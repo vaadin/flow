@@ -1,6 +1,7 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Page;
 
 /**
@@ -14,11 +15,11 @@ public class DependenciesLoadingPageApiUI extends DependenciesLoadingBaseUI {
         super.init(request);
 
         Page page = getUI().get().getPage();
-        page.addJavaScript("/com/vaadin/flow/uitest/ui/dependencies/non-blocking.js", false);
-        page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/non-blocking.css", false);
-        page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/non-blocking.html", false);
-        page.addJavaScript("/com/vaadin/flow/uitest/ui/dependencies/blocking.js");
-        page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/blocking.css");
-        page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/blocking.html");
+        page.addJavaScript("/com/vaadin/flow/uitest/ui/dependencies/lazy.js", LoadMode.LAZY);
+        page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/lazy.css", LoadMode.LAZY);
+        page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/lazy.html", LoadMode.LAZY);
+        page.addJavaScript("/com/vaadin/flow/uitest/ui/dependencies/eager.js");
+        page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/eager.css");
+        page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/eager.html");
     }
 }

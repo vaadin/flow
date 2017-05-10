@@ -22,7 +22,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-hello-world#,Hello World>>
 ** <<tutorial-include-css#,Including Style Sheets>>
 ** <<tutorial-importing#,Importing html/javascript>>
-** <<tutorial-non-blocking-importing#,Non-blocking Importing>>
+** <<tutorial-lazy-importing#,Lazy importing>>
 ** <<tutorial-bootstrap#,Modifying bootstrap page>>
 * Element API
 ** <<tutorial-properties-attributes#,Element Properties and Attributes>>

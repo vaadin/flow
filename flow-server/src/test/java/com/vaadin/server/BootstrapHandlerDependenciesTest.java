@@ -24,43 +24,44 @@ import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.UI;
 
 public class BootstrapHandlerDependenciesTest {
 
-    @JavaScript(value = "lazy.js", blocking = false)
-    @StyleSheet(value = "lazy.css", blocking = false)
-    @HtmlImport(value = "lazy.html", blocking = false)
-    @JavaScript("blocking.js")
-    @StyleSheet("context://blocking-relative.css")
-    @StyleSheet("blocking.css")
-    @HtmlImport("blocking.html")
-    private static class UIAnnotated_BlockingOrderTest extends UI {
+    @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
+    @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
+    @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
+    @JavaScript("eager.js")
+    @StyleSheet("context://eager-relative.css")
+    @StyleSheet("eager.css")
+    @HtmlImport("eager.html")
+    private static class UIAnnotated_LoadingOrderTest extends UI {
     }
 
-    private static class UIWithMethods_BlockingOrderTest extends UI {
+    private static class UIWithMethods_LoadingOrderTest extends UI {
         @Override
         protected void init(VaadinRequest request) {
-            getPage().addJavaScript("lazy.js", false);
-            getPage().addStyleSheet("lazy.css", false);
-            getPage().addHtmlImport("lazy.html", false);
-            getPage().addJavaScript("blocking.js");
-            getPage().addStyleSheet("context://blocking-relative.css");
-            getPage().addStyleSheet("blocking.css");
-            getPage().addHtmlImport("blocking.html");
+            getPage().addJavaScript("lazy.js", LoadMode.LAZY);
+            getPage().addStyleSheet("lazy.css", LoadMode.LAZY);
+            getPage().addHtmlImport("lazy.html", LoadMode.LAZY);
+            getPage().addJavaScript("eager.js");
+            getPage().addStyleSheet("context://eager-relative.css");
+            getPage().addStyleSheet("eager.css");
+            getPage().addHtmlImport("eager.html");
         }
     }
 
-    @JavaScript(value = "new.js", blocking = false)
+    @JavaScript(value = "new.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "new.js")
-    private static class UIAnnotated_BothBlockingAndNotTest extends UI {
+    private static class UIAnnotated_BothLazyAndEagerTest extends UI {
     }
 
-    private static class UIWithMethods_BothBlockingAndNotTest extends UI {
+    private static class UIWithMethods_BothBothLazyAndEagerTest extends UI {
         @Override
         protected void init(VaadinRequest request) {
-            getPage().addJavaScript("new.js", false);
+            getPage().addJavaScript("new.js", LoadMode.LAZY);
             getPage().addJavaScript("new.js");
         }
     }
@@ -71,19 +72,19 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet("2.css")
     @HtmlImport("1.html")
     @HtmlImport("2.html")
-    private static class UIAnnotated_ImportOrderTest_Blocking extends UI {
+    private static class UIAnnotated_ImportOrderTest_Eager extends UI {
     }
 
-    @JavaScript(value = "1.js", blocking = false)
-    @JavaScript(value = "2.js", blocking = false)
-    @StyleSheet(value = "1.css", blocking = false)
-    @StyleSheet(value = "2.css", blocking = false)
-    @HtmlImport(value = "1.html", blocking = false)
-    @HtmlImport(value = "2.html", blocking = false)
-    private static class UIAnnotated_ImportOrderTest_NonBlocking extends UI {
+    @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
+    @StyleSheet(value = "1.css", loadMode = LoadMode.LAZY)
+    @StyleSheet(value = "2.css", loadMode = LoadMode.LAZY)
+    @HtmlImport(value = "1.html", loadMode = LoadMode.LAZY)
+    @HtmlImport(value = "2.html", loadMode = LoadMode.LAZY)
+    private static class UIAnnotated_ImportOrderTest_Lazy extends UI {
     }
 
-    private static class UIWithMethods_ImportOrderTest_Blocking extends UI {
+    private static class UIWithMethods_ImportOrderTest_Eager extends UI {
         @Override
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
@@ -95,42 +96,42 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    private static class UIWithMethods_ImportOrderTest_NonBlocking extends UI {
+    private static class UIWithMethods_ImportOrderTest_Lazy extends UI {
         @Override
         public void init(VaadinRequest request) {
-            getPage().addJavaScript("1.js", false);
-            getPage().addJavaScript("2.js", false);
-            getPage().addStyleSheet("1.css", false);
-            getPage().addStyleSheet("2.css", false);
-            getPage().addHtmlImport("1.html", false);
-            getPage().addHtmlImport("2.html", false);
+            getPage().addJavaScript("1.js", LoadMode.LAZY);
+            getPage().addJavaScript("2.js", LoadMode.LAZY);
+            getPage().addStyleSheet("1.css", LoadMode.LAZY);
+            getPage().addStyleSheet("2.css", LoadMode.LAZY);
+            getPage().addHtmlImport("1.html", LoadMode.LAZY);
+            getPage().addHtmlImport("2.html", LoadMode.LAZY);
         }
     }
 
-    @JavaScript(value = "1.js", blocking = false)
-    @JavaScript(value = "2.js", blocking = false)
-    @JavaScript(value = "1.js", blocking = false)
-    private static class UIAnnotated_DuplicateDependencies_NonBlocking
+    @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
+    private static class UIAnnotated_DuplicateDependencies_Lazy
             extends UI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_NonBlocking
+    private static class UIWithMethods_DuplicateDependencies_Lazy
             extends UI {
         @Override
         protected void init(VaadinRequest request) {
-            getPage().addJavaScript("1.js", false);
-            getPage().addJavaScript("2.js", false);
-            getPage().addJavaScript("1.js", false);
+            getPage().addJavaScript("1.js", LoadMode.LAZY);
+            getPage().addJavaScript("2.js", LoadMode.LAZY);
+            getPage().addJavaScript("1.js", LoadMode.LAZY);
         }
     }
 
     @JavaScript(value = "1.js")
     @JavaScript(value = "2.js")
     @JavaScript(value = "1.js")
-    private static class UIAnnotated_DuplicateDependencies_Blocking extends UI {
+    private static class UIAnnotated_DuplicateDependencies_Eager extends UI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Blocking
+    private static class UIWithMethods_DuplicateDependencies_Eager
             extends UI {
         @Override
         protected void init(VaadinRequest request) {
@@ -172,8 +173,8 @@ public class BootstrapHandlerDependenciesTest {
             assertFalse("New dependency should not be loaded via uidl",
                     uidlData.contains(newDependencyUrl));
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_BothBlockingAndNotTest(),
-                new UIWithMethods_BothBlockingAndNotTest());
+        testUis(uiPageTestingMethod, new UIAnnotated_BothLazyAndEagerTest(),
+                new UIWithMethods_BothBothLazyAndEagerTest());
 
     }
 
@@ -182,40 +183,40 @@ public class BootstrapHandlerDependenciesTest {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            assertCssElementPrerendered(head, "blocking.css");
-            assertCssElementPrerendered(head, "./blocking-relative.css");
-            assertJavaScriptElementPrerendered(head, "blocking.js");
+            assertCssElementPrerendered(head, "eager.css");
+            assertCssElementPrerendered(head, "./eager-relative.css");
+            assertJavaScriptElementPrerendered(head, "eager.js");
 
             // For some reason, we don't prerender html now at all
-            assertElementNotPrerendered(head, "blocking.html");
+            assertElementNotPrerendered(head, "eager.html");
 
             assertElementNotPrerendered(head, "lazy.js");
             assertElementNotPrerendered(head, "lazy.css");
             assertElementNotPrerendered(head, "lazy.html");
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_BlockingOrderTest(),
-                new UIWithMethods_BlockingOrderTest());
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
+                new UIWithMethods_LoadingOrderTest());
     }
 
     @Test
     public void checkUidlDependencies() {
         Consumer<Document> uiPageTestingMethod = page -> {
             String uidlData = extractUidlData(page);
-            assertFalse(uidlData.contains("blocking.css"));
-            assertFalse(uidlData.contains("./blocking-relative.css"));
-            assertFalse(uidlData.contains("blocking.js"));
+            assertFalse(uidlData.contains("eager.css"));
+            assertFalse(uidlData.contains("./eager-relative.css"));
+            assertFalse(uidlData.contains("eager.js"));
 
-            assertTrue(uidlData.contains("blocking.html"));
+            assertTrue(uidlData.contains("eager.html"));
             assertTrue(uidlData.contains("lazy.js"));
             assertTrue(uidlData.contains("lazy.css"));
             assertTrue(uidlData.contains("lazy.html"));
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_BlockingOrderTest(),
-                new UIWithMethods_BlockingOrderTest());
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
+                new UIWithMethods_LoadingOrderTest());
     }
 
     @Test
-    public void everyBlockingJavaScriptDependencyIsIncludedWithDeferAttribute() {
+    public void everyLazyJavaScriptIsIncludedWithDeferAttribute() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Elements jsElements = page.getElementsByTag("script");
             Elements deferElements = page.getElementsByAttribute("defer");
@@ -228,14 +229,14 @@ public class BootstrapHandlerDependenciesTest {
                     "Expected to have all script elements with defer attribute",
                     jsElements, deferElements);
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_BlockingOrderTest(),
-                new UIWithMethods_BlockingOrderTest(),
-                new UIAnnotated_ImportOrderTest_NonBlocking(),
-                new UIWithMethods_ImportOrderTest_NonBlocking());
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
+                new UIWithMethods_LoadingOrderTest(),
+                new UIAnnotated_ImportOrderTest_Lazy(),
+                new UIWithMethods_ImportOrderTest_Lazy());
     }
 
     @Test
-    public void blockingDependenciesAreImportedInConsequentOrder() {
+    public void eagerDependenciesAreImportedInConsequentOrder() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
@@ -253,12 +254,12 @@ public class BootstrapHandlerDependenciesTest {
             String uidlData = extractUidlData(page);
             assertDependenciesOrderInUidl(uidlData, "1.html", "2.html");
         };
-        testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Blocking(),
-                new UIWithMethods_ImportOrderTest_Blocking());
+        testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Eager(),
+                new UIWithMethods_ImportOrderTest_Eager());
     }
 
     @Test
-    public void nonBlockingDependenciesAreImportedInConsequentOrder() {
+    public void lazyDependenciesAreImportedInConsequentOrder() {
         Consumer<Document> uiPageTestingMethod = page -> {
             String uidlData = extractUidlData(page);
             assertDependenciesOrderInUidl(uidlData, "1.js", "2.js");
@@ -266,12 +267,12 @@ public class BootstrapHandlerDependenciesTest {
             assertDependenciesOrderInUidl(uidlData, "1.html", "2.html");
         };
         testUis(uiPageTestingMethod,
-                new UIAnnotated_ImportOrderTest_NonBlocking(),
-                new UIWithMethods_ImportOrderTest_NonBlocking());
+                new UIAnnotated_ImportOrderTest_Lazy(),
+                new UIWithMethods_ImportOrderTest_Lazy());
     }
 
     @Test
-    public void duplicateDependenciesAreDiscarded_Blocking() {
+    public void duplicateDependenciesAreDiscarded_Eager() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
@@ -281,19 +282,19 @@ public class BootstrapHandlerDependenciesTest {
             assertUrlOrder(jsImportUrls, "1.js", "2.js");
         };
         testUis(uiPageTestingMethod,
-                new UIAnnotated_DuplicateDependencies_Blocking(),
-                new UIWithMethods_DuplicateDependencies_Blocking());
+                new UIAnnotated_DuplicateDependencies_Eager(),
+                new UIWithMethods_DuplicateDependencies_Eager());
     }
 
     @Test
-    public void duplicateDependenciesAreDiscarded_NonBlocking() {
+    public void duplicateDependenciesAreDiscarded_Lazy() {
         Consumer<Document> uiPageTestingMethod = page -> {
             String uidlData = extractUidlData(page);
             assertDependenciesOrderInUidl(uidlData, "1.js", "2.js");
         };
         testUis(uiPageTestingMethod,
-                new UIAnnotated_DuplicateDependencies_NonBlocking(),
-                new UIWithMethods_DuplicateDependencies_NonBlocking());
+                new UIAnnotated_DuplicateDependencies_Lazy(),
+                new UIWithMethods_DuplicateDependencies_Lazy());
     }
 
     private void testUis(Consumer<Document> uiPageTestingMethod,

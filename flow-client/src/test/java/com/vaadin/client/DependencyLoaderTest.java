@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
@@ -170,7 +171,7 @@ public class DependencyLoaderTest {
     }
 
     @Test
-    public void ensureBlockingDependenciesLoadedInOrder() {
+    public void ensureEagerDependenciesLoadedInOrder() {
         ensureDependenciesLoadedInOrder();
     }
 
@@ -210,7 +211,7 @@ public class DependencyLoaderTest {
         JsonObject dependency = Json.createObject();
         dependency.put(DependencyList.KEY_TYPE, type);
         dependency.put(DependencyList.KEY_URL, url);
-        dependency.put(DependencyList.KEY_BLOCKING, true);
+        dependency.put(DependencyList.KEY_LOAD_MODE, LoadMode.EAGER.name());
         return dependency;
     }
 

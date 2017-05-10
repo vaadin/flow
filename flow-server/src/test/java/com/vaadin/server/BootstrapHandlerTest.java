@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.Prerenderer;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.server.BootstrapHandler.PreRenderMode;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
@@ -44,13 +45,13 @@ public class BootstrapHandlerTest {
     static final String UI_TITLE = "UI_TITLE";
 
     @Title(UI_TITLE)
-    @JavaScript(value = "lazy.js", blocking = false)
-    @StyleSheet(value = "lazy.css", blocking = false)
-    @HtmlImport(value = "lazy.html", blocking = false)
-    @JavaScript("blocking.js")
-    @StyleSheet("context://blocking-relative.css")
-    @StyleSheet("blocking.css")
-    @HtmlImport("blocking.html")
+    @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
+    @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
+    @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
+    @JavaScript("eager.js")
+    @StyleSheet("context://eager-relative.css")
+    @StyleSheet("eager.css")
+    @HtmlImport("eager.html")
     private class TestUI extends UI {
 
         @Override

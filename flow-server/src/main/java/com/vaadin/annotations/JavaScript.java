@@ -23,22 +23,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 
 /**
  * Annotation for defining JavaScript dependencies on a {@link Component} class.
  * For adding multiple JavaScript files for a single component, you can use this
  * annotation multiple times.
  * <p>
- * It is guaranteed that all blocking JavaScript files are loaded on the client
- * side before the component is used for the first time in a {@link UI}.
- * Non-blocking javascript files can be loaded later, for more details refer to
- * {@link #blocking()}. The dependencies are sent only once.
- * <p>
- * By default, the resource is loaded in blocking mode, that assumes that an
- * application cannot work without having the it loaded first.
- * To change this behaviour, please specify {@link #blocking()} property.
+ * It is guaranteed that dependencies will be loaded only once.
  * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
@@ -67,14 +60,10 @@ public @interface JavaScript {
     String value();
 
     /**
-     * Indicates whether resource should be loaded before component is used for
-     * the first time or not.
-     * <p>
-     * Component can be used only if all corresponding blocking resources are
-     * loaded.
+     * Determines the dependency load mode. Refer to {@link LoadMode} for the
+     * details.
      *
-     * @return {@code false} if the resource can be loaded before component
-     *         usage, {@code true} otherwise
+     * @return load mode for the dependency
      */
-    boolean blocking() default true;
+    LoadMode loadMode() default LoadMode.EAGER;
 }

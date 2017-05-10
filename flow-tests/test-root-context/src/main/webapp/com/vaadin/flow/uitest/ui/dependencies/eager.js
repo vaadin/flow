@@ -4,4 +4,4 @@ function attachTestDiv(textContent) {
     div.textContent = textContent;
     document.body.appendChild(div);
 }
-attachTestDiv("blocking.js");
+attachTestDiv("eager.js");

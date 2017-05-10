@@ -1,0 +1,10 @@
+<script type="text/javascript">
+    // Cannot use eager.js code, because Flow does not guarantee *.js and *.html dependencies import order.
+    function eagerHtml() {
+        const div = document.createElement("div");
+        div.className = "dependenciesTest";
+        div.textContent = "eager.html";
+        document.body.appendChild(div);
+    }
+    eagerHtml();
+</script>

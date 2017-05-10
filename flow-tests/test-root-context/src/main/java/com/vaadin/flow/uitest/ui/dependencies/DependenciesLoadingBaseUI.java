@@ -13,7 +13,7 @@ import com.vaadin.ui.UI;
  */
 class DependenciesLoadingBaseUI extends UI {
     static final String PRELOADED_DIV_ID = "preloadedDiv";
-    static final String DOM_CHANGE_TEXT = "I appear after blocking dependencies and before non-blocking";
+    static final String DOM_CHANGE_TEXT = "I appear after eager dependencies and before lazy";
 
     @Override
     protected void init(VaadinRequest request) {
@@ -25,7 +25,7 @@ class DependenciesLoadingBaseUI extends UI {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        // See blocking.js for attachTestDiv code
+        // See eager.js for attachTestDiv code
         getPage().executeJavaScript(
                 "attachTestDiv($0)",
                 DOM_CHANGE_TEXT);

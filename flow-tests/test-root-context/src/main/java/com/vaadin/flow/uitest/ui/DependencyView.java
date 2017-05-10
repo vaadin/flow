@@ -27,6 +27,7 @@ import com.vaadin.flow.html.Hr;
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasText;
@@ -60,7 +61,7 @@ public class DependencyView extends AbstractDivView {
 
         Button jsOrder = new Button("Test JS order", e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
-            getPage().addJavaScript("/test-files/js/read-global-var.js", false);
+            getPage().addJavaScript("/test-files/js/read-global-var.js", LoadMode.LAZY);
         });
         jsOrder.setId("loadJs");
 

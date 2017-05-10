@@ -48,6 +48,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
@@ -520,14 +521,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         int uidlDependenciesIndex = 0;
         for (int i = 0; i < dependencies.length(); i++) {
             JsonObject dependency = dependencies.getObject(i);
-            boolean isBlocking = dependency
-                    .getBoolean(DependencyList.KEY_BLOCKING);
+            LoadMode loadMode = LoadMode.valueOf(
+                    dependency.getString(DependencyList.KEY_LOAD_MODE));
             String dependencyKey = dependency
                     .getString(DependencyList.KEY_TYPE);
-            if (isBlocking
+            if (loadMode == LoadMode.EAGER
                     && DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
                 addStyleSheet(head, resolver, dependency);
-            } else if (isBlocking
+            } else if (loadMode == LoadMode.EAGER
                     && DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
                 addJavaScript(head, resolver, dependency);
             } else {
