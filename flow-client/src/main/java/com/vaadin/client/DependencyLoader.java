@@ -197,11 +197,11 @@ public class DependencyLoader {
         case DependencyList.TYPE_STYLESHEET:
             return resourceLoader::loadStylesheet;
         case DependencyList.TYPE_HTML_IMPORT:
-            return resourceLoader::loadHtml;
+            return (scriptUrl, resourceLoadListener) -> resourceLoader
+                    .loadHtml(scriptUrl, resourceLoadListener, true);
         case DependencyList.TYPE_JAVASCRIPT:
             return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadScript(scriptUrl, resourceLoadListener, !blocking,
-                            !blocking);
+                    .loadScript(scriptUrl, resourceLoadListener, false, true);
         default:
             throw new IllegalArgumentException(
                     "Unknown dependency type " + resourceType);

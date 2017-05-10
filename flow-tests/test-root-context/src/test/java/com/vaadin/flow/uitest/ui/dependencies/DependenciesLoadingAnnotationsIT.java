@@ -39,6 +39,8 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
         waitUntil(input -> input.findElements(By.className("dependenciesTest"))
                 .size() == 5);
 
+        ensureDependenciesHaveCorrectAttributes();
+
         WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
         Assert.assertEquals(
                 "Non-blocking css should be loaded last: color should be blue",
@@ -67,5 +69,38 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
         Assert.assertTrue(
                 "Non-blocking dependencies should be loaded after blocking",
                 testMessages.get(4).startsWith(NON_BLOCKING_PREFIX));
+    }
+
+    private void ensureDependenciesHaveCorrectAttributes() {
+        findElements(By.tagName("script")).stream()
+                // FW needs this element to be loaded asap, that's why it's an
+                // exclusion
+                .filter(javaScriptImport -> !javaScriptImport
+                        .getAttribute("src").endsWith("es6-collections.js"))
+                .forEach(javaScriptImport -> {
+                    Assert.assertEquals(
+                            String.format(
+                                    "All javascript dependencies should be loaded with 'defer' attribute. Dependency with url %s does not have this attribute",
+                                    javaScriptImport.getAttribute("src")),
+                            "true", javaScriptImport.getAttribute("defer"));
+                    Assert.assertNull(
+                            String.format(
+                                    "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
+                                    javaScriptImport.getAttribute("src")),
+                            javaScriptImport.getAttribute("async"));
+                });
+
+        findElements(By.tagName("link")).stream()
+                .filter(element -> element.getAttribute("href")
+                        .endsWith(".html"))
+                .forEach(
+                        htmlImport -> Assert
+                                .assertEquals(
+                                        String.format(
+                                                "All javascript dependencies should be loaded with 'async' attribute. Dependency with url %s does not have this attribute",
+                                                htmlImport
+                                                        .getAttribute("href")),
+                                        "true",
+                                        htmlImport.getAttribute("async")));
     }
 }

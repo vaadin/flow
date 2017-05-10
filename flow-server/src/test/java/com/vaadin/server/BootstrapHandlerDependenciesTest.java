@@ -215,7 +215,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     @Test
-    public void everyNonBlockingJavaScriptIsIncludedWithDeferAttribute() {
+    public void everyBlockingJavaScriptDependencyIsIncludedWithDeferAttribute() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Elements jsElements = page.getElementsByTag("script");
             Elements deferElements = page.getElementsByAttribute("defer");
