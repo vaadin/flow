@@ -27,11 +27,13 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -76,7 +78,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
             ClientDelegateHandlers.class, PolymerEventListenerMap.class,
-            ShadowRootData.class };
+            ShadowRootData.class, AttachExistingElementFeature.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -339,5 +341,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     public StateNode attachShadow(StateNode node) {
         assert getShadowRoot(node) == null;
         return ShadowRootStateProvider.get().createShadowRootNode(node);
+    }
+
+    @Override
+    protected Node getNode(StateNode node) {
+        assert supports(node);
+        return Element.get(node);
     }
 }

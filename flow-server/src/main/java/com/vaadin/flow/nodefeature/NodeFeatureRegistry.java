@@ -85,6 +85,8 @@ public class NodeFeatureRegistry {
                 ClientDelegateHandlers::new);
         registerFeature(ShadowRootData.class, ShadowRootData::new);
         registerFeature(ShadowRootHost.class, ShadowRootHost::new);
+        registerFeature(AttachExistingElementFeature.class,
+                AttachExistingElementFeature::new);
     }
 
     private NodeFeatureRegistry() {

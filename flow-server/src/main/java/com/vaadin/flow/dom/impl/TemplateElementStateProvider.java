@@ -23,6 +23,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
@@ -564,6 +565,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public StateNode attachShadow(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void attachExistingElement(StateNode node, String tagName,
+            Element previousSibling, ChildElementConsumer callback) {
         throw new UnsupportedOperationException();
     }
 }

@@ -17,6 +17,11 @@ package com.vaadin.server;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -25,8 +30,10 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.server.communication.StreamResourceRequestHandler;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -168,6 +175,53 @@ public class VaadinServiceTest {
         Assert.assertEquals(
                 "Original CurrentInstance should be set after the task has been run",
                 "Original value", CurrentInstance.get(String.class));
+    }
+
+    @Test
+    public void testBootstrapListenersCreation() throws ServiceException {
+        // in this test the actual behavior of the listeners is not evaluated.
+        // That test can be found at the BootstrapHandlerTest.
+        BootstrapListener listener1 = evt -> {
+        };
+        BootstrapListener listener2 = evt -> {
+        };
+
+        MockVaadinServletService mock = new MockVaadinServletService(
+                new VaadinServlet(), new MockDeploymentConfiguration());
+
+        MockVaadinServletService service = Mockito.spy(mock);
+
+        List<VaadinServiceInitListener> initListeners = new ArrayList<>();
+        initListeners.add(evt -> {
+            evt.addBootstrapListener(listener1);
+            evt.addBootstrapListener(listener2);
+        });
+
+        Mockito.when(service.getServiceInitListeners())
+                .thenReturn(initListeners.iterator());
+
+        Mockito.when(service.processBootstrapListeners(Mockito.anyList()))
+                .thenAnswer(invocation -> {
+                    List<BootstrapListener> defaultListeners = (List<BootstrapListener>) invocation
+                            .getArguments()[0];
+
+                    assertEquals(2, defaultListeners.size());
+                    assertTrue(defaultListeners.contains(listener1));
+                    assertTrue(defaultListeners.contains(listener2));
+
+                    // verify whether the list is modifiable
+                    assertTrue(defaultListeners.remove(listener1));
+                    assertEquals(1, defaultListeners.size());
+                    assertTrue(defaultListeners.add(listener1));
+                    assertEquals(2, defaultListeners.size());
+
+                    return defaultListeners;
+                });
+
+        service.init();
+
+        Mockito.verify(service, Mockito.times(2)).getServiceInitListeners();
+        Mockito.verify(service).processBootstrapListeners(Mockito.anyList());
     }
 
     private static VaadinService createService() {

@@ -5,13 +5,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -43,10 +44,13 @@ public class BootstrapHandlerTest {
     static final String UI_TITLE = "UI_TITLE";
 
     @Title(UI_TITLE)
-    @StyleSheet("relative.css")
-    @StyleSheet("context://context.css")
-    @JavaScript("myjavascript.js")
-    @HtmlImport("www.com")
+    @JavaScript(value = "lazy.js", blocking = false)
+    @StyleSheet(value = "lazy.css", blocking = false)
+    @HtmlImport(value = "lazy.html", blocking = false)
+    @JavaScript("blocking.js")
+    @StyleSheet("context://blocking-relative.css")
+    @StyleSheet("blocking.css")
+    @HtmlImport("blocking.html")
     private class TestUI extends UI {
 
         @Override
@@ -158,7 +162,7 @@ public class BootstrapHandlerTest {
         @Override
         protected Optional<Node> prerender() {
             return Prerenderer.prerenderElementTree(getElement(), true, false);
-        };
+        }
     }
 
     private TestUI testUI;
@@ -176,8 +180,10 @@ public class BootstrapHandlerTest {
         prerenderTestUI = new UI();
 
         deploymentConfiguration = new MockDeploymentConfiguration();
-        service = new VaadinServletService(new VaadinServlet(),
-                deploymentConfiguration);
+
+        service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
+                deploymentConfiguration));
+
         session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(deploymentConfiguration);
@@ -192,6 +198,12 @@ public class BootstrapHandlerTest {
 
     private void initUI(UI ui, VaadinRequest request) {
         this.request = request;
+        try {
+            service.init();
+        } catch (ServiceException e) {
+            throw new RuntimeException("Error initializing the VaadinService",
+                    e);
+        }
         ui.doInit(request, 0);
         context = new BootstrapContext(request, null, session, ui);
     }
@@ -217,19 +229,19 @@ public class BootstrapHandlerTest {
 
     @Test
     public void prerenderMode() {
-        Map<String, PreRenderMode> parametertoMode = new HashMap<>();
-        parametertoMode.put("only", PreRenderMode.PRE_ONLY);
-        parametertoMode.put("no", PreRenderMode.LIVE_ONLY);
+        Map<String, PreRenderMode> parameterToMode = new HashMap<>();
+        parameterToMode.put("only", PreRenderMode.PRE_ONLY);
+        parameterToMode.put("no", PreRenderMode.LIVE_ONLY);
 
-        parametertoMode.put("", PreRenderMode.PRE_AND_LIVE);
-        parametertoMode.put(null, PreRenderMode.PRE_AND_LIVE);
-        parametertoMode.put("foobar", PreRenderMode.PRE_AND_LIVE);
+        parameterToMode.put("", PreRenderMode.PRE_AND_LIVE);
+        parameterToMode.put(null, PreRenderMode.PRE_AND_LIVE);
+        parameterToMode.put("foobar", PreRenderMode.PRE_AND_LIVE);
 
-        for (String parameter : parametertoMode.keySet()) {
+        for (String parameter : parameterToMode.keySet()) {
             HttpServletRequest request = createRequest(parameter);
             BootstrapContext context = new BootstrapContext(
                     new VaadinServletRequest(request, null), null, null, null);
-            assertEquals(parametertoMode.get(parameter),
+            assertEquals(parameterToMode.get(parameter),
                     context.getPreRenderMode());
         }
     }
@@ -470,74 +482,6 @@ public class BootstrapHandlerTest {
         assertEquals("noscript", body.children().get(0).tagName());
     }
 
-    @Test
-    public void prerenderContainsStyleSheets() throws Exception {
-        initUI(testUI, createVaadinRequest(PreRenderMode.PRE_ONLY));
-
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
-        Element head = page.head();
-
-        Elements relativeCssLinks = head.getElementsByAttributeValue("href",
-                "relative.css");
-        assertEquals(1, relativeCssLinks.size());
-        Element relativeLinkElement = relativeCssLinks.get(0);
-        assertEquals("link", relativeLinkElement.tagName());
-        assertEquals("text/css", relativeLinkElement.attr("type"));
-
-        Elements contextCssLinks = head.getElementsByAttributeValue("href",
-                "./context.css");
-        assertEquals(1, contextCssLinks.size());
-        Element contextLinkElement = contextCssLinks.get(0);
-        assertEquals("link", contextLinkElement.tagName());
-        assertEquals("text/css", contextLinkElement.attr("type"));
-    }
-
-    @Test
-    public void styleSheetsAndJavaScriptNotInUidl() {
-        initUI(testUI, createVaadinRequest(null));
-
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
-
-        Element uidlScriptTag = null;
-        for (Element scriptTag : page.head().getElementsByTag("script")) {
-            if (scriptTag.hasAttr("src")) {
-                continue;
-            }
-
-            uidlScriptTag = scriptTag;
-
-            break;
-        }
-        Assert.assertNotNull(uidlScriptTag);
-
-        String uidlData = uidlScriptTag.data();
-        assertTrue(uidlData.contains("var uidl ="));
-        assertTrue(uidlData.contains("www.com"));
-        assertFalse(uidlData.contains("myjavascript.js"));
-        assertFalse(uidlData.contains("context.css"));
-        assertFalse(uidlData.contains("relative.css"));
-    }
-
-    @Test
-    public void everyJavaScriptIsIncludedWithDeferAttribute() {
-        initUI(testUI, createVaadinRequest(null));
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
-
-        Elements jsElements = page.getElementsByTag("script");
-        Elements deferElements = page.getElementsByAttribute("defer");
-
-        // Ignore polyfill that should be loaded immediately
-        jsElements.removeIf(
-                element -> element.attr("src").contains("es6-collections.js"));
-
-        assertEquals(jsElements, deferElements);
-        assertTrue(deferElements.stream().map(element -> element.attr("src"))
-                .anyMatch("myjavascript.js"::equals));
-    }
-
     @Test // #1134
     public void testBodyAfterHeadPrerender() throws Exception {
         initUI(testUI, createVaadinRequest(null));
@@ -564,6 +508,33 @@ public class BootstrapHandlerTest {
         assertEquals("body", body.tagName());
         assertEquals("html", body.parent().tagName());
         assertEquals(2, body.parent().childNodeSize());
+    }
+
+    @Test
+    public void testBootstrapListener() {
+        List<BootstrapListener> listeners = new ArrayList<>(3);
+        listeners.add(evt -> evt.getDocument().head().getElementsByTag("script")
+                .remove());
+        listeners.add(evt -> evt.getDocument().head().appendElement("script")
+                .attr("src", "testing.1"));
+        listeners.add(evt -> evt.getDocument().head().appendElement("script")
+                .attr("src", "testing.2"));
+
+        Mockito.when(service.processBootstrapListeners(Mockito.anyList()))
+                .thenReturn(listeners);
+
+        initUI(testUI);
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements scripts = page.head().getElementsByTag("script");
+        assertEquals(2, scripts.size());
+        assertEquals("testing.1", scripts.get(0).attr("src"));
+        assertEquals("testing.2", scripts.get(1).attr("src"));
+
+        Mockito.verify(service, Mockito.times(2))
+                .processBootstrapListeners(Mockito.anyList());
     }
 
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {

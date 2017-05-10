@@ -18,7 +18,7 @@ package com.vaadin.ui;
 import java.io.Serializable;
 
 /**
- * Represents a stylesheet or JavaScript to include on the page.
+ * Represents an html import, stylesheet or JavaScript to include on the page.
  *
  * @author Vaadin Ltd
  */
@@ -28,25 +28,31 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, HTML_IMPORT;
+        STYLESHEET, JAVASCRIPT, HTML_IMPORT
     }
 
     private final Type type;
     private final String url;
+    private final boolean blocking;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
      * URL.
      * <p>
      * The URL is passed through the translation mechanism before loading, so
-     * custom protocols such as "vaadin://" can be used.
+     * custom protocols, specified at
+     * {@link com.vaadin.shared.VaadinUriResolver} can be used.
      *
      * @param type
-     *            the type of the dependency, not <code>null</code>
+     *            the type of the dependency, not {@code null}
      * @param url
-     *            the URL to load the dependency from, not <code>null</code>
+     *            the URL to load the dependency from, not {@code null}
+     * @param blocking
+     *            {@code true} forces the dependency to be loaded before the
+     *            initial page load, {@code false} allows the dependency to be
+     *            loaded independent of initial page load
      */
-    public Dependency(Type type, String url) {
+    public Dependency(Type type, String url, boolean blocking) {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
@@ -54,6 +60,7 @@ public class Dependency implements Serializable {
 
         this.type = type;
         this.url = url;
+        this.blocking = blocking;
     }
 
     /**
@@ -72,5 +79,15 @@ public class Dependency implements Serializable {
      */
     public Type getType() {
         return type;
+    }
+
+    /**
+     * Gets the blocking property of the dependency.
+     *
+     * @return {@code true} if dependency should be loaded before whole page is
+     *         loaded, {@code false} otherwise.
+     */
+    public boolean isBlocking() {
+        return blocking;
     }
 }

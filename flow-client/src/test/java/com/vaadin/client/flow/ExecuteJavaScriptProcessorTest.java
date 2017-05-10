@@ -24,8 +24,11 @@ import org.junit.Test;
 
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
+import com.vaadin.client.flow.collection.JsMap;
+import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.util.JsonUtils;
 
+import elemental.js.dom.JsElement;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 
@@ -34,25 +37,32 @@ public class ExecuteJavaScriptProcessorTest {
             extends ExecuteJavaScriptProcessor {
         private final List<String[]> parameterNamesAndCodeList = new ArrayList<>();
         private final List<JsArray<Object>> parametersList = new ArrayList<>();
+        private final List<JsMap<Object, StateNode>> nodeParametersList = new ArrayList<>();
 
         private CollectingExecuteJavaScriptProcessor() {
-            super(new Registry() {
+            this(new Registry() {
                 {
                     set(StateTree.class, new StateTree(this));
                 }
             });
         }
 
+        private CollectingExecuteJavaScriptProcessor(Registry registry) {
+            super(registry);
+        }
+
         @Override
         protected void invoke(String[] parameterNamesAndCode,
-                JsArray<Object> parameters) {
+                JsArray<Object> parameters,
+                JsMap<Object, StateNode> nodeParameters) {
             parameterNamesAndCodeList.add(parameterNamesAndCode);
             parametersList.add(parameters);
+            nodeParametersList.add(nodeParameters);
         }
     }
 
     @Test
-    public void testExecute() {
+    public void execute_parametersAndCodeAreValidAndNoNodeParameters() {
         CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
 
         JsonArray invocation1 = JsonUtils.createArray(Json.create("script1"));
@@ -64,6 +74,7 @@ public class ExecuteJavaScriptProcessorTest {
 
         Assert.assertEquals(2, processor.parameterNamesAndCodeList.size());
         Assert.assertEquals(2, processor.parametersList.size());
+        Assert.assertEquals(2, processor.nodeParametersList.size());
 
         Assert.assertArrayEquals(new String[] { "script1" },
                 processor.parameterNamesAndCodeList.get(0));
@@ -75,5 +86,45 @@ public class ExecuteJavaScriptProcessorTest {
         Assert.assertEquals("param1", processor.parametersList.get(1).get(0));
         Assert.assertEquals("param2", processor.parametersList.get(1).get(1));
 
+        Assert.assertEquals(0, processor.nodeParametersList.get(0).size());
+        Assert.assertEquals(0, processor.nodeParametersList.get(1).size());
+    }
+
+    @Test
+    public void execute_nodeParametersAreCorrectlyPassed() {
+        Registry registry = new Registry() {
+            {
+                StateTree tree = new StateTree(this);
+                set(StateTree.class, tree);
+            }
+
+        };
+        CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor(
+                registry);
+
+        StateNode node = new StateNode(10, registry.getStateTree());
+        registry.getStateTree().registerNode(node);
+
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(node.getId()));
+
+        JsonArray invocation = Stream.of(json, Json.create("$0"))
+                .collect(JsonUtils.asArray());
+
+        processor.execute(JsonUtils.createArray(invocation));
+
+        Assert.assertEquals(1, processor.nodeParametersList.size());
+
+        Assert.assertEquals(1, processor.nodeParametersList.get(0).size());
+
+        JsMap<Object, StateNode> map = processor.nodeParametersList.get(0);
+
+        StateNode stateNode = map.get(element);
+        Assert.assertEquals(node, stateNode);
     }
 }

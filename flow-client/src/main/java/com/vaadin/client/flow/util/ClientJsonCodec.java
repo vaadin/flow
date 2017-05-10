@@ -17,6 +17,7 @@ package com.vaadin.client.flow.util;
 
 import com.google.gwt.core.client.GWT;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -38,6 +39,43 @@ public class ClientJsonCodec {
     }
 
     /**
+     * Decodes a value as a {@link StateNode} encoded on the server using
+     * {@link JsonCodec#encodeWithTypeInfo(Object)} if it's possible. Otherwise
+     * returns {@code null}.
+     * <p>
+     * It does the same as {@link #decodeWithTypeInfo(StateTree, JsonValue)} for
+     * the encoded json value if the encoded object is a {@link StateNode}
+     * except it returns the node itself instead of a DOM element associated
+     * with it.
+     *
+     * @see #decodeWithTypeInfo(StateTree, JsonValue)
+     * @param tree
+     *            the state tree to use for resolving nodes and elements
+     * @param json
+     *            the JSON value to decode
+     * @return the decoded state node if any
+     */
+    public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
+        if (json.getType() == JsonType.ARRAY) {
+            JsonArray array = (JsonArray) json;
+            int typeId = (int) array.getNumber(0);
+            switch (typeId) {
+            case JsonCodec.NODE_TYPE: {
+                int nodeId = (int) array.getNumber(1);
+                return tree.getNode(nodeId);
+            }
+            case JsonCodec.ARRAY_TYPE:
+                return null;
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported complex type in " + array.toJson());
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Decodes a value encoded on the server using
      * {@link JsonCodec#encodeWithTypeInfo(Object)}.
      *
@@ -52,7 +90,7 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.ELEMENT_TYPE: {
+            case JsonCodec.NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
                 return tree.getNode(nodeId).getDomNode();
             }

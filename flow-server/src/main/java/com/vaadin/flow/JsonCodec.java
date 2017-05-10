@@ -18,6 +18,7 @@ package com.vaadin.flow;
 import java.io.Serializable;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.ui.Component;
 
@@ -47,7 +48,7 @@ public class JsonCodec {
     /**
      * Type id for a complex type array containing an {@link Element}.
      */
-    public static final int ELEMENT_TYPE = 0;
+    public static final int NODE_TYPE = 0;
 
     /**
      * Type id for a complex type array containing a {@link JsonArray}.
@@ -72,9 +73,9 @@ public class JsonCodec {
      */
     public static JsonValue encodeWithTypeInfo(Object value) {
         if (value instanceof Component) {
-            return encodeElement(((Component) value).getElement());
-        } else if (value instanceof Element) {
-            return encodeElement((Element) value);
+            return encodeNode(((Component) value).getElement());
+        } else if (value instanceof Node<?>) {
+            return encodeNode((Node<?>) value);
         } else {
             JsonValue encoded = encodeWithoutTypeInfo(value);
             if (encoded.getType() == JsonType.ARRAY) {
@@ -85,10 +86,10 @@ public class JsonCodec {
         }
     }
 
-    private static JsonValue encodeElement(Element element) {
-        StateNode node = element.getNode();
-        if (node.isAttached()) {
-            return wrapComplexValue(ELEMENT_TYPE, Json.create(node.getId()));
+    private static JsonValue encodeNode(Node<?> node) {
+        StateNode stateNode = node.getNode();
+        if (stateNode.isAttached()) {
+            return wrapComplexValue(NODE_TYPE, Json.create(stateNode.getId()));
         } else {
             return Json.createNull();
         }
