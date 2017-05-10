@@ -24,7 +24,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
 import com.vaadin.shared.JsonConstants;
@@ -57,9 +56,10 @@ public class AttachExistingElementByIdRpcHandlerTest {
 
         AttachExistingElementFeatureById feature = new AttachExistingElementFeatureById(
                 node);
-        feature.register(parentElement, "id", requested);
+        feature.register(parentElement, requested);
 
-        Mockito.when(parentElement.getShadowRoot()).thenReturn(Optional.of(shadowRoot));
+        Mockito.when(parentElement.getShadowRoot())
+                .thenReturn(Optional.of(shadowRoot));
         Mockito.when(node.getFeature(AttachExistingElementFeatureById.class))
                 .thenReturn(feature);
         Mockito.when(parentElement.getNode()).thenReturn(parentNode);
@@ -95,9 +95,10 @@ public class AttachExistingElementByIdRpcHandlerTest {
                 node);
         Element parentNode = Mockito.mock(Element.class);
         ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
-        Mockito.when(parentNode.getShadowRoot()).thenReturn(Optional.of(shadowRoot));
+        Mockito.when(parentNode.getShadowRoot())
+                .thenReturn(Optional.of(shadowRoot));
 
-        feature.register(parentNode, "id", requested);
+        feature.register(parentNode, requested);
         Mockito.when(node.getFeature(AttachExistingElementFeatureById.class))
                 .thenReturn(feature);
 
@@ -135,16 +136,18 @@ public class AttachExistingElementByIdRpcHandlerTest {
                 node);
         Element parentNode = Mockito.mock(Element.class);
         ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
-        Mockito.when(parentNode.getShadowRoot()).thenReturn(Optional.of(shadowRoot));
+        Mockito.when(parentNode.getShadowRoot())
+                .thenReturn(Optional.of(shadowRoot));
 
-        feature.register(parentNode, "id", requested);
+        feature.register(parentNode, requested);
         Mockito.when(node.getFeature(AttachExistingElementFeatureById.class))
                 .thenReturn(feature);
 
         handler.handleNode(node, object);
 
         assertNodeIsUnregistered(node, requested, feature);
-        Mockito.verify(shadowRoot, Mockito.times(0)).insertVirtualChild(Mockito.any());
+        Mockito.verify(shadowRoot, Mockito.times(0))
+                .insertVirtualChild(Mockito.any());
     }
 
     private void assertNodeIsUnregistered(StateNode node, StateNode requested,

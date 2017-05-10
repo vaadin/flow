@@ -15,17 +15,12 @@
  */
 package com.vaadin.flow.nodefeature;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.Node;
 
 public class AttachExistingElementFeatureByIdTest {
 
@@ -38,7 +33,7 @@ public class AttachExistingElementFeatureByIdTest {
         StateNode child = Mockito.mock(StateNode.class);
 
         Element parent = Mockito.mock(Element.class);
-        feature.register(parent, "id", child);
+        feature.register(parent, child);
 
         Mockito.verify(child).setParent(node);
 
@@ -54,7 +49,7 @@ public class AttachExistingElementFeatureByIdTest {
         StateNode child = Mockito.mock(StateNode.class);
 
         Element parent = Mockito.mock(Element.class);
-        feature.register(parent, "id", child);
+        feature.register(parent, child);
 
         feature.unregister(child);
 
