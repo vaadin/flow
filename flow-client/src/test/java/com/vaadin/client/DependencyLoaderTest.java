@@ -43,7 +43,7 @@ public class DependencyLoaderTest {
 
         @Override
         public void loadHtml(String htmlUrl,
-                ResourceLoadListener resourceLoadListener) {
+                ResourceLoadListener resourceLoadListener, boolean async) {
             loadingHtml.add(htmlUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, htmlUrl));
         }
