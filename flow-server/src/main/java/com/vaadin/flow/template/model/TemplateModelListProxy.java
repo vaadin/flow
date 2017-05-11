@@ -18,6 +18,7 @@ package com.vaadin.flow.template.model;
 import java.util.AbstractList;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.nodefeature.BasicTypeValue;
 import com.vaadin.flow.nodefeature.ModelList;
 
 /**
@@ -57,6 +58,8 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
         } else if (itemType instanceof BeanModelType<?>) {
             return TemplateModelProxyHandler.createModelProxy(modelNode,
                     (BeanModelType<T>) itemType);
+        } else if (itemType instanceof BasicComplexModelType<?>) {
+            return (T) modelNode.getFeature(BasicTypeValue.class).getValue();
         }
         throw new IllegalStateException("Item type has unexpected type "
                 + itemType + ". Don't know how to create a proxy for it");
