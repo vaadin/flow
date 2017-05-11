@@ -16,6 +16,7 @@
 package com.vaadin.flow.shared;
 
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
+import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -42,6 +43,7 @@ import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.nodefeature.TemplateOverridesMap;
 import com.vaadin.flow.nodefeature.TextNodeMap;
+import com.vaadin.flow.nodefeature.VirtualChildrenList;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and
@@ -172,6 +174,16 @@ public class NodeFeatures {
      * Id for {@link AttachExistingElementFeature}.
      */
     public static final int ATTACH_EXISTING_ELEMENT = 27;
+
+    /**
+     * Id for {@link AttachExistingElementFeatureById}.
+     */
+    public static final int ATTACH_EXISTING_ELEMENT_BY_ID = 28;
+
+    /**
+     * Id for {@link VirtualChildrenList}.
+     */
+    public static final int VIRTUAL_CHILD_ELEMENTS = 29;
 
     /**
      * Key for {@link ElementData#getTag()}.
