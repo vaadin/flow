@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom.impl;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -495,7 +496,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         assert modelFeature == ModelMap.class
                 || modelFeature == ModelList.class;
 
-        return new StateNode(TemplateOverridesMap.class, modelFeature);
+        return new StateNode(Collections.singletonList(modelFeature),
+                TemplateOverridesMap.class);
     }
 
     @Override

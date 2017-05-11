@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -61,5 +62,11 @@ public class BasicElementStateProviderTest {
         parent.appendChild(child);
         Assert.assertEquals(parent,
                 BasicElementStateProvider.get().getParent(child.getNode()));
+    }
+
+    @Test
+    public void createStateNode_stateNodeHasRequiredElementDataFeature() {
+        StateNode stateNode = BasicElementStateProvider.createStateNode("div");
+        Assert.assertTrue(stateNode.isReportedFeature(ElementData.class));
     }
 }

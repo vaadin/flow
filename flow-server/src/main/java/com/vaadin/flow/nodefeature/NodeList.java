@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.AbstractListChange;
+import com.vaadin.flow.change.EmptyChange;
 import com.vaadin.flow.change.ListAddChange;
 import com.vaadin.flow.change.ListRemoveChange;
 import com.vaadin.flow.change.NodeChange;
@@ -136,6 +137,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     private List<T> values;
 
+    private boolean isPopulated;
+
     /**
      * Creates a new list for the given node.
      *
@@ -144,6 +147,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      */
     protected NodeList(StateNode node) {
         super(node);
+        isPopulated = !node.isReportedFeature(getClass());
     }
 
     /**
@@ -308,8 +312,18 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             }
             index++;
         }
-        allChanges.stream().filter(this::acceptChange).forEach(collector);
-
+        List<AbstractListChange<T>> changes = allChanges.stream()
+                .filter(this::acceptChange).collect(Collectors.toList());
+        if (isPopulated) {
+            changes.forEach(collector);
+        } else {
+            if (changes.isEmpty()) {
+                collector.accept(new EmptyChange(this));
+            } else {
+                changes.forEach(collector);
+            }
+            isPopulated = true;
+        }
     }
 
     private boolean acceptChange(AbstractListChange<T> change) {
@@ -332,6 +346,10 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             assert !values.isEmpty();
             getChangeTracker().add(new ListAddChange<>(this, isNodeValues(), 0,
                     new ArrayList<>(values)));
+        } else if (!isPopulated) {
+            // make change tracker available so that an empty change can be
+            // reported
+            getChangeTracker();
         }
     }
 

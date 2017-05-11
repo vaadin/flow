@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.change.EmptyChange;
 import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.shared.util.UniqueSerializable;
@@ -40,6 +41,8 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
 
     private T value;
 
+    private boolean isPopulated;
+
     /**
      * Creates a new feature for the given node.
      *
@@ -48,6 +51,7 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
      */
     public NodeValue(StateNode node) {
         super(node);
+        isPopulated = !node.isReportedFeature(getClass());
     }
 
     /**
@@ -105,7 +109,10 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
 
         if (!Objects.equals(originalValue, this.value)) {
             collector.accept(new MapPutChange(this, getKey(), value));
+        } else if (!isPopulated) {
+            collector.accept(new EmptyChange(this));
         }
+        isPopulated = true;
     }
 
     @Override

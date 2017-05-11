@@ -1,0 +1,19 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="empty-list">
+    <template>
+        <ul>
+            <template is="dom-repeat" items="[[items]]">
+                <li class="item">[[item.label]]</li>
+            </template>
+        </ul>
+    </template>
+    <script>
+        class EmptyList extends Polymer.Element {
+            static get is() {
+                return 'empty-list'
+            }
+        }
+        customElements.define(EmptyList.is, EmptyList);
+    </script>
+</dom-module>

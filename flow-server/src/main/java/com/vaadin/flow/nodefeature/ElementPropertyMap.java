@@ -18,6 +18,7 @@ package com.vaadin.flow.nodefeature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +126,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     private ElementPropertyMap getOrCreateModelMap(String key) {
         Serializable value = getProperty(key);
         if (value == null) {
-            value = new StateNode(ElementPropertyMap.class);
+            value = new StateNode(
+                    Collections.singletonList(ElementPropertyMap.class));
             setProperty(key, value);
         }
 
@@ -147,7 +149,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     private ModelList getOrCreateModelList(String key) {
         Serializable value = getProperty(key);
         if (value == null) {
-            value = new StateNode(ModelList.class);
+            value = new StateNode(Collections.singletonList(ModelList.class));
             setProperty(key, value);
         }
 
