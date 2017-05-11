@@ -635,4 +635,56 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("child", childElement.getId());
         assertNull(existingElementMap.getElement(childNode.getId()));
     }
+
+    public void testBindVirtualElement() {
+        // ShadowRoot setup for virtual element binding test.
+        addShadowRoot(element);
+
+        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        StateNode shadowRoot = new StateNode(34, tree);
+        map.getProperty(NodeFeatures.SHADOW_ROOT).setValue(shadowRoot);
+
+        NodeList virtualChildren = shadowRoot
+                .getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+
+        // start binder test
+        Binder.bind(node, element);
+
+        StateNode childNode = createChildNode("childElement");
+
+        String tag = (String) childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).getValue();
+
+        ExistingElementMap existingElementMap = node.getTree().getRegistry()
+                .getExistingElementMap();
+
+        // create and add an existing element
+        Element span = Browser.getDocument().createElement(tag);
+        element.appendChild(span);
+
+        existingElementMap.add(childNode.getId(), span);
+
+        virtualChildren.add(0, childNode);
+
+        Reactive.flush();
+
+        // nothing has changed: no new child
+        assertEquals(element.getChildElementCount(), 1);
+
+        assertNull(existingElementMap.getElement(childNode.getId()));
+
+        Element childElement = element.getFirstElementChild();
+
+        assertEquals(tag,
+                childElement.getTagName().toLowerCase(Locale.ENGLISH));
+        assertSame(span, childElement);
+        assertEquals("childElement", childElement.getId());
+        assertNull(existingElementMap.getElement(childNode.getId()));
+    }
+
+    private native Element addShadowRoot(Element element) /*-{
+        element.shadowRoot = $doc.createElement("div");
+
+        return element.shadowRoot;
+    }-*/;
 }
