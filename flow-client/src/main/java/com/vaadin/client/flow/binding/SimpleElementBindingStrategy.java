@@ -19,8 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -55,6 +53,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -364,8 +363,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void addModelListChangeListener(Element htmlNode,
             NodeList modelList, String polymerModelPath) {
-        modelList.addSpliceListener(event -> processModelListChange(htmlNode,
-                polymerModelPath, event));
+        modelList.addSpliceListener(event -> Reactive
+                .addFlushListener(() -> processModelListChange(htmlNode,
+                        polymerModelPath, event)));
     }
 
     private void processModelListChange(Element htmlNode,
@@ -393,17 +393,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void listenToSubPropertiesChanges(Element htmlNode,
             String polymerModelPath, int subNodeIndex, Object item) {
         if (item instanceof StateNode) {
-            ((StateNode) item).getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                    .addPropertyAddListener(event -> {
-                        Computation computation = Reactive
-                                .runWhenDepedenciesChange(() -> PolymerUtils
-                                        .setListValueByIndex(htmlNode,
-                                                polymerModelPath, subNodeIndex,
-                                                PolymerUtils.convertToJson(
-                                                        event.getProperty())));
-                        ((StateNode) item)
-                                .addUnregisterListener(e -> computation.stop());
-                    });
+            StateNode stateNode = (StateNode) item;
+            NodeMap feature = null;
+            if (stateNode.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+                feature = stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+            } else if (stateNode.hasFeature(NodeFeatures.BASIC_TYPE_VALUE)) {
+                feature = stateNode.getMap(NodeFeatures.BASIC_TYPE_VALUE);
+            }
+
+            if (feature != null) {
+                feature.addPropertyAddListener(event -> {
+                    Computation computation = Reactive.runWhenDepedenciesChange(
+                            () -> PolymerUtils.setListValueByIndex(htmlNode,
+                                    polymerModelPath, subNodeIndex,
+                                    PolymerUtils.convertToJson(
+                                            event.getProperty())));
+                    stateNode.addUnregisterListener(e -> computation.stop());
+                });
+            }
         }
     }
 
@@ -568,7 +575,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindVirtualChildren(BindingContext context) {
-        NodeList children = context.node.getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+        NodeList children = context.node
+                .getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);

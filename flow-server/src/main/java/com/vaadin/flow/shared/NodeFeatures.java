@@ -17,6 +17,7 @@ package com.vaadin.flow.shared;
 
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
+import com.vaadin.flow.nodefeature.BasicTypeValue;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -186,6 +187,11 @@ public class NodeFeatures {
     public static final int VIRTUAL_CHILD_ELEMENTS = 29;
 
     /**
+     * Id for {@link BasicTypeValue}.
+     */
+    public static final int BASIC_TYPE_VALUE = 30;
+
+    /**
      * Key for {@link ElementData#getTag()}.
      */
     public static final String TAG = "tag";
@@ -209,6 +215,11 @@ public class NodeFeatures {
      * Key for {@link TemplateMap#getModelDescriptor()}.
      */
     public static final String MODEL_DESCRIPTOR = "descriptor";
+
+    /**
+     * Key for {@link BasicTypeValue#getValue()}.
+     */
+    public static final String VALUE = "value";
 
     private NodeFeatures() {
         // Only static

@@ -30,9 +30,6 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.template.angular.model.BeanModelType;
-import com.vaadin.flow.template.angular.model.ListModelType;
-import com.vaadin.flow.template.angular.model.ModelDescriptor;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.BasicTypeModel;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.BeanModel;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.ListBeanModel;
@@ -40,14 +37,6 @@ import com.vaadin.flow.template.angular.model.TemplateModelTest.ListInsideListBe
 import com.vaadin.flow.template.angular.model.TemplateModelTest.ListInsideListInsideList;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.NotSupportedModel;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.SubBeansModel;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExclude;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcludeAndInclude;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcludeAndIncludeSubclassOverrides;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcludeForSubBean;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcludeOnList;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithInclude;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeForSubBean;
-import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeOnList;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExclude.ModelWithExclude;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcludeAndIncludeSubclassOverrides.ModelWithExcludeAndIncludeSubclass;

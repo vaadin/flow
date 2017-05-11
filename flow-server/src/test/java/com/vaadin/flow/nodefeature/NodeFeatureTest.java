@@ -103,6 +103,7 @@ public class NodeFeatureTest {
                 NodeFeatures.ATTACH_EXISTING_ELEMENT_BY_ID);
         expectedIds.put(VirtualChildrenList.class,
                 NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+        expectedIds.put(BasicTypeValue.class, NodeFeatures.BASIC_TYPE_VALUE);
 
         return expectedIds;
     }

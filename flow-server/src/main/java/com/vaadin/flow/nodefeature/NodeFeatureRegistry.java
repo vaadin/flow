@@ -90,6 +90,7 @@ public class NodeFeatureRegistry {
         registerFeature(AttachExistingElementFeatureById.class,
                 AttachExistingElementFeatureById::new);
         registerFeature(VirtualChildrenList.class, VirtualChildrenList::new);
+        registerFeature(BasicTypeValue.class, BasicTypeValue::new);
     }
 
     private NodeFeatureRegistry() {

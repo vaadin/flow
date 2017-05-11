@@ -409,6 +409,20 @@ public class TemplateModelTest {
         }
     }
 
+    public static class StringListModelTemplate
+            extends NoModelTemplate<StringListModel> {
+        @Override
+        public StringListModel getModel() {
+            return super.getModel();
+        }
+    }
+
+    public interface StringListModel extends TemplateModel {
+        void setItems(List<String> beans);
+
+        List<String> getItems();
+    }
+
     public static class TemplateWithExcludeAndIncludeSubclass extends
             TemplateWithExcludeAndInclude<TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude> {
         // Should work exactly the same way as the parent class
@@ -893,13 +907,49 @@ public class TemplateModelTest {
                 new Bean(200), new Bean(300));
     }
 
+    @Test
+    public void stringListModel_handlesListOperationsProperly() {
+        StringListModelTemplate template = new StringListModelTemplate();
+        ArrayList<String> list = new ArrayList<>();
+        list.add("foo");
+        list.add("bar");
+        list.add("foobar");
+        template.getModel().setItems(list);
+        assertListContentsEquals(template.getModel().getItems(), false,
+                list.toArray(new String[list.size()]));
+
+        template.getModel().getItems().add("barfoo");
+        list = new ArrayList<>(list);
+        list.add("barfoo");
+        assertListContentsEquals(template.getModel().getItems(), false,
+                list.toArray(new String[list.size()]));
+
+        template.getModel().getItems().remove(0);
+        list.remove(0);
+        assertListContentsEquals(template.getModel().getItems(), false,
+                list.toArray(new String[list.size()]));
+
+        template.getModel().getItems().add(1, "abc");
+        list.add(1, "abc");
+        assertListContentsEquals(template.getModel().getItems(), false,
+                list.toArray(new String[list.size()]));
+    }
+
     @SafeVarargs
     private static <T> void assertListContentsEquals(List<T> list, T... beans) {
+        assertListContentsEquals(list, true, beans);
+    }
+
+    @SafeVarargs
+    private static <T> void assertListContentsEquals(List<T> list,
+            boolean notSameInstances, T... beans) {
         Assert.assertEquals(beans.length, list.size());
         for (int i = 0; i < beans.length; i++) {
             Assert.assertThat(list.get(i),
                     Matchers.samePropertyValuesAs(beans[i]));
-            Assert.assertNotSame(beans[i], list.get(i));
+            if (notSameInstances) {
+                Assert.assertNotSame(beans[i], list.get(i));
+            }
         }
 
     }

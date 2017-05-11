@@ -179,18 +179,20 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         if (itemType instanceof ParameterizedType) {
             return new ListModelType<>((ComplexModelType<?>) getModelType(
                     itemType, propertyFilter, propertyName, declaringClass));
-        } else {
-            if (!isBean(itemType)) {
-                throw new InvalidTemplateModelException("Element type "
-                        + itemType.getTypeName()
-                        + " is not a valid Bean type. Used in class "
-                        + declaringClass.getSimpleName()
-                        + " with property named " + propertyName
-                        + " with list type " + propertyType.getTypeName());
-            }
+        } else if (BasicComplexModelType.isBasicType(itemType)) {
+            return new ListModelType<>(
+                    BasicComplexModelType.get((Class<?>) itemType).get());
+        } else if (isBean(itemType)) {
             Class<?> beansListItemType = (Class<?>) itemType;
             return new ListModelType<>(
                     new BeanModelType<>(beansListItemType, propertyFilter));
+        } else {
+            throw new InvalidTemplateModelException(
+                    "Element type " + itemType.getTypeName()
+                            + " is not a valid Bean type. Used in class "
+                            + declaringClass.getSimpleName()
+                            + " with property named " + propertyName
+                            + " with list type " + propertyType.getTypeName());
         }
     }
 
