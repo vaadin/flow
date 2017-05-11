@@ -82,6 +82,12 @@ public class Dependency implements Serializable {
         return type;
     }
 
+    /**
+     * Gets load mode that will be used for dependency loading. Refer to
+     * {@link LoadMode} for details.
+     * 
+     * @return the load mode that will be used during dependency loading
+     */
     public LoadMode getLoadMode() {
         return loadMode;
     }

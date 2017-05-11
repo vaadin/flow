@@ -97,5 +97,5 @@ you cannot use the `context://` protocol. Your options are then:
 
 [TIP]
 ====
-There is a possibility to define which dependencies are loaded first, refer to <<tutorial-lazy-importing#,Importing html/javascript>> for details.
+There is a possibility to define which dependencies are loaded first, refer to <<tutorial-lazy-importing#,Lazy importing>> for details.
 ====
