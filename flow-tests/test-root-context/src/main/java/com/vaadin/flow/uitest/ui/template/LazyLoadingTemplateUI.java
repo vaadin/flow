@@ -27,6 +27,7 @@ import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UI;
 
 @WebComponents(PolyfillVersion.V1)
@@ -64,7 +65,7 @@ public class LazyLoadingTemplateUI extends UI {
                 .getResourceRegistry()
                 .registerResource(getHtmlImportResource());
         getPage().addHtmlImport(registration.getResourceUri().toString(),
-                false);
+                LoadMode.LAZY);
     }
 
     private StreamResource getHtmlImportResource() {

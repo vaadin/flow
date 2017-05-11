@@ -16,7 +16,6 @@
 package com.vaadin.flow.nodefeature;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -28,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
@@ -52,65 +52,65 @@ public class DependencyListTest {
     }
 
     @Test
-    public void addStyleSheetDependency_blocking1() {
+    public void addStyleSheetDependency_eager1() {
         ui.getPage().addStyleSheet(URL);
-        validateDependency(URL, DependencyList.TYPE_STYLESHEET, true);
+        validateDependency(URL, DependencyList.TYPE_STYLESHEET, LoadMode.EAGER);
     }
 
     @Test
-    public void addStyleSheetDependency_blocking2() {
-        ui.getPage().addStyleSheet(URL, true);
-        validateDependency(URL, DependencyList.TYPE_STYLESHEET, true);
+    public void addStyleSheetDependency_eager2() {
+        ui.getPage().addStyleSheet(URL, LoadMode.EAGER);
+        validateDependency(URL, DependencyList.TYPE_STYLESHEET, LoadMode.EAGER);
     }
 
     @Test
-    public void addStyleSheetDependency_nonBlocking() {
-        ui.getPage().addStyleSheet(URL, false);
-        validateDependency(URL, DependencyList.TYPE_STYLESHEET, false);
+    public void addStyleSheetDependency_lazy() {
+        ui.getPage().addStyleSheet(URL, LoadMode.LAZY);
+        validateDependency(URL, DependencyList.TYPE_STYLESHEET, LoadMode.LAZY);
     }
 
     @Test
-    public void addJavaScriptDependency_blocking1() {
+    public void addJavaScriptDependency_eager1() {
         ui.getPage().addJavaScript(URL);
-        validateDependency(URL, DependencyList.TYPE_JAVASCRIPT, true);
+        validateDependency(URL, DependencyList.TYPE_JAVASCRIPT, LoadMode.EAGER);
     }
 
     @Test
-    public void addJavaScriptDependency_blocking2() {
-        ui.getPage().addJavaScript(URL, true);
-        validateDependency(URL, DependencyList.TYPE_JAVASCRIPT, true);
+    public void addJavaScriptDependency_eager2() {
+        ui.getPage().addJavaScript(URL, LoadMode.EAGER);
+        validateDependency(URL, DependencyList.TYPE_JAVASCRIPT, LoadMode.EAGER);
     }
 
     @Test
-    public void addJavaScriptDependency_nonBlocking() {
-        ui.getPage().addJavaScript(URL, false);
-        validateDependency(URL, DependencyList.TYPE_JAVASCRIPT, false);
+    public void addJavaScriptDependency_lazy() {
+        ui.getPage().addJavaScript(URL, LoadMode.LAZY);
+        validateDependency(URL, DependencyList.TYPE_JAVASCRIPT, LoadMode.LAZY);
     }
 
     @Test
-    public void addHtmlDependency_blocking1() {
+    public void addHtmlDependency_eager1() {
         ui.getPage().addHtmlImport(URL);
-        validateDependency(URL, DependencyList.TYPE_HTML_IMPORT, true);
+        validateDependency(URL, DependencyList.TYPE_HTML_IMPORT, LoadMode.EAGER);
     }
 
     @Test
-    public void addHtmlDependency_blocking2() {
-        ui.getPage().addHtmlImport(URL, true);
-        validateDependency(URL, DependencyList.TYPE_HTML_IMPORT, true);
+    public void addHtmlDependency_eager2() {
+        ui.getPage().addHtmlImport(URL, LoadMode.EAGER);
+        validateDependency(URL, DependencyList.TYPE_HTML_IMPORT, LoadMode.EAGER);
     }
 
     @Test
-    public void addHtmlDependency_nonBlocking() {
-        ui.getPage().addHtmlImport(URL, false);
-        validateDependency(URL, DependencyList.TYPE_HTML_IMPORT, false);
+    public void addHtmlDependency_lazy() {
+        ui.getPage().addHtmlImport(URL, LoadMode.LAZY);
+        validateDependency(URL, DependencyList.TYPE_HTML_IMPORT, LoadMode.LAZY);
     }
 
     private void validateDependency(String url, String dependencyType,
-            boolean blocking) {
+            LoadMode loadMode) {
         JsonObject expectedJson = Json.createObject();
         expectedJson.put(DependencyList.KEY_URL, url);
         expectedJson.put(DependencyList.KEY_TYPE, dependencyType);
-        expectedJson.put(DependencyList.KEY_BLOCKING, blocking);
+        expectedJson.put(DependencyList.KEY_LOAD_MODE, loadMode.name());
 
         assertEquals("Expected to receive exactly one dependency", 1,
                 deps.getPendingSendToClient().length());
@@ -142,7 +142,7 @@ public class DependencyListTest {
     }
 
     private void assertUrlUnchanged(String url) {
-        deps.add(new Dependency(Type.JAVASCRIPT, url, true));
+        deps.add(new Dependency(Type.JAVASCRIPT, url, LoadMode.EAGER));
         assertEquals(url, ((JsonObject) deps.getPendingSendToClient().get(0))
                 .getString(DependencyList.KEY_URL));
         deps.clearPendingSendToClient();
@@ -150,12 +150,12 @@ public class DependencyListTest {
 
     @Test
     public void urlAddedOnlyOnce() {
-        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", true));
-        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", true));
+        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", LoadMode.EAGER));
+        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", LoadMode.EAGER));
         assertEquals(1, deps.getPendingSendToClient().length());
         deps.clearPendingSendToClient();
 
-        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", true));
+        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", LoadMode.EAGER));
         assertEquals(0, deps.getPendingSendToClient().length());
     }
 
@@ -164,8 +164,8 @@ public class DependencyListTest {
         String url = "foo/bar.js";
         Type type = Type.JAVASCRIPT;
 
-        deps.add(new Dependency(type, url, true));
-        deps.add(new Dependency(type, url, false));
+        deps.add(new Dependency(type, url, LoadMode.EAGER));
+        deps.add(new Dependency(type, url, LoadMode.LAZY));
 
         assertEquals(1, deps.getPendingSendToClient().length());
 
@@ -175,9 +175,10 @@ public class DependencyListTest {
         assertEquals("Dependency should be added with its key",
                 DependencyList.TYPE_JAVASCRIPT,
                 dependency.getString(DependencyList.KEY_TYPE));
-        assertTrue(
-                "Dependency in different modes should be added as blocking one",
-                dependency.getBoolean(DependencyList.KEY_BLOCKING));
+        assertEquals(
+                String.format("Dependency in different modes should be added with mode = %s", LoadMode.EAGER),
+                LoadMode.EAGER.name(),
+                dependency.getString(DependencyList.KEY_LOAD_MODE));
     }
 
     @Test
@@ -185,7 +186,7 @@ public class DependencyListTest {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {
             deps.add(new Dependency(Type.JAVASCRIPT, "foo" + i + "/bar.js",
-                    true));
+                    LoadMode.EAGER));
         }
         long time = System.currentTimeMillis() - start;
 
@@ -195,35 +196,35 @@ public class DependencyListTest {
 
     @Test
     public void ensureDependenciesSentToClientHaveTheSameOrderAsAdded() {
-        Dependency html_dep_blocking = new Dependency(Type.HTML_IMPORT,
-                "blocking.html", true);
-        Dependency js_dep_blocking = new Dependency(Type.JAVASCRIPT,
-                "blocking.js", true);
-        Dependency css_dep_blocking = new Dependency(Type.STYLESHEET,
-                "blocking.css", true);
-        Dependency html_dep_non_blocking = new Dependency(Type.HTML_IMPORT,
-                "non_blocking.html", false);
-        Dependency js_dep_non_blocking = new Dependency(Type.JAVASCRIPT,
-                "non_blocking.js", false);
-        Dependency css_dep_non_blocking = new Dependency(Type.STYLESHEET,
-                "non_blocking.css", false);
-        assertTrue("Expected the dependency to be blocking",
-                html_dep_blocking.isBlocking());
-        assertTrue("Expected the dependency to be blocking",
-                js_dep_blocking.isBlocking());
-        assertTrue("Expected the dependency to be blocking",
-                css_dep_blocking.isBlocking());
-        assertFalse("Expected the dependency to be non-blocking",
-                html_dep_non_blocking.isBlocking());
-        assertFalse("Expected the dependency to be non-blocking",
-                js_dep_non_blocking.isBlocking());
-        assertFalse("Expected the dependency to be non-blocking",
-                css_dep_non_blocking.isBlocking());
+        Dependency eagerHtml = new Dependency(Type.HTML_IMPORT,
+                "eager.html", LoadMode.EAGER);
+        Dependency eagerJs = new Dependency(Type.JAVASCRIPT,
+                "eager.js", LoadMode.EAGER);
+        Dependency eagerCss = new Dependency(Type.STYLESHEET,
+                "eager.css", LoadMode.EAGER);
+        Dependency lazyHtml = new Dependency(Type.HTML_IMPORT,
+                "lazy.html", LoadMode.LAZY);
+        Dependency lazyJs = new Dependency(Type.JAVASCRIPT,
+                "lazy.js", LoadMode.LAZY);
+        Dependency lazyCss = new Dependency(Type.STYLESHEET,
+                "lazy.css", LoadMode.LAZY);
+        assertEquals("Expected the dependency to be eager",
+                LoadMode.EAGER, eagerHtml.getLoadMode());
+        assertEquals("Expected the dependency to be eager",
+                LoadMode.EAGER, eagerJs.getLoadMode());
+        assertEquals("Expected the dependency to be eager",
+                LoadMode.EAGER, eagerCss.getLoadMode());
+        assertEquals("Expected the dependency to be lazy",
+                LoadMode.LAZY, lazyHtml.getLoadMode());
+        assertEquals("Expected the dependency to be lazy",
+                LoadMode.LAZY, lazyJs.getLoadMode());
+        assertEquals("Expected the dependency to be lazy",
+                LoadMode.LAZY, lazyCss.getLoadMode());
 
         List<Dependency> dependencies = new ArrayList<>(
-                Arrays.asList(html_dep_blocking, js_dep_blocking,
-                        css_dep_blocking, html_dep_non_blocking,
-                        js_dep_non_blocking, css_dep_non_blocking));
+                Arrays.asList(eagerHtml, eagerJs,
+                        eagerCss, lazyHtml,
+                        lazyJs, lazyCss));
         assertEquals("Expected to have 6 dependencies", 6, dependencies.size());
 
         Collections.shuffle(dependencies);
@@ -238,9 +239,9 @@ public class DependencyListTest {
                     expectedDependency.getUrl(),
                     actualDependency.getString(DependencyList.KEY_URL));
             assertEquals(
-                    "Expected to have the same dependency on the same position for list, but blocking parameter values do not match",
-                    expectedDependency.isBlocking(),
-                    actualDependency.getBoolean(DependencyList.KEY_BLOCKING));
+                    "Expected to have the same dependency on the same position for list, but load modes do not match",
+                    expectedDependency.getLoadMode().name(),
+                    actualDependency.getString(DependencyList.KEY_LOAD_MODE));
         }
     }
 }

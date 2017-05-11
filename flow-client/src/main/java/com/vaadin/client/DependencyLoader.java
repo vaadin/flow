@@ -24,6 +24,7 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.DependencyList;
 
 import elemental.json.JsonArray;
@@ -38,11 +39,11 @@ public class DependencyLoader {
     private static final JsArray<Command> callbacks = JsCollections.array();
 
     // Listener that loads the next when one is completed
-    private static final ResourceLoadListener BLOCKING_RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
+    private static final ResourceLoadListener EAGER_RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
         @Override
         public void onLoad(ResourceLoadEvent event) {
             // Call start for next before calling end for current
-            endBlockingDependencyLoading();
+            endEagerDependencyLoading();
         }
 
         @Override
@@ -53,7 +54,7 @@ public class DependencyLoader {
         }
     };
 
-    private static final ResourceLoadListener NON_BLOCKING_RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
+    private static final ResourceLoadListener LAZY_RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
         @Override
         public void onLoad(ResourceLoadEvent event) {
             // Do nothing on success, simply continue loading
@@ -67,7 +68,7 @@ public class DependencyLoader {
         }
     };
 
-    private static int blockingDependenciesLoading;
+    private static int eagerDependenciesLoading;
 
     private final Registry registry;
 
@@ -81,50 +82,35 @@ public class DependencyLoader {
         this.registry = registry;
     }
 
-    /**
-     * Loads the given dependency using the given loader and ensures any
-     * callbacks registered using
-     * {@link #runWhenBlockingDependenciesLoaded(Command)} are run when all
-     * blocking dependencies have been loaded.
-     *
-     * @param dependencyUrl
-     *            a dependency URL to load, will be translated using
-     *            {@link URIResolver#resolveVaadinUri(String)} before it is
-     *            loaded, not {@code null}
-     * @param blocking
-     *            indicates whether the resource is blocking or not
-     * @param loader
-     *            function which takes care of loading the dependency URL
-     */
-    private void loadDependency(final String dependencyUrl, boolean blocking,
+    private void loadDependency(final String dependencyUrl, boolean eager,
             final BiConsumer<String, ResourceLoadListener> loader) {
         assert dependencyUrl != null;
         assert loader != null;
 
         // Start chain by loading first
         String url = registry.getURIResolver().resolveVaadinUri(dependencyUrl);
-        if (blocking) {
-            startBlockingDependencyLoading();
-            loader.accept(url, BLOCKING_RESOURCE_LOAD_LISTENER);
+        if (eager) {
+            startEagerDependencyLoading();
+            loader.accept(url, EAGER_RESOURCE_LOAD_LISTENER);
         } else {
-            loader.accept(url, NON_BLOCKING_RESOURCE_LOAD_LISTENER);
+            loader.accept(url, LAZY_RESOURCE_LOAD_LISTENER);
         }
     }
 
     /**
-     * Adds a command to be run when all blocking dependencies have finished
+     * Adds a command to be run when all eager dependencies have finished
      * loading.
      * <p>
-     * If no blocking dependencies are currently being loaded, runs the command
+     * If no eager dependencies are currently being loaded, runs the command
      * immediately.
      *
-     * @see #startBlockingDependencyLoading()
-     * @see #endBlockingDependencyLoading()
+     * @see #startEagerDependencyLoading()
+     * @see #endEagerDependencyLoading()
      * @param command
-     *            the command to run when blocking dependencies have been loaded
+     *            the command to run when eager dependencies have been loaded
      */
-    public static void runWhenBlockingDependenciesLoaded(Command command) {
-        if (blockingDependenciesLoading == 0) {
+    public static void runWhenEagerDependenciesLoaded(Command command) {
+        if (eagerDependenciesLoading == 0) {
             command.execute();
         } else {
             callbacks.push(command);
@@ -134,22 +120,22 @@ public class DependencyLoader {
     /**
      * Marks that loading of a dependency has started.
      *
-     * @see #runWhenBlockingDependenciesLoaded(Command)
-     * @see #endBlockingDependencyLoading()
+     * @see #runWhenEagerDependenciesLoaded(Command)
+     * @see #endEagerDependencyLoading()
      */
-    private static void startBlockingDependencyLoading() {
-        blockingDependenciesLoading++;
+    private static void startEagerDependencyLoading() {
+        eagerDependenciesLoading++;
     }
 
     /**
      * Marks that loading of a dependency has ended.
      * <p>
      * If all pending dependencies have been loaded, calls any callback
-     * registered using {@link #runWhenBlockingDependenciesLoaded(Command)}.
+     * registered using {@link #runWhenEagerDependenciesLoaded(Command)}.
      */
-    private static void endBlockingDependencyLoading() {
-        blockingDependenciesLoading--;
-        if (blockingDependenciesLoading == 0 && callbacks.length() != 0) {
+    private static void endEagerDependencyLoading() {
+        eagerDependenciesLoading--;
+        if (eagerDependenciesLoading == 0 && callbacks.length() != 0) {
             for (int i = 0; i < callbacks.length(); i++) {
                 Command cmd = callbacks.get(i);
                 cmd.execute();
@@ -167,32 +153,32 @@ public class DependencyLoader {
     public void loadDependencies(JsonArray deps) {
         assert deps != null;
 
-        Map<String, BiConsumer<String, ResourceLoadListener>> nonBlockingDependencies = new LinkedHashMap<>();
+        Map<String, BiConsumer<String, ResourceLoadListener>> lazyDependencies = new LinkedHashMap<>();
 
         for (int i = 0; i < deps.length(); i++) {
             JsonObject dependencyJson = deps.getObject(i);
             String url = dependencyJson.getString(DependencyList.KEY_URL);
-            boolean blocking = dependencyJson
-                    .getBoolean(DependencyList.KEY_BLOCKING);
+            LoadMode loadMode = LoadMode.valueOf(
+                    dependencyJson.getString(DependencyList.KEY_LOAD_MODE));
             BiConsumer<String, ResourceLoadListener> loader = getResourceLoader(
                     dependencyJson.getString(DependencyList.KEY_TYPE));
-            if (blocking) {
+            if (loadMode == LoadMode.EAGER) {
                 loadDependency(url, true, loader);
             } else {
-                nonBlockingDependencies.put(url, loader);
+                lazyDependencies.put(url, loader);
             }
         }
 
         // postpone load dependencies execution after the browser event
         // loop to make possible to execute all other commands that should be
-        // run after the blocking dependencies so that non-blocking dependencies
+        // run after the eager dependencies so that lazy dependencies
         // don't block those commands
-        if (!nonBlockingDependencies.isEmpty()) {
-            runWhenBlockingDependenciesLoaded(
+        if (!lazyDependencies.isEmpty()) {
+            runWhenEagerDependenciesLoaded(
                     () -> Scheduler.get().scheduleDeferred(() -> {
                         Console.log(
-                                "Finished loading blocking dependencies, loading non-blocking.");
-                        nonBlockingDependencies.forEach((url,
+                                "Finished loading eager dependencies, loading lazy.");
+                        lazyDependencies.forEach((url,
                                 loader) -> loadDependency(url, false, loader));
                     }));
         }

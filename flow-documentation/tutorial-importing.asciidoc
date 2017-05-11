@@ -94,3 +94,8 @@ you cannot use the `context://` protocol. Your options are then:
 * Use an absolute URL, e.g. `/myapp/images/logo.png`
 * Deploy your static resources in a directory matching the servlet path, e.g. `/myservlet/`.
 ====
+
+[TIP]
+====
+There is a possibility to define which dependencies are loaded first, refer to <<tutorial-lazy-importing#,Lazy importing>> for details.
+====

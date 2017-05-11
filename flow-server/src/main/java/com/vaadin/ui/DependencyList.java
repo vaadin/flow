@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.ui.Dependency.Type;
+import com.vaadin.shared.ui.LoadMode;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -42,7 +42,7 @@ public class DependencyList implements Serializable {
 
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
-    public static final String KEY_BLOCKING = "blocking";
+    public static final String KEY_LOAD_MODE = "mode";
     public static final String TYPE_STYLESHEET = "css";
     public static final String TYPE_JAVASCRIPT = "js";
     public static final String TYPE_HTML_IMPORT = "html";
@@ -97,16 +97,17 @@ public class DependencyList implements Serializable {
 
     private void checkDuplicateDependency(Dependency newDependency,
             Dependency currentDependency) {
-        if (newDependency.isBlocking() != currentDependency.isBlocking()) {
+        if (newDependency.getLoadMode() != currentDependency.getLoadMode()) {
             getLogger().log(Level.WARNING,
                     () -> String.format(
-                            "Dependency with url %s was imported with 'blocking=true' and 'blocking=false' properties. "
-                                    + "The 'blocking' property was set to 'true' to avoid conflicts. This may impact performance.",
-                            newDependency.getUrl()));
-            if (!currentDependency.isBlocking()) {
+                            "Dependency with url %s was imported with two different loading strategies: %s and %s. "
+                                    + "The loading strategy is changed to %s to avoid conflicts. This may impact performance.",
+                            newDependency.getUrl(), newDependency.getLoadMode(),
+                            currentDependency.getLoadMode(), LoadMode.EAGER));
+            if (currentDependency.getLoadMode() != LoadMode.EAGER) {
                 urlToLoadedDependency.put(currentDependency.getUrl(),
                         new Dependency(currentDependency.getType(),
-                                currentDependency.getUrl(), true));
+                                currentDependency.getUrl(), LoadMode.EAGER));
             }
         }
     }
@@ -130,7 +131,7 @@ public class DependencyList implements Serializable {
         JsonObject jsonObject = Json.createObject();
         jsonObject.put(KEY_URL, dependency.getUrl());
         jsonObject.put(KEY_TYPE, getType(dependency));
-        jsonObject.put(KEY_BLOCKING, dependency.isBlocking());
+        jsonObject.put(KEY_LOAD_MODE, dependency.getLoadMode().name());
         return jsonObject;
     }
 
@@ -149,11 +150,11 @@ public class DependencyList implements Serializable {
      * @return the type for the JSON
      */
     private static String getType(Dependency dependency) {
-        if (dependency.getType() == Type.JAVASCRIPT) {
+        if (dependency.getType() == Dependency.Type.JAVASCRIPT) {
             return TYPE_JAVASCRIPT;
-        } else if (dependency.getType() == Type.STYLESHEET) {
+        } else if (dependency.getType() == Dependency.Type.STYLESHEET) {
             return TYPE_STYLESHEET;
-        } else if (dependency.getType() == Type.HTML_IMPORT) {
+        } else if (dependency.getType() == Dependency.Type.HTML_IMPORT) {
             return TYPE_HTML_IMPORT;
         } else {
             throw new IllegalArgumentException(

@@ -20,15 +20,16 @@ import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-non-blocking-importing.asciidoc")
-public class NonBlockingImporting {
+@CodeFor("tutorial-lazy-importing.asciidoc")
+public class LazyImporting {
 
     @Tag("div")
     @HtmlImport("/html/layout.html")
-    @JavaScript(value = "/js/animation.js", blocking = false)
+    @JavaScript(value = "/js/animation.js", loadMode = LoadMode.LAZY)
     public class MainLayout extends Component {
         // implementation omitted
     }
@@ -37,8 +38,8 @@ public class NonBlockingImporting {
 
         @Override
         protected void init(VaadinRequest request) {
-            getPage().addHtmlImport("/html/layout.html", true);
-            getPage().addJavaScript("/js/animation.js", false);
+            getPage().addHtmlImport("/html/layout.html", LoadMode.EAGER);
+            getPage().addJavaScript("/js/animation.js", LoadMode.LAZY);
         }
     }
 }

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
@@ -93,43 +94,43 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         initScheduler(new CustomScheduler());
     }
 
-    public void testAllBlockingDependenciesAreLoadedFirst() {
-        String blockingJsUrl = "https://foo.bar/blocking_script.js";
-        String blockingHtmlUrl = "https://foo.bar/blocking_page.html";
-        String blockingCssUrl = "https://foo.bar/blocking_style.css";
+    public void testAllEagerDependenciesAreLoadedFirst() {
+        String eagerJsUrl = "https://foo.bar/eager_script.js";
+        String eagerHtmlUrl = "https://foo.bar/eager_page.html";
+        String eagerCssUrl = "https://foo.bar/eager_style.css";
 
-        String regularJsUrl = "https://foo.bar/script.js";
-        String regularHtmlUrl = "https://foo.bar/page.html";
-        String regularCssUrl = "https://foo.bar/style.css";
+        String lazyJsUrl = "https://foo.bar/script.js";
+        String lazyHtmlUrl = "https://foo.bar/page.html";
+        String lazyCssUrl = "https://foo.bar/style.css";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(regularJsUrl, DependencyList.TYPE_JAVASCRIPT,
-                        false),
-                createDependency(regularHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, false),
-                createDependency(regularCssUrl, DependencyList.TYPE_STYLESHEET,
-                        false),
+                createDependency(lazyJsUrl, DependencyList.TYPE_JAVASCRIPT,
+                        LoadMode.LAZY),
+                createDependency(lazyHtmlUrl,
+                        DependencyList.TYPE_HTML_IMPORT, LoadMode.LAZY),
+                createDependency(lazyCssUrl, DependencyList.TYPE_STYLESHEET,
+                        LoadMode.LAZY),
 
-                createDependency(blockingJsUrl, DependencyList.TYPE_JAVASCRIPT,
-                        true),
-                createDependency(blockingHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, true),
-                createDependency(blockingCssUrl, DependencyList.TYPE_STYLESHEET,
-                        true)));
+                createDependency(eagerJsUrl, DependencyList.TYPE_JAVASCRIPT,
+                        LoadMode.EAGER),
+                createDependency(eagerHtmlUrl,
+                        DependencyList.TYPE_HTML_IMPORT, LoadMode.EAGER),
+                createDependency(eagerCssUrl, DependencyList.TYPE_STYLESHEET,
+                        LoadMode.EAGER)));
 
-        assertEquals(Arrays.asList(blockingJsUrl, regularJsUrl),
+        assertEquals(Arrays.asList(eagerJsUrl, lazyJsUrl),
                 mockResourceLoader.loadingScripts);
 
-        assertEquals("2 style files should be imported, blocking first",
-                Arrays.asList(blockingCssUrl, regularCssUrl),
+        assertEquals("2 style files should be imported, eager first",
+                Arrays.asList(eagerCssUrl, lazyCssUrl),
                 mockResourceLoader.loadingStyles);
 
-        assertEquals("2 html files should be imported, blocking first",
-                Arrays.asList(blockingHtmlUrl, regularHtmlUrl),
+        assertEquals("2 html files should be imported, eager first",
+                Arrays.asList(eagerHtmlUrl, lazyHtmlUrl),
                 mockResourceLoader.loadingHtml);
     }
 
-    public void testEnsureNonBlockingDependenciesLoadedInOrder() {
+    public void testEnsureLazyDependenciesLoadedInOrder() {
         String jsUrl1 = "1.js";
         String jsUrl2 = "2.js";
         String cssUrl1 = "1.css";
@@ -138,16 +139,16 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String htmlUrl2 = "2.html";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT, false),
-                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT, false),
+                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT, LoadMode.LAZY),
+                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT, LoadMode.LAZY),
                 createDependency(cssUrl1, DependencyList.TYPE_STYLESHEET,
-                        false),
+                        LoadMode.LAZY),
                 createDependency(cssUrl2, DependencyList.TYPE_STYLESHEET,
-                        false),
+                        LoadMode.LAZY),
                 createDependency(htmlUrl1, DependencyList.TYPE_HTML_IMPORT,
-                        false),
+                        LoadMode.LAZY),
                 createDependency(htmlUrl2, DependencyList.TYPE_HTML_IMPORT,
-                        false)));
+                        LoadMode.LAZY)));
 
         assertEquals(
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
@@ -174,11 +175,11 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
     }
 
     private JsonObject createDependency(String url, String type,
-            boolean blocking) {
+                                        LoadMode loadMode) {
         JsonObject dependency = Json.createObject();
         dependency.put(DependencyList.KEY_TYPE, type);
         dependency.put(DependencyList.KEY_URL, url);
-        dependency.put(DependencyList.KEY_BLOCKING, blocking);
+        dependency.put(DependencyList.KEY_LOAD_MODE, loadMode.name());
         return dependency;
     }
 

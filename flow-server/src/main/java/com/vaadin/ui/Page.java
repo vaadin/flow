@@ -21,6 +21,7 @@ import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
@@ -91,14 +92,14 @@ public class Page implements Serializable {
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
      * <p>
-     * Is is guaranteed that style sheet will be loaded before the first page load.
-     * For more options, refer to {@link #addStyleSheet(String, boolean)}
+     * Is is guaranteed that style sheet will be loaded before the first page
+     * load. For more options, refer to {@link #addStyleSheet(String, LoadMode)}
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
      */
     public void addStyleSheet(String url) {
-        addStyleSheet(url, true);
+        addStyleSheet(url, LoadMode.EAGER);
     }
 
     /**
@@ -115,13 +116,12 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
-     * @param blocking
-     *            {@code true} forces the style sheet to be loaded before the
-     *            initial page load, {@code false} allows the style sheet to be
-     *            loaded independent of initial page load
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
      */
-    public void addStyleSheet(String url, boolean blocking) {
-        addDependency(new Dependency(Type.STYLESHEET, url, blocking));
+    public void addStyleSheet(String url, LoadMode loadMode) {
+        addDependency(new Dependency(Type.STYLESHEET, url, loadMode));
     }
 
     /**
@@ -137,13 +137,13 @@ public class Page implements Serializable {
      * {@link JavaScript @JavaScript} annotation.
      * <p>
      * Is is guaranteed that script will be loaded before the first page load.
-     * For more options, refer to {@link #addJavaScript(String, boolean)}
+     * For more options, refer to {@link #addJavaScript(String, LoadMode)}
      *
      * @param url
      *            the URL to load the JavaScript from, not <code>null</code>
      */
     public void addJavaScript(String url) {
-        addJavaScript(url, true);
+        addJavaScript(url, LoadMode.EAGER);
     }
 
     /**
@@ -160,12 +160,12 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the JavaScript from, not <code>null</code>
-     * @param blocking
-     *            {@code true} forces the script to be loaded before the initial page load,
-     *            {@code false} allows the script to be loaded independent of initial page load
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
      */
-    public void addJavaScript(String url, boolean blocking) {
-        addDependency(new Dependency(Type.JAVASCRIPT, url, blocking));
+    public void addJavaScript(String url, LoadMode loadMode) {
+        addDependency(new Dependency(Type.JAVASCRIPT, url, loadMode));
     }
 
     /**
@@ -177,14 +177,14 @@ public class Page implements Serializable {
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
      * <p>
-     * Is is guaranteed that html import will be loaded before the first page load.
-     * For more options, refer to {@link #addHtmlImport(String, boolean)}
+     * Is is guaranteed that html import will be loaded before the first page
+     * load. For more options, refer to {@link #addHtmlImport(String, LoadMode)}
      *
      * @param url
      *            the URL to load the HTML import from, not <code>null</code>
      */
     public void addHtmlImport(String url) {
-        addHtmlImport(url, true);
+        addHtmlImport(url, LoadMode.EAGER);
     }
 
     /**
@@ -198,12 +198,12 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the HTML import from, not <code>null</code>
-     * @param blocking
-     *            {@code true} forces the html import to be loaded before the initial page load,
-     *            {@code false} allows the html import to be loaded independent of initial page load
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
      */
-    public void addHtmlImport(String url, boolean blocking) {
-        addDependency(new Dependency(Type.HTML_IMPORT, url, blocking));
+    public void addHtmlImport(String url, LoadMode loadMode) {
+        addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
     }
 
     /**

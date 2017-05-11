@@ -29,8 +29,8 @@ import com.vaadin.flow.testutil.PhantomJSTest;
  * @see DependenciesLoadingPageApiIT
  */
 public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
-    private static final String BLOCKING_PREFIX = "blocking.";
-    private static final String NON_BLOCKING_PREFIX = "non-blocking.";
+    private static final String EAGER_PREFIX = "eager.";
+    private static final String LAZY_PREFIX = "lazy.";
 
     @Test
     public void dependenciesLoadedAsExpectedWithAnnotationApi() {
@@ -43,7 +43,7 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
 
         WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
         Assert.assertEquals(
-                "Non-blocking css should be loaded last: color should be blue",
+                "Lazy css should be loaded last: color should be blue",
                 "rgba(0, 0, 255, 1)", preloadedDiv.getCssValue("color"));
 
         List<String> testMessages = findElements(
@@ -51,24 +51,24 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                         .map(WebElement::getText).collect(Collectors.toList());
 
         Assert.assertEquals(
-                "5 elements are expected to be added: 2 for blocking dependencies, 1 for UI 'onAttach' method, 2 for non-blocking dependencies",
+                "5 elements are expected to be added: 2 for eager dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
                 5, testMessages.size());
 
-        Assert.assertTrue("Blocking dependencies should be loaded first",
-                testMessages.get(0).startsWith(BLOCKING_PREFIX));
-        Assert.assertTrue("Blocking dependencies should be loaded first",
-                testMessages.get(1).startsWith(BLOCKING_PREFIX));
+        Assert.assertTrue("Eager dependencies should be loaded first",
+                testMessages.get(0).startsWith(EAGER_PREFIX));
+        Assert.assertTrue("Eager dependencies should be loaded first",
+                testMessages.get(1).startsWith(EAGER_PREFIX));
 
         Assert.assertTrue(
-                "Expected dom change to happen after blocking dependencies loaded and before non-blocking dependencies have loaded",
+                "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded",
                 testMessages.get(2).equals(DOM_CHANGE_TEXT));
 
         Assert.assertTrue(
-                "Non-blocking dependencies should be loaded after blocking",
-                testMessages.get(3).startsWith(NON_BLOCKING_PREFIX));
+                "Lazy dependencies should be loaded after eager",
+                testMessages.get(3).startsWith(LAZY_PREFIX));
         Assert.assertTrue(
-                "Non-blocking dependencies should be loaded after blocking",
-                testMessages.get(4).startsWith(NON_BLOCKING_PREFIX));
+                "Lazy dependencies should be loaded after eager",
+                testMessages.get(4).startsWith(LAZY_PREFIX));
     }
 
     private void ensureDependenciesHaveCorrectAttributes() {

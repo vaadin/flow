@@ -17,6 +17,8 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.shared.ui.LoadMode;
+
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
  *
@@ -33,7 +35,7 @@ public class Dependency implements Serializable {
 
     private final Type type;
     private final String url;
-    private final boolean blocking;
+    private final LoadMode loadMode;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -47,12 +49,11 @@ public class Dependency implements Serializable {
      *            the type of the dependency, not {@code null}
      * @param url
      *            the URL to load the dependency from, not {@code null}
-     * @param blocking
-     *            {@code true} forces the dependency to be loaded before the
-     *            initial page load, {@code false} allows the dependency to be
-     *            loaded independent of initial page load
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
      */
-    public Dependency(Type type, String url, boolean blocking) {
+    public Dependency(Type type, String url, LoadMode loadMode) {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
@@ -60,7 +61,7 @@ public class Dependency implements Serializable {
 
         this.type = type;
         this.url = url;
-        this.blocking = blocking;
+        this.loadMode = loadMode;
     }
 
     /**
@@ -82,12 +83,12 @@ public class Dependency implements Serializable {
     }
 
     /**
-     * Gets the blocking property of the dependency.
-     *
-     * @return {@code true} if dependency should be loaded before whole page is
-     *         loaded, {@code false} otherwise.
+     * Gets load mode that will be used for dependency loading. Refer to
+     * {@link LoadMode} for details.
+     * 
+     * @return the load mode that will be used during dependency loading
      */
-    public boolean isBlocking() {
-        return blocking;
+    public LoadMode getLoadMode() {
+        return loadMode;
     }
 }

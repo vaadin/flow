@@ -1,38 +1,38 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Non-blocking Importing
+= Lazy Importing
 
 Sections <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>
 are describing ways to include style sheets and import HTML/JavaScript.
 
-Every annotation `@StyleSheet`, `@JavaScript` and `@HtmlImport` has a `blocking` 
-parameter which is `true` by default. It means that the client-side structure corresponding
+Every annotation `@StyleSheet`, `@JavaScript` and `@HtmlImport` has a `loadMode`
+parameter which is `LoadMode.EAGER` by default. It means that the client-side structure corresponding
 to the annotated component class won't be created and process until the dependency
 (HTML/JavaScript import or Style Sheet) is not loaded.
 
-If you want to speed up the page load and it is possible to load dependencies after 
-the processing of the DOM structure then you can specify the `blocking` parameter value as `blocking=false`.
+If you want to speed up the page load and it is possible to load dependencies after
+the processing of the DOM structure then you can specify the `loadMode` parameter value as `loadMode=LoadMode.LAZY`.
 [NOTE]
 ====
-It is guaranteed, that all blocking dependencies are loaded before any of the non-blocking dependencies.
+It is guaranteed, that all eager dependencies are loaded before any of the lazy dependencies.
 Each of the groups imports dependencies in the same way, which is described in <<tutorial-importing#,Importing html/javascript>> tutorial.
 ====
 
-All the blocking dependencies are loaded and injected into the DOM before any non-blocking dependencies,
-to make sure that client side structure is correctly processed with the required blocking dependencies.
+All eager dependencies are loaded and injected into the DOM before any lazy dependencies,
+to make sure that client side structure is correctly processed with the required eager dependencies.
 
 Let's assume you have some additional functionality for your component which is optional
-and is not required for your application. For instance it can be a JavaScript which 
+and is not required for your application. For instance it can be a JavaScript which
 adds some animation to the component: `/js/animation.js`. This animation may be applied
-at any time later on for the component so that we can postpone its loading. Then 
+at any time later on for the component so that we can postpone its loading. Then
 the component can be declared as:
 
 [source,java]
 ----
 @Tag("div")
 @HtmlImport("/html/layout.html")
-@JavaScript(value = "/js/animation.js", blocking = false)
+@JavaScript(value = "/js/animation.js", loadMode = LoadMode.LAZY)
 public class MainLayout extends Component {
-  // implementation omitted
+    // implementation omitted
 }
 ----
 
@@ -40,11 +40,11 @@ In this example the `/html/layout.html` will be loaded and injected before the c
 structure is created for the `MainLayout` component regardless of availability of the
 `/js/animation.js` script.
 
-The same can be done programmatically via the overloaded methods of the `Page` class: 
+The same can be done programmatically via the overloaded methods of the `Page` class:
 
- * `addStyleSheet(String url, boolean blocking)` 
- * `addHtmlImport(String url, boolean blocking)`
- * `addJavaScript(String url, boolean blocking)`
+ * `addStyleSheet(String url, LoadMode loadMode)`
+ * `addHtmlImport(String url, LoadMode loadMode)`
+ * `addJavaScript(String url, LoadMode loadMode)`
 
 [source,java]
 ----
@@ -52,8 +52,8 @@ public class MyCustomUI extends UI {
 
   @Override
   protected void init(VaadinRequest request) {
-    getPage().addHtmlImport("/html/layout.html", true);
-    getPage().addJavaScript("/js/animation.js", false);
+      getPage().addHtmlImport("/html/layout.html", LoadMode.EAGER);
+      getPage().addJavaScript("/js/animation.js", LoadMode.LAZY);
   }
 }
 ----
