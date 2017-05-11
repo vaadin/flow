@@ -17,6 +17,7 @@
 package com.vaadin.flow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +34,9 @@ import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.change.NodeDetachChange;
 import com.vaadin.flow.dom.EventRegistrationHandle;
+import com.vaadin.flow.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
+import com.vaadin.flow.nodefeature.ElementClassList;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.NodeFeature;
@@ -461,5 +464,22 @@ public class StateNodeTest {
         });
 
         Assert.assertEquals(1, commandRun.get());
+    }
+
+    @Test
+    public void requiredFeatures() {
+        StateNode stateNode = new StateNode(
+                Arrays.asList(ElementClassList.class, ElementPropertyMap.class),
+                ElementAttributeMap.class);
+
+        Assert.assertTrue(stateNode.hasFeature(ElementClassList.class));
+        Assert.assertTrue(stateNode.hasFeature(ElementPropertyMap.class));
+        Assert.assertTrue(stateNode.hasFeature(ElementAttributeMap.class));
+
+        Assert.assertTrue(stateNode.isReportedFeature(ElementClassList.class));
+        Assert.assertTrue(
+                stateNode.isReportedFeature(ElementPropertyMap.class));
+        Assert.assertFalse(
+                stateNode.isReportedFeature(ElementAttributeMap.class));
     }
 }

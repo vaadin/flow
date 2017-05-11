@@ -21,11 +21,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.change.EmptyChange;
 import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.MapRemoveChange;
 import com.vaadin.flow.change.NodeChange;
@@ -42,6 +44,8 @@ public abstract class NodeMap extends NodeFeature {
 
     private HashMap<String, Serializable> values;
 
+    private boolean isPopulated;
+
     /**
      * Creates a new map feature for the given node.
      *
@@ -50,6 +54,7 @@ public abstract class NodeMap extends NodeFeature {
      */
     public NodeMap(StateNode node) {
         super(node);
+        isPopulated = !node.isReportedFeature(getClass());
     }
 
     /**
@@ -281,25 +286,41 @@ public abstract class NodeMap extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        getChangeTracker().forEach((key, earlierValue) -> {
+        boolean hasChanges = false;
+        for (Entry<String, Serializable> entry : getChangeTracker()
+                .entrySet()) {
+            String key = entry.getKey();
+            Serializable value = entry.getValue();
             boolean containsNow = values != null && values.containsKey(key);
-            boolean containedEarlier = earlierValue != REMOVED_MARKER;
+            boolean containedEarlier = value != REMOVED_MARKER;
             if (containedEarlier && !containsNow) {
                 collector.accept(new MapRemoveChange(this, key));
+                hasChanges = true;
             } else if (containsNow) {
                 Object currentValue = values.get(key);
-                if (!containedEarlier
-                        || !Objects.equals(earlierValue, currentValue)) {
+                if (!containedEarlier || !Objects.equals(value, currentValue)) {
                     // New or changed value
                     collector.accept(new MapPutChange(this, key, currentValue));
+                    hasChanges = true;
                 }
             }
-        });
+        }
+        if (!isPopulated) {
+            if (!hasChanges) {
+                collector.accept(new EmptyChange(this));
+            }
+            isPopulated = true;
+        }
     }
 
     @Override
     public void generateChangesFromEmpty() {
         if (values == null) {
+            if (!isPopulated) {
+                // populate change tracker so that an empty change can be
+                // reported
+                getChangeTracker();
+            }
             return;
         }
         assert !values.isEmpty();

@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -272,7 +273,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return null;
         }
 
-        StateNode node = new StateNode(ElementPropertyMap.class);
+        StateNode node = new StateNode(
+                Collections.singletonList(ElementPropertyMap.class));
 
         importProperties(ElementPropertyMap.getModel(node), applicationValue,
                 filter);

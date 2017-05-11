@@ -179,6 +179,34 @@ public class TreeChangeProcessorTest {
         Assert.assertEquals(1, unregisterCount.get());
     }
 
+    @Test
+    public void poulateMapFeature() {
+        StateNode node = new StateNode(2, tree);
+        tree.registerNode(node);
+        int featureId = 11;
+        JsonObject change = populateChange(node.getId(), false, featureId);
+
+        TreeChangeProcessor.processChange(tree, change);
+
+        Assert.assertTrue(node.hasFeature(featureId));
+        // No assertion error because of wrong feature instance
+        node.getMap(featureId);
+    }
+
+    @Test
+    public void poulateListFeature() {
+        StateNode node = new StateNode(3, tree);
+        tree.registerNode(node);
+        int featureId = 12;
+        JsonObject change = populateChange(node.getId(), true, featureId);
+
+        TreeChangeProcessor.processChange(tree, change);
+
+        Assert.assertTrue(node.hasFeature(featureId));
+        // No assertion error because of wrong feature instance
+        node.getList(featureId);
+    }
+
     private static JsonArray toArray(JsonValue... changes) {
         return Arrays.stream(changes).collect(JsonUtils.asArray());
     }
@@ -201,6 +229,14 @@ public class TreeChangeProcessorTest {
 
     private static JsonObject attachChange(int node) {
         return baseChange(node, JsonConstants.CHANGE_TYPE_ATTACH);
+    }
+
+    private static JsonObject populateChange(int node, boolean isList,
+            int featureId) {
+        JsonObject object = baseChange(node, JsonConstants.CHANGE_TYPE_NOOP);
+        object.put(JsonConstants.CHANGE_FEATURE, featureId);
+        object.put(JsonConstants.CHANGE_FEATURE_TYPE, isList);
+        return object;
     }
 
     private static JsonObject detachChange(int node) {
