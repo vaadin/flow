@@ -12,6 +12,9 @@ Instructions on how to set up a working environment for developing the Flow proj
 
 Quick Setup
 ======
+To create your own application using Flow, use https://github.com/vaadin/flow-hello-world as a starting point.
+
+To quickly get started with contributing, follow these simple steps.
 1. <code>git clone https://github.com/vaadin/flow.git</code>
 1. make sure you have a TestBench license (get it otherwise on https://vaadin.com/pro/licenses)
 1. <code>mvn install</code>
