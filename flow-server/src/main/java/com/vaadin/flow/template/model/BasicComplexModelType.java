@@ -58,7 +58,7 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
      * @return the basic model type, or an empty optional if the provided type
      *         is not a basic type
      */
-    public static <T> Optional<ComplexModelType<?>> get(Class<?> type) {
+    public static Optional<ComplexModelType<?>> get(Class<?> type) {
         return Optional.ofNullable(TYPES.get(type));
     }
 
