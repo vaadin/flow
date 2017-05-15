@@ -123,6 +123,9 @@ public final class PolymerUtils {
                 feature = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
             } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
+            } else if (node.hasFeature(NodeFeatures.BASIC_TYPE_VALUE)) {
+                return convertToJson(node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
+                        .getProperty(NodeFeatures.VALUE));
             }
             assert feature != null : "Don't know how to convert node without map or list features";
 
@@ -134,10 +137,14 @@ public final class PolymerUtils {
             return convert;
         } else if (object instanceof MapProperty) {
             MapProperty property = (MapProperty) object;
-            JsonObject convertedObject = Json.createObject();
-            convertedObject.put(property.getName(),
-                    convertToJson(property.getValue()));
-            return convertedObject;
+            if (property.getMap().getId() == NodeFeatures.BASIC_TYPE_VALUE) {
+                return convertToJson(property.getValue());
+            } else {
+                JsonObject convertedObject = Json.createObject();
+                convertedObject.put(property.getName(),
+                        convertToJson(property.getValue()));
+                return convertedObject;
+            }
         } else {
             return WidgetUtil.crazyJsoCast(object);
         }

@@ -2,6 +2,7 @@ package com.vaadin.client.flow;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
@@ -136,6 +137,17 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         assertListsEqual(serverList, getClientList());
     }
 
+    public void testAddBasicTypeList() {
+        List<String> serverList = Arrays.asList("one", "two");
+        createAndAttachNodeWithList(modelNode, serverList,
+                this::createBasicTypeWrapper);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        assertListsEqual(serverList, getClientList());
+    }
+
     public void testSetNewListForTheSameProperty() {
         createAndAttachNodeWithList(modelNode, Arrays.asList("one", "two"));
 
@@ -144,6 +156,22 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
         List<String> newServerList = Arrays.asList("1", "2", "3");
         createAndAttachNodeWithList(modelNode, newServerList);
+
+        Reactive.flush();
+
+        assertListsEqual(newServerList, getClientList());
+    }
+
+    public void testSetNewBasicTypeListForTheSameProperty() {
+        createAndAttachNodeWithList(modelNode, Arrays.asList("one", "two"),
+                this::createBasicTypeWrapper);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        List<String> newServerList = Arrays.asList("1", "2", "3");
+        createAndAttachNodeWithList(modelNode, newServerList,
+                this::createBasicTypeWrapper);
 
         Reactive.flush();
 
@@ -171,11 +199,36 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         StateNode nodeWithList = createAndAttachNodeWithList(modelNode,
                 Arrays.asList("one", "two"));
 
+        assertUpdateListValues(nodeWithList);
+    }
+
+    public void testUpdateBasicTypeList() {
+        StateNode nodeWithList = createAndAttachNodeWithList(modelNode,
+                Arrays.asList("one", "two"), this::createBasicTypeWrapper);
+
+        assertUpdateListValues(nodeWithList);
+    }
+
+    @Override
+    protected StateNode createNode() {
+        StateNode newNode = super.createNode();
+
+        newNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        newNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+        newNode.getMap(NodeFeatures.ELEMENT_DATA);
+        return newNode;
+    }
+
+    ////////////////////////
+
+    private void assertUpdateListValues(StateNode nodeWithList) {
         Binder.bind(node, element);
         Reactive.flush();
 
         List<String> newList = Arrays.asList("1", "2", "3");
         fillNodeWithListItems(nodeWithList, newList);
+
+        Reactive.flush();
 
         JsonArray argumentsArray = WidgetUtil.crazyJsCast(
                 WidgetUtil.getJsProperty(element, "argumentsArray"));
@@ -199,18 +252,6 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
             assertEquals(newList.get(i), items);
         }
     }
-
-    @Override
-    protected StateNode createNode() {
-        StateNode newNode = super.createNode();
-
-        newNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        newNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
-        newNode.getMap(NodeFeatures.ELEMENT_DATA);
-        return newNode;
-    }
-
-    ////////////////////////
 
     private StateNode createAndAttachModelNode(String modelPropertyName) {
         StateNode modelNode = new StateNode(nextId,
@@ -263,18 +304,29 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     }
 
     private StateNode createAndAttachNodeWithList(StateNode modelNode,
-            List<String> listItems) {
+            List<String> listItems, Function<Object, ?> converter) {
         StateNode nodeWithList = new StateNode(nextId, modelNode.getTree());
         nextId++;
-        fillNodeWithListItems(nodeWithList, listItems);
+        fillNodeWithListItems(nodeWithList, listItems, converter);
         setModelProperty(modelNode, LIST_PROPERTY_NAME, nodeWithList, false);
         return nodeWithList;
     }
 
+    private StateNode createAndAttachNodeWithList(StateNode modelNode,
+            List<String> listItems) {
+        return createAndAttachNodeWithList(modelNode, listItems,
+                Function.identity());
+    }
+
     private void fillNodeWithListItems(StateNode node, List<?> listItems) {
+        fillNodeWithListItems(node, listItems, Function.identity());
+    }
+
+    private void fillNodeWithListItems(StateNode node, List<?> listItems,
+            Function<Object, ?> converter) {
         NodeList nodeList = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
         for (int i = 0; i < listItems.size(); i++) {
-            nodeList.add(i, listItems.get(i));
+            nodeList.add(i, converter.apply(listItems.get(i)));
         }
     }
 
@@ -290,6 +342,14 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         return WidgetUtil
                 .crazyJsCast(WidgetUtil.getJsProperty(element, PROPERTY_PREFIX
                         + MODEL_PROPERTY_NAME + "." + LIST_PROPERTY_NAME));
+    }
+
+    private StateNode createBasicTypeWrapper(Object value) {
+        StateNode node = new StateNode(nextId, tree);
+        nextId++;
+        node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
+                .getProperty(NodeFeatures.VALUE).setValue(value);
+        return node;
     }
 
     private native void initPolymer(Element element)
