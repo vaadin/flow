@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.template.model;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,6 +32,8 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.StateNode;
+import com.vaadin.flow.nodefeature.BasicTypeValue;
 import com.vaadin.flow.template.model.TemplateModelTest.BasicTypeModel;
 import com.vaadin.flow.template.model.TemplateModelTest.BeanModel;
 import com.vaadin.flow.template.model.TemplateModelTest.ListBeanModel;
@@ -353,6 +357,43 @@ public class ModelDescriptorTest {
 
         Assert.assertEquals(expectedProperties,
                 beanType.getPropertyNames().collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void basicComplexModelType_intAndInteger() {
+        assertComplexModeType(int.class, 1, 2);
+        assertComplexModeType(Integer.class, 3, 4);
+    }
+
+    @Test
+    public void basicComplexModelType_booleabAndBoolean() {
+        assertComplexModeType(boolean.class, true, false);
+        assertComplexModeType(Boolean.class, false, true);
+    }
+
+    @Test
+    public void basicComplexModelType_doubleAndDouble() {
+        assertComplexModeType(double.class, 1.2, 2.3);
+        assertComplexModeType(Double.class, 3.4, 4.5);
+    }
+
+    @Test
+    public void basicComplexModelType_String() {
+        assertComplexModeType(String.class, "foo", "bar");
+    }
+
+    private <T extends Serializable> void assertComplexModeType(Class<T> clazz,
+            T wrappedValue, T value) {
+        Optional<ComplexModelType<?>> type = BasicComplexModelType.get(clazz);
+        StateNode stateNode = type.get().applicationToModel(wrappedValue, null);
+
+        Assert.assertEquals(wrappedValue,
+                stateNode.getFeature(BasicTypeValue.class).getValue());
+
+        stateNode.getFeature(BasicTypeValue.class).setValue(value);
+        Object modelValue = type.get().modelToApplication(stateNode);
+        Assert.assertEquals(value, modelValue);
+
     }
 
 }

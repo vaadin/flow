@@ -89,18 +89,5 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                                     javaScriptImport.getAttribute("src")),
                             javaScriptImport.getAttribute("async"));
                 });
-
-        findElements(By.tagName("link")).stream()
-                .filter(element -> element.getAttribute("href")
-                        .endsWith(".html"))
-                .forEach(
-                        htmlImport -> Assert
-                                .assertEquals(
-                                        String.format(
-                                                "All html dependencies should be loaded with 'async' attribute. Dependency with url %s does not have this attribute",
-                                                htmlImport
-                                                        .getAttribute("href")),
-                                        "true",
-                                        htmlImport.getAttribute("async")));
     }
 }

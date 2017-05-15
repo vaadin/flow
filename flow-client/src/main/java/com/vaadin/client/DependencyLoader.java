@@ -192,7 +192,7 @@ public class DependencyLoader {
             return resourceLoader::loadStylesheet;
         case DependencyList.TYPE_HTML_IMPORT:
             return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadHtml(scriptUrl, resourceLoadListener, true);
+                    .loadHtml(scriptUrl, resourceLoadListener, false);
         case DependencyList.TYPE_JAVASCRIPT:
             return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadScript(scriptUrl, resourceLoadListener, false, true);

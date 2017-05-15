@@ -16,16 +16,10 @@
 package com.vaadin.flow.template.model;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import com.vaadin.util.ReflectTools;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 /**
  * A model type representing an immutable leaf value, e.g. strings, numbers or
@@ -33,24 +27,13 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  */
-public class BasicModelType implements ModelType {
-    static final Map<Class<?>, BasicModelType> types = new HashMap<>();
+public class BasicModelType extends AbstractBasicModelType {
 
-    static {
-        Stream.of(int.class, Integer.class, boolean.class, Boolean.class,
-                double.class, Double.class, String.class)
-                .forEach(type -> types.put(type, new BasicModelType(type)));
-
-        // Make sure each type has a unique getSimpleName value since it's used
-        // as an identifier in JSON messages
-        assert types.keySet().stream().map(Class::getSimpleName).distinct()
-                .count() == types.size();
-    }
-
-    private final Class<?> type;
+    static final Map<Class<?>, BasicModelType> TYPES = loadBasicTypes(
+            BasicModelType::new);
 
     private BasicModelType(Class<?> type) {
-        this.type = type;
+        super(type);
     }
 
     /**
@@ -62,13 +45,13 @@ public class BasicModelType implements ModelType {
      *         is not a basic type
      */
     public static Optional<ModelType> get(Class<?> type) {
-        return Optional.ofNullable(types.get(type));
+        return Optional.ofNullable(TYPES.get(type));
     }
 
     @Override
     public Object modelToApplication(Serializable modelValue) {
-        if (modelValue == null && type.isPrimitive()) {
-            return ReflectTools.getPrimitiveDefaultValue(type);
+        if (modelValue == null && getJavaType().isPrimitive()) {
+            return ReflectTools.getPrimitiveDefaultValue(getJavaType());
         } else {
             return modelValue;
         }
@@ -85,22 +68,4 @@ public class BasicModelType implements ModelType {
         return (Serializable) applicationValue;
     }
 
-    @Override
-    public boolean accepts(Type applicationType) {
-        if (type.isPrimitive()
-                && ReflectTools.convertPrimitiveType(type) == applicationType) {
-            return true;
-        }
-        return type == applicationType;
-    }
-
-    @Override
-    public Type getJavaType() {
-        return type;
-    }
-
-    @Override
-    public JsonValue toJson() {
-        return Json.create(type.getSimpleName());
-    }
 }
