@@ -287,7 +287,9 @@ public class ResourceLoader {
             LinkElement linkTag = getDocument().createLinkElement();
             linkTag.setAttribute("rel", "import");
             linkTag.setAttribute("href", url);
-            linkTag.setAttribute("async", Boolean.toString(async));
+            if (async) {
+                linkTag.setAttribute("async", "true");
+            }
 
             class LoadAndReadyListener
                     implements ResourceLoadListener, Runnable {
