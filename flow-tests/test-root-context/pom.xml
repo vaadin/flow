@@ -79,7 +79,6 @@
                         <resource>
                             <!-- this is relative to the pom.xml directory -->
                             <directory>${bower.working.directory}</directory>
-                            <include>bower_components/**</include>
                         </resource>
                     </webResources>
                 </configuration>

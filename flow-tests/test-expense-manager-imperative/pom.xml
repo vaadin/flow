@@ -92,8 +92,7 @@
                     <webResources>
                         <resource>
                             <!-- this is relative to the pom.xml directory -->
-                            <directory>frontend</directory>
-                            <include>bower_components/**</include>
+                            <directory>${bower.working.directory}</directory>
                         </resource>
                     </webResources>
                 </configuration>
@@ -159,7 +158,7 @@
                 <configuration>
                     <nodeVersion>${node.version}</nodeVersion>
                     <npmVersion>${npm.version}</npmVersion>
-                    <workingDirectory>frontend</workingDirectory>
+                    <workingDirectory>${bower.working.directory}</workingDirectory>
                 </configuration>
                 <executions>
                     <execution>

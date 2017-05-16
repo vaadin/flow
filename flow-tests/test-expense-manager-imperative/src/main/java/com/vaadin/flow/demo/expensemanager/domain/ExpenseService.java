@@ -3,7 +3,6 @@ package com.vaadin.flow.demo.expensemanager.domain;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.TextStyle;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
