@@ -215,6 +215,23 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
         assertRpcToServerArguments(99, child.getTagName(), id);
     }
 
+    // This test emulates FireFox that doesn't hide element children under shadowRoot
+    public void testAttachExistingElementById_elementOutsideShadowRoot() {
+        Browser.getDocument().getBody().appendChild(element);
+        setupShadowRoot();
+
+        String id = "identifier";
+
+        Element child = Browser.getDocument().createElement("div");
+        child.setAttribute("id", id);
+        element.appendChild(child);
+
+        ElementUtils.attachExistingElementById(node,
+                "div", requestedId, id);
+
+        assertRpcToServerArguments(requestedId, child.getTagName(), id);
+    }
+
     private Element setupShadowRoot() {
         Element shadowRoot = addShadowRoot(element);
 
