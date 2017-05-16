@@ -72,6 +72,7 @@ public class RedeployLeakIT {
             Assert.assertNotNull(driver.findElement(By.id("hello")));
         } finally {
             driver.close();
+            driver.quit();
         }
         shutdownAndVerify();
     }
