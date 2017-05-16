@@ -22,6 +22,8 @@ import com.vaadin.flow.router.View;
 public class PaperSliderView extends Div implements View {
     static final String VALUE_TEXT_ID = "valueText";
     static final String CHANGE_VALUE_ID = "changeValue";
+    static final int INITIAL_VALUE = 75;
+    static final int UPDATED_VALUE = 50;
 
     public PaperSliderView() {
         Div valueText = new Div();
@@ -31,12 +33,13 @@ public class PaperSliderView extends Div implements View {
         paperSlider.addValueChangeListener(e -> {
             String text = "Value: " + e.getSource().getValue();
             text += " (set on " + (e.isFromClient() ? "client" : "server")
-                    + ")";
+                    + ')';
             valueText.setText(text);
         });
-        paperSlider.setValue(75);
-        Button changeValueFromServer = new Button("Set value to 50",
-                e -> paperSlider.setValue(50));
+        paperSlider.setValue(INITIAL_VALUE);
+        Button changeValueFromServer = new Button(
+                "Set value to " + UPDATED_VALUE,
+                e -> paperSlider.setValue(UPDATED_VALUE));
         changeValueFromServer.setId(CHANGE_VALUE_ID);
         add(paperSlider, valueText, changeValueFromServer);
     }
