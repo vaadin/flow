@@ -167,7 +167,7 @@ public class ElementUtils {
             elementById = shadowRootParent.shadowRoot.getElementById(id);
         }
         if(elementById == null) {
-            elementById = $doc.getElementById("creator");
+            elementById = $doc.getElementById(id);
         }
         return elementById;
     }-*/;
