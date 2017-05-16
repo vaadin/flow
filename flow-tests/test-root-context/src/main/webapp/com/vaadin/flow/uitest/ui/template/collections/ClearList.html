@@ -1,0 +1,20 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="clear-list">
+    <template>
+        <dom-repeat items="[[messages]]">
+            <template>
+                <div class='msg' on-click="selectItem">[[item.text]]</div>
+            </template>
+        </dom-repeat>
+        <button id="clearList" on-click="clearList">clearList</button>
+    </template>
+    <script>
+        class ClearList extends Polymer.Element {
+            static get is() {
+                return 'clear-list'
+            }
+        }
+        customElements.define(ClearList.is, ClearList);
+    </script>
+</dom-module>
