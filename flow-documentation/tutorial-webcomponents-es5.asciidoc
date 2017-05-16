@@ -78,7 +78,7 @@ just like you do in your `pom.xml` with Java dependencies.
     "tests"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#v2.0.0-rc.7",
+    "polymer": "2.0.0",
     "other-dependency" : "version"
   }
 }
