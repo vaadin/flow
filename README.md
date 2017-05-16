@@ -65,6 +65,24 @@ Running tests
 The unit tests for the projects can be run using
 <pre><code>mvn test</code></pre>
 
+Remote tests execution
+--------
+Each pull request requires validation via Travis, so before the pull request is merged
+all the tests are executed remotely by Travis CI server. 
+If you want to run the tests remotely for your branch but don't want to create a PR for your patch then you can use
+instructions from [here](https://docs.travis-ci.com/user/triggering-builds).
+There is a script <code>scripts/runTests.sh</code> which you can use to run validation tests with various options.
+To be able to use the script you need:
+1. *nix system or CygWin with <code>curl</code> command installed
+1. Read the link [above](https://docs.travis-ci.com/user/triggering-builds): you need an API token to be able to access to Travis API.
+1. Once you get your API token you can run the script via <code>runTests.sh -branch yourBranch -token yourAPItoken</code>
+
+The command requests Travis to execute validation tests in your branch which has to be specified as a parameter.
+In addition to required parameters you can provide:
+1. A commit message using <code>-message commitMessage</code>. This message will appear in the Travis Job. So you can identify your job using the message.
+1. The parameter <code>-javadoc</code>. The default validation executes only tests without checking javadocs.   <code>-javadoc</code> parameter requests javadoc validation in addition to the tests.
+1. The parameter <code>-full</code>. Some tests are excluded from validation for various reasons (e.g. slow tests, etc.). This parameter requests all tests execution (not only validation).
+
 Building a package
 =====
 The distribution package is built and installed into the local Maven repository by doing
