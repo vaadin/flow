@@ -232,6 +232,26 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
         assertRpcToServerArguments(requestedId, child.getTagName(), id);
     }
 
+    // This test emulates Edge that doesn't support requesting getElementById from shadowRoot
+    public void testAttachExistingElementById_noByIdMethodInShadowRoot() {
+        Browser.getDocument().getBody().appendChild(element);
+        Element shadowRoot = addShadowRootWithoutGetElementById(element);
+
+        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        map.getProperty(NodeFeatures.SHADOW_ROOT).setValue(new StateNode(34, tree));
+
+        String id = "identifier";
+
+        Element child = Browser.getDocument().createElement("div");
+        child.setAttribute("id", id);
+        element.appendChild(child);
+
+        ElementUtils.attachExistingElementById(node,
+                "div", requestedId, id);
+
+        assertRpcToServerArguments(requestedId, child.getTagName(), id);
+    }
+
     private Element setupShadowRoot() {
         Element shadowRoot = addShadowRoot(element);
 
@@ -253,6 +273,11 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
             }
         }
 
+        return element.shadowRoot;
+    }-*/;
+
+    private native Element addShadowRootWithoutGetElementById(Element element) /*-{
+        element.shadowRoot = $doc.createElement("div");
         return element.shadowRoot;
     }-*/;
 
