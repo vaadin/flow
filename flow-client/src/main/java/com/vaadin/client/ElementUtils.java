@@ -163,8 +163,9 @@ public class ElementUtils {
     private static native Element getDomElementById(Element shadowRootParent,
             String id) /*-{
         var elementById = null;
-        if (shadowRootParent.shadowRoot) {
-            elementById = shadowRootParent.shadowRoot.getElementById(id);
+        var shadowRoot = shadowRootParent.shadowRoot;
+        if (shadowRoot && typeof(shadowRoot.getElementById) === 'function') {
+            elementById = shadowRoot.getElementById(id);
         }
         if(elementById == null) {
             elementById = $doc.getElementById(id);
