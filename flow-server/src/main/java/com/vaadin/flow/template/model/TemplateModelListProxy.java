@@ -30,8 +30,8 @@ import com.vaadin.flow.nodefeature.ModelList;
  *            the type of items in the list
  */
 public class TemplateModelListProxy<T> extends AbstractList<T> {
-    private StateNode stateNode;
-    private ComplexModelType<T> itemType;
+    private final StateNode stateNode;
+    private final ComplexModelType<T> itemType;
 
     /**
      * Creates a new proxy for the given node and item type.
@@ -83,6 +83,11 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
                 PropertyFilter.ACCEPT_ALL);
 
         getModelList().add(index, nodeToAdd);
+    }
+
+    @Override
+    public void clear() {
+        getModelList().clear();
     }
 
     @Override

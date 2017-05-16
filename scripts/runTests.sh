@@ -3,6 +3,7 @@
 function usage
 {
     echo "usage: $0 -branch branch_name -token api_token [-message commit_message] [-cfile certificate_file] [-javadoc] [-full]"
+    echo "See README.md for parameter detials"
 }
 
 while [ "$1" != "" ]; do
