@@ -65,14 +65,14 @@ body='{
 "request": {
 "config": {
     "script": '"\"$script\""'
-}
+},
 "branch": '"\"$branch\"}}"
 else
 body='{
 "request": {
 "config": {
     "script": '"\"$script\""'
-}
+},
 "message": '"\"$message\",
 \"branch\": \"$branch\"}}"
 fi
