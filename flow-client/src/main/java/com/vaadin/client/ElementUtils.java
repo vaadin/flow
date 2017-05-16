@@ -162,10 +162,14 @@ public class ElementUtils {
 
     private static native Element getDomElementById(Element shadowRootParent,
             String id) /*-{
+        var elementById = null;
         if (shadowRootParent.shadowRoot) {
-            return shadowRootParent.shadowRoot.getElementById(id);
+            elementById = shadowRootParent.shadowRoot.getElementById(id);
         }
-        return null;
+        if(elementById == null) {
+            elementById = $doc.getElementById("creator");
+        }
+        return elementById;
     }-*/;
 
     private static Integer getExistingIdOrUpdate(StateNode parent,
