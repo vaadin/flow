@@ -42,24 +42,17 @@ public class TemplateModelListProxyTest {
     }
 
     @Test
-    public void testClear_noDefaultConstructor() {
+    public void clear_noDefaultConstructor() {
         TemplateModelListProxy<ClassWithoutDefaultConstructor> list = createModelListProxy(
                 ClassWithoutDefaultConstructor.class);
-
         list.add(new ClassWithoutDefaultConstructor("one"));
         list.add(new ClassWithoutDefaultConstructor("two"));
-        Assert.assertThat(
-                "List should be of size 2, since we've added two elements",
-                list.size(), is(2));
 
-        list.clear();
-        Assert.assertThat(
-                "List should be of size 0, since we've called clear()",
-                list.size(), is(0));
+        assertListClearedNormally(list);
     }
 
     @Test
-    public void testClear_defaultConstructor() {
+    public void clear_defaultConstructor() {
         TemplateModelListProxy<ClassWithDefaultConstructor> list = createModelListProxy(
                 ClassWithDefaultConstructor.class);
         ClassWithDefaultConstructor one = new ClassWithDefaultConstructor();
@@ -70,10 +63,11 @@ public class TemplateModelListProxyTest {
         list.add(one);
         list.add(two);
 
-        Assert.assertThat(
-                "List should be of size 2, since we've added two elements",
-                list.size(), is(2));
+        assertListClearedNormally(list);
+    }
 
+    private static void assertListClearedNormally(
+            TemplateModelListProxy<?> list) {
         list.clear();
         Assert.assertThat(
                 "List should be of size 0, since we've called clear()",
