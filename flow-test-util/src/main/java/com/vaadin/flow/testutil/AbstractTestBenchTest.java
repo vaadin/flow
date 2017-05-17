@@ -236,7 +236,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * The method {@link #getBrowsersToTest()} delegates the logic to this
      * method in case {@link #getLocalExecution()} return value is an empty
      * optional (i.e. the tests Hub is used).
-     * 
+     *
      * @return the browsers capabilities list to execute test on the tests Hub
      */
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
@@ -246,7 +246,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     /**
      * Gets browser capabilities for the provided <code>browsers</code>.
-     * 
+     *
      * @param browsers
      *            a browsers list
      * @return the capabilities for the given <code>browsers</code>
@@ -329,12 +329,12 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * <p>
      * If this method return an empty optional then test with be run on the test
      * Hub
-     * 
+     *
      * @see LocalExecution
-     * 
+     *
      * @return an optional configuration, or an empty optional if configuration
      *         is disabled or not available
-     * 
+     *
      */
     protected Optional<LocalExecution> getLocalExecution() {
         if (USE_HUB) {

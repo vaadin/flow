@@ -2,6 +2,7 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.Dimension;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
@@ -13,7 +14,7 @@ public class ScrollIT extends ChromeBrowserTest {
 
     @Test
     public void testScrollRestoration_basicBackForward() {
-        open();
+        openTestWithBrowserSized();
 
         verifyView("ScrollView");
         verifyHistoryStatePosition("nan");
@@ -67,7 +68,7 @@ public class ScrollIT extends ChromeBrowserTest {
 
     @Test
     public void testScrollRestoration_pagesWithFraments() {
-        open();
+        openTestWithBrowserSized();
 
         verifyView("ScrollView");
         verifyHistoryStatePosition("nan");
@@ -80,25 +81,25 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView2#row5");
         verifyHistoryStatePosition("1");
-        verifyScroll(2044, 222);
+        verifyScroll(2037, 222);
 
         scrollYBy(-600, 600);
-        verifyScroll(2044 - 600, 222 + 600);
+        verifyScroll(2037 - 600, 222 + 600);
 
         clickLink("ScrollView#row3");
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("2");
-        verifyScroll(1044, 222 + 600);
+        verifyScroll(1037, 222 + 600);
 
         scrollYBy(-500, -500);
-        verifyScroll(1044 - 500, 222 + 600 - 500);
+        verifyScroll(1037 - 500, 222 + 600 - 500);
 
         back();
 
         verifyView("ScrollView2#row5");
         verifyHistoryStatePosition("1");
-        verifyScroll(2044 - 600, 222 + 600);
+        verifyScroll(2037 - 600, 222 + 600);
 
         back();
 
@@ -110,18 +111,18 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView2#row5");
         verifyHistoryStatePosition("1");
-        verifyScroll(2044 - 600, 222 + 600);
+        verifyScroll(2037 - 600, 222 + 600);
 
         forward();
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("2");
-        verifyScroll(1044 - 500, 222 + 600 - 500);
+        verifyScroll(1037 - 500, 222 + 600 - 500);
     }
 
     @Test
     public void testScrollRestoration_sameViewFragmentChanges() {
-        open();
+        openTestWithBrowserSized();
 
         verifyView("ScrollView");
         verifyHistoryStatePosition("nan");
@@ -135,10 +136,10 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("1");
-        verifyScroll(1044, 100);
+        verifyScroll(1037, 100);
 
         scrollYBy(-500, 200);
-        verifyScroll(1044 - 500, 100 + 200);
+        verifyScroll(1037 - 500, 100 + 200);
 
         back();
 
@@ -153,7 +154,7 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("1");
-        verifyScroll(1044 - 500, 100 + 200);
+        verifyScroll(1037 - 500, 100 + 200);
 
         back();
 
@@ -165,12 +166,12 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("1");
-        verifyScroll(1044 - 500, 100 + 200);
+        verifyScroll(1037 - 500, 100 + 200);
     }
 
     @Test
     public void testScrollRestoration_reclickingSameFragment_scrollsBackToFragmentButDoesntAddNewState() {
-        open();
+        openTestWithBrowserSized();
 
         verifyView("ScrollView");
         verifyHistoryStatePosition("nan");
@@ -179,33 +180,33 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("1");
-        verifyScroll(1044, 0);
+        verifyScroll(1037, 0);
 
         scrollYBy(-600, 0);
-        verifyScroll(1044 - 600, 0);
+        verifyScroll(1037 - 600, 0);
 
         clickLink("ScrollView#row3");
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("1");
-        verifyScroll(1044, 0);
+        verifyScroll(1037, 0);
 
         back();
 
         verifyView("ScrollView");
         verifyHistoryStatePosition("0");
-        verifyScroll(0, 0);
+        verifyScroll(1037, 0);
 
         forward();
 
         verifyView("ScrollView#row3");
         verifyHistoryStatePosition("1");
-        verifyScroll(1044, 0);
+        verifyScroll(1037, 0);
     }
 
     @Test
     public void testScrollRestoration_samePageFragmentNotRouterLink() {
-        open();
+        openTestWithBrowserSized();
 
         verifyView("ScrollView");
         verifyHistoryStatePosition("nan");
@@ -225,10 +226,10 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView3#row10");
         verifyHistoryStatePosition("2");
-        verifyScroll(4544, 0);
+        verifyScroll(4537, 0);
 
         scrollYBy(-1000, 0);
-        verifyScroll(4544 - 1000, 0);
+        verifyScroll(4537 - 1000, 0);
 
         back();
 
@@ -240,7 +241,7 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView3#row10");
         verifyHistoryStatePosition("2");
-        verifyScroll(4544 - 1000, 0);
+        verifyScroll(4537 - 1000, 0);
     }
 
     @Test
@@ -249,7 +250,7 @@ public class ScrollIT extends ChromeBrowserTest {
         Assert.assertTrue(
                 getDriver().getCurrentUrl().contains("dev.vaadin.com"));
 
-        open();
+        openTestWithBrowserSized();
 
         verifyView("ScrollView");
         verifyHistoryStatePosition("nan");
@@ -262,10 +263,10 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView2#row5");
         verifyHistoryStatePosition("1");
-        verifyScroll(2044, 222);
+        verifyScroll(2037, 222);
 
         scrollYBy(-600, 200);
-        verifyScroll(2044 - 600, 222 + 200);
+        verifyScroll(2037 - 600, 222 + 200);
 
         getDriver().get("https://dev.vaadin.com");
         Assert.assertTrue(
@@ -275,7 +276,7 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView2#row5");
         verifyHistoryStatePosition("1");
-        verifyScroll(2044 - 600, 222 + 200);
+        verifyScroll(2037 - 600, 222 + 200);
 
         back();
 
@@ -300,7 +301,12 @@ public class ScrollIT extends ChromeBrowserTest {
 
         verifyView("ScrollView2#row5");
         verifyHistoryStatePosition("1");
-        verifyScroll(2044 - 600, 222 + 200);
+        verifyScroll(2037 - 600, 222 + 200);
+    }
+
+    private void openTestWithBrowserSized() {
+        getDriver().manage().window().setSize(new Dimension(400, 400));
+        open();
     }
 
     private void back() {

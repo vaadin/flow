@@ -33,7 +33,7 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
 
         WebElement errorMessage = findElement(ERROR_LOCATOR);
         Assert.assertTrue(errorMessage.getText(),
-                errorMessage.getText().contains("null is not an object"));
+                errorMessage.getText().equals("(TypeError) : Cannot read property 'foo' of null"));
     }
 
     @Test
