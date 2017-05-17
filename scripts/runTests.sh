@@ -26,6 +26,12 @@ while [ "$1" != "" ]; do
          -full )         shift
                          full=1
                          ;;
+         -sonar )        shift
+                         sonar=1
+                         ;;
+         -sonaronly )    shift
+                         sonaronly=1
+                         ;;
          * )             usage
                          exit 1
     esac
@@ -58,6 +64,14 @@ fi
 
 if [ "$full" = "1" ]; then
    script=$script" -full"
+fi
+
+if [ "$sonar" = "1" ]; then
+   script=$script" -sonar"
+fi
+
+if [ "$sonaronly" = "1" ]; then
+   script=$script" -sonaronly"
 fi
 
 if [ -z $message ]; then

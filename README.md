@@ -82,6 +82,8 @@ In addition to required parameters you can provide:
 1. A commit message using <code>-message commitMessage</code>. This message will appear in the Travis Job. So you can identify your job using the message.
 1. The parameter <code>-javadoc</code>. The default validation executes only tests without checking javadocs.   <code>-javadoc</code> parameter requests javadoc validation in addition to the tests.
 1. The parameter <code>-full</code>. Some tests are excluded from validation for various reasons (e.g. slow tests, etc.). This parameter requests all tests execution (not only validation).
+1. The parameter <code>-sonar</code>. In addition to validation (running the tests) it requests Sonar Qube sources analysis.
+1. The parameter <code>-sonaronly</code>. This parameter requests Sonar Qube analysis only (without tests).
 
 Building a package
 =====
