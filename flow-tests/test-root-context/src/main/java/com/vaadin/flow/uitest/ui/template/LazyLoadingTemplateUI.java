@@ -20,8 +20,6 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.server.StreamResource;
@@ -30,7 +28,6 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UI;
 
-@WebComponents(PolyfillVersion.V1)
 public class LazyLoadingTemplateUI extends UI {
 
     @Tag("lazy-widget")

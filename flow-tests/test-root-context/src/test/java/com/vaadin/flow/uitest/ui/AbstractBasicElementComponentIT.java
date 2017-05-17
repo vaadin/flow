@@ -8,9 +8,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public abstract class AbstractBasicElementComponentIT extends PhantomJSTest {
+public abstract class AbstractBasicElementComponentIT extends ChromeBrowserTest {
 
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {

@@ -19,9 +19,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class FormIT extends PhantomJSTest {
+public class FormIT extends ChromeBrowserTest {
 
     @Test
     public void updateServerSide() {

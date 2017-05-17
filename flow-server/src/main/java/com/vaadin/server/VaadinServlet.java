@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -32,8 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.shared.JsonConstants;
@@ -70,7 +69,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      *             servlet's normal operation.
      */
     @Override
-    public void init(javax.servlet.ServletConfig servletConfig)
+    public void init(ServletConfig servletConfig)
             throws ServletException {
         verifyServletVersion();
         CurrentInstance.clearAll();
@@ -181,13 +180,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
                             e);
                 }
             }
-        }
-        Optional<WebComponents> webComponents = AnnotationReader
-                .getAnnotationFor(getClass(), WebComponents.class);
-        if (webComponents.isPresent()
-                && webComponents.get().value() == PolyfillVersion.V1) {
-            initParameters.setProperty(Constants.WEB_COMPONENTS,
-                    String.valueOf(1));
         }
     }
 

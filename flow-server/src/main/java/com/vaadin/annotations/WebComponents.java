@@ -26,38 +26,18 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.UI;
 
 /**
- * Allows to specify polyfill (webcomponentsjs) version to use, and other
- * configurations related to web components in general.
- * {@link PolyfillVersion#V0} is used by default.
+ * Allows to configure polyfill (webcomponents.js) for Flow application.
  * <p>
- * Add the annotation to your {@link UI} or {@link VaadinServlet} class and
- * specify the polyfill version using {@link #value()}.
+ * In order to set the settings, add the annotation to your {@link UI} or
+ * {@link VaadinServlet} class.
  *
  * @author Vaadin Ltd
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
 @Inherited
 public @interface WebComponents {
-
-    /**
-     * Enumeration of all versions of the webcomponents.js polyfill supported by
-     * the framework.
-     */
-    enum PolyfillVersion {
-        V0, V1;
-    }
-
-    /**
-     * Gets polyfill version to use.
-     * <p>
-     * {@link PolyfillVersion#V0} is used by default.
-     * 
-     * @return which polyfill version to use
-     */
-    PolyfillVersion value() default PolyfillVersion.V0;
 
     /**
      * Gets whether the application should load the ES5 adapter polyfill. This

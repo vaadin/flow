@@ -3,10 +3,10 @@ package com.vaadin.flow.uitest.ui.scroll;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
-public class ScrollIT extends PhantomJSTest {
+public class ScrollIT extends ChromeBrowserTest {
 
     // PhantomJS scroll position may differ a little locally and in Travis
     private static final int allowedScrollVariance = 5;

@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class RouterLinkIT extends PhantomJSTest {
+public class RouterLinkIT extends ChromeBrowserTest {
 
     @Test
     public void testRoutingLinks_insideServletMapping_updateLocation() {

@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * A test that ensures correct order of dependencies loaded. Test corresponds to
@@ -28,7 +28,7 @@ import com.vaadin.flow.testutil.PhantomJSTest;
  * @see DependenciesLoadingPageApiUI
  * @see DependenciesLoadingPageApiIT
  */
-public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
+public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     private static final String EAGER_PREFIX = "eager.";
     private static final String LAZY_PREFIX = "lazy.";
 
@@ -63,11 +63,9 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                 "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded",
                 testMessages.get(2).equals(DOM_CHANGE_TEXT));
 
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager",
+        Assert.assertTrue("Lazy dependencies should be loaded after eager",
                 testMessages.get(3).startsWith(LAZY_PREFIX));
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager",
+        Assert.assertTrue("Lazy dependencies should be loaded after eager",
                 testMessages.get(4).startsWith(LAZY_PREFIX));
     }
 
@@ -75,9 +73,11 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
         findElements(By.tagName("script")).stream()
                 // FW needs this element to be loaded asap, that's why it's an
                 // exclusion
-                .filter(javaScriptImport -> !javaScriptImport
-                        .getAttribute("src").endsWith("es6-collections.js"))
-                .forEach(javaScriptImport -> {
+                .filter(javaScriptImport -> {
+                    String jsUrl = javaScriptImport.getAttribute("src");
+                    return !jsUrl.endsWith("es6-collections.js")
+                            && !jsUrl.endsWith("webcomponents-lite.js");
+                }).forEach(javaScriptImport -> {
                     Assert.assertEquals(
                             String.format(
                                     "All javascript dependencies should be loaded with 'defer' attribute. Dependency with url %s does not have this attribute",
