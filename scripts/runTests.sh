@@ -2,7 +2,7 @@
 
 function usage
 {
-    echo "usage: $0 -branch branch_name -token api_token [-message commit_message] [-cfile certificate_file] [-javadoc] [-full]"
+    echo "usage: $0 -branch branch_name -token api_token [-message commit_message] [-cfile certificate_file] [-javadoc] [-all-tests] [-sonar] [-sonaronly]"
     echo "See README.md for parameter details"
 }
 
@@ -20,11 +20,13 @@ while [ "$1" != "" ]; do
          -token )        shift
                          token=$1
                          ;;
-         -javadoc )      shift
-                         javadoc=1
+         -javadoc )      javadoc=1
                          ;;
-         -full )         shift
-                         full=1
+         -all-tests )    full=1
+                         ;;
+         -sonar )        sonar=1
+                         ;;
+         -sonaronly )    sonaronly=1
                          ;;
          * )             usage
                          exit 1
@@ -57,7 +59,15 @@ if [ "$javadoc" = "1" ]; then
 fi
 
 if [ "$full" = "1" ]; then
-   script=$script" -full"
+   script=$script" -all-tests"
+fi
+
+if [ "$sonar" = "1" ]; then
+   script=$script" -sonar"
+fi
+
+if [ "$sonaronly" = "1" ]; then
+   script=$script" -sonaronly"
 fi
 
 if [ -z $message ]; then
