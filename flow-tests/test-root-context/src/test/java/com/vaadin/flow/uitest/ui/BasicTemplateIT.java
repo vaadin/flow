@@ -65,16 +65,16 @@ public class BasicTemplateIT extends ChromeBrowserTest {
         childSlotContent.click();
         Assert.assertFalse(isElementPresent(By.className(".childSlotContent")));
 
-        assertModelValue("", false);
+        assertModelValue("", "null", false);
 
         findElement(By.id("modelText")).click();
-        assertModelValue("text", true);
+        assertModelValue("text", "text", true);
 
         findElement(By.id("modelBoolean")).click();
-        assertModelValue("false", false);
+        assertModelValue("false", "false", false);
 
         findElement(By.id("clearModel")).click();
-        assertModelValue("", false);
+        assertModelValue("", "null", false);
 
         findElement(By.id("updateAttributeBinding")).click();
         String value = findElement(By.id("attributeBinding"))
@@ -88,12 +88,12 @@ public class BasicTemplateIT extends ChromeBrowserTest {
         Assert.assertEquals("placeholder", input.getAttribute("placeholder"));
     }
 
-    private void assertModelValue(String text, boolean classPresent) {
+    private void assertModelValue(String text, String title, boolean classPresent) {
         WebElement element = findElement(By.id("bindings"));
 
         Assert.assertEquals(text, element.getText());
         // Set as a property, but reflected to an attribute in the browser
-        Assert.assertEquals(text, element.getAttribute("title"));
+        Assert.assertEquals(title, element.getAttribute("title"));
 
         if (classPresent) {
             Assert.assertEquals("name", element.getAttribute("class"));
