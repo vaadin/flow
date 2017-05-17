@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.Prerenderer;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.server.BootstrapHandler.PreRenderMode;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Component;
@@ -185,7 +186,7 @@ public class BootstrapHandlerTest {
         service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
                 deploymentConfiguration));
 
-        session = new MockVaadinSession(service);
+        session = Mockito.spy(new MockVaadinSession(service));
         session.lock();
         session.setConfiguration(deploymentConfiguration);
         testUI.getInternals().setSession(session);
@@ -536,6 +537,115 @@ public class BootstrapHandlerTest {
 
         Mockito.verify(service, Mockito.times(2))
                 .processBootstrapListeners(Mockito.anyList());
+    }
+
+    @Test
+    public void testFrontendProtocolInProductionMode() {
+        deploymentConfiguration.setProductionMode(true);
+
+        Mockito.when(session.getBrowser()).thenReturn(new WebBrowser() {
+            @Override
+            public boolean isEs6Supported() {
+                return true;
+            }
+        });
+
+        String resolvedContext = context.getUriResolver()
+                .resolveVaadinUri(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
+
+        String urlES6 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
+
+        assertEquals(ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE
+                .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
+                        resolvedContext)
+                + "foo", urlES6);
+
+        Mockito.when(session.getBrowser()).thenReturn(new WebBrowser() {
+            @Override
+            public boolean isEs6Supported() {
+                return false;
+            }
+        });
+
+        String urlES5 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
+
+        assertEquals(ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE
+                .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
+                        resolvedContext)
+                + "foo", urlES5);
+
+        Mockito.verify(session, Mockito.times(3)).getBrowser();
+    }
+
+    @Test
+    public void testFrontendProtocolNotInProductionMode() {
+        deploymentConfiguration.setProductionMode(false);
+
+        Mockito.when(session.getBrowser()).thenReturn(new WebBrowser() {
+            @Override
+            public boolean isEs6Supported() {
+                return true;
+            }
+        });
+
+        String resolvedContext = context.getUriResolver()
+                .resolveVaadinUri(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
+
+        String urlES6 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
+
+        assertEquals(resolvedContext + "foo", urlES6);
+
+        Mockito.when(session.getBrowser()).thenReturn(new WebBrowser() {
+            @Override
+            public boolean isEs6Supported() {
+                return false;
+            }
+        });
+
+        String urlES5 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
+
+        assertEquals(resolvedContext + "foo", urlES5);
+
+        Mockito.verify(session, Mockito.times(3)).getBrowser();
+    }
+
+    @Test
+    public void testFrontendProtocolNotInProductionModeWithProperties() {
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                Constants.FRONTEND_URL_ES6, "bar/es6/");
+        deploymentConfiguration.setApplicationOrSystemProperty(
+                Constants.FRONTEND_URL_ES5, "bar/es5/");
+
+        Mockito.when(session.getBrowser()).thenReturn(new WebBrowser() {
+            @Override
+            public boolean isEs6Supported() {
+                return true;
+            }
+        });
+
+        String urlES6 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
+
+        assertEquals("bar/es6/foo", urlES6);
+
+        Mockito.when(session.getBrowser()).thenReturn(new WebBrowser() {
+            @Override
+            public boolean isEs6Supported() {
+                return false;
+            }
+        });
+
+        String urlES5 = context.getUriResolver().resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
+
+        assertEquals("bar/es5/foo", urlES5);
+
+        Mockito.verify(session, Mockito.times(3)).getBrowser();
     }
 
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {
