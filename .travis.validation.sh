@@ -5,17 +5,13 @@
 
 while [ "$1" != "" ]; do
     case $1 in
-         -javadoc )      shift
-                         javadoc=1
+         -javadoc )      javadoc=1
                          ;;
-         -all-tests )    shift
-                         full=1
+         -all-tests )    full=1
                          ;;
-         -sonar )        shift
-                         sonar=1
+         -sonar )        sonar=1
                          ;;
-         -sonaronly )    shift
-                         sonaronly=1
+         -sonaronly )    sonaronly=1
                          ;;
     esac
     shift
