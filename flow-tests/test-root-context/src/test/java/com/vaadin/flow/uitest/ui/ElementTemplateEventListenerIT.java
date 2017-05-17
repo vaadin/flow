@@ -21,13 +21,13 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class ElementTemplateEventListenerIT extends PhantomJSTest {
+public class ElementTemplateEventListenerIT extends ChromeBrowserTest {
 
     @Before
     public void setUp() {

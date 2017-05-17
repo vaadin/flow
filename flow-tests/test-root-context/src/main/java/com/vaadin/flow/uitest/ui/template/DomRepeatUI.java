@@ -18,12 +18,9 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@WebComponents(PolyfillVersion.V1)
 public class DomRepeatUI extends UI {
     static final int NUMBER_OF_EMPLOYEES = 3;
     static final String EVENT_INDEX_ID = "eventIndex";

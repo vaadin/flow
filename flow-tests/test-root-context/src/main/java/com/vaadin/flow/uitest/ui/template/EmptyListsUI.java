@@ -20,15 +20,12 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.html.Button;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@WebComponents(PolyfillVersion.V1)
 public class EmptyListsUI extends UI {
 
     @HtmlImport("/com/vaadin/flow/uitest/ui/template/EmptyLists.html")

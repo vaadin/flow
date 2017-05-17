@@ -22,9 +22,9 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class BasicTemplateIT extends PhantomJSTest {
+public class BasicTemplateIT extends ChromeBrowserTest {
 
     @Test
     public void testBasicTemplate() {
