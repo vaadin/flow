@@ -23,8 +23,14 @@ while [ "$1" != "" ]; do
          -javadoc )      shift
                          javadoc=1
                          ;;
-         -full )         shift
+         -all-tests )    shift
                          full=1
+                         ;;
+         -sonar )        shift
+                         sonar=1
+                         ;;
+         -sonaronly )    shift
+                         sonaronly=1
                          ;;
          * )             usage
                          exit 1
@@ -57,7 +63,15 @@ if [ "$javadoc" = "1" ]; then
 fi
 
 if [ "$full" = "1" ]; then
-   script=$script" -full"
+   script=$script" -all-tests"
+fi
+
+if [ "$sonar" = "1" ]; then
+   script=$script" -sonar"
+fi
+
+if [ "$sonaronly" = "1" ]; then
+   script=$script" -sonaronly"
 fi
 
 if [ -z $message ]; then
