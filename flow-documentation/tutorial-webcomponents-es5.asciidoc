@@ -168,6 +168,7 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 ----
 <properties>
   <jetty.version>9.4.5.v20170502</jetty.version>
+  <frontend.working.directory>src/main/frontend</frontend.working.directory>
   <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
 </properties>
 
@@ -183,9 +184,31 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                   <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                   <resourceBases>
                       <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                      <resourceBase>${project.basedir}/src/main/frontend</resourceBase>
+                      <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
                   </resourceBases>
               </webAppConfig>
+          </configuration>
+      </plugin>
+
+      <plugin>  <!--2-->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+              <filesets>
+                  <fileset>
+                      <directory>${frontend.working.directory}/bower_components</directory>
+                  </fileset>
+                  <fileset>
+                      <directory>${frontend.working.directory}/build</directory>
+                  </fileset>
+                  <fileset>
+                      <directory>${frontend.working.directory}/node</directory>
+                  </fileset>
+                  <fileset>
+                      <directory>${frontend.working.directory}/node_modules</directory>
+                  </fileset>
+              </filesets>
           </configuration>
       </plugin>
   </plugins>
@@ -201,14 +224,14 @@ Jetty Plugin, by using the `mvn jetty:run` command.
     </activation>
     <build>
         <plugins>
-            <plugin> <!--2-->
+            <plugin> <!--3-->
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.4</version>
                 <configuration>
                     <nodeVersion>v6.9.1</nodeVersion>
                     <yarnVersion>v0.22.0</yarnVersion>
-                    <workingDirectory>src/main/frontend</workingDirectory>
+                    <workingDirectory>${frontend.working.directory}</workingDirectory>
                 </configuration>
                 <executions>
                     <execution>
@@ -226,14 +249,14 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                 </executions>
             </plugin>
 
-            <plugin> <!--3-->
+            <plugin> <!--4-->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
                     <webResources>
                         <resource>
-                            <directory>src/main/frontend/build</directory>
+                            <directory>${frontend.working.directory}/build</directory>
                             <targetPath>${vaadin.frontend.path}</targetPath>
                         </resource>
                     </webResources>
@@ -252,14 +275,14 @@ Jetty Plugin, by using the `mvn jetty:run` command.
       </activation>
       <build>
           <plugins>
-              <plugin> <!--4-->
+              <plugin> <!--5-->
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-war-plugin</artifactId>
                   <version>3.0.0</version>
                   <configuration>
                       <webResources>
                           <resource>
-                              <directory>src/main/frontend</directory>
+                              <directory>${frontend.working.directory}</directory>
                               <excludes>
                                   <exclude>build/**</exclude>
                               </excludes>
@@ -274,10 +297,11 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 ----
 
 <1> Configures the jetty plugin to use the extra resource folder
-<2> Configures the frontend plugin to compile the web components source
-<3> Copies the files compiled by Polymer to a directory from where it can be
+<2> Configures the cleanup process for JS dependencies and build
+<3> Configures the frontend plugin to compile the web components source
+<4> Copies the files compiled by Polymer to a directory from where it can be
 served (root of the WAR) when in production mode
-<4> Adds the files from src/main/frontend directly into the WAR when in debug
+<5> Adds the files from src/main/frontend directly into the WAR when in debug
 mode
 
 === Production mode
