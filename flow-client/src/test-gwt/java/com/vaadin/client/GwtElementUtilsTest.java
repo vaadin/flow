@@ -165,13 +165,13 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
     }
 
     public void testAttachExistingElementById_elementExistsInDom() {
-        Element shadowRoot = setupShadowRoot();
+        setupShadowRoot();
 
         String id = "identifier";
 
         Element child = Browser.getDocument().createElement("div");
         child.setAttribute("id", id);
-        shadowRoot.appendChild(child);
+        addChildElement(element, child);
 
         ElementUtils.attachExistingElementById(node,
                 "div", requestedId, id);
@@ -189,13 +189,12 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
     }
 
     public void testAttachExistingElementById_elementIsAlreadyAssociated() {
-        Element shadowRoot = setupShadowRoot();
-
+        setupShadowRoot();
         String id = "identifier";
 
         Element child = Browser.getDocument().createElement("div");
         child.setAttribute("id", id);
-        shadowRoot.appendChild(child);
+        addChildElement(element, child);
 
 
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
@@ -215,70 +214,21 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
         assertRpcToServerArguments(99, child.getTagName(), id);
     }
 
-    // This test emulates FireFox that doesn't hide element children under shadowRoot
-    public void testAttachExistingElementById_elementOutsideShadowRoot() {
-        Browser.getDocument().getBody().appendChild(element);
-        setupShadowRoot();
-
-        String id = "identifier";
-
-        Element child = Browser.getDocument().createElement("div");
-        child.setAttribute("id", id);
-        element.appendChild(child);
-
-        ElementUtils.attachExistingElementById(node,
-                "div", requestedId, id);
-
-        assertRpcToServerArguments(requestedId, child.getTagName(), id);
-    }
-
-    // This test emulates Edge that doesn't support requesting getElementById from shadowRoot
-    public void testAttachExistingElementById_noByIdMethodInShadowRoot() {
-        Browser.getDocument().getBody().appendChild(element);
-        Element shadowRoot = addShadowRootWithoutGetElementById(element);
+    private void setupShadowRoot() {
+        setupParent(element);
 
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         map.getProperty(NodeFeatures.SHADOW_ROOT).setValue(new StateNode(34, tree));
-
-        String id = "identifier";
-
-        Element child = Browser.getDocument().createElement("div");
-        child.setAttribute("id", id);
-        element.appendChild(child);
-
-        ElementUtils.attachExistingElementById(node,
-                "div", requestedId, id);
-
-        assertRpcToServerArguments(requestedId, child.getTagName(), id);
     }
 
-    private Element setupShadowRoot() {
-        Element shadowRoot = addShadowRoot(element);
-
-        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        map.getProperty(NodeFeatures.SHADOW_ROOT).setValue(new StateNode(34, tree));
-
-        return shadowRoot;
-    }
-
-    private native Element addShadowRoot(Element element) /*-{
-        element.shadowRoot = $doc.createElement("div");
-        element.shadowRoot.getElementById = function(id) {
-            var children = element.shadowRoot.children;
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                if(child.getAttribute("id") === id) {
-                    return child;
-                }
-            }
+    private native void setupParent(Element element) /*-{
+        element.$ = function() {
+            return element;
         }
-
-        return element.shadowRoot;
     }-*/;
 
-    private native Element addShadowRootWithoutGetElementById(Element element) /*-{
-        element.shadowRoot = $doc.createElement("div");
-        return element.shadowRoot;
+    private native void addChildElement(Element parent, Element child) /*-{
+        parent.$[child.getAttribute("id")] = child;
     }-*/;
 
     private void assertRpcToServerArguments(int associatedId, String tagName,
