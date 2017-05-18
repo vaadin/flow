@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
@@ -15,6 +16,7 @@ import com.vaadin.flow.shared.NodeFeatures;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.json.JsonArray;
+import elemental.json.JsonValue;
 
 /**
  * @author Vaadin Ltd.
@@ -208,6 +210,24 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
         assertUpdateListValues(nodeWithList);
     }
+
+    public void testPolymerUtilsStoreNodeIdNotAvailableAsListItem() {
+        nextId = 98;
+        List<String> serverList = Arrays.asList("one", "two");
+        StateNode andAttachNodeWithList = createAndAttachNodeWithList(modelNode,
+                serverList);
+
+        JsonValue jsonValue = PolymerUtils.convertToJson(andAttachNodeWithList);
+
+        assertFalse(
+                "JsonValue array contained nodeId even though it shouldn't be visible",
+                jsonValue.toJson().contains(getNodeId(jsonValue).toString()));
+        assertEquals(98, getNodeId(jsonValue).intValue());
+    }
+
+    private native Number getNodeId(Object o) /*-{
+        return o.nodeId;
+    }-*/;
 
     @Override
     protected StateNode createNode() {
