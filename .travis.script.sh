@@ -7,6 +7,9 @@
 
 export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
+# The Following line fixes random Chrome startup failures (https://github.com/SeleniumHQ/docker-selenium/issues/87)
+export DBUS_SESSION_BUS_ADDRESS=/dev/null
+
 if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
 then
     # Pull request for master with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available

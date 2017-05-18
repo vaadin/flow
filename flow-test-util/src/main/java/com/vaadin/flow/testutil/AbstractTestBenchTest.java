@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -255,7 +256,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             Browser... browsers) {
         List<DesiredCapabilities> capabilities = new ArrayList<>();
         for (Browser browser : browsers) {
-            capabilities.add(browser.getDesiredCapabilities());
+            DesiredCapabilities desiredCapabilities = browser.getDesiredCapabilities();
+            if (browser == Browser.CHROME) {
+                ChromeOptions chromeOptions = new ChromeOptions();
+                chromeOptions.addArguments("--no-sandbox");
+                desiredCapabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+            }
+            capabilities.add(desiredCapabilities);
         }
         return capabilities;
     }
