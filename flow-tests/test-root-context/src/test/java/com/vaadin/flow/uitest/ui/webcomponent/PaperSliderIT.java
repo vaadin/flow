@@ -15,48 +15,64 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import java.util.List;
+import static org.hamcrest.CoreMatchers.is;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class PaperSliderIT extends PhantomJSTest {
+public class PaperSliderIT extends ChromeBrowserTest {
 
     @Test
     public void domCorrect() {
         open();
-        List<WebElement> progress = findElements(By.xpath("//paper-progress"));
-        // Paper-slider uses <paper-progress> internally so if everything is
-        // setup correctly, it should be found in the DOM
-        Assert.assertEquals(1, progress.size());
-    }
 
-    @Test
-    public void changeValueFromServer() {
-        open();
-        WebElement changeValue = findElement(
-                By.id(PaperSliderView.CHANGE_VALUE_ID));
-        changeValue.click();
-        WebElement valueText = findElement(
+        WebElement eventField = findElement(
                 By.id(PaperSliderView.VALUE_TEXT_ID));
+        Assert.assertNotNull("No text value found on the page", eventField);
 
-        // This should really be (set on server).
-        // Depends on https://github.com/vaadin/flow/issues/792
-        Assert.assertEquals("Value: 50 (set on client)", valueText.getText());
+        WebElement paperSlider = findElement(By.tagName("paper-slider"));
+        Assert.assertNotNull("No slider found on the page", paperSlider);
+
+        int initialValue = 0;
+
+        assertSliderValue(paperSlider, initialValue);
+
+        changeSliderValueViaApi(eventField, paperSlider,
+                initialValue + 1);
+        changeSliderValueViaButton(eventField, paperSlider,
+                PaperSliderView.UPDATED_VALUE);
     }
 
-    @Test
-    public void changeValueFromClientByJSApi() {
-        open();
-        WebElement paperSlider = findElement(By.xpath("//paper-slider"));
+    private void changeSliderValueViaApi(WebElement eventField,
+                                         WebElement paperSlider, int expectedValue) {
         executeScript("arguments[0].increment()", paperSlider);
+        assertSliderValue(paperSlider, expectedValue);
+        assertEventFieldValue(eventField, expectedValue);
+    }
 
-        WebElement valueText = findElement(
-                By.id(PaperSliderView.VALUE_TEXT_ID));
-        Assert.assertEquals("Value: 76 (set on client)", valueText.getText());
+    private void changeSliderValueViaButton(WebElement eventField,
+            WebElement paperSlider, int expectedValue) {
+        findElement(By.id(PaperSliderView.CHANGE_VALUE_ID)).click();
+        assertSliderValue(paperSlider, expectedValue);
+        assertEventFieldValue(eventField, expectedValue);
+    }
+
+    private static void assertSliderValue(WebElement paperSlider,
+            int expectedValue) {
+        Assert.assertThat("Slider has incorrect value",
+                Integer.valueOf(paperSlider.getAttribute("value")),
+                is(expectedValue));
+    }
+
+    private static void assertEventFieldValue(WebElement eventField,
+            int expectedValue) {
+        Assert.assertThat(
+                "Expected event field to be updated after slider value was changed",
+                eventField.getText(),
+                is(String.format("Value: %s (set on client)", expectedValue)));
     }
 }

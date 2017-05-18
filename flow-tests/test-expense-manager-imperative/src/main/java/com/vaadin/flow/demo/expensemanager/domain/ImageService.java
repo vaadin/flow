@@ -12,9 +12,9 @@ import javax.imageio.ImageIO;
 import javax.servlet.http.Part;
 
 public class ImageService {
-    
+
     public static final ImageService INSTANCE = new ImageService();
-    
+
     public String partToData(Part filePart) throws IOException {
         BufferedImage imBuff = ImageIO.read(filePart.getInputStream());
         imBuff = scaleImage(imBuff, 400, 400, true, true);
@@ -34,7 +34,7 @@ public class ImageService {
                 targetWidth = (int)(targetHeight * rel);
             }
         }
-    
+
         int type = (img.getTransparency() == Transparency.OPAQUE) ?
                 BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
         BufferedImage ret = (BufferedImage) img;
@@ -73,11 +73,11 @@ public class ImageService {
             prevH = h;
             ret = scratchImage;
         } while (w != targetWidth || h != targetHeight);
-    
+
         if (g2 != null) {
             g2.dispose();
         }
-    
+
         if (targetWidth != ret.getWidth() || targetHeight != ret.getHeight()) {
             scratchImage = new BufferedImage(targetWidth, targetHeight, type);
             g2 = scratchImage.createGraphics();

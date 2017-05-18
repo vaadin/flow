@@ -71,7 +71,7 @@ public class LazyLoadingTemplateUI extends UI {
     private StreamResource getHtmlImportResource() {
         return new StreamResource("LazyWidget.html", () -> {
             // @formatter:off
-            String js = "<link rel='import' href='/v2/bower_components/polymer/polymer.html'>"+
+            String js = "<link rel='import' href='/bower_components/polymer/polymer.html'>"+
             "<dom-module id='lazy-widget'>"+
                   "<template>"+
                     "<div id='msg' >[[text]]</div>"+
