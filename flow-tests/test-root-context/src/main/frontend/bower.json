@@ -2,7 +2,6 @@
   "name": "test-root-context",
   "homepage": "https://github.com/vaadin/flow",
   "authors": [
-    "Artur Signell <artur@vaadin.com>"
   ],
   "description": "",
   "main": "",
@@ -16,9 +15,7 @@
     "tests"
   ],
   "dependencies": {
-    "paper-slider": "1.0.11",
-    "progress-bubble": "1.3.0",
-    "polymer": "1.5.0"
+    "polymer": "2.0.0",
+    "paper-slider": "2.0.0"
   }
 }
-

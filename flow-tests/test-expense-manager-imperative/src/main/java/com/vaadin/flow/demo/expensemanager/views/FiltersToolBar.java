@@ -1,8 +1,6 @@
 package com.vaadin.flow.demo.expensemanager.views;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.flow.components.paper.PaperButton;

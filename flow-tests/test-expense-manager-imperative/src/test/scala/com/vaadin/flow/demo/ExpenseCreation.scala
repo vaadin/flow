@@ -1,10 +1,5 @@
 package scala.com.vaadin.flow.demo
 
-import io.gatling.core.Predef._
-import io.gatling.http.Predef._
-
-import scala.concurrent.duration._
-
 class ExpenseCreation extends Simulation {
 
   val httpProtocol = http
