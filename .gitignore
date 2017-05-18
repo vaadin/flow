@@ -33,4 +33,5 @@ node_modules
 
 # Selenium driver folders
 selenium_standalone_zips
+driver_zips
 driver

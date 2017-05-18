@@ -99,16 +99,16 @@
                     <plugin>
                         <groupId>com.lazerycode.selenium</groupId>
                         <artifactId>driver-binary-downloader-maven-plugin</artifactId>
-                        <version>1.0.10</version>
+                        <version>${driver.binary.downloader.maven.plugin.version}</version>
                         <configuration>
-                            <!-- root directory that downloaded driver binaries
-                                will be stored in -->
                             <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>driver</rootStandaloneServerDirectory>
-                            <customRepositoryMap>repo.xml</customRepositoryMap>
+                            <rootStandaloneServerDirectory>../driver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>../driver_zips</downloadedZipFileDirectory>
+                            <customRepositoryMap>../repo.xml</customRepositoryMap>
                         </configuration>
                         <executions>
                             <execution>
+                                <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>selenium</goal>
                                 </goals>
