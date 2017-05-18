@@ -94,7 +94,7 @@
                                 Bower files available for jetty:run when run from command line (Eclipse profile
                                 handles Eclipse) -->
                             <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                            <resourceBase>${project.basedir}/${bower.working.directory}</resourceBase>
+                            <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
                         </resourceBases>
                     </webAppConfig>
                     <scanIntervalSeconds>-1</scanIntervalSeconds>
@@ -197,7 +197,7 @@
                                     <!-- these paths are relative to the
                                         project where the profile is triggered -->
                                     <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                                    <resourceBase>${project.basedir}/${bower.working.directory}</resourceBase>
+                                    <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-server/src/main/resources/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>

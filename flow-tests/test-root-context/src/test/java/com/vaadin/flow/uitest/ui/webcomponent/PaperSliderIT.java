@@ -37,7 +37,6 @@ public class PaperSliderIT extends ChromeBrowserTest {
         WebElement paperSlider = findElement(By.tagName("paper-slider"));
         Assert.assertNotNull("No slider found on the page", paperSlider);
 
-        // TODO initial value should be PaperSliderView.INITIAL_VALUE, see #1607
         int initialValue = 0;
 
         assertSliderValue(paperSlider, initialValue);

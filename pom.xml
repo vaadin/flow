@@ -59,7 +59,7 @@
         <!--Frontend-->
         <node.version>v7.10.0</node.version>
         <npm.version>4.6.1</npm.version>
-        <bower.working.directory>src/main/frontend</bower.working.directory>
+        <frontend.working.directory>src/main/frontend</frontend.working.directory>
     </properties>
 
     <repositories>
@@ -263,16 +263,16 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${bower.working.directory}/bower_components</directory>
+                            <directory>${frontend.working.directory}/bower_components</directory>
                         </fileset>
                         <fileset>
-                            <directory>${bower.working.directory}/build</directory>
+                            <directory>${frontend.working.directory}/build</directory>
                         </fileset>
                         <fileset>
-                            <directory>${bower.working.directory}/node</directory>
+                            <directory>${frontend.working.directory}/node</directory>
                         </fileset>
                         <fileset>
-                            <directory>${bower.working.directory}/node_modules</directory>
+                            <directory>${frontend.working.directory}/node_modules</directory>
                         </fileset>
                     </filesets>
                 </configuration>

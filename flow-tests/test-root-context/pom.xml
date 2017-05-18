@@ -65,7 +65,7 @@
                             <goal>bower</goal> <!-- runs 'install' by default -->
                         </goals>
                         <configuration>
-                            <workingDirectory>${bower.working.directory}</workingDirectory>
+                            <workingDirectory>${frontend.working.directory}</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -78,7 +78,7 @@
                     <webResources>
                         <resource>
                             <!-- this is relative to the pom.xml directory -->
-                            <directory>${bower.working.directory}</directory>
+                            <directory>${frontend.working.directory}</directory>
                         </resource>
                     </webResources>
                 </configuration>
