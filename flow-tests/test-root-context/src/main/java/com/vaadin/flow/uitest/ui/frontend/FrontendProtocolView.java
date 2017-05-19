@@ -23,7 +23,7 @@ import com.vaadin.ui.HasComponents;
 
 /**
  * Wrapper view for the {@link FrontendProtocolTemplate} component. This class
- * is used by the {@link FrontendProtocolIT} to test the "frontend://" protocol
+ * is used by the FrontendProtocolIT to test the "frontend://" protocol
  * in multiple scenarios.
  */
 @Tag("div")
