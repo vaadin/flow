@@ -24,7 +24,6 @@ import com.vaadin.shared.communication.PushMode;
  *
  */
 public interface Constants {
-
     String NOT_PRODUCTION_MODE_INFO = "\n"
             + "=================================================================\n"
             + "Vaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
@@ -35,12 +34,6 @@ public interface Constants {
     String WARNING_XSRF_PROTECTION_DISABLED = "\n"
             + "===========================================================\n"
             + "WARNING: Cross-site request forgery protection is disabled!\n"
-            + "===========================================================";
-
-    String WARNING_RESOURCE_CACHING_TIME_NOT_NUMERIC = "\n"
-            + "===========================================================\n"
-            + "WARNING: resourceCacheTime has been set to a non integer value "
-            + "in web.xml. The default of 1h will be used.\n"
             + "===========================================================";
 
     String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = "\n"
@@ -87,13 +80,6 @@ public interface Constants {
             + ".\n"
             + "=================================================================";
 
-    String PUSH_NOT_SUPPORTED_ERROR = "\n"
-            + "=================================================================\n"
-            + "Push is not supported for {0}\n" + "Will fall back to using "
-            + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
-            + ".\n"
-            + "=================================================================";
-
     String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = "\n"
             + "=================================================================\n"
             + "Vaadin was unable to acquire class loader from servlet container\n"
@@ -106,7 +92,6 @@ public interface Constants {
     String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
     // Javadocs for VaadinService should be updated if this value is changed
     String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
-    String SERVLET_PARAMETER_RESOURCE_CACHE_TIME = "resourceCacheTime";
     String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = "heartbeatInterval";
     String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
     String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
@@ -114,12 +99,6 @@ public interface Constants {
     String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
     String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
     String SERVLET_PARAMETER_ROUTER_CONFIGURATOR = "routerConfigurator";
-
-    int MAX_BUFFER_SIZE = 64 * 1024;
-
-    String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
-
-    String WEB_COMPONENTS = "webComponents";
 
     /**
      * Configuration name for loading the ES5 adapter.
@@ -140,5 +119,4 @@ public interface Constants {
      * Configuration name for the build URL of ES5 web components.
      */
     String FRONTEND_URL_ES5 = "frontend.url.es5";
-
 }

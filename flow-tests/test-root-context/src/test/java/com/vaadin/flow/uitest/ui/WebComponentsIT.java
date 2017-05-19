@@ -26,25 +26,23 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class WebComponentsIT extends PhantomJSTest {
+public class WebComponentsIT extends ChromeBrowserTest {
 
     @Test
     public void testPolyfillLoaded() {
         open();
 
         assertScriptLoadedWithoutErrors(driver,
-                "/server/webcomponents-lite.min.js");
+                "/server/webcomponents-lite.js");
     }
 
     public static void assertScriptLoadedWithoutErrors(WebDriver driver,
             String scriptSrcContents) {
         Assert.assertTrue(driver.findElements(By.tagName("script")).stream()
-                .anyMatch(element -> {
-                    return element.getAttribute("src")
-                            .contains(scriptSrcContents);
-                }));
+                .anyMatch(element -> element.getAttribute("src")
+                        .contains(scriptSrcContents)));
 
         LogEntries logs = driver.manage().logs().get("browser");
         if (logs != null) {

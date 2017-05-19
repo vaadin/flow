@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class PageTitleIT extends PhantomJSTest {
+public class PageTitleIT extends ChromeBrowserTest {
 
     @Test
     public void testPageTitleUpdates() {

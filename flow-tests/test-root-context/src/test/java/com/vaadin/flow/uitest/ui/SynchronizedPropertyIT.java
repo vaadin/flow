@@ -19,10 +19,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
-public class SynchronizedPropertyIT extends PhantomJSTest {
+public class SynchronizedPropertyIT extends ChromeBrowserTest {
 
     @Test
     public void synchronizeOnChange() {

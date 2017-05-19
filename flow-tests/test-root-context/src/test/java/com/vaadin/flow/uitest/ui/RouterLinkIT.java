@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class RouterLinkIT extends PhantomJSTest {
+public class RouterLinkIT extends ChromeBrowserTest {
 
     @Test
     public void testRoutingLinks_insideServletMapping_updateLocation() {
@@ -50,8 +50,11 @@ public class RouterLinkIT extends PhantomJSTest {
         clickLink("http://google.com");
 
         String currentUrl = getDriver().getCurrentUrl();
+
+        // Chrome changes url to whatever it can, removing www part, forcing https.
         Assert.assertTrue("Invalid URL: " + currentUrl,
-                currentUrl.startsWith("http://www.google."));
+                currentUrl.startsWith("http://www.google.") || currentUrl.startsWith("https://www.google.")
+        || currentUrl.startsWith("http://google.") || currentUrl.startsWith("https://google."));
     }
 
     @Test

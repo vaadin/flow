@@ -35,7 +35,6 @@ import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
@@ -357,10 +356,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void writeBootstrapPage(VaadinResponse response, String html)
             throws IOException {
         response.setContentType("text/html");
-        BufferedWriter writer = new BufferedWriter(
-                new OutputStreamWriter(response.getOutputStream(), "UTF-8"));
-        writer.append(html);
-        writer.close();
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(response.getOutputStream(), "UTF-8"))) {
+            writer.append(html);
+            writer.close();
+        }
     }
 
     private static void setupDocumentHead(Element head,
@@ -442,23 +442,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .getAnnotationFor(context.getUI().getClass(),
                         WebComponents.class);
 
-        boolean isVersion1;
-        boolean forceShadyDom;
-        boolean loadEs5Adapter;
-
         DeploymentConfiguration config = context.getSession()
                 .getConfiguration();
 
-        isVersion1 = getUserDefinedProperty(config, Constants.WEB_COMPONENTS,
-                version -> String.valueOf(1).equals(version),
-                webComponents.isPresent()
-                        && webComponents.get().value() == PolyfillVersion.V1);
-        forceShadyDom = getUserDefinedProperty(config,
+        boolean forceShadyDom = getUserDefinedProperty(config,
                 Constants.FORCE_SHADY_DOM, Boolean::parseBoolean,
                 webComponents.isPresent()
                         && webComponents.get().forceShadyDom());
 
-        loadEs5Adapter = getUserDefinedProperty(config,
+        boolean loadEs5Adapter = getUserDefinedProperty(config,
                 Constants.LOAD_ES5_ADAPTER, Boolean::parseBoolean,
                 webComponents.isPresent()
                         && webComponents.get().loadEs5Adapter());
@@ -472,19 +464,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     false));
         }
 
-        if (isVersion1) {
-            head.appendChild(createJavaScriptElement(
-                    context.getUriResolver()
-                            .resolveVaadinUri("context://"
-                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/v1/webcomponents-lite.js"),
-                    false).attr("shadydom", forceShadyDom));
-        } else {
-            head.appendChild(createJavaScriptElement(context.getUriResolver()
-                    .resolveVaadinUri("context://"
-                            + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                            + "server/webcomponents-lite.min.js")));
-        }
+        head.appendChild(createJavaScriptElement(
+                context.getUriResolver()
+                        .resolveVaadinUri("context://"
+                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                + "server/webcomponents-lite.js"),
+                false).attr("shadydom", forceShadyDom));
     }
 
     private static Element createJavaScriptElement(String sourceUrl,

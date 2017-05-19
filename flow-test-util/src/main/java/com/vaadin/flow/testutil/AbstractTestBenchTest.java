@@ -31,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.OutputType;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -124,28 +123,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
-    }
-
-    /**
-     * Opens URL that corresponds to current test case using JavaScript
-     * {@code window.href} functionality. This allows to open page instantly,
-     * not waiting for the page to load.
-     *
-     * <p>
-     * <b>LIMITATION</b>
-     * </p>
-     * You will receive {@link NullPointerException} if you will use the
-     * {@link com.vaadin.testbench.commands.TestBenchCommands#compareScreen(String)}
-     * method or any its overload before page is fully loaded. This happens
-     * because method {@link PhantomJSDriver#getScreenshotAs(OutputType)}
-     * receives empty base64 string as a command execution result.
-     *
-     * @param parameters
-     *            parameters to add to URL to open.
-     */
-    protected void openUsingJs(String... parameters) {
-        ((JavascriptExecutor) getDriver()).executeScript(
-                String.format("window.location='%s';", getTestURL(parameters)));
     }
 
     /**
@@ -259,7 +236,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * The method {@link #getBrowsersToTest()} delegates the logic to this
      * method in case {@link #getLocalExecution()} return value is an empty
      * optional (i.e. the tests Hub is used).
-     * 
+     *
      * @return the browsers capabilities list to execute test on the tests Hub
      */
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
@@ -269,7 +246,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     /**
      * Gets browser capabilities for the provided <code>browsers</code>.
-     * 
+     *
      * @param browsers
      *            a browsers list
      * @return the capabilities for the given <code>browsers</code>
@@ -352,12 +329,12 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * <p>
      * If this method return an empty optional then test with be run on the test
      * Hub
-     * 
+     *
      * @see LocalExecution
-     * 
+     *
      * @return an optional configuration, or an empty optional if configuration
      *         is disabled or not available
-     * 
+     *
      */
     protected Optional<LocalExecution> getLocalExecution() {
         if (USE_HUB) {

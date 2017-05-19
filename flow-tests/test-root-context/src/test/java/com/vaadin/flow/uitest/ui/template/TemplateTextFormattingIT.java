@@ -25,10 +25,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
-public class TemplateTextFormattingIT extends PhantomJSTest {
+public class TemplateTextFormattingIT extends ChromeBrowserTest {
 
     private Set<String> doNotMatch = new HashSet<>();
     {

@@ -24,14 +24,14 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.shared.NodeFeatures;
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class RPCLoggerIT extends PhantomJSTest {
+public class RPCLoggerIT extends ChromeBrowserTest {
 
     @Test
     public void interceptRpcInvocations()
