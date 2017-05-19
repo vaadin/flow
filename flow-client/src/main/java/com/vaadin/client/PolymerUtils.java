@@ -22,7 +22,6 @@ import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.dom.Element;
-import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -88,23 +87,30 @@ public final class PolymerUtils {
     }-*/;
 
     /**
-     * Store the StateNode.id into the polymer property under 'nodeId'
+     * Store the StateNode.id into the object as an unenumerable defined
+     * property 'nodeId'
      *
-     * @param domNode
-     *            polymer dom node
+     * @param object
+     *            object to store id for
      * @param id
      *            id of a state node
-     * @param path
-     *            polymer model path to property
      */
-    public static native void storeNodeId(Node domNode, int id, String path)
+    public static native void storeNodeId(Object object, int id, String path)
     /*-{
-        if (typeof(domNode.get) !== 'undefined') {
-            var polymerProperty = domNode.get(path);
-            if (typeof(polymerProperty) === 'object'
-                && polymerProperty["nodeId"] === undefined) {
-                polymerProperty["nodeId"] = id;
+        if(path.length > 0 && typeof(object.get) !== 'undefined') {
+            object = object.get(path);
+            if (typeof(object) !== 'object'){
+                return;
             }
+        }
+        if (object.nodeId === undefined) {
+            Object.defineProperty(object, 'nodeId', {
+                get: function () {
+                    return id;
+                },
+                enumerable: false,
+                configurable: true
+            });
         }
     }-*/;
 
@@ -130,9 +136,8 @@ public final class PolymerUtils {
             assert feature != null : "Don't know how to convert node without map or list features";
 
             JsonValue convert = feature.convert(PolymerUtils::convertToJson);
-            if (convert instanceof JsonObject
-                    && !((JsonObject) convert).hasKey("nodeId")) {
-                ((JsonObject) convert).put("nodeId", node.getId());
+            if(convert instanceof JsonObject) {
+                storeNodeId(convert, feature.getNode().getId(), "");
             }
             return convert;
         } else if (object instanceof MapProperty) {

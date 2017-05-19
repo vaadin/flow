@@ -15,13 +15,16 @@
  */
 package com.vaadin.client.flow;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
@@ -297,7 +300,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         node.setDomNode(element);
         Binder.bind(node, element);
         // Add the node property for getPolymerPropertyObject functionality
-        setNodeProperty(node.getDomNode(), eventData, "nodeId", "1");
+        PolymerUtils.storeNodeId(node.getDomNode(), 1);
         Reactive.flush();
 
         NativeFunction mockedFunction = new NativeFunction(
@@ -323,41 +326,6 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertEquals("Method node did not match the expected node.", node,
                 serverRpcNodes.get(methodName));
     }
-
-    /**
-     * Add get functionality to element if not defined. Add the key value pair
-     * to property object or create object if not available.
-     * 
-     * @param node
-     *            Target node
-     * @param property
-     *            Property name of object
-     * @param key
-     *            Key to add to property object
-     * @param value
-     *            value to add
-     */
-    private native void setNodeProperty(Node node, String property, String key,
-            String value)
-    /*-{
-        if(typeof(node.get) !== 'function') {
-            node.get = function(propertyName) {
-                return this[propertyName];
-            }
-        }
-        var propertyValue = node.get(property);
-        if(typeof(property) !== 'object') {
-            node[property] = {};
-            // If a number add as a number not as a string.
-            if(parseInt(value) !== NaN){
-                node[property][key] = parseInt(value);
-            } else {
-                node[property][key] = value;
-            }
-        } else {
-            propertyValue.key = value;
-        }
-    }-*/;
 
     private void assertServerEventHandlerMethodInDom(int id,
             Consumer<Element> assertMethod, String method) {
