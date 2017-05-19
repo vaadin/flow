@@ -123,7 +123,7 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
 
     @Override
     public JsonValue getDebugJson() {
-        JsonObject json = WidgetUtil.createJsonObjectWithoutPrototype();
+        JsonObject json = WidgetUtil.createJsonObject();
 
         properties.forEach((p, n) -> {
             if (p.hasValue()) {
@@ -140,7 +140,7 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
 
     @Override
     public JsonValue convert(Function<Object, JsonValue> converter) {
-        JsonObject json = WidgetUtil.createJsonObjectWithoutPrototype();
+        JsonObject json = WidgetUtil.createJsonObject();
 
         properties.forEach((property, name) -> {
             if (property.hasValue()) {
