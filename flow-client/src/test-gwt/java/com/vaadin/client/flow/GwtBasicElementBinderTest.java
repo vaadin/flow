@@ -684,7 +684,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private native Element addShadowRoot(Element element) /*-{
         element.shadowRoot = $doc.createElement("div");
-                                                          
         return element.shadowRoot;
     }-*/;
 
