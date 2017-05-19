@@ -330,7 +330,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void bindSubProperty(StateNode stateNode, Element htmlNode,
             String path, MapProperty property) {
         setSubProperties(htmlNode, property, path);
-        PolymerUtils.storeNodeId(htmlNode, stateNode.getId());
+        PolymerUtils.storeNodeId(htmlNode, stateNode.getId(), path);
     }
 
     private void setSubProperties(Element htmlNode, MapProperty property,

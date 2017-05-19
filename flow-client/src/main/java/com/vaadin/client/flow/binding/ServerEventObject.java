@@ -167,7 +167,7 @@ public final class ServerEventObject extends JavaScriptObject {
         if (expression.startsWith(EVENT_PREFIX)) {
             return createPolymerPropertyObject(event, expression);
         } else {
-            return getObjectNodeId(node.getDomNode());
+            return getObjectNodeId(node.getDomNode(), expression);
         }
     }
 
@@ -176,12 +176,22 @@ public final class ServerEventObject extends JavaScriptObject {
         ServerEventDataExpression dataExpression = getOrCreateExpression(
                 expression);
         JsonObject expressionValue = dataExpression.evaluate(event, this);
-        return getObjectNodeId(expressionValue);
+        return getObjectNodeId(expressionValue, "");
     }
 
-    private native JsonObject getObjectNodeId(Object node)
+    private native JsonObject getObjectNodeId(Object node, String propertyName)
     /*-{
-        return {nodeId: node.nodeId};
+        var id;
+        if(propertyName.length > 0 && typeof(node.get) === 'function') {
+            var polymerProperty = node.get(propertyName);
+            if (typeof(polymerProperty) === 'object'
+                && polymerProperty.nodeId !==  'undefined') {
+                id = polymerProperty.nodeId;
+            }
+        } else {
+            id = node.nodeId;
+        }
+        return {nodeId: id};
     }-*/;
 
     /**

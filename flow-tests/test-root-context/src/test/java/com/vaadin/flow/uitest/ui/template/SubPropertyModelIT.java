@@ -60,7 +60,9 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
         // click message
         getInShadowRoot(template, By.id("msg")).get().click();
 
-        Assert.assertEquals(findElement(By.id("statusClick")).getText(),
-                getInShadowRoot(template, By.id("msg")).get().getText());
+        Assert.assertEquals(
+                "Clicking status message did not get the same modelData as in the message box.",
+                getInShadowRoot(template, By.id("msg")).get().getText(),
+                findElement(By.id("statusClick")).getText());
     }
 }

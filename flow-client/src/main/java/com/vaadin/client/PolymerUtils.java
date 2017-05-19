@@ -95,8 +95,14 @@ public final class PolymerUtils {
      * @param id
      *            id of a state node
      */
-    public static native void storeNodeId(Object object, int id)
+    public static native void storeNodeId(Object object, int id, String path)
     /*-{
+        if(path.length > 0 && typeof(object.get) !== 'undefined') {
+            object = object.get(path);
+            if (typeof(object) !== 'object'){
+                return;
+            }
+        }
         if (object.nodeId === undefined) {
             Object.defineProperty(object, 'nodeId', {
                 get: function () {
@@ -131,7 +137,7 @@ public final class PolymerUtils {
 
             JsonValue convert = feature.convert(PolymerUtils::convertToJson);
             if(convert instanceof JsonObject) {
-                storeNodeId(convert, feature.getNode().getId());
+                storeNodeId(convert, feature.getNode().getId(), "");
             }
             return convert;
         } else if (object instanceof MapProperty) {
