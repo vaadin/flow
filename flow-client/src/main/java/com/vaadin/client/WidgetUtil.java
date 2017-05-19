@@ -246,6 +246,16 @@ public class WidgetUtil {
     }-*/;
 
     /**
+     * Creates a new {@link JsonObject} with the JavaScript prototype.
+     *
+     * @return a new json object
+     */
+    public static native JsonObject createJsonObject()
+    /*-{
+      return {};
+    }-*/;
+
+    /**
      * Gets the boolean value of the provided value based on JavaScript
      * semantics.
      *

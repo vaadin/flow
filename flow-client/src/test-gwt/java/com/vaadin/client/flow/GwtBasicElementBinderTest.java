@@ -684,7 +684,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     private native Element addShadowRoot(Element element) /*-{
         element.shadowRoot = $doc.createElement("div");
-
+                                                          
         return element.shadowRoot;
+    }-*/;
+
+    public void testPropertyValueHasPrototypeMethods() {
+        NodeMap map = new NodeMap(0, new StateNode(0, new StateTree(null)));
+        JsonObject object = Json.createObject();
+        object.put("name", "bar");
+        map.getProperty("foo").setValue(object);
+        assertTrue(map.hasPropertyValue("foo"));
+        String toString = getToString(map.getProperty("foo").getValue());
+        assertEquals("[object Object]", toString);
+    }
+
+    private native String getToString(Object value) /*-{
+        return value.toString();
     }-*/;
 }
