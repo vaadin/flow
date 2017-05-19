@@ -272,12 +272,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         protected BootstrapUriResolver(BootstrapContext bootstrapContext) {
             context = bootstrapContext;
 
-            es6BuildUrl = context.getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
-                            ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE);
-            es5BuildUrl = context.getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
-                            ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE);
+            DeploymentConfiguration config = context.getSession()
+                    .getConfiguration();
+            if (config.isProductionMode()) {
+                es6BuildUrl = config.getApplicationOrSystemProperty(
+                        Constants.FRONTEND_URL_ES6,
+                        ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE);
+                es5BuildUrl = config.getApplicationOrSystemProperty(
+                        Constants.FRONTEND_URL_ES5,
+                        ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE);
+            } else {
+                es6BuildUrl = config.getApplicationOrSystemProperty(
+                        Constants.FRONTEND_URL_ES6,
+                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
+                es5BuildUrl = config.getApplicationOrSystemProperty(
+                        Constants.FRONTEND_URL_ES5,
+                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
+            }
         }
 
         @Override
@@ -672,14 +683,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         JsonObject appConfig = Json.createObject();
 
-        appConfig.put(Constants.FRONTEND_URL_ES6, context.getSession()
-                .getConfiguration()
-                .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
-                        ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE));
-        appConfig.put(Constants.FRONTEND_URL_ES5, context.getSession()
-                .getConfiguration()
-                .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
-                        ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE));
+        if (productionMode) {
+            appConfig.put(Constants.FRONTEND_URL_ES6, context.getSession()
+                    .getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+                            ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE));
+            appConfig.put(Constants.FRONTEND_URL_ES5, context.getSession()
+                    .getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+                            ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE));
+        } else {
+            appConfig.put(Constants.FRONTEND_URL_ES6, context.getSession()
+                    .getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+                            ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
+            appConfig.put(Constants.FRONTEND_URL_ES5, context.getSession()
+                    .getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+                            ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
+        }
 
         appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
                 context.getUI().getUIId());

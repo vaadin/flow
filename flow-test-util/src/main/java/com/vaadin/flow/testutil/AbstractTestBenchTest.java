@@ -102,14 +102,27 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     protected void openProduction(String... parameters) {
+        openUrl("view-production", parameters);
+    }
+
+    protected void openForEs6Url(String... parameters) {
+        openUrl("view-es6-url", parameters);
+    }
+
+    protected void openUrl(String targetUrl, String... parameters) {
         String url = getTestURL(parameters);
         if (!url.contains("/view/")) {
-            throw new IllegalArgumentException(
-                    "Production mode is only available for /view/ URLs");
+            throw new IllegalArgumentException("Custom url mode (" + targetUrl
+                    + ") is only available for /view/ URLs");
         }
-        url = url.replace("/view/", "/view-production/");
-        driver.get(url);
-
+        StringBuilder builder = new StringBuilder(targetUrl);
+        if (!targetUrl.startsWith("/")) {
+            builder.insert(0, "/");
+        }
+        if (!targetUrl.endsWith("/")) {
+            builder.append("/");
+        }
+        url = url.replace("/view/", builder.toString());
         getDriver().get(url);
     }
 

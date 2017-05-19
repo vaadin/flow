@@ -154,7 +154,7 @@ In summary, the distribution of files inside `src/main/frontend` should be:
 == Using Maven plugins to compile your project
 
 Once properly structured, the project can be compiled using regular Maven
-commands, such as `mvn package`.
+commands.
 
 To do so, you need to add specific configuration to your `pom.xml` file. This
 configuration is a one-time setup. You can copy-paste the example below it
@@ -167,50 +167,14 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 [source,xml]
 ----
 <properties>
-  <jetty.version>9.3.7.v20160115</jetty.version>
+  <jetty.version>9.4.5.v20170502</jetty.version>
+  <frontend.working.directory>src/main/frontend</frontend.working.directory>
   <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
 </properties>
 
 <build>
   <plugins>
       <plugin> <!--1-->
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <version>3.0.0</version>
-          <configuration>
-              <webResources>
-                  <resource>
-                      <directory>src/main/frontend/build</directory>
-                      <targetPath>${vaadin.frontend.path}</targetPath>
-                  </resource>
-              </webResources>
-          </configuration>
-      </plugin>
-
-      <plugin> <!--2-->
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.2</version>
-          <executions>
-              <execution>
-                  <id>copy-resources</id>
-                  <phase>process-resources</phase>
-                  <goals>
-                      <goal>copy-resources</goal>
-                  </goals>
-                  <configuration>
-                      <outputDirectory>${project.build.directory}/jetty-extra-resources/${vaadin.frontend.path}</outputDirectory>
-                      <overwrite>true</overwrite>
-                      <resources>
-                          <resource>
-                              <directory>${project.basedir}/src/main/frontend/build</directory>
-                          </resource>
-                      </resources>
-                  </configuration>
-              </execution>
-          </executions>
-      </plugin>
-
-      <plugin> <!--3-->
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
           <version>${jetty.version}</version>
@@ -220,9 +184,31 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                   <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                   <resourceBases>
                       <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                      <resourceBase>${project.build.directory}/jetty-extra-resources</resourceBase>
+                      <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
                   </resourceBases>
               </webAppConfig>
+          </configuration>
+      </plugin>
+
+      <plugin>  <!--2-->
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+              <filesets>
+                  <fileset>
+                      <directory>${frontend.working.directory}/bower_components</directory>
+                  </fileset>
+                  <fileset>
+                      <directory>${frontend.working.directory}/build</directory>
+                  </fileset>
+                  <fileset>
+                      <directory>${frontend.working.directory}/node</directory>
+                  </fileset>
+                  <fileset>
+                      <directory>${frontend.working.directory}/node_modules</directory>
+                  </fileset>
+              </filesets>
           </configuration>
       </plugin>
   </plugins>
@@ -230,34 +216,31 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 
 <profiles>
   <profile>
-    <id>frontend-files</id>
+    <id>productionMode</id>
     <activation>
         <property>
-            <name>!skip.bower</name>
+            <name>vaadin.productionMode</name>
         </property>
     </activation>
     <build>
         <plugins>
-            <plugin> <!--4-->
+            <plugin> <!--3-->
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>1.4</version>
                 <configuration>
                     <nodeVersion>v6.9.1</nodeVersion>
                     <yarnVersion>v0.22.0</yarnVersion>
-                    <workingDirectory>src/main/frontend</workingDirectory>
+                    <workingDirectory>${frontend.working.directory}</workingDirectory>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>generate-resources</phase>
                         <id>install node and yarn</id>
                         <goals>
                             <goal>install-node-and-yarn</goal>
                         </goals>
-                        <configuration></configuration>
                     </execution>
                     <execution>
-                        <phase>generate-resources</phase>
                         <id>yarn install</id>
                         <goals>
                             <goal>yarn</goal>
@@ -265,22 +248,85 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin> <!--4-->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>${frontend.working.directory}/build</directory>
+                            <targetPath>${vaadin.frontend.path}</targetPath>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+  </profile>
+
+  <profile>
+      <id>debugMode</id>
+      <activation>
+          <property>
+              <name>!vaadin.productionMode</name>
+          </property>
+      </activation>
+      <build>
+          <plugins>
+              <plugin> <!--5-->
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-war-plugin</artifactId>
+                  <version>3.0.0</version>
+                  <configuration>
+                      <webResources>
+                          <resource>
+                              <directory>${frontend.working.directory}</directory>
+                              <excludes>
+                                  <exclude>build/**</exclude>
+                              </excludes>
+                          </resource>
+                      </webResources>
+                  </configuration>
+              </plugin>
+          </plugins>
+      </build>
   </profile>
 </profiles>
 ----
 
-<1> Copies the files compiled by Polymer to a directory from where it can be served (root of the WAR)
-<2> Copies the files compiled by Polymer to a directory where jetty:run can use as resource folder
-<3> Configures the jetty plugin to use the extra resource folder
-<4> Configures the frontend plugin to compile the web components source
+<1> Configures the jetty plugin to use the extra resource folder
+<2> Configures the cleanup process for JS dependencies and build
+<3> Configures the frontend plugin to compile the web components source
+<4> Copies the files compiled by Polymer to a directory from where it can be
+served (root of the WAR) when in production mode
+<5> Adds the files from src/main/frontend directly into the WAR when in debug
+mode
 
-=== Skipping compilation
+=== Production mode
 
-To avoid recompiling the code every time you run a Maven command, you can use
-the flag `-Dskip.bower`. For example, `mvn jetty:run -Dskip.bower` would run
-Jetty without recompiling the components.
+By default, Flow applications run are packaged debug mode (or development mode),
+which should be used during development. When packaging in debug mode, the
+webcomponents are *not* complied, which allows the developer to change the
+sources and see the changes right away upon refreshing the browser.
+
+For example, when running the Jetty server from Maven, by using the
+`mvn jetty:run` command, you can modify any webcomponent source file and just
+refresh the browser to see the changes. No compilation is required.
+
+[WARNING]
+You can only develop in that way when using an ES6 compatible browser. Older
+browsers such as Safari 9 and Internet Explorer 11 require compilation to work
+properly with webcomponents.
+
+To effectively compile and minify your resources for production deployment, you
+must run the packaging using the `-Dvaadin.productionMode` flag. For example:
+
+[source,bash]
+----
+mvn package -Dvaadin.productionMode
+----
 
 === Directories created by the process
 
@@ -335,13 +381,19 @@ declaring the path of your `HTMLImport`. For example:
 public class MyComponent extends PolymerTemplate<MyModel> {
 ----
 
-In runtime, the Flow application will determine whether the browser supports ES6 or
+In production, the Flow application will determine whether the browser supports ES6 or
 not. When the browser supports ES6, the linked file will be served from
 `(context)/VAADIN/static/frontend/es6/components/my-component.html`. When it
 doesn`t, the served file will be
 `(context)/VAADIN/static/frontend/es5/components/my-component.html`.
 
 That way you can support ES5 browsers without compromising ES6 capable browsers.
+
+[NOTE]
+The differentiation between ES5 and ES6 paths only occur when `productionMode` is
+`true`. When running in debug (or development) mode, the `frontend://` protocol
+behaves exactly like the `context://` protocol, and the files are served directly
+from `src/main/frontend`.
 
 === Changing the target of `frontend://` served files
 
@@ -360,7 +412,8 @@ prefix. For example:
 mvn jetty:run -Dvaadin.frontend.url.es6=http://mydomain.com/es6/ -Dvaadin.frontend.url.es5=http://mydomain.com/es5/
 ----
 
-You can also set those properties as Servlet init params. You can use the traditional `web.xml` file or the Servlet 3.0 `@WebServlet` annotation:
+You can also set those properties as Servlet init params. You can use the
+traditional `web.xml` file or the Servlet 3.0 `@WebServlet` annotation:
 
 [source,java]
 ----
@@ -426,3 +479,7 @@ must end with a `/`.
 You can also use the `context://` protocol in your `frontend.url.es6` and
 `frontend.url.es5` properties. When doing so, the resulting URL will be relative
 to the current context on the server.
+
+[TIP]
+Those properties are also used in debug mode (in other words, when
+`productionMode = false`).
