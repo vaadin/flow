@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
@@ -15,6 +16,8 @@ import com.vaadin.flow.shared.NodeFeatures;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * @author Vaadin Ltd.
@@ -207,6 +210,23 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 Arrays.asList("one", "two"), this::createBasicTypeWrapper);
 
         assertUpdateListValues(nodeWithList);
+    }
+
+    public void testPolymerUtilsStoreNodeIdNotAvailableAsListItem() {
+        nextId = 98;
+        List<String> serverList = Arrays.asList("one", "two");
+        StateNode andAttachNodeWithList = createAndAttachNodeWithList(modelNode,
+                serverList);
+
+        JsonValue jsonValue = PolymerUtils.convertToJson(andAttachNodeWithList);
+
+        assertTrue("Expected instance of JsonObject from converter, but was not.",
+                jsonValue instanceof JsonObject);
+        double nodeId = ((JsonObject) jsonValue).getNumber("nodeId");
+        assertFalse(
+                "JsonValue array contained nodeId even though it shouldn't be visible",
+                jsonValue.toJson().contains(Double.toString(nodeId)));
+        assertEquals("Found nodeId didn't match the set nodeId", 98.0, nodeId);
     }
 
     @Override
