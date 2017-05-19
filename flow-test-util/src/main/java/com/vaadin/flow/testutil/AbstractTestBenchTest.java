@@ -31,7 +31,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.OutputType;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -124,28 +123,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
-    }
-
-    /**
-     * Opens URL that corresponds to current test case using JavaScript
-     * {@code window.href} functionality. This allows to open page instantly,
-     * not waiting for the page to load.
-     *
-     * <p>
-     * <b>LIMITATION</b>
-     * </p>
-     * You will receive {@link NullPointerException} if you will use the
-     * {@link com.vaadin.testbench.commands.TestBenchCommands#compareScreen(String)}
-     * method or any its overload before page is fully loaded. This happens
-     * because method {@link PhantomJSDriver#getScreenshotAs(OutputType)}
-     * receives empty base64 string as a command execution result.
-     *
-     * @param parameters
-     *            parameters to add to URL to open.
-     */
-    protected void openUsingJs(String... parameters) {
-        ((JavascriptExecutor) getDriver()).executeScript(
-                String.format("window.location='%s';", getTestURL(parameters)));
     }
 
     /**
