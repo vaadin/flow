@@ -90,18 +90,22 @@ public final class PolymerUtils {
      * Store the StateNode.id into the object as an unenumerable defined
      * property 'nodeId'
      *
-     * @param domNode
+     * @param object
      *            object to store id for
      * @param id
      *            id of a state node
      */
-    public static native void storeNodeId(Object domNode, int id)
+    public static native void storeNodeId(Object object, int id)
     /*-{
-        Object.defineProperty(domNode, 'nodeId', {
-            get: function() { return id; },
-            enumerable: false,
-            configurable: true
-        });
+        if (object.nodeId === undefined) {
+            Object.defineProperty(object, 'nodeId', {
+                get: function () {
+                    return id;
+                },
+                enumerable: false,
+                configurable: true
+            });
+        }
     }-*/;
 
     /**
@@ -126,7 +130,9 @@ public final class PolymerUtils {
             assert feature != null : "Don't know how to convert node without map or list features";
 
             JsonValue convert = feature.convert(PolymerUtils::convertToJson);
-            storeNodeId(convert, feature.getNode().getId());
+            if(convert instanceof JsonObject) {
+                storeNodeId(convert, feature.getNode().getId());
+            }
             return convert;
         } else if (object instanceof MapProperty) {
             MapProperty property = (MapProperty) object;
