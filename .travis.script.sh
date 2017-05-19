@@ -17,7 +17,7 @@ then
 elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
 then
         # master build
-	mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Pall-tests -Dgatling.skip=true -Dsonar.verbose=true -Dsonar.analysis.mode=publish -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_LOGIN clean org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar install
+	mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Pall-tests -Dgatling.skip=true -Dsonar.verbose=true -Dsonar.analysis.mode=issues -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_LOGIN clean org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar install
 else
 	# Something else than a "safe" pull request
 	mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Pall-tests verify javadoc:javadoc
