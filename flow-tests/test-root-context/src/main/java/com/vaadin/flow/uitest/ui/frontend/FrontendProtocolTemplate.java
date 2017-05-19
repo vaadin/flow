@@ -22,10 +22,9 @@ import com.vaadin.ui.Component;
 /**
  * This is the Java wrapper for the webcomponent defined at the
  * frontend-protocol.html file. This component is tested by the
- * {@link FrontendProtocolIT}.
+ * FrontendProtocolIT.
  */
 @Tag("frontend-protocol")
 @HtmlImport("frontend://components/frontend-protocol.html")
 public class FrontendProtocolTemplate extends Component {
-
 }
