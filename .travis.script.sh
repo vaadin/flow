@@ -18,6 +18,7 @@ elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
 then
     # master build
     mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Pall-tests -Dgatling.skip=true clean org.jacoco:jacoco-maven-plugin:prepare-agent install
+    # Sonar should be run after the project is built so that findbugs can analyze compiled sources
     mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dgatling.skip=true -Dsonar.verbose=true -Dsonar.analysis.mode=publish -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_LOGIN sonar:sonar
 else
     # Something else than a "safe" pull request
