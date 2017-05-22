@@ -224,17 +224,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("", element.getId());
     }
 
-    private StateNode createChildNode(String id) {
+    private StateNode createChildNode(String id, String tag) {
         StateNode childNode = new StateNode(nextId++, node.getTree());
 
         childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("span");
+                .getProperty(NodeFeatures.TAG).setValue(tag);
         if (id != null) {
             childNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty("id")
                     .setValue(id);
         }
 
         return childNode;
+    }
+
+    private StateNode createChildNode(String id) {
+        return createChildNode(id, "span");
     }
 
     public void testAddChild() {
@@ -252,6 +256,70 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         assertEquals("SPAN", childElement.getTagName());
         assertEquals("child", childElement.getId());
+    }
+
+    public void testInsertChild() {
+        Binder.bind(node, element);
+
+        Element existingChild1 = Browser.getDocument().createElement("div");
+        element.appendChild(existingChild1);
+
+        StateNode childNode = createChildNode("first");
+
+        // One client side element, isnert at the very beginning
+        children.add(0, childNode);
+
+        Reactive.flush();
+
+        assertEquals(2, element.getChildElementCount());
+
+        Element childElement = (Element) element.getChildren().at(0);
+
+        assertEquals("SPAN", childElement.getTagName());
+        assertEquals("first", childElement.getId());
+
+        childNode = createChildNode("second", "a");
+        // Insert before the bound node and pure client side node at the very
+        // beginning
+        children.add(0, childNode);
+        Reactive.flush();
+
+        assertEquals(3, element.getChildElementCount());
+
+        childElement = (Element) element.getChildren().at(0);
+
+        assertEquals("A", childElement.getTagName());
+        assertEquals("second", childElement.getId());
+
+        Element existingChild2 = Browser.getDocument().createElement("div");
+        element.insertBefore(existingChild2,
+                (Element) element.getChildren().at(1));
+
+        childNode = createChildNode("third", "h1");
+        // Insert at the first position.
+        children.add(1, childNode);
+        Reactive.flush();
+
+        assertEquals(element.getChildElementCount(), 5);
+
+        childElement = (Element) element.getChildren().at(1);
+
+        assertEquals("H1", childElement.getTagName());
+        assertEquals("third", childElement.getId());
+
+        childNode = createChildNode("fourth", "br");
+        // Insert after the last bound node
+        children.add(3, childNode);
+        Reactive.flush();
+
+        assertEquals(6, element.getChildElementCount());
+
+        childElement = (Element) element.getChildren().at(4);
+
+        // Element should be before the client side element and after the bound
+        // node
+        assertEquals("BR", childElement.getTagName());
+        assertEquals("fourth", childElement.getId());
     }
 
     public void testRemoveChild() {
@@ -683,9 +751,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private native Element addShadowRoot(Element element) /*-{
-        element.shadowRoot = $doc.createElement("div");
-        return element.shadowRoot;
-    }-*/;
+                                                          element.shadowRoot = $doc.createElement("div");
+                                                          return element.shadowRoot;
+                                                          }-*/;
 
     public void testPropertyValueHasPrototypeMethods() {
         NodeMap map = new NodeMap(0, new StateNode(0, new StateTree(null)));
@@ -698,6 +766,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private native String getToString(Object value) /*-{
-        return value.toString();
-    }-*/;
+                                                    return value.toString();
+                                                    }-*/;
 }

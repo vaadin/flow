@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -35,12 +36,43 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
         findElement(By.id("attach-label")).click();
 
         Assert.assertTrue(isElementPresent(By.id("label")));
-        Assert.assertEquals("label", findElement(By.id("label")).getTagName()
-                .toLowerCase(Locale.ENGLISH));
+        WebElement label = findElement(By.id("label"));
+        Assert.assertEquals("label",
+                label.getTagName().toLowerCase(Locale.ENGLISH));
+
+        WebElement parentDiv = findElement(By.id("root-div"));
+        List<WebElement> children = parentDiv
+                .findElements(By.xpath("./child::*"));
+        boolean labelIsFoundAsChild = false;
+        WebElement removeButton = null;
+        for (int i = 0; i < children.size(); i++) {
+            WebElement child = children.get(i);
+            if (child.equals(label)) {
+                labelIsFoundAsChild = true;
+                WebElement attachButton = children.get(i + 1);
+                Assert.assertEquals(
+                        "The first inserted compoenent after "
+                                + "attached label has wrong index on the client side",
+                        "attach-populated-label",
+                        attachButton.getAttribute("id"));
+                removeButton = children.get(i + 2);
+                Assert.assertEquals(
+                        "The second inserted compoenent after "
+                                + "attached label has wrong index on the client side",
+                        "remove-self", removeButton.getAttribute("id"));
+                break;
+            }
+        }
+
+        Assert.assertTrue(
+                "The attached label is not found as a child of its parent",
+                labelIsFoundAsChild);
+
+        removeButton.click();
+        Assert.assertFalse(isElementPresent(By.id("remove-self")));
 
         // attach existing server-side element
         findElement(By.id("attach-populated-label")).click();
-        WebElement label = findElement(By.id("label"));
         Assert.assertEquals("already-populated", label.getAttribute("class"));
 
         // attach header element

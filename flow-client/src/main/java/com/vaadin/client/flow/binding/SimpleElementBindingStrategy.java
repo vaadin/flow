@@ -612,40 +612,48 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         JsArray<?> add = event.getAdd();
         if (add.length() != 0) {
-            int insertIndex = event.getIndex();
-            JsArray<Node> childNodes = DomApi.wrap(context.htmlNode)
-                    .getChildNodes();
+            addChildren(event.getIndex(), context, add);
+        }
+    }
 
-            Node beforeRef;
-            if (insertIndex < childNodes.length()) {
-                // Insert before the node current at the target index
-                beforeRef = childNodes.get(insertIndex);
+    private void addChildren(int index, BindingContext context,
+            JsArray<?> add) {
+        NodeList nodeChildren = context.node
+                .getList(NodeFeatures.ELEMENT_CHILDREN);
+
+        Node beforeRef;
+        if (index == 0) {
+            // Insert at the first position
+            beforeRef = context.htmlNode.getFirstChild();
+        } else if (index <= nodeChildren.length() && index > 0) {
+            StateNode previousSibling = (StateNode) nodeChildren.get(index - 1);
+            // Insert before the next sibling of the current node
+            beforeRef = DomApi.wrap(previousSibling.getDomNode())
+                    .getNextSibling();
+        } else {
+            // Insert at the end
+            beforeRef = null;
+        }
+
+        for (int i = 0; i < add.length(); i++) {
+            Object newChildObject = add.get(i);
+            StateNode newChild = (StateNode) newChildObject;
+
+            ExistingElementMap existingElementMap = newChild.getTree()
+                    .getRegistry().getExistingElementMap();
+            Node childNode = existingElementMap.getElement(newChild.getId());
+            if (childNode != null) {
+                existingElementMap.remove(newChild.getId());
+                newChild.setDomNode(childNode);
+                context.binderContext.createAndBind(newChild);
             } else {
-                // Insert at the end
-                beforeRef = null;
+                childNode = context.binderContext.createAndBind(newChild);
+
+                DomApi.wrap(context.htmlNode).insertBefore(childNode,
+                        beforeRef);
             }
 
-            for (int i = 0; i < add.length(); i++) {
-                Object newChildObject = add.get(i);
-                StateNode newChild = (StateNode) newChildObject;
-
-                ExistingElementMap existingElementMap = newChild.getTree()
-                        .getRegistry().getExistingElementMap();
-                Node childNode = existingElementMap
-                        .getElement(newChild.getId());
-                if (childNode != null) {
-                    existingElementMap.remove(newChild.getId());
-                    newChild.setDomNode(childNode);
-                    context.binderContext.createAndBind(newChild);
-                } else {
-                    childNode = context.binderContext.createAndBind(newChild);
-
-                    DomApi.wrap(context.htmlNode).insertBefore(childNode,
-                            beforeRef);
-                }
-
-                beforeRef = DomApi.wrap(childNode).getNextSibling();
-            }
+            beforeRef = DomApi.wrap(childNode).getNextSibling();
         }
     }
 
