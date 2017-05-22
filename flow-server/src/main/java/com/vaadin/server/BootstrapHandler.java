@@ -536,12 +536,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     dependency.getString(DependencyList.KEY_LOAD_MODE));
             String dependencyKey = dependency
                     .getString(DependencyList.KEY_TYPE);
-            if (loadMode == LoadMode.EAGER
-                    && DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
-                addStyleSheet(head, resolver, dependency);
-            } else if (loadMode == LoadMode.EAGER
-                    && DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
-                addJavaScript(head, resolver, dependency);
+            if (loadMode == LoadMode.EAGER) {
+                switch (dependencyKey) {
+                case DependencyList.TYPE_STYLESHEET:
+                    addStyleSheet(head, resolver, dependency);
+                    break;
+                case DependencyList.TYPE_JAVASCRIPT:
+                    addJavaScript(head, resolver, dependency);
+                    break;
+                case DependencyList.TYPE_HTML_IMPORT:
+                    addHtmlImport(head, resolver, dependency);
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            "Unsupported dependency type: " + dependencyKey);
+                }
             } else {
                 loadedAtClientDependencies.set(uidlDependenciesIndex,
                         dependency);
@@ -552,6 +561,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Remove from initial UIDL
         initialUIDL.put(DependencyList.DEPENDENCY_KEY,
                 loadedAtClientDependencies);
+    }
+
+    private static void addHtmlImport(Element head, VaadinUriResolver resolver,
+            JsonObject dependency) {
+        String url = dependency.getString(DependencyList.KEY_URL);
+
+        head.appendElement("link").attr("rel", "import").attr("href",
+                resolver.resolveVaadinUri(url));
     }
 
     private static void addStyleSheet(Element head, VaadinUriResolver resolver,
