@@ -1,12 +1,14 @@
 package com.vaadin.flow.uitest.ui.scroll;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.Dimension;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
+@Ignore
 public class ScrollIT extends ChromeBrowserTest {
 
     // PhantomJS scroll position may differ a little locally and in Travis
