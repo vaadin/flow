@@ -183,9 +183,7 @@ public class BootstrapHandlerDependenciesTest {
             assertCssElementLoadedEagerly(head, "eager.css");
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
             assertJavaScriptElementLoadedEagerly(head, "eager.js");
-
-            // For some reason, we don't load eagerly html now at all
-            assertElementLazyLoaded(head, "eager.html");
+            assertHtmlElementLoadedEagerly(head, "eager.html");
 
             assertElementLazyLoaded(head, "lazy.js");
             assertElementLazyLoaded(head, "lazy.css");
@@ -203,7 +201,6 @@ public class BootstrapHandlerDependenciesTest {
             assertFalse(uidlData.contains("./eager-relative.css"));
             assertFalse(uidlData.contains("eager.js"));
 
-            assertTrue(uidlData.contains("eager.html"));
             assertTrue(uidlData.contains("lazy.js"));
             assertTrue(uidlData.contains("lazy.css"));
             assertTrue(uidlData.contains("lazy.html"));
@@ -246,13 +243,16 @@ public class BootstrapHandlerDependenciesTest {
             assertUrlOrder(jsImportUrls, "1.js", "2.js");
 
             List<String> cssImportUrls = head.getElementsByTag("link").stream()
+                    .filter(element -> "stylesheet".equals(element.attr("rel")))
                     .map(element -> element.attr("href"))
                     .collect(Collectors.toList());
             assertUrlOrder(cssImportUrls, "1.css", "2.css");
 
-            // We don't include html imports eagerly
-            String uidlData = extractUidlData(page);
-            assertDependenciesOrderInUidl(uidlData, "1.html", "2.html");
+            List<String> htmlImportUrls = head.getElementsByTag("link").stream()
+                    .filter(element -> "import".equals(element.attr("rel")))
+                    .map(element -> element.attr("href"))
+                    .collect(Collectors.toList());
+            assertUrlOrder(htmlImportUrls, "1.html", "2.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Eager(),
                 new UIWithMethods_ImportOrderTest_Eager());
@@ -341,6 +341,15 @@ public class BootstrapHandlerDependenciesTest {
         assertEquals("script", linkElement.tagName());
         assertEquals("text/javascript", linkElement.attr("type"));
         assertEquals(url, linkElement.attr("src"));
+    }
+
+    private void assertHtmlElementLoadedEagerly(Element head, String url) {
+        Elements cssLinks = head.getElementsByAttributeValue("href", url);
+        assertEquals(1, cssLinks.size());
+        Element linkElement = cssLinks.get(0);
+        assertEquals("link", linkElement.tagName());
+        assertEquals("import", linkElement.attr("rel"));
+        assertEquals(url, linkElement.attr("href"));
     }
 
     private void assertElementLazyLoaded(Element head, String url) {
