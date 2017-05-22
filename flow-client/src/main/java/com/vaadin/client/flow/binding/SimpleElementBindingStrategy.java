@@ -624,12 +624,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         Node beforeRef;
         if (index == 0) {
             // Insert at the first position
-            beforeRef = context.htmlNode.getFirstChild();
+            beforeRef = DomApi.wrap(context.htmlNode).getFirstChild();
         } else if (index <= nodeChildren.length() && index > 0) {
-            StateNode previousSibling = (StateNode) nodeChildren.get(index - 1);
+            StateNode previousSibling = getPreviousSibling(index, context);
             // Insert before the next sibling of the current node
-            beforeRef = DomApi.wrap(previousSibling.getDomNode())
-                    .getNextSibling();
+            beforeRef = previousSibling == null ? null
+                    : DomApi.wrap(previousSibling.getDomNode())
+                            .getNextSibling();
         } else {
             // Insert at the end
             beforeRef = null;
@@ -655,6 +656,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             beforeRef = DomApi.wrap(childNode).getNextSibling();
         }
+    }
+
+    private StateNode getPreviousSibling(int index, BindingContext context) {
+        NodeList nodeChildren = context.node
+                .getList(NodeFeatures.ELEMENT_CHILDREN);
+
+        int count = 0;
+        StateNode node = null;
+        for (int i = 0; i < nodeChildren.length(); i++) {
+            if (count == index) {
+                return node;
+            }
+            node = (StateNode) nodeChildren.get(i);
+            if (node.getDomNode() != null) {
+                count++;
+            }
+        }
+        return node;
     }
 
     private void handleVirtualChildrenSplice(ListSpliceEvent event,
