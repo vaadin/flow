@@ -33,6 +33,7 @@ import com.vaadin.flow.shared.NodeFeatures;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.html.HTMLCollection;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -266,7 +267,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         StateNode childNode = createChildNode("first");
 
-        // One client side element, isnert at the very beginning
+        // One client side element, insert at the very beginning
         children.add(0, childNode);
 
         Reactive.flush();
@@ -320,6 +321,45 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         // node
         assertEquals("BR", childElement.getTagName());
         assertEquals("fourth", childElement.getId());
+    }
+
+    /**
+     * This is important test which checks that index of insertion is calculated
+     * correctly.
+     * <p>
+     * The insertion index is calculated based on the {@link StateNode}s
+     * positions. But it might be that nodes in the {@link StateNode}s list
+     * don't have yet DOM node assigned (created and bound). In this case such
+     * nodes should not cause any issues and insertion index should be correctly
+     * calculated.
+     */
+    public void testInsertChild_recalculateIndex() {
+        Binder.bind(node, element);
+
+        Element existingChild1 = Browser.getDocument().createElement("div");
+        element.appendChild(existingChild1);
+
+        // The order is important: some StateNodes during event handling don't
+        // have yet DOM node with this order
+        children.add(0, createChildNode("first"));
+        children.add(1, createChildNode("second"));
+        children.add(0, createChildNode("third"));
+
+        Reactive.flush();
+
+        assertEquals(4, element.getChildElementCount());
+
+        HTMLCollection children = element.getChildren();
+
+        // check that order is the correct one
+        Element childElement = (Element) children.at(0);
+        assertEquals("third", childElement.getId());
+
+        childElement = (Element) children.at(1);
+        assertEquals("first", childElement.getId());
+
+        childElement = (Element) children.at(2);
+        assertEquals("second", childElement.getId());
     }
 
     public void testRemoveChild() {

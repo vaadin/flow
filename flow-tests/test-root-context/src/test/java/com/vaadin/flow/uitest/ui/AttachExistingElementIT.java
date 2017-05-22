@@ -51,13 +51,13 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
                 labelIsFoundAsChild = true;
                 WebElement attachButton = children.get(i + 1);
                 Assert.assertEquals(
-                        "The first inserted compoenent after "
+                        "The first inserted component after "
                                 + "attached label has wrong index on the client side",
                         "attach-populated-label",
                         attachButton.getAttribute("id"));
                 removeButton = children.get(i + 2);
                 Assert.assertEquals(
-                        "The second inserted compoenent after "
+                        "The second inserted component after "
                                 + "attached label has wrong index on the client side",
                         "remove-self", removeButton.getAttribute("id"));
                 break;
