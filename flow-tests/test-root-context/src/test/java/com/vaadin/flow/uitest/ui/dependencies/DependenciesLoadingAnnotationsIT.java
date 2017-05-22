@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.DOM_CHANGE_TEXT;
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.PRELOADED_DIV_ID;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.DOM_CHANGE_TEXT;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.PRELOADED_DIV_ID;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,20 +54,27 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                 "5 elements are expected to be added: 2 for eager dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
                 5, testMessages.size());
 
-        Assert.assertTrue("Eager dependencies should be loaded first",
+        Assert.assertTrue(
+                "Eager dependencies should be loaded first, but got "
+                        + testMessages.get(0),
                 testMessages.get(0).startsWith(EAGER_PREFIX));
-        Assert.assertTrue("Eager dependencies should be loaded first",
+        Assert.assertTrue(
+                "Eager dependencies should be loaded first, but got "
+                        + testMessages.get(1),
                 testMessages.get(1).startsWith(EAGER_PREFIX));
 
         Assert.assertTrue(
-                "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded",
+                "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded, but got "
+                        + testMessages.get(2),
                 testMessages.get(2).equals(DOM_CHANGE_TEXT));
 
         Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager",
+                "Lazy dependencies should be loaded after eager, but got "
+                        + testMessages.get(3),
                 testMessages.get(3).startsWith(LAZY_PREFIX));
         Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager",
+                "Lazy dependencies should be loaded after eager, but got "
+                        + testMessages.get(4),
                 testMessages.get(4).startsWith(LAZY_PREFIX));
     }
 
@@ -77,6 +84,9 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                 // exclusion
                 .filter(javaScriptImport -> !javaScriptImport
                         .getAttribute("src").endsWith("es6-collections.js"))
+                // Ignore development time XSI client engine file
+                .filter(javaScriptImport -> !javaScriptImport
+                        .getAttribute("src").endsWith(".cache.js"))
                 .forEach(javaScriptImport -> {
                     Assert.assertEquals(
                             String.format(
