@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.DOM_CHANGE_TEXT;
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.PRELOADED_DIV_ID;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.DOM_CHANGE_TEXT;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.PRELOADED_DIV_ID;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,11 +63,9 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                 "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded",
                 testMessages.get(2).equals(DOM_CHANGE_TEXT));
 
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager",
+        Assert.assertTrue("Lazy dependencies should be loaded after eager",
                 testMessages.get(3).startsWith(LAZY_PREFIX));
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager",
+        Assert.assertTrue("Lazy dependencies should be loaded after eager",
                 testMessages.get(4).startsWith(LAZY_PREFIX));
     }
 
@@ -77,6 +75,9 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                 // exclusion
                 .filter(javaScriptImport -> !javaScriptImport
                         .getAttribute("src").endsWith("es6-collections.js"))
+                // Ignore development time XSI client engine file
+                .filter(javaScriptImport -> !javaScriptImport
+                        .getAttribute("src").endsWith(".cache.js"))
                 .forEach(javaScriptImport -> {
                     Assert.assertEquals(
                             String.format(
