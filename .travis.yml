@@ -1,7 +1,8 @@
 language: java
 jdk: oraclejdk8
-before_install: ./.travis.before_install.sh
-script: ./.travis.script.sh
+# Run on a dedicated Trusty VM to avoid random problems like "User limit of inotify watches reached"
+sudo: required
+dist: trusty
 
 addons:
   apt:
@@ -10,9 +11,17 @@ addons:
     packages:
      - google-chrome-stable
 
-# Run on a dedicated Trusty VM to avoid random problems like "User limit of inotify watches reached"
-sudo: required
-dist: trusty
+before_install: ./.travis.before_install.sh
+
+# Make Chrome IT tests more stable
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+  - export CHROME_BIN=/usr/bin/google-chrome
+  - export DBUS_SESSION_BUS_ADDRESS=/dev/null
+
+script: ./.travis.script.sh
 
 deploy:
   - provider: script
