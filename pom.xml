@@ -52,9 +52,12 @@
         <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <failOnMissingWebXml>false</failOnMissingWebXml>
-        <phantomjs.plugin.version>0.7</phantomjs.plugin.version>
         <phantomjs.version>2.1.1</phantomjs.version>
         <phantomjs.outputDir>${project.rootdir}/target/phantomjs-maven-plugin</phantomjs.outputDir>
+
+        <!--Plugins-->
+        <phantomjs.plugin.version>0.7</phantomjs.plugin.version>
+        <driver.binary.downloader.maven.plugin.version>1.0.13</driver.binary.downloader.maven.plugin.version>
 
         <!--Frontend-->
         <node.version>v7.10.0</node.version>
@@ -274,6 +277,12 @@
                         <fileset>
                             <directory>${frontend.working.directory}/node_modules</directory>
                         </fileset>
+                        <fileset>
+                            <directory>flow-tests/driver_zips</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>flow-tests/driver</directory>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>
@@ -311,12 +320,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.19.1</version>
-                    <configuration>
-                        <parallel>all</parallel>
-                        <threadCount>5</threadCount>
-                    </configuration>
-
+                    <version>2.20</version>
                 </plugin>
                 <plugin>
                     <groupId>com.github.klieber</groupId>
