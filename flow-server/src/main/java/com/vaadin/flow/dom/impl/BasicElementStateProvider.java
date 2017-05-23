@@ -29,7 +29,6 @@ import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
@@ -53,6 +52,7 @@ import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
 import com.vaadin.server.StreamResource;
+import com.vaadin.shared.Registration;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -218,7 +218,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public EventRegistrationHandle addEventListener(StateNode node,
+    public Registration addEventListener(StateNode node,
             String eventType, DomEventListener listener,
             String[] eventDataExpressions) {
         ElementListenerMap listeners = node
@@ -324,7 +324,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public EventRegistrationHandle addPropertyChangeListener(StateNode node,
+    public Registration addPropertyChangeListener(StateNode node,
             String name, PropertyChangeListener listener) {
         return getPropertyFeature(node).addPropertyChangeListener(name,
                 listener);

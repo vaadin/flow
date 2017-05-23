@@ -15,8 +15,8 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
 /**
  * The interface for adding and removing {@link PollEvent} listeners.
@@ -40,7 +40,7 @@ public interface PollNotifier extends ComponentEventNotifier {
      *            the listener to add
      * @return a handle that can be used for removing the listener
      */
-    default EventRegistrationHandle addPollListener(
+    default Registration addPollListener(
             ComponentEventListener<PollEvent> listener) {
         return addListener(PollEvent.class, listener);
     }

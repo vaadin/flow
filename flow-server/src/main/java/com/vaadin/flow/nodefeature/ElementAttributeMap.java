@@ -23,11 +23,11 @@ import java.util.stream.Stream;
 import com.vaadin.flow.NodeOwner;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.StreamResourceRegistry;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.Registration;
 
 /**
  * Map for element attribute values.
@@ -38,7 +38,7 @@ public class ElementAttributeMap extends NodeMap {
 
     private HashMap<String, StreamResourceRegistration> resourceRegistrations;
 
-    private HashMap<String, EventRegistrationHandle> pendingResources;
+    private HashMap<String, Registration> pendingResources;
 
     /**
      * Creates a new element attribute map for the given node.
@@ -144,7 +144,7 @@ public class ElementAttributeMap extends NodeMap {
 
         StreamResourceRegistration registration = resourceRegistrations
                 .remove(attribute);
-        EventRegistrationHandle handle = pendingResources.remove(attribute);
+        Registration handle = pendingResources.remove(attribute);
         if (handle != null) {
             handle.remove();
         }
@@ -163,7 +163,7 @@ public class ElementAttributeMap extends NodeMap {
         ensurePendingResources();
 
         assert !pendingResources.containsKey(attribute);
-        EventRegistrationHandle handle = getNode()
+        Registration handle = getNode()
                 .addAttachListener(() -> registerResource(attribute, resource));
         pendingResources.put(attribute, handle);
     }
@@ -176,7 +176,7 @@ public class ElementAttributeMap extends NodeMap {
         StreamResourceRegistration registration = getSession()
                 .getResourceRegistry().registerResource(resource);
         resourceRegistrations.put(attribute, registration);
-        EventRegistrationHandle handle = pendingResources.remove(attribute);
+        Registration handle = pendingResources.remove(attribute);
         if (handle != null) {
             handle.remove();
         }

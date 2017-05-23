@@ -35,6 +35,7 @@ import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.Registration;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.UI;
@@ -1719,7 +1720,7 @@ public class ElementTest extends AbstractNodeTest {
         AtomicInteger childTriggered = new AtomicInteger();
         AtomicInteger grandChildTriggered = new AtomicInteger();
 
-        EventRegistrationHandle registrationHandle = child
+        Registration registrationHandle = child
                 .addAttachListener(event -> {
                     childTriggered.addAndGet(1);
                 });
@@ -1771,7 +1772,7 @@ public class ElementTest extends AbstractNodeTest {
 
         AtomicInteger triggered = new AtomicInteger();
 
-        EventRegistrationHandle registrationHandle = child
+        Registration registrationHandle = child
                 .addDetachListener(event -> {
                     triggered.addAndGet(1);
                     Assert.assertEquals(child, event.getSource());
