@@ -23,10 +23,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.event.PropertyChangeEvent;
 import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.shared.Registration;
 
 public class ElementPropertyMapTest {
 
@@ -47,7 +47,7 @@ public class ElementPropertyMapTest {
         PropertyChangeListener listener = ev -> {
             Assert.fail();
         };
-        EventRegistrationHandle registration = map
+        Registration registration = map
                 .addPropertyChangeListener("foo", listener);
         registration.remove();
 

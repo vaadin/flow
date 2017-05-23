@@ -41,10 +41,10 @@ import com.vaadin.annotations.Uses;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventBus;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.Registration;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.AngularTemplateTest.TestSpan;
 
@@ -193,7 +193,7 @@ public class ComponentTest {
         }
 
         @Override
-        public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
+        public <T extends ComponentEvent<?>> Registration addListener(
                 Class<T> eventType, ComponentEventListener<T> listener) {
             return super.addListener(eventType, listener);
         }
@@ -473,10 +473,10 @@ public class ComponentTest {
         TestComponentContainer child = new TestComponentContainer();
         TestComponent grandChild = new TestComponent();
         child.track();
-        EventRegistrationHandle attachRegistrationHandle = grandChild
+        Registration attachRegistrationHandle = grandChild
                 .addAttachListener(event -> grandChild.getAttachEvents()
                         .incrementAndGet());
-        EventRegistrationHandle detachRegistrationHandle = grandChild
+        Registration detachRegistrationHandle = grandChild
                 .addDetachListener(event -> grandChild.getDetachEvents()
                         .incrementAndGet());
 

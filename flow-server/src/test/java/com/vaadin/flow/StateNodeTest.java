@@ -33,13 +33,13 @@ import org.junit.Test;
 import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.change.NodeDetachChange;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
 import com.vaadin.flow.nodefeature.ElementClassList;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.NodeFeature;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 
 public class StateNodeTest {
@@ -297,7 +297,7 @@ public class StateNodeTest {
         Assert.assertFalse(child.isAttached());
         AtomicBoolean triggered = new AtomicBoolean(false);
 
-        EventRegistrationHandle registrationHandle = child
+        Registration registrationHandle = child
                 .addAttachListener(() -> triggered.set(true));
         registrationHandle.remove();
 
@@ -333,7 +333,7 @@ public class StateNodeTest {
 
         AtomicBoolean triggered = new AtomicBoolean(false);
 
-        EventRegistrationHandle registrationHandle = child
+        Registration registrationHandle = child
                 .addDetachListener(() -> triggered.set(true));
         registrationHandle.remove();
 

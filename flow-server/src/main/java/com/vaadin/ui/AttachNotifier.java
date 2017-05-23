@@ -15,8 +15,8 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
 /**
  * Mixin interface for components that support adding attach listeners.
@@ -32,7 +32,7 @@ public interface AttachNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default EventRegistrationHandle addAttachListener(
+    default Registration addAttachListener(
             ComponentEventListener<AttachEvent> listener) {
         return addListener(AttachEvent.class, listener);
     }
