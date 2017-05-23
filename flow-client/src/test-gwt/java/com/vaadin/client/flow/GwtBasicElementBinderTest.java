@@ -33,6 +33,7 @@ import com.vaadin.flow.shared.NodeFeatures;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.html.HTMLCollection;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -224,17 +225,21 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("", element.getId());
     }
 
-    private StateNode createChildNode(String id) {
+    private StateNode createChildNode(String id, String tag) {
         StateNode childNode = new StateNode(nextId++, node.getTree());
 
         childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("span");
+                .getProperty(NodeFeatures.TAG).setValue(tag);
         if (id != null) {
             childNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty("id")
                     .setValue(id);
         }
 
         return childNode;
+    }
+
+    private StateNode createChildNode(String id) {
+        return createChildNode(id, "span");
     }
 
     public void testAddChild() {
@@ -252,6 +257,109 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         assertEquals("SPAN", childElement.getTagName());
         assertEquals("child", childElement.getId());
+    }
+
+    public void testInsertChild() {
+        Binder.bind(node, element);
+
+        Element existingChild1 = Browser.getDocument().createElement("div");
+        element.appendChild(existingChild1);
+
+        StateNode childNode = createChildNode("first");
+
+        // One client side element, insert at the very beginning
+        children.add(0, childNode);
+
+        Reactive.flush();
+
+        assertEquals(2, element.getChildElementCount());
+
+        Element childElement = (Element) element.getChildren().at(0);
+
+        assertEquals("SPAN", childElement.getTagName());
+        assertEquals("first", childElement.getId());
+
+        childNode = createChildNode("second", "a");
+        // Insert before the bound node and pure client side node at the very
+        // beginning
+        children.add(0, childNode);
+        Reactive.flush();
+
+        assertEquals(3, element.getChildElementCount());
+
+        childElement = (Element) element.getChildren().at(0);
+
+        assertEquals("A", childElement.getTagName());
+        assertEquals("second", childElement.getId());
+
+        Element existingChild2 = Browser.getDocument().createElement("div");
+        element.insertBefore(existingChild2,
+                (Element) element.getChildren().at(1));
+
+        childNode = createChildNode("third", "h1");
+        // Insert at the first position.
+        children.add(1, childNode);
+        Reactive.flush();
+
+        assertEquals(element.getChildElementCount(), 5);
+
+        childElement = (Element) element.getChildren().at(1);
+
+        assertEquals("H1", childElement.getTagName());
+        assertEquals("third", childElement.getId());
+
+        childNode = createChildNode("fourth", "br");
+        // Insert after the last bound node
+        children.add(3, childNode);
+        Reactive.flush();
+
+        assertEquals(6, element.getChildElementCount());
+
+        childElement = (Element) element.getChildren().at(4);
+
+        // Element should be before the client side element and after the bound
+        // node
+        assertEquals("BR", childElement.getTagName());
+        assertEquals("fourth", childElement.getId());
+    }
+
+    /**
+     * This is important test which checks that index of insertion is calculated
+     * correctly.
+     * <p>
+     * The insertion index is calculated based on the {@link StateNode}s
+     * positions. But it might be that nodes in the {@link StateNode}s list
+     * don't have yet DOM node assigned (created and bound). In this case such
+     * nodes should not cause any issues and insertion index should be correctly
+     * calculated.
+     */
+    public void testInsertChild_recalculateIndex() {
+        Binder.bind(node, element);
+
+        Element existingChild1 = Browser.getDocument().createElement("div");
+        element.appendChild(existingChild1);
+
+        // The order is important: some StateNodes during event handling don't
+        // have yet DOM node with this order
+        children.add(0, createChildNode("first"));
+        children.add(1, createChildNode("second"));
+        children.add(0, createChildNode("third"));
+
+        Reactive.flush();
+
+        assertEquals(4, element.getChildElementCount());
+
+        HTMLCollection children = element.getChildren();
+
+        // check that order is the correct one
+        Element childElement = (Element) children.at(0);
+        assertEquals("third", childElement.getId());
+
+        childElement = (Element) children.at(1);
+        assertEquals("first", childElement.getId());
+
+        childElement = (Element) children.at(2);
+        assertEquals("second", childElement.getId());
     }
 
     public void testRemoveChild() {
@@ -683,9 +791,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private native Element addShadowRoot(Element element) /*-{
-        element.shadowRoot = $doc.createElement("div");
-        return element.shadowRoot;
-    }-*/;
+                                                          element.shadowRoot = $doc.createElement("div");
+                                                          return element.shadowRoot;
+                                                          }-*/;
 
     public void testPropertyValueHasPrototypeMethods() {
         NodeMap map = new NodeMap(0, new StateNode(0, new StateTree(null)));
@@ -698,6 +806,6 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private native String getToString(Object value) /*-{
-        return value.toString();
-    }-*/;
+                                                    return value.toString();
+                                                    }-*/;
 }
