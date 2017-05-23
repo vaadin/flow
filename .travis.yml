@@ -3,6 +3,13 @@ jdk: oraclejdk8
 before_install: ./.travis.before_install.sh
 script: ./.travis.script.sh
 
+addons:
+  apt:
+    sources:
+     - google-chrome
+    packages:
+     - google-chrome-stable
+
 # Run on a dedicated Trusty VM to avoid random problems like "User limit of inotify watches reached"
 sudo: required
 dist: trusty
