@@ -35,7 +35,7 @@ Property synchronization takes place before events are fired so the event listen
 [source,java]
 ----
 public class PaperSlider extends Component {
-  public EventRegistrationHandle addValueChangeListener(
+  public Registration addValueChangeListener(
         ComponentEventListener<ValueChangeEvent> valueChangeListener) {
     return super.addListener(ValueChangeEvent.class, valueChangeListener);
   }
@@ -76,7 +76,7 @@ public class PaperSlider extends Component {
         return getElement().getProperty("pin", false);
     }
 
-    public EventRegistrationHandle addValueChangeListener(
+    public Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent> valueChangeListener) {
         return super.addListener(ValueChangeEvent.class, valueChangeListener);
     }

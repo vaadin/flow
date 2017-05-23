@@ -28,9 +28,9 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.PropertyChangeEvent;
 import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.shared.Registration;
 
 /**
  * Map for element property values.
@@ -87,7 +87,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            listener to get notifications about property value changes
      * @return an event registration handle for removing the listener
      */
-    public EventRegistrationHandle addPropertyChangeListener(String name,
+    public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
         assert hasElement();
 
