@@ -22,8 +22,8 @@ import java.util.List;
 
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.shared.Registration;
 
 import elemental.json.Json;
 
@@ -64,7 +64,7 @@ public class PolymerEventListenerMap extends NodeMap {
      *            the event data expressions
      * @return handler to remove eventType data
      */
-    public EventRegistrationHandle add(String methodName,
+    public Registration add(String methodName,
             String[] eventDataExpressions) {
         assert methodName != null;
         assert eventDataExpressions != null;

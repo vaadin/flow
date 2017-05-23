@@ -23,7 +23,6 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
@@ -35,6 +34,7 @@ import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
 import com.vaadin.server.StreamResource;
+import com.vaadin.shared.Registration;
 
 /**
  * Implementation which handles shadow root nodes.
@@ -116,7 +116,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public EventRegistrationHandle addEventListener(StateNode node,
+    public Registration addEventListener(StateNode node,
             String eventType, DomEventListener listener,
             String[] eventDataExpressions) {
         throw new UnsupportedOperationException();
@@ -184,7 +184,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public EventRegistrationHandle addPropertyChangeListener(StateNode node,
+    public Registration addPropertyChangeListener(StateNode node,
             String name, PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }

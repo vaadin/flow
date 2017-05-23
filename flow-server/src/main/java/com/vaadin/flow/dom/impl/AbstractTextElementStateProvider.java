@@ -26,10 +26,10 @@ import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.server.StreamResource;
+import com.vaadin.shared.Registration;
 
 /**
  * Abstract element state provider for text nodes. Operations that are not
@@ -106,7 +106,7 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public EventRegistrationHandle addEventListener(StateNode node,
+    public Registration addEventListener(StateNode node,
             String eventType, DomEventListener listener,
             String[] eventDataExpressions) {
         throw new UnsupportedOperationException();
@@ -165,7 +165,7 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public EventRegistrationHandle addPropertyChangeListener(StateNode node,
+    public Registration addPropertyChangeListener(StateNode node,
             String name, PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }

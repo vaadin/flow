@@ -42,6 +42,7 @@ import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
 import com.vaadin.server.CustomElementRegistry;
 import com.vaadin.server.StreamResource;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Page;
@@ -503,7 +504,7 @@ public class Element extends Node<Element> {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    public EventRegistrationHandle addEventListener(String eventType,
+    public Registration addEventListener(String eventType,
             DomEventListener listener) {
         return addEventListener(eventType, listener, new String[0]);
     }
@@ -538,7 +539,7 @@ public class Element extends Node<Element> {
      *            together with the event
      * @return a handle that can be used for removing the listener
      */
-    public EventRegistrationHandle addEventListener(String eventType,
+    public Registration addEventListener(String eventType,
             DomEventListener listener, String... eventDataExpressions) {
         if (eventType == null) {
             throw new IllegalArgumentException(EVENT_TYPE_MUST_NOT_BE_NULL);
@@ -713,7 +714,7 @@ public class Element extends Node<Element> {
      *            listener to get notifications about property value changes
      * @return an event registration handle for removing the listener
      */
-    public EventRegistrationHandle addPropertyChangeListener(String name,
+    public Registration addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
         return getStateProvider().addPropertyChangeListener(getNode(), name,
                 listener);
@@ -1241,7 +1242,7 @@ public class Element extends Node<Element> {
      *            the attach listener to add
      * @return an event registration handle for removing the listener
      */
-    public EventRegistrationHandle addAttachListener(
+    public Registration addAttachListener(
             ElementAttachListener attachListener) {
         if (attachListener == null) {
             throw new IllegalArgumentException(
@@ -1263,7 +1264,7 @@ public class Element extends Node<Element> {
      *            the detach listener to add
      * @return an event registration handle for removing the listener
      */
-    public EventRegistrationHandle addDetachListener(
+    public Registration addDetachListener(
             ElementDetachListener detachListener) {
         if (detachListener == null) {
             throw new IllegalArgumentException(

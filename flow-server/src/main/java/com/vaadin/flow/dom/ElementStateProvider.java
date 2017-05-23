@@ -24,6 +24,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.server.StreamResource;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 
 /**
@@ -203,7 +204,7 @@ public interface ElementStateProvider extends Serializable {
      *
      * @return a handle for removing the listener
      */
-    EventRegistrationHandle addEventListener(StateNode node, String eventType,
+    Registration addEventListener(StateNode node, String eventType,
             DomEventListener listener, String[] eventDataExpressions);
 
     /**
@@ -375,7 +376,7 @@ public interface ElementStateProvider extends Serializable {
      *            listener to get notifications about property value changes
      * @return an event registration handle for removing the listener
      */
-    EventRegistrationHandle addPropertyChangeListener(StateNode node,
+    Registration addPropertyChangeListener(StateNode node,
             String name, PropertyChangeListener listener);
 
     /**

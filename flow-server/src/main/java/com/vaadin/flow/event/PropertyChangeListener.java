@@ -18,13 +18,13 @@ package com.vaadin.flow.event;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.dom.EventRegistrationHandle;
+import com.vaadin.shared.Registration;
 
 /**
  * A listener for property change events.
  *
  * @see PropertyChangeEvent
- * @see EventRegistrationHandle
+ * @see Registration
  */
 @FunctionalInterface
 public interface PropertyChangeListener extends Serializable {

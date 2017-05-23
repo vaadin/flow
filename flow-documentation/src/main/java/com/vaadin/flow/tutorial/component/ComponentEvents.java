@@ -18,10 +18,10 @@ package com.vaadin.flow.tutorial.component;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.flow.html.Button;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
@@ -37,7 +37,7 @@ public class ComponentEvents {
 
     @Tag("input")
     public class TextField extends Component {
-        public EventRegistrationHandle addChangeListener(
+        public Registration addChangeListener(
                 ComponentEventListener<ChangeEvent> listener) {
             return addListener(ChangeEvent.class, listener);
         }
@@ -68,7 +68,7 @@ public class ComponentEvents {
     @SuppressWarnings("unused")
     private void useEvents() {
         TextField textField = new TextField();
-        EventRegistrationHandle registration = textField
+        Registration registration = textField
                 .addChangeListener(e -> System.out.println("Event fired"));
 
         // In some other part of the code

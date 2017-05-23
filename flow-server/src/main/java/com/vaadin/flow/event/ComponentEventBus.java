@@ -27,7 +27,7 @@ import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.EventRegistrationHandle;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
@@ -49,7 +49,7 @@ import elemental.json.JsonValue;
 public class ComponentEventBus implements Serializable {
 
     private static class ComponentEventData implements Serializable {
-        private EventRegistrationHandle domEventRemover = null;
+        private Registration domEventRemover = null;
         private ArrayList<ComponentEventListener<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
                 1);
     }
@@ -79,7 +79,7 @@ public class ComponentEventBus implements Serializable {
      *            the listener to call when the event occurs
      * @return an object which can be used to remove the event listener
      */
-    public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
+    public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener) {
         addDomTriggerIfNeeded(eventType);
 
@@ -173,7 +173,7 @@ public class ComponentEventBus implements Serializable {
 
         // This needs to be an anonymous class and not a lambda because of
         // https://github.com/vaadin/flow/issues/575
-        EventRegistrationHandle remover = element.addEventListener(domEventType,
+        Registration remover = element.addEventListener(domEventType,
                 new DomEventListener() {
                     @Override
                     public void handleEvent(DomEvent e) {
@@ -217,7 +217,7 @@ public class ComponentEventBus implements Serializable {
     /**
      * Removes the given listener for the given event type.
      * <p>
-     * Called through the {@link EventRegistrationHandle} returned by
+     * Called through the {@link Registration} returned by
      * {@link #addListener(Class, ComponentEventListener)}.
      *
      * @param eventType
@@ -263,7 +263,7 @@ public class ComponentEventBus implements Serializable {
         assert eventType != null;
         assert domEventType != null && !domEventType.isEmpty();
 
-        EventRegistrationHandle domEventRemover = componentEventData
+        Registration domEventRemover = componentEventData
                 .get(eventType).domEventRemover;
 
         if (domEventRemover != null) {

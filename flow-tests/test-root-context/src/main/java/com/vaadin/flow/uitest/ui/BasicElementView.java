@@ -19,14 +19,14 @@ import java.util.Set;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.shared.Registration;
 
 import elemental.json.JsonObject;
 
 public class BasicElementView extends AbstractDivView {
 
-    private EventRegistrationHandle helloWorldEventRemover;
+    private Registration helloWorldEventRemover;
 
     @Override
     protected void onShow() {

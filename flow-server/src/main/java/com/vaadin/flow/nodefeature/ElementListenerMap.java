@@ -26,8 +26,8 @@ import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.shared.Registration;
 
 import elemental.json.Json;
 
@@ -74,7 +74,7 @@ public class ElementListenerMap extends NodeMap {
      *            the event data expressions
      * @return a handle for removing the listener
      */
-    public EventRegistrationHandle add(String eventType,
+    public Registration add(String eventType,
             DomEventListener listener, String[] eventDataExpressions) {
         assert eventType != null;
         assert listener != null;

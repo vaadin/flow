@@ -33,10 +33,10 @@ import java.util.stream.Stream;
 import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.change.NodeDetachChange;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.server.Command;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 
 /**
@@ -424,7 +424,7 @@ public class StateNode implements Serializable {
      *            the attach listener to add
      * @return an event registration handle for removing the listener
      */
-    public EventRegistrationHandle addAttachListener(Command attachListener) {
+    public Registration addAttachListener(Command attachListener) {
         assert attachListener != null;
 
         if (attachListeners == null) {
@@ -443,7 +443,7 @@ public class StateNode implements Serializable {
      *            the detach listener to add
      * @return an event registration handle for removing the listener
      */
-    public EventRegistrationHandle addDetachListener(Command detachListener) {
+    public Registration addDetachListener(Command detachListener) {
         assert detachListener != null;
 
         if (detachListeners == null) {

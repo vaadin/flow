@@ -13,19 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.dom;
+package com.vaadin.shared;
 
 import java.io.Serializable;
 
 /**
- * Handle used for removing an added event listener.
+ * A registration object for removing an event listener added to a source.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface EventRegistrationHandle extends Serializable {
+public interface Registration extends Serializable {
     /**
-     * Removes the event listener.
+     * Removes the associated listener from the event source.
      */
     void remove();
 }
