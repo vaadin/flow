@@ -91,7 +91,8 @@ public class AttachExistingElementView extends AbstractDivView {
         attachedLabel = Component.from(label, Label.class);
         attachedLabel.setText("Client side label");
         attachedLabel.setId("label");
-        Button attachPopulatedLabel = new Button("Attach the attached label",
+        Button attachPopulatedLabel = new Button(
+                "Attach the already attached label",
                 event -> getElement().attachExistingElement("label", null,
                         this::handleAttachedLabel));
         attachPopulatedLabel.setId("attach-populated-label");

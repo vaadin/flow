@@ -60,7 +60,7 @@ public class BasicTypeInListUI extends UI {
                 event -> list.getModel().getItems().add("newItem"));
         add.setId("add");
         add(add);
-        Button remove = new Button("Remove the firt item",
+        Button remove = new Button("Remove the first item",
                 event -> list.getModel().getItems().remove(0));
         remove.setId("remove");
         add(remove);
