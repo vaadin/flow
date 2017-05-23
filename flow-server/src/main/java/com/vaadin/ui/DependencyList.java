@@ -82,10 +82,6 @@ public class DependencyList implements Serializable {
         String dependencyUrl = dependency.getUrl();
 
         if (urlCache.contains(dependencyUrl)) {
-            getLogger().log(Level.WARNING,
-                    () -> String.format(
-                            "Dependency with url %s was imported numerous times, it's advised to remove excessive imports",
-                            dependencyUrl));
             Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
                     .ifPresent(currentDependency -> checkDuplicateDependency(
                             dependency, currentDependency));
