@@ -28,6 +28,8 @@ import com.vaadin.ui.Component;
 
 public class AttachExistingElementView extends AbstractDivView {
 
+    private Label attachedLabel;
+
     private class NonExistingElementCallback implements ChildElementConsumer {
 
         @Override
@@ -48,6 +50,7 @@ public class AttachExistingElementView extends AbstractDivView {
 
     @Override
     protected void onShow() {
+        setId("root-div");
         Button attachLabel = new Button("Attach label", event -> getElement()
                 .attachExistingElement("label", null, this::handleLabel));
         attachLabel.setId("attach-label");
@@ -85,18 +88,25 @@ public class AttachExistingElementView extends AbstractDivView {
     }
 
     private void handleLabel(Element label) {
-        Label lbl = Component.from(label, Label.class);
-        lbl.setText("Client side label");
-        lbl.setId("label");
-        Button attachPopulatedLabel = new Button("Attach the attached label",
+        attachedLabel = Component.from(label, Label.class);
+        attachedLabel.setText("Client side label");
+        attachedLabel.setId("label");
+        Button attachPopulatedLabel = new Button(
+                "Attach the already attached label",
                 event -> getElement().attachExistingElement("label", null,
                         this::handleAttachedLabel));
         attachPopulatedLabel.setId("attach-populated-label");
         add(attachPopulatedLabel);
+
+        Button removeSelf = new Button("Remove myself on the server side",
+                event -> event.getSource().getElement().removeFromParent());
+        removeSelf.setId("remove-self");
+        add(removeSelf);
     }
 
     private void handleAttachedLabel(Element label) {
-        Element child = getElement().getChild(5);
+        Element child = getElement().getChild(attachedLabel.getParent().get()
+                .getElement().indexOfChild(attachedLabel.getElement()));
         // child is already populated label. The <code>label</code> should be
         // the same element
         if (child.equals(label)) {
