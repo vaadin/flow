@@ -25,11 +25,11 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Prerenderer;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.event.ComponentEventBus;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -326,7 +326,7 @@ public abstract class Component implements HasElement, Serializable,
     }
 
     @Override
-    public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
+    public <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener) {
 
         return getEventBus().addListener(eventType, listener);

@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.flow.html.Button;
 import com.vaadin.flow.html.HtmlContainer;
@@ -25,6 +24,7 @@ import com.vaadin.flow.html.Label;
 import com.vaadin.flow.html.event.ChangeEvent;
 import com.vaadin.flow.html.event.ChangeNotifier;
 import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.shared.Registration;
 
 public class RerouteView extends AbstractDivView {
 
@@ -34,8 +34,8 @@ public class RerouteView extends AbstractDivView {
         Button button = new Button("Navigate to here");
         button.setId("navigate");
         button.addClickListener(e -> {
-            button.getUI().ifPresent(ui -> ui.navigateTo(
-                    "com.vaadin.flow.uitest.ui.RerouteView"));
+            button.getUI().ifPresent(ui -> ui
+                    .navigateTo("com.vaadin.flow.uitest.ui.RerouteView"));
         });
 
         CheckBox checkbox = new CheckBox("RerouteToError");
@@ -80,13 +80,14 @@ public class RerouteView extends AbstractDivView {
         }
 
         @Override
-        public EventRegistrationHandle addChangeListener(
+        public Registration addChangeListener(
                 ComponentEventListener<ChangeEvent> listener) {
             return input.addChangeListener(listener);
         }
 
         public boolean isChecked() {
-            return Boolean.parseBoolean(input.getElement().getProperty("checked"));
+            return Boolean
+                    .parseBoolean(input.getElement().getProperty("checked"));
         }
     }
 

@@ -17,8 +17,8 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
 /**
  * Something that you can add component event listeners to. This interface
@@ -38,6 +38,6 @@ public interface ComponentEventNotifier extends Serializable {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
+    <T extends ComponentEvent<?>> Registration addListener(
             Class<T> eventType, ComponentEventListener<T> listener);
 }

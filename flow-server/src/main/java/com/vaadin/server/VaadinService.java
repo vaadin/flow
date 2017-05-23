@@ -47,7 +47,6 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
@@ -58,6 +57,7 @@ import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.shared.Registration;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -443,7 +443,7 @@ public abstract class VaadinService implements Serializable {
      *            the Vaadin service session initialization listener
      * @return a handle that can be used for removing the listener
      */
-    public EventRegistrationHandle addSessionInitListener(
+    public Registration addSessionInitListener(
             SessionInitListener listener) {
         sessionInitListeners.add(listener);
         return () -> sessionInitListeners.remove(listener);
@@ -463,7 +463,7 @@ public abstract class VaadinService implements Serializable {
      * 
      * @return a handle that can be used for removing the listener
      */
-    public EventRegistrationHandle addSessionDestroyListener(
+    public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
         sessionDestroyListeners.add(listener);
         return () -> sessionDestroyListeners.remove(listener);
@@ -1856,7 +1856,7 @@ public abstract class VaadinService implements Serializable {
      * 
      * @return a handle that can be used for removing the listener
      */
-    public EventRegistrationHandle addServiceDestroyListener(
+    public Registration addServiceDestroyListener(
             ServiceDestroyListener listener) {
         serviceDestroyListeners.add(listener);
         return () -> serviceDestroyListeners.remove(listener);
