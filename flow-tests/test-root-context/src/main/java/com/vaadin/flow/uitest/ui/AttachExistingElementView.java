@@ -51,12 +51,16 @@ public class AttachExistingElementView extends AbstractDivView {
     @Override
     protected void onShow() {
         setId("root-div");
-        Button attachLabel = new Button("Attach label", event -> getElement()
-                .attachExistingElement("label", null, this::handleLabel));
+        Button attachLabel = new Button("Attach label",
+                event -> getElement().getStateProvider().attachExistingElement(
+                        getElement().getNode(), "label", null,
+                        this::handleLabel));
         attachLabel.setId("attach-label");
         add(attachLabel);
-        Button attachHeader = new Button("Attach Header", event -> getElement()
-                .attachExistingElement("h1", null, this::handleHeader));
+        Button attachHeader = new Button("Attach Header",
+                event -> getElement().getStateProvider().attachExistingElement(
+                        getElement().getNode(), "h1", null,
+                        this::handleHeader));
         attachHeader.setId("attach-header");
         add(attachHeader);
 
@@ -65,14 +69,16 @@ public class AttachExistingElementView extends AbstractDivView {
         ShadowRoot shadowRoot = div.getElement().attachShadow();
 
         Button attachLabelInShadow = new Button("Attach label in shadow",
-                event -> shadowRoot.attachExistingElement("label", null,
+                event -> shadowRoot.getStateProvider().attachExistingElement(
+                        shadowRoot.getNode(), "label", null,
                         this::handleLabelInShadow));
         attachLabelInShadow.setId("attach-label-inshadow");
         add(attachLabelInShadow);
 
         Button attachNonExistingElement = new Button(
                 "Attach non-existing element",
-                event -> getElement().attachExistingElement("image", null,
+                event -> getElement().getStateProvider().attachExistingElement(
+                        getElement().getNode(), "image", null,
                         new NonExistingElementCallback()));
         attachNonExistingElement.setId("non-existing-element");
         add(attachNonExistingElement);
@@ -93,7 +99,8 @@ public class AttachExistingElementView extends AbstractDivView {
         attachedLabel.setId("label");
         Button attachPopulatedLabel = new Button(
                 "Attach the already attached label",
-                event -> getElement().attachExistingElement("label", null,
+                event -> getElement().getStateProvider().attachExistingElement(
+                        getElement().getNode(), "label", null,
                         this::handleAttachedLabel));
         attachPopulatedLabel.setId("attach-populated-label");
         add(attachPopulatedLabel);
