@@ -9,7 +9,15 @@
     </parent>
     <artifactId>flow-server-production-mode</artifactId>
     <name>Flow Server Production Mode</name>
-    <description>Wrapper project for the web-fragment.xml file that sets productionMode=true</description>
     <packaging>jar</packaging>
+    
+    <description>
+    This is a wrapper project for the web-fragment.xml file that sets productionMode=true. When this jar is 
+    added to the classpath of a web application, it will run in production mode automatically. This is better 
+    used in conjunction with the compilation and minification of resources for production deployment. See 
+    the documentation about ES5 compilation and resource minification at 
+    https://github.com/vaadin/flow/blob/master/flow-documentation/tutorial-webcomponents-es5.asciidoc for more 
+    information about it.
+    </description>
 
 </project>
