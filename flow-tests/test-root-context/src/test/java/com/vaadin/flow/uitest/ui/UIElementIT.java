@@ -17,14 +17,14 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
 import com.vaadin.testbench.By;
 
-public class UIElementIT extends PhantomJSTest {
+public class UIElementIT extends ChromeBrowserTest {
 
     @Test
     public void uiElementWorksInJSCalls() {

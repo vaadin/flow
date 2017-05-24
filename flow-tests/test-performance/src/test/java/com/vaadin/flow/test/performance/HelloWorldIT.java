@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -73,8 +74,7 @@ public class HelloWorldIT extends AbstractTestBenchTest {
 
     public void timeUntilButtonPresent(int latencyMilliseconds,
             int bandwidthKilobytePerSecond) throws Exception {
-        setupPhantomjsWithProxy(latencyMilliseconds,
-                bandwidthKilobytePerSecond);
+        setupProxy(latencyMilliseconds, bandwidthKilobytePerSecond);
         try {
             String testName = "helloworld-empty-" + bandwidthKilobytePerSecond
                     + "kBps-" + latencyMilliseconds + "ms";
@@ -84,6 +84,36 @@ public class HelloWorldIT extends AbstractTestBenchTest {
         } finally {
             stopProxyServer();
         }
+    }
+
+    private void setupProxy(int latencyMilliseconds,
+            int bandwidthKilobytePerSecond) {
+        proxyServer = setupMobProxy(latencyMilliseconds,
+                bandwidthKilobytePerSecond * 1024);
+        // get the Selenium proxy object and configure it for the driver
+        org.openqa.selenium.Proxy proxy = ClientUtil
+                .createSeleniumProxy(proxyServer);
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        capabilities.setCapability(CapabilityType.PROXY, proxy);
+        setDriver(new ChromeDriver(capabilities));
+
+
+        // Start recording a new har file
+        proxyServer.newHar("button");
+    }
+
+    protected static BrowserMobProxyServer setupMobProxy(long latencyMs,
+            long bytesPerSecond) {
+        BrowserMobProxyServer proxyServer = new net.lightbody.bmp.BrowserMobProxyServer();
+        proxyServer.setHarCaptureTypes(CaptureType.REQUEST_HEADERS,
+                CaptureType.RESPONSE_HEADERS);
+
+        proxyServer.setWriteBandwidthLimit(bytesPerSecond);
+        proxyServer.setReadBandwidthLimit(bytesPerSecond);
+        proxyServer.setLatency(latencyMs, TimeUnit.MILLISECONDS);
+
+        proxyServer.start();
+        return proxyServer;
     }
 
     private void runButtonTest(String testName) throws IOException {
@@ -105,35 +135,6 @@ public class HelloWorldIT extends AbstractTestBenchTest {
     private void stopProxyServer() {
         proxyServer.stop();
         proxyServer = null;
-    }
-
-    private void setupPhantomjsWithProxy(int latencyMilliseconds,
-            int bandwidthKilobytePerSecond) {
-        proxyServer = setupMobProxy(latencyMilliseconds,
-                bandwidthKilobytePerSecond * 1024);
-        // get the Selenium proxy object and configure it for the driver
-        org.openqa.selenium.Proxy proxy = ClientUtil
-                .createSeleniumProxy(proxyServer);
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability(CapabilityType.PROXY, proxy);
-        setupPhantomJsDriver(capabilities);
-
-        // Start recording a new har file
-        proxyServer.newHar("button");
-    }
-
-    protected static BrowserMobProxyServer setupMobProxy(long latencyMs,
-            long bytesPerSecond) {
-        BrowserMobProxyServer proxyServer = new net.lightbody.bmp.BrowserMobProxyServer();
-        proxyServer.setHarCaptureTypes(CaptureType.REQUEST_HEADERS,
-                CaptureType.RESPONSE_HEADERS);
-
-        proxyServer.setWriteBandwidthLimit(bytesPerSecond);
-        proxyServer.setReadBandwidthLimit(bytesPerSecond);
-        proxyServer.setLatency(latencyMs, TimeUnit.MILLISECONDS);
-
-        proxyServer.start();
-        return proxyServer;
     }
 
     @Override

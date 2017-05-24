@@ -19,9 +19,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class StaticHtmlIT extends PhantomJSTest {
+public class StaticHtmlIT extends ChromeBrowserTest {
 
     @Test
     public void ensureStaticHtmlShown() {

@@ -32,7 +32,7 @@ import com.vaadin.testbench.parallel.Browser;
  * overridden by {@link AbstractTestBenchTest#USE_HUB_PROPERTY}. If this
  * property value is set to {@code true} then the test will be executed on the
  * tests Hub.
- * 
+ *
  * @see RunLocally
  * @author Vaadin Ltd
  *
@@ -44,24 +44,24 @@ public @interface LocalExecution {
 
     /**
      * Gets the browser for local execution.
-     * 
+     *
      * @return the browser for local execution
      */
-    Browser value() default Browser.PHANTOMJS;
+    Browser value() default Browser.CHROME;
 
     /**
      * Gets the browser version.
-     * 
+     *
      * @return the browser version
      */
-    public String browserVersion() default "";
+    String browserVersion() default "";
 
     /**
      * Checks whether the local execution configuration active.
      * <p>
      * If configuration is not active then the test will be executed on the
      * tests Hub.
-     * 
+     *
      * @return whether the local execution configuration is active
      */
     boolean active() default true;

@@ -5,9 +5,9 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public abstract class AbstractContextIT extends PhantomJSTest {
+public abstract class AbstractContextIT extends ChromeBrowserTest {
 
     private static final String JETTY_CONTEXT = "/context";
 

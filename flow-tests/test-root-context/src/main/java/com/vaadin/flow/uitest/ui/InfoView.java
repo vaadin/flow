@@ -80,7 +80,6 @@ public class InfoView extends Div implements View {
         add(browser, "Edge", webBrowser.isEdge());
         add(browser, "Firefox", webBrowser.isFirefox());
         add(browser, "IE", webBrowser.isIE());
-        add(browser, "PhantomJS", webBrowser.isPhantomJS());
         add(browser, "Safari", webBrowser.isSafari());
 
         info("Browser", browser.stream().collect(Collectors.joining(", ")));

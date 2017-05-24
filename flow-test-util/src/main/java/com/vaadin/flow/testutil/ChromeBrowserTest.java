@@ -24,8 +24,7 @@ import com.vaadin.flow.testcategory.ChromeTests;
 import com.vaadin.testbench.parallel.Browser;
 
 /**
- * Base class for TestBench tests to run locally in the Chrome browser instead
- * of Phantom JS.
+ * Base class for TestBench tests to run locally in the Chrome browser.
  * <p>
  * It is required to set system property with path to the driver to be able to
  * run the test.
@@ -39,18 +38,12 @@ import com.vaadin.testbench.parallel.Browser;
  *
  */
 @Category(ChromeTests.class)
-@LocalExecution(Browser.CHROME)
 public class ChromeBrowserTest extends ViewOrUITest {
 
     @Override
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
         /*
-         * Let's use only Chrome browser for now:
-         *
-         * - phantom JS should be excluded for the ChromeBrowserTest test
-         * because phantom JS doesn't support polymer (the main reason to use
-         * ChromeBrowserTest) - FF version (currently used on hub) is not
-         * supported.
+         * Let's use only Chrome browser for now: FF version does not exit correctly after test being run.
          */
         return getBrowserCapabilities(Browser.CHROME);
     }
