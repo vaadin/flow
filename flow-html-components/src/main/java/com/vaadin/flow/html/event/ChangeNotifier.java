@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.html.event;
 
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.ComponentEventNotifier;
 
 /**
@@ -33,7 +33,7 @@ public interface ChangeNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default EventRegistrationHandle addChangeListener(
+    default Registration addChangeListener(
             ComponentEventListener<ChangeEvent> listener) {
         return addListener(ChangeEvent.class, listener);
     }

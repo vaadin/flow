@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.EventRegistrationHandle;
+import com.vaadin.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -43,7 +43,7 @@ public class ElementListenersTest
 
         AtomicInteger eventCount = new AtomicInteger();
 
-        EventRegistrationHandle handle = ns.add("foo",
+        Registration handle = ns.add("foo",
                 e -> eventCount.incrementAndGet(), new String[0]);
 
         Assert.assertEquals(0, eventCount.get());
@@ -67,7 +67,7 @@ public class ElementListenersTest
     public void testEventNameInClientData() {
         Assert.assertFalse(ns.contains("foo"));
 
-        EventRegistrationHandle handle = ns.add("foo", noOp, new String[0]);
+        Registration handle = ns.add("foo", noOp, new String[0]);
 
         Assert.assertEquals(0, getExpressions("foo").size());
 
@@ -85,7 +85,7 @@ public class ElementListenersTest
         Assert.assertTrue(expressions.contains("data2"));
         Assert.assertFalse(expressions.contains("data3"));
 
-        EventRegistrationHandle handle = ns.add("eventType",
+        Registration handle = ns.add("eventType",
                 new DomEventListener() {
                     /*
                      * Can't use the existing noOp instance since there would

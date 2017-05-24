@@ -28,7 +28,7 @@ You don't need to implement a separate method for removing an event listener. In
 ----
 @Tag("input")
 public class TextField extends Component {
-    public EventRegistrationHandle addChangeListener(
+    public Registration addChangeListener(
             ComponentEventListener<ChangeEvent> listener) {
         return addListener(ChangeEvent.class, listener);
     }
@@ -42,7 +42,7 @@ The user can then add and remove listeners like this.
 [source,java]
 ----
 TextField textField = new TextField();
-EventRegistrationHandle registration = textField
+Registration registration = textField
         .addChangeListener(e -> System.out.println("Event fired"));
 
 // In some other part of the code

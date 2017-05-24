@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.NullOwner;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 
 public class ShadowRootTest extends AbstractNodeTest {
@@ -76,7 +77,7 @@ public class ShadowRootTest extends AbstractNodeTest {
         AtomicInteger childTriggered = new AtomicInteger();
         AtomicInteger grandChildTriggered = new AtomicInteger();
 
-        EventRegistrationHandle registrationHandle = child
+        Registration registrationHandle = child
                 .addAttachListener(event -> {
                     childTriggered.addAndGet(1);
                 });
@@ -128,7 +129,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         AtomicInteger triggered = new AtomicInteger();
 
-        EventRegistrationHandle registrationHandle = child
+        Registration registrationHandle = child
                 .addDetachListener(event -> {
                     triggered.addAndGet(1);
                     Assert.assertEquals(child, event.getSource());

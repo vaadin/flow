@@ -18,8 +18,8 @@ package com.vaadin.flow.uitest.ui.webcomponent;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
@@ -44,7 +44,7 @@ public class PaperSlider extends Component implements HasValue {
         return getElement().getProperty("pin", false);
     }
 
-    public EventRegistrationHandle addValueChangeListener(
+    public Registration addValueChangeListener(
             ComponentEventListener<ValueChangeEvent> valueChangeListener) {
         return super.addListener(ValueChangeEvent.class, valueChangeListener);
     }

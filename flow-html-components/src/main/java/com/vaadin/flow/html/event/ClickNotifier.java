@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.html.event;
 
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.ComponentEventNotifier;
 
 /**
@@ -33,7 +33,7 @@ public interface ClickNotifier extends ComponentEventNotifier {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    default EventRegistrationHandle addClickListener(
+    default Registration addClickListener(
             ComponentEventListener<ClickEvent> listener) {
         return addListener(ClickEvent.class, listener);
     }

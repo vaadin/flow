@@ -29,7 +29,6 @@ import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
@@ -53,6 +52,7 @@ import com.vaadin.flow.template.angular.ElementTemplateNode;
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.server.StreamResource;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
 
@@ -310,7 +310,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public EventRegistrationHandle addEventListener(StateNode node,
+    public Registration addEventListener(StateNode node,
             String eventType, DomEventListener listener,
             String[] eventDataExpressions) {
         ElementListenerMap listeners = getOrCreateOverrideNode(node)
@@ -501,7 +501,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public EventRegistrationHandle addPropertyChangeListener(StateNode node,
+    public Registration addPropertyChangeListener(StateNode node,
             String name, PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }

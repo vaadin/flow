@@ -24,8 +24,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentTest.TestComponent;
@@ -187,7 +187,7 @@ public class ComponentEventBusTest {
     public void domEvent_removeListener() {
         TestComponent component = new TestComponent();
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
-        EventRegistrationHandle remover = component
+        Registration remover = component
                 .addListener(MappedToDomEvent.class, eventTracker);
         remover.remove();
 
@@ -240,7 +240,7 @@ public class ComponentEventBusTest {
     public void nonDomEvent_removeListener() {
         TestComponent component = new TestComponent();
         EventTracker<ServerEvent> eventTracker = new EventTracker<>();
-        EventRegistrationHandle remover = component
+        Registration remover = component
                 .addListener(ServerEvent.class, eventTracker);
         remover.remove();
 
@@ -267,9 +267,9 @@ public class ComponentEventBusTest {
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         EventTracker<MappedToDomNoDataEvent> eventTracker2 = new EventTracker<>();
 
-        EventRegistrationHandle remover = component
+        Registration remover = component
                 .addListener(MappedToDomEvent.class, eventTracker);
-        EventRegistrationHandle remover2 = component
+        Registration remover2 = component
                 .addListener(MappedToDomNoDataEvent.class, eventTracker2);
         remover.remove();
 
@@ -334,9 +334,9 @@ public class ComponentEventBusTest {
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         EventTracker<MappedToDomEvent> eventTracker2 = new EventTracker<>();
 
-        EventRegistrationHandle remover = component
+        Registration remover = component
                 .addListener(MappedToDomEvent.class, eventTracker);
-        EventRegistrationHandle remover2 = component
+        Registration remover2 = component
                 .addListener(MappedToDomEvent.class, eventTracker2);
         remover.remove();
 

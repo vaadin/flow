@@ -19,9 +19,9 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
@@ -58,7 +58,7 @@ public class WebComponentEvents {
             return getElement().getProperty("pin", false);
         }
 
-        public EventRegistrationHandle addValueChangeListener(
+        public Registration addValueChangeListener(
                 ComponentEventListener<ValueChangeEvent> valueChangeListener) {
             // @formatter:off
             return super.addListener(ValueChangeEvent.class, valueChangeListener);
