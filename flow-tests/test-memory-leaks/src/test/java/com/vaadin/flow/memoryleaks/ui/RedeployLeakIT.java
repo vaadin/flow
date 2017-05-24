@@ -17,7 +17,6 @@
 package com.vaadin.flow.memoryleaks.ui;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.lang.ref.WeakReference;
 
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
@@ -35,7 +34,7 @@ import org.eclipse.jetty.webapp.WebXmlConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
@@ -65,8 +64,7 @@ public class RedeployLeakIT {
         // DO NOT RUN FROM ECLIPSE
         // The test uses files from the target folder
         setup(7778);
-        PhantomJSDriver driver = new PhantomJSDriver(
-                DesiredCapabilities.phantomjs());
+        ChromeDriver driver = new ChromeDriver(DesiredCapabilities.chrome());
         try {
             driver.get("http://localhost:7778/");
             Assert.assertNotNull(driver.findElement(By.id("hello")));
@@ -84,15 +82,13 @@ public class RedeployLeakIT {
 
         server = new Server();
 
-        final ServerConnector connector = new ServerConnector(server);
+        try (ServerConnector connector = new ServerConnector(server)) {
+            connector.setPort(port);
+            server.setConnectors(new ServerConnector[] { connector });
+        }
 
-        connector.setPort(port);
-        server.setConnectors(new ServerConnector[] { connector });
-
-        File[] warDirs = new File("target").listFiles((FileFilter) file -> {
-            return file.getName()
-                    .matches("flow-test-memory-leaks-.*-SNAPSHOT");
-        });
+        File[] warDirs = new File("target").listFiles(file -> file.getName()
+                .matches("flow-test-memory-leaks-.*-SNAPSHOT"));
         String wardir = "target/" + warDirs[0].getName();
 
         context = new WebAppContext();

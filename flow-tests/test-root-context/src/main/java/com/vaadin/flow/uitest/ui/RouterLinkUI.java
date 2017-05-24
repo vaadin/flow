@@ -56,7 +56,7 @@ public class RouterLinkUI extends UI {
                 ElementFactory.createDiv("outside this servlet"), createRouterLink("/run"), new Element("p"),
                 createRouterLink("/foo/bar"), new Element("p"),
                 // external
-                ElementFactory.createDiv("external"), createRouterLink("http://google.com"));
+                ElementFactory.createDiv("external"), createRouterLink("http://example.net/"));
     }
 
     private Element createRouterLink(String target) {
