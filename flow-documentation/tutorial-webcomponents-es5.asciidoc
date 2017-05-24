@@ -168,6 +168,7 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 [source,xml]
 ----
 <properties>
+  <flow.version>FLOW VERSION HERE</flow.version>
   <jetty.version>9.4.5.v20170502</jetty.version>
   <frontend.working.directory>src/main/frontend</frontend.working.directory>
   <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
@@ -197,7 +198,7 @@ Jetty Plugin, by using the `mvn jetty:run` command.
               </filesets>
           </configuration>
       </plugin>
-      
+
       <!--2-->
       <plugin>
           <groupId>com.github.eirslett</groupId>
@@ -226,6 +227,23 @@ Jetty Plugin, by using the `mvn jetty:run` command.
               </execution>
           </executions>
       </plugin>
+
+     <!--3-->
+      <plugin>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-maven-plugin</artifactId>
+          <version>${jetty.version}</version>
+          <configuration>
+              <webAppConfig>
+                  <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
+                  <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                  <resourceBases>
+                      <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                      <resourceBase>${jetty.extra.resource.base}</resourceBase>
+                  </resourceBases>
+              </webAppConfig>
+          </configuration>
+      </plugin>
   </plugins>
 </build>
 
@@ -237,14 +255,24 @@ Jetty Plugin, by using the `mvn jetty:run` command.
             <name>vaadin.productionMode</name>
         </property>
     </activation>
-    
+
     <properties>
         <yarn.build.goal>install</yarn.build.goal>
+        <jetty.extra.resource.base>${project.build.directory}/jetty-extra-resources</jetty.extra.resource.base>
     </properties>
-    
+
+    <!--4-->
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server-production-mode</artifactId>
+            <version>${flow.version}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
-            <!--3-->
+            <!--5-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -258,8 +286,8 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                     </webResources>
                 </configuration>
             </plugin>
-            
-            <!--4-->
+
+            <!--6-->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.2</version>
@@ -271,7 +299,7 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/jetty-extra-resources/${vaadin.frontend.path}</outputDirectory>
+                            <outputDirectory>${jetty.extra.resource.base}/${vaadin.frontend.path}</outputDirectory>
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
@@ -281,23 +309,6 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!--5-->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <configuration>
-                    <webAppConfig>
-                        <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
-                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                        <resourceBases>
-                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                            <resourceBase>${project.build.directory}/jetty-extra-resources</resourceBase>
-                        </resourceBases>
-                    </webAppConfig>
-                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -310,14 +321,15 @@ Jetty Plugin, by using the `mvn jetty:run` command.
               <name>!vaadin.productionMode</name>
           </property>
       </activation>
-      
+
       <properties>
           <yarn.build.goal>run devMode</yarn.build.goal>
+          <jetty.extra.resource.base>${project.basedir}/${frontend.working.directory}</jetty.extra.resource.base>
       </properties>
-      
+
       <build>
           <plugins>
-              <!--6-->
+              <!--7-->
               <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-war-plugin</artifactId>
@@ -333,23 +345,6 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                       </webResources>
                   </configuration>
               </plugin>
-              
-              <!--7-->
-              <plugin>
-                  <groupId>org.eclipse.jetty</groupId>
-                  <artifactId>jetty-maven-plugin</artifactId>
-                  <version>${jetty.version}</version>
-                  <configuration>
-                      <webAppConfig>
-                          <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
-                          <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                          <resourceBases>
-                              <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                              <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
-                          </resourceBases>
-                      </webAppConfig>
-                  </configuration>
-              </plugin>
           </plugins>
       </build>
   </profile>
@@ -358,16 +353,19 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 
 <1> Configures the cleanup process for JS dependencies and build
 <2> Configures the frontend plugin to compile the web components source
-<3> Copies the files compiled by Polymer to a directory from where it can be
+<3> Configures the Jetty plugin to use the right resource path when running in
+either production or debug modes
+<4> Makes the package runs in production mode when deployed, without the need
+of setting extra properties on the server  
+<5> Copies the files compiled by Polymer to a directory from where it can be
 served (root of the WAR) when in production mode
-<4> Copies the files compiled by Polymer to a directory where jetty:run can 
+<6> Copies the files compiled by Polymer to a directory where jetty:run can
 use as resource folder
-<5> Configures the jetty plugin to use the extra resource folder in 
-production mode
-<6> Adds the files from src/main/frontend directly into the WAR when in 
+<7> Adds the files from src/main/frontend directly into the WAR when in
 debug mode
-<7> Configures the jetty plugin to use the extra resource folder in debug 
-mode
+
+[WARNING]
+Don't forget to set the proper Flow version inside the `<flow.version>` property.
 
 === Production mode
 
@@ -391,6 +389,13 @@ must run the packaging using the `-Dvaadin.productionMode` flag. For example:
 [source,bash]
 ----
 mvn package -Dvaadin.productionMode
+----
+
+You can test your application in production mode with the Jetty plugin as well:
+
+[source,bash]
+----
+mvn jetty:run -Dvaadin.productionMode
 ----
 
 === Directories created by the process
