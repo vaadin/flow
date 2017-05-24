@@ -17,11 +17,6 @@ while [ "$1" != "" ]; do
     shift
 done
 
-export DISPLAY=:99.0
-sh -e /etc/init.d/xvfb start
-# The Following line fixes random Chrome startup failures (https://github.com/SeleniumHQ/docker-selenium/issues/87)
-export DBUS_SESSION_BUS_ADDRESS=/dev/null
-
 if [ "$javadoc" = "1" ]; then
    javadoc_opts=""
 else 
