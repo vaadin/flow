@@ -191,20 +191,6 @@ public class WebBrowser implements Serializable {
     }
 
     /**
-     * Tests whether the user is using PhantomJS.
-     *
-     * @return true if the user is using PhantomJS, false if the user is not
-     *         using PhantomJS or if no information on the browser is present
-     */
-    public boolean isPhantomJS() {
-        if (browserDetails == null) {
-            return false;
-        }
-
-        return browserDetails.isPhantomJS();
-    }
-
-    /**
      * Gets the major version of the browser the user is using.
      *
      * <p>
@@ -539,7 +525,7 @@ public class WebBrowser implements Serializable {
      * Checks if the browser supports ECMAScript 6, based on the user agent. Web
      * components must be compiled to ECMAScript 5 when running on browsers
      * without support to ECMAScript 6.
-     * 
+     *
      * @return <code>true</code> if the browser supports ES6, <code>false</code>
      *         otherwise.
      */

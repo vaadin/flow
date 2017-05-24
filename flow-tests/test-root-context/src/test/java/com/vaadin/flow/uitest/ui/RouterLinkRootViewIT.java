@@ -20,9 +20,9 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class RouterLinkRootViewIT extends PhantomJSTest {
+public class RouterLinkRootViewIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {

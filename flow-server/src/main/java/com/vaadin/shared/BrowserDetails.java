@@ -44,7 +44,6 @@ public class BrowserDetails implements Serializable {
     private boolean isOpera = false;
     private boolean isIE = false;
     private boolean isEdge = false;
-    private boolean isPhantomJS = false;
 
     private boolean isWindowsPhone;
     private boolean isIPad;
@@ -85,9 +84,7 @@ public class BrowserDetails implements Serializable {
         // IE 11 no longer contains MSIE in the user agent
         isIE = isIE || isTrident;
 
-        isPhantomJS = userAgent.indexOf("phantomjs/") != -1;
-        isSafari = !isChrome && !isIE && !isPhantomJS
-                && userAgent.indexOf("safari") != -1;
+        isSafari = !isChrome && !isIE && userAgent.indexOf("safari") != -1;
         isFirefox = userAgent.indexOf(" firefox/") != -1;
         if (userAgent.indexOf(" edge/") != -1) {
             isEdge = true;
@@ -98,7 +95,6 @@ public class BrowserDetails implements Serializable {
             isFirefox = false;
             isWebKit = false;
             isGecko = false;
-            isPhantomJS = false;
         }
 
         // Rendering engine version
@@ -188,10 +184,6 @@ public class BrowserDetails implements Serializable {
             } else if (isEdge) {
                 int i = userAgent.indexOf(" edge/") + 6;
                 parseVersionString(safeSubstring(userAgent, i, i + 8));
-            } else if (isPhantomJS) {
-                String prefix = " phantomjs/";
-                int i = userAgent.indexOf(prefix) + prefix.length();
-                parseVersionString(safeSubstring(userAgent, i, i + 5));
             }
         } catch (Exception e) {
             // Browser version parsing failed
@@ -411,15 +403,6 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is PhantomJS.
-     *
-     * @return true if it is PhantomJS, false otherwise
-     */
-    public boolean isPhantomJS() {
-        return isPhantomJS;
-    }
-
-    /**
      * Returns the version of the browser engine. For WebKit this is an integer
      * e.g., 532.0. For gecko it is a float e.g., 1.8 or 1.9.
      *
@@ -584,7 +567,7 @@ public class BrowserDetails implements Serializable {
      * Checks if the browser supports ECMAScript 6, based on the user agent. The
      * main features required to consider the browser ES6 compatible are ES6
      * Classes, let/const support and arrow functions.
-     * 
+     *
      * @return <code>true</code> if the browser supports ES6, <code>false</code>
      *         otherwise.
      */

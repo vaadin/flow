@@ -21,12 +21,12 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * @author Vaadin Ltd.
  */
-public class RequestParametersHistoryIT extends PhantomJSTest {
+public class RequestParametersHistoryIT extends ChromeBrowserTest {
     @Test
     public void noParameters() {
         open();
