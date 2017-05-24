@@ -21,9 +21,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class TemplateComponentMappingIT extends PhantomJSTest {
+public class TemplateComponentMappingIT extends ChromeBrowserTest {
 
     @Test
     public void eventHandler() {

@@ -413,7 +413,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "z-index: 10000;" //
                 + "}");
 
-        // Collections polyfill needed for PhantomJS and maybe googlebot
+        // Collections polyfill maybe needed for googlebot
         head.appendChild(
                 createJavaScriptElement(
                         context.getUriResolver()

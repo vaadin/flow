@@ -19,13 +19,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class TimingInfoReportedIT extends PhantomJSTest {
+public class TimingInfoReportedIT extends ChromeBrowserTest {
 
     @Test
     public void ensureTimingsAvailable() {

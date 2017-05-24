@@ -29,9 +29,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.router.View;
@@ -170,28 +168,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Sets up the test to run using Phantom JS.
-     *
-     */
-    protected void setupPhantomJsDriver() {
-        setupPhantomJsDriver(new DesiredCapabilities());
-    }
-
-    /**
-     * Sets up the test to run using Phantom JS with the additional capabilities
-     * specified.
-     *
-     * @param extraCapabilities
-     *            additional capabilities to pass to the driver
-     */
-    protected void setupPhantomJsDriver(Capabilities extraCapabilities) {
-        DesiredCapabilities cap = DesiredCapabilities.phantomjs();
-        cap.merge(extraCapabilities);
-        PhantomJSDriver driver = new PhantomJSDriver(cap);
-        setDriver(driver);
-    }
-
-    /**
      * Compares the given reference screenshot to the current and fails the test
      * if it doesn't match.
      *
@@ -236,17 +212,17 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * The method {@link #getBrowsersToTest()} delegates the logic to this
      * method in case {@link #getLocalExecution()} return value is an empty
      * optional (i.e. the tests Hub is used).
-     * 
+     *
      * @return the browsers capabilities list to execute test on the tests Hub
      */
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
         return getBrowserCapabilities(Browser.IE11, Browser.FIREFOX,
-                Browser.CHROME, Browser.PHANTOMJS);
+                Browser.CHROME);
     }
 
     /**
      * Gets browser capabilities for the provided <code>browsers</code>.
-     * 
+     *
      * @param browsers
      *            a browsers list
      * @return the capabilities for the given <code>browsers</code>
@@ -329,12 +305,12 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * <p>
      * If this method return an empty optional then test with be run on the test
      * Hub
-     * 
+     *
      * @see LocalExecution
-     * 
+     *
      * @return an optional configuration, or an empty optional if configuration
      *         is disabled or not available
-     * 
+     *
      */
     protected Optional<LocalExecution> getLocalExecution() {
         if (USE_HUB) {

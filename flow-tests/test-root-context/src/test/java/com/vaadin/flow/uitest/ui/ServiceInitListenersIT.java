@@ -21,14 +21,14 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class ServiceInitListenersIT extends PhantomJSTest {
+public class ServiceInitListenersIT extends ChromeBrowserTest {
 
     @Test
     public void testServiceInitListenerTriggered() {

@@ -6,10 +6,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchTestCase;
 
-public abstract class AbstractClientServerCounterIT extends PhantomJSTest {
+public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
 
     @Test
     public void testServerInitiatedCommunication() throws InterruptedException {

@@ -26,9 +26,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class WebComponentsIT extends PhantomJSTest {
+public class WebComponentsIT extends ChromeBrowserTest {
 
     @Test
     public void testPolyfillLoaded() {

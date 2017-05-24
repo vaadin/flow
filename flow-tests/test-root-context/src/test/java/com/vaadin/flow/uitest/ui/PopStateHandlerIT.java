@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class PopStateHandlerIT extends PhantomJSTest {
+public class PopStateHandlerIT extends ChromeBrowserTest {
 
     private static final String FORUM = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/";
     private static final String FORUM_SUBCATEGORY = "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/#!/category/1";
