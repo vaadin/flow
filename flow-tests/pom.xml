@@ -133,23 +133,23 @@
                         <lifecycleMappingMetadata>
                             <pluginExecutions>
                                 <pluginExecution>
-                                	<pluginExecutionFilter>
-                                		<groupId>
-                                			com.lazerycode.selenium
-                                		</groupId>
-                                		<artifactId>
-                                			driver-binary-downloader-maven-plugin
-                                		</artifactId>
-                                		<versionRange>
-                                			[1.0.10,)
-                                		</versionRange>
-                                		<goals>
-                                			<goal>selenium</goal>
-                                		</goals>
-                                	</pluginExecutionFilter>
-                                	<action>
-                                		<ignore></ignore>
-                                	</action>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            com.lazerycode.selenium
+                                        </groupId>
+                                        <artifactId>
+                                            driver-binary-downloader-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [${driver.binary.downloader.maven.plugin.version},)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>selenium</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
                                 </pluginExecution>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
@@ -160,7 +160,7 @@
                                             phantomjs-maven-plugin
                                         </artifactId>
                                         <versionRange>
-                                            [0.7,)
+                                            [${phantomjs.plugin.version},)
                                         </versionRange>
                                         <goals>
                                             <goal>install</goal>
