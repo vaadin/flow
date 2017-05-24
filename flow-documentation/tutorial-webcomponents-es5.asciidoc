@@ -352,7 +352,7 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 
 <1> Configures the cleanup process for JS dependencies and build
 <2> Configures the frontend plugin to compile the web components source
-<3> Configures the jetty plugin to use the right resource path when running in
+<3> Configures the Jetty plugin to use the right resource path when running in
 either production or debug modes
 <4> Copies the files compiled by Polymer to a directory from where it can be
 served (root of the WAR) when in production mode
@@ -386,6 +386,13 @@ must run the packaging using the `-Dvaadin.productionMode` flag. For example:
 [source,bash]
 ----
 mvn package -Dvaadin.productionMode
+----
+
+You can test your application in production mode with the Jetty plugin as well:
+
+[source,bash]
+----
+mvn jetty:run -Dvaadin.productionMode
 ----
 
 === Directories created by the process
