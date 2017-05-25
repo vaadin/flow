@@ -147,7 +147,10 @@ public class ClientJsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithoutTypeInfo(Object value) {
-        if (GWT.isScript()) {
+        if (value == null) {
+            // undefined shouln't go as undefined, it should be encoded as null
+            return Json.createNull();
+        } else if (GWT.isScript()) {
             return WidgetUtil.crazyJsoCast(value);
         } else {
             if (value instanceof String) {
@@ -158,12 +161,9 @@ public class ClientJsonCodec {
                 return Json.create(((Boolean) value).booleanValue());
             } else if (value instanceof JsonValue) {
                 return (JsonValue) value;
-            } else if (value == null) {
-                return Json.createNull();
-            } else {
-                throw new IllegalArgumentException(
-                        "Can't encode" + value.getClass() + " to json");
             }
+            throw new IllegalArgumentException(
+                    "Can't encode" + value.getClass() + " to json");
         }
     }
 
