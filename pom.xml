@@ -58,7 +58,7 @@
 
         <!--Plugins-->
         <phantomjs.plugin.version>0.7</phantomjs.plugin.version>
-        <driver.binary.downloader.maven.plugin.version>1.0.13</driver.binary.downloader.maven.plugin.version>
+        <driver.binary.downloader.maven.plugin.version>1.0.12</driver.binary.downloader.maven.plugin.version>
 
         <!--Frontend-->
         <node.version>v7.10.0</node.version>
