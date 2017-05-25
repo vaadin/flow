@@ -22,10 +22,8 @@ import java.util.stream.Stream.Builder;
 
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.dom.Prerenderer;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.event.ComponentEventBus;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -167,34 +165,6 @@ public abstract class Component implements HasElement, Serializable,
     public Element getElement() {
         assert element != null : "getElement() must not be called before the element has been set";
         return element;
-    }
-
-    /**
-     * Returns an optional pre-rendered version of the Component, or an empty
-     * optional if this component should not be included in the pre-render HTML.
-     * <p>
-     * Used by the framework during the first request to produce the HTML on the
-     * first page.
-     * <p>
-     * A component should override this method to pre-render something else than
-     * the default, which is the element returned by {@link #getElement()}.
-     * <p>
-     * By default <b>Web Components are and scripts are not included</b> in the
-     * pre-render HTML.
-     * <p>
-     * Each component which supports pre-rendering should output the HTML tree
-     * for itself, handle pre-rendering for its children and ensure they are
-     * attached to the pre-rendered element tree.
-     * <p>
-     * The {@link Prerenderer} class provides some helper methods related to
-     * pre-rendering.
-     *
-     * @return an JSoup node with the pre-rendered DOM structure of the
-     *         component and its children
-     * @see Prerenderer for useful methods
-     */
-    protected Optional<Node> prerender() {
-        return Prerenderer.prerenderElementTree(getElement());
     }
 
     /**

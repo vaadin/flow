@@ -88,7 +88,7 @@ public class ElementUtilTest {
     }
 
     @Test
-    public void notPrerender_includesScriptTags() {
+    public void includesScriptTags() {
         InlineTemplate template = new InlineTemplate(
                 "<div><script>window.alert('shazbot');</script></div>");
         Node jsoupNode = ElementUtil.toJsoup(new Document(""),

@@ -18,11 +18,9 @@ package com.vaadin.ui;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.util.ReflectTools;
@@ -155,11 +153,6 @@ public abstract class Composite<T extends Component> extends Component {
     @Override
     public Element getElement() {
         return getContent().getElement();
-    }
-
-    @Override
-    protected Optional<Node> prerender() {
-        return getContent().prerender();
     }
 
     /**

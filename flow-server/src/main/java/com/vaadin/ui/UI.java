@@ -24,10 +24,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.Prerenderer;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
@@ -615,26 +613,6 @@ public class UI extends Component
     }
 
     /**
-     * Returns the pre-render version of the UI, or an empty optional if nothing
-     * should be pre-rendered.
-     * <p>
-     * When returning an element, the element must always be of type
-     * <code>body</code>.
-     * <p>
-     * By default returns the body element and the children attached to the UI.
-     *
-     * @return an element with the pre-rendered DOM structure of the UI and its
-     *         children
-     * @see Component#prerender()
-     * @see Prerenderer#prerenderElementTree(Element)
-     */
-    @Override
-    protected Optional<Node> prerender() {
-        // overridden because of additional javadocs
-        return super.prerender();
-    }
-
-    /**
      * Gets the state node for this UI.
      *
      * @return the state node for the UI, in practice the state tree root node
@@ -683,13 +661,13 @@ public class UI extends Component
      *            query parameters that are used for navigation, not
      *            {@code null}
      */
-    public void navigateTo(String location,
-            QueryParameters queryParameters) {
+    public void navigateTo(String location, QueryParameters queryParameters) {
         if (location == null) {
             throw new IllegalArgumentException("Location may not be null");
         }
         if (queryParameters == null) {
-            throw new IllegalArgumentException("Query parameters may not be null");
+            throw new IllegalArgumentException(
+                    "Query parameters may not be null");
         }
 
         if (!getRouter().isPresent()) {

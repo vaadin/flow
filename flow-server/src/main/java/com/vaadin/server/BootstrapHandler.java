@@ -40,7 +40,6 @@ import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
 import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.parser.Tag;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
@@ -49,7 +48,6 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -68,8 +66,6 @@ import elemental.json.impl.JsonUtil;
  * @since 7.0.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
-
-    static final String PRE_RENDER_INFO_TEXT = "This is only a pre-rendered version. Remove ?prerender=only to see the full version";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "flow.gwtStatsEvents = [];"
@@ -208,26 +204,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         /**
-         * Gets the pre-rendering mode.
-         * <p>
-         * The pre-rendering mode can be "pre-render only", "pre-render and live
-         * " or "live only" and is only meant for testing.
-         *
-         * @return the mode to use for pre-rendering
-         */
-        public PreRenderMode getPreRenderMode() {
-            String preParam = request.getParameter("prerender");
-            if (preParam != null) {
-                if ("only".equals(preParam)) {
-                    return PreRenderMode.PRE_ONLY;
-                } else if ("no".equals(preParam)) {
-                    return PreRenderMode.LIVE_ONLY;
-                }
-            }
-            return PreRenderMode.PRE_AND_LIVE;
-        }
-
-        /**
          * Checks if the application is running in production mode.
          *
          * @return <code>true</code> if in production mode, <code>false</code>
@@ -238,30 +214,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .isProductionMode();
         }
 
-    }
-
-    enum PreRenderMode {
-        PRE_AND_LIVE, PRE_ONLY, LIVE_ONLY;
-
-        /**
-         * Checks if a live version of the application should be rendered.
-         *
-         * @return <code>true</code> if a live version should be rendered,
-         *         <code>false</code> otherwise
-         */
-        public boolean includeLiveVersion() {
-            return this == PRE_AND_LIVE || this == LIVE_ONLY;
-        }
-
-        /**
-         * Checks if a pre-render version of the application should be included.
-         *
-         * @return <code>true</code> if a pre-render version should be included,
-         *         <code>false</code> otherwise
-         */
-        public boolean includePreRenderVersion() {
-            return this == PRE_AND_LIVE || this == PRE_ONLY;
-        }
     }
 
     private static class BootstrapUriResolver extends VaadinUriResolver {
@@ -340,9 +292,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         document.appendChild(doctype);
         Element html = document.appendElement("html");
         Element head = html.appendElement("head");
+        html.appendElement("body");
 
         setupDocumentHead(head, context);
-        setupDocumentBody(document, context);
+        setupDocumentBody(document);
 
         document.outputSettings().prettyPrint(false);
 
@@ -385,8 +338,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
-        includeDependenciesInPreRender(head, initialUIDL,
-                context.getUriResolver());
+        loadEagerDependencies(head, initialUIDL, context.getUriResolver());
 
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
@@ -428,12 +380,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendChild(getPushScript(context));
         }
 
-        if (context.getPreRenderMode().includeLiveVersion()) {
-            head.appendChild(getBootstrapScript(initialUIDL, context));
-            head.appendChild(
-                    createJavaScriptElement(getClientEngineUrl(context)));
-        }
-
+        head.appendChild(getBootstrapScript(initialUIDL, context));
+        head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
     }
 
     private static void appendWebComponentsElements(Element head,
@@ -518,7 +466,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return converter.apply(value);
     }
 
-    private static void includeDependenciesInPreRender(Element head,
+    private static void loadEagerDependencies(Element head,
             JsonObject initialUIDL, VaadinUriResolver resolver) {
         // Extract style sheets and load them eagerly
         JsonArray dependencies = initialUIDL
@@ -569,45 +517,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 createJavaScriptElement(resolver.resolveVaadinUri(url)));
     }
 
-    private static void setupDocumentBody(Document document,
-            BootstrapContext context) {
-        Element body;
-        if (!context.getPreRenderMode().includePreRenderVersion()) {
-            document.head().after("<body></body>");
-            body = document.body();
-        } else {
-            Optional<Node> uiElement = ComponentUtil.prerender(context.getUI());
-
-            if (uiElement.isPresent()) {
-                Node prerenderedUIElement = uiElement.get();
-                assert prerenderedUIElement instanceof Element;
-                assert "body"
-                        .equals(((Element) prerenderedUIElement).tagName());
-
-                document.head().after(prerenderedUIElement);
-                body = document.body();
-                assert body == prerenderedUIElement;
-
-                // Mark body and children so we know what to remove when
-                // transitioning to the live version
-                body.attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true);
-                body.children().forEach(element -> element
-                        .attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true));
-            } else {
-                document.head().after("<body></body>");
-                body = document.body();
-            }
-        }
-
-        if (context.getPreRenderMode() == PreRenderMode.PRE_ONLY
-                && !context.isProductionMode()) {
-            Element preOnlyInfo = body.appendElement("div");
-            preOnlyInfo.addClass("v-system-error");
-            preOnlyInfo.text(PRE_RENDER_INFO_TEXT);
-            preOnlyInfo.attr("onclick", "this.remove()");
-        }
-
-        body.appendElement("noscript").append(
+    private static void setupDocumentBody(Document document) {
+        document.body().appendElement("noscript").append(
                 "You have to enable javascript in your browser to use this web site.");
     }
 
