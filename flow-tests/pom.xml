@@ -140,9 +140,9 @@
                                         <artifactId>
                                             driver-binary-downloader-maven-plugin
                                         </artifactId>
-                                        <versionRange>
-                                            [${driver.binary.downloader.maven.plugin.version},)
-                                        </versionRange>
+                                        <version>
+                                            ${driver.binary.downloader.maven.plugin.version}
+                                        </version>
                                         <goals>
                                             <goal>selenium</goal>
                                         </goals>
