@@ -295,7 +295,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         html.appendElement("body");
 
         setupDocumentHead(head, context);
-        setupDocumentBody(document, context);
+        setupDocumentBody(document);
 
         document.outputSettings().prettyPrint(false);
 
@@ -517,11 +517,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 createJavaScriptElement(resolver.resolveVaadinUri(url)));
     }
 
-    private static void setupDocumentBody(Document document,
-            BootstrapContext context) {
-        Element body = document.body();
-
-        body.appendElement("noscript").append(
+    private static void setupDocumentBody(Document document) {
+        document.body().appendElement("noscript").append(
                 "You have to enable javascript in your browser to use this web site.");
     }
 

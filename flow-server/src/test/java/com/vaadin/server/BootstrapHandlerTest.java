@@ -129,7 +129,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test // #1134
-    public void testBodyAfterHeadPrerender() throws Exception {
+    public void testBody() throws Exception {
         initUI(testUI, createVaadinRequest());
 
         Document page = BootstrapHandler.getBootstrapPage(

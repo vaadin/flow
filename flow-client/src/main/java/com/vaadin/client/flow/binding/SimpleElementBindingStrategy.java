@@ -227,7 +227,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ){
           handlePropertiesFunction(this, false);
       }
-      else if ($wnd.customElements && element.localName.includes('-')){
+      else if ($wnd.customElements && element.localName.indexOf('-') > -1){
           var self = this;
           var callback = function (){
               handlePropertiesFunction(self, true);
