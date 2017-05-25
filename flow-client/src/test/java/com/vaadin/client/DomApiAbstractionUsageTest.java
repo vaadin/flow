@@ -23,7 +23,6 @@ import org.objectweb.asm.Opcodes;
 
 import com.vaadin.client.bootstrap.Bootstrapper;
 import com.vaadin.client.communication.DefaultReconnectDialog;
-import com.vaadin.client.flow.PreRenderer;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement;
@@ -40,7 +39,7 @@ public class DomApiAbstractionUsageTest {
             .of(DomElement.class, DomNode.class, ResourceLoader.class,
                     BrowserInfo.class, DefaultReconnectDialog.class,
                     SystemErrorHandler.class, LoadingIndicator.class,
-                    RouterLinkHandler.class, Profiler.class, PreRenderer.class,
+                    RouterLinkHandler.class, Profiler.class,
                     ScrollPositionHandler.class)
             .map(Class::getName).collect(Collectors.toSet());
 

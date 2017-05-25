@@ -111,12 +111,10 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
-    private static class UIAnnotated_DuplicateDependencies_Lazy
-            extends UI {
+    private static class UIAnnotated_DuplicateDependencies_Lazy extends UI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Lazy
-            extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Lazy extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
@@ -131,8 +129,7 @@ public class BootstrapHandlerDependenciesTest {
     private static class UIAnnotated_DuplicateDependencies_Eager extends UI {
     }
 
-    private static class UIWithMethods_DuplicateDependencies_Eager
-            extends UI {
+    private static class UIWithMethods_DuplicateDependencies_Eager extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
@@ -179,20 +176,20 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     @Test
-    public void checkPrerenderedDependencies() throws Exception {
+    public void checkEagerDependencies() throws Exception {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            assertCssElementPrerendered(head, "eager.css");
-            assertCssElementPrerendered(head, "./eager-relative.css");
-            assertJavaScriptElementPrerendered(head, "eager.js");
+            assertCssElementLoadedEagerly(head, "eager.css");
+            assertCssElementLoadedEagerly(head, "./eager-relative.css");
+            assertJavaScriptElementLoadedEagerly(head, "eager.js");
 
-            // For some reason, we don't prerender html now at all
-            assertElementNotPrerendered(head, "eager.html");
+            // For some reason, we don't load eagerly html now at all
+            assertElementLazyLoaded(head, "eager.html");
 
-            assertElementNotPrerendered(head, "lazy.js");
-            assertElementNotPrerendered(head, "lazy.css");
-            assertElementNotPrerendered(head, "lazy.html");
+            assertElementLazyLoaded(head, "lazy.js");
+            assertElementLazyLoaded(head, "lazy.css");
+            assertElementLazyLoaded(head, "lazy.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
                 new UIWithMethods_LoadingOrderTest());
@@ -250,7 +247,7 @@ public class BootstrapHandlerDependenciesTest {
                     .collect(Collectors.toList());
             assertUrlOrder(cssImportUrls, "1.css", "2.css");
 
-            // We don't include html imports in prerender
+            // We don't include html imports eagerly
             String uidlData = extractUidlData(page);
             assertDependenciesOrderInUidl(uidlData, "1.html", "2.html");
         };
@@ -266,8 +263,7 @@ public class BootstrapHandlerDependenciesTest {
             assertDependenciesOrderInUidl(uidlData, "1.css", "2.css");
             assertDependenciesOrderInUidl(uidlData, "1.html", "2.html");
         };
-        testUis(uiPageTestingMethod,
-                new UIAnnotated_ImportOrderTest_Lazy(),
+        testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Lazy(),
                 new UIWithMethods_ImportOrderTest_Lazy());
     }
 
@@ -306,7 +302,7 @@ public class BootstrapHandlerDependenciesTest {
 
     private Document initUIAndGetPage(UI ui) {
         ui.getInternals().setSession(session);
-        VaadinRequest request = new VaadinServletRequest(createRequest(""),
+        VaadinRequest request = new VaadinServletRequest(createRequest(),
                 service);
         try {
             service.init();
@@ -319,15 +315,13 @@ public class BootstrapHandlerDependenciesTest {
                 new BootstrapContext(request, null, session, ui));
     }
 
-    private HttpServletRequest createRequest(String preRenderParameter) {
+    private HttpServletRequest createRequest() {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.doAnswer(invocation -> preRenderParameter).when(request)
-                .getParameter("prerender");
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         return request;
     }
 
-    private void assertCssElementPrerendered(Element head, String url) {
+    private void assertCssElementLoadedEagerly(Element head, String url) {
         Elements cssLinks = head.getElementsByAttributeValue("href", url);
         assertEquals(1, cssLinks.size());
         Element linkElement = cssLinks.get(0);
@@ -336,7 +330,8 @@ public class BootstrapHandlerDependenciesTest {
         assertEquals(url, linkElement.attr("href"));
     }
 
-    private void assertJavaScriptElementPrerendered(Element head, String url) {
+    private void assertJavaScriptElementLoadedEagerly(Element head,
+            String url) {
         Elements jsLinks = head.getElementsByAttributeValue("src", url);
         assertEquals(1, jsLinks.size());
         Element linkElement = jsLinks.get(0);
@@ -345,7 +340,7 @@ public class BootstrapHandlerDependenciesTest {
         assertEquals(url, linkElement.attr("src"));
     }
 
-    private void assertElementNotPrerendered(Element head, String url) {
+    private void assertElementLazyLoaded(Element head, String url) {
         Stream.of("href", "src").forEach(attribute -> {
             Elements elements = head.getElementsByAttributeValue(attribute,
                     url);
