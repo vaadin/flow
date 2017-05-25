@@ -61,6 +61,7 @@ public class ApplicationConnection {
 
         Element body = Browser.getDocument().getBody();
 
+        rootNode.setDomNode(body);
         Binder.bind(rootNode, body);
         RouterLinkHandler.bind(registry, body);
 
