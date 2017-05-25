@@ -24,7 +24,6 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Uses;
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.util.ReflectionCache;
@@ -321,18 +320,4 @@ public class ComponentUtil {
         return componentMetaDataCache.get(componentClass).getDependencyInfo();
     }
 
-    /**
-     * Gets the pre-render element for the given component.
-     * <p>
-     * This is a framework internal method used for accessing the protected
-     * {@link Component#prerender()} method.
-     *
-     * @param component
-     *            the component to get pre-render element for
-     * @return the pre-render element
-     * @see Component#prerender()
-     */
-    public static Optional<Node> prerender(Component component) {
-        return component.prerender();
-    }
 }

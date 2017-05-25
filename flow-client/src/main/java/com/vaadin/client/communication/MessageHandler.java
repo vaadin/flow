@@ -30,7 +30,6 @@ import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
-import com.vaadin.client.flow.PreRenderer;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.TreeChangeProcessor;
 import com.vaadin.client.flow.collection.JsArray;
@@ -311,12 +310,8 @@ public class MessageHandler {
             serverTimingInfo = valueMap.getValueMap("timings");
         }
 
-        if (!isInitialUidlHandled()) {
-            DependencyLoader
-                    .runWhenEagerDependenciesLoaded(PreRenderer::transitionToLive);
-        }
-        DependencyLoader
-                .runWhenEagerDependenciesLoaded(DomApi::updateApiImplementation);
+        DependencyLoader.runWhenEagerDependenciesLoaded(
+                DomApi::updateApiImplementation);
         DependencyLoader.runWhenEagerDependenciesLoaded(
                 () -> processMessage(valueMap, lock, start));
     }

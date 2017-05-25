@@ -55,21 +55,6 @@ public class FragmentLinkIT extends PhantomJSTest {
         verifyTopOfThePage();
     }
 
-    // @Test Will work after prerendering is implemented
-    public void testInitialPageWithFragment_scrollLocationUpdated() {
-        String url = getRootURL();
-        while (url.endsWith("/")) {
-            url = url.substring(0, url.length() - 1);
-        }
-        url = url + getTestPath() + "#Scroll_Target2";
-        getDriver().get(url);
-
-        verifyInsideServletLocation(
-                "com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target2");
-        verifyHashChangeEvents(0);
-        verifyScrollTarget2Visible();
-    }
-
     private void clickScrollerLink() {
         clickLink("Scroller link");
     }
