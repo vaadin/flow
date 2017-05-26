@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.RouterConfiguration;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.AbstractTemplate;
 import com.vaadin.flow.template.angular.RelativeFileResolver;
 import com.vaadin.flow.template.angular.TemplateNode;
@@ -66,7 +67,8 @@ import com.vaadin.util.ReflectTools;
  *
  * @author Vaadin Ltd
  */
-public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
+public abstract class AngularTemplate extends AbstractTemplate<TemplateModel>
+        implements HasChildView {
 
     private transient TemplateModel model;
 
@@ -84,6 +86,16 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
             setTemplateElement(annotation.value());
         }
 
+    }
+
+    @Override
+    public void setChildView(View childView) {
+        TemplateMap templateMap = getStateNode().getFeature(TemplateMap.class);
+        if (childView == null) {
+            templateMap.setChild(null);
+        } else {
+            templateMap.setChild(childView.getElement().getNode());
+        }
     }
 
     /**
