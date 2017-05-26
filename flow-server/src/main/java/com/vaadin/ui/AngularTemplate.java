@@ -88,16 +88,6 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel>
 
     }
 
-    @Override
-    public void setChildView(View childView) {
-        TemplateMap templateMap = getStateNode().getFeature(TemplateMap.class);
-        if (childView == null) {
-            templateMap.setChild(null);
-        } else {
-            templateMap.setChild(childView.getElement().getNode());
-        }
-    }
-
     /**
      * Creates a new template using {@code templateFileName} as the template
      * file name.
@@ -127,6 +117,16 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel>
         setTemplateElement(inputStream, relativeFilename -> {
             throw new IOException("No template resolver defined");
         });
+    }
+
+    @Override
+    public void setChildView(View childView) {
+        TemplateMap templateMap = getStateNode().getFeature(TemplateMap.class);
+        if (childView == null) {
+            templateMap.setChild(null);
+        } else {
+            templateMap.setChild(childView.getElement().getNode());
+        }
     }
 
     private static StateNode createTemplateStateNode() {
