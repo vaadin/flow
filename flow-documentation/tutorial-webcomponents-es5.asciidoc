@@ -52,7 +52,7 @@ to change this file anymore.
     "polymer-cli": "next"
   },
   "scripts": {
-    "install": "bower install && polymer build",
+    "prodMode": "bower install && polymer build",
     "devMode": "bower install"
   }
 }
@@ -217,6 +217,16 @@ Jetty Plugin, by using the `mvn jetty:run` command.
                   </goals>
               </execution>
               <execution>
+                  <phase>generate-resources</phase>
+                  <id>add bower</id>
+                  <goals>
+                      <goal>yarn</goal>
+                  </goals>
+                  <configuration>
+                      <arguments>add bower</arguments>
+                  </configuration>
+              </execution>
+              <execution>
                   <id>yarn install</id>
                   <goals>
                       <goal>yarn</goal>
@@ -257,7 +267,7 @@ Jetty Plugin, by using the `mvn jetty:run` command.
     </activation>
 
     <properties>
-        <yarn.build.goal>install</yarn.build.goal>
+        <yarn.build.goal>run prodMode</yarn.build.goal>
         <jetty.extra.resource.base>${project.build.directory}/jetty-extra-resources</jetty.extra.resource.base>
     </properties>
 
