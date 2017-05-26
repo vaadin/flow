@@ -78,15 +78,15 @@ import elemental.json.impl.JsonUtil;
  */
 public abstract class VaadinService implements Serializable {
 
-    public static final String INVALID_ATMOSPHERE_VERSION_WARNING = "\n"
-            + "=================================================================\n"
-            + "Vaadin depends on Atmosphere {0} but version {1} was found.\n"
-            + "This might cause compatibility problems if push is used.\n"
-            + "=================================================================";
+    private static final String SEPARATOR = "\n=================================================================";
 
-    public static final String ATMOSPHERE_MISSING_ERROR = "\n"
-            + "=================================================================\n"
-            + "Atmosphere could not be loaded. When using push with Vaadin, the\n"
+    public static final String INVALID_ATMOSPHERE_VERSION_WARNING = SEPARATOR
+            + "\nVaadin depends on Atmosphere {0} but version {1} was found.\n"
+            + "This might cause compatibility problems if push is used."
+            + SEPARATOR;
+
+    public static final String ATMOSPHERE_MISSING_ERROR = SEPARATOR
+            + "\nAtmosphere could not be loaded. When using push with Vaadin, the\n"
             + "Atmosphere framework must be present on the classpath.\n"
             + "If using a dependency management system, please add a dependency\n"
             + "to vaadin-push.\n"
@@ -94,17 +94,14 @@ public abstract class VaadinService implements Serializable {
             + Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION
             + " is included on the classpath.\n" + "Will fall back to using "
             + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
-            + ".\n"
-            + "=================================================================";
+            + "." + SEPARATOR;
 
-    public static final String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = "\n"
-            + "=================================================================\n"
+    public static final String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = SEPARATOR
             + "Vaadin was unable to acquire class loader from servlet container\n"
             + "to load your application classes. Setup appropriate security\n"
             + "policy to allow invoking Thread.getContextClassLoader() from\n"
             + "VaadinService if you're not using custom class loader.\n"
-            + "NullPointerExceptions will be thrown later."
-            + "=================================================================";
+            + "NullPointerExceptions will be thrown later." + SEPARATOR;
 
     /**
      * Attribute name for telling
