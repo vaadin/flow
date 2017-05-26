@@ -27,6 +27,10 @@ import com.vaadin.shared.ApplicationConstants;
  */
 public final class Constants implements Serializable {
 
+    private Constants() {
+        // prevent instantiation constants class only
+    }
+
     // Keep the version number in sync with push/build.xml and other locations
     // listed in that file
     public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.5.vaadin1";

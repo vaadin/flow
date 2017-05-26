@@ -32,30 +32,26 @@ import com.vaadin.shared.communication.PushMode;
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
-    public static final String NOT_PRODUCTION_MODE_INFO = "\n"
-            + "=================================================================\n"
-            + "Vaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
+    private static final String SEPARATOR = "\n===========================================================";
+
+    public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
+            + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
             + "to disable debug features.\nTo show debug window, add ?debug to "
-            + "your application URL.\n"
-            + "=================================================================";
+            + "your application URL." + SEPARATOR;
 
-    public static final String WARNING_XSRF_PROTECTION_DISABLED = "\n"
-            + "===========================================================\n"
-            + "WARNING: Cross-site request forgery protection is disabled!\n"
-            + "===========================================================";
+    public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
+            + "\nWARNING: Cross-site request forgery protection is disabled!"
+            + SEPARATOR;
 
-    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = "\n"
-            + "===========================================================\n"
-            + "WARNING: heartbeatInterval has been set to a non integer value "
-            + "in web.xml. The default of 5min will be used.\n"
-            + "===========================================================";
+    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = SEPARATOR
+            + "\nWARNING: heartbeatInterval has been set to a non integer value "
+            + "in web.xml. The default of 5min will be used." + SEPARATOR;
 
-    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = "\n"
-            + "===========================================================\n"
-            + "WARNING: pushMode has been set to an unrecognized value\n"
+    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = SEPARATOR
+            + "\nWARNING: pushMode has been set to an unrecognized value\n"
             + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
-            + "and \"automatic\". The default of \"disabled\" will be used.\n"
-            + "===========================================================";
+            + "and \"automatic\". The default of \"disabled\" will be used."
+            + SEPARATOR;
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
