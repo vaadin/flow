@@ -301,7 +301,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         BootstrapPageResponse response = new BootstrapPageResponse(
                 context.getRequest(), context.getSession(),
-                context.getResponse(), document, context.getUI());
+                context.getResponse(), document, context.getUI(),
+                context.getUriResolver());
         context.getSession().getService().modifyBootstrapPage(response);
 
         return document;
