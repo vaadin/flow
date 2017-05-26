@@ -57,8 +57,9 @@ import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.Registration;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.shared.Registration;
+import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 import com.vaadin.util.ReflectTools;
@@ -76,6 +77,35 @@ import elemental.json.impl.JsonUtil;
  * @since 7.0
  */
 public abstract class VaadinService implements Serializable {
+
+    public static final String INVALID_ATMOSPHERE_VERSION_WARNING = "\n"
+            + "=================================================================\n"
+            + "Vaadin depends on Atmosphere {0} but version {1} was found.\n"
+            + "This might cause compatibility problems if push is used.\n"
+            + "=================================================================";
+
+    public static final String ATMOSPHERE_MISSING_ERROR = "\n"
+            + "=================================================================\n"
+            + "Atmosphere could not be loaded. When using push with Vaadin, the\n"
+            + "Atmosphere framework must be present on the classpath.\n"
+            + "If using a dependency management system, please add a dependency\n"
+            + "to vaadin-push.\n"
+            + "If managing dependencies manually, please make sure Atmosphere\n"
+            + Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION
+            + " is included on the classpath.\n" + "Will fall back to using "
+            + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
+            + ".\n"
+            + "=================================================================";
+
+    public static final String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = "\n"
+            + "=================================================================\n"
+            + "Vaadin was unable to acquire class loader from servlet container\n"
+            + "to load your application classes. Setup appropriate security\n"
+            + "policy to allow invoking Thread.getContextClassLoader() from\n"
+            + "VaadinService if you're not using custom class loader.\n"
+            + "NullPointerExceptions will be thrown later."
+            + "=================================================================";
+
     /**
      * Attribute name for telling
      * {@link VaadinSession#valueUnbound(javax.servlet.http.HttpSessionBindingEvent)}
@@ -443,8 +473,7 @@ public abstract class VaadinService implements Serializable {
      *            the Vaadin service session initialization listener
      * @return a handle that can be used for removing the listener
      */
-    public Registration addSessionInitListener(
-            SessionInitListener listener) {
+    public Registration addSessionInitListener(SessionInitListener listener) {
         sessionInitListeners.add(listener);
         return () -> sessionInitListeners.remove(listener);
     }
@@ -1627,8 +1656,7 @@ public abstract class VaadinService implements Serializable {
         } else {
             if (!pushWarningEmitted) {
                 pushWarningEmitted = true;
-                getLogger().log(Level.WARNING,
-                        Constants.ATMOSPHERE_MISSING_ERROR);
+                getLogger().log(Level.WARNING, ATMOSPHERE_MISSING_ERROR);
             }
             return false;
         }
@@ -1641,8 +1669,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         if (!Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION.equals(rawVersion)) {
-            getLogger().log(Level.WARNING,
-                    Constants.INVALID_ATMOSPHERE_VERSION_WARNING,
+            getLogger().log(Level.WARNING, INVALID_ATMOSPHERE_VERSION_WARNING,
                     new Object[] {
                             Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION,
                             rawVersion });
@@ -1894,8 +1921,7 @@ public abstract class VaadinService implements Serializable {
             setClassLoader(
                     VaadinServiceClassLoaderUtil.findDefaultClassLoader());
         } catch (SecurityException e) {
-            getLogger().log(Level.SEVERE,
-                    Constants.CANNOT_ACQUIRE_CLASSLOADER_SEVERE, e);
+            getLogger().log(Level.SEVERE, CANNOT_ACQUIRE_CLASSLOADER_SEVERE, e);
             throw e;
         }
     }

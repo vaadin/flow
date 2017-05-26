@@ -29,7 +29,6 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.communication.rpc.AttachExistingElementByIdRpcHandler;
@@ -56,6 +55,14 @@ import elemental.json.impl.JsonUtil;
  * @since 7.1
  */
 public class ServerRpcHandler implements Serializable {
+
+    public static final String WIDGETSET_MISMATCH_INFO = "\n"
+            + "=================================================================\n"
+            + "The widgetset in use does not seem to be built for the Vaadin\n"
+            + "version in use. This might cause strange problems - a\n"
+            + "recompile/deploy is strongly recommended.\n"
+            + " Vaadin version: %s\n" + " Widgetset version: %s\n"
+            + "=================================================================";
 
     /**
      * A data transfer object representing an RPC request sent by the client
@@ -336,7 +343,7 @@ public class ServerRpcHandler implements Serializable {
         }
 
         if (!Version.getFullVersion().equals(widgetsetVersion)) {
-            getLogger().warning(String.format(Constants.WIDGETSET_MISMATCH_INFO,
+            getLogger().warning(String.format(WIDGETSET_MISMATCH_INFO,
                     Version.getFullVersion(), widgetsetVersion));
         }
     }

@@ -27,7 +27,7 @@ import com.vaadin.shared.ApplicationConstants;
 
 /**
  * Servlet created to test the environment when the property
- * {@link Constants#FRONTEND_URL_ES6} is set.
+ * {@link ApplicationConstants#FRONTEND_URL_ES6} is set.
  */
 @WebServlet(asyncSupported = true, urlPatterns = { "/view-es6-url/*" })
 @VaadinServletConfiguration(productionMode = false, routerConfigurator = ViewTestConfigurator.class)

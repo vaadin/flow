@@ -32,6 +32,31 @@ import com.vaadin.shared.communication.PushMode;
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
+    public static final String NOT_PRODUCTION_MODE_INFO = "\n"
+            + "=================================================================\n"
+            + "Vaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
+            + "to disable debug features.\nTo show debug window, add ?debug to "
+            + "your application URL.\n"
+            + "=================================================================";
+
+    public static final String WARNING_XSRF_PROTECTION_DISABLED = "\n"
+            + "===========================================================\n"
+            + "WARNING: Cross-site request forgery protection is disabled!\n"
+            + "===========================================================";
+
+    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = "\n"
+            + "===========================================================\n"
+            + "WARNING: heartbeatInterval has been set to a non integer value "
+            + "in web.xml. The default of 5min will be used.\n"
+            + "===========================================================";
+
+    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = "\n"
+            + "===========================================================\n"
+            + "WARNING: pushMode has been set to an unrecognized value\n"
+            + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
+            + "and \"automatic\". The default of \"disabled\" will be used.\n"
+            + "===========================================================";
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -256,7 +281,7 @@ public class DefaultDeploymentConfiguration
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false")
                         .equals("true");
         if (!productionMode) {
-            getLogger().warning(Constants.NOT_PRODUCTION_MODE_INFO);
+            getLogger().warning(NOT_PRODUCTION_MODE_INFO);
         }
     }
 
@@ -268,7 +293,7 @@ public class DefaultDeploymentConfiguration
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, "false")
                         .equals("true");
         if (!xsrfProtectionEnabled) {
-            getLogger().warning(Constants.WARNING_XSRF_PROTECTION_DISABLED);
+            getLogger().warning(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }
 
@@ -278,8 +303,7 @@ public class DefaultDeploymentConfiguration
                     Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                     Integer.toString(DEFAULT_HEARTBEAT_INTERVAL)));
         } catch (NumberFormatException e) {
-            getLogger()
-                    .warning(Constants.WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            getLogger().warning(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
         }
     }
@@ -297,7 +321,7 @@ public class DefaultDeploymentConfiguration
         try {
             pushMode = Enum.valueOf(PushMode.class, mode.toUpperCase());
         } catch (IllegalArgumentException e) {
-            getLogger().warning(Constants.WARNING_PUSH_MODE_NOT_RECOGNIZED);
+            getLogger().warning(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
         }
     }
