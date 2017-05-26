@@ -77,4 +77,8 @@ public final class Constants implements Serializable {
             + ApplicationConstants.VAADIN_STATIC_FILES_PATH + "frontend/es5/";
 
     public static final String WEB_COMPONENTS = "webComponents";
+
+    private Constants() {
+        // prevent instantiation constants class only
+    }
 }
