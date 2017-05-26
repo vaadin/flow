@@ -38,9 +38,9 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.SpringViewDisplay;
-import com.vaadin.spring.internal.UIID;
 import com.vaadin.spring.internal.SpringViewDisplayPostProcessor;
 import com.vaadin.spring.internal.SpringViewDisplayRegistrationBean;
+import com.vaadin.spring.internal.UIID;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.SingleComponentContainer;
@@ -88,13 +88,13 @@ public class SpringUIProvider extends UIProvider {
 
     @SuppressWarnings("unchecked")
     protected void detectUIs() {
-        logger.info("Checking the application context for Vaadin UIs");
+        logger.debug("Checking the application context for Vaadin UIs");
         final String[] uiBeanNames = getWebApplicationContext()
                 .getBeanNamesForAnnotation(SpringUI.class);
         for (String uiBeanName : uiBeanNames) {
             Class<?> beanType = getWebApplicationContext().getType(uiBeanName);
             if (UI.class.isAssignableFrom(beanType)) {
-                logger.info("Found Vaadin UI [{}]",
+                logger.debug("Found Vaadin UI [{}]",
                         beanType.getCanonicalName());
                 final String path;
                 String tempPath = deriveMappingForUI(uiBeanName);

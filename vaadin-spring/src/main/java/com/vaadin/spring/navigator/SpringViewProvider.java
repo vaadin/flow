@@ -170,7 +170,7 @@ public class SpringViewProvider implements ViewProvider {
 
     @PostConstruct
     void init() {
-        LOGGER.info("Looking up SpringViews");
+        LOGGER.debug("Looking up SpringViews");
         int count = 0;
         final String[] viewBeanNames = getWebApplicationContext()
                 .getBeanNamesForAnnotation(SpringView.class);
@@ -205,9 +205,9 @@ public class SpringViewProvider implements ViewProvider {
         if (count == 0) {
             LOGGER.warn("No SpringViews found");
         } else if (count == 1) {
-            LOGGER.info("1 SpringView found");
+            LOGGER.debug("1 SpringView found");
         } else {
-            LOGGER.info("{} SpringViews found", count);
+            LOGGER.debug("{} SpringViews found", count);
         }
     }
 
