@@ -53,7 +53,7 @@ import com.vaadin.util.CurrentInstance;
  *
  * @author Vaadin Ltd
  */
-public class VaadinServlet extends HttpServlet implements Constants {
+public class VaadinServlet extends HttpServlet {
 
     private VaadinServletService servletService;
     private StaticFileServer staticFileServer;

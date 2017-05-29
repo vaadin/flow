@@ -26,7 +26,6 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.server.Constants;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -135,10 +134,10 @@ public class Bootstrapper implements EntryPoint {
 
         if (BrowserInfo.get().isEs6Supported()) {
             conf.setFrontendRootUrl(jsoConfiguration
-                    .getConfigString(Constants.FRONTEND_URL_ES6));
+                    .getConfigString(ApplicationConstants.FRONTEND_URL_ES6));
         } else {
             conf.setFrontendRootUrl(jsoConfiguration
-                    .getConfigString(Constants.FRONTEND_URL_ES5));
+                    .getConfigString(ApplicationConstants.FRONTEND_URL_ES5));
         }
 
         conf.setUIId(jsoConfiguration

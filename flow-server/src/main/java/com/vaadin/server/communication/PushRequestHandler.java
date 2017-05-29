@@ -34,6 +34,7 @@ import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 
+import com.vaadin.server.Constants;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.ServiceDestroyEvent;
 import com.vaadin.server.ServiceDestroyListener;
@@ -107,7 +108,7 @@ public class PushRequestHandler
         }
         pushHandler.setLongPollingSuspendTimeout(
                 atmosphere.getAtmosphereConfig().getInitParameter(
-                        com.vaadin.server.Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                        Constants.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
                         -1));
         for (AtmosphereHandlerWrapper handlerWrapper : atmosphere
                 .getAtmosphereHandlers().values()) {
