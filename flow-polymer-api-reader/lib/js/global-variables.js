@@ -13,7 +13,7 @@ var publicDir = publicDirBase + nspath + "/public/";
 module.exports = {
   ns: ns,
   nspath: nspath,
-  artifactId: args.artifactId || "gwt-polymer-elements",
+  artifactId: args.artifactId || "flow-polymer-elements",
   currentDir: currentDir,
   clientDirBase: clientDirBase,
   publicDirBase: publicDirBase,

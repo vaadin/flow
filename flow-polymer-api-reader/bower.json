@@ -1,7 +1,7 @@
 {
-  "name": "hummingbird-api-generator",
+  "name": "flow-polymer-api-reader",
   "description": "",
-  "main": "bin/gwt-api-generator.js",
+  "main": "bin/flow-polymer-api-reader.js",
   "authors": [
     "Vaadin Ltd"
   ],
@@ -12,7 +12,6 @@
     "web",
     "components",
     "webcomponents",
-    "gwt",
     "polymer"
   ],
   "homepage": "",

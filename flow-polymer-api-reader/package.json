@@ -1,6 +1,6 @@
 {
-  "name": "gwt-api-generator",
-  "version": "1.2.3",
+  "name": "flow-polymer-api-reader",
+  "version": "0.0.1",
   "description": "",
   "author": "Vaadin Ltd",
   "license": "Apache License 2.0",
@@ -25,7 +25,7 @@
     "vinyl": "^1.1.1"
   },
   "bin": {
-    "gwt-api-generator": "./bin/gwt-api-generator.js"
+    "flow-polymer-api-reader": "./bin/flow-polymer-api-reader.js"
   },
   "keywords": [
     "vaadin",
@@ -33,7 +33,6 @@
     "web",
     "components",
     "webcomponents",
-    "gwt",
     "polymer"
   ]
 }
