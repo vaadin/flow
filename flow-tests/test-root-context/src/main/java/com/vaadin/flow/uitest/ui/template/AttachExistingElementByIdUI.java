@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.WebComponents;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@WebComponents(WebComponents.PolyfillVersion.V1)
 public class AttachExistingElementByIdUI extends UI {
 
     @Override

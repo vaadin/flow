@@ -32,8 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.shared.JsonConstants;
@@ -181,13 +179,6 @@ public class VaadinServlet extends HttpServlet {
                             e);
                 }
             }
-        }
-        Optional<WebComponents> webComponents = AnnotationReader
-                .getAnnotationFor(getClass(), WebComponents.class);
-        if (webComponents.isPresent()
-                && webComponents.get().value() == PolyfillVersion.V1) {
-            initParameters.setProperty(Constants.WEB_COMPONENTS,
-                    String.valueOf(1));
         }
     }
 

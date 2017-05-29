@@ -28,7 +28,7 @@ public class WebComponentsUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        Element div = ElementFactory.createDiv("Web components v0");
+        Element div = ElementFactory.createDiv("Web components v1");
         getElement().appendChild(div);
     }
 }

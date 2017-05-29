@@ -17,15 +17,12 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.event.PropertyChangeEvent;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@WebComponents(PolyfillVersion.V1)
 public class PolymerPropertyChangeEventUI extends UI {
 
     @Tag("property-change")

@@ -18,15 +18,12 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.html.Button;
 import com.vaadin.flow.html.Label;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@WebComponents(PolyfillVersion.V1)
 public class UpgradeElementUI extends UI {
 
     @Tag("upgrade-element")
