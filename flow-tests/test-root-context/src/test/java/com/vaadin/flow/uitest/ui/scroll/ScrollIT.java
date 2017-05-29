@@ -305,7 +305,7 @@ public class ScrollIT extends ChromeBrowserTest {
     }
 
     private void openTestWithBrowserSized() {
-        getDriver().manage().window().setSize(new Dimension(390, 390));
+        getDriver().manage().window().setSize(new Dimension(400, 400));
         open();
     }
 
