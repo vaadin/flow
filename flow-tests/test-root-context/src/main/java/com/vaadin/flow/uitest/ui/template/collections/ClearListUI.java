@@ -6,8 +6,6 @@ import java.util.List;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
@@ -16,7 +14,6 @@ import com.vaadin.ui.UI;
 /**
  * @author Vaadin Ltd.
  */
-@WebComponents(PolyfillVersion.V1)
 public class ClearListUI extends UI {
     @Override
     protected void init(VaadinRequest request) {

@@ -218,9 +218,12 @@ public class BootstrapHandlerDependenciesTest {
             Elements jsElements = page.getElementsByTag("script");
             Elements deferElements = page.getElementsByAttribute("defer");
 
-            // Ignore polyfill that should be loaded immediately
-            jsElements.removeIf(element -> element.attr("src")
-                    .contains("es6-collections.js"));
+            // Ignore polyfills that should be loaded immediately
+            jsElements.removeIf(element -> {
+                String jsUrl = element.attr("src");
+                return jsUrl.contains("es6-collections.js")
+                        || jsUrl.contains("webcomponents-lite.js");
+            });
 
             assertEquals(
                     "Expected to have all script elements with defer attribute",

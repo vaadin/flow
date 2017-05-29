@@ -75,9 +75,11 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         findElements(By.tagName("script")).stream()
                 // FW needs this element to be loaded asap, that's why it's an
                 // exclusion
-                .filter(javaScriptImport -> !javaScriptImport
-                        .getAttribute("src").endsWith("es6-collections.js"))
-                .forEach(javaScriptImport -> {
+                .filter(javaScriptImport -> {
+                    String jsUrl = javaScriptImport.getAttribute("src");
+                    return !jsUrl.endsWith("es6-collections.js")
+                            && !jsUrl.endsWith("webcomponents-lite.js");
+                }).forEach(javaScriptImport -> {
                     Assert.assertEquals(
                             String.format(
                                     "All javascript dependencies should be loaded with 'defer' attribute. Dependency with url %s does not have this attribute",
