@@ -18,6 +18,7 @@
         <gatling.version>2.2.1</gatling.version>
         <!-- Skip tests by default, explicitly enabled on build server -->
         <maven.test.skip>true</maven.test.skip>
+        <jetty.skip>true</jetty.skip>
     </properties>
 
     <dependencies>
@@ -149,29 +150,85 @@
                         </goals>
                     </execution>
                 </executions>
-
-            </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.4</version>
-                <configuration>
-                    <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
-                    <workingDirectory>${frontend.working.directory}</workingDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install-node-and-npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                            <goal>npm</goal> <!-- runs 'install' by default -->
-                            <goal>bower</goal> <!-- runs 'install' by default -->
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>tests</id>
+            <activation>
+                <property>
+                    <name>maven.test.skip</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <properties>
+                <jetty.skip>false</jetty.skip>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.4</version>
+                        <configuration>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
+                            <workingDirectory>${frontend.working.directory}</workingDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>install-node-and-npm</id>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                    <goal>npm</goal> <!-- runs 'install' by default -->
+                                    <goal>bower</goal> <!-- runs 'install' by default -->
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>gattling</id>
+            <activation>
+                <property>
+                    <name>gatling.skip</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <properties>
+                <jetty.skip>false</jetty.skip>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.4</version>
+                        <configuration>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
+                            <workingDirectory>${frontend.working.directory}</workingDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>install-node-and-npm</id>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                    <goal>npm</goal> <!-- runs 'install' by default -->
+                                    <goal>bower</goal> <!-- runs 'install' by default -->
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
