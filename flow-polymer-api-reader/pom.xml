@@ -1,0 +1,11 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- Parent not inherited since no dependencies required. -->
+   <groupId>com.vaadin</groupId>
+  <artifactId>flow-polymer-api-reader</artifactId>
+  <name>Polymer API Reader</name>
+  <description>Reads Polymer Elements APIs with Polymer Analyzer</description>
+  <!-- Versioning doesn't follow Flow Core. -->
+  <version>0.0.1-SNAPSHOT</version>
+  
+</project>
