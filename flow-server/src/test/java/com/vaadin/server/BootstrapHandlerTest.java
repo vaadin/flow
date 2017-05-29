@@ -6,9 +6,11 @@ import static org.junit.Assert.assertFalse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -23,6 +25,7 @@ import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Html;
@@ -145,10 +148,14 @@ public class BootstrapHandlerTest {
     @Test
     public void testBootstrapListener() {
         List<BootstrapListener> listeners = new ArrayList<>(3);
+        AtomicReference<VaadinUriResolver> resolver = new AtomicReference<>();
         listeners.add(evt -> evt.getDocument().head().getElementsByTag("script")
                 .remove());
-        listeners.add(evt -> evt.getDocument().head().appendElement("script")
-                .attr("src", "testing.1"));
+        listeners.add(evt -> {
+            resolver.set(evt.getUriResolver());
+            evt.getDocument().head().appendElement("script").attr("src",
+                    "testing.1");
+        });
         listeners.add(evt -> evt.getDocument().head().appendElement("script")
                 .attr("src", "testing.2"));
 
@@ -157,13 +164,17 @@ public class BootstrapHandlerTest {
 
         initUI(testUI);
 
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
+        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
+                session, testUI);
+        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
 
         Elements scripts = page.head().getElementsByTag("script");
         assertEquals(2, scripts.size());
         assertEquals("testing.1", scripts.get(0).attr("src"));
         assertEquals("testing.2", scripts.get(1).attr("src"));
+
+        Assert.assertNotNull(resolver.get());
+        Assert.assertEquals(bootstrapContext.getUriResolver(), resolver.get());
 
         Mockito.verify(service).processBootstrapListeners(Mockito.anyList());
     }

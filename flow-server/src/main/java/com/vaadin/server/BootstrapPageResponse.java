@@ -17,6 +17,7 @@
 package com.vaadin.server;
 
 import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.ui.UI;
 
 /**
@@ -33,6 +34,7 @@ public class BootstrapPageResponse {
     private final VaadinSession session;
     private final UI ui;
     private final Document document;
+    private final VaadinUriResolver uriResolver;
 
     /**
      * Create a new bootstrap page response.
@@ -47,16 +49,21 @@ public class BootstrapPageResponse {
      *            the Vaadin response that serves the bootstrap page.
      * @param document
      *            the DOM document making up the HTML page.
+     * @param uriResolver
+     *            the uri resolver utility
+     * 
      * @param ui
      *            the UI for the bootstrap.
      */
     public BootstrapPageResponse(VaadinRequest request, VaadinSession session,
-            VaadinResponse response, Document document, UI ui) {
+            VaadinResponse response, Document document, UI ui,
+            VaadinUriResolver uriResolver) {
         this.request = request;
         this.session = session;
         this.ui = ui;
         this.response = response;
         this.document = document;
+        this.uriResolver = uriResolver;
     }
 
     /**
@@ -140,4 +147,12 @@ public class BootstrapPageResponse {
         return ui;
     }
 
+    /**
+     * Gets the URI resolver utility.
+     *
+     * @return the URI resolver utility
+     */
+    public VaadinUriResolver getUriResolver() {
+        return uriResolver;
+    }
 }
