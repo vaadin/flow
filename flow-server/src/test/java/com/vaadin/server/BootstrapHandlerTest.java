@@ -194,7 +194,7 @@ public class BootstrapHandlerTest {
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
 
-        assertEquals(ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE
+        assertEquals(Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
                 .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
                         resolvedContext)
                 + "foo", urlES6);
@@ -204,7 +204,7 @@ public class BootstrapHandlerTest {
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
 
-        assertEquals(ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE
+        assertEquals(Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
                 .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
                         resolvedContext)
                 + "foo", urlES5);

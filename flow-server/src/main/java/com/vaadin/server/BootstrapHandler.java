@@ -229,10 +229,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (config.isProductionMode()) {
                 es6BuildUrl = config.getApplicationOrSystemProperty(
                         Constants.FRONTEND_URL_ES6,
-                        ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE);
+                        Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);
                 es5BuildUrl = config.getApplicationOrSystemProperty(
                         Constants.FRONTEND_URL_ES5,
-                        ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE);
+                        Constants.FRONTEND_URL_ES5_DEFAULT_VALUE);
             } else {
                 es6BuildUrl = config.getApplicationOrSystemProperty(
                         Constants.FRONTEND_URL_ES6,
@@ -596,21 +596,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         JsonObject appConfig = Json.createObject();
 
         if (productionMode) {
-            appConfig.put(Constants.FRONTEND_URL_ES6, context.getSession()
-                    .getConfiguration()
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES6, context
+                    .getSession().getConfiguration()
                     .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
-                            ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE));
-            appConfig.put(Constants.FRONTEND_URL_ES5, context.getSession()
-                    .getConfiguration()
+                            Constants.FRONTEND_URL_ES6_DEFAULT_VALUE));
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5, context
+                    .getSession().getConfiguration()
                     .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
-                            ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE));
+                            Constants.FRONTEND_URL_ES5_DEFAULT_VALUE));
         } else {
-            appConfig.put(Constants.FRONTEND_URL_ES6, context.getSession()
-                    .getConfiguration()
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES6, context
+                    .getSession().getConfiguration()
                     .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
-            appConfig.put(Constants.FRONTEND_URL_ES5, context.getSession()
-                    .getConfiguration()
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5, context
+                    .getSession().getConfiguration()
                     .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
         }
