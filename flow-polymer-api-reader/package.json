@@ -1,0 +1,39 @@
+{
+  "name": "gwt-api-generator",
+  "version": "1.2.3",
+  "description": "",
+  "author": "Vaadin Ltd",
+  "license": "Apache License 2.0",
+  "dependencies": {
+    "bower": "latest",
+    "coa": "^1.0.1",
+    "ejs": "^2.4.2",
+    "fs-extra": "latest",
+    "gulp": "latest",
+    "gulp-bower": "latest",
+    "gulp-rename": "latest",
+    "gulp-util": "latest",
+    "hydrolysis": "latest",
+    "jsonfile": "^2.2.1",
+    "lodash": "latest",
+    "map-stream": "latest",
+    "marked": "latest",
+    "minimist": "^1.1.1",
+    "require-dir": "latest",
+    "run-sequence": "latest",
+    "stream-from-array": "latest",
+    "vinyl": "^1.1.1"
+  },
+  "bin": {
+    "gwt-api-generator": "./bin/gwt-api-generator.js"
+  },
+  "keywords": [
+    "vaadin",
+    "elements",
+    "web",
+    "components",
+    "webcomponents",
+    "gwt",
+    "polymer"
+  ]
+}

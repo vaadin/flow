@@ -1,0 +1,35 @@
+    /*
+<% if (method.desc) { -%>
+     * <%= indentLines(method.desc, '     * ') %>
+<% } -%>
+     * @function
+     * @name <%= method.name %>
+<% method.params.forEach((param) => { -%>
+     * @param <%= param.name %> <%= param.type %>
+<% }) -%>
+<% if (method.return) { -%>
+     * @return <%= method.return.type %> <%= method.return.desc %>
+<% } -%>
+     */
+<% var unsupportedParams = method.params.filter((param) => !isTypeSupportedInMethodCalls(param.type)) -%>
+<% if (unsupportedParams.length) { -%>
+    // TODO: Method is not accessable due to unsupported argument types
+<% } else { -%>
+    <% if (isInterface) { %>default <% } %>public void <%= method.name %>(<% method.params.forEach((param) => { %>
+    <%= getJavaType(param.type) %> <%= param.name -%>
+<% }) %>) {
+        // This is a hack until #1032
+        Page page = UI.getCurrent().getPage();
+        page.executeJavaScript(
+                "$0.<%= method.name %>(<%= method.params.map((param, i) => '$' + (i + 1)).join(', ') %>)",
+                <%=
+                  indentLines(
+                      ['this']
+                        .concat(method.params.map((param) => param.name))
+                        .join(',\n'),
+                      '                '
+                  )
+                %>
+        );
+    }
+<% } -%>

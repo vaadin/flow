@@ -1,0 +1,39 @@
+<% if (property.desc) { -%>
+    /*
+     * <%= indentLines(property.desc, '     * ') %>
+     */
+<% } -%>
+<% if (!isTypeSupportedInProperties(property.type)) { -%>
+    // TODO: Property <%= property.name %> is not accessable due to unsupported type <%= property.type %>
+<% } else { -%>
+<% if (property.notify) { -%>
+    @Synchronize("<%= _.kebabCase(property.name) %>-changed")
+<% } -%>
+    <% if (isInterface) { %>default <% } %>public <%= getJavaType(property.type) %> <%= property.type === 'Boolean' ? 'is' : 'get' %><%= _.upperFirst(property.name) %>() {
+<% if (property.default !== undefined && !isJsonJavaType(getJavaType(property.java))) { -%>
+        return getElement().getProperty("<%= property.name %>", <%- getJavaValueForType(property.default, property.type) %>);
+<% } else if (property.type === 'Boolean') { -%>
+        return getElement().hasProperty("<%= property.name %>");
+<% } else { -%>
+        return (<%= getJavaType(property.type) %>) getElement().getPropertyRaw("<%= property.name %>");
+<% } -%>
+    }
+<% if (!property.readOnly) { -%>
+    <% if (isInterface) { %>default <% } %>public void set<%= _.upperFirst(property.name) %>(<%= getJavaType(property.type) %> value) {
+        getElement().<%= isJsonJavaType(getJavaType(property.type)) ? 'setPropertyJson' : 'setProperty' %>("<%= property.name %>", value);
+    }
+<% } -%>
+<% if (property.notify) { -%>
+<%-
+  include('_event.java.ejs', {
+    event: {
+      name: _.kebabCase(property.name) + '-changed',
+      params: [{
+        from: 'element',
+        name: property.name,
+        type: property.type
+      }]
+  }, name: name})
+-%>
+<% } -%>
+<% } -%>
