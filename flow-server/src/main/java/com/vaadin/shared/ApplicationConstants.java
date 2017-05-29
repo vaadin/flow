@@ -179,17 +179,13 @@ public class ApplicationConstants implements Serializable {
     public static final String PRE_RENDER_ATTRIBUTE = "pre-render";
 
     /**
-     * Default value of the configuration of the build URL of ES6 web
-     * components.
+     * Configuration parameter for the build URL of ES6 web components.
      */
-    public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
-            + VAADIN_STATIC_FILES_PATH + "frontend/es6/";
+    public static final String FRONTEND_URL_ES6 = "frontendUrlEs6";
 
     /**
-     * Default value of the configuration of the build URL of ES5 web
-     * components.
+     * Configuration parameter for the build URL of ES5 web components.
      */
-    public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
-            + VAADIN_STATIC_FILES_PATH + "frontend/es5/";
+    public static final String FRONTEND_URL_ES5 = "frontendUrlEs5";
 
 }
