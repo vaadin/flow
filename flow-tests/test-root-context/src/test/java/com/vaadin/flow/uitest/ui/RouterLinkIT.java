@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class RouterLinkIT extends PhantomJSTest {
+public class RouterLinkIT extends ChromeBrowserTest {
 
     @Test
     public void testRoutingLinks_insideServletMapping_updateLocation() {
@@ -47,11 +47,14 @@ public class RouterLinkIT extends PhantomJSTest {
 
         verifySamePage();
 
-        clickLink("http://google.com");
+        clickLink("http://example.net/");
 
         String currentUrl = getDriver().getCurrentUrl();
+
+        // Chrome changes url to whatever it can, removing www part, forcing
+        // https.
         Assert.assertTrue("Invalid URL: " + currentUrl,
-                currentUrl.startsWith("http://www.google."));
+                currentUrl.equals("http://example.net/"));
     }
 
     @Test
@@ -86,8 +89,8 @@ public class RouterLinkIT extends PhantomJSTest {
     }
 
     private void verifyParametersQuery(String parametersQuery) {
-        Assert.assertEquals("Invalid server side event location", parametersQuery,
-                findElement(By.id("queryParams")).getText());
+        Assert.assertEquals("Invalid server side event location",
+                parametersQuery, findElement(By.id("queryParams")).getText());
     }
 
     private void verifyPopStateEvent(String location) {

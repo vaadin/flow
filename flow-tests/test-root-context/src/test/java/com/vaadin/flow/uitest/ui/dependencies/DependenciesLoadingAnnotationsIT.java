@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * A test that ensures correct order of dependencies loaded. Test corresponds to
@@ -28,7 +28,7 @@ import com.vaadin.flow.testutil.PhantomJSTest;
  * @see DependenciesLoadingPageApiUI
  * @see DependenciesLoadingPageApiIT
  */
-public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
+public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     private static final String EAGER_PREFIX = "eager.";
     private static final String LAZY_PREFIX = "lazy.";
 

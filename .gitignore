@@ -21,8 +21,6 @@
 # Python
 scripts/*.pyc
 
-phantomjsdriver.log
-
 bower_components
 node
 node_modules

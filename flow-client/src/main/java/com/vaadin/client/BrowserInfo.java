@@ -72,9 +72,8 @@ public class BrowserInfo {
         } else if (browserDetails.isIE()) {
             touchDevice = detectIETouchDevice();
         } else {
-            // PhantomJS pretends to be a touch device which breaks some UI
             // tests
-            touchDevice = !browserDetails.isPhantomJS() && detectTouchDevice();
+            touchDevice = detectTouchDevice();
         }
     }
 
@@ -146,14 +145,6 @@ public class BrowserInfo {
                 majorVersionClass = "ch";
                 browserEngineClass = ENGINE_WEBKIT;
             } else if (browserDetails.isSafari()) {
-                browserIdentifier = BROWSER_SAFARI;
-                majorVersionClass = browserIdentifier
-                        + getBrowserMajorVersion();
-                minorVersionClass = majorVersionClass
-                        + browserDetails.getBrowserMinorVersion();
-                browserEngineClass = ENGINE_WEBKIT;
-            } else if (browserDetails.isPhantomJS()) {
-                // Safari needed for theme
                 browserIdentifier = BROWSER_SAFARI;
                 majorVersionClass = browserIdentifier
                         + getBrowserMajorVersion();
@@ -399,9 +390,9 @@ public class BrowserInfo {
 
     /**
      * Checks if the browser supports ECMAScript 6, based on the user agent.
-     * 
+     *
      * @see com.vaadin.shared.BrowserDetails#isEs6Supported()
-     * 
+     *
      * @return <code>true</code> if the browser supports ES6, <code>false</code>
      *         otherwise.
      */
