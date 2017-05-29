@@ -158,13 +158,12 @@ public class SessionSizeIT {
         }
     }
 
-    private void openSession(int buttonCount) {
-        String url = getTestURL(HelloWorldUI.PATH, "buttons=" + buttonCount);
+    private void openSession(int expectedHelloCounts) {
+        String url = getTestURL(HelloWorldUI.PATH, "buttons=" + expectedHelloCounts);
         try {
             String response = IOUtils.toString(new URL(url),
                     StandardCharsets.UTF_8);
-            // Each button is included once in UIDL and once prerendered
-            int expectedHelloCounts = buttonCount * 2;
+            // Each button is included once in UIDL
             Assert.assertEquals(expectedHelloCounts,
                     StringUtils.countMatches(response, "Hello"));
         } catch (IOException e) {
