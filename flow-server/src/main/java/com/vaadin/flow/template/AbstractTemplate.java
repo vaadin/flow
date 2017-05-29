@@ -22,9 +22,6 @@ import java.lang.reflect.TypeVariable;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.Component;
 
 /**
@@ -33,8 +30,7 @@ import com.vaadin.ui.Component;
  * @param <M>
  *            a model class that will be used for template data propagation
  */
-public abstract class AbstractTemplate<M> extends Component
-        implements HasChildView {
+public abstract class AbstractTemplate<M> extends Component {
     private final StateNode stateNode;
 
     protected AbstractTemplate() {
@@ -56,16 +52,6 @@ public abstract class AbstractTemplate<M> extends Component
      * @return the model of this template
      */
     protected abstract M getModel();
-
-    @Override
-    public void setChildView(View childView) {
-        TemplateMap templateMap = stateNode.getFeature(TemplateMap.class);
-        if (childView == null) {
-            templateMap.setChild(null);
-        } else {
-            templateMap.setChild(childView.getElement().getNode());
-        }
-    }
 
     /**
      * Gets the type of the template model to use with with this template.
