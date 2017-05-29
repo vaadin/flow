@@ -10,7 +10,7 @@ import com.vaadin.testbench.By;
 public class ScrollIT extends ChromeBrowserTest {
 
     // Scroll position may differ a little locally and in Travis
-    private static final int allowedScrollVariance = 5;
+    private static final int allowedScrollVariance = 15;
 
     @Test
     public void testScrollRestoration_basicBackForward() {
