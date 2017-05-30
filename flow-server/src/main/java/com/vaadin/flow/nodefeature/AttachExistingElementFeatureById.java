@@ -17,6 +17,7 @@ package com.vaadin.flow.nodefeature;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
@@ -83,4 +84,8 @@ public class AttachExistingElementFeatureById extends ServerSideFeature {
         node.setParent(null);
     }
 
+    @Override
+    public void forEachChild(Consumer<StateNode> action) {
+        parentNodes.keySet().stream().forEach(action::accept);
+    }
 }

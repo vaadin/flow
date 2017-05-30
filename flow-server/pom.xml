@@ -126,6 +126,7 @@
 				<version>2.19.1</version>
 				<configuration>
 					<excludedGroups>${test.excludegroup}</excludedGroups>
+					<enableAssertions>true</enableAssertions>
 				</configuration>
 			</plugin>
 
