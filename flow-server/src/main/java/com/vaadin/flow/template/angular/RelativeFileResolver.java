@@ -48,6 +48,7 @@ public class RelativeFileResolver implements TemplateResolver {
         } else if (!referenceDir.endsWith("/")) {
             referenceDir += "/";
         }
+        referenceDir = referenceDir.replace('\\', '/').replaceAll("//", "/");
     }
 
     @Override
