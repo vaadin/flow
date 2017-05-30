@@ -321,6 +321,7 @@
                     <version>2.20</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
+                        <enableAssertions>true</enableAssertions>
                     </configuration>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse
