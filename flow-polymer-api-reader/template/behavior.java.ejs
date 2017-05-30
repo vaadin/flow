@@ -7,7 +7,7 @@
 import com.vaadin.ui.HasElement;
 import com.vaadin.ui.ComponentEventNotifier;
 <% (behaviors || []).forEach(function(behavior) { -%>
-import com.vaadin.hummingbird.components.<%= getCollectionName(behavior) %>.<%= getJavaName(behavior) %>;
+import com.vaadin.<%= getCollectionName(behavior) %>.<%= getJavaName(behavior) %>;
 <% }) -%>
 
 public interface <%= name %> extends <%= ['HasElement', 'ComponentEventNotifier'].concat(behaviorNames).join(', ') %> {

@@ -101,6 +101,9 @@ module.exports = class Behavior extends TemplateContext {
     this.name = this.getJavaName(this.is);
     this.bowerPackageName = this.path.split(path.sep)[0];
     this.package = this.getCollectionName(this.bowerPackageName);
+    if (this.package == 'vaadin') {
+        this.package = 'core';
+    }
     this.behaviorNames = (this.behaviors || []).map(this.getJavaName.bind(this));
 
     /*

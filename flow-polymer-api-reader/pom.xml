@@ -1,11 +1,96 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <!-- Parent not inherited since no dependencies required. -->
-   <groupId>com.vaadin</groupId>
-  <artifactId>flow-polymer-api-reader</artifactId>
-  <name>Polymer API Reader</name>
-  <description>Reads Polymer Elements APIs with Polymer Analyzer</description>
-  <!-- Versioning doesn't follow Flow Core. -->
-  <version>0.0.1-SNAPSHOT</version>
-  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <!-- Inheriting parent so we can get configuration properties and organization, 
+        license etc. information from it. Drawback is some not needed dependencies. -->
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-project</artifactId>
+        <version>0.1.7-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-polymer-api-reader</artifactId>
+    <name>Polymer API Reader</name>
+    <description>Reads Polymer Elements APIs with Polymer Analyzer</description>
+    <!-- Versioning doesn't follow Flow Core. -->
+    <version>0.0.1-SNAPSHOT</version>
+    
+    <properties>
+        <reader.output.directory>src/main</reader.output.directory>
+        <packages>foo</packages>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.4</version>
+                <configuration>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <npmVersion>${npm.version}</npmVersion>
+                    <workingDirectory>${frontend.working.directory}</workingDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install node and npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>install polymer api reader</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>initialize</phase> <!-- runs 'install' by default -->
+                    </execution>
+                    <execution>
+                        <id>read polymer api</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <!-- TODO need to figure out how to pass command line parameters
+                             from maven calls to this, such as what packages to create 
+                             and what should be the output folder. See bin/flow-polymer-api-reader.js
+                             for current defaults. -->
+                            <!-- This argument matches to the "scripts" defined 
+                             in package.json file. -->
+                            <arguments>run-script
+                                flow-polymer-api-reader</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!-- Clean up generated sources and downloaded WCs -->
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${reader.output.directory}</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>node_modules</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

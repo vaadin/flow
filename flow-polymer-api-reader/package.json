@@ -24,6 +24,9 @@
     "stream-from-array": "latest",
     "vinyl": "^1.1.1"
   },
+  "scripts": {
+    "flow-polymer-api-reader": "bin/flow-polymer-api-reader.js"
+  },
   "bin": {
     "flow-polymer-api-reader": "./bin/flow-polymer-api-reader.js"
   },

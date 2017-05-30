@@ -33,8 +33,8 @@
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.1.2",
     "paper-input": "PolymerElements/paper-input#^1.1.15",
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.6",
-    "vaadin-date-picker": "Vaadin/vaadin-date-picker#master",
-    "vaadin-combo-box": "Vaadin/vaadin-combo-box#master",
+    "vaadin-date-picker": "Vaadin/vaadin-date-picker#1.2.3",
+    "vaadin-combo-box": "Vaadin/vaadin-combo-box#1.3.3",
     "vaadin-upload": "Vaadin/vaadin-upload#^1.0.1",
     "vaadin-grid": "Vaadin/vaadin-grid#^1.1.1"
   }

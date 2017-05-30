@@ -1,6 +1,6 @@
 var args = require('minimist')(process.argv.slice(2));
 
-var ns = args.groupId || "com.vaadin.hummingbird.components";
+var ns = args.groupId || "com.vaadin";
 var nspath = ns.replace(/\./g,'/');
 var currentDir = process.cwd() + '/';
 
