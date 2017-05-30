@@ -15,9 +15,11 @@
 <% if (unsupportedParams.length) { -%>
     // TODO: Method is not accessable due to unsupported argument types
 <% } else { -%>
-    <% if (isInterface) { %>default <% } %>public void <%= method.name %>(<% method.params.forEach((param) => { %>
+    <% if (isInterface) { %>default <% } %>public void <%= method.name %>(
+    <% for (var i=0; i < method.params.length; i++) { var param = method.params[i]; %>
     <%= getJavaType(param.type) %> <%= param.name -%>
-<% }) %>) {
+    <% if (i < (method.params.length -1)) { %>, <% } %>
+<% } %>) {
         // This is a hack until #1032
         Page page = UI.getCurrent().getPage();
         page.executeJavaScript(
