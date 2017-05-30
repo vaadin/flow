@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -30,9 +29,15 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
     public void elementsAreBoundOnTheServerSide() {
         open();
 
-        WebElement input = getInput();
+        assertTemplate("simple-path");
+        assertTemplate("context-path");
+        assertTemplate("frontend-path");
+    }
 
-        Assert.assertEquals("default", getLabel().getText());
+    private void assertTemplate(String id) {
+        WebElement input = getInput(id);
+
+        Assert.assertEquals("default", getLabel(id).getText());
 
         Assert.assertEquals("Type here to update label",
                 input.getAttribute("placeholder"));
@@ -40,19 +45,19 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
         input.sendKeys("Harley!");
         input.sendKeys(Keys.ENTER);
 
-        Assert.assertEquals("Text from input Harley!", getLabel().getText());
+        Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
 
         // Reset values to defaults
-        getInShadowRoot(findElement(By.id("template")), By.id("button")).get().click();
+        getInShadowRoot(findElement(By.id(id)), By.id("button")).get().click();
 
-        Assert.assertEquals("default", getLabel().getText());
+        Assert.assertEquals("default", getLabel(id).getText());
     }
 
-    private WebElement getInput() {
-        return getInShadowRoot(findElement(By.id("template")), By.id("input")).get();
+    private WebElement getInput(String id) {
+        return getInShadowRoot(findElement(By.id(id)), By.id("input")).get();
     }
 
-    private WebElement getLabel() {
-        return getInShadowRoot(findElement(By.id("template")), By.id("label")).get();
+    private WebElement getLabel(String id) {
+        return getInShadowRoot(findElement(By.id(id)), By.id("label")).get();
     }
 }

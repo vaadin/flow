@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -64,7 +65,9 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * Creates the component that is responsible for Polymer template
      * functionality.
      */
-    public PolymerTemplate() {
+    public PolymerTemplate(TemplateParser parser) {
+        Predicate<String> idVerifier = parseTemplate(
+                parser.getTemplateContent(getClass(), getElement().getTag()));
         // This a workaround to propagate model to a Polymer template.
         // Correct implementation will follow in
         // https://github.com/vaadin/flow/issues/1371
@@ -74,7 +77,11 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         ModelDescriptor.get(getModelType()).getPropertyNames().forEach(
                 propertyName -> modelMap.setProperty(propertyName, null));
 
-        mapComponents(getClass());
+        mapComponents(getClass(), idVerifier);
+    }
+
+    public PolymerTemplate() {
+        this(new DefaultTemplateParser());
     }
 
     /**
@@ -179,27 +186,35 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     /* Map declared fields marked @Id */
 
-    private void mapComponents(Class<?> cls) {
+    private void mapComponents(Class<?> cls, Predicate<String> idVerifier) {
         if (!AbstractTemplate.class.equals(cls.getSuperclass())) {
             // Parent fields
-            mapComponents(cls.getSuperclass());
+            mapComponents(cls.getSuperclass(), idVerifier);
         }
 
         Stream<Field> annotatedComponentFields = Stream
                 .of(cls.getDeclaredFields())
                 .filter(field -> !field.isSynthetic());
 
-        annotatedComponentFields.forEach(this::tryMapComponentOrElement);
+        annotatedComponentFields
+                .forEach(filed -> tryMapComponentOrElement(filed, idVerifier));
     }
 
     @SuppressWarnings("unchecked")
-    private void tryMapComponentOrElement(Field field) {
+    private void tryMapComponentOrElement(Field field,
+            Predicate<String> idVeridier) {
         Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
                 Id.class);
         if (!idAnnotation.isPresent()) {
             return;
         }
         String id = idAnnotation.get().value();
+        if (!idVeridier.test(id)) {
+            throw new IllegalStateException(String.format(
+                    "There is no element with "
+                            + "id='%s' in the template file. Cannot map it using @%s",
+                    id, Id.class.getSimpleName()));
+        }
 
         Class<?> fieldType = field.getType();
 
@@ -312,6 +327,11 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
             throw new IllegalArgumentException(msg);
         }
+    }
+
+    private Predicate<String> parseTemplate(
+            com.vaadin.external.jsoup.nodes.Element element) {
+        return id -> element.getElementById(id) != null;
     }
 
 }
