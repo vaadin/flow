@@ -268,8 +268,9 @@ public class ComponentUtil {
             Component.elementToMapTo.set(wrapData);
             return ReflectTools.createInstance(componentType);
         } finally {
-            // This should always be cleared in Component
-            assert Component.elementToMapTo.get() == null;
+            // This should always be cleared, normally it's cleared in Component
+            // but in case of exception it might be not cleared
+            Component.elementToMapTo.remove();
         }
 
     }

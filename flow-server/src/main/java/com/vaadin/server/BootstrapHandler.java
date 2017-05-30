@@ -196,7 +196,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         public VaadinUriResolver getUriResolver() {
             if (uriResolver == null) {
-                uriResolver = new BootstrapUriResolver(this);
+                uriResolver = new BootstrapUriResolver(getRequest(),
+                        getSession());
             }
 
             return uriResolver;
@@ -216,15 +217,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static class BootstrapUriResolver extends VaadinUriResolver {
-        private final BootstrapContext context;
+        private final VaadinSession session;
+        private final VaadinRequest request;
         private final String es6BuildUrl;
         private final String es5BuildUrl;
 
-        protected BootstrapUriResolver(BootstrapContext bootstrapContext) {
-            context = bootstrapContext;
-
-            DeploymentConfiguration config = context.getSession()
-                    .getConfiguration();
+        protected BootstrapUriResolver(VaadinRequest request,
+                VaadinSession session) {
+            this.session = session;
+            this.request = request;
+            DeploymentConfiguration config = session.getConfiguration();
             if (config.isProductionMode()) {
                 es6BuildUrl = config.getApplicationOrSystemProperty(
                         Constants.FRONTEND_URL_ES6,
@@ -244,7 +246,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         @Override
         protected String getContextRootUrl() {
-            String root = context.getApplicationParameters()
+            String root = getApplicationParameters(request, session)
                     .getString(ApplicationConstants.CONTEXT_ROOT_URL);
             assert root.endsWith("/");
             return root;
@@ -253,7 +255,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         @Override
         protected String getFrontendRootUrl() {
             String root;
-            if (context.getSession().getBrowser().isEs6Supported()) {
+            if (session.getBrowser().isEs6Supported()) {
                 root = es6BuildUrl;
             } else {
                 root = es5BuildUrl;
@@ -269,6 +271,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);
+
+        if (session.getAttribute(VaadinUriResolverFactory.class) == null) {
+            session.setAttribute(VaadinUriResolverFactory.class,
+                    vaadinRequest -> new BootstrapUriResolver(vaadinRequest,
+                            session));
+        }
 
         UI ui = createAndInitUI(uiClass, request, session);
 
@@ -571,36 +579,41 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected static JsonObject getApplicationParameters(
             BootstrapContext context) {
-        VaadinRequest request = context.getRequest();
-        VaadinSession session = context.getSession();
-        VaadinService vaadinService = request.getService();
+        JsonObject appConfig = getApplicationParameters(context.getRequest(),
+                context.getSession());
+
+        appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
+                context.getUI().getUIId());
+        return appConfig;
+    }
+
+    private static JsonObject getApplicationParameters(VaadinRequest request,
+            VaadinSession session) {
+        VaadinService vaadinService = session.getService();
         final boolean productionMode = session.getConfiguration()
                 .isProductionMode();
 
         JsonObject appConfig = Json.createObject();
 
         if (productionMode) {
-            appConfig.put(ApplicationConstants.FRONTEND_URL_ES6, context
-                    .getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
+                    session.getConfiguration().getApplicationOrSystemProperty(
+                            Constants.FRONTEND_URL_ES6,
                             Constants.FRONTEND_URL_ES6_DEFAULT_VALUE));
-            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5, context
-                    .getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
+                    session.getConfiguration().getApplicationOrSystemProperty(
+                            Constants.FRONTEND_URL_ES5,
                             Constants.FRONTEND_URL_ES5_DEFAULT_VALUE));
         } else {
-            appConfig.put(ApplicationConstants.FRONTEND_URL_ES6, context
-                    .getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
+                    session.getConfiguration().getApplicationOrSystemProperty(
+                            Constants.FRONTEND_URL_ES6,
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
-            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5, context
-                    .getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+            appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
+                    session.getConfiguration().getApplicationOrSystemProperty(
+                            Constants.FRONTEND_URL_ES5,
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
         }
-
-        appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
-                context.getUI().getUIId());
 
         JsonObject versionInfo = Json.createObject();
         versionInfo.put("vaadinVersion", Version.getFullVersion());
@@ -613,8 +626,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put("versionInfo", versionInfo);
 
         // Use locale from session if set, else from the request
-        Locale locale = ServletHelper.findLocale(context.getSession(),
-                context.getRequest());
+        Locale locale = ServletHelper.findLocale(session, request);
         // Get system messages
         SystemMessages systemMessages = vaadinService.getSystemMessages(locale,
                 request);
