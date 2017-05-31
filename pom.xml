@@ -381,7 +381,7 @@
             <!-- Profile for generating components from Polymer APIs. -->
             <id>generator</id>
             <modules>
-                <module>flow-polymer-api-reader</module>
+                <module>flow-components</module>
             </modules>
         </profile>
     </profiles>

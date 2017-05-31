@@ -5,7 +5,7 @@
         license etc. information from it. Drawback is some not needed dependencies. -->
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-project</artifactId>
+        <artifactId>flow-components</artifactId>
         <version>0.1.7-SNAPSHOT</version>
     </parent>
     <artifactId>flow-polymer-api-reader</artifactId>
@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow</artifactId>
+            <artifactId>flow-html-components</artifactId>
             <version>0.1.7-SNAPSHOT</version>
         </dependency>
     </dependencies>
