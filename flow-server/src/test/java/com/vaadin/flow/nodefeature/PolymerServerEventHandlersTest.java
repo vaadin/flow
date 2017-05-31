@@ -36,6 +36,7 @@ import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
@@ -59,6 +60,12 @@ public class PolymerServerEventHandlersTest {
     @Tag("polymer")
     private static class CorrectAnnotationUsage
             extends PolymerTemplate<TemplateModel> {
+
+        CorrectAnnotationUsage() {
+            super((clazz, tag) -> Jsoup
+                    .parse("<dom-module id='polymer'></dom-module>"));
+        }
+
         @EventHandler
         public void noParams() {
         }
@@ -79,6 +86,7 @@ public class PolymerServerEventHandlersTest {
         public void eventDataAndRepeatIndexOnDifferentParams(
                 @EventData("test") String test, @RepeatIndex int index) {
         }
+
     }
 
     private static class WrongAnnotationUsage {

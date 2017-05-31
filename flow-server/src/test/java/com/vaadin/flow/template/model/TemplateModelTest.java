@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.vaadin.annotations.Exclude;
 import com.vaadin.annotations.Include;
 import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
@@ -210,6 +211,8 @@ public class TemplateModelTest {
     public static class EmptyDivTemplate<M extends TemplateModel>
             extends PolymerTemplate<M> {
         public EmptyDivTemplate() {
+            super((clazz, tag) -> Jsoup
+                    .parse("<dom-module id='div'></dom-module>"));
         }
 
     }
