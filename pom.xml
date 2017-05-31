@@ -9,19 +9,6 @@
     <packaging>pom</packaging>
     <version>0.1.7-SNAPSHOT</version>
 
-    <modules>
-        <module>flow</module>
-        <module>flow-server</module>
-        <module>flow-push</module>
-        <module>flow-client</module>
-        <module>flow-html-components</module>
-        <module>flow-documentation</module>
-        <module>flow-test-util</module>
-        <module>flow-tests</module>
-        <module>flow-server-production-mode</module>
-        <module>flow-components</module>
-    </modules>
-
     <organization>
         <name>Vaadin Ltd</name>
         <url>http://vaadin.com</url>
@@ -366,10 +353,36 @@
     </build>
     <profiles>
         <profile>
+            <!-- Default profile, doesn't include component generator modules. -->
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>flow</module>
+                <module>flow-server</module>
+                <module>flow-push</module>
+                <module>flow-client</module>
+                <module>flow-html-components</module>
+                <module>flow-documentation</module>
+                <module>flow-test-util</module>
+                <module>flow-tests</module>
+                <module>flow-server-production-mode</module>
+                <module>flow-components</module>
+            </modules>
+        </profile>
+        <profile>
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>false</maven.javadoc.skip>
             </properties>
+        </profile>
+        <profile>
+            <!-- Profile for generating components from Polymer APIs. -->
+            <id>generator</id>
+            <modules>
+                <module>flow-components</module>
+            </modules>
         </profile>
     </profiles>
 
