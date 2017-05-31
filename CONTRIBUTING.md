@@ -60,7 +60,7 @@ However, try to make your explanation understandable without external resources.
 
 # Separate your changes
 
-Separate enhancements, fixes and new features into a separate pull requests.
+Separate all enhancements, fixes and new features into different pull requests.
 
 For example, if your changes include both bug fixes and performance enhancements, separate those changes into two or more patches. If your changes include an API update, and a new component which uses that new API, separate those into two patches.
 
