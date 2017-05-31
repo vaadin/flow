@@ -18,6 +18,7 @@ package com.vaadin.flow.template;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -80,8 +81,10 @@ public class DefaultTemplateParser implements TemplateParser {
                                     tag, htmlImport.value()));
                     return templateElement;
                 }
-            } catch (IOException ignore) {
+            } catch (IOException exception) {
                 // ignore exception on close()
+                getLogger().log(Level.WARNING,
+                        "Couldn't close template input stream", exception);
             }
         }
         throw new IllegalStateException(String.format(
@@ -98,9 +101,11 @@ public class DefaultTemplateParser implements TemplateParser {
     private String resolvePath(VaadinRequest request, String path) {
         VaadinUriResolverFactory uriResolverfactory = VaadinSession.getCurrent()
                 .getAttribute(VaadinUriResolverFactory.class);
+        assert uriResolverfactory != null;
+
         VaadinUriResolver uriResolver = uriResolverfactory
                 .getUriResolver(request);
-        assert uriResolverfactory != null;
+        assert uriResolver != null;
 
         String pathInfo = request.getPathInfo();
         String uri = uriResolver.resolveVaadinUri(path);
@@ -130,7 +135,8 @@ public class DefaultTemplateParser implements TemplateParser {
             return Jsoup.parse(content, StandardCharsets.UTF_8.name(), "");
         } catch (IOException exception) {
             throw new RuntimeException(String.format(
-                    "Can't parse the template declared using '%s' path", path));
+                    "Can't parse the template declared using '%s' path", path),
+                    exception);
         }
     }
 

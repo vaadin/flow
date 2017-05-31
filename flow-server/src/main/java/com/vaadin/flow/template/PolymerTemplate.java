@@ -63,7 +63,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     /**
      * Creates the component that is responsible for Polymer template
-     * functionality.
+     * functionality using the provided {@code parser}.
+     * 
+     * @param parser
+     *            a template parser
      */
     public PolymerTemplate(TemplateParser parser) {
         Predicate<String> idVerifier = parseTemplate(
@@ -80,6 +83,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         mapComponents(getClass(), idVerifier);
     }
 
+    /**
+     * Creates the component that is responsible for Polymer template
+     * functionality.
+     */
     public PolymerTemplate() {
         this(new DefaultTemplateParser());
     }
