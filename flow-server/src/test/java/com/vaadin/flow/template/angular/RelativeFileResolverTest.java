@@ -61,9 +61,4 @@ public class RelativeFileResolverTest {
         resolveAndAssert("subfolder/subfoldertemplate.html",
                 "Template in sub folder");
     }
-
-    @Test
-    public void resolveTemplateThroughParentFolder() throws IOException {
-        resolveAndAssert("../angular/sub.html", "Sub template");
-    }
 }
