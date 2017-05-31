@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>flow-project</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>0.1.7-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-components</artifactId>
+    <name>Flow Components</name>
+    <packaging>pom</packaging>
+    <modelVersion>4.0.0</modelVersion>
+
+    <properties>
+        <maven.test.skip>true</maven.test.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>0.1.7-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>Components-test</id>
+            <activation>
+                <property>
+                    <name>test.components</name>
+                    <value>true</value>
+                </property>
+            </activation>
+
+            <!-- Can we get this nicer somehow? -->
+            <properties>
+                <maven.test.skip>false</maven.test.skip>
+            </properties>
+        </profile>
+
+        <!-- Profile for generating components from Polymer APIs. -->
+        <profile>
+            <id>generator</id>
+            <modules>
+                <module>flow-polymer-api-reader</module>
+            </modules>
+        </profile>
+    </profiles>
+</project>

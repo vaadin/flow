@@ -1,0 +1,62 @@
+<%
+// Due to the lack of events for file manipulation in client side,
+// we have to use the the low-level Polymer changes API which is complex
+// and terribly slow if we handle it in server-side since it sends
+// about a dozen of files-changed events per operation.
+// Here we filter paths matching files added/removed and send convenience events
+// to server side.
+//
+// TODO: check event names and discuss whether this should be done by the element.
+
+contentFor('classBodyStart', `
+    @DomEvent("file-added")
+    public static class FileAddedEvent extends ComponentEvent<VaadinUpload> {
+        public String name;
+        public FileAddedEvent(VaadinUpload source, boolean fromClient,
+                @EventData("event.detail.name") String name) {
+            super(source, fromClient);
+            this.name = name;
+        }
+    }
+    public Registration addFileAddedListener(ComponentEventListener<FileAddedEvent> listener) {
+        return addListener(FileAddedEvent.class, listener);
+    }
+
+    @DomEvent("file-removed")
+    public static class FileRemovedEvent extends FileAddedEvent {
+        public String name;
+        public FileRemovedEvent(VaadinUpload source, boolean fromClient,
+                @EventData("event.detail.name") String name) {
+            super(source, fromClient, name);
+            this.name = name;
+        }
+    }
+    public Registration addFileRemovedListener(ComponentEventListener<FileRemovedEvent> listener) {
+        return addListener(FileRemovedEvent.class, listener);
+    }
+`);
+
+contentFor('jsMonkeyPatch', `
+$0.addEventListener('files-changed', function(e) {
+  var path = e.detail.path;
+  var value = e.detail.value;
+  if (Array.isArray(value)) {
+    for (i in value) {
+      $0.fire('file-added', value[i]);
+    }
+  } else if (path == 'files.splices') {
+    for (var i in e.detail.value.indexSplices) {
+      var is = e.detail.value.indexSplices[i];
+      for (var r in is.removed) {
+        $0.fire('file-removed', is.removed[r]);
+      }
+      for (var a = is.index; a < is.index + is.addedCount; a++) {
+        $0.fire('file-added', is.object[a]);
+      }
+    }
+  }
+});
+`);
+
+-%>
+<%- include('../element.java.ejs') -%>
