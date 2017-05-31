@@ -25,14 +25,12 @@ import com.vaadin.shared.VaadinUriResolver;
  * Produces a {@link VaadinUriResolver} for the provided {@link VaadinRequest}
  * instance.
  * <p>
- * The instance of the factory may be gotten from {@link VaadinSession}:
+ * The instance of the factory may be retrieved from {@link VaadinSession}:
  * 
  * <pre>
- *  
  * <code>
  * VaadinUriResolverFactory factory = VaadinSession.getCurrent.getAttribute(VaadinUriResolverFactory.class);
  * </code>
- * 
  * </pre>
  * 
  * @see VaadinSession#getAttribute(Class)

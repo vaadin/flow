@@ -204,19 +204,19 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 .filter(field -> !field.isSynthetic());
 
         annotatedComponentFields
-                .forEach(filed -> tryMapComponentOrElement(filed, idVerifier));
+                .forEach(field -> tryMapComponentOrElement(field, idVerifier));
     }
 
     @SuppressWarnings("unchecked")
     private void tryMapComponentOrElement(Field field,
-            Predicate<String> idVeridier) {
+            Predicate<String> idVerifier) {
         Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
                 Id.class);
         if (!idAnnotation.isPresent()) {
             return;
         }
         String id = idAnnotation.get().value();
-        if (!idVeridier.test(id)) {
+        if (!idVerifier.test(id)) {
             throw new IllegalStateException(String.format(
                     "There is no element with "
                             + "id='%s' in the template file. Cannot map it using @%s",

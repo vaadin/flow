@@ -118,7 +118,10 @@ public class DefaultTemplateParserTest {
                         .getBytes(StandardCharsets.UTF_8)));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+        Element element = parser
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+
+        Assert.assertTrue(element.getElementById("foo") != null);
     }
 
     @Test
@@ -135,7 +138,10 @@ public class DefaultTemplateParserTest {
                         .getBytes(StandardCharsets.UTF_8)));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(RootImportsInspectTemplate.class, "foo");
+        Element element = parser
+                .getTemplateContent(RootImportsInspectTemplate.class, "foo");
+
+        Assert.assertTrue(element.getElementById("foo") != null);
     }
 
     @Test(expected = IllegalStateException.class)

@@ -28,11 +28,11 @@ import com.vaadin.external.jsoup.nodes.Element;
  * @author Vaadin Ltd
  *
  */
+@FunctionalInterface
 public interface TemplateParser {
 
     /**
-     * Gets a JSOUP {@link com.vaadin.external.jsoup.nodes.Element} representing
-     * the template content.
+     * Gets a JSOUP {@link Element} representing the template content.
      * 
      * @param clazz
      *            the template class

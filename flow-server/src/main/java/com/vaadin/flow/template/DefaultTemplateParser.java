@@ -71,14 +71,13 @@ public class DefaultTemplateParser implements TemplateParser {
                                     + "via the servlet context",
                             htmlImport.value()));
                 }
-                com.vaadin.external.jsoup.nodes.Element templateElement = parseHtmlImport(
-                        content, htmlImport.value());
+                Element templateElement = parseHtmlImport(content,
+                        htmlImport.value());
                 if (isTemplateImport(templateElement, tag)) {
-                    Logger.getLogger(PolymerTemplate.class.getName())
-                            .info(String.format(
-                                    "Found a template file containing template "
-                                            + "definition for the tag '%s' by the path '%s'",
-                                    tag, htmlImport.value()));
+                    getLogger().info(String.format(
+                            "Found a template file containing template "
+                                    + "definition for the tag '%s' by the path '%s'",
+                            tag, htmlImport.value()));
                     return templateElement;
                 }
             } catch (IOException exception) {
@@ -99,11 +98,11 @@ public class DefaultTemplateParser implements TemplateParser {
     }
 
     private String resolvePath(VaadinRequest request, String path) {
-        VaadinUriResolverFactory uriResolverfactory = VaadinSession.getCurrent()
+        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
                 .getAttribute(VaadinUriResolverFactory.class);
-        assert uriResolverfactory != null;
+        assert uriResolverFactory != null;
 
-        VaadinUriResolver uriResolver = uriResolverfactory
+        VaadinUriResolver uriResolver = uriResolverFactory
                 .getUriResolver(request);
         assert uriResolver != null;
 
@@ -119,9 +118,7 @@ public class DefaultTemplateParser implements TemplateParser {
         }
     }
 
-    private boolean isTemplateImport(
-            com.vaadin.external.jsoup.nodes.Element contentElement,
-            String tag) {
+    private boolean isTemplateImport(Element contentElement, String tag) {
         if (contentElement == null) {
             return false;
         }
