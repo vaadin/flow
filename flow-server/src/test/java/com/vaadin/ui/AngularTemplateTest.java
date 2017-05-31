@@ -234,26 +234,6 @@ public class AngularTemplateTest {
     }
 
     @Test
-    public void htmlAnnotation_htmlFileInDifferentPackage() {
-        AnnotatedAbsolutePathTemplate template = new AnnotatedAbsolutePathTemplate();
-        Assert.assertEquals("absolute",
-                template.getElement().getAttribute("id"));
-    }
-
-    @Test
-    public void htmlAnnotation_htmlFileInRootPackage() {
-        AnnotatedRootPathTemplate template = new AnnotatedRootPathTemplate();
-        Assert.assertEquals("root", template.getElement().getAttribute("id"));
-    }
-
-    @Test
-    public void htmlAnnotation_inherited() {
-        InheritedAnnotationTemplate template = new InheritedAnnotationTemplate();
-        Assert.assertEquals("absolute",
-                template.getElement().getAttribute("id"));
-    }
-
-    @Test
     public void htmlAnnotation_noExtension() {
         AnnotatedNoExtensionTemplate template = new AnnotatedNoExtensionTemplate();
         Assert.assertEquals("no-extension",
