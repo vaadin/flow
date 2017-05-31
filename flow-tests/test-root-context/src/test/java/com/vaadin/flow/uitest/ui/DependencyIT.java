@@ -112,12 +112,21 @@ public class DependencyIT extends ChromeBrowserTest {
                 .stream().map(WebElement::getText).collect(Collectors.toList());
         Assert.assertEquals(3, errors.size());
         // The order for these can be random
-        assertTrue(errors
-                .contains("Error loading http://localhost:8888/not-found.css"));
-        assertTrue(errors
-                .contains("Error loading http://localhost:8888/not-found.js"));
-        assertTrue(errors.contains(
-                "Error loading http://localhost:8888/not-found.html"));
+        assertTrue("Couldn't find error for not-found.css",
+                errors.stream()
+                        .filter(s -> s.startsWith("Error loading http://")
+                                && s.endsWith("/not-found.css"))
+                        .findFirst().isPresent());
+        assertTrue("Couldn't find error for not-found.js",
+                errors.stream()
+                        .filter(s -> s.startsWith("Error loading http://")
+                                && s.endsWith("/not-found.js"))
+                        .findFirst().isPresent());
+        assertTrue("Couldn't find error for not-found.html",
+                errors.stream()
+                        .filter(s -> s.startsWith("Error loading http://")
+                                && s.endsWith("/not-found.html"))
+                        .findFirst().isPresent());
     }
 
     @Test
