@@ -35,7 +35,6 @@
                 <configuration>
                     <nodeVersion>${node.version}</nodeVersion>
                     <npmVersion>${npm.version}</npmVersion>
-                    <workingDirectory>${frontend.working.directory}</workingDirectory>
                 </configuration>
                 <executions>
                     <execution>
@@ -43,6 +42,21 @@
                         <goals>
                             <goal>install-node-and-npm</goal>
                             <goal>npm</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>install bower</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration><arguments>install --save bower</arguments></configuration>
+                        <phase>initialize</phase>
+                    </execution>
+                    <execution>
+                        <id>bower install</id>
+                        <goals>
+                            <goal>bower</goal>
                         </goals>
                         <phase>initialize</phase>
                     </execution>
@@ -60,7 +74,7 @@
                             <!-- This argument matches to the "scripts" defined 
                              in package.json file. -->
                             <arguments>run-script
-                                flow-polymer-api-reader </arguments>
+                                flow-polymer-api-reader</arguments>
                         </configuration>
                     </execution>
                 </executions>
