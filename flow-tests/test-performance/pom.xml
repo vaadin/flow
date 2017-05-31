@@ -42,6 +42,25 @@
 			</activation>
 			<build>
 				<plugins>
+					<plugin>
+						<groupId>com.lazerycode.selenium</groupId>
+						<artifactId>driver-binary-downloader-maven-plugin</artifactId>
+						<version>${driver.binary.downloader.maven.plugin.version}</version>
+						<configuration>
+							<onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
+							<rootStandaloneServerDirectory>../driver</rootStandaloneServerDirectory>
+							<downloadedZipFileDirectory>../driver_zips</downloadedZipFileDirectory>
+							<customRepositoryMap>../drivers.xml</customRepositoryMap>
+						</configuration>
+						<executions>
+							<execution>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>selenium</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
 					<!-- This module is mapped to default web context -->
 					<plugin>
 						<groupId>org.eclipse.jetty</groupId>

@@ -28,6 +28,7 @@ import com.vaadin.external.jsoup.nodes.Element;
  * @author Vaadin Ltd
  *
  */
+@FunctionalInterface
 public interface TemplateParser {
 
     /**

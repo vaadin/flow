@@ -71,14 +71,13 @@ public class DefaultTemplateParser implements TemplateParser {
                                     + "via the servlet context",
                             htmlImport.value()));
                 }
-                com.vaadin.external.jsoup.nodes.Element templateElement = parseHtmlImport(
-                        content, htmlImport.value());
+                Element templateElement = parseHtmlImport(content,
+                        htmlImport.value());
                 if (isTemplateImport(templateElement, tag)) {
-                    Logger.getLogger(PolymerTemplate.class.getName())
-                            .info(String.format(
-                                    "Found a template file containing template "
-                                            + "definition for the tag '%s' by the path '%s'",
-                                    tag, htmlImport.value()));
+                    getLogger().info(String.format(
+                            "Found a template file containing template "
+                                    + "definition for the tag '%s' by the path '%s'",
+                            tag, htmlImport.value()));
                     return templateElement;
                 }
             } catch (IOException exception) {
