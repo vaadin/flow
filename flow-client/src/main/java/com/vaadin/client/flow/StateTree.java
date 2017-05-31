@@ -67,6 +67,8 @@ public class StateTree {
         assert this.updateInProgress != updateInProgress : "Inconsistent state tree updating status, expected "
                 + (updateInProgress ? "no " : "") + " updates in progress.";
         this.updateInProgress = updateInProgress;
+
+        getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
     }
 
     /**
@@ -94,6 +96,10 @@ public class StateTree {
         assert !idToNode.has(key) : "Node " + key + " is already registered";
 
         idToNode.set(key, node);
+
+        if (isUpdateInProgress()) {
+            getRegistry().getInitialPropertiesHandler().nodeRegistered(node);
+        }
     }
 
     private static Double getKey(StateNode node) {
@@ -185,6 +191,11 @@ public class StateTree {
 
         NodeMap nodeMap = property.getMap();
         StateNode node = nodeMap.getNode();
+
+        if (getRegistry().getInitialPropertiesHandler()
+                .handlePropertyUpdate(property)) {
+            return;
+        }
 
         assert assertValidNode(node);
         registry.getServerConnector().sendNodeSyncMessage(node, nodeMap.getId(),

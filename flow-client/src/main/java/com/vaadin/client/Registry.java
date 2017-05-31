@@ -298,4 +298,8 @@ public class Registry {
     public ExistingElementMap getExistingElementMap() {
         return get(ExistingElementMap.class);
     }
+
+    public InitialPropertiesHandler getInitialPropertiesHandler() {
+        return get(InitialPropertiesHandler.class);
+    }
 }

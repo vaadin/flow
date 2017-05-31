@@ -75,6 +75,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     @FunctionalInterface
     @JsFunction
     @SuppressWarnings("unusable-by-js")
+
     private interface EventDataExpression {
         /**
          * Callback interface for an event data expression parsed using new
