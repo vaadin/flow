@@ -15,23 +15,29 @@
  */
 package com.vaadin.server;
 
-import javax.servlet.ServletException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.flow.template.TemplateParser;
 import com.vaadin.flow.template.model.TemplateModel;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
  */
 public class CustomElementRegistryInitializerTest {
+
+    private static final TemplateParser TEST_PARSER = (clazz, tag) -> Jsoup
+            .parse("<dom-module id='" + tag + "'></dom-module>");
 
     @Before
     public void setup() {
@@ -165,6 +171,11 @@ public class CustomElementRegistryInitializerTest {
     @Tag("custom-element")
     public static class ValidCustomElement
             extends PolymerTemplate<TemplateModel> {
+
+        public ValidCustomElement() {
+            super(TEST_PARSER);
+        }
+
     }
 
     @Tag("custom-element")
@@ -174,16 +185,29 @@ public class CustomElementRegistryInitializerTest {
     @Tag("-invalid")
     public static class InvalidCustomElement
             extends PolymerTemplate<TemplateModel> {
+
+        public InvalidCustomElement() {
+            super(TEST_PARSER);
+        }
     }
 
     @Tag("custom-element")
     public static class InvalidExtendingElement
             extends PolymerTemplate<TemplateModel> {
+
+        public InvalidExtendingElement() {
+            super(TEST_PARSER);
+        }
     }
 
     @Tag("custom-polymer-element")
     public static class CustomPolymerElement
             extends PolymerTemplate<TemplateModel> {
+
+        public CustomPolymerElement() {
+            super(TEST_PARSER);
+        }
+
     }
 
     @Tag("non-polymer")

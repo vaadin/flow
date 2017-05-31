@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.server.StreamResource;
@@ -33,6 +34,7 @@ public class LazyLoadingTemplateUI extends UI {
     @Tag("lazy-widget")
     public static class LazyWidget extends PolymerTemplate<Message> {
         public LazyWidget() {
+            super((clazz, tag) -> Jsoup.parse(getTemplateContent()));
             getModel().setText("foo");
         }
 
@@ -67,21 +69,6 @@ public class LazyLoadingTemplateUI extends UI {
 
     private StreamResource getHtmlImportResource() {
         return new StreamResource("LazyWidget.html", () -> {
-            // @formatter:off
-            String js = "<link rel='import' href='/bower_components/polymer/polymer.html'>"+
-            "<dom-module id='lazy-widget'>"+
-                  "<template>"+
-                    "<div id='msg' >[[text]]</div>"+
-                    "<input id='input' value='{{text::input}}' on-change='valueUpdated'>"+
-                  "</template>"+
-                  "<script>"+
-                   " class LazyWidget extends Polymer.Element {"+
-                    "  static get is() { return 'lazy-widget' }"+
-                    "}"+
-                    "customElements.define(LazyWidget.is, LazyWidget);"+
-                  "</script>"+
-            "</dom-module>";
-            // @formatter:on
 
             // Wait to ensure that client side will stop until the JavaScript is
             // loaded
@@ -90,7 +77,25 @@ public class LazyLoadingTemplateUI extends UI {
             } catch (Exception e) {
             }
             return new ByteArrayInputStream(
-                    js.getBytes(StandardCharsets.UTF_8));
+                    getTemplateContent().getBytes(StandardCharsets.UTF_8));
         });
+    }
+
+    private static String getTemplateContent() {
+        // @formatter:off
+        return "<link rel='import' href='/bower_components/polymer/polymer.html'>"+
+        "<dom-module id='lazy-widget'>"+
+              "<template>"+
+                "<div id='msg' >[[text]]</div>"+
+                "<input id='input' value='{{text::input}}' on-change='valueUpdated'>"+
+              "</template>"+
+              "<script>"+
+               " class LazyWidget extends Polymer.Element {"+
+                "  static get is() { return 'lazy-widget' }"+
+                "}"+
+                "customElements.define(LazyWidget.is, LazyWidget);"+
+              "</script>"+
+        "</dom-module>";
+        // @formatter:on
     }
 }

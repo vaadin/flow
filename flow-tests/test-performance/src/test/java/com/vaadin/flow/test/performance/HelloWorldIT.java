@@ -137,19 +137,6 @@ public class HelloWorldIT extends AbstractTestBenchTest {
         proxyServer = null;
     }
 
-    @Override
-    protected String getRootURL() {
-        // Can't use localhost or 127.0.0.1 because PhantomJS ignores the proxy
-        // Waiting for https://github.com/ariya/phantomjs/pull/12703 to be
-        // merged...
-        try {
-            String ip = InetAddress.getLocalHost().getHostAddress();
-            return "http://" + ip + ":" + SERVER_PORT;
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private void writeHar(BrowserMobProxyServer proxyServer, String testName)
             throws IOException {
         Har har = proxyServer.getHar();
