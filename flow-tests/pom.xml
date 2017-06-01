@@ -16,7 +16,7 @@
         <module>test-resources</module>
         <module>test-root-context</module>
         <module>test-subcontext</module>
-        <!-- Drop performance test until we can figure -->
+        <!-- Drop performance until we can figure -->
         <!-- out how it should work with TestBench hub -->
         <!--<module>test-performance</module>-->
         <module>test-scalability</module>
