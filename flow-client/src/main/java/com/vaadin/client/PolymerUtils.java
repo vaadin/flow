@@ -161,4 +161,19 @@ public final class PolymerUtils {
     /*-{
         return (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
     }-*/;
+
+    /**
+     * Checks whether the {@code htmlNode} can turn into polymer 2 element later.
+     * <p>
+     * Lazy loaded dependencies can load {@literal polymer.html} much later then the element itself gets processed
+     * by the Flow. This method helps to determine such elements.
+     *
+     * @param htmlNode
+     *            HTML element to check
+     * @return {@code true} if the {@code htmlNode} can become a polymer 2 element
+     */
+    public static native boolean canBePolymerElement(Element htmlNode)
+    /*-{
+        return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
+    }-*/;
 }

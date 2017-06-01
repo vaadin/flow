@@ -31,6 +31,8 @@ public class LazyWidgetIT extends ChromeBrowserTest {
     @Test
     public void test() {
         open();
+        waitForElementVisible(By.id("template")); // template is lazy loaded, need some time to load
+
         WebElement template = findElements(By.id("template")).get(0);
         String input = "InputMaster";
         Assert.assertFalse(
