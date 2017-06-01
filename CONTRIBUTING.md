@@ -9,13 +9,13 @@ We like quality patches that solve problems. A quality patch follows good coding
 In other words: 
 
  * Describe your changes: what did you change, why did you change it, how did you change it? 
- * Separate your changes: one change per commit, many small changes are easier to review
+ * Separate your changes: one change per commit, many small changes are easier to review.
  * Include a test to prove your patch works, or a benchmark if it’s a performance improvement.
  * Style-check your changes: it’s okay to have a separate commit to fix style issues.
  * Ensure you have Contributor Agreement signed up. This can be signed digitally in the code review system.
- * Create a pull request; it will then be reviewed by the Framework team, who will provide actionable feedback in a timely fashion if necessary. **Remember to check the "Allow edits from maintainers" so we can rebase the PR or make small changes if necessary** 
+ * Create a pull request; it will then be reviewed by the Framework team, who will provide actionable feedback in a timely fashion if necessary. **Remember to check the "Allow edits from maintainers" so we can rebase the PR or make small changes if necessary**.
  * Respond to review comments: review comments are meant to improve the quality of the code by pointing out defects or readability issues.
- * Don't get discouraged - or impatient: Reviewers are people too and will sometimes forget. Give them a friendly poke if you feel the PR has been forgotten about. 
+ * Don't get discouraged - or impatient: reviewers are people too and will sometimes forget. Give them a friendly poke if you feel the PR has been forgotten about. 
  * Most PRs take a few iterations of review before they are merged. 
 
 # We encourage you to get in touch
@@ -52,7 +52,7 @@ Once the problem is established, describe what you are actually doing about it i
 
 ## Solve only one problem per patch
 
-If your description starts to get long, that's a sign that you probably need to split up your patch. See “Only one logical change per patch”
+If your description starts to get long, that's a sign that you probably need to split up your patch. See “Only one logical change per patch”.
 
 Describe your changes in imperative mood, e.g. "make xyzzy do frotz". If the patch fixes a logged bug entry, refer to that bug entry by number or URL. 
 
@@ -128,7 +128,7 @@ If there is feedback that is blocking merging of the pull request, and there is 
 
 # Don't get discouraged - or impatient.
 
-After you have submitted your change, be patient and wait.  Reviewers are busy people and may not get to your patch right away. Ideally we try to get a response within one business day.
+After you have submitted your change, be patient and wait.  Reviewers are busy people and may not get to your patch right away. Ideally, we try to get a response within one business day.
 
 You should receive comments within a week or so; if that does not happen, make sure that you have sent your patches to the right place.  Wait for a minimum of one week before resubmitting or pinging reviewers - possibly longer during busy times like merge windows for minor or major release versions. 
 
