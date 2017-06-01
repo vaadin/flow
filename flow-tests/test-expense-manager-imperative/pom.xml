@@ -16,8 +16,9 @@
         <!-- Skip scalability tests by default, explicitly enabled on build server -->
         <gatling.skip>true</gatling.skip>
         <gatling.version>2.2.1</gatling.version>
+        <skip.tests>true</skip.tests>
         <!-- Skip tests by default, explicitly enabled on build server -->
-        <maven.test.skip>true</maven.test.skip>
+        <maven.test.skip>${skip.tests}</maven.test.skip>
         <jetty.skip>true</jetty.skip>
     </properties>
 
