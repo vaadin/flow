@@ -1,5 +1,10 @@
 <script type="text/javascript">
-	// document.body might not yet be accessible, so just leave a message
-	window.messages = window.messages || [];
-	window.messages.push("eager.html");
+    // Cannot use eager.js code, because Flow does not guarantee *.js and *.html dependencies import order.
+    function eagerHtml() {
+        const div = document.createElement("div");
+        div.className = "dependenciesTest";
+        div.textContent = "eager.html";
+        document.body.appendChild(div);
+    }
+    eagerHtml();
 </script>

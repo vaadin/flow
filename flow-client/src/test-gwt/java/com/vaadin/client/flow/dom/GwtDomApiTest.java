@@ -2,9 +2,7 @@ package com.vaadin.client.flow.dom;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.ClientEngineTestBase;
-import com.vaadin.client.DependencyLoader;
 import com.vaadin.client.Registry;
-import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
@@ -29,8 +27,6 @@ public class GwtDomApiTest extends ClientEngineTestBase {
                         new RequestResponseTracker(this));
                 set(MessageHandler.class, new MessageHandler(this));
                 set(ServerRpcQueue.class, new ServerRpcQueue(this));
-                set(DependencyLoader.class, new DependencyLoader(this));
-                set(ResourceLoader.class, new ResourceLoader(this, false));
             }
 
         };

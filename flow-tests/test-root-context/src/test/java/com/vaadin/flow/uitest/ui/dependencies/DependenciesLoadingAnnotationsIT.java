@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.DOM_CHANGE_TEXT;
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.PRELOADED_DIV_ID;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.DOM_CHANGE_TEXT;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.PRELOADED_DIV_ID;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,40 +54,31 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 "5 elements are expected to be added: 2 for eager dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
                 5, testMessages.size());
 
-        Assert.assertTrue(
-                "Eager dependencies should be loaded first, but got "
-                        + testMessages.get(0),
+        Assert.assertTrue("Eager dependencies should be loaded first",
                 testMessages.get(0).startsWith(EAGER_PREFIX));
-        Assert.assertTrue(
-                "Eager dependencies should be loaded first, but got "
-                        + testMessages.get(1),
+        Assert.assertTrue("Eager dependencies should be loaded first",
                 testMessages.get(1).startsWith(EAGER_PREFIX));
 
         Assert.assertTrue(
-                "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded, but got "
-                        + testMessages.get(2),
+                "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded",
                 testMessages.get(2).equals(DOM_CHANGE_TEXT));
 
         Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager, but got "
-                        + testMessages.get(3),
+                "Lazy dependencies should be loaded after eager",
                 testMessages.get(3).startsWith(LAZY_PREFIX));
         Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager, but got "
-                        + testMessages.get(4),
+                "Lazy dependencies should be loaded after eager",
                 testMessages.get(4).startsWith(LAZY_PREFIX));
     }
 
     private void ensureDependenciesHaveCorrectAttributes() {
         findElements(By.tagName("script")).stream()
-                // FW needs these elements to be loaded asap, that's why it's an
+                // FW needs this element to be loaded asap, that's why it's an
                 // exclusion
                 .filter(javaScriptImport -> {
                     String jsUrl = javaScriptImport.getAttribute("src");
                     return !jsUrl.endsWith("es6-collections.js")
-                            && !jsUrl.endsWith("webcomponents-lite.js")
-                    // development time XSI client engine file
-                            && !jsUrl.endsWith(".cache.js");
+                            && !jsUrl.endsWith("webcomponents-lite.js");
                 }).forEach(javaScriptImport -> {
                     Assert.assertEquals(
                             String.format(
