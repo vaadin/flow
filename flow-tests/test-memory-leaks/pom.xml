@@ -12,6 +12,9 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <skip.memory.leak.test>false</skip.memory.leak.test>
+        <!-- Skip tests by default, explicitly enabled on build server -->
+        <maven.test.skip>${skip.memory.leak.test}</maven.test.skip>
     </properties>
 
     <dependencies>
