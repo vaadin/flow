@@ -31,7 +31,7 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
         open();
 
         WebElement template = findElement(By.id("template"));
-        WebElement input = getInShadowRoot(template, By.id("input")).get();
+        WebElement input = getInShadowRoot(template, By.id("input"));
 
         input.sendKeys("a");
         Assert.assertEquals("Value: a", getStatusMessage());
@@ -39,7 +39,7 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
         input.sendKeys("b");
         Assert.assertEquals("Value: ab", getStatusMessage());
 
-        getInShadowRoot(template, By.id("reset")).get().click();
+        getInShadowRoot(template, By.id("reset")).click();
         Assert.assertEquals("Value:", getStatusMessage());
         Assert.assertEquals("", getValueProperty(input));
 
@@ -55,6 +55,6 @@ public class TwoWayPolymerBindingIT extends ChromeBrowserTest {
     private String getStatusMessage() {
         WebElement template = findElement(By.id("template"));
 
-        return getInShadowRoot(template, By.id("status")).get().getText();
+        return getInShadowRoot(template, By.id("status")).getText();
     }
 }
