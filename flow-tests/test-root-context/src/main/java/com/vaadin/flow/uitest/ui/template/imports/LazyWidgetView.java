@@ -45,7 +45,7 @@ public class LazyWidgetView extends PolymerTemplate<LazyWidgetView.Model> implem
     }
 
     @ClientDelegate
-    void getGreeting(String name) {
+    void greet(String name) {
         getModel().setGreeting(String.format(GREETINGS_TEMPLATE, name));
         getModel().setHasGreeting(name != null && !name.isEmpty());
     }

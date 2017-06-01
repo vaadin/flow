@@ -192,12 +192,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private native void bindPolymerModelProperties(StateNode node, Element element)
     /*-{
       if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
-          @SimpleElementBindingStrategy::bindPropertiesAndAddChangeListeners(*)(node, this, element, false);
-      } else if ( @com.vaadin.client.PolymerUtils::canBePolymerElement(*)(element) ) {
+          @SimpleElementBindingStrategy::bindPolymerProperties(*)(node, this, element, false);
+      } else if ( @com.vaadin.client.PolymerUtils::mayBePolymerElement(*)(element) ) {
           var self = this;
           try {
               $wnd.customElements.whenDefined(element.localName).then( function () {
-                  @SimpleElementBindingStrategy::bindPropertiesAndAddChangeListeners(*)(node, self, element, true);
+                  @SimpleElementBindingStrategy::bindPolymerProperties(*)(node, self, element, true);
               });
           }
           catch (e) {
@@ -206,9 +206,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       }
     }-*/;
 
-    private static native void bindPropertiesAndAddChangeListeners(StateNode node, SimpleElementBindingStrategy strategy, Element element, boolean ready)
+    private static native void bindPolymerProperties(StateNode node, SimpleElementBindingStrategy strategy, Element element, boolean ready)
     /*-{
-        strategy.@SimpleElementBindingStrategy::initialBindModelProperties(*)(node, element);
+        strategy.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         
         var originalFunction = element._propertiesChanged;
         var readyFunction = element.ready;
@@ -312,7 +312,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void initialBindModelProperties(StateNode stateNode,
+    private void bindInitialModelProperties(StateNode stateNode,
             Element htmlNode) {
         bindModelProperties(stateNode, htmlNode, "");
     }

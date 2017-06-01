@@ -44,18 +44,16 @@
                 return {
                     greeting: {
                         type: String,
-                        value: ''
                     },
                     hasGreeting: {
                         type: Boolean,
-                        value: false
                     }
                 }
             }
 
             _onButtonTapped(event) {
                 this.hasGreeting = false;
-                this.$server.getGreeting(this.$.input.value);
+                this.$server.greet(this.$.input.value);
             }
         }
 

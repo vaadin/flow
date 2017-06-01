@@ -172,7 +172,7 @@ public final class PolymerUtils {
      *            HTML element to check
      * @return {@code true} if the {@code htmlNode} can become a polymer 2 element
      */
-    public static native boolean canBePolymerElement(Element htmlNode)
+    public static native boolean mayBePolymerElement(Element htmlNode)
     /*-{
         return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
     }-*/;
