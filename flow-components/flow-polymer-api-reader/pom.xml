@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components</artifactId>
-        <version>0.1.7-SNAPSHOT</version>
+        <version>0.1.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-polymer-api-reader</artifactId>
     <name>Polymer API Reader</name>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components</artifactId>
-            <version>0.1.7-SNAPSHOT</version>
+            <version>0.1.8-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

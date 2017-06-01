@@ -4,7 +4,7 @@
     <parent>
         <artifactId>flow-project</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>0.1.7-SNAPSHOT</version>
+        <version>0.1.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-components</artifactId>
     <name>Flow Components</name>
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
-            <version>0.1.7-SNAPSHOT</version>
+            <version>0.1.8-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
