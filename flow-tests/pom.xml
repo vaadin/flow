@@ -16,11 +16,11 @@
         <module>test-resources</module>
         <module>test-root-context</module>
         <module>test-subcontext</module>
-        <!-- Drop performance and memory leak test until we can figure -->
+        <!-- Drop performance until we can figure -->
         <!-- out how it should work with TestBench hub -->
         <!--<module>test-performance</module>-->
         <module>test-scalability</module>
-        <!--<module>test-memory-leaks</module>-->
+        <module>test-memory-leaks</module>
         <module>test-expense-manager-imperative</module>
     </modules>
 
