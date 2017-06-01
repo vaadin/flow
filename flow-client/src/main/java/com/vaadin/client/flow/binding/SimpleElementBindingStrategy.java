@@ -358,6 +358,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             } else {
                 setValueFunction.call(htmlNode, newPath, property.getValue());
             }
+        } else {
+            property.getValue();
         }
     }
 
