@@ -78,7 +78,7 @@ public class DependencyLoader {
      * @param registry
      *            the global registry
      */
-    public DependencyLoader(Registry registry) {
+    DependencyLoader(Registry registry) {
         this.registry = registry;
     }
 
@@ -200,15 +200,5 @@ public class DependencyLoader {
             throw new IllegalArgumentException(
                     "Unknown dependency type " + resourceType);
         }
-    }
-
-    /**
-     * Prevents eager dependencies from being considered as loaded until
-     * <code>HTMLImports.whenReady</code> has been run.
-     */
-    public void requireHtmlImportsReady() {
-        startEagerDependencyLoading();
-        registry.getResourceLoader().runWhenHtmlImportsReady(
-                DependencyLoader::endEagerDependencyLoading);
     }
 }
