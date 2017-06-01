@@ -192,12 +192,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private native void bindPolymerModelProperties(StateNode node, Element element)
     /*-{
       if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
-          @SimpleElementBindingStrategy::bindPropertiesAndAddChangeListeners(*)(node, this, element, false);
-      } else if ( @com.vaadin.client.PolymerUtils::canBePolymerElement(*)(element) ) {
+          this.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element, false);
+      } else if ( @com.vaadin.client.PolymerUtils::mayBePolymerElement(*)(element) ) {
           var self = this;
           try {
               $wnd.customElements.whenDefined(element.localName).then( function () {
-                  @SimpleElementBindingStrategy::bindPropertiesAndAddChangeListeners(*)(node, self, element, true);
+                  self.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element, true);
               });
           }
           catch (e) {
@@ -206,9 +206,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       }
     }-*/;
 
-    private static native void bindPropertiesAndAddChangeListeners(StateNode node, SimpleElementBindingStrategy strategy, Element element, boolean ready)
+    private native void bindPolymerProperties(StateNode node, Element element, boolean ready)
     /*-{
-        strategy.@SimpleElementBindingStrategy::initialBindModelProperties(*)(node, element);
+        this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
+        var self = this
         
         var originalFunction = element._propertiesChanged;
         var readyFunction = element.ready;
@@ -222,7 +223,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     // values from the server side explicitly. So server always overrides
                     // polymer default values.
                     $entry(function () {
-                        strategy.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+                        self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
                     })();
                 }
             };
@@ -312,7 +313,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void initialBindModelProperties(StateNode stateNode,
+    private void bindInitialModelProperties(StateNode stateNode,
             Element htmlNode) {
         bindModelProperties(stateNode, htmlNode, "");
     }

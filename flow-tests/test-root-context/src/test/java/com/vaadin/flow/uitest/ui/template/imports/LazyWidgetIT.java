@@ -24,12 +24,14 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
 /**
+ * This test is intended to check that templates work as Polymer elements even if they're lazy loaded.
+ *
  * @author Vaadin Ltd.
  */
 public class LazyWidgetIT extends ChromeBrowserTest {
 
     @Test
-    public void test() {
+    public void lazyLoadedPolymerTemplateWorksAsElement() {
         open();
         waitForElementVisible(By.id("template")); // template is lazy loaded, need some time to load
 
