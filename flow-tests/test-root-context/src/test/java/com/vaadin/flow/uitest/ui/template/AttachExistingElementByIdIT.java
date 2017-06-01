@@ -48,16 +48,16 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
         Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
 
         // Reset values to defaults
-        getInShadowRoot(findElement(By.id(id)), By.id("button")).get().click();
+        getInShadowRoot(findElement(By.id(id)), By.id("button")).click();
 
         Assert.assertEquals("default", getLabel(id).getText());
     }
 
     private WebElement getInput(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("input")).get();
+        return getInShadowRoot(findElement(By.id(id)), By.id("input"));
     }
 
     private WebElement getLabel(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("label")).get();
+        return getInShadowRoot(findElement(By.id(id)), By.id("label"));
     }
 }
