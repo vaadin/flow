@@ -393,7 +393,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void appendWebComponentsElements(Element head,
-            BootstrapContext context) {
+                                                    BootstrapContext context) {
         Optional<WebComponents> webComponents = AnnotationReader
                 .getAnnotationFor(context.getUI().getClass(),
                         WebComponents.class);
@@ -421,8 +421,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         head.appendChild(createJavaScriptElement(
-                context.getUriResolver().resolveVaadinUri(
-                        "frontend://bower_components/webcomponentsjs/webcomponents-lite.js"),
+                context.getUriResolver()
+                        .resolveVaadinUri("context://"
+                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                + "server/webcomponents-lite.js"),
                 false).attr("shadydom", forceShadyDom));
     }
 
@@ -473,8 +475,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             JsonObject dependency = dependencies.getObject(i);
             LoadMode loadMode = LoadMode.valueOf(
                     dependency.getString(DependencyList.KEY_LOAD_MODE));
-            if (loadMode == LoadMode.EAGER) {
-                head.appendChild(createDependencyElement(resolver, dependency));
+            String dependencyKey = dependency
+                    .getString(DependencyList.KEY_TYPE);
+            if (loadMode == LoadMode.EAGER
+                    && DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
+                addStyleSheet(head, resolver, dependency);
+            } else if (loadMode == LoadMode.EAGER
+                    && DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
+                addJavaScript(head, resolver, dependency);
             } else {
                 loadedAtClientDependencies.set(uidlDependenciesIndex,
                         dependency);
@@ -487,34 +495,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 loadedAtClientDependencies);
     }
 
-    private static Element createDependencyElement(VaadinUriResolver resolver,
-            JsonObject dependency) {
-        String type = dependency.getString(DependencyList.KEY_TYPE);
-        String url = dependency.getString(DependencyList.KEY_URL);
-
-        String resolvedUrl = resolver.resolveVaadinUri(url);
-
-        switch (type) {
-        case DependencyList.TYPE_STYLESHEET:
-            return createStylesheetElement(resolvedUrl);
-        case DependencyList.TYPE_JAVASCRIPT:
-            return createJavaScriptElement(resolvedUrl, true);
-        case DependencyList.TYPE_HTML_IMPORT:
-            return createHtmlImportElement(resolvedUrl);
-        default:
-            throw new IllegalStateException(
-                    "Unsupported dependency type: " + type);
-        }
+    private static void addStyleSheet(Element head, VaadinUriResolver resolver,
+            JsonObject styleSheet) {
+        Element link = head.appendElement("link").attr("rel", "stylesheet")
+                .attr("type", "text/css");
+        String url = styleSheet.getString(DependencyList.KEY_URL);
+        link.attr("href", resolver.resolveVaadinUri(url));
     }
 
-    private static Element createHtmlImportElement(String url) {
-        return new Element(Tag.valueOf("link"), "").attr("rel", "import")
-                .attr("href", url);
-    }
-
-    private static Element createStylesheetElement(String url) {
-        return new Element(Tag.valueOf("link"), "").attr("rel", "stylesheet")
-                .attr("type", "text/css").attr("href", url);
+    private static void addJavaScript(Element head, VaadinUriResolver resolver,
+            JsonObject javaScript) {
+        String url = javaScript.getString(DependencyList.KEY_URL);
+        head.appendChild(
+                createJavaScriptElement(resolver.resolveVaadinUri(url)));
     }
 
     private static void setupDocumentBody(Document document) {

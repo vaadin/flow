@@ -329,23 +329,6 @@ public class ResourceLoader {
         }
     }
 
-    /**
-     * Sets the provided task to be run by <code>HTMLImports.whenReady</code>.
-     * The task is run immediately if <code>HTMLImports.whenReady</code> is not
-     * supported.
-     *
-     * @param task
-     *            the task to run, not <code>null</code>
-     */
-    public void runWhenHtmlImportsReady(Runnable task) {
-        assert task != null;
-        if (supportsHtmlWhenReady) {
-            addHtmlImportsReadyHandler(task);
-        } else {
-            task.run();
-        }
-    }
-
     private static native boolean supportsHtmlWhenReady()
     /*-{
         return !!($wnd.HTMLImports && $wnd.HTMLImports.whenReady);
