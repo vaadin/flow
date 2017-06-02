@@ -35,7 +35,7 @@ public class PolymerModelPropertiesIT extends ChromeBrowserTest {
                 initial.getText());
 
         WebElement template = findElement(By.id("template"));
-        WebElement input = getInShadowRoot(template, By.id("input")).get();
+        WebElement input = getInShadowRoot(template, By.id("input"));
         input.clear();
         input.sendKeys("x");
 
