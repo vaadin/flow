@@ -170,7 +170,7 @@ public class TestBenchHelpers extends ParallelTest {
      * @param by
      *            the selector used to find element
      * @return an element from shadow root, if located
-     * @throws {@link AssertionError} if shadow root is not present or element is
+     * @throws AssertionError if shadow root is not present or element is
      *         not found in the shadow root
      */
     protected WebElement getInShadowRoot(WebElement shadowRootOwner, By by) {
