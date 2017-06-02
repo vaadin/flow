@@ -20,12 +20,19 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.InitialPropertiesHandler;
+import com.vaadin.client.Registry;
 import com.vaadin.client.flow.binding.Binder;
 
 import elemental.events.EventRemover;
 
 public class StateTreeTest {
-    StateTree tree = new StateTree(null);
+    StateTree tree = new StateTree(new Registry() {
+        {
+            set(InitialPropertiesHandler.class,
+                    new InitialPropertiesHandler(this));
+        }
+    });
     StateNode node = new StateNode(5, tree);
 
     @Test

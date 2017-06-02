@@ -16,13 +16,21 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.PropertyDescriptor;
+import com.vaadin.ui.PropertyDescriptors;
 import com.vaadin.ui.UI;
 
 public class PolymerDefaultPropertyValueUI extends UI {
+
+    private static final PropertyDescriptor<String, String> msgDescriptor = PropertyDescriptors
+            .propertyWithDefault("message", "");
 
     public interface MyModel extends TemplateModel {
         void setText(String text);
@@ -36,6 +44,21 @@ public class PolymerDefaultPropertyValueUI extends UI {
 
         public MyTemplate() {
             getModel().setText("foo");
+            setMessage("updated-message");
+        }
+
+        @Synchronize("email-changed")
+        public String getEmail() {
+            return getElement().getProperty("email");
+        }
+
+        @Synchronize("message-changed")
+        public String getMessage() {
+            return get(msgDescriptor);
+        }
+
+        public void setMessage(String value) {
+            set(msgDescriptor, value);
         }
 
     }
@@ -45,5 +68,18 @@ public class PolymerDefaultPropertyValueUI extends UI {
         MyTemplate template = new MyTemplate();
         template.setId("template");
         add(template);
+
+        Button button = new Button("Show email value",
+                event -> createEmailValue(template));
+        button.setId("show-email");
+        add(button);
     }
+
+    private void createEmailValue(MyTemplate template) {
+        Div div = new Div();
+        div.setText(template.getEmail());
+        div.setId("email-value");
+        add(div);
+    }
+
 }

@@ -19,6 +19,8 @@
     <template>
         <div id="text">[[text]]</div>
         <div id="name">[[name]]</div>
+        <div id="message">[[message]]</div>
+        <div id="email">[[email]]</div>
     </template>
     <script>
         class MyTemplate extends Polymer.Element {
@@ -33,6 +35,16 @@
                     name :{
                         type: String,
                         value: "bar"
+                    },
+                    messsage :{
+                        type: String,
+                        value: "msg",
+                        notify: true
+                    },
+                    email :{
+                        type: String,
+                        value: "foo@example.com",
+                        notify: true
                     }
                  };
             }

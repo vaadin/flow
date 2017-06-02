@@ -16,6 +16,7 @@
 package com.vaadin.client;
 
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -27,7 +28,18 @@ import com.vaadin.flow.shared.NodeFeatures;
 import elemental.events.EventRemover;
 
 /**
+ * Handles server initial property values with the purpose to prevent change
+ * their values from the client side.
+ * <p>
+ * Initial property values has to be set from the server side. Client side may
+ * have default values which overrides server side values and those values are
+ * sent to the server overriding server side values. This class prevents this.
+ * Only properties that have not been set form the server are sent from the
+ * client to the server. Properties that have been set from the server overrides
+ * any client side default value.
+ * 
  * @author Vaadin Ltd
+ * @see StateTree#sendNodePropertySyncToServer(MapProperty)
  *
  */
 public class InitialPropertiesHandler {
