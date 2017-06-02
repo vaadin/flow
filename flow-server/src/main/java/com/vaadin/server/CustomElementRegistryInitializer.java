@@ -29,8 +29,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.util.CustomElementNameValidator;
 
 /**
- * Servlet initializer for collecting all applicable custom element tag
- * names on startup.
+ * Servlet initializer for collecting all applicable custom element tag names on
+ * startup.
  */
 @HandlesTypes(Tag.class)
 public class CustomElementRegistryInitializer
@@ -66,7 +66,7 @@ public class CustomElementRegistryInitializer
                 } else {
                     String msg = String.format(
                             "Tag name '%s' for '%s' is not a valid custom element name.",
-                            tagName, clazz.getSimpleName());
+                            tagName, clazz.getCanonicalName());
                     throw new InvalidCustomElementNameException(msg);
                 }
             }
@@ -99,9 +99,9 @@ public class CustomElementRegistryInitializer
             customElements.put(tagName, (Class<? extends Component>) newClass);
         } else if (!componentClass.isAssignableFrom(newClass)) {
             String msg = String.format(
-                    "Incompatible tag '%s' annotation for components '%s' and '%s'",
-                    tagName, componentClass.getSimpleName(),
-                    newClass.getSimpleName());
+                    "Components '%s' and '%s' have the same @Tag('%s') annotation, but neither is a super class of the other.",
+                    componentClass.getCanonicalName(),
+                    newClass.getCanonicalName(), tagName);
             // Throw exception if neither class is a super class of the
             // other.
             throw new ClassCastException(msg);
