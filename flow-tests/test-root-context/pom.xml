@@ -12,6 +12,8 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <skip.npm>${maven.test.skip}</skip.npm>
+        <skip.bower>${maven.test.skip}</skip.bower>
     </properties>
     <!-- uses default ports 8888 and 8889 -->
 
