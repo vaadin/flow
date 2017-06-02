@@ -32,7 +32,7 @@ public class UpgradeElementIT extends ChromeBrowserTest {
         findElement(By.id("upgrade")).click();
 
         WebElement template = findElement(By.id("template"));
-        WebElement input = getInShadowRoot(template, By.id("input")).get();
+        WebElement input = getInShadowRoot(template, By.id("input"));
         input.sendKeys("foo");
         input.sendKeys(Keys.ENTER);
         WebElement result = findElement(By.id("text-update"));

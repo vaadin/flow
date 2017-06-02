@@ -31,13 +31,13 @@ public class EventHandlerIT extends ChromeBrowserTest {
         open();
 
         WebElement template = findElement(By.id("template"));
-        getInShadowRoot(template, By.id("handle")).get().click();
+        getInShadowRoot(template, By.id("handle")).click();
         Assert.assertTrue(
                 "Unable to find server event handler invocation confirmation. "
                         + "Looks like 'click' event handler has not been invoked on the server side",
                 isElementPresent(By.id("event-handler-result")));
 
-        getInShadowRoot(template, By.id("send")).get().click();
+        getInShadowRoot(template, By.id("send")).click();
         WebElement container = findElement(By.id("event-data"));
         List<WebElement> divs = container.findElements(By.tagName("div"));
 
@@ -53,7 +53,7 @@ public class EventHandlerIT extends ChromeBrowserTest {
 
         // Check event functionality for event with both client and server
         // handler
-        getInShadowRoot(template, By.id("overridden")).get().click();
+        getInShadowRoot(template, By.id("overridden")).click();
 
         Assert.assertTrue(
                 "Unable to find server event handler invocation confirmation.",
