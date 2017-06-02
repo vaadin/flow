@@ -60,7 +60,8 @@ public class CustomUIClassLoaderTest extends TestCase {
         Properties properties = new Properties();
         properties.put(VaadinSession.UI_PARAMETER, MyUI.class.getName());
         return new DefaultDeploymentConfiguration(CustomUIClassLoaderTest.class,
-                properties);
+                properties, (base, consumer) -> {
+                });
     }
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {

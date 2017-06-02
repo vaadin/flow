@@ -16,10 +16,19 @@
 
 package com.vaadin.server;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -81,6 +90,7 @@ public class DefaultDeploymentConfiguration
     private final Class<?> systemPropertyBaseClass;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
+    private String webComponentsPolyfillBase;
 
     /**
      * Create a new deployment configuration instance.
@@ -91,9 +101,15 @@ public class DefaultDeploymentConfiguration
      * @param initParameters
      *            the init parameters that should make up the foundation for
      *            this configuration
+     * @param resourceScanner
+     *            callback for traversing the available resources, not
+     *            <code>null</code>
      */
     public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+            Properties initParameters,
+            BiConsumer<String, Predicate<String>> resourceScanner) {
+        assert resourceScanner != null;
+
         this.initParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;
 
@@ -104,6 +120,7 @@ public class DefaultDeploymentConfiguration
         checkPushMode();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
+        checkWebComponentsPolyfillBase(resourceScanner);
     }
 
     @Override
@@ -265,6 +282,11 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
+    public Optional<String> getWebComponentsPolyfillBase() {
+        return Optional.ofNullable(webComponentsPolyfillBase);
+    }
+
+    @Override
     public Properties getInitParameters() {
         return initParameters;
     }
@@ -337,6 +359,92 @@ public class DefaultDeploymentConfiguration
 
     private Logger getLogger() {
         return Logger.getLogger(getClass().getName());
+    }
+
+    private void checkWebComponentsPolyfillBase(
+            BiConsumer<String, Predicate<String>> resourceScanner) {
+        String propertyValue = getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_POLYFILL_BASE, null);
+        if (null == propertyValue) {
+            propertyValue = resolveDefaultPolyfillUri(resourceScanner);
+        } else if (propertyValue.trim().isEmpty()) {
+            propertyValue = null;
+        }
+        webComponentsPolyfillBase = propertyValue;
+    }
+
+    private String resolveDefaultPolyfillUri(
+            BiConsumer<String, Predicate<String>> resourceScanner) {
+        VaadinUriResolver uriResolver = new VaadinUriResolver() {
+            @Override
+            protected String getContextRootUrl() {
+                // ServlerContext.getResource expects a leading slash
+                return "/";
+            }
+
+            @Override
+            protected String getFrontendRootUrl() {
+                return getEs6BuildUrl();
+            }
+        };
+        String scanBase = uriResolver.resolveVaadinUri("frontend://");
+        if (!scanBase.startsWith("/")) {
+            // Has protocol or isn't relative to the context root -> no can do
+            getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
+                    "Cannot automatically find the webcomponents polyfill because frontend:// isn't relative to the context root"));
+            return null;
+        }
+
+        List<String> foundPolyfills = new ArrayList<>();
+        resourceScanner.accept(scanBase, name -> {
+            if (name.endsWith("webcomponents-lite.js")) {
+                foundPolyfills.add(name);
+            }
+
+            // Don't traverse some potentially huge but pointless directories
+            if (name.startsWith("node/") || name.startsWith("node_modules/")) {
+                return false;
+            } else {
+                return true;
+            }
+        });
+
+        int findCount = foundPolyfills.size();
+        if (findCount == 1) {
+            String jsName = foundPolyfills.get(0);
+            Path jsDir = Paths.get(jsName).getParent();
+
+            String dirName = jsDir == null ? "" : jsDir.toString();
+
+            assert !dirName.endsWith("/");
+
+            // Log something here as well
+            getLogger().log(Level.INFO,
+                    () -> formatDefaultPolyfillMessage(
+                            "Will use webcomponents polyfill discovered in "
+                                    + dirName));
+            return "frontend://" + dirName + '/';
+        } else {
+            if (findCount == 0) {
+                getLogger().log(Level.WARNING,
+                        () -> formatDefaultPolyfillMessage(
+                                "Webcomponents polyfill will not be used because none was found in frontend:// (resolved to "
+                                        + scanBase + ")"));
+            } else {
+                getLogger().log(Level.WARNING,
+                        () -> formatDefaultPolyfillMessage(
+                                "Webcomponents polyfill will not be used because multiple implementations were found: "
+                                        + foundPolyfills));
+            }
+            return null;
+        }
+    }
+
+    private static String formatDefaultPolyfillMessage(String baseMessage) {
+        return String.format(
+                "%1$s%n" + "Configure %2$s with an empty value to explicilty disable Web Components polyfill loading.%n"
+                        + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
+                baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }
 
 }
