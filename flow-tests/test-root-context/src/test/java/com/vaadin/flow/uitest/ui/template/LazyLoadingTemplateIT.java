@@ -37,11 +37,11 @@ public class LazyLoadingTemplateIT extends ChromeBrowserTest {
         waitUntil(driver -> templateIsLoaded());
 
         WebElement template = findElements(By.id("template")).get(0);
-        WebElement valueDiv = getInShadowRoot(template, By.id("msg")).get();
+        WebElement valueDiv = getInShadowRoot(template, By.id("msg"));
         Assert.assertEquals("foo", valueDiv.getText());
 
         testBench().enableWaitForVaadin();
-        WebElement input = getInShadowRoot(template, By.id("input")).get();
+        WebElement input = getInShadowRoot(template, By.id("input"));
         input.clear();
         input.sendKeys("bar");
         input.sendKeys(Keys.ENTER);
@@ -53,9 +53,6 @@ public class LazyLoadingTemplateIT extends ChromeBrowserTest {
         Assert.assertTrue(isElementPresent(By.id("initial-div")));
         Assert.assertTrue(findElement(By.id("initial-div")).isDisplayed());
         List<WebElement> template = findElements(By.id("template"));
-        if (template.isEmpty()) {
-            return false;
-        }
-        return getInShadowRoot(template.get(0), By.id("msg")).isPresent();
+        return !template.isEmpty() && isPresentInShadowRoot(template.get(0), By.id("msg"));
     }
 }

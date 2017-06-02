@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
@@ -31,18 +29,14 @@ public class ShadowRootIT extends ChromeBrowserTest {
         open();
 
         WebElement div = findElement(By.id("test-element"));
-        Optional<WebElement> shadowDiv = getInShadowRoot(div,
+        WebElement shadowDiv = getInShadowRoot(div,
                 By.id("shadow-div"));
-        Assert.assertTrue("Cannot find div in the shadow root",
-                shadowDiv.isPresent());
-        Assert.assertEquals("Div inside shadow DOM", shadowDiv.get().getText());
+        Assert.assertEquals("Div inside shadow DOM", shadowDiv.getText());
 
-        Optional<WebElement> shadowLabel = getInShadowRoot(div,
+        WebElement shadowLabel = getInShadowRoot(div,
                 By.id("shadow-label"));
-        Assert.assertTrue("Cannot find label in the shadow root",
-                shadowLabel.isPresent());
         Assert.assertEquals("Label inside shadow DOM",
-                shadowLabel.get().getText());
+                shadowLabel.getText());
 
         findElement(By.id("remove")).click();
 

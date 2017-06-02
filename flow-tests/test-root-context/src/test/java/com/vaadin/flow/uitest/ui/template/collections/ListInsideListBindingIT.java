@@ -38,7 +38,7 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
         WebElement template = findElement(By.id("template"));
 
         checkMessagesRemoval(template, initialSize);
-        getInShadowRoot(template, By.id("reset")).get().click();
+        getInShadowRoot(template, By.id("reset")).click();
         checkAllElementsUpdated(template, initialSize);
     }
 
@@ -54,7 +54,7 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
             messageToRemove.click();
 
             String removedMessageLabelText = getInShadowRoot(template,
-                    By.id("removedMessage")).get().getText();
+                    By.id("removedMessage")).getText();
             Assert.assertEquals("Expected removed message text to appear",
                     "Removed message: " + messageToRemoveText,
                     removedMessageLabelText);
@@ -62,7 +62,7 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
     }
 
     private void checkAllElementsUpdated(WebElement template, int initialSize) {
-        getInShadowRoot(template, By.id("updateAllElements")).get().click();
+        getInShadowRoot(template, By.id("updateAllElements")).click();
         List<WebElement> msgs = findInShadowRoot(template,
                 By.className("submsg"));
         Assert.assertEquals("Wrong amount of nested messages", initialSize,
