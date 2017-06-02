@@ -28,7 +28,7 @@ public class ClearListIT extends ChromeBrowserTest {
         Assert.assertEquals("Initial page does not contain expected messages",
                 Arrays.asList("1", "2"), initialMessages);
 
-        getInShadowRoot(template, By.id("clearList")).get().click();
+        getInShadowRoot(template, By.id("clearList")).click();
 
         Assert.assertTrue("Page should not contain elements after we've cleared them",
                 getMessages(template).isEmpty());

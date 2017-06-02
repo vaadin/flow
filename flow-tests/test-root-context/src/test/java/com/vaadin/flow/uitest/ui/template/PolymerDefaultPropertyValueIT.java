@@ -29,11 +29,11 @@ public class PolymerDefaultPropertyValueIT extends ChromeBrowserTest {
         open();
 
         WebElement template = findElement(By.id("template"));
-        WebElement text = getInShadowRoot(template, By.id("text")).get();
+        WebElement text = getInShadowRoot(template, By.id("text"));
 
         Assert.assertEquals("foo", text.getText());
 
-        WebElement name = getInShadowRoot(template, By.id("name")).get();
+        WebElement name = getInShadowRoot(template, By.id("name"));
         Assert.assertEquals("", name.getText());
     }
 }
