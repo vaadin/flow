@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-project</artifactId>
+        <version>0.1.7-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-components</artifactId>
+    <name>Flow components</name>
+    <description>Modules for Flow components based on code generation</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>flow-analyzer</module>
+        <module>flow-code-generator-api</module>
+        <module>flow-code-generator</module>
+        <module>flow-server-components</module>
+    </modules>
+
+    <properties>
+    	<frontend.maven.plugin.version>1.4</frontend.maven.plugin.version>
+        <flow.version>${project.version}</flow.version>
+    </properties>
+
+    <dependencies>
+        <!-- Project dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow</artifactId>
+            <version>${flow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-util</artifactId>
+            <version>${flow.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        
+    </build>
+
+    <profiles>
+        
+    </profiles>
+
+</project>
