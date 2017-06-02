@@ -19,8 +19,6 @@ package com.vaadin.flow.uitest.ui.template;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
@@ -44,7 +42,7 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
         checkInitialState(template);
         checkTemplateModel(template);
 
-        getInShadowRoot(template, By.id("changeModelValue")).get().click();
+        getInShadowRoot(template, By.id("changeModelValue")).click();
 
         checkStateAfterClick(template);
         checkTemplateModel(template);
@@ -52,8 +50,8 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
 
     private void checkInitialState(WebElement template) {
         String messageDivText = getInShadowRoot(template, By.id("messageDiv"))
-                .get().getText();
-        String titleDivText = getInShadowRoot(template, By.id("titleDiv")).get()
+                .getText();
+        String titleDivText = getInShadowRoot(template, By.id("titleDiv"))
                 .getText();
         Assert.assertEquals(OneWayPolymerBindingTemplate.MESSAGE,
                 messageDivText);
@@ -61,17 +59,14 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
     }
 
     private void checkTemplateModel(WebElement template) {
-        Optional<WebElement> titleDivConditional = getInShadowRoot(template, By.id("titleDivConditional"));
-        assertTrue(titleDivConditional.isPresent());
-
-        Optional<WebElement> nonExistingProperty = getInShadowRoot(template, By.id("nonExistingProperty"));
-        assertFalse(nonExistingProperty.isPresent());
+        assertTrue(isPresentInShadowRoot(template, By.id("titleDivConditional")));
+        assertFalse(isPresentInShadowRoot(template, By.id("nonExistingProperty")));
     }
 
     private void checkStateAfterClick(WebElement template) {
         String changedMessageDivText = getInShadowRoot(template,
-                By.id("messageDiv")).get().getText();
-        String titleDivText = getInShadowRoot(template, By.id("titleDiv")).get()
+                By.id("messageDiv")).getText();
+        String titleDivText = getInShadowRoot(template, By.id("titleDiv"))
                 .getText();
 
         Assert.assertEquals(OneWayPolymerBindingTemplate.NEW_MESSAGE,

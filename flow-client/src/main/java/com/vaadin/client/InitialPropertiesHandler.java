@@ -25,8 +25,6 @@ import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.shared.NodeFeatures;
 
-import elemental.events.EventRemover;
-
 /**
  * Handles server initial property values with the purpose to prevent change
  * their values from the client side.
@@ -48,16 +46,7 @@ public class InitialPropertiesHandler {
 
     private final JsSet<Double> newNodeDuringUpdate = JsCollections.set();
 
-    private final JsMap<Double, JsMap<String, Object>> propertyChangesDuringUpdate = JsCollections
-            .map();
-
     private final JsArray<MapProperty> propertyUpdateQueue = JsCollections
-            .array();
-
-    private final JsArray<EventRemover> propertyAddListeners = JsCollections
-            .array();
-
-    private final JsArray<EventRemover> propertyUpdateListeners = JsCollections
             .array();
 
     public InitialPropertiesHandler(Registry registry) {
@@ -66,26 +55,18 @@ public class InitialPropertiesHandler {
 
     public void flushPropertyUpdates() {
         if (!getRegistry().getStateTree().isUpdateInProgress()) {
-            propertyAddListeners.forEach(EventRemover::remove);
-            propertyAddListeners.clear();
-            propertyUpdateListeners.forEach(EventRemover::remove);
-            propertyUpdateListeners.clear();
-            Reactive.addPostFlushListener(this::doFlushPropertyUpdates);
+            JsMap<Double, JsMap<String, Object>> map = JsCollections.map();
+            newNodeDuringUpdate
+                    .forEach(node -> collectInitialProperties(node, map));
+            Reactive.addPostFlushListener(() -> doFlushPropertyUpdates(map));
         }
     }
 
     public void nodeRegistered(StateNode node) {
         newNodeDuringUpdate.add(getNodeId(node));
-        EventRemover remover = node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .addPropertyAddListener(
-                        event -> handleAddPropertyEvent(event.getProperty()));
-        propertyAddListeners.push(remover);
     }
 
     public boolean handlePropertyUpdate(MapProperty property) {
-        if (resetProperty(property)) {
-            return true;
-        }
         if (isNodeNewlyCreated(property.getMap().getNode())) {
             propertyUpdateQueue.push(property);
             return true;
@@ -93,8 +74,9 @@ public class InitialPropertiesHandler {
         return false;
     }
 
-    private boolean resetProperty(MapProperty property) {
-        JsMap<String, Object> ignoreProperties = propertyChangesDuringUpdate
+    private boolean resetProperty(MapProperty property,
+            JsMap<Double, JsMap<String, Object>> properties) {
+        JsMap<String, Object> ignoreProperties = properties
                 .get(getNodeId(property.getMap().getNode()));
         if (ignoreProperties != null
                 && ignoreProperties.has(property.getName())) {
@@ -105,56 +87,19 @@ public class InitialPropertiesHandler {
         return false;
     }
 
-    private void handleAddPropertyEvent(MapProperty property) {
-        if (!getRegistry().getStateTree().isUpdateInProgress()) {
-            return;
-        }
-        if (property.getMap().getId() != NodeFeatures.ELEMENT_PROPERTIES) {
-            return;
-        }
-        EventRemover remover = property.addChangeListener(
-                event -> handleUpdatePropertyEvent(event.getSource()));
-        propertyUpdateListeners.push(remover);
-        handleProperty(property);
-    }
-
-    private void handleUpdatePropertyEvent(MapProperty property) {
-        if (!getRegistry().getStateTree().isUpdateInProgress()) {
-            return;
-        }
-        handleProperty(property);
-    }
-
-    private void handleProperty(MapProperty property) {
-        StateNode node = property.getMap().getNode();
-        if (isNodeNewlyCreated(node)) {
-            Double id = getNodeId(node);
-            JsMap<String, Object> properties = propertyChangesDuringUpdate
-                    .get(id);
-            if (properties == null) {
-                properties = JsCollections.map();
-                propertyChangesDuringUpdate.set(id, properties);
-            }
-            properties.set(property.getName(), property.getValue());
-        }
-    }
-
     private boolean isNodeNewlyCreated(StateNode node) {
         return newNodeDuringUpdate.has(getNodeId(node));
     }
 
-    private void doFlushPropertyUpdates() {
+    private void doFlushPropertyUpdates(
+            JsMap<Double, JsMap<String, Object>> properties) {
         newNodeDuringUpdate.clear();
-        try {
-            while (propertyUpdateQueue.length() > 0) {
-                MapProperty property = propertyUpdateQueue.remove(0);
-                if (!resetProperty(property)) {
-                    getRegistry().getStateTree()
-                            .sendNodePropertySyncToServer(property);
-                }
+        while (propertyUpdateQueue.length() > 0) {
+            MapProperty property = propertyUpdateQueue.remove(0);
+            if (!resetProperty(property, properties)) {
+                getRegistry().getStateTree()
+                        .sendNodePropertySyncToServer(property);
             }
-        } finally {
-            propertyChangesDuringUpdate.clear();
         }
     }
 
@@ -166,4 +111,14 @@ public class InitialPropertiesHandler {
         return registry;
     }
 
+    private void collectInitialProperties(Double id,
+            JsMap<Double, JsMap<String, Object>> properties) {
+        StateNode node = registry.getStateTree().getNode(id.intValue());
+        if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            JsMap<String, Object> map = JsCollections.map();
+            node.getMap(NodeFeatures.ELEMENT_PROPERTIES).forEachProperty(
+                    (property, name) -> map.set(name, property.getValue()));
+            properties.set(id, map);
+        }
+    }
 }

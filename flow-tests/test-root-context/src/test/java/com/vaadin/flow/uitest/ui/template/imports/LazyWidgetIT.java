@@ -39,13 +39,13 @@ public class LazyWidgetIT extends ChromeBrowserTest {
         String input = "InputMaster";
         Assert.assertFalse(
                 "No greeting should be present before we press the button",
-                getInShadowRoot(template, By.id("greeting")).isPresent());
+                isPresentInShadowRoot(template, By.id("greeting")));
 
-        getInShadowRoot(template, By.id("input")).get().sendKeys(input);
-        getInShadowRoot(template, By.id("button")).get().click();
+        getInShadowRoot(template, By.id("input")).sendKeys(input);
+        getInShadowRoot(template, By.id("button")).click();
 
         Assert.assertEquals("Greeting is different from expected",
                 String.format(LazyWidgetView.GREETINGS_TEMPLATE, input),
-                getInShadowRoot(template, By.id("greeting")).get().getText());
+                getInShadowRoot(template, By.id("greeting")).getText());
     }
 }

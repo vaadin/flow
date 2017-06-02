@@ -327,6 +327,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             StateNode subNode = (StateNode) property.getValue();
 
             if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+                JsonValue convertToJson = PolymerUtils.convertToJson(subNode);
                 setValueFunction.call(htmlNode, newPath,
                         PolymerUtils.convertToJson(subNode));
                 addModelListChangeListener(htmlNode,

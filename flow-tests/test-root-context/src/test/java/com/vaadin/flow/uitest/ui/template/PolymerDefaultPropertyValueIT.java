@@ -29,17 +29,17 @@ public class PolymerDefaultPropertyValueIT extends ChromeBrowserTest {
         open();
 
         WebElement template = findElement(By.id("template"));
-        WebElement text = getInShadowRoot(template, By.id("text")).get();
+        WebElement text = getInShadowRoot(template, By.id("text"));
 
         Assert.assertEquals("foo", text.getText());
 
-        WebElement name = getInShadowRoot(template, By.id("name")).get();
+        WebElement name = getInShadowRoot(template, By.id("name"));
         Assert.assertEquals("", name.getText());
 
-        WebElement msg = getInShadowRoot(template, By.id("message")).get();
+        WebElement msg = getInShadowRoot(template, By.id("message"));
         Assert.assertEquals("updated-message", msg.getText());
 
-        WebElement email = getInShadowRoot(template, By.id("email")).get();
+        WebElement email = getInShadowRoot(template, By.id("email"));
         Assert.assertEquals("foo@example.com", email.getText());
 
         findElement(By.id("show-email")).click();

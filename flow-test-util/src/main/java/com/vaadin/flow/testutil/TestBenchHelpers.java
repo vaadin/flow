@@ -17,7 +17,6 @@ package com.vaadin.flow.testutil;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -166,15 +165,22 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Find the first {@link WebElement} using the given {@link By} selector.
      * 
-     * @param webComponent
+     * @param shadowRootOwner
      *            the web component owning shadow DOM to start search from
      * @param by
      *            the selector used to find element
-     * @return an optional element, or an empty optional if no element found
+     * @return an element from shadow root, if located
+     * @throws AssertionError if shadow root is not present or element is
+     *         not found in the shadow root
      */
-    protected Optional<WebElement> getInShadowRoot(WebElement webComponent,
-            By by) {
-        return findInShadowRoot(webComponent, by).stream().findFirst();
+    protected WebElement getInShadowRoot(WebElement shadowRootOwner, By by) {
+        WebElement shadowRoot = (WebElement) getCommandExecutor().executeScript(
+                "return arguments[0].shadowRoot", shadowRootOwner);
+        Assert.assertNotNull("Could not locate shadowRoot in the element",
+                shadowRoot);
+        return shadowRoot.findElements(by).stream().findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "Could not find required element in the shadowRoot"));
     }
 
     /**

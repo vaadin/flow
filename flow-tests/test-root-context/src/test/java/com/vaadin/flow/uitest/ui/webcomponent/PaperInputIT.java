@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.webcomponent;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -31,9 +30,9 @@ public class PaperInputIT extends ChromeBrowserTest {
         open();
 
         WebElement webComponent = findElement(By.tagName("paper-input"));
-        Optional<WebElement> input = getInShadowRoot(webComponent,
-                By.id("nativeInput"));
-        input.get().sendKeys("bar");
+        WebElement input = getInShadowRoot(webComponent, By.id("nativeInput"));
+        input.clear();
+        input.sendKeys("bar");
 
         List<WebElement> updateValueElements = findElements(
                 By.className("update-value"));
