@@ -190,15 +190,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         bindPolymerModelProperties(stateNode, htmlNode);
     }
 
-    private native void bindPolymerModelProperties(StateNode node, Element element)
+    private native void bindPolymerModelProperties(StateNode node,
+            Element element)
     /*-{
       if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
-          this.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element, false);
+          this.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element);
       } else if ( @com.vaadin.client.PolymerUtils::mayBePolymerElement(*)(element) ) {
           var self = this;
           try {
               $wnd.customElements.whenDefined(element.localName).then( function () {
-                  self.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element, true);
+                  self.@SimpleElementBindingStrategy::bindPolymerProperties(*)(node, element);
               });
           }
           catch (e) {
@@ -207,37 +208,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       }
     }-*/;
 
-    private native void bindPolymerProperties(StateNode node, Element element, boolean ready)
+    private native void bindPolymerProperties(StateNode node, Element element)
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
-        var self = this
+        var self = this;
         
         var originalFunction = element._propertiesChanged;
-        var readyFunction = element.ready;
-        if (originalFunction && readyFunction) {
-            var isReady = ready;
+        if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 originalFunction.apply(this, arguments);
-                if (isReady) {
-                    // don't send default values to the server (they are set during
-                    // the first 'ready' method call). We always set model default
-                    // values from the server side explicitly. So server always overrides
-                    // polymer default values.
-                    $entry(function () {
-                        self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
-                    })();
-                }
+                $entry(function () {
+                    self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+                })();
             };
-            if (!isReady) {
-                element.ready = function () {
-                    try {
-                        readyFunction.apply(this);
-                    }
-                    finally {
-                        isReady = true;
-                    }
-                };
-            }
         }
     }-*/;
 
@@ -320,7 +303,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
-                                            String path) {
+            String path) {
         Computation computation = Reactive.runWhenDepedenciesChange(
                 () -> stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                         .forEachProperty((property, key) -> bindSubProperty(
@@ -335,11 +318,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private void setSubProperties(Element htmlNode, MapProperty property,
-                                  String path) {
+            String path) {
         String newPath = path.isEmpty() ? property.getName()
                 : path + "." + property.getName();
-        NativeFunction setValueFunction = NativeFunction.create("path",
-                "value", "this.set(path, value)");
+        NativeFunction setValueFunction = NativeFunction.create("path", "value",
+                "this.set(path, value)");
         if (property.getValue() instanceof StateNode) {
             StateNode subNode = (StateNode) property.getValue();
 
@@ -350,8 +333,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                         subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
                         newPath);
             } else {
-                NativeFunction function = NativeFunction.create("path",
-                        "value", "this.set(path, {})");
+                NativeFunction function = NativeFunction.create("path", "value",
+                        "this.set(path, {})");
                 function.call(htmlNode, newPath);
                 bindModelProperties(subNode, htmlNode, newPath);
             }
