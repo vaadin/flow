@@ -6,10 +6,11 @@
 # TRAVIS_REPO_SLUG == the repository, e.g. vaadin/vaadin
 
 # Check from the latest commit if this contains changes to components package.
-change=`diff <(git show --name-only) <(git show --summary)`
+change=`diff <(git log --name-only master^..HEAD) <(git log --summary master^..HEAD)`
 components=false
 if [[ $change == *"flow-components/"* ]]
 then
+  echo "Setting components flag to true"
   components=true
 fi
 
