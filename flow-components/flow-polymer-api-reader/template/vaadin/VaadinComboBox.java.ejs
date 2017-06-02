@@ -1,0 +1,13 @@
+<% contentFor('classBodyEnd', include('../_value-clear.java.ejs')) -%>
+<% contentFor('classBodyEnd', `
+    // TODO: https://github.com/vaadin/hummingbird-polymer-components/issues/12
+    public void setItems(String[] items) {
+        JsonArray jsonArray = Json.createArray();
+        for (String s: items) {
+            jsonArray.set(jsonArray.length(), s);
+        }
+        setItems(jsonArray);
+    }
+`) -%>
+<%- include('../element.java.ejs') -%>
+

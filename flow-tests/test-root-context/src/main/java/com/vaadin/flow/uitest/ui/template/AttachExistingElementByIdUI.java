@@ -15,15 +15,47 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
 public class AttachExistingElementByIdUI extends UI {
 
+    @HtmlImport("/com/vaadin/flow/uitest/ui/template/AttachExistingElementById.html")
+    @Tag("existing-element")
+    public static class AttachExistingElementByIdTemplate
+            extends AbstractAttachExistingElementByIdTemplate {
+
+        AttachExistingElementByIdTemplate() {
+            super("simple-path");
+        }
+    }
+
+    @HtmlImport("context://com/vaadin/flow/uitest/ui/template/ContextAttachExistingElementById.html")
+    @Tag("context-existing-element")
+    public static class ContextAttachExistingElementByIdTemplate
+            extends AbstractAttachExistingElementByIdTemplate {
+
+        ContextAttachExistingElementByIdTemplate() {
+            super("context-path");
+        }
+    }
+
+    @HtmlImport("frontend://components/AttachExistingElementById.html")
+    @Tag("frontend-existing-element")
+    public static class FrontendAttachExistingElementByIdTemplate
+            extends AbstractAttachExistingElementByIdTemplate {
+
+        FrontendAttachExistingElementByIdTemplate() {
+            super("frontend-path");
+        }
+    }
+
     @Override
     protected void init(VaadinRequest request) {
-        AttachExistingElementByIdTemplate template = new AttachExistingElementByIdTemplate();
-        template.setId("template");
-        add(template);
+        add(new AttachExistingElementByIdTemplate(),
+                new ContextAttachExistingElementByIdTemplate(),
+                new FrontendAttachExistingElementByIdTemplate());
     }
 }

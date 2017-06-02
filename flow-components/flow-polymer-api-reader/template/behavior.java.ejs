@@ -1,0 +1,36 @@
+<% locals.isInterface = true; -%>
+<%- include('_disclaimer.java.ejs') -%>
+
+<%- include('_package.java.ejs', {package: package}) -%>
+
+<%- include('_common-imports.java.ejs') -%>
+import com.vaadin.ui.HasElement;
+import com.vaadin.ui.ComponentEventNotifier;
+<% (behaviors || []).forEach(function(behavior) { -%>
+import com.vaadin.<%= getCollectionName(behavior) %>.<%= getJavaName(behavior) %>;
+<% }) -%>
+
+public interface <%= name %> extends <%= ['HasElement', 'ComponentEventNotifier'].concat(behaviorNames).join(', ') %> {
+<% if (publicProperties.length) { -%>
+
+    /* Properties */
+<% publicProperties.forEach(function(property) { %>
+<%- include('_property.java.ejs', {property: property}) -%>
+<% }) -%>
+<% } -%>
+<% if (publicMethods.length) { -%>
+
+    /* Methods */
+<% publicMethods.forEach(function(method) { %>
+<%- include('_method.java.ejs', {method: method}) -%>
+<% }); -%>
+<% } -%>
+<% if (events.length) { -%>
+
+    /* Events */
+<% events.forEach(function(event) { %>
+<%- include('_event.java.ejs', {event: event, name: name}) -%>
+<% }) -%>
+<% } -%>
+
+}

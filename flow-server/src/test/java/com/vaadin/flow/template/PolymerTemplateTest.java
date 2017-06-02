@@ -22,13 +22,21 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.Jsoup;
+import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 
 /**
  * @author Vaadin Ltd.
@@ -46,16 +54,64 @@ public class PolymerTemplateTest {
         String getTitle();
     }
 
+    @Tag(Tag.DIV)
+    public static class CustomComponent extends Component {
+
+    }
+
+    private static class TestTemplateParser implements TemplateParser {
+        @Override
+        public Element getTemplateContent(
+                Class<? extends PolymerTemplate> clazz, String tag) {
+            return Jsoup.parse("<dom-module id='" + tag + "'></dom-module>");
+        }
+    }
+
     @Tag(TAG)
     private static class TestPolymerTemplate
             extends PolymerTemplate<ModelClass> {
+        public TestPolymerTemplate() {
+            super(new TestTemplateParser());
+        }
+    }
+
+    @Tag(TAG)
+    private static class IdChildTemplate extends PolymerTemplate<ModelClass> {
+
+        @Id("child")
+        private CustomComponent child;
+
+        public IdChildTemplate() {
+            this((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><div id='child'></dom-module>"));
+        }
+
+        IdChildTemplate(TemplateParser parser) {
+            super(parser);
+        }
+
+    }
+
+    private static class IdWrongChildTemplate extends IdChildTemplate {
+
+        public IdWrongChildTemplate() {
+            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><div id='foo'></dom-module>"));
+        }
+
     }
 
     private static class TemplateWithoutTagAnnotation
             extends PolymerTemplate<ModelClass> {
     }
 
+    @Tag(TAG)
     private static class NoModelTemplate extends PolymerTemplate {
+
+        NoModelTemplate() {
+            super(new TestTemplateParser());
+        }
+
     }
 
     @Test
@@ -115,6 +171,25 @@ public class PolymerTemplateTest {
     @Test(expected = IllegalStateException.class)
     public void noModelTemplate() {
         new NoModelTemplate();
+    }
+
+    @Test
+    public void parseTemplate_hasIdChild_childIsRegisteredInFeature() {
+        IdChildTemplate template = new IdChildTemplate();
+
+        UI ui = new UI();
+        ui.add(template);
+
+        AttachExistingElementFeatureById feature = template.getElement()
+                .getNode().getFeature(AttachExistingElementFeatureById.class);
+        AtomicInteger counter = new AtomicInteger(0);
+        feature.forEachChild(child -> counter.incrementAndGet());
+        Assert.assertEquals(1, counter.get());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void parseTemplate_hasWrongIdChild_exceptionIsThrown() {
+        new IdWrongChildTemplate();
     }
 
 }

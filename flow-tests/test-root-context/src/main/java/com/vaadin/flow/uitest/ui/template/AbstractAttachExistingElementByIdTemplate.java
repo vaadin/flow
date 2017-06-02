@@ -16,28 +16,23 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Id;
-import com.vaadin.annotations.Tag;
 import com.vaadin.flow.html.Input;
 import com.vaadin.flow.html.Label;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 
-@Tag("existing-element")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/AttachExistingElementById.html")
-public class AttachExistingElementByIdTemplate
+public abstract class AbstractAttachExistingElementByIdTemplate
         extends PolymerTemplate<TemplateModel> {
 
     @Id("input")
-    Input input;
+    private Input input;
 
     @Id("label")
-    Label label;
+    private Label label;
 
-
-
-    public AttachExistingElementByIdTemplate() {
+    protected AbstractAttachExistingElementByIdTemplate(String id) {
+        setId(id);
         input.setPlaceholder("Type here to update label");
         label.setText("default");
     }
