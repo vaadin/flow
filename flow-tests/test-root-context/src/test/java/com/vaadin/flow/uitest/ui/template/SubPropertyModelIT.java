@@ -33,19 +33,19 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
 
         WebElement template = findElement(By.id("template"));
         Assert.assertEquals("message",
-                getInShadowRoot(template, By.id("msg")).get().getText());
+                getInShadowRoot(template, By.id("msg")).getText());
 
-        getInShadowRoot(template, By.id("button")).get().click();
+        getInShadowRoot(template, By.id("button")).click();
 
         Assert.assertEquals("Updated",
-                getInShadowRoot(template, By.id("msg")).get().getText());
+                getInShadowRoot(template, By.id("msg")).getText());
 
-        getInShadowRoot(template, By.id("sync")).get().click();
+        getInShadowRoot(template, By.id("sync")).click();
 
         WebElement syncedReport = findElement(By.id("synced-msg"));
         Assert.assertEquals("Set from the client", syncedReport.getText());
 
-        WebElement input = getInShadowRoot(template, By.id("input")).get();
+        WebElement input = getInShadowRoot(template, By.id("input"));
         input.clear();
         input.sendKeys("foo");
 
@@ -58,11 +58,11 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
                 result.isPresent());
 
         // click message
-        getInShadowRoot(template, By.id("msg")).get().click();
+        getInShadowRoot(template, By.id("msg")).click();
 
         Assert.assertEquals(
                 "Clicking status message did not get the same modelData as in the message box.",
-                getInShadowRoot(template, By.id("msg")).get().getText(),
+                getInShadowRoot(template, By.id("msg")).getText(),
                 findElement(By.id("statusClick")).getText());
     }
 }

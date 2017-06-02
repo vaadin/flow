@@ -19,21 +19,64 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
+import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.nodefeature.MapProperty;
+import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.events.EventRemover;
 
 public class StateTreeTest {
-    StateTree tree = new StateTree(new Registry() {
+
+    private static class TestServerConnector extends ServerConnector {
+
+        private StateNode node;
+        private String key;
+        private Object value;
+
+        public TestServerConnector(Registry registry) {
+            super(registry);
+        }
+
+        @Override
+        public void sendNodeSyncMessage(StateNode node, int feature, String key,
+                Object value) {
+            this.node = node;
+            this.key = key;
+            this.value = value;
+        }
+
+        void clear() {
+            this.node = null;
+            this.key = null;
+            this.value = null;
+        }
+
+        void assertMessage(StateNode node, String key, Object value) {
+            Assert.assertEquals(node, this.node);
+            Assert.assertEquals(key, this.key);
+            Assert.assertEquals(value, this.value);
+        }
+    }
+
+    private InitialPropertiesHandler propertyHandler = Mockito
+            .mock(InitialPropertiesHandler.class);
+
+    private StateTree tree = new StateTree(new Registry() {
         {
-            set(InitialPropertiesHandler.class,
-                    new InitialPropertiesHandler(this));
+            set(InitialPropertiesHandler.class, propertyHandler);
+            set(ServerConnector.class, new TestServerConnector(this));
         }
     });
-    StateNode node = new StateNode(5, tree);
+    private StateNode node = new StateNode(5, tree);
+
+    private TestServerConnector connector = (TestServerConnector) tree
+            .getRegistry().getServerConnector();
 
     @Test
     public void testIdMappings() {
@@ -118,6 +161,63 @@ public class StateTreeTest {
         tree.registerNode(node);
         tree.setUpdateInProgress(true);
         Binder.bind(node, null);
+    }
+
+    @Test
+    public void sendNodePropertySyncToServer_notInitialProperty_propertyIsSent() {
+        tree.registerNode(node);
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty property = new MapProperty("foo", map);
+        property.setValue("bar");
+        connector.clear();
+
+        tree.sendNodePropertySyncToServer(property);
+
+        connector.assertMessage(node, "foo", "bar");
+    }
+
+    @Test
+    public void sendNodePropertySyncToServer_initialProperty_propertyIsNoSent() {
+        tree.registerNode(node);
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty property = new MapProperty("foo", map);
+        property.setValue("bar");
+
+        Mockito.when(propertyHandler.handlePropertyUpdate(property))
+                .thenReturn(true);
+
+        connector.clear();
+
+        tree.sendNodePropertySyncToServer(property);
+
+        connector.assertMessage(null, null, null);
+    }
+
+    @Test
+    public void setUpdateInProgress_flushPropertyUpdates() {
+        tree.setUpdateInProgress(true);
+
+        Mockito.verify(propertyHandler).flushPropertyUpdates();
+
+        tree.setUpdateInProgress(false);
+
+        Mockito.verify(propertyHandler, Mockito.times(2))
+                .flushPropertyUpdates();
+    }
+
+    @Test
+    public void registerNode_updateIsNotInProgress_noPropertyHandlerCalls() {
+        tree.registerNode(node);
+
+        Mockito.verifyZeroInteractions(propertyHandler);
+    }
+
+    @Test
+    public void registerNode_updateIsInProgress_noPropertyHandlerCalls() {
+        tree.setUpdateInProgress(true);
+        tree.registerNode(node);
+
+        Mockito.verify(propertyHandler).nodeRegistered(node);
     }
 
 }

@@ -37,7 +37,7 @@ public class EmptyListsIT extends ChromeBrowserTest {
         WebElement template = findElement(By.id("template"));
 
         Assert.assertTrue(
-                getInShadowRoot(template, By.className("item")).isPresent());
+                isPresentInShadowRoot(template, By.className("item")));
 
         findElement(By.id("set-empty")).click();
 

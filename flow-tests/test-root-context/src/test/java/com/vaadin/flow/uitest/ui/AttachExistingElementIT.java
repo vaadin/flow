@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -85,12 +84,11 @@ public class AttachExistingElementIT extends ChromeBrowserTest {
         // attach a child in the shadow root of the div
 
         findElement(By.id("attach-label-inshadow")).click();
-        Optional<WebElement> labelInShadow = getInShadowRoot(
+        WebElement labelInShadow = getInShadowRoot(
                 findElement(By.id("element-with-shadow")),
                 By.id("label-in-shadow"));
-        Assert.assertTrue(labelInShadow.isPresent());
         Assert.assertEquals("label",
-                labelInShadow.get().getTagName().toLowerCase(Locale.ENGLISH));
+                labelInShadow.getTagName().toLowerCase(Locale.ENGLISH));
 
         // Try to attach non-existing element
         findElement(By.id("non-existing-element")).click();

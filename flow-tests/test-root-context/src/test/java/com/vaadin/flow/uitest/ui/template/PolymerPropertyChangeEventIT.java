@@ -31,7 +31,7 @@ public class PolymerPropertyChangeEventIT extends ChromeBrowserTest {
         open();
 
         WebElement template = findElement(By.id("template"));
-        getInShadowRoot(template, By.id("input")).get().sendKeys("foo");
+        getInShadowRoot(template, By.id("input")).sendKeys("foo");
 
         List<WebElement> changeEvents = findElements(
                 By.className("change-event"));

@@ -86,7 +86,7 @@ public class ListBindingIT extends ChromeBrowserTest {
 
         // Assert that the message was gotten correctly on the server side
         Assert.assertEquals("Couldn't validate element click selection.",
-                getInShadowRoot(template, By.id("selection")).get().getText(),
+                getInShadowRoot(template, By.id("selection")).getText(),
                 "Clicked message: " + msgs.get(1).getText());
     }
 
@@ -99,14 +99,14 @@ public class ListBindingIT extends ChromeBrowserTest {
     private void assertMethodWorksCorrectly(String handlerName,
             WebElement template, String... expectedMessages) {
         resetState(template);
-        getInShadowRoot(template, By.id(handlerName)).get().click();
+        getInShadowRoot(template, By.id(handlerName)).click();
 
         Assert.assertEquals(Arrays.asList(expectedMessages),
                 getMessages(template));
     }
 
     private void resetState(WebElement template) {
-        getInShadowRoot(template, By.id("reset")).get().click();
+        getInShadowRoot(template, By.id("reset")).click();
         Assert.assertEquals(ListBindingTemplate.RESET_STATE,
                 getMessages(template));
     }
