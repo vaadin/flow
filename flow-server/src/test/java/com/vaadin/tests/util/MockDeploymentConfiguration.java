@@ -103,4 +103,9 @@ public class MockDeploymentConfiguration
         return sendUrlsAsParameters;
     }
 
+    @Override
+    public String getWebComponentsPolyfillBase() {
+        return null;
+    }
+
 }

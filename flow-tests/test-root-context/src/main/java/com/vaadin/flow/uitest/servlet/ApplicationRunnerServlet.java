@@ -149,7 +149,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         }
     }
 
-    private final static class ProxyDeploymentConfiguration
+    private final class ProxyDeploymentConfiguration
             implements InvocationHandler, Serializable {
         private final DeploymentConfiguration originalConfiguration;
 
@@ -275,9 +275,14 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
+        // Create original deployment conf just so we can get the original
+        // resource availability checker
+        DefaultDeploymentConfiguration superConf = (DefaultDeploymentConfiguration) super.createDeploymentConfiguration(
+                initParameters);
+
         // Get the original configuration from the super class
         final DeploymentConfiguration originalConfiguration = new DefaultDeploymentConfiguration(
-                getClass(), initParameters) {
+                getClass(), initParameters, this::scanForResources) {
             @Override
             public String getUIClassName() {
                 return getApplicationRunnerApplicationClassName(request.get());
@@ -320,7 +325,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         return service;
     }
 
-    private static DeploymentConfiguration findDeploymentConfiguration(
+    private DeploymentConfiguration findDeploymentConfiguration(
             DeploymentConfiguration originalConfiguration) throws Exception {
         // First level of cache
         DeploymentConfiguration configuration = CurrentInstance
@@ -403,7 +408,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                             }
 
                             configuration = new DefaultDeploymentConfiguration(
-                                    servlet.getClass(), initParameters);
+                                    servlet.getClass(), initParameters,
+                                    this::scanForResources);
                         } else {
                             configuration = originalConfiguration;
                         }
