@@ -250,8 +250,21 @@ public class ComponentGenerator {
                 .setPublic().setReturnTypeVoid();
 
         method.addParameter(toJavaType(property.getType()), property.getName());
-        method.setBody(String.format("getElement().setProperty(\"%s\", %s);",
-                property.getName(), property.getName()));
+
+        switch (property.getType()) {
+        case ARRAY:
+        case OBJECT:
+            method.setBody(
+                    String.format("getElement().setPropertyJson(\"%s\", %s);",
+                            property.getName(), property.getName()));
+            break;
+        default:
+            method.setBody(
+                    String.format("getElement().setProperty(\"%s\", %s);",
+                            property.getName(), property.getName()));
+            break;
+        }
+
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,

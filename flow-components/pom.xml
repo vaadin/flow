@@ -24,21 +24,6 @@
         <maven.test.skip>true</maven.test.skip>
     </properties>
 
-    <dependencies>
-        <!-- Project dependencies -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow</artifactId>
-            <version>${flow.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-util</artifactId>
-            <version>${flow.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
     <profiles>
         <profile>
             <id>Components-test</id>

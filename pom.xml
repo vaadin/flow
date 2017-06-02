@@ -19,7 +19,6 @@
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
-        <module>flow-components</module>
     </modules>
 
     <organization>
