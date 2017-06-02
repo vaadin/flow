@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -275,9 +276,15 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
+        // Create original deployment conf just so we can get the original
+        // resource availability checker
+        DefaultDeploymentConfiguration superConf = (DefaultDeploymentConfiguration) super.createDeploymentConfiguration(
+                initParameters);
+
         // Get the original configuration from the super class
         final DeploymentConfiguration originalConfiguration = new DefaultDeploymentConfiguration(
-                getClass(), initParameters) {
+                getClass(), initParameters,
+                superConf.getResourceAvailabilityChecker()) {
             @Override
             public String getUIClassName() {
                 return getApplicationRunnerApplicationClassName(request.get());
@@ -402,8 +409,14 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                                 initParameters.put(entry.name(), entry.value());
                             }
 
+                            Predicate<String> resourceAvailabilityChecker = ((DefaultDeploymentConfiguration) servlet
+                                    .createDeploymentConfiguration(
+                                            new Properties()))
+                                                    .getResourceAvailabilityChecker();
+
                             configuration = new DefaultDeploymentConfiguration(
-                                    servlet.getClass(), initParameters);
+                                    servlet.getClass(), initParameters,
+                                    resourceAvailabilityChecker);
                         } else {
                             configuration = originalConfiguration;
                         }

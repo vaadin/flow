@@ -22,6 +22,8 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -214,7 +216,20 @@ public class VaadinServlet extends HttpServlet {
 
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters);
+        return new DefaultDeploymentConfiguration(getClass(), initParameters,
+                this::checkResourceExistence);
+    }
+
+    private boolean checkResourceExistence(String resourceUri) {
+        try {
+            URL resource = getServletContext().getResource(resourceUri);
+
+            return resource != null;
+        } catch (MalformedURLException e) {
+            getLogger().log(Level.INFO,
+                    "Couldn't check availability of " + resourceUri, e);
+            return false;
+        }
     }
 
     protected VaadinServletService createServletService(
@@ -536,6 +551,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected StaticFileServer createStaticFileServer() {
         return new StaticFileServer();
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(VaadinServlet.class.getName());
     }
 
 }

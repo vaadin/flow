@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import com.vaadin.server.AbstractDeploymentConfiguration;
+import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.shared.communication.PushMode;
 
 public class MockDeploymentConfiguration
@@ -101,6 +102,11 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isSendUrlsAsParameters() {
         return sendUrlsAsParameters;
+    }
+
+    @Override
+    public String getWebComponentsPolyfillBase() {
+        return DefaultDeploymentConfiguration.DEFAUL_POLYFILL_BASE;
     }
 
 }

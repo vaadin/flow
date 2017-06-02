@@ -18,8 +18,11 @@ package com.vaadin.server;
 
 import java.util.Locale;
 import java.util.Properties;
+import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -72,6 +75,14 @@ public class DefaultDeploymentConfiguration
 
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
+    /**
+     * Default value for {@link #getWebComponentsPolyfillBase()} = {@value} .
+     * <p>
+     * Unless explicitly configured, the default will only be used if
+     * <code>webcomponents-lite.js</code> is available at the default location.
+     */
+    public static final String DEFAUL_POLYFILL_BASE = "frontend://bower_components/webcomponentsjs/";
+
     private final Properties initParameters;
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
@@ -81,6 +92,9 @@ public class DefaultDeploymentConfiguration
     private final Class<?> systemPropertyBaseClass;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
+    private String webComponentsPolyfillBase;
+
+    private final Predicate<String> resourceAvailabilityChecker;
 
     /**
      * Create a new deployment configuration instance.
@@ -91,11 +105,18 @@ public class DefaultDeploymentConfiguration
      * @param initParameters
      *            the init parameters that should make up the foundation for
      *            this configuration
+     * @param resourceAvailabilityChecker
+     *            callback for checking whether a resource file is available,
+     *            not <code>null</code>
      */
     public DefaultDeploymentConfiguration(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+            Properties initParameters,
+            Predicate<String> resourceAvailabilityChecker) {
+        assert resourceAvailabilityChecker != null;
+
         this.initParameters = initParameters;
         this.systemPropertyBaseClass = systemPropertyBaseClass;
+        this.resourceAvailabilityChecker = resourceAvailabilityChecker;
 
         checkProductionMode();
         checkXsrfProtection();
@@ -104,6 +125,7 @@ public class DefaultDeploymentConfiguration
         checkPushMode();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
+        checkWebComponentsPolyfillBase();
     }
 
     @Override
@@ -265,6 +287,11 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
+    public String getWebComponentsPolyfillBase() {
+        return webComponentsPolyfillBase;
+    }
+
+    @Override
     public Properties getInitParameters() {
         return initParameters;
     }
@@ -337,6 +364,68 @@ public class DefaultDeploymentConfiguration
 
     private Logger getLogger() {
         return Logger.getLogger(getClass().getName());
+    }
+
+    private void checkWebComponentsPolyfillBase() {
+        String propertyValue = getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_POLYFILL_BASE, null);
+        if (null == propertyValue) {
+            propertyValue = resolveDefaultPolyfillUri();
+        } else if (propertyValue.trim().isEmpty()) {
+            propertyValue = null;
+        }
+        webComponentsPolyfillBase = propertyValue;
+    }
+
+    private String resolveDefaultPolyfillUri() {
+        VaadinUriResolver uriResolver = new VaadinUriResolver() {
+            @Override
+            protected String getContextRootUrl() {
+                // ServlerContext.getResource expects a leading slash
+                return "/";
+            }
+
+            @Override
+            protected String getFrontendRootUrl() {
+                return getEs6BuildUrl();
+            }
+        };
+        String webComponentsLiteJs = uriResolver.resolveVaadinUri(
+                DEFAUL_POLYFILL_BASE + "webcomponents-lite.js");
+        if (!webComponentsLiteJs.startsWith("/")) {
+            // Has protocol or is relative -> no can do
+            getLogger().log(Level.WARNING,
+                    () -> formatDefaultPolyfillMissingMessage(
+                            webComponentsLiteJs));
+            return null;
+        }
+
+        if (getResourceAvailabilityChecker().test(webComponentsLiteJs)) {
+            return DEFAUL_POLYFILL_BASE;
+        } else {
+            getLogger().log(Level.WARNING,
+                    () -> formatDefaultPolyfillMissingMessage(
+                            webComponentsLiteJs));
+            return null;
+        }
+    }
+
+    private static String formatDefaultPolyfillMissingMessage(
+            String webComponentsLiteJs) {
+        return String.format(
+                "The Web Components polyfill will not be used because existence of %1$s cannot be verified. "
+                        + "Configure %2$s with an empty value to explicilty disable Web Components polyfill loading. "
+                        + "Configure %2$s with an explicit value to use that location without any automatic check.",
+                webComponentsLiteJs, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
+    }
+
+    /**
+     * Gets the configured resource availability checker.
+     *
+     * @return the resource availability checker, not <code>null</code>
+     */
+    public Predicate<String> getResourceAvailabilityChecker() {
+        return resourceAvailabilityChecker;
     }
 
 }

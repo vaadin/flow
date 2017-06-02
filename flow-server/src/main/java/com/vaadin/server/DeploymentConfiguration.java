@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Properties;
 
 import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -149,5 +150,44 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 7.4
      */
     String getClassLoaderName();
+
+    /**
+     * Gets the location from which the Web Components polyfill is loaded.
+     * Should end in an <code>/</code>.
+     *
+     * @return the Web Components polyfill URI, nor <code>null</code> to not
+     *         load the polyfill
+     */
+    String getWebComponentsPolyfillBase();
+
+    /**
+     * Gets the the URL from which frontend resources should be loaded in ES6
+     * compatible browsers.
+     *
+     * @return the ES6 resource URL
+     */
+    default String getEs6BuildUrl() {
+        String defaultUrl = isProductionMode()
+                ? Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
+                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+
+        return getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+                defaultUrl);
+    }
+
+    /**
+     * Gets the the URL from which frontend resources should be loaded in ES5
+     * compatible browsers.
+     *
+     * @return the ES5 resource URL
+     */
+    default String getEs5BuildUrl() {
+        String defaultUrl = isProductionMode()
+                ? Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
+                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+
+        return getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+                defaultUrl);
+    }
 
 }

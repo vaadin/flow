@@ -15,6 +15,9 @@
  */
 package com.vaadin.server;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -36,7 +39,7 @@ public class DefaultDeploymentConfigurationTest {
         String prop = "prop";
         System.setProperty(prop, value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                clazz, new Properties());
+                clazz, new Properties(), resource -> true);
         Assert.assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -49,7 +52,78 @@ public class DefaultDeploymentConfigurationTest {
                         + '.' + prop,
                 value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties());
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                resource -> true);
         Assert.assertEquals(value, config.getSystemProperty(prop));
     }
+
+    @Test
+    public void testWebComponentsBase_defaultSetting_fileFound() {
+        List<String> queriedUrls = new ArrayList<>();
+
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                resource -> {
+                    queriedUrls.add(resource);
+                    return true;
+                });
+
+        Assert.assertEquals(
+                Collections.singletonList(
+                        "/bower_components/webcomponentsjs/webcomponents-lite.js"),
+                queriedUrls);
+
+        String webComponentsPolyfillBase = config
+                .getWebComponentsPolyfillBase();
+
+        Assert.assertEquals("frontend://bower_components/webcomponentsjs/",
+                webComponentsPolyfillBase);
+    }
+
+    @Test
+    public void testWebComponentsBase_defaultSetting_fileMissing() {
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                resource -> false);
+
+        String webComponentsPolyfillBase = config
+                .getWebComponentsPolyfillBase();
+
+        Assert.assertNull(webComponentsPolyfillBase);
+    }
+
+    @Test
+    public void testWebComponentsBase_explicitSetting() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "foo");
+
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, initParameters,
+                resource -> {
+                    throw new AssertionError("Should never be called");
+                });
+
+        String webComponentsPolyfillBase = config
+                .getWebComponentsPolyfillBase();
+
+        Assert.assertEquals("foo", webComponentsPolyfillBase);
+    }
+
+    @Test
+    public void testWebComponentsBase_explicitDisable() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "");
+
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, initParameters,
+                resource -> {
+                    throw new AssertionError("Should never be called");
+                });
+
+        String webComponentsPolyfillBase = config
+                .getWebComponentsPolyfillBase();
+
+        Assert.assertNull(webComponentsPolyfillBase);
+    }
+
 }
