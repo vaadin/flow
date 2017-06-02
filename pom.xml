@@ -7,7 +7,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>0.1.7-SNAPSHOT</version>
+    <version>0.1.8-SNAPSHOT</version>
 
     <modules>
         <module>flow</module>
@@ -19,6 +19,7 @@
         <module>flow-test-util</module>
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
+        <module>flow-components</module>
     </modules>
 
     <organization>
@@ -61,6 +62,10 @@
         <node.version>v7.10.0</node.version>
         <npm.version>4.6.1</npm.version>
         <frontend.working.directory>src/main/frontend</frontend.working.directory>
+
+        <!-- Set to true to run tests for components and skip other tests -->
+        <test.components>false</test.components>
+        <maven.test.skip>${test.components}</maven.test.skip>
     </properties>
 
     <repositories>
@@ -321,6 +326,7 @@
                     <version>2.20</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
+                        <enableAssertions>true</enableAssertions>
                     </configuration>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse

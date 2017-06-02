@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>0.1.7-SNAPSHOT</version>
+        <version>0.1.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -16,7 +16,9 @@
         <module>test-resources</module>
         <module>test-root-context</module>
         <module>test-subcontext</module>
-        <module>test-performance</module>
+        <!-- Drop performance until we can figure -->
+        <!-- out how it should work with TestBench hub -->
+        <!--<module>test-performance</module>-->
         <module>test-scalability</module>
         <module>test-memory-leaks</module>
         <module>test-expense-manager-imperative</module>
@@ -41,12 +43,12 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow</artifactId>
-            <version>0.1.7-SNAPSHOT</version>
+            <version>0.1.8-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>0.1.7-SNAPSHOT</version>
+            <version>0.1.8-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>

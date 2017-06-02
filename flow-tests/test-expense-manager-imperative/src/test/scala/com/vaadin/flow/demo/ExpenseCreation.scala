@@ -27,7 +27,7 @@ class ExpenseCreation extends Simulation {
   val uidlHeaders = Map("Content-Type" -> "application/json; charset=UTF-8")
 
   val storeUiId =
-    regex(""""v-uiId":\s(\d+),""")
+    regex(""""v-uiId":\s(\d+)""")
       .saveAs("uiId")
   val storeSecurityKey =
     regex(""""Vaadin-Security-Key":\s"([^"]*)""")
