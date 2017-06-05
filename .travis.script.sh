@@ -27,14 +27,10 @@ else
     then
       modules="$modules -pl flow-client"
     else
-      if [[ $change == *"flow-test-util/"* ]]
+      if [[ $change == *"flow-test-util/"* || $change == *"flow-tests/"* ]]
       then
+        # for flow-tests build test-util also
         modules="$modules -pl flow-test-util"
-      else
-        if [[ $change == *"flow-tests/"* ]]
-        then
-          modules="$modules -pl flow-tests"
-        fi
       fi
     fi
 
