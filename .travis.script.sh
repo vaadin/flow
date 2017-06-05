@@ -5,8 +5,15 @@
 # TRAVIS_SECURE_ENV_VARS == true if encrypted variables, e.g. SONAR_HOST is available
 # TRAVIS_REPO_SLUG == the repository, e.g. vaadin/vaadin
 
+# Count all commits only for this branch.
+actualBranchCommitAmount=`git log --no-merges --first-parent --pretty=oneline master^..HEAD | wc -l`
+# Remove first commit as it is the branch parent which is from master
+actualBranchCommitAmount=`expr $actualBranchCommitAmount - 1`
+
+# Get changed files with full path for branch commits.
+change=`diff <(git log --no-merges --first-parent --name-only master^..HEAD -$actualBranchCommitAmount) <(git log --no-merges --first-parent --summary master^..HEAD -$actualBranchCommitAmount)`
+
 # Check from the latest commit if this contains changes to components package.
-change=`diff <(git log --name-only master^..HEAD) <(git log --summary master^..HEAD)`
 components=false
 if [[ $change == *"flow-components/"* ]]
 then
