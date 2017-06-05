@@ -179,7 +179,7 @@ public class NodeFeatures {
     /**
      * Id for {@link AttachTemplateChildFeature}.
      */
-    public static final int ATTACH_EXISTING_ELEMENT_BY_ID = 28;
+    public static final int ATTACH_TEMPLATE_CHILD_ELEMENT = 28;
 
     /**
      * Id for {@link VirtualChildrenList}.
