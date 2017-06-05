@@ -20,7 +20,7 @@ package com.vaadin.generator.metadata;
  * 
  * @see ComponentMetadata
  */
-public class ComponentProperty extends ComponentPropertyBase {
+public class ComponentPropertyData extends ComponentPropertyBaseData {
 
     private String documentation;
     private boolean readOnly;

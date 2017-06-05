@@ -17,6 +17,7 @@ package com.vaadin.generator;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.Date;
 
@@ -30,15 +31,14 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
-import com.vaadin.generator.metadata.ComponentEvent;
-import com.vaadin.generator.metadata.ComponentFunction;
-import com.vaadin.generator.metadata.ComponentFunctionParameter;
+import com.vaadin.generator.metadata.ComponentEventData;
+import com.vaadin.generator.metadata.ComponentFunctionData;
+import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentObjectType;
-import com.vaadin.generator.metadata.ComponentProperty;
+import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 
@@ -81,8 +81,8 @@ public class ComponentGenerator {
             }
             return mapper.readValue(jsonFile, ComponentMetadata.class);
         } catch (IOException e) {
-            throw new ComponentGenerationException("Error reading JSON file",
-                    e);
+            throw new ComponentGenerationException(
+                    "Error reading JSON file \"" + jsonFile + "\"", e);
         }
     }
 
@@ -127,13 +127,12 @@ public class ComponentGenerator {
                 .setSuperType(Component.class)
                 .setName(generateJavaClassName(metadata.getName()));
 
-        javaClass.addAnnotation(Generated.class).setLiteralValue(
-                "\"" + ComponentGenerator.class.getName() + "\"");
-        javaClass.addAnnotation(Tag.class)
-                .setLiteralValue("\"" + metadata.getTag() + "\"");
+        addAnnotation(javaClass, Generated.class,
+                ComponentGenerator.class.getName());
+        addAnnotation(javaClass, Generated.class, metadata.getTag());
 
         if (metadata.getProperties() != null) {
-            for (ComponentProperty property : metadata.getProperties()) {
+            for (ComponentPropertyData property : metadata.getProperties()) {
                 generateGetterFor(javaClass, property);
 
                 if (!property.isReadOnly()) {
@@ -143,13 +142,13 @@ public class ComponentGenerator {
         }
 
         if (metadata.getFunctions() != null) {
-            for (ComponentFunction function : metadata.getFunctions()) {
+            for (ComponentFunctionData function : metadata.getFunctions()) {
                 generateFunctionFor(javaClass, function);
             }
         }
 
         if (metadata.getEvents() != null) {
-            for (ComponentEvent event : metadata.getEvents()) {
+            for (ComponentEventData event : metadata.getEvents()) {
                 generateEventListenerFor(javaClass, event);
             }
         }
@@ -174,18 +173,26 @@ public class ComponentGenerator {
             String basePackage) {
 
         String source = generateClass(metadata, basePackage);
+        String fileName = generateJavaClassName(metadata.getName()) + ".java";
         try {
             if (!targetPath.isDirectory()) {
                 targetPath.mkdirs();
             }
             Files.write(new File(convertToDirectory(targetPath, basePackage),
-                    generateJavaClassName(metadata.getName()) + ".java")
-                            .toPath(),
-                    source.getBytes("UTF-8"));
+                    fileName).toPath(), source.getBytes("UTF-8"));
         } catch (IOException ex) {
             throw new ComponentGenerationException(
-                    "Error writing the generated Java class", ex);
+                    "Error writing the generated Java source file \"" + fileName
+                            + "\" at \"" + targetPath + "\" for component \""
+                            + metadata.getName() + "\"",
+                    ex);
         }
+    }
+
+    private void addAnnotation(JavaClassSource javaClass,
+            Class<? extends Annotation> annotation, String literalValue) {
+        javaClass.addAnnotation(annotation)
+                .setLiteralValue("\"" + literalValue + "\"");
     }
 
     private String generateJavaClassName(String webcomponentClassName) {
@@ -201,12 +208,16 @@ public class ComponentGenerator {
     }
 
     private void generateGetterFor(JavaClassSource javaClass,
-            ComponentProperty property) {
-        MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("get" + StringUtils.capitalize(property.getName()))
-                .setPublic();
+            ComponentPropertyData property) {
 
-        method.setReturnType(toJavaType(property.getType()));
+        MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
+                .setReturnType(toJavaType(property.getType()));
+
+        if (property.getType() == ComponentObjectType.BOOLEAN) {
+            method.setName("is" + StringUtils.capitalize(property.getName()));
+        } else {
+            method.setName("get" + StringUtils.capitalize(property.getName()));
+        }
 
         switch (property.getType()) {
         case STRING:
@@ -243,7 +254,7 @@ public class ComponentGenerator {
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
-            ComponentProperty property) {
+            ComponentPropertyData property) {
 
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("set" + StringUtils.capitalize(property.getName()))
@@ -268,7 +279,7 @@ public class ComponentGenerator {
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
-            ComponentFunction function) {
+            ComponentFunctionData function) {
 
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName(StringUtils.uncapitalize(
@@ -279,7 +290,8 @@ public class ComponentGenerator {
         if (function.getParameters() != null
                 && !function.getParameters().isEmpty()) {
 
-            for (ComponentFunctionParameter param : function.getParameters()) {
+            for (ComponentFunctionParameterData param : function
+                    .getParameters()) {
                 String formattedName = StringUtils.uncapitalize(
                         formatStringToValidJavaIdentifier(param.getName()));
                 method.addParameter(toJavaType(param.getType()), formattedName);
@@ -292,7 +304,7 @@ public class ComponentGenerator {
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
-            ComponentEvent event) {
+            ComponentEventData event) {
 
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("add" + StringUtils.capitalize(

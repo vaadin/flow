@@ -24,12 +24,12 @@ import java.util.List;
  * 
  * @see ComponentMetadata
  */
-public class ComponentFunction implements Serializable {
+public class ComponentFunctionData implements Serializable {
 
     private String name;
     private ComponentObjectType returns;
     private String documentation;
-    private List<ComponentFunctionParameter> parameters;
+    private List<ComponentFunctionParameterData> parameters;
 
     /**
      * Gets the name of the function on the webcomponent.
@@ -92,22 +92,22 @@ public class ComponentFunction implements Serializable {
 
     /**
      * Gets the list of parameters of the function. Each parameter is
-     * represented by the {@link ComponentFunctionParameter} object.
+     * represented by the {@link ComponentFunctionParameterData} object.
      * 
      * @return The list of parameters of the function.
      */
-    public List<ComponentFunctionParameter> getParameters() {
+    public List<ComponentFunctionParameterData> getParameters() {
         return parameters;
     }
 
     /**
      * Sets the list of parameters of the function. Each parameter is
-     * represented by the {@link ComponentFunctionParameter} object.
+     * represented by the {@link ComponentFunctionParameterData} object.
      * 
      * @param parameters
      *            The list of parameters of the function.
      */
-    public void setParameters(List<ComponentFunctionParameter> parameters) {
+    public void setParameters(List<ComponentFunctionParameterData> parameters) {
         this.parameters = parameters;
     }
 

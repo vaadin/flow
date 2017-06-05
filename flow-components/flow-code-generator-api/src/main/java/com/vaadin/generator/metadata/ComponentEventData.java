@@ -23,11 +23,11 @@ import java.util.List;
  * 
  * @see ComponentMetadata
  */
-public class ComponentEvent implements Serializable {
+public class ComponentEventData implements Serializable {
 
     private String name;
     private String documentation;
-    private List<ComponentPropertyBase> properties;
+    private List<ComponentPropertyBaseData> properties;
 
     /**
      * Gets the name of the event, such as "click".
@@ -71,22 +71,22 @@ public class ComponentEvent implements Serializable {
 
     /**
      * Gets the list of properties that are part of the event. Each property is
-     * represented by the {@link ComponentPropertyBase} object.
+     * represented by the {@link ComponentPropertyBaseData} object.
      * 
      * @return The list of properties that are part of the event.
      */
-    public List<ComponentPropertyBase> getProperties() {
+    public List<ComponentPropertyBaseData> getProperties() {
         return properties;
     }
 
     /**
      * Sets the list of properties that are part of the event. Each property is
-     * represented by the {@link ComponentPropertyBase} object.
+     * represented by the {@link ComponentPropertyBaseData} object.
      * 
      * @param properties
      *            The list of properties that are part of the event.
      */
-    public void setProperties(List<ComponentPropertyBase> properties) {
+    public void setProperties(List<ComponentPropertyBaseData> properties) {
         this.properties = properties;
     }
 

@@ -20,7 +20,7 @@ package com.vaadin.generator.metadata;
  *
  * @see ComponentMetadata
  */
-public class ComponentFunctionParameter extends ComponentPropertyBase {
+public class ComponentFunctionParameterData extends ComponentPropertyBaseData {
 
     private boolean optional;
 

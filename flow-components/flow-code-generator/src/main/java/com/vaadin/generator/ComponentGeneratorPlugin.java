@@ -42,33 +42,44 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
     @Parameter(property = "generate.base.package", defaultValue = "${project.groupId}", required = false)
     private String basePackage;
 
+    @Parameter(property = "generate.fail.on.error", defaultValue = "true", required = false)
+    private boolean failOnError;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        try {
-            ComponentGenerator generator = new ComponentGenerator();
-            if (!sourceDir.isDirectory()) {
-                getLog().warn(
-                        "Directory not readable. Can't generate any Java classes from "
-                                + sourceDir.getName());
-                return;
-            }
+        ComponentGenerator generator = new ComponentGenerator();
+        if (!sourceDir.isDirectory()) {
+            getLog().warn(
+                    "Directory not readable. Can't generate any Java classes from "
+                            + sourceDir.getName());
+            return;
+        }
 
-            File[] files = sourceDir.listFiles((dir, pathName) -> pathName
-                    .toLowerCase().endsWith(".json"));
-            if (files.length == 0) {
-                getLog().warn("No JSON files found at " + sourceDir.getName());
-                return;
-            }
+        File[] files = sourceDir.listFiles(
+                (dir, pathName) -> pathName.toLowerCase().endsWith(".json"));
+        if (files.length == 0) {
+            getLog().warn("No JSON files found at " + sourceDir.getName());
+            return;
+        }
 
-            getLog().info("Generating " + files.length + " Java classes...");
+        getLog().info("Generating " + files.length + " Java classes...");
 
-            for (File file : files) {
-                getLog().info("Generating class for " + file.getName() + "...");
+        for (File file : files) {
+            getLog().info("Generating class for " + file.getName() + "...");
+            try {
                 generator.generateClass(file, targetDir, basePackage);
+            } catch (Exception e) {
+                if (failOnError) {
+                    throw new MojoExecutionException(
+                            "Error generating Java source for "
+                                    + file.getName(),
+                            e);
+                }
+                getLog().error(
+                        "Error generating Java source for " + file.getName()
+                                + ". The property \"failOnError\" is false, skipping file...",
+                        e);
             }
-        } catch (Exception e) {
-            throw new MojoExecutionException("Error generating Java sources",
-                    e);
         }
     }
 }

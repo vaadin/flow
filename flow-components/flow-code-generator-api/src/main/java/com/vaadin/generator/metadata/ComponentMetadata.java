@@ -32,9 +32,9 @@ public class ComponentMetadata implements Serializable {
     private String name;
     private String version;
     private String documentation;
-    private List<ComponentProperty> properties;
-    private List<ComponentFunction> functions;
-    private List<ComponentEvent> events;
+    private List<ComponentPropertyData> properties;
+    private List<ComponentFunctionData> functions;
+    private List<ComponentEventData> events;
     private List<String> behaviors;
 
     /**
@@ -81,24 +81,24 @@ public class ComponentMetadata implements Serializable {
 
     /**
      * Gets the {@link List} of properties exposed by the webcomponent. Each
-     * individual property is represented by the {@link ComponentProperty}
+     * individual property is represented by the {@link ComponentPropertyData}
      * object.
      * 
      * @return The list of exposed properties.
      */
-    public List<ComponentProperty> getProperties() {
+    public List<ComponentPropertyData> getProperties() {
         return properties;
     }
 
     /**
      * Sets the {@link List} of properties exposed by the webcomponent. Each
-     * individual property is represented by the {@link ComponentProperty}
+     * individual property is represented by the {@link ComponentPropertyData}
      * object.
      * 
      * @param properties
      *            The list of exposed properties.
      */
-    public void setProperties(List<ComponentProperty> properties) {
+    public void setProperties(List<ComponentPropertyData> properties) {
         this.properties = properties;
     }
 
@@ -170,46 +170,46 @@ public class ComponentMetadata implements Serializable {
     /**
      * Gets the list of exposed functions of the webcomponent, that can be
      * called from the corresponding Java class. Each function is represented by
-     * the {@link ComponentFunction} object.
+     * the {@link ComponentFunctionData} object.
      * 
      * @return The list of exposed functions.
      */
-    public List<ComponentFunction> getFunctions() {
+    public List<ComponentFunctionData> getFunctions() {
         return functions;
     }
 
     /**
      * Sets the list of exposed functions of the webcomponent, that can be
      * called from the corresponding Java class. Each function is represented by
-     * the {@link ComponentFunction} object.
+     * the {@link ComponentFunctionData} object.
      * 
      * @param functions
      *            The list of exposed functions.
      */
-    public void setFunctions(List<ComponentFunction> functions) {
+    public void setFunctions(List<ComponentFunctionData> functions) {
         this.functions = functions;
     }
 
     /**
      * Gets the list of events triggered by the webcomponent, that can be
      * intercepted at the server side by the corresponding Java class. Each
-     * event is represented by the {@link ComponentEvent} object.
+     * event is represented by the {@link ComponentEventData} object.
      * 
      * @return The list of events.
      */
-    public List<ComponentEvent> getEvents() {
+    public List<ComponentEventData> getEvents() {
         return events;
     }
 
     /**
      * Sets the list of events triggered by the webcomponent, that can be
      * intercepted at the server side by the corresponding Java class. Each
-     * event is represented by the {@link ComponentEvent} object.
+     * event is represented by the {@link ComponentEventData} object.
      * 
      * @param events
      *            The list of events.
      */
-    public void setEvents(List<ComponentEvent> events) {
+    public void setEvents(List<ComponentEventData> events) {
         this.events = events;
     }
 

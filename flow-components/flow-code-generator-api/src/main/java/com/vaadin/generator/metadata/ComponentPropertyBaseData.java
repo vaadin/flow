@@ -23,7 +23,7 @@ import java.io.Serializable;
  *
  * @see ComponentMetadata
  */
-public class ComponentPropertyBase implements Serializable {
+public class ComponentPropertyBaseData implements Serializable {
 
     private String name;
     private ComponentObjectType type;
