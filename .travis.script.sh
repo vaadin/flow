@@ -33,7 +33,7 @@ else
       else
         if [[ $change == *"flow-tests/"* ]]
         then
-          modules="$modules -pl flow-tests"
+          modules="$modules -pl flow-tests,\!test-expense-manager-imperative"
         fi
       fi
     fi
