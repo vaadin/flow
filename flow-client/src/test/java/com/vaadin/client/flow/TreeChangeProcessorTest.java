@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.InitialPropertiesHandler;
+import com.vaadin.client.Registry;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.flow.util.JsonUtils;
@@ -32,7 +34,14 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 public class TreeChangeProcessorTest {
-    private StateTree tree = new StateTree(null);
+    private Registry registry = new Registry() {
+        {
+            set(StateTree.class, new StateTree(this));
+            set(InitialPropertiesHandler.class,
+                    new InitialPropertiesHandler(this));
+        }
+    };
+    private StateTree tree = registry.getStateTree();
     private int rootId = tree.getRootNode().getId();
     private int ns = 0;
 
