@@ -5,13 +5,11 @@
 # TRAVIS_SECURE_ENV_VARS == true if encrypted variables, e.g. SONAR_HOST is available
 # TRAVIS_REPO_SLUG == the repository, e.g. vaadin/vaadin
 
-# Count all commits only for this branch.
-actualBranchCommitAmount=`git log --no-merges --first-parent --pretty=oneline master^..HEAD | wc -l`
-# Remove first commit as it is the branch parent which is from master
-actualBranchCommitAmount=`expr $actualBranchCommitAmount - 1`
+# Count all commits only for this branch. (no-merges or merged pull requests that have '(#' in the comment)
+actualCommits=`git log --no-merges --pretty=oneline master^..HEAD | grep -v "(#" | awk '{print $1}' | tr '\n' ' '`
 
 # Get changed files with full path for branch commits.
-change=`diff <(git log --no-merges --first-parent --name-only master^..HEAD -$actualBranchCommitAmount) <(git log --no-merges --first-parent --summary master^..HEAD -$actualBranchCommitAmount)`
+change=`diff <(git show --name-only $actualCommits) <(git show --summary -$actualCommits)`
 
 # Check from the latest commit if this contains changes to components package.
 components=false
