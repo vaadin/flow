@@ -9,7 +9,7 @@
 actualCommits=`git log --no-merges --pretty=oneline master^..HEAD | grep -v "(#" | awk '{print $1}' | tr '\n' ' '`
 
 # Get changed files with full path for branch commits.
-change=`diff <(git show --name-only $actualCommits) <(git show --summary -$actualCommits)`
+change=`diff <(git show --name-only $actualCommits) <(git show --summary $actualCommits)`
 
 # Check from the latest commit if this contains changes to components package.
 components=false
