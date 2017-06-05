@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.ExistingElementMap;
+import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -69,18 +70,21 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 set(TemplateRegistry.class, new TemplateRegistry());
                 set(ConstantPool.class, new ConstantPool());
                 set(ExistingElementMap.class, new ExistingElementMap());
+                set(InitialPropertiesHandler.class,
+                        new InitialPropertiesHandler(this));
+                set(StateTree.class, new StateTree(this) {
+
+                    @Override
+                    public void sendTemplateEventToServer(StateNode node,
+                            String methodName, JsArray<?> argValues) {
+                        serverMethods.put(methodName, argValues);
+                        serverRpcNodes.put(methodName, node);
+                    }
+                });
             }
         };
 
-        tree = new StateTree(registry) {
-
-            @Override
-            public void sendTemplateEventToServer(StateNode node,
-                    String methodName, JsArray<?> argValues) {
-                serverMethods.put(methodName, argValues);
-                serverRpcNodes.put(methodName, node);
-            }
-        };
+        tree = registry.getStateTree();
 
         /**
          * This state node is ALWAYS a template !!!

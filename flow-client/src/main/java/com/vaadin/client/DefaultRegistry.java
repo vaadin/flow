@@ -74,6 +74,7 @@ public class DefaultRegistry extends Registry {
         set(TemplateRegistry.class, new TemplateRegistry());
         set(ConstantPool.class, new ConstantPool());
         set(ExistingElementMap.class, new ExistingElementMap());
+        set(InitialPropertiesHandler.class, new InitialPropertiesHandler(this));
 
         // Classes with dependencies, in correct order
         set(Heartbeat.class, new Heartbeat(this));

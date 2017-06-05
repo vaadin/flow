@@ -298,4 +298,13 @@ public class Registry {
     public ExistingElementMap getExistingElementMap() {
         return get(ExistingElementMap.class);
     }
+
+    /**
+     * Gets the {@link InitialPropertiesHandler} singleton.
+     * 
+     * @return the {@link InitialPropertiesHandler} singleton
+     */
+    public InitialPropertiesHandler getInitialPropertiesHandler() {
+        return get(InitialPropertiesHandler.class);
+    }
 }
