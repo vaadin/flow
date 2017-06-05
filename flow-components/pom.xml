@@ -12,7 +12,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <maven.test.skip>true</maven.test.skip>
+        <!--<maven.test.skip>true</maven.test.skip>-->
     </properties>
 
     <dependencies>
@@ -29,20 +29,20 @@
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>Components-test</id>
-            <activation>
-                <property>
-                    <name>test.components</name>
-                    <value>true</value>
-                </property>
-            </activation>
+        <!--<profile>-->
+            <!--<id>Components-test</id>-->
+            <!--<activation>-->
+                <!--<property>-->
+                    <!--<name>test.components</name>-->
+                    <!--<value>true</value>-->
+                <!--</property>-->
+            <!--</activation>-->
 
-            <!-- Can we get this nicer somehow? -->
-            <properties>
-                <maven.test.skip>false</maven.test.skip>
-            </properties>
-        </profile>
+            <!--&lt;!&ndash; Can we get this nicer somehow? &ndash;&gt;-->
+            <!--<properties>-->
+                <!--<maven.test.skip>false</maven.test.skip>-->
+            <!--</properties>-->
+        <!--</profile>-->
 
         <!-- Profile for generating components from Polymer APIs. -->
         <profile>

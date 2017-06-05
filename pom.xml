@@ -64,8 +64,8 @@
         <frontend.working.directory>src/main/frontend</frontend.working.directory>
 
         <!-- Set to true to run tests for components and skip other tests -->
-        <test.components>false</test.components>
-        <maven.test.skip>${test.components}</maven.test.skip>
+        <!--<test.components>false</test.components>-->
+        <!--<maven.test.skip>${test.components}</maven.test.skip>-->
     </properties>
 
     <repositories>
