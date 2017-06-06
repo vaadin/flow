@@ -17,6 +17,7 @@ package com.vaadin.client.flow;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
@@ -62,6 +63,8 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
 
             {
                 set(ServerConnector.class, new TestServerConnector(this));
+                set(InitialPropertiesHandler.class,
+                        new InitialPropertiesHandler(this));
             }
 
         };
