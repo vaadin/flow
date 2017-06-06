@@ -15,15 +15,13 @@
  */
 package com.vaadin.generator.metadata;
 
-import java.io.Serializable;
-
 /**
  * Base class of properties exposed by the webcomponent, that can be properties
  * themselves, event properties or function parameters.
  *
  * @see ComponentMetadata
  */
-public class ComponentPropertyBaseData implements Serializable {
+public class ComponentPropertyBaseData {
 
     private String name;
     private ComponentObjectType type;

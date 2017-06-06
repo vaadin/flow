@@ -15,7 +15,6 @@
  */
 package com.vaadin.generator.metadata;
 
-import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.ui.HasComponents;
@@ -26,7 +25,7 @@ import com.vaadin.ui.HasComponents;
  * with the webcomponent at the client side.
  *
  */
-public class ComponentMetadata implements Serializable {
+public class ComponentMetadata {
 
     private String tag;
     private String name;

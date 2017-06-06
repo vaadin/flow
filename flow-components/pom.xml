@@ -13,7 +13,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>flow-polymer-api-reader</module>
         <module>flow-code-generator-api</module>
         <module>flow-code-generator</module>
     </modules>

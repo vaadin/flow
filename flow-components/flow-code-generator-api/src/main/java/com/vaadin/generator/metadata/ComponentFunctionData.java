@@ -15,7 +15,6 @@
  */
 package com.vaadin.generator.metadata;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -24,7 +23,7 @@ import java.util.List;
  * 
  * @see ComponentMetadata
  */
-public class ComponentFunctionData implements Serializable {
+public class ComponentFunctionData {
 
     private String name;
     private ComponentObjectType returns;
