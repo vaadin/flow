@@ -27,10 +27,17 @@ else
     then
       modules="$modules -pl flow-client"
     else
-      if [[ $change == *"flow-test-util/"* || $change == *"flow-tests/"* ]]
+      if [[ $change == *"flow-test-util/"* ]]
       then
-        # for flow-tests build test-util also
         modules="$modules -pl flow-test-util"
+      else
+        if [[ $change == *"flow-tests/"* ]]
+        then
+          # Building flow as Expense-manager-imperative fails to get its
+          # flow dependency on travis!
+          # Change this to '-pl flow-tests' when expense manager is removed!
+          modules="$modules -pl flow"
+        fi
       fi
     fi
 
