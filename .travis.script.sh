@@ -33,10 +33,7 @@ else
       else
         if [[ $change == *"flow-tests/"* ]]
         then
-          # Building flow as Expense-manager-imperative fails to get its
-          # flow dependency on travis!
-          # Change this to '-pl flow-tests' when expense manager is removed!
-          modules="$modules -pl flow"
+          modules="$modules -pl flow-tests"
         fi
       fi
     fi
