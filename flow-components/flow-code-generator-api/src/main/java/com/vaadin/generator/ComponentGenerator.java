@@ -124,8 +124,8 @@ public class ComponentGenerator {
             String basePackage) {
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(basePackage).setPublic()
-                .setSuperType(Component.class)
-                .setName(generateJavaClassName(metadata.getName()));
+                .setSuperType(Component.class).setName(ComponentGeneratorUtils
+                        .generateValidJavaClassName(metadata.getName()));
 
         addAnnotation(javaClass, Generated.class,
                 ComponentGenerator.class.getName());
@@ -173,13 +173,16 @@ public class ComponentGenerator {
             String basePackage) {
 
         String source = generateClass(metadata, basePackage);
-        String fileName = generateJavaClassName(metadata.getName()) + ".java";
+        String fileName = ComponentGeneratorUtils
+                .generateValidJavaClassName(metadata.getName()) + ".java";
         try {
             if (!targetPath.isDirectory()) {
                 targetPath.mkdirs();
             }
-            Files.write(new File(convertToDirectory(targetPath, basePackage),
-                    fileName).toPath(), source.getBytes("UTF-8"));
+            Files.write(
+                    new File(ComponentGeneratorUtils.convertPackageToDirectory(
+                            targetPath, basePackage, true), fileName).toPath(),
+                    source.getBytes("UTF-8"));
         } catch (IOException ex) {
             throw new ComponentGenerationException(
                     "Error writing the generated Java source file \"" + fileName
@@ -193,18 +196,6 @@ public class ComponentGenerator {
             Class<? extends Annotation> annotation, String literalValue) {
         javaClass.addAnnotation(annotation)
                 .setLiteralValue("\"" + literalValue + "\"");
-    }
-
-    private String generateJavaClassName(String webcomponentClassName) {
-        return StringUtils.capitalize(
-                formatStringToValidJavaIdentifier(webcomponentClassName));
-    }
-
-    private File convertToDirectory(File basePath, String packageName) {
-        File directory = new File(basePath,
-                packageName.replace('.', File.separatorChar));
-        directory.mkdirs();
-        return directory;
     }
 
     private void generateGetterFor(JavaClassSource javaClass,
@@ -282,8 +273,8 @@ public class ComponentGenerator {
             ComponentFunctionData function) {
 
         MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName(StringUtils.uncapitalize(
-                        formatStringToValidJavaIdentifier(function.getName())))
+                .setName(StringUtils.uncapitalize(ComponentGeneratorUtils
+                        .formatStringToValidJavaIdentifier(function.getName())))
                 .setPublic().setReturnTypeVoid();
 
         StringBuilder params = new StringBuilder();
@@ -292,8 +283,10 @@ public class ComponentGenerator {
 
             for (ComponentFunctionParameterData param : function
                     .getParameters()) {
-                String formattedName = StringUtils.uncapitalize(
-                        formatStringToValidJavaIdentifier(param.getName()));
+                String formattedName = StringUtils
+                        .uncapitalize(ComponentGeneratorUtils
+                                .formatStringToValidJavaIdentifier(
+                                        param.getName()));
                 method.addParameter(toJavaType(param.getType()), formattedName);
                 params.append(", ").append(formattedName);
             }
@@ -307,9 +300,9 @@ public class ComponentGenerator {
             ComponentEventData event) {
 
         MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("add" + StringUtils.capitalize(
-                        formatStringToValidJavaIdentifier(event.getName())
-                                + "Listener"))
+                .setName("add" + StringUtils.capitalize(ComponentGeneratorUtils
+                        .formatStringToValidJavaIdentifier(event.getName())
+                        + "Listener"))
                 .setPublic().setReturnType(Registration.class);
         method.addParameter(DomEventListener.class, "listener");
 
@@ -337,21 +330,4 @@ public class ComponentGenerator {
                     "Not a supported type: " + type);
         }
     }
-
-    private String formatStringToValidJavaIdentifier(String name) {
-        name = name.trim();
-        StringBuilder sb = new StringBuilder();
-        if (!Character.isJavaIdentifierStart(name.charAt(0))) {
-            sb.append('_');
-        }
-        for (char c : name.toCharArray()) {
-            if (!Character.isJavaIdentifierPart(c)) {
-                sb.append('_');
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
 }
