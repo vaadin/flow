@@ -23,21 +23,6 @@ else
   then
     modules="$modules -pl flow-server"
   else
-    if [[ $change == *"flow-client/"* ]]
-    then
-      modules="$modules -pl flow-client"
-    else
-      if [[ $change == *"flow-test-util/"* ]]
-      then
-        modules="$modules -pl flow-test-util"
-      else
-        if [[ $change == *"flow-tests/"* ]]
-        then
-          modules="$modules -pl flow-tests"
-        fi
-      fi
-    fi
-
     if [[ $change == *"flow-html-components/"* ]]
     then
       modules="$modules -pl flow-html-components"
@@ -52,6 +37,21 @@ else
     then
       echo "Setting components flag to true"
       modules="$modules -pl flow-components"
+    fi
+
+    if [[ $change == *"flow-client/"* ]]
+    then
+      modules="$modules -pl flow-client"
+    else
+      if [[ $change == *"flow-test-util/"* ]]
+      then
+        modules="$modules -pl flow-test-util"
+      else
+        if [[ $change == *"flow-tests/"* ]]
+        then
+          modules="$modules -pl flow-tests"
+        fi
+      fi
     fi
   fi
 fi
