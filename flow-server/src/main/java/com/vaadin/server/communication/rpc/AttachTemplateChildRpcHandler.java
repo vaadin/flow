@@ -21,7 +21,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
+import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -38,7 +38,7 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  */
-public class AttachExistingElementByIdRpcHandler
+public class AttachTemplateChildRpcHandler
         extends AbstractRpcInvocationHandler {
 
     @Override
@@ -58,8 +58,8 @@ public class AttachExistingElementByIdRpcHandler
         int assignedId = (int) invocationJson
                 .getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
 
-        AttachExistingElementFeatureById feature = node
-                .getFeature(AttachExistingElementFeatureById.class);
+        AttachTemplateChildFeature feature = node
+                .getFeature(AttachTemplateChildFeature.class);
 
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
