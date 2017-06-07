@@ -1,32 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>flow-project</artifactId>
         <groupId>com.vaadin</groupId>
+        <artifactId>flow-project</artifactId>
         <version>0.1.8-SNAPSHOT</version>
     </parent>
     <artifactId>flow-components</artifactId>
-    <name>Flow Components</name>
+    <name>Flow components</name>
+    <description>Modules for Flow components based on code generation</description>
     <packaging>pom</packaging>
-    <modelVersion>4.0.0</modelVersion>
+
+    <modules>
+        <module>flow-code-generator-api</module>
+        <module>flow-code-generator</module>
+    </modules>
 
     <properties>
+        <frontend.maven.plugin.version>1.4</frontend.maven.plugin.version>
+        <flow.version>${project.version}</flow.version>
         <maven.test.skip>true</maven.test.skip>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
-            <version>0.1.8-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 
     <profiles>
         <profile>
@@ -52,4 +47,5 @@
             </modules>
         </profile>
     </profiles>
+
 </project>
