@@ -70,20 +70,21 @@ public class ComponentGenerator {
      */
     protected ComponentMetadata toMetadata(File jsonFile) {
         try {
-            if (mapper == null) {
-                synchronized (this) {
-                    if (mapper == null) {
-                        JsonFactory factory = new JsonFactory();
-                        factory.enable(JsonParser.Feature.ALLOW_COMMENTS);
-                        mapper = new ObjectMapper(factory);
-                    }
-                }
-            }
-            return mapper.readValue(jsonFile, ComponentMetadata.class);
+            return getObjectMapper().readValue(jsonFile,
+                    ComponentMetadata.class);
         } catch (IOException e) {
             throw new ComponentGenerationException(
                     "Error reading JSON file \"" + jsonFile + "\"", e);
         }
+    }
+
+    private synchronized ObjectMapper getObjectMapper() {
+        if (mapper == null) {
+            JsonFactory factory = new JsonFactory();
+            factory.enable(JsonParser.Feature.ALLOW_COMMENTS);
+            mapper = new ObjectMapper(factory);
+        }
+        return mapper;
     }
 
     /**
@@ -175,10 +176,15 @@ public class ComponentGenerator {
         String source = generateClass(metadata, basePackage);
         String fileName = ComponentGeneratorUtils
                 .generateValidJavaClassName(metadata.getName()) + ".java";
-        try {
-            if (!targetPath.isDirectory()) {
-                targetPath.mkdirs();
+
+        if (!targetPath.isDirectory()) {
+            if (!targetPath.mkdirs()) {
+                throw new ComponentGenerationException(
+                        "Could not create target directory \"" + targetPath
+                                + "\"");
             }
+        }
+        try {
             Files.write(
                     new File(ComponentGeneratorUtils.convertPackageToDirectory(
                             targetPath, basePackage, true), fileName).toPath(),

@@ -16,6 +16,7 @@
 package com.vaadin.generator;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -80,13 +81,20 @@ public final class ComponentGeneratorUtils {
      *            without creating them.
      * @return a new File that represents the final directory of the package,
      *         with basePath as root.
+     * 
+     * @throws IOException
+     *             When createDirectories is <code>true</code> and the target
+     *             directory cannot be created.
      */
     public static File convertPackageToDirectory(File basePath,
-            String packageName, boolean createDirectories) {
+            String packageName, boolean createDirectories) throws IOException {
         File directory = new File(basePath,
                 packageName.replace('.', File.separatorChar));
-        if (createDirectories) {
-            directory.mkdirs();
+        if (createDirectories && !directory.isDirectory()) {
+            if (!directory.mkdirs()) {
+                throw new IOException("Directory \"" + directory
+                        + "\" could not be created.");
+            }
         }
         return directory;
     }

@@ -57,7 +57,7 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
 
         File[] files = sourceDir.listFiles(
                 (dir, pathName) -> pathName.toLowerCase().endsWith(".json"));
-        if (files.length == 0) {
+        if (files == null || files.length == 0) {
             getLog().warn("No JSON files found at " + sourceDir.getName());
             return;
         }
