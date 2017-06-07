@@ -39,7 +39,10 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-public class ExecuteJavaScriptElementUtils {
+public final class ExecuteJavaScriptElementUtils {
+
+    private ExecuteJavaScriptElementUtils() {
+    }
 
     /**
      * Calculate the data required for server side callback to attach existing
@@ -135,6 +138,23 @@ public class ExecuteJavaScriptElementUtils {
                 existingElement);
     }
 
+    /**
+     * Find element by the given {@code path} in the {@code parent} and collect
+     * data required for server side callback to attach existing element and
+     * send it to the server.
+     *
+     * @param parent
+     *            the parent node containing the shadow root containing the
+     *            element requested to attach
+     * @param tagName
+     *            the tag name of the element requested to attach
+     * @param serverSideId
+     *            the identifier of the server side node which is requested to
+     *            be a counterpart of the client side element
+     * @param path
+     *            the path from the {@code parent} template element to the
+     *            element to wire to (consist of indices)
+     */
     public static void attachCustomElement(StateNode parent, String tagName,
             int serverSideId, JsonArray path) {
         Element customElement = getCustomElement(
