@@ -20,7 +20,8 @@ actualCommits=`echo "$actualCommits" | awk '{print $1}' | tr '\n' ' '`
 # Get changed files with full path for branch commits.
 change=`diff <(git show --name-only $actualCommits) <(git show --summary $actualCommits)`
 
-# Collect changed modules to build and build also their required modules
+# Collect changed modules to build and build also modules that depend on the
+# selected modules (see the flag '-amd')
 
 modules=
 if [[ $change == *"flow-push/"* ]]

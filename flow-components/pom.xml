@@ -21,29 +21,9 @@
             <artifactId>flow-server</artifactId>
             <version>0.1.8-SNAPSHOT</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>javax.servlet</groupId>-->
-            <!--<artifactId>javax.servlet-api</artifactId>-->
-            <!--<scope>provided</scope>-->
-        <!--</dependency>-->
     </dependencies>
 
     <profiles>
-        <!--<profile>-->
-            <!--<id>Components-test</id>-->
-            <!--<activation>-->
-                <!--<property>-->
-                    <!--<name>test.components</name>-->
-                    <!--<value>true</value>-->
-                <!--</property>-->
-            <!--</activation>-->
-
-            <!--&lt;!&ndash; Can we get this nicer somehow? &ndash;&gt;-->
-            <!--<properties>-->
-                <!--<maven.test.skip>false</maven.test.skip>-->
-            <!--</properties>-->
-        <!--</profile>-->
-
         <!-- Profile for generating components from Polymer APIs. -->
         <profile>
             <id>generator</id>
