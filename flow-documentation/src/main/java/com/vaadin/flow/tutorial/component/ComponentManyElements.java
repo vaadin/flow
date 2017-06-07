@@ -31,7 +31,8 @@ public class ComponentManyElements {
 
         public TextField() {
             inputElement.synchronizeProperty("value", "change");
-            getElement().appendChild(labelElement, inputElement);
+            labelElement.appendChild(inputElement);
+            getElement().appendChild(labelElement);
         }
 
         public String getLabel() {
@@ -44,6 +45,7 @@ public class ComponentManyElements {
 
         public TextField setLabel(String label) {
             labelElement.setText(label);
+            labelElement.appendChild(inputElement);
             return this;
         }
 
@@ -59,6 +61,7 @@ public class ComponentManyElements {
 
     public void setLabel(String label) {
         labelElement.setText(label);
+        labelElement.appendChild(inputElement);
     }
 
     public void setValue(String value) {

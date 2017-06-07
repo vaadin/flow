@@ -30,7 +30,8 @@ public class TextField extends Component {
 
   public TextField() {
     inputElement.synchronizeProperty("value", "change");
-    getElement().appendChild(labelElement,inputElement);
+    labelElement.appendChild(inputElement);
+    getElement().appendChild(labelElement);
   }
 }
 ----
@@ -46,6 +47,9 @@ You can add API for setting the value of the input and the text of the label, us
   }
   public void setLabel(String label) {
     labelElement.setText(label);
+
+    labelElement.appendChild(inputElement); //needed
+    // because setText removes content by default
   }
   public String getValue() {
     return inputElement.getProperty("value");
@@ -61,6 +65,8 @@ To make it even more convenient to use, the API can be made fluent by making the
 ----
   public TextField setLabel(String label) {
     labelElement.setText(label);
+    labelElement.appendChild(inputElement); //needed
+    // because setText removes content by default
     return this;
   }
   public TextField setValue(String value) {
