@@ -31,6 +31,10 @@
             <exclusions>
                 <exclusion>
                     <groupId>com.vaadin</groupId>
+                    <artifactId>flow</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.vaadin</groupId>
                     <artifactId>flow-html-components</artifactId>
                 </exclusion>
                 <exclusion>
