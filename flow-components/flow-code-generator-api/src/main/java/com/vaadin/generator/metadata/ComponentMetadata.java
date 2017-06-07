@@ -59,7 +59,7 @@ public class ComponentMetadata {
 
     /**
      * Gets the tag name used by the webcomponent. For example "my-component",
-     * which is used at the HTML page as "<my-component>".
+     * which is used at the HTML page as "&lt;my-component&gt;".
      * 
      * @return The tag name of the webcomponent.
      */
@@ -69,7 +69,7 @@ public class ComponentMetadata {
 
     /**
      * Sets the tag name used by the webcomponent. For example "my-component",
-     * which is used at the HTML page as "<my-component>".
+     * which is used at the HTML page as "&lt;my-component&gt;".
      * 
      * @param tag
      *            The tag name of the webcomponent.

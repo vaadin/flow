@@ -28,10 +28,10 @@ public final class ComponentGeneratorUtils {
     }
 
     /**
-     * Creates a valid Java class name based on the Javascript class name.
+     * Creates a valid Java class name based on the ES6 class name.
      * 
-     * @param jsClassName
-     *            The Javascript class name.
+     * @param webcomponentClassName
+     *            The ES6 class name.
      * @return A valid Java class name.
      */
     public static String generateValidJavaClassName(
