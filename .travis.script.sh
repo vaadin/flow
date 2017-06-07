@@ -5,8 +5,17 @@
 # TRAVIS_SECURE_ENV_VARS == true if encrypted variables, e.g. SONAR_HOST is available
 # TRAVIS_REPO_SLUG == the repository, e.g. vaadin/vaadin
 
-# Collect all commit hashes only for this branch. (no-merges or merged pull requests that have '(#' in the comment)
-actualCommits=`git log --no-merges --pretty=oneline master^..HEAD | grep -v "(#" | awk '{print $1}' | tr '\n' ' '`
+# Get all changes to branch (no-merges)
+actualCommits=`git log --no-merges --pretty=oneline master^..HEAD`
+
+# If running a pull request drop merged pull requests that have '(#' in the comment)
+if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]
+then
+  actualCommits=`echo "$actualCommits" | grep -v "(#"`
+fi
+
+#Collect commit hashes
+actualCommits=`echo "$actualCommits" | awk '{print $1}' | tr '\n' ' '`
 
 # Get changed files with full path for branch commits.
 change=`diff <(git show --name-only $actualCommits) <(git show --summary $actualCommits)`
