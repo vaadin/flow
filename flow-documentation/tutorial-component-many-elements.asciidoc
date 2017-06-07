@@ -47,6 +47,9 @@ You can add API for setting the value of the input and the text of the label, us
   }
   public void setLabel(String label) {
     labelElement.setText(label);
+    
+    labelElement.appendChild(inputElement); //needed
+    // because setText removes content by default
   }
   public String getValue() {
     return inputElement.getProperty("value");
