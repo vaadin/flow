@@ -30,7 +30,8 @@ public class TextField extends Component {
 
   public TextField() {
     inputElement.synchronizeProperty("value", "change");
-    getElement().appendChild(labelElement,inputElement);
+    labelElement.appendChild(inputElement);
+    getElement().appendChild(labelElement);
   }
 }
 ----
