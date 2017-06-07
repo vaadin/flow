@@ -53,12 +53,12 @@ public final class ComponentGeneratorUtils {
      * @see Character#isJavaIdentifierPart(char)
      */
     public static String formatStringToValidJavaIdentifier(String name) {
-        name = name.trim();
+        String trimmed = name.trim();
         StringBuilder sb = new StringBuilder();
-        if (!Character.isJavaIdentifierStart(name.charAt(0))) {
+        if (!Character.isJavaIdentifierStart(trimmed.charAt(0))) {
             sb.append('_');
         }
-        for (char c : name.toCharArray()) {
+        for (char c : trimmed.toCharArray()) {
             if (!Character.isJavaIdentifierPart(c)) {
                 sb.append('_');
             } else {
@@ -90,11 +90,10 @@ public final class ComponentGeneratorUtils {
             String packageName, boolean createDirectories) throws IOException {
         File directory = new File(basePath,
                 packageName.replace('.', File.separatorChar));
-        if (createDirectories && !directory.isDirectory()) {
-            if (!directory.mkdirs()) {
-                throw new IOException("Directory \"" + directory
-                        + "\" could not be created.");
-            }
+        if (createDirectories && !directory.isDirectory()
+                && !directory.mkdirs()) {
+            throw new IOException(
+                    "Directory \"" + directory + "\" could not be created.");
         }
         return directory;
     }

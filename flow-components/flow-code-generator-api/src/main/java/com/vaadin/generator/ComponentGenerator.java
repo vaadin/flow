@@ -177,12 +177,9 @@ public class ComponentGenerator {
         String fileName = ComponentGeneratorUtils
                 .generateValidJavaClassName(metadata.getName()) + ".java";
 
-        if (!targetPath.isDirectory()) {
-            if (!targetPath.mkdirs()) {
-                throw new ComponentGenerationException(
-                        "Could not create target directory \"" + targetPath
-                                + "\"");
-            }
+        if (!targetPath.isDirectory() && !targetPath.mkdirs()) {
+            throw new ComponentGenerationException(
+                    "Could not create target directory \"" + targetPath + "\"");
         }
         try {
             Files.write(
