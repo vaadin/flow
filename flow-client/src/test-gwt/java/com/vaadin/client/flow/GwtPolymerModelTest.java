@@ -258,9 +258,6 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 WidgetUtil.getJsProperty(element,
                         "propertiesChangedCallCount"));
         assertEquals(
-                "No ready() calls should be made due to late element initialization",
-                0.0, WidgetUtil.getJsProperty(element, "readyCallCount"));
-        assertEquals(
                 "Exactly one `whenDefined.then` callback should be called after element was initialized",
                 1.0, WidgetUtil.getJsProperty(element, "callbackCallCount"));
     }
@@ -271,11 +268,6 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element.propertiesChangedCallCount = 0;
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
-        };
-
-        element.readyCallCount = 0;
-        element.ready = function() {
-            element.readyCallCount += 1;
         };
 
         element.callbackCallCount = 0;
