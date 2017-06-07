@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
+import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -80,7 +80,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
             ClientDelegateHandlers.class, PolymerEventListenerMap.class,
             ShadowRootData.class, AttachExistingElementFeature.class,
-            AttachExistingElementFeatureById.class };
+            AttachTemplateChildFeature.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist

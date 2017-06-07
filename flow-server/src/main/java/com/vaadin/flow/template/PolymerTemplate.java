@@ -31,7 +31,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
+import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.ListModelType;
 import com.vaadin.flow.template.model.ModelDescriptor;
@@ -297,7 +297,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
         StateNode node = getElement().getNode();
         node.runWhenAttached(ui -> {
-            node.getFeature(AttachExistingElementFeatureById.class)
+            node.getFeature(AttachTemplateChildFeature.class)
                     .register(getElement(), proposedNode);
             ui.getPage().executeJavaScript(
                     "this.attachExistingElementById($0, $1, $2, $3);",

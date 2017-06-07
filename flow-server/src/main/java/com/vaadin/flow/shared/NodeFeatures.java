@@ -16,7 +16,7 @@
 package com.vaadin.flow.shared;
 
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
+import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.BasicTypeValue;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
@@ -177,7 +177,7 @@ public class NodeFeatures {
     public static final int ATTACH_EXISTING_ELEMENT = 27;
 
     /**
-     * Id for {@link AttachExistingElementFeatureById}.
+     * Id for {@link AttachTemplateChildFeature}.
      */
     public static final int ATTACH_EXISTING_ELEMENT_BY_ID = 28;
 
