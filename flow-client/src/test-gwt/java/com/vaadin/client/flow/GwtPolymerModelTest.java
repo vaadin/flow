@@ -220,7 +220,8 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
         JsonValue jsonValue = PolymerUtils.convertToJson(andAttachNodeWithList);
 
-        assertTrue("Expected instance of JsonObject from converter, but was not.",
+        assertTrue(
+                "Expected instance of JsonObject from converter, but was not.",
                 jsonValue instanceof JsonObject);
         double nodeId = ((JsonObject) jsonValue).getNumber("nodeId");
         assertFalse(
@@ -228,6 +229,80 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
                 jsonValue.toJson().contains(Double.toString(nodeId)));
         assertEquals("Found nodeId didn't match the set nodeId", 98.0, nodeId);
     }
+
+    public void testLatePolymerInit() {
+        emulatePolymerNotLoaded();
+        addMockMethods(element);
+
+        String propertyName = "black";
+        String propertyValue = "coffee";
+        setModelProperty(node, propertyName, propertyValue);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+        assertEquals(
+                "Expected to have property with name " + propertyName
+                        + " defined after initial binding",
+                propertyValue, WidgetUtil.getJsProperty(element, propertyName));
+
+        String newPropertyValue = "bubblegum";
+        emulatePolymerPropertyChange(element, propertyName, newPropertyValue);
+        Reactive.flush();
+        assertEquals(
+                "Expected to have property with name " + propertyName
+                        + " updated from client side",
+                newPropertyValue,
+                WidgetUtil.getJsProperty(element, propertyName));
+
+        assertEquals("`_propertiesChanged` should be triggered exactly once", 1.0,
+                WidgetUtil.getJsProperty(element,
+                        "propertiesChangedCallCount"));
+        assertEquals(
+                "No ready() calls should be made due to late element initialization",
+                0.0, WidgetUtil.getJsProperty(element, "readyCallCount"));
+        assertEquals(
+                "Exactly one `whenDefined.then` callback should be called after element was initialized",
+                1.0, WidgetUtil.getJsProperty(element, "callbackCallCount"));
+    }
+
+    ////////////////////////
+    private native void addMockMethods(Element element)
+    /*-{
+        element.propertiesChangedCallCount = 0;
+        element._propertiesChanged = function() {
+            element.propertiesChangedCallCount += 1;
+        };
+
+        element.readyCallCount = 0;
+        element.ready = function() {
+            element.readyCallCount += 1;
+        };
+
+        element.callbackCallCount = 0;
+        $wnd.customElements = {
+            whenDefined: function() {
+                return {
+                    then: function (callback) {
+                        element.callbackCallCount += 1;
+                        callback();
+                    }
+                }
+            }
+        };
+    }-*/;
+
+    private native void emulatePolymerNotLoaded()
+    /*-{
+        $wnd.Polymer = null;
+    }-*/;
+
+    private native void emulatePolymerPropertyChange(Element element,
+            String propertyName, String newPropertyValue)
+    /*-{
+        var changedProperties = {};
+        changedProperties[propertyName] = newPropertyValue;
+        element._propertiesChanged({}, changedProperties, {});
+    }-*/;
 
     @Override
     protected StateNode createNode() {
@@ -238,8 +313,6 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         newNode.getMap(NodeFeatures.ELEMENT_DATA);
         return newNode;
     }
-
-    ////////////////////////
 
     private void assertUpdateListValues(StateNode nodeWithList) {
         Binder.bind(node, element);
@@ -282,7 +355,9 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     }
 
     private Element createHtmlElement() {
-        Element element = Browser.getDocument().createElement("div");
+        String name = "custom-div";
+        Element element = Browser.getDocument().createElement(name);
+        WidgetUtil.setJsProperty(element, "localName", name);
         setupSetMethod(element, PROPERTY_PREFIX);
         setupMockSpliceMethod(element);
         return element;
@@ -376,7 +451,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     /*-{
         $wnd.Polymer = function() {};
         $wnd.Polymer.Element = {};
-        $wnd.Polymer.version="2.0.0";
+        $wnd.Polymer.version="2.0.1";
         element.__proto__ = $wnd.Polymer.Element;
     }-*/;
 }
