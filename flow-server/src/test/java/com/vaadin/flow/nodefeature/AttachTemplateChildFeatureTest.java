@@ -22,12 +22,12 @@ import org.mockito.Mockito;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 
-public class AttachExistingElementFeatureByIdTest {
+public class AttachTemplateChildFeatureTest {
 
     @Test
     public void register_dataIsAvailaleByNode() {
         StateNode node = new StateNode();
-        AttachExistingElementFeatureById feature = new AttachExistingElementFeatureById(
+        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
                 node);
 
         StateNode child = Mockito.mock(StateNode.class);
@@ -43,7 +43,7 @@ public class AttachExistingElementFeatureByIdTest {
     @Test
     public void unregister_dataIsNotAvailaleByNode() {
         StateNode node = new StateNode();
-        AttachExistingElementFeatureById feature = new AttachExistingElementFeatureById(
+        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
                 node);
 
         StateNode child = Mockito.mock(StateNode.class);

@@ -25,17 +25,17 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
+import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-public class AttachExistingElementByIdRpcHandlerTest {
+public class AttachTemplateChildRpcHandlerTest {
 
     @Test(expected = IllegalStateException.class)
     public void handleNode_error() {
-        AttachExistingElementByIdRpcHandler handler = new AttachExistingElementByIdRpcHandler();
+        AttachTemplateChildRpcHandler handler = new AttachTemplateChildRpcHandler();
 
         int requestedId = 1;
         JsonObject object = Json.createObject();
@@ -54,13 +54,13 @@ public class AttachExistingElementByIdRpcHandlerTest {
         Element parentElement = Mockito.mock(Element.class);
         ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
 
-        AttachExistingElementFeatureById feature = new AttachExistingElementFeatureById(
+        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
                 node);
         feature.register(parentElement, requested);
 
         Mockito.when(parentElement.getShadowRoot())
                 .thenReturn(Optional.of(shadowRoot));
-        Mockito.when(node.getFeature(AttachExistingElementFeatureById.class))
+        Mockito.when(node.getFeature(AttachTemplateChildFeature.class))
                 .thenReturn(feature);
         Mockito.when(parentElement.getNode()).thenReturn(parentNode);
         Mockito.when(parentNode.getId()).thenReturn(3);
@@ -72,7 +72,7 @@ public class AttachExistingElementByIdRpcHandlerTest {
 
     @Test
     public void handleNode_requestedIdEqualsAssignedId() {
-        AttachExistingElementByIdRpcHandler handler = new AttachExistingElementByIdRpcHandler();
+        AttachTemplateChildRpcHandler handler = new AttachTemplateChildRpcHandler();
 
         int requestedId = 1;
         JsonObject object = Json.createObject();
@@ -91,7 +91,7 @@ public class AttachExistingElementByIdRpcHandlerTest {
 
         Mockito.when(requested.hasFeature(Mockito.any())).thenReturn(true);
 
-        AttachExistingElementFeatureById feature = new AttachExistingElementFeatureById(
+        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
                 node);
         Element parentNode = Mockito.mock(Element.class);
         ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
@@ -99,7 +99,7 @@ public class AttachExistingElementByIdRpcHandlerTest {
                 .thenReturn(Optional.of(shadowRoot));
 
         feature.register(parentNode, requested);
-        Mockito.when(node.getFeature(AttachExistingElementFeatureById.class))
+        Mockito.when(node.getFeature(AttachTemplateChildFeature.class))
                 .thenReturn(feature);
 
         handler.handleNode(node, object);
@@ -110,7 +110,7 @@ public class AttachExistingElementByIdRpcHandlerTest {
 
     @Test
     public void handleNode_requestedIdAndAssignedIdAreDifferent() {
-        AttachExistingElementByIdRpcHandler handler = new AttachExistingElementByIdRpcHandler();
+        AttachTemplateChildRpcHandler handler = new AttachTemplateChildRpcHandler();
 
         int requestedId = 1;
         int assignedId = 2;
@@ -132,7 +132,7 @@ public class AttachExistingElementByIdRpcHandlerTest {
 
         Mockito.when(assigned.hasFeature(Mockito.any())).thenReturn(true);
 
-        AttachExistingElementFeatureById feature = new AttachExistingElementFeatureById(
+        AttachTemplateChildFeature feature = new AttachTemplateChildFeature(
                 node);
         Element parentNode = Mockito.mock(Element.class);
         ShadowRoot shadowRoot = Mockito.mock(ShadowRoot.class);
@@ -140,7 +140,7 @@ public class AttachExistingElementByIdRpcHandlerTest {
                 .thenReturn(Optional.of(shadowRoot));
 
         feature.register(parentNode, requested);
-        Mockito.when(node.getFeature(AttachExistingElementFeatureById.class))
+        Mockito.when(node.getFeature(AttachTemplateChildFeature.class))
                 .thenReturn(feature);
 
         handler.handleNode(node, object);
@@ -151,7 +151,7 @@ public class AttachExistingElementByIdRpcHandlerTest {
     }
 
     private void assertNodeIsUnregistered(StateNode node, StateNode requested,
-            AttachExistingElementFeatureById feature) {
+            AttachTemplateChildFeature feature) {
         Mockito.verify(requested).setParent(null);
         Assert.assertNull(feature.getParent(requested));
     }
