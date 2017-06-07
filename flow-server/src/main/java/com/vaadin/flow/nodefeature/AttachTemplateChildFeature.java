@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.Node;
  * @author Vaadin Ltd
  *
  */
-public class AttachExistingElementFeatureById extends ServerSideFeature {
+public class AttachTemplateChildFeature extends ServerSideFeature {
 
     private Map<StateNode, Element> parentNodes = new HashMap<>();
 
@@ -43,7 +43,7 @@ public class AttachExistingElementFeatureById extends ServerSideFeature {
      * @param node
      *            the node that the feature belongs to
      */
-    public AttachExistingElementFeatureById(StateNode node) {
+    public AttachTemplateChildFeature(StateNode node) {
         super(node);
     }
 

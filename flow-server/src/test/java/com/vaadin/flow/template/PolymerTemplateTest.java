@@ -32,7 +32,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
+import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.ui.Component;
@@ -180,8 +180,8 @@ public class PolymerTemplateTest {
         UI ui = new UI();
         ui.add(template);
 
-        AttachExistingElementFeatureById feature = template.getElement()
-                .getNode().getFeature(AttachExistingElementFeatureById.class);
+        AttachTemplateChildFeature feature = template.getElement()
+                .getNode().getFeature(AttachTemplateChildFeature.class);
         AtomicInteger counter = new AtomicInteger(0);
         feature.forEachChild(child -> counter.incrementAndGet());
         Assert.assertEquals(1, counter.get());
