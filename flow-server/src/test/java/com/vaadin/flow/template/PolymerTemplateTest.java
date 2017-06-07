@@ -45,6 +45,7 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.CustomElementRegistry;
+import com.vaadin.server.CustomElementRegistryAccess;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
@@ -165,13 +166,11 @@ public class PolymerTemplateTest {
 
     @Before
     public void setUp() {
-        if (!CustomElementRegistry.getInstance()
-                .isRegisteredCustomElement("ffs")) {
-            Map<String, Class<? extends Component>> map = new HashMap<>();
-            map.put("child-template", TemplateChild.class);
-            map.put("ffs", TestPolymerTemplate.class);
-            CustomElementRegistry.getInstance().setCustomElements(map);
-        }
+        CustomElementRegistryAccess.resetRegistry();
+        Map<String, Class<? extends Component>> map = new HashMap<>();
+        map.put("child-template", TemplateChild.class);
+        map.put("ffs", TestPolymerTemplate.class);
+        CustomElementRegistry.getInstance().setCustomElements(map);
     }
 
     @Tag(TAG)
