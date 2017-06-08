@@ -78,9 +78,16 @@ then
     # Trigger Sonar analysis
     # Verify build and build javadoc
     mvn -B -e -V -P validation -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= clean  org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
-    # Execute sonar
-    echo "Running Sonar"
-    mvn -B -e -V -Dsonar.verbose=true -Dsonar.analysis.mode=issues -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.host.url=$SONAR_HOST -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH -Dsonar.login=$SONAR_LOGIN -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST sonar:sonar
+    # Get the status for the previous maven command and if not exception then run sonar.
+    STATUS=$?
+    if [ $STATUS -eq 0 ]
+    then
+        # Run sonar
+        echo "Running Sonar"
+        mvn -B -e -V -Dsonar.verbose=true -Dsonar.analysis.mode=issues -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.host.url=$SONAR_HOST -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH -Dsonar.login=$SONAR_LOGIN -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST sonar:sonar
+    else
+        exit 1
+    fi
 elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
 then
     # master build
