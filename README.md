@@ -3,7 +3,7 @@ Flow
 *[Flow](https://vaadin.com) is a Java framework for building modern web sites that look great, perform well and make you and your users happy.*
 
 For instructions about _using_ Flow to develop applications, please refer to
-https://vaadin.com/
+https://github.com/vaadin/flow/tree/master/flow-documentation
 
 To contribute, first refer to https://vaadin.com/wiki/-/wiki/Main/Contributing+Code
 for general instructions and requirements for contributing code to Flow.
