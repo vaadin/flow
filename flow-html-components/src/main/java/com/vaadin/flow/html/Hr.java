@@ -24,6 +24,7 @@ import com.vaadin.annotations.Tag;
  */
 @Tag(Tag.HR)
 public class Hr extends HtmlComponent {
+    
     /**
      * Creates a new hr.
      */
