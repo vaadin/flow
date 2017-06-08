@@ -1,3 +1,5 @@
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vaadin-flow/Lobby#?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Flow
 ======
 *[Flow](https://vaadin.com) is a Java framework for building modern web sites that look great, perform well and make you and your users happy.*
