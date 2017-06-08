@@ -22,29 +22,7 @@ package com.vaadin.generator.metadata;
  */
 public class ComponentPropertyData extends ComponentPropertyBaseData {
 
-    private String documentation;
     private boolean readOnly;
-
-    /**
-     * Gets the public documentation of the property, that can be used to
-     * generate the corresponding Javadoc at the Java class.
-     * 
-     * @return The property-level documentation.
-     */
-    public String getDocumentation() {
-        return documentation;
-    }
-
-    /**
-     * Sets the public documentation of the property, that can be used to
-     * generate the corresponding Javadoc at the Java class.
-     * 
-     * @param documentation
-     *            The property-level documentation.
-     */
-    public void setDocumentation(String documentation) {
-        this.documentation = documentation;
-    }
 
     /**
      * Gets whether the property is read-only or not. Read-only properties
