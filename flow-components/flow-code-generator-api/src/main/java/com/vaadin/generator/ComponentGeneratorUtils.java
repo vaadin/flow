@@ -42,6 +42,19 @@ public final class ComponentGeneratorUtils {
     }
 
     /**
+     * Formats property name to valid java identifier with CamelCase
+     *
+     * @param prefix property prefix (e.g. set, get, is etc.), not <code>null</code>
+     * @param propertyName property name to convert
+     */
+    public static String formatPropertyName(String prefix,
+            String propertyName) {
+        assert prefix != null : "prefix should not be null";
+        return prefix + StringUtils
+                .capitalize(formatStringToValidJavaIdentifier(propertyName));
+    }
+
+    /**
      * Formats a given name (which can be a property name, function name or
      * event name) to a valid Java identifier.
      * 
@@ -58,9 +71,16 @@ public final class ComponentGeneratorUtils {
         if (!Character.isJavaIdentifierStart(trimmed.charAt(0))) {
             sb.append('_');
         }
+
+        boolean toTitleCase = false;
+
         for (char c : trimmed.toCharArray()) {
-            if (!Character.isJavaIdentifierPart(c)) {
-                sb.append('_');
+            if (!Character.isJavaIdentifierPart(c) || Character
+                    .getType(c) == Character.CONNECTOR_PUNCTUATION) {
+                toTitleCase = true;
+            } else if (toTitleCase) {
+                sb.append(Character.toTitleCase(c));
+                toTitleCase = false;
             } else {
                 sb.append(c);
             }
