@@ -311,7 +311,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
     /*-{
         element.$ = function() {
             return element;
-        }
+        };
         element.root = element;
     }-*/;
 

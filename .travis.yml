@@ -13,6 +13,10 @@ addons:
 
 before_install: ./.travis.before_install.sh
 
+# Skip the installation step.
+# https://docs.travis-ci.com/user/customizing-the-build#Skipping-the-Installation-Step
+install: true
+
 # Make Chrome IT tests more stable
 # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
 before_script:

@@ -21,7 +21,6 @@
         <!--<module>test-performance</module>-->
         <module>test-scalability</module>
         <module>test-memory-leaks</module>
-        <module>test-expense-manager-imperative</module>
     </modules>
 
     <properties>
@@ -145,7 +144,20 @@
             </plugins>
         </pluginManagement>
     </build>
+
     <profiles>
+        <profile>
+            <id>expense-manager</id>
+            <activation>
+                <property>
+                    <name>gatling.skip</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <modules>
+                <module>test-expense-manager-imperative</module>
+            </modules>
+        </profile>
         <profile>
             <id>eclipse</id>
             <build>
