@@ -15,35 +15,28 @@
  */
 package com.vaadin.generator;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.nio.file.Files;
-import java.util.Date;
-
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.annotations.Tag;
+import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.generator.exception.ComponentGenerationException;
+import com.vaadin.generator.metadata.*;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.generator.exception.ComponentGenerationException;
-import com.vaadin.generator.metadata.ComponentEventData;
-import com.vaadin.generator.metadata.ComponentFunctionData;
-import com.vaadin.generator.metadata.ComponentFunctionParameterData;
-import com.vaadin.generator.metadata.ComponentMetadata;
-import com.vaadin.generator.metadata.ComponentObjectType;
-import com.vaadin.generator.metadata.ComponentPropertyData;
-import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import javax.annotation.Generated;
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.util.Date;
 
 /**
  * Base class of the component generation process. It takes a
@@ -130,7 +123,7 @@ public class ComponentGenerator {
 
         addAnnotation(javaClass, Generated.class,
                 ComponentGenerator.class.getName());
-        addAnnotation(javaClass, Generated.class, metadata.getTag());
+        addAnnotation(javaClass, Tag.class, metadata.getTag());
 
         if (metadata.getProperties() != null) {
             for (ComponentPropertyData property : metadata.getProperties()) {
@@ -142,8 +135,8 @@ public class ComponentGenerator {
             }
         }
 
-        if (metadata.getFunctions() != null) {
-            for (ComponentFunctionData function : metadata.getFunctions()) {
+        if (metadata.getMethods() != null) {
+            for (ComponentFunctionData function : metadata.getMethods()) {
                 generateFunctionFor(javaClass, function);
             }
         }

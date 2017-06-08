@@ -15,9 +15,9 @@
  */
 package com.vaadin.generator.metadata;
 
-import java.util.List;
-
 import com.vaadin.ui.HasComponents;
+
+import java.util.List;
 
 /**
  * Base class of the representation of a webcomponent for the code generator. It
@@ -30,9 +30,10 @@ public class ComponentMetadata {
     private String tag;
     private String name;
     private String version;
-    private String documentation;
+    private String description;
+    private String baseUrl;
     private List<ComponentPropertyData> properties;
-    private List<ComponentFunctionData> functions;
+    private List<ComponentFunctionData> methods;
     private List<ComponentEventData> events;
     private List<String> behaviors;
 
@@ -146,47 +147,47 @@ public class ComponentMetadata {
     }
 
     /**
-     * Gets the public documentation of the webcomponent, that can be used to
+     * Gets the public description of the webcomponent, that can be used to
      * generate the corresponding Javadoc at the Java class.
      * 
-     * @return The class-level documentation of the webcomponent.
+     * @return The class-level description of the webcomponent.
      */
-    public String getDocumentation() {
-        return documentation;
+    public String getDescription() {
+        return description;
     }
 
     /**
-     * Sets the public documentation of the webcomponent, that can be used to
+     * Sets the public description of the webcomponent, that can be used to
      * generate the corresponding Javadoc at the Java class.
      * 
-     * @param documentation
-     *            The class-level documentation of the webcomponent.
+     * @param description
+     *            The class-level description of the webcomponent.
      */
-    public void setDocumentation(String documentation) {
-        this.documentation = documentation;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
-     * Gets the list of exposed functions of the webcomponent, that can be
+     * Gets the list of exposed methods of the webcomponent, that can be
      * called from the corresponding Java class. Each function is represented by
      * the {@link ComponentFunctionData} object.
      * 
-     * @return The list of exposed functions.
+     * @return The list of exposed methods.
      */
-    public List<ComponentFunctionData> getFunctions() {
-        return functions;
+    public List<ComponentFunctionData> getMethods() {
+        return methods;
     }
 
     /**
-     * Sets the list of exposed functions of the webcomponent, that can be
+     * Sets the list of exposed methods of the webcomponent, that can be
      * called from the corresponding Java class. Each function is represented by
      * the {@link ComponentFunctionData} object.
      * 
-     * @param functions
-     *            The list of exposed functions.
+     * @param methods
+     *            The list of exposed methods.
      */
-    public void setFunctions(List<ComponentFunctionData> functions) {
-        this.functions = functions;
+    public void setMethods(List<ComponentFunctionData> methods) {
+        this.methods = methods;
     }
 
     /**
@@ -212,4 +213,25 @@ public class ComponentMetadata {
         this.events = events;
     }
 
+    /**
+     * Gets the baseUrl of the web component, which is the path to the WC file.
+     * <p>
+     * E.g. "paper-input/paper-input.html"
+     *
+     * @return the baseUrl of the web component source file
+     */
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    /**
+     * Sets the baseUrl of the web component, which is the path to the WC file.
+     * <p>
+     * E.g. "paper-input/paper-input.html"
+     *
+     * @param baseUrl the base url to set
+     */
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 }

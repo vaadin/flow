@@ -9,22 +9,10 @@
         <version>0.1.9-SNAPSHOT</version>
     </parent>
     <artifactId>flow-polymer-api-reader</artifactId>
-    <name>Polymer API Reader</name>
-    <description>Reads Polymer Elements APIs with Polymer Analyzer</description>
+    <name>Flow WebComponent API Analyzer</name>
+    <description>Reads WebComponent APIs with Polymer Analyzer and Transform them to Json for Component Generator</description>
     <!-- Versioning doesn't follow Flow Core. -->
     <version>0.0.1-SNAPSHOT</version>
-    
-    <properties>
-        <reader.output.directory>src/main</reader.output.directory>
-    </properties>
-    
-    <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-html-components</artifactId>
-            <version>0.1.9-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
@@ -68,26 +56,14 @@
                         <phase>generate-sources</phase>
                         <configuration>
                             <!-- TODO need to figure out how to pass command line parameters
-                             from maven calls to this, such as what packages to create 
-                             and what should be the output folder. See bin/flow-polymer-api-reader.js
+                             from maven calls to this, such as what packages to create
+                             and what should be the output folder. See flow-wc-api-analyzer.js
                              for current defaults. -->
-                            <!-- This argument matches to the "scripts" defined 
+                            <!-- This argument matches to the "scripts" defined
                              in package.json file. -->
                             <arguments>run-script
-                                flow-polymer-api-reader</arguments>
+                                flow-components</arguments>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -98,10 +74,16 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${reader.output.directory}</directory>
+                            <directory>generated-json</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>dependencies</directory>
                         </fileset>
                         <fileset>
                             <directory>node_modules</directory>
+                        </fileset>
+                        <fileset>
+                            <directory>bower_components</directory>
                         </fileset>
                     </filesets>
                 </configuration>
