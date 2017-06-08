@@ -20,7 +20,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,7 +75,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            a template parser
      */
     public PolymerTemplate(TemplateParser parser) {
-        Predicate<String> idVerifier = parseTemplate(
+        Function<String, Optional<String>> idVerifier = parseTemplate(
                 parser.getTemplateContent(getClass(), getElement().getTag()));
         // This a workaround to propagate model to a Polymer template.
         // Correct implementation will follow in
@@ -199,10 +199,11 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     /* Map declared fields marked @Id */
 
-    private void mapComponents(Class<?> cls, Predicate<String> idVerifier) {
+    private void mapComponents(Class<?> cls,
+            Function<String, Optional<String>> tagProvider) {
         if (!AbstractTemplate.class.equals(cls.getSuperclass())) {
             // Parent fields
-            mapComponents(cls.getSuperclass(), idVerifier);
+            mapComponents(cls.getSuperclass(), tagProvider);
         }
 
         Stream<Field> annotatedComponentFields = Stream
@@ -210,44 +211,61 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 .filter(field -> !field.isSynthetic());
 
         annotatedComponentFields
-                .forEach(field -> tryMapComponentOrElement(field, idVerifier));
+                .forEach(field -> tryMapComponentOrElement(field, tagProvider));
     }
 
     @SuppressWarnings("unchecked")
     private void tryMapComponentOrElement(Field field,
-            Predicate<String> idVerifier) {
+            Function<String, Optional<String>> tagProvider) {
         Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
                 Id.class);
         if (!idAnnotation.isPresent()) {
             return;
         }
         String id = idAnnotation.get().value();
-        if (!idVerifier.test(id)) {
+        Optional<String> tagName = tagProvider.apply(id);
+        if (!tagName.isPresent()) {
             throw new IllegalStateException(String.format(
                     "There is no element with "
                             + "id='%s' in the template file. Cannot map it using @%s",
                     id, Id.class.getSimpleName()));
         }
 
-        Class<?> fieldType = field.getType();
-
         Element element = getElementById(id).orElse(null);
 
-        if (element != null && getElement().equals(element)) {
+        if (element == null) {
+            injectClientSideElement(tagName.get(), id, field);
+        } else {
+            injectServerSideElement(element, field);
+        }
+    }
+
+    private void injectServerSideElement(Element element, Field field) {
+        if (getElement().equals(element)) {
             throw new IllegalArgumentException(
                     "Cannot map the root element of the template. "
                             + "This is always mapped to the template instance itself ("
                             + getClass().getName() + ")");
-        } else if (!fieldType.isAnnotationPresent(Tag.class)) {
-            String msg = String.format(
-                    "Cannot instantiate element without tagName for '%s' defined for field '%s' found in class '%s'",
-                    fieldType.getName(), field.getName(), getClass().getName());
-            throw new IllegalArgumentException(msg);
+        } else if (element != null) {
+            handleAttach(element, field);
         }
+    }
+
+    private void injectClientSideElement(String tagName, String id,
+            Field field) {
+        Class<?> fieldType = field.getType();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
-
-        attachExistingElementById(tag.value(), id, field);
+        if (tag != null && !tagName.equalsIgnoreCase(tag.value())) {
+            String msg = String.format(
+                    "Class '%s' has field '%s' whose type '%s' is annotated with "
+                            + "tag '%s' but the element defined in the HTML "
+                            + "template with id '%s' has tag name '%s'",
+                    getClass().getName(), field.getName(), fieldType.getName(),
+                    tag.value(), id, tagName);
+            throw new IllegalStateException(msg);
+        }
+        attachExistingElementById(tagName, id, field);
     }
 
     private Optional<Element> getElementById(String id) {
@@ -345,13 +363,14 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         }
     }
 
-    private Predicate<String> parseTemplate(
+    private Function<String, Optional<String>> parseTemplate(
             com.vaadin.external.jsoup.nodes.Element element) {
         Elements templates = element.getElementsByTag("template");
         if (!templates.isEmpty()) {
             inspectCustomElements(templates.get(0), templates.get(0));
         }
-        return id -> element.getElementById(id) != null;
+        return id -> Optional.ofNullable(element.getElementById(id))
+                .map(com.vaadin.external.jsoup.nodes.Element::tagName);
     }
 
     private void inspectCustomElements(Node node,

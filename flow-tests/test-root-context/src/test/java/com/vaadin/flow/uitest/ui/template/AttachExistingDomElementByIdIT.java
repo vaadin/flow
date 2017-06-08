@@ -17,19 +17,13 @@ package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Test;
 
-public class AttachExistingElementByIdIT
+public class AttachExistingDomElementByIdIT
         extends AbstractAttachExistingElementByIdIT {
 
     @Test
     public void elementsAreBoundOnTheServerSide() {
         open();
 
-        assertTemplate("simple-path");
-        assertTemplate("context-path");
-        assertTemplate("frontend-path");
-    }
-
-    private void assertTemplate(String id) {
-        assertTemplate(id, "default", "Type here to update label");
+        assertTemplate("template", "bar", "Foo");
     }
 }
