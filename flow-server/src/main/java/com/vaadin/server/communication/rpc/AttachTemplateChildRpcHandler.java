@@ -72,10 +72,17 @@ public class AttachTemplateChildRpcHandler
 
             feature.unregister(requestedNode);
 
-            throw new IllegalStateException(String.format(
-                    "The element with the tag name '%s' and id '%s' was "
-                            + "not found in the parent with id='%d'",
-                    tag, id, parent.getNode().getId()));
+            if (id == null) {
+                throw new IllegalStateException(String.format(
+                        "The element with the tag name '%s' was "
+                                + "not found in the parent with id='%d'",
+                        tag, parent.getNode().getId()));
+            } else {
+                throw new IllegalStateException(String.format(
+                        "The element with the tag name '%s' and id '%s' was "
+                                + "not found in the parent with id='%d'",
+                        tag, id, parent.getNode().getId()));
+            }
 
         } else {
             StateNode elementNode = tree.getNodeById(assignedId);

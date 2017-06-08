@@ -100,7 +100,7 @@ public class NodeFeatureTest {
         expectedIds.put(AttachExistingElementFeature.class,
                 NodeFeatures.ATTACH_EXISTING_ELEMENT);
         expectedIds.put(AttachTemplateChildFeature.class,
-                NodeFeatures.ATTACH_EXISTING_ELEMENT_BY_ID);
+                NodeFeatures.ATTACH_TEMPLATE_CHILD_ELEMENT);
         expectedIds.put(VirtualChildrenList.class,
                 NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
         expectedIds.put(BasicTypeValue.class, NodeFeatures.BASIC_TYPE_VALUE);

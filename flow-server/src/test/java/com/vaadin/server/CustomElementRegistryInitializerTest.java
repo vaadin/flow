@@ -41,7 +41,7 @@ public class CustomElementRegistryInitializerTest {
 
     @Before
     public void setup() {
-        CustomElementRegistry.getInstance().initialized = false;
+        CustomElementRegistryAccess.resetRegistry();
     }
 
     @Test
