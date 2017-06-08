@@ -31,9 +31,9 @@
     </dependencies>
 
     <profiles>
-        <!-- Profile for generating components from Polymer APIs. -->
+        <!-- Profile for generating components from WC APIs. -->
         <profile>
-            <id>generator</id>
+            <id>analyzer</id>
             <modules>
                 <module>flow-polymer-api-reader</module>
             </modules>

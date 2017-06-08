@@ -1,15 +1,24 @@
-# Vaadin Flow Polymer API Reader
+# Vaadin Flow WebComponent API Analyzer
 
-Vaadin Flow Polymer API Reader is a tool that reads Web Components as input and outputs data that can be used by a Java code generation tool (WIP) that produces Flow Component APIs.
-Currently the reader also generates the components into the source folder `src`.
+Vaadin Flow WebComponent API Analyzer is a tool that analyzes Web Components as input and outputs JSON data that can be used by a Java code generation tool that produces Flow Component APIs.
 
-Currently the reader supports only Web Components written in the Polymer 1.0 syntax and reads them using Hydrolysis, soon to be switched to use Analyzer and Polymer 2.0. Support for other type of JavaScript sources might be added in the future.
+Currently the Analyzer supports only Web Components that the Polymer Analyzer 2.0 understands.
 
 ## Installation and Usage
 
-- Local Installation
+- Maven Usage
 
-Clone this repository and run the flow-polymer-api-reader folder run:
+Clone this repository, add your _bower.json_ file to the root folder and run
+```shell
+mvn install -P analyzer
+```
+
+This will download the needed dependencies to /bower-components/ and then generate the JSON files to /generated-json/.
+Given the target folder or WCs to analyze as parameters is not currently supported.
+
+- Local Node Installation
+
+Clone this repository and in the root folder run:
 ```shell
 $ npm link
 ```
@@ -19,28 +28,10 @@ $ npm link
 
   ```shell
   $ bower install my-web-component
-  $ flow-polymer-api-reader
+  $ flow-wc-api-analyzer
   ```
 - Generating java code for a complete library
 
   ```shell
-  $ flow-polymer-api-reader --package=PolymerElements/paper-elements
-  ```
-- Generating resources with a custom groupId and artifactId
-
-  ```shell
-  $ flow-polymer-api-reader --package=PolymerElements/paper-elements \
-                    --groupId=com.foo --artifactId=bar
-  ```
-- Generating resources for a non-maven structure
-
-  ```shell
-  $ flow-polymer-api-reader --package=PolymerElements/paper-elements
-                      --javaDir=src --resourcesDir=src
-  ```
-- Generating maven `pom.xml` file and packaging the result as a ready-to-use `.jar` file
-
-  ```shell
-  $ flow-polymer-api-reader --package=PolymerElements/paper-elements --pom
-  $ mvn package
+  $ flow-wc-api-analyzer --package=PolymerElements/paper-elements
   ```

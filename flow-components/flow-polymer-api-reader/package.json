@@ -1,5 +1,5 @@
 {
-  "name": "flow-polymer-api-reader",
+  "name": "flow-wc-api-analyzer",
   "version": "0.0.1",
   "description": "",
   "author": "Vaadin Ltd",
@@ -13,22 +13,23 @@
     "gulp-bower": "latest",
     "gulp-rename": "latest",
     "gulp-util": "latest",
-    "hydrolysis": "latest",
     "jsonfile": "^2.2.1",
     "lodash": "latest",
     "map-stream": "latest",
     "marked": "latest",
     "minimist": "^1.1.1",
+    "polymer-analyzer": "2.0.2",
     "require-dir": "latest",
     "run-sequence": "latest",
     "stream-from-array": "latest",
     "vinyl": "^1.1.1"
   },
   "scripts": {
-    "flow-polymer-api-reader": "bin/flow-polymer-api-reader.js"
+    "flow-wc-api-analyzer": "bin/flow-wc-api-analyzer.js",
+    "flow-components": "bin/flow-wc-api-analyzer.js --flow_components"
   },
   "bin": {
-    "flow-polymer-api-reader": "./bin/flow-polymer-api-reader.js"
+    "flow-wc-api-analyzer": "./bin/flow-wc-api-analyzer.js"
   },
   "keywords": [
     "vaadin",
@@ -36,6 +37,7 @@
     "web",
     "components",
     "webcomponents",
-    "polymer"
+    "polymer",
+    "flow"
   ]
 }

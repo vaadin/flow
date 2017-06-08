@@ -23,6 +23,7 @@ package com.vaadin.generator.metadata;
 public class ComponentFunctionParameterData extends ComponentPropertyBaseData {
 
     private boolean optional;
+    private String description;
 
     /**
      * Gets whether the parameter is optional or not when calling the function.
