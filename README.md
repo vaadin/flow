@@ -7,7 +7,7 @@ Flow
 For instructions about _using_ Flow to develop applications, please refer to
 https://github.com/vaadin/flow/tree/master/flow-documentation
 
-To contribute, first refer to https://vaadin.com/wiki/-/wiki/Main/Contributing+Code
+To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md)
 for general instructions and requirements for contributing code to Flow.
 
 Instructions on how to set up a working environment for developing the Flow project follow below.
