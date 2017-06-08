@@ -124,10 +124,13 @@ public class ExecuteJavaScriptProcessor {
               return node;
           };
           object.attachExistingElement = function(parent, previousSibling, tagName, id){
-              @com.vaadin.client.ElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
           };
           object.attachExistingElementById = function(parent, tagName, serverSideId, id){
-              @com.vaadin.client.ElementUtils::attachExistingElementById(*)(object.getNode(parent), tagName, serverSideId, id);
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElementById(*)(object.getNode(parent), tagName, serverSideId, id);
+          };
+          object.attachCustomElement = function(parent, tagName, serverSideId, path){
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::attachCustomElement(*)(object.getNode(parent), tagName, serverSideId, path);
           };
           return object;
     }-*/;

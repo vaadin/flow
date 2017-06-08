@@ -13,22 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
-
-import com.vaadin.annotations.Tag;
+package com.vaadin.server;
 
 /**
- * Component representing a <code>&lt;hr&gt;</code> element.
- *
  * @author Vaadin Ltd
+ *
  */
-@Tag(Tag.HR)
-public class Hr extends HtmlComponent {
-    
-    /**
-     * Creates a new hr.
-     */
-    public Hr() {
-        super();
+public class CustomElementRegistryAccess {
+
+    public static void resetRegistry() {
+        CustomElementRegistry.getInstance().initialized = false;
     }
 }
