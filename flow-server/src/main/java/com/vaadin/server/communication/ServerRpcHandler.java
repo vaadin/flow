@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.server.communication.rpc.AttachExistingElementRpcHandler;
+import com.vaadin.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.server.communication.rpc.EventRpcHandler;
 import com.vaadin.server.communication.rpc.MapSyncRpcHandler;
 import com.vaadin.server.communication.rpc.NavigationRpcHandler;
