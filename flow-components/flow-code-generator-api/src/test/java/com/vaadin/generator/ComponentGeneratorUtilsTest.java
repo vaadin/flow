@@ -26,8 +26,8 @@ public class ComponentGeneratorUtilsTest {
                 .formatStringToValidJavaIdentifier(name);
 
         Assert.assertEquals(
-                "Name was not converted to camelCase in the correct way",
-                name, convertedName);
+                "Name was not converted to camelCase in the correct way", name,
+                convertedName);
     }
 
     @Test
@@ -45,21 +45,49 @@ public class ComponentGeneratorUtilsTest {
     public void gettersAndSettersAreGeneratedAsCamelCase() {
         String property = "my_property";
 
-        String formattedProperty = ComponentGeneratorUtils.generateMethodNameForProperty("get", property);
+        String formattedProperty = ComponentGeneratorUtils
+                .generateMethodNameForProperty("get", property);
 
-        Assert.assertEquals("Getter was converted wrong.", "getMyProperty", formattedProperty);
+        Assert.assertEquals("Getter was converted wrong.", "getMyProperty",
+                formattedProperty);
 
-        formattedProperty = ComponentGeneratorUtils.generateMethodNameForProperty("set", property);
+        formattedProperty = ComponentGeneratorUtils
+                .generateMethodNameForProperty("set", property);
 
-        Assert.assertEquals("Setter was converted wrong.", "setMyProperty", formattedProperty);
+        Assert.assertEquals("Setter was converted wrong.", "setMyProperty",
+                formattedProperty);
     }
 
     @Test(expected = AssertionError.class)
     public void propertyFormatterFailsAssertionForNullPrefix() {
         String property = "my_property";
 
-        String formatted =ComponentGeneratorUtils.generateMethodNameForProperty(null, property);
+        String formatted = ComponentGeneratorUtils
+                .generateMethodNameForProperty(null, property);
 
         Assert.assertEquals("", "MyProperty", formatted);
+    }
+
+    @Test
+    public void formatStringToComment() {
+        String simpleComment = "simple comment";
+
+        String formatted = ComponentGeneratorUtils
+                .formatStringToJavaComment(simpleComment);
+
+        Assert.assertEquals("/*\n * simple comment\n */\n", formatted);
+
+        String multiLineComment = "this\nis\na\nmulti\nline\ncomment";
+
+        formatted = ComponentGeneratorUtils
+                .formatStringToJavaComment(multiLineComment);
+        Assert.assertEquals(
+                "/*\n * this\n * is\n * a\n * multi\n * line\n * comment\n */\n",
+                formatted);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void formatStringToCommentAssertionForNullPrefix() {
+        ComponentGeneratorUtils.formatStringToJavaComment(null);
     }
 }

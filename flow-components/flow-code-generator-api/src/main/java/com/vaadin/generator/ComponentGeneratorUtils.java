@@ -123,4 +123,22 @@ public final class ComponentGeneratorUtils {
         return directory;
     }
 
+    /**
+     * Formats and ordinary String as a multi-line Java comment, that can be
+     * safely added to any part of a Java code.
+     * 
+     * @param input
+     *            The text to be converted as a comment. Should not be
+     *            <code>null</code>.
+     * 
+     * @return The text ready to be added as a comment in a Java file.
+     */
+    public static String formatStringToJavaComment(String input) {
+        assert input != null;
+        StringBuilder builder = new StringBuilder("/*\n * ");
+        builder.append(input.replace("\n", "\n * "));
+        builder.append("\n */\n");
+        return builder.toString();
+    }
+
 }

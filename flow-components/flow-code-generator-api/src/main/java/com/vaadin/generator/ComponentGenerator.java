@@ -15,22 +15,23 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.Date;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -52,8 +53,8 @@ import elemental.json.JsonObject;
  * that can interacts with the original webcomponent. The metadata can also be
  * set as a JSON format.
  * 
- * @see #generateClass(ComponentMetadata, String)
- * @see #generateClass(File, File, String)
+ * @see #generateClass(ComponentMetadata, String, String)
+ * @see #generateClass(File, File, String, String)
  *
  */
 public class ComponentGenerator {
@@ -93,7 +94,7 @@ public class ComponentGenerator {
      * file.
      * 
      * @see #toMetadata(File)
-     * @see #generateClass(ComponentMetadata, File, String)
+     * @see #generateClass(ComponentMetadata, File, String, String)
      * 
      * @param jsonFile
      *            The input JSON file.
@@ -101,13 +102,17 @@ public class ComponentGenerator {
      *            The output base directory for the generated Java file.
      * @param basePackage
      *            The package to be used for the generated Java class.
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
      */
     public void generateClass(File jsonFile, File targetPath,
-            String basePackage) {
+            String basePackage, String licenseNote) {
 
-        generateClass(toMetadata(jsonFile), targetPath, basePackage);
+        generateClass(toMetadata(jsonFile), targetPath, basePackage,
+                licenseNote);
     }
 
     /**
@@ -118,12 +123,15 @@ public class ComponentGenerator {
      *            The webcomponent metadata.
      * @param basePackage
      *            The package to be used for the generated Java class.
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @return The generated Java class in String format.
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
      */
-    public String generateClass(ComponentMetadata metadata,
-            String basePackage) {
+    public String generateClass(ComponentMetadata metadata, String basePackage,
+            String licenseNote) {
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(basePackage).setPublic()
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
@@ -159,7 +167,14 @@ public class ComponentGenerator {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
 
-        return javaClass.toString();
+        String source = javaClass.toString();
+
+        if (!StringUtils.isBlank(licenseNote)) {
+            source = ComponentGeneratorUtils
+                    .formatStringToJavaComment(licenseNote) + source;
+        }
+
+        return source;
     }
 
     /**
@@ -171,14 +186,17 @@ public class ComponentGenerator {
      *            The output base directory for the generated Java file.
      * @param basePackage
      *            The package to be used for the generated Java class.
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * 
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
      */
     public void generateClass(ComponentMetadata metadata, File targetPath,
-            String basePackage) {
+            String basePackage, String licenseNote) {
 
-        String source = generateClass(metadata, basePackage);
+        String source = generateClass(metadata, basePackage, licenseNote);
         String fileName = ComponentGeneratorUtils
                 .generateValidJavaClassName(metadata.getName()) + ".java";
 
