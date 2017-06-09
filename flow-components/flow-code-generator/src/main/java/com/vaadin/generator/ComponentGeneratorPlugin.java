@@ -16,6 +16,8 @@
 package com.vaadin.generator;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -33,15 +35,37 @@ import org.apache.maven.plugins.annotations.Parameter;
 @Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate")
 public class ComponentGeneratorPlugin extends AbstractMojo {
 
+    /**
+     * The source directory from where the JSON files are read.
+     */
     @Parameter(property = "generate.source.dir", defaultValue = "${project.basedir}/json_metadata", required = false)
     private File sourceDir;
 
+    /**
+     * The target base directory where the generated Java files will be written.
+     */
     @Parameter(property = "generate.target.dir", defaultValue = "${project.build.sourceDirectory}", required = false)
     private File targetDir;
 
+    /**
+     * The file containing the license to be added as a comment in the beginning
+     * of every generated Java class. It's expected that the file is encoded in
+     * UTF-8.
+     */
+    @Parameter(property = "generate.license.file", required = false)
+    private File licenseFile;
+
+    /**
+     * The base package of all generated Java classes.
+     */
     @Parameter(property = "generate.base.package", defaultValue = "${project.groupId}", required = false)
     private String basePackage;
 
+    /**
+     * Flag that indicates if the plugin should fail if any Java file gets an
+     * error on being generated. When <code>false</code>, the plugin will ignore
+     * errors on Java code generation (but will still log them to the console).
+     */
     @Parameter(property = "generate.fail.on.error", defaultValue = "true", required = false)
     private boolean failOnError;
 
@@ -51,15 +75,29 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
         if (!sourceDir.isDirectory()) {
             getLog().warn(
                     "Directory not readable. Can't generate any Java classes from "
-                            + sourceDir.getName());
+                            + sourceDir.getAbsolutePath());
             return;
         }
 
         File[] files = sourceDir.listFiles(
                 (dir, pathName) -> pathName.toLowerCase().endsWith(".json"));
         if (files == null || files.length == 0) {
-            getLog().warn("No JSON files found at " + sourceDir.getName());
+            getLog().warn(
+                    "No JSON files found at " + sourceDir.getAbsolutePath());
             return;
+        }
+
+        String licenseNote = null;
+        if (licenseFile != null) {
+            try {
+                licenseNote = new String(
+                        Files.readAllBytes(licenseFile.toPath()), "UTF-8");
+            } catch (IOException e) {
+                throw new MojoExecutionException(
+                        "Error reading license file at "
+                                + licenseFile.getAbsolutePath(),
+                        e);
+            }
         }
 
         getLog().info("Generating " + files.length + " Java classes...");
@@ -67,16 +105,18 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
         for (File file : files) {
             getLog().info("Generating class for " + file.getName() + "...");
             try {
-                generator.generateClass(file, targetDir, basePackage);
+                generator.generateClass(file, targetDir, basePackage,
+                        licenseNote);
             } catch (Exception e) {
                 if (failOnError) {
                     throw new MojoExecutionException(
                             "Error generating Java source for "
-                                    + file.getName(),
+                                    + file.getAbsolutePath(),
                             e);
                 }
                 getLog().error(
-                        "Error generating Java source for " + file.getName()
+                        "Error generating Java source for "
+                                + file.getAbsolutePath()
                                 + ". The property \"failOnError\" is false, skipping file...",
                         e);
             }

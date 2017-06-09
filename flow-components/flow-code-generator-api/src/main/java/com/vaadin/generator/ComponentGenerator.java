@@ -15,28 +15,36 @@
  */
 package com.vaadin.generator;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.util.Date;
+
+import javax.annotation.Generated;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
-import com.vaadin.generator.metadata.*;
+import com.vaadin.generator.metadata.ComponentEventData;
+import com.vaadin.generator.metadata.ComponentFunctionData;
+import com.vaadin.generator.metadata.ComponentFunctionParameterData;
+import com.vaadin.generator.metadata.ComponentMetadata;
+import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
-
-import javax.annotation.Generated;
-import java.io.File;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.nio.file.Files;
-import java.util.Date;
 
 /**
  * Base class of the component generation process. It takes a
@@ -93,13 +101,17 @@ public class ComponentGenerator {
      *            The output base directory for the generated Java file.
      * @param basePackage
      *            The package to be used for the generated Java class.
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
      */
     public void generateClass(File jsonFile, File targetPath,
-            String basePackage) {
+            String basePackage, String licenseNote) {
 
-        generateClass(toMetadata(jsonFile), targetPath, basePackage);
+        generateClass(toMetadata(jsonFile), targetPath, basePackage,
+                licenseNote);
     }
 
     /**
@@ -110,12 +122,15 @@ public class ComponentGenerator {
      *            The webcomponent metadata.
      * @param basePackage
      *            The package to be used for the generated Java class.
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @return The generated Java class in String format.
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
      */
-    public String generateClass(ComponentMetadata metadata,
-            String basePackage) {
+    public String generateClass(ComponentMetadata metadata, String basePackage,
+            String licenseNote) {
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(basePackage).setPublic()
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
@@ -147,7 +162,14 @@ public class ComponentGenerator {
             }
         }
 
-        return javaClass.toString();
+        String source = javaClass.toString();
+
+        if (!StringUtils.isBlank(licenseNote)) {
+            source = ComponentGeneratorUtils
+                    .formatStringToJavaComment(licenseNote) + source;
+        }
+
+        return source;
     }
 
     /**
@@ -159,14 +181,17 @@ public class ComponentGenerator {
      *            The output base directory for the generated Java file.
      * @param basePackage
      *            The package to be used for the generated Java class.
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * 
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
      */
     public void generateClass(ComponentMetadata metadata, File targetPath,
-            String basePackage) {
+            String basePackage, String licenseNote) {
 
-        String source = generateClass(metadata, basePackage);
+        String source = generateClass(metadata, basePackage, licenseNote);
         String fileName = ComponentGeneratorUtils
                 .generateValidJavaClassName(metadata.getName()) + ".java";
 
@@ -201,11 +226,11 @@ public class ComponentGenerator {
                 .setReturnType(toJavaType(property.getType()));
 
         if (property.getType() == ComponentObjectType.BOOLEAN) {
-            method.setName(ComponentGeneratorUtils.generateMethodNameForProperty("is",
-                    property.getName()));
+            method.setName(ComponentGeneratorUtils
+                    .generateMethodNameForProperty("is", property.getName()));
         } else {
-            method.setName(ComponentGeneratorUtils.generateMethodNameForProperty("get",
-                    property.getName()));
+            method.setName(ComponentGeneratorUtils
+                    .generateMethodNameForProperty("get", property.getName()));
         }
 
         switch (property.getType()) {
@@ -245,9 +270,9 @@ public class ComponentGenerator {
     private void generateSetterFor(JavaClassSource javaClass,
             ComponentPropertyData property) {
 
-        MethodSource<JavaClassSource> method = javaClass
-                .addMethod().setName(ComponentGeneratorUtils
-                        .generateMethodNameForProperty("set", property.getName()))
+        MethodSource<JavaClassSource> method = javaClass.addMethod()
+                .setName(ComponentGeneratorUtils.generateMethodNameForProperty(
+                        "set", property.getName()))
                 .setPublic().setReturnTypeVoid();
 
         method.addParameter(toJavaType(property.getType()), property.getName());
