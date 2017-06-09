@@ -214,7 +214,7 @@ public class ComponentMetadata {
     }
 
     /**
-     * Gets the baseUrl of the web component, which is the path to the WC file.
+     * Gets the baseUrl of the web component, which is the path to the WebComponent file.
      * <p>
      * E.g. "paper-input/paper-input.html"
      *
@@ -225,7 +225,7 @@ public class ComponentMetadata {
     }
 
     /**
-     * Sets the baseUrl of the web component, which is the path to the WC file.
+     * Sets the baseUrl of the web component, which is the path to the WebComponent file.
      * <p>
      * E.g. "paper-input/paper-input.html"
      *

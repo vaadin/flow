@@ -65,14 +65,14 @@ module.exports = class AnalyzerTransform extends Transform {
         const elements = [];
         for (const element of elementSet) {
           const baseUrl = element._parsedDocument.baseUrl;
-          // This is a temporary solution for skipping things that are not UI elements
+          // TODO #1804 This is a temporary solution for skipping things that are not UI elements
           if (baseUrl.startsWith('polymer/') || baseUrl.startsWith('paper-styles/')) {
             console.info("Skipping element of tagName " + element.tagName);
             continue;
           }
           elements.push(element);
           console.info("Element: " + element.tagName
-            + " baseUrl: " + element._parsedDocument.baseUrl
+            + " baseUrl: " + baseUrl
             + " extends: " + element.extends
             + ", template: " + element._parsedDocument.contents.includes('<template>')
             + "\n    behaviors: " + element.behaviorAssignments.map(behavior => "" + behavior.name).join(', ')

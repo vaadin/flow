@@ -1,5 +1,5 @@
 {
-  "name": "flow-wc-api-analyzer",
+  "name": "flow-webcomponent-api-analyzer",
   "version": "0.0.1",
   "description": "",
   "author": "Vaadin Ltd",
@@ -25,11 +25,11 @@
     "vinyl": "^1.1.1"
   },
   "scripts": {
-    "flow-wc-api-analyzer": "bin/flow-wc-api-analyzer.js",
-    "flow-components": "bin/flow-wc-api-analyzer.js --flow_components"
+    "flow-webcomponent-api-analyzer": "bin/flow-webcomponent-api-analyzer.js",
+    "flow-components": "bin/flow-webcomponent-api-analyzer.js --flow_components"
   },
   "bin": {
-    "flow-wc-api-analyzer": "./bin/flow-wc-api-analyzer.js"
+    "flow-webcomponent-api-analyzer": "./bin/flow-webcomponent-api-analyzer.js"
   },
   "keywords": [
     "vaadin",

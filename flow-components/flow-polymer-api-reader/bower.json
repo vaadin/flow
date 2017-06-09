@@ -1,7 +1,7 @@
 {
-  "name": "flow-wc-api-analyzer",
+  "name": "flow-webcomponent-api-analyzer",
   "description": "",
-  "main": "bin/flow-wc-api-analyzer.js",
+  "main": "bin/flow-webcomponent-api-analyzer.js",
   "authors": [
     "Vaadin Ltd"
   ],

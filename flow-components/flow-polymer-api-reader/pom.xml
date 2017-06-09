@@ -55,9 +55,9 @@
                         </goals>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <!-- TODO need to figure out how to pass command line parameters
+                            <!-- TODO #1805 need to figure out how to pass command line parameters
                              from maven calls to this, such as what packages to create
-                             and what should be the output folder. See flow-wc-api-analyzer.js
+                             and what should be the output folder. flow-webcomponent-api-analyzer.jsr.js
                              for current defaults. -->
                             <!-- This argument matches to the "scripts" defined
                              in package.json file. -->

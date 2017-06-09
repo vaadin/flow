@@ -20,7 +20,7 @@ require('../gulpfile');
 
 require('coa').Cmd()
   .name(process.argv[1])
-  .title('flow-wc-api-analyzer')
+  .title('flow-webcomponent-api-analyzer')
   .helpful()
   .opt()
     .name('package')
