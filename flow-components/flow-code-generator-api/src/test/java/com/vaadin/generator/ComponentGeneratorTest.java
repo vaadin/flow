@@ -35,7 +35,7 @@ public class ComponentGeneratorTest {
     @Test
     public void generateClass_containsClassJavaDoc() {
         String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test");
+                "com.my.test", null);
 
         Assert.assertTrue("Generated class didn't contain class JavaDoc",
                 generatedClass
@@ -45,7 +45,7 @@ public class ComponentGeneratorTest {
     @Test
     public void generateClass_generatedTagIsSameAsTag() {
         String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test");
+                "com.my.test", null);
 
         Assert.assertTrue("Generated class had wrong generated tag",
                 generatedClass.contains(
@@ -55,7 +55,7 @@ public class ComponentGeneratorTest {
     @Test
     public void generateClass_classNameIsCamelCase() {
         String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test");
+                "com.my.test", null);
 
         Assert.assertTrue("Generated class name was faulty",
                 generatedClass.contains("public class MyComponent"));
@@ -69,10 +69,10 @@ public class ComponentGeneratorTest {
         componentMetadata.setMethods(Arrays.asList(functionData));
 
         String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test");
+                "com.my.test", null);
 
-        Assert.assertTrue("Method javaDoc was not found", generatedClass
-                .contains("* " + functionData.getDescription()));
+        Assert.assertTrue("Method javaDoc was not found",
+                generatedClass.contains("* " + functionData.getDescription()));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class ComponentGeneratorTest {
         componentMetadata.setMethods(Arrays.asList(functionData));
 
         String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test");
+                "com.my.test", null);
 
         Assert.assertTrue("JavaDoc for method parameter text was not found",
                 generatedClass.contains("* @param " + parameter.getName()));
@@ -100,20 +100,20 @@ public class ComponentGeneratorTest {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
         propertyData.setType(ComponentObjectType.STRING);
-        propertyData.setDescription(
-                "This is the name property of the component.");
+        propertyData
+                .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test");
+                "com.my.test", null);
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
         Assert.assertTrue("No setter found", generatedClass
                 .contains("public void setName(java.lang.String name)"));
 
-        Assert.assertTrue("Method javaDoc was not found", generatedClass
-                .contains("* " + propertyData.getDescription()));
+        Assert.assertTrue("Method javaDoc was not found",
+                generatedClass.contains("* " + propertyData.getDescription()));
 
         Assert.assertTrue("JavaDoc parameter for setter was not found",
                 generatedClass.contains("* @param " + propertyData.getName()));
@@ -124,20 +124,29 @@ public class ComponentGeneratorTest {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
         propertyData.setType(ComponentObjectType.STRING);
-        propertyData.setDescription(
-                "This is the name property of the component.");
+        propertyData
+                .setDescription("This is the name property of the component.");
         propertyData.setReadOnly(true);
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test");
+                "com.my.test", null);
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
         Assert.assertFalse("Found setter even if it shouldn't exist",
                 generatedClass.contains("setName"));
 
-        Assert.assertTrue("Method javaDoc was not found", generatedClass
-                .contains("* " + propertyData.getDescription()));
+        Assert.assertTrue("Method javaDoc was not found",
+                generatedClass.contains("* " + propertyData.getDescription()));
+    }
+
+    @Test
+    public void generateClassWithLicenseNote_classContainsLicenseHeader() {
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", "some license header");
+
+        Assert.assertTrue("No license header found", generatedClass.startsWith(
+                "/*\n * some license header\n */\npackage com.my.test;"));
     }
 }
