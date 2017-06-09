@@ -58,6 +58,23 @@ import elemental.json.JsonArray;
 public class PolymerTemplateTest {
     private static final String TAG = "FFS";
 
+    private static class TestPage extends Page {
+
+        private List<Serializable[]> params = new ArrayList<>();
+
+        public TestPage() {
+            super(Mockito.mock(UI.class));
+        }
+
+        @Override
+        public ExecutionCanceler executeJavaScript(String expression,
+                Serializable... parameters) {
+            params.add(parameters);
+            return null;
+        }
+
+    }
+
     public interface ModelClass extends TemplateModel {
         void setMessage(String message);
 
@@ -97,7 +114,7 @@ public class PolymerTemplateTest {
 
         public IdChildTemplate() {
             this((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
-                    + "'><div id='child'></dom-module>"));
+                    + "'><template><div id='child'></template></dom-module>"));
         }
 
         IdChildTemplate(TemplateParser parser) {
@@ -151,11 +168,46 @@ public class PolymerTemplateTest {
 
     }
 
+    @Tag(TAG)
+    private static class IdElementTemplate extends PolymerTemplate<ModelClass> {
+
+        @Id("labelId")
+        private com.vaadin.flow.dom.Element label;
+
+        public IdElementTemplate() {
+            this((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><label id='labelId'></dom-module>"));
+        }
+
+        IdElementTemplate(TemplateParser parser) {
+            super(parser);
+        }
+
+    }
+
+    private static class IdWrongElementTemplate extends IdElementTemplate {
+
+        public IdWrongElementTemplate() {
+            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><div id='foo'></dom-module>"));
+        }
+
+    }
+
     private static class IdWrongChildTemplate extends IdChildTemplate {
 
         public IdWrongChildTemplate() {
             super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
                     + "'><div id='foo'></dom-module>"));
+        }
+
+    }
+
+    private static class IdWrongTagChildTemplate extends IdChildTemplate {
+
+        public IdWrongTagChildTemplate() {
+            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><label id='child'></dom-module>"));
         }
 
     }
@@ -260,37 +312,16 @@ public class PolymerTemplateTest {
         new IdWrongChildTemplate();
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void parseTemplate_hasWrongIdChildElement_exceptionIsThrown() {
+        new IdWrongElementTemplate();
+    }
+
     @Test
     public void parseTemplate_hasChildTemplate_elemetsAreCreatedAndRequestIsSent() {
         TemplateInTemplate template = new TemplateInTemplate();
 
-        List<Object[]> args = new ArrayList<>();
-        class TestPage extends Page {
-
-            private List<Serializable[]> params = new ArrayList<>();
-
-            public TestPage() {
-                super(Mockito.mock(UI.class));
-            }
-
-            @Override
-            public ExecutionCanceler executeJavaScript(String expression,
-                    Serializable... parameters) {
-                params.add(parameters);
-                return null;
-            }
-
-        }
-
-        TestPage page = new TestPage();
-
-        UI ui = new UI() {
-            @Override
-            public Page getPage() {
-                return page;
-            }
-        };
-        ui.add(template);
+        TestPage page = setupUI(template);
 
         AttachTemplateChildFeature feature = template.getStateNode()
                 .getFeature(AttachTemplateChildFeature.class);
@@ -340,6 +371,73 @@ public class PolymerTemplateTest {
         Assert.assertEquals(1, templateNodes.size());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void injectIdComponent_wrongTag_throw() {
+        new IdWrongTagChildTemplate();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void injectIdElement_wrongTag_throw() {
+        new IdWrongElementTemplate();
+    }
+
+    @Test
+    public void attachExistingElement_elementIsCreatedAndRequestIsSent() {
+        IdElementTemplate template = new IdElementTemplate();
+
+        TestPage page = setupUI(template);
+
+        AttachTemplateChildFeature feature = template.getStateNode()
+                .getFeature(AttachTemplateChildFeature.class);
+        List<StateNode> templateNodes = new ArrayList<>();
+        feature.forEachChild(templateNodes::add);
+
+        Assert.assertEquals(1, templateNodes.size());
+
+        StateNode child = templateNodes.get(0);
+        String tag = child.getFeature(ElementData.class).getTag();
+        Assert.assertEquals("label", tag);
+
+        // check id in the JS call request
+        Assert.assertEquals("labelId", page.params.get(0)[3]);
+
+        Assert.assertNotNull(template.label);
+        Assert.assertEquals(child, template.label.getNode());
+    }
+
+    @Test
+    public void attachExistingComponent_elementIsCreatedAndRequestIsSent() {
+        IdChildTemplate template = new IdChildTemplate();
+
+        TestPage page = setupUI(template);
+
+        AttachTemplateChildFeature feature = template.getStateNode()
+                .getFeature(AttachTemplateChildFeature.class);
+        List<StateNode> templateNodes = new ArrayList<>();
+        feature.forEachChild(templateNodes::add);
+
+        Assert.assertEquals(1, templateNodes.size());
+
+        StateNode child = templateNodes.get(0);
+        String tag = child.getFeature(ElementData.class).getTag();
+        Assert.assertEquals("div", tag);
+
+        // check id in the JS call request
+        Assert.assertEquals("child", page.params.get(0)[3]);
+
+        Assert.assertNotNull(template.child);
+        Assert.assertEquals(child, template.child.getElement().getNode());
+
+        Assert.assertTrue(
+                template.child.getElement().getComponent().isPresent());
+
+        Assert.assertTrue(template.child.getElement().getComponent()
+                .get() instanceof CustomComponent);
+
+        Assert.assertEquals(template.child,
+                template.child.getElement().getComponent().get());
+    }
+
     private List<Integer> convertIntArray(JsonArray array) {
         List<Integer> list = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
@@ -348,4 +446,18 @@ public class PolymerTemplateTest {
         return list;
     }
 
+    private TestPage setupUI(PolymerTemplate<?> template) {
+        List<Object[]> args = new ArrayList<>();
+
+        TestPage page = new TestPage();
+
+        UI ui = new UI() {
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
+        ui.add(template);
+        return page;
+    }
 }
