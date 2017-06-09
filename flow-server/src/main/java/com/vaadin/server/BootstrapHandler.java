@@ -226,22 +226,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 VaadinSession session) {
             this.session = session;
             this.request = request;
+
             DeploymentConfiguration config = session.getConfiguration();
-            if (config.isProductionMode()) {
-                es6BuildUrl = config.getApplicationOrSystemProperty(
-                        Constants.FRONTEND_URL_ES6,
-                        Constants.FRONTEND_URL_ES6_DEFAULT_VALUE);
-                es5BuildUrl = config.getApplicationOrSystemProperty(
-                        Constants.FRONTEND_URL_ES5,
-                        Constants.FRONTEND_URL_ES5_DEFAULT_VALUE);
-            } else {
-                es6BuildUrl = config.getApplicationOrSystemProperty(
-                        Constants.FRONTEND_URL_ES6,
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
-                es5BuildUrl = config.getApplicationOrSystemProperty(
-                        Constants.FRONTEND_URL_ES5,
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX);
-            }
+            es6BuildUrl = config.getEs6BuildUrl();
+            es5BuildUrl = config.getEs5BuildUrl();
         }
 
         @Override
@@ -393,13 +381,21 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void appendWebComponentsElements(Element head,
-                                                    BootstrapContext context) {
+            BootstrapContext context) {
         Optional<WebComponents> webComponents = AnnotationReader
                 .getAnnotationFor(context.getUI().getClass(),
                         WebComponents.class);
 
         DeploymentConfiguration config = context.getSession()
                 .getConfiguration();
+
+        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
+                .orElse(null);
+        if (null == webComponentsPolyfillBase) {
+            return;
+        }
+
+        assert webComponentsPolyfillBase.endsWith("/");
 
         boolean forceShadyDom = getUserDefinedProperty(config,
                 Constants.FORCE_SHADY_DOM, Boolean::parseBoolean,
@@ -414,17 +410,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (loadEs5Adapter) {
             head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
-                            .resolveVaadinUri("context://"
-                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/custom-elements-es5-adapter.js"),
+                            .resolveVaadinUri(webComponentsPolyfillBase
+                                    + "custom-elements-es5-adapter.js"),
                     false));
         }
 
         head.appendChild(createJavaScriptElement(
-                context.getUriResolver()
-                        .resolveVaadinUri("context://"
-                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                + "server/webcomponents-lite.js"),
+                context.getUriResolver().resolveVaadinUri(
+                        webComponentsPolyfillBase + "webcomponents-lite.js"),
                 false).attr("shadydom", forceShadyDom));
     }
 
