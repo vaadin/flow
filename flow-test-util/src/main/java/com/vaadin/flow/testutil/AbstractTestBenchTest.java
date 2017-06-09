@@ -43,7 +43,7 @@ import com.vaadin.testbench.parallel.DefaultBrowserFactory;
  * Abstract base class for flow TestBench tests, which are based on a
  * {@link View} class.
  */
-@RunOnHub("tb3-hub.intra.itmill.com")
+@RunOnHub
 @BrowserFactory(DefaultBrowserFactory.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {

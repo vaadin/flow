@@ -77,7 +77,11 @@ then
 
     # Trigger Sonar analysis
     # Verify build and build javadoc
-    mvn -B -e -V -P validation -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= clean  org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
+    mvn -B -e -V -P validation \
+        -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
+        -Dtest.excludegroup=clean \
+        -Dtest.use.hub=true \
+        org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
     # Get the status for the previous maven command and if not exception then run sonar.
     STATUS=$?
     if [ $STATUS -eq 0 ]

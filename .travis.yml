@@ -11,6 +11,9 @@ addons:
     packages:
      - google-chrome-stable
 
+services:
+  - docker
+
 before_install: ./.travis.before_install.sh
 
 # Skip the installation step.
