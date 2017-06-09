@@ -20,47 +20,38 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 
-public class AttachExistingDomElementByIdView extends AbstractDivView {
+@HtmlImport("/com/vaadin/flow/uitest/ui/template/AttachExistingDomElementById.html")
+@Tag("existing-dom-element")
+public class AttachExistingDomElementByIdView
+        extends PolymerTemplate<TemplateModel> implements View {
 
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/AttachExistingDomElementById.html")
-    @Tag("existing-dom-element")
-    public static class AttachExistingElementByIdTempalte
-            extends PolymerTemplate<TemplateModel> {
-        @Id("input")
-        private Element input;
+    @Id("input")
+    private Element input;
 
-        @Id("label")
-        private Element label;
-
-        public AttachExistingElementByIdTempalte() {
-            setId("template");
-
-            input.setProperty("placeholder", "Foo");
-            label.setText("bar");
-            input.synchronizeProperty("value", "change");
-        }
-
-        @EventHandler
-        private void clear() {
-            label.setText("default");
-            input.setProperty("value", "");
-        }
-
-        @EventHandler
-        private void valueChange() {
-            label.setText("Text from input " + input.getProperty("value"));
-        }
-
-    }
+    @Id("label")
+    private Element label;
 
     public AttachExistingDomElementByIdView() {
-        AttachExistingElementByIdTempalte template = new AttachExistingElementByIdTempalte();
-        template.setId("template");
-        add(template);
+        setId("template");
+
+        input.setProperty("placeholder", "Foo");
+        label.setText("bar");
+        input.synchronizeProperty("value", "change");
+    }
+
+    @EventHandler
+    private void clear() {
+        label.setText("default");
+        input.setProperty("value", "");
+    }
+
+    @EventHandler
+    private void valueChange() {
+        label.setText("Text from input " + input.getProperty("value"));
     }
 
 }

@@ -75,7 +75,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            a template parser
      */
     public PolymerTemplate(TemplateParser parser) {
-        Function<String, Optional<String>> idVerifier = parseTemplate(
+        Function<String, Optional<String>> tagProvider = parseTemplate(
                 parser.getTemplateContent(getClass(), getElement().getTag()));
         // This a workaround to propagate model to a Polymer template.
         // Correct implementation will follow in
@@ -86,7 +86,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         ModelDescriptor.get(getModelType()).getPropertyNames().forEach(
                 propertyName -> modelMap.setProperty(propertyName, null));
 
-        mapComponents(getClass(), idVerifier);
+        mapComponents(getClass(), tagProvider);
     }
 
     /**
