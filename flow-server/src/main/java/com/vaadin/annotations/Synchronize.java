@@ -36,7 +36,10 @@ import java.lang.annotation.Target;
 public @interface Synchronize {
 
     /**
-     * The DOM event(s) to use for synchronization.
+     * The DOM event(s) to use for synchronization. Those events need to be
+     * fired by the root element of the webcomponent (or bubbled to the root
+     * element). Events from inner elements of the webcomponent that are not
+     * bubbled to the outside are not intercepted by the server.
      *
      * @return the name of the DOM event(s) to use for synchronization
      */
