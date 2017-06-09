@@ -44,10 +44,15 @@ public final class ComponentGeneratorUtils {
     /**
      * Formats property name to valid java identifier with CamelCase
      *
-     * @param prefix property prefix (e.g. set, get, is etc.), not <code>null</code>
-     * @param propertyName property name to convert
+     * @param prefix
+     *            property prefix (e.g. set, get, is etc.), not
+     *            <code>null</code>
+     * @param propertyName
+     *            property name to convert
+     * 
+     * @return property method name
      */
-    public static String formatPropertyName(String prefix,
+    public static String generateMethodNameForProperty(String prefix,
             String propertyName) {
         assert prefix != null : "prefix should not be null";
         return prefix + StringUtils

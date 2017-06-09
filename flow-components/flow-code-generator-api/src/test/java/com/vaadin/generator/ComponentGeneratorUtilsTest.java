@@ -45,11 +45,11 @@ public class ComponentGeneratorUtilsTest {
     public void gettersAndSettersAreGeneratedAsCamelCase() {
         String property = "my_property";
 
-        String formattedProperty = ComponentGeneratorUtils.formatPropertyName("get", property);
+        String formattedProperty = ComponentGeneratorUtils.generateMethodNameForProperty("get", property);
 
         Assert.assertEquals("Getter was converted wrong.", "getMyProperty", formattedProperty);
 
-        formattedProperty = ComponentGeneratorUtils.formatPropertyName("set", property);
+        formattedProperty = ComponentGeneratorUtils.generateMethodNameForProperty("set", property);
 
         Assert.assertEquals("Setter was converted wrong.", "setMyProperty", formattedProperty);
     }
@@ -58,7 +58,7 @@ public class ComponentGeneratorUtilsTest {
     public void propertyFormatterFailsAssertionForNullPrefix() {
         String property = "my_property";
 
-        String formatted =ComponentGeneratorUtils.formatPropertyName(null, property);
+        String formatted =ComponentGeneratorUtils.generateMethodNameForProperty(null, property);
 
         Assert.assertEquals("", "MyProperty", formatted);
     }
