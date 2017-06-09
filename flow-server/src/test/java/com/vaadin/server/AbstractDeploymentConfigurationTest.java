@@ -15,6 +15,7 @@
  */
 package com.vaadin.server;
 
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -108,6 +109,11 @@ public class AbstractDeploymentConfigurationTest {
         @Override
         public boolean isSendUrlsAsParameters() {
             return DefaultDeploymentConfiguration.DEFAULT_SEND_URLS_AS_PARAMETERS;
+        }
+
+        @Override
+        public Optional<String> getWebComponentsPolyfillBase() {
+            return Optional.empty();
         }
 
     }
