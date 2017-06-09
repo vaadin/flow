@@ -19,9 +19,13 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -214,7 +218,29 @@ public class VaadinServlet extends HttpServlet {
 
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        return new DefaultDeploymentConfiguration(getClass(), initParameters);
+        return new DefaultDeploymentConfiguration(getClass(), initParameters,
+                this::scanForResources);
+    }
+
+    protected void scanForResources(String basePath,
+            Predicate<String> consumer) {
+        Deque<String> queue = new ArrayDeque<>();
+        queue.add(basePath);
+
+        ServletContext context = getServletContext();
+        int prefixLength = basePath.length();
+
+        while (!queue.isEmpty()) {
+            String path = queue.removeLast();
+            boolean visit = consumer.test(path.substring(prefixLength));
+
+            if (visit && path.endsWith("/")) {
+                Set<String> resourcePaths = context.getResourcePaths(path);
+                if (resourcePaths != null) {
+                    queue.addAll(resourcePaths);
+                }
+            }
+        }
     }
 
     protected VaadinServletService createServletService(
