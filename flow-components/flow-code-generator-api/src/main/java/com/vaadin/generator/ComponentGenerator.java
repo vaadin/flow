@@ -258,7 +258,11 @@ public class ComponentGenerator {
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
-        javaDoc.setFullText(documentation);
+        String nl = System.getProperty("line.separator");
+        String text = String.format("%s%s%s%s",
+                "Description copied from corresponding location in WebComponent:",
+                nl, nl, documentation);
+        javaDoc.setFullText(text);
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
