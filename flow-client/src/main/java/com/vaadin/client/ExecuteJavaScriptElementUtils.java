@@ -27,6 +27,7 @@ import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.html.HTMLCollection;
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
@@ -206,9 +207,9 @@ public final class ExecuteJavaScriptElementUtils {
     private static Element getCustomElement(Node root, JsonArray path) {
         Node current = root;
         for (int i = 0; i < path.length(); i++) {
-            JsArray<Node> childNodes = DomApi.wrap(current).getChildNodes();
+            HTMLCollection children = DomApi.wrap(current).getChildren();
             JsonValue value = path.get(i);
-            current = childNodes.get((int) value.asNumber());
+            current = children.item((int) value.asNumber());
         }
         if (current instanceof Element) {
             return (Element) current;

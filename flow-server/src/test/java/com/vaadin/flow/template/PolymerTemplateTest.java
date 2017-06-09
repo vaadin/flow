@@ -169,6 +169,25 @@ public class PolymerTemplateTest {
     }
 
     @Tag(TAG)
+    private static class TextNodesInHtmlTemplate
+            extends PolymerTemplate<ModelClass> {
+
+        // @formatter:off
+        private static String HTML_TEMPLATE = "<template>\n"+
+        "      <style>\n"+
+        "      </style>\n"+
+        "      <child-template></child-template>\n"+
+        "      \n"+
+        "      <div class='content-wrap'>";
+        // @formatter:on
+
+        public TextNodesInHtmlTemplate() {
+            super((clazz, tag) -> Jsoup.parse(HTML_TEMPLATE));
+        }
+
+    }
+
+    @Tag(TAG)
     private static class IdElementTemplate extends PolymerTemplate<ModelClass> {
 
         @Id("labelId")
@@ -318,7 +337,7 @@ public class PolymerTemplateTest {
     }
 
     @Test
-    public void parseTemplate_hasChildTemplate_elemetsAreCreatedAndRequestIsSent() {
+    public void parseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
         TemplateInTemplate template = new TemplateInTemplate();
 
         TestPage page = setupUI(template);
@@ -349,6 +368,19 @@ public class PolymerTemplateTest {
         // check arrays of indices
         Assert.assertTrue(paths.contains(Arrays.asList(0, 0)));
         Assert.assertTrue(paths.contains(Arrays.asList(2)));
+    }
+
+    @Test
+    public void parseTemplate_hasTextNodesInTemmplate_correctRequestIsSent() {
+        TextNodesInHtmlTemplate template = new TextNodesInHtmlTemplate();
+
+        TestPage page = setupUI(template);
+
+        JsonArray path = (JsonArray) page.params.get(0)[3];
+
+        // check arrays of indices
+        Assert.assertEquals(1, path.length());
+        Assert.assertEquals(1, (int) path.get(0).asNumber());
     }
 
     @Test(expected = IllegalStateException.class)
