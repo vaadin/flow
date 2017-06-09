@@ -208,9 +208,11 @@ public class ComponentGenerator {
                 .setReturnType(toJavaType(property.getType()));
 
         if (property.getType() == ComponentObjectType.BOOLEAN) {
-            method.setName("is" + StringUtils.capitalize(property.getName()));
+            method.setName(ComponentGeneratorUtils.generateMethodNameForProperty("is",
+                    property.getName()));
         } else {
-            method.setName("get" + StringUtils.capitalize(property.getName()));
+            method.setName(ComponentGeneratorUtils.generateMethodNameForProperty("get",
+                    property.getName()));
         }
 
         switch (property.getType()) {
@@ -250,8 +252,9 @@ public class ComponentGenerator {
     private void generateSetterFor(JavaClassSource javaClass,
             ComponentPropertyData property) {
 
-        MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("set" + StringUtils.capitalize(property.getName()))
+        MethodSource<JavaClassSource> method = javaClass
+                .addMethod().setName(ComponentGeneratorUtils
+                        .generateMethodNameForProperty("set", property.getName()))
                 .setPublic().setReturnTypeVoid();
 
         method.addParameter(toJavaType(property.getType()), property.getName());
