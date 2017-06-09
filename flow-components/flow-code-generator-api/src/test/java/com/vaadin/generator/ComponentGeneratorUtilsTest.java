@@ -15,7 +15,7 @@ public class ComponentGeneratorUtilsTest {
                 .formatStringToValidJavaIdentifier(name);
 
         Assert.assertEquals(
-                "Name was not converted to cameCase in the correct way",
+                "Name was not converted to camelCase in the correct way",
                 "testMethodForComponent", convertedName);
     }
 
@@ -26,7 +26,7 @@ public class ComponentGeneratorUtilsTest {
                 .formatStringToValidJavaIdentifier(name);
 
         Assert.assertEquals(
-                "Name was not converted to cameCase in the correct way",
+                "Name was not converted to camelCase in the correct way",
                 name, convertedName);
     }
 
@@ -37,7 +37,7 @@ public class ComponentGeneratorUtilsTest {
                 .generateValidJavaClassName(name);
 
         Assert.assertEquals(
-                "Name was not converted to cameCase in the correct way",
+                "Name was not converted to camelCase in the correct way",
                 "TestMethodForComponent", convertedName);
     }
 
