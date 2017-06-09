@@ -430,13 +430,13 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         }
     }
 
-    private JsonArray getPath(Node node,
+    private JsonArray getPath(com.vaadin.external.jsoup.nodes.Element element,
             com.vaadin.external.jsoup.nodes.Element templateRoot) {
         List<Integer> path = new ArrayList<>();
-        Node current = node;
+        com.vaadin.external.jsoup.nodes.Element current = element;
         while (!current.equals(templateRoot)) {
-            Node parent = current.parent();
-            path.add(parent.childNodes().indexOf(current));
+            com.vaadin.external.jsoup.nodes.Element parent = current.parent();
+            path.add(parent.children().indexOf(current));
             current = parent;
         }
         JsonArray array = Json.createArray();
