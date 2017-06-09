@@ -27,22 +27,27 @@ import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.json.JsonArray;
+import elemental.json.JsonValue;
 
 /**
  * Utility class which handles javascript execution context (see
  * ExecuteJavaScriptProcessor#getContextExecutionObject()).
- * 
+ *
  * @see ExecuteJavaScriptProcessor
- * 
+ *
  * @author Vaadin Ltd
  *
  */
-public class ElementUtils {
+public final class ExecuteJavaScriptElementUtils {
+
+    private ExecuteJavaScriptElementUtils() {
+    }
 
     /**
      * Calculate the data required for server side callback to attach existing
      * element and send it to the server.
-     * 
+     *
      * @param parent
      *            the parent node whose child is requested to attach
      * @param previousSibling
@@ -129,6 +134,44 @@ public class ElementUtils {
         Element existingElement = getDomElementById(
                 (Element) parent.getDomNode(), id);
 
+        respondExistingElement(parent, tagName, serverSideId, id,
+                existingElement);
+    }
+
+    /**
+     * Find element by the given {@code path} in the {@code parent} and collect
+     * data required for server side callback to attach existing element and
+     * send it to the server.
+     *
+     * @param parent
+     *            the parent node containing the shadow root containing the
+     *            element requested to attach
+     * @param tagName
+     *            the tag name of the element requested to attach
+     * @param serverSideId
+     *            the identifier of the server side node which is requested to
+     *            be a counterpart of the client side element
+     * @param path
+     *            the path from the {@code parent} template element to the
+     *            element to wire to (consist of indices)
+     */
+    public static void attachCustomElement(StateNode parent, String tagName,
+            int serverSideId, JsonArray path) {
+        Element customElement = getCustomElement(
+                getDomRoot(parent.getDomNode()), path);
+        if (customElement != null
+                && !tagName.equalsIgnoreCase(customElement.getTagName())) {
+            Console.warn("Custom element addressed by the path '" + path
+                    + "' has wrong tag name '" + customElement.getTagName()
+                    + "', required tag '" + tagName + "'");
+        }
+        respondExistingElement(parent, tagName, serverSideId, null,
+                customElement);
+
+    }
+
+    private static void respondExistingElement(StateNode parent, String tagName,
+            int serverSideId, String id, Element existingElement) {
         if (existingElement != null && hasTag(existingElement, tagName)) {
             NodeMap map = parent.getMap(NodeFeatures.SHADOW_ROOT_DATA);
             StateNode shadowRootNode = (StateNode) map
@@ -160,9 +203,34 @@ public class ElementUtils {
         }
     }
 
+    private static Element getCustomElement(Node root, JsonArray path) {
+        Node current = root;
+        for (int i = 0; i < path.length(); i++) {
+            JsArray<Node> childNodes = DomApi.wrap(current).getChildNodes();
+            JsonValue value = path.get(i);
+            current = childNodes.get((int) value.asNumber());
+        }
+        if (current instanceof Element) {
+            return (Element) current;
+        } else if (current == null) {
+            Console.warn(
+                    "There is no element addressed by the path '" + path + "'");
+        } else {
+            Console.warn("The node addressed by path " + path
+                    + " is not an Element");
+        }
+        return null;
+    }
+
     private static native Element getDomElementById(Element shadowRootParent,
-            String id) /*-{
+            String id)
+    /*-{
         return shadowRootParent.$[id];
+    }-*/;
+
+    private static native Element getDomRoot(Node templateElement)
+    /*-{
+        return templateElement.root;
     }-*/;
 
     private static Integer getExistingIdOrUpdate(StateNode parent,
