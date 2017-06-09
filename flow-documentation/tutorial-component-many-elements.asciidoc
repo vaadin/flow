@@ -35,7 +35,8 @@ public class TextField extends Component {
 }
 ----
 
-The DOM structure is set up by marking the root element as a `<div>` using `@Tag("div")` and creating and appending a label and an input element to the root element. Value synchronization is set up using the input element, like in <<tutorial-component-basic#,the basic component tutorial>>.
+The DOM structure is set up by marking the root element as a `<div>` using `@Tag("div")` and creating and appending a label and an input element to the root element. Value synchronization is set up using the input element,
+this is an alternative way of synchronisation, the other one can be seen in <<tutorial-component-basic#,the basic component tutorial>>.
 
 You can add API for setting the value of the input and the text of the label, using the corresponding elements:
 
