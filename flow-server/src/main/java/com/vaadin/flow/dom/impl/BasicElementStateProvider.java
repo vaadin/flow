@@ -218,9 +218,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addEventListener(StateNode node,
-            String eventType, DomEventListener listener,
-            String[] eventDataExpressions) {
+    public Registration addEventListener(StateNode node, String eventType,
+            DomEventListener listener, String[] eventDataExpressions) {
         ElementListenerMap listeners = node
                 .getFeature(ElementListenerMap.class);
 
@@ -324,8 +323,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addPropertyChangeListener(StateNode node,
-            String name, PropertyChangeListener listener) {
+    public Registration addPropertyChangeListener(StateNode node, String name,
+            PropertyChangeListener listener) {
         return getPropertyFeature(node).addPropertyChangeListener(name,
                 listener);
     }
