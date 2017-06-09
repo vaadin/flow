@@ -36,7 +36,8 @@ public class DefaultDeploymentConfigurationTest {
         String prop = "prop";
         System.setProperty(prop, value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                clazz, new Properties());
+                clazz, new Properties(), (base, consumer) -> {
+                });
         Assert.assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -49,7 +50,79 @@ public class DefaultDeploymentConfigurationTest {
                         + '.' + prop,
                 value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties());
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                (base, consumer) -> {
+                });
         Assert.assertEquals(value, config.getSystemProperty(prop));
     }
+
+    @Test
+    public void testWebComponentsBase_defaultSetting_fileFound() {
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                (base, consumer) -> {
+                    consumer.test(
+                            "bower_components/webcomponentsjs/webcomponents-lite.js");
+                });
+
+        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
+                .orElseThrow(AssertionError::new);
+
+        Assert.assertEquals("frontend://bower_components/webcomponentsjs/",
+                webComponentsPolyfillBase);
+    }
+
+    @Test
+    public void testWebComponentsBase_defaultSetting_fileMissing() {
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                (base, consumer) -> {
+                });
+
+        Assert.assertFalse(config.getWebComponentsPolyfillBase().isPresent());
+    }
+
+    @Test
+    public void testWebComponentsBase_defaultSetting_multipleFiles() {
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                (base, consumer) -> {
+                    consumer.test("foo/webcomponents-lite.js");
+                    consumer.test("bar/webcomponents-lite.js");
+                });
+
+        Assert.assertFalse(config.getWebComponentsPolyfillBase().isPresent());
+    }
+
+    @Test
+    public void testWebComponentsBase_explicitSetting() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "foo");
+
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, initParameters,
+                (base, consumer) -> {
+                    throw new AssertionError("Should never be called");
+                });
+
+        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
+                .orElseThrow(AssertionError::new);
+
+        Assert.assertEquals("foo", webComponentsPolyfillBase);
+    }
+
+    @Test
+    public void testWebComponentsBase_explicitDisable() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "");
+
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, initParameters,
+                (base, consumer) -> {
+                    throw new AssertionError("Should never be called");
+                });
+
+        Assert.assertFalse(config.getWebComponentsPolyfillBase().isPresent());
+    }
+
 }
