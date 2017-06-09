@@ -27,7 +27,7 @@ public class ComponentFunctionData {
 
     private String name;
     private ComponentObjectType returns;
-    private String documentation;
+    private String description;
     private List<ComponentFunctionParameterData> parameters;
 
     /**
@@ -69,24 +69,24 @@ public class ComponentFunctionData {
     }
 
     /**
-     * Gets the public documentation of the function, that can be used to
+     * Gets the public description of the function, that can be used to
      * generate the corresponding Javadoc at the Java class.
      * 
-     * @return The function-level documentation.
+     * @return The function-level description.
      */
-    public String getDocumentation() {
-        return documentation;
+    public String getDescription() {
+        return description;
     }
 
     /**
-     * Sets the public documentation of the function, that can be used to
+     * Sets the public description of the function, that can be used to
      * generate the corresponding Javadoc at the Java class.
      * 
-     * @param documentation
-     *            The function-level documentation.
+     * @param description
+     *            The function-level description.
      */
-    public void setDocumentation(String documentation) {
-        this.documentation = documentation;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
