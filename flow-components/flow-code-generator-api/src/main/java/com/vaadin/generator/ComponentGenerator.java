@@ -53,8 +53,8 @@ import elemental.json.JsonObject;
  * that can interacts with the original webcomponent. The metadata can also be
  * set as a JSON format.
  * 
- * @see #generateClass(ComponentMetadata, String)
- * @see #generateClass(File, File, String)
+ * @see #generateClass(ComponentMetadata, String, String)
+ * @see #generateClass(File, File, String, String)
  *
  */
 public class ComponentGenerator {
@@ -94,7 +94,7 @@ public class ComponentGenerator {
      * file.
      * 
      * @see #toMetadata(File)
-     * @see #generateClass(ComponentMetadata, File, String)
+     * @see #generateClass(ComponentMetadata, File, String, String)
      * 
      * @param jsonFile
      *            The input JSON file.
