@@ -49,7 +49,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-routing-view-parameters#,Using View Parameters>>
 ** <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
 ** <<tutorial-routing-error-view#,Defining an Error View>>
-** <<tutorial-routing-rerouting",Rerouting to another View>>
+** <<tutorial-routing-rerouting#,Rerouting to another View>>
 * Polymer template
 ** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 ** <<tutorial-template-components#,Binding Components from PolymerTemplate>>
