@@ -25,6 +25,7 @@ public class ComponentPropertyBaseData {
 
     private String name;
     private ComponentObjectType type;
+    private String description;
 
     /**
      * Gets the name of the property.
@@ -62,6 +63,27 @@ public class ComponentPropertyBaseData {
      */
     public void setType(ComponentObjectType type) {
         this.type = type;
+    }
+
+    /**
+     * Gets the public description of the function parameter, that can be used to
+     * generate the corresponding Javadoc at the Java class.
+     *
+     * @return The function parameter description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the public description of the function parameter, that can be used to
+     * generate the corresponding Javadoc at the Java class.
+     *
+     * @param description
+     *            The function parameter description.
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
 }
