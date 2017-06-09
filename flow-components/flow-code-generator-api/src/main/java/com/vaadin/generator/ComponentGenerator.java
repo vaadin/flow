@@ -26,6 +26,7 @@ import javax.annotation.Generated;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -162,6 +163,10 @@ public class ComponentGenerator {
             }
         }
 
+        if (StringUtils.isNotEmpty(metadata.getDescription())) {
+            addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
+        }
+
         String source = javaClass.toString();
 
         if (!StringUtils.isBlank(licenseNote)) {
@@ -232,7 +237,6 @@ public class ComponentGenerator {
             method.setName(ComponentGeneratorUtils
                     .generateMethodNameForProperty("get", property.getName()));
         }
-
         switch (property.getType()) {
         case STRING:
             method.setBody(
@@ -265,6 +269,18 @@ public class ComponentGenerator {
                     property.getName()));
             break;
         }
+
+        if (StringUtils.isNotEmpty(property.getDescription())) {
+            addJavaDoc(property.getDescription(), method.getJavaDoc());
+        }
+    }
+
+    private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
+        String nl = System.getProperty("line.separator");
+        String text = String.format("%s%s%s%s",
+                "Description copied from corresponding location in WebComponent:",
+                nl, nl, documentation);
+        javaDoc.setFullText(text);
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
@@ -291,6 +307,11 @@ public class ComponentGenerator {
             break;
         }
 
+        if (StringUtils.isNotEmpty(property.getDescription())) {
+            addJavaDoc(property.getDescription(), method.getJavaDoc());
+        }
+
+        method.getJavaDoc().addTagValue("@param", property.getName());
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
@@ -300,6 +321,10 @@ public class ComponentGenerator {
                 .setName(StringUtils.uncapitalize(ComponentGeneratorUtils
                         .formatStringToValidJavaIdentifier(function.getName())))
                 .setPublic().setReturnTypeVoid();
+
+        if (StringUtils.isNotEmpty(function.getDescription())) {
+            addJavaDoc(function.getDescription(), method.getJavaDoc());
+        }
 
         StringBuilder params = new StringBuilder();
         if (function.getParameters() != null
@@ -313,6 +338,8 @@ public class ComponentGenerator {
                                         param.getName()));
                 method.addParameter(toJavaType(param.getType()), formattedName);
                 params.append(", ").append(formattedName);
+
+                method.getJavaDoc().addTagValue("@param", param.getName());
             }
         }
 

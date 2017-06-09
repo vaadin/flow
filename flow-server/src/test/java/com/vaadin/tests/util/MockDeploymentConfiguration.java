@@ -2,6 +2,7 @@ package com.vaadin.tests.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import com.vaadin.server.AbstractDeploymentConfiguration;
@@ -101,6 +102,11 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isSendUrlsAsParameters() {
         return sendUrlsAsParameters;
+    }
+
+    @Override
+    public Optional<String> getWebComponentsPolyfillBase() {
+        return Optional.empty();
     }
 
 }
