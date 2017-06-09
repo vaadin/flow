@@ -43,7 +43,7 @@ import com.vaadin.testbench.parallel.DefaultBrowserFactory;
  * Abstract base class for flow TestBench tests, which are based on a
  * {@link View} class.
  */
-@RunOnHub("tb3-hub.intra.itmill.com")
+@RunOnHub
 @BrowserFactory(DefaultBrowserFactory.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
@@ -245,6 +245,17 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         if (getLocalExecution().isPresent()) {
             return "localhost";
         }
+        return getCurrentHostAddress();
+    }
+
+    /**
+     * Returns host address that can be targeted from the outside, like from a test hub.
+     *
+     * @return host address
+     * @throws RuntimeException if host name could not be determined or {@link SocketException} was caught during
+     * the determination.
+     */
+    public static String getCurrentHostAddress() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface
                     .getNetworkInterfaces();
@@ -321,7 +332,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 .filter(LocalExecution::active);
     }
 
-    private Optional<String> getHostAddress(NetworkInterface nwInterface) {
+    private static Optional<String> getHostAddress(NetworkInterface nwInterface) {
         Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
         while (addresses.hasMoreElements()) {
             InetAddress address = addresses.nextElement();

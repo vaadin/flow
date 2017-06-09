@@ -34,8 +34,11 @@ import org.eclipse.jetty.webapp.WebXmlConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
+import com.vaadin.flow.testutil.AbstractTestBenchTest;
+import com.vaadin.testbench.annotations.RunOnHub;
 
 /**
  * Test that verifies no leaks happen during redeployment of a war. Uses Jetty
@@ -44,6 +47,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
  * If you run this from Eclipse it might not produce the correct result as it
  * uses files from the target folder.
  */
+@RunOnHub
 public class RedeployLeakIT {
 
     private static final String testClass = "com.vaadin.server.VaadinServlet";
@@ -64,9 +68,9 @@ public class RedeployLeakIT {
         // DO NOT RUN FROM ECLIPSE
         // The test uses files from the target folder
         setup(7778);
-        ChromeDriver driver = new ChromeDriver(DesiredCapabilities.chrome());
+        RemoteWebDriver driver = new RemoteWebDriver(DesiredCapabilities.chrome());
         try {
-            driver.get("http://localhost:7778/");
+            driver.get("http://"+ AbstractTestBenchTest.getCurrentHostAddress() + ":7778/");
             Assert.assertNotNull(driver.findElement(By.id("hello")));
         } finally {
             driver.close();
