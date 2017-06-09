@@ -43,5 +43,8 @@ To make the framework send property changes from the browser to the server, an `
 [TIP]
 The `@Synchronize` annotation can specify multiple events and override the name of the property if needed.
 
+[NOTE]
+The `@Synchronize` annotation maps events _originated from the root element of the webcomponent only_ (or events bubbled to the root element). If you have a `<div>` as the root element and an `<input>` inside it, the only events that can be mapped using `@Synchronize` are the events from the `<div>` element.
+
 [TIP]
 For an easier way to address properties and attributes, see <<tutorial-component-property-descriptor#,Using API Helpers for Defining Component Properties>>
