@@ -275,6 +275,11 @@ Native elements need to specify a custom change event name in the annotation usi
 </dom-module>
 ----
 
+Here's the template representation in the browser:
+
+image:images/two-way-binding-example.png[Template representation]
+
+
 In the template we use two-way bindings for each element and some elements bind to the same property.
 This will show up in a way that for example the value for name is changed in the paper-input element the value will be reflected to both "Input name:" and "Change name".
 
