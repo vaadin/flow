@@ -25,7 +25,7 @@ import java.util.List;
 public class ComponentEventData {
 
     private String name;
-    private String documentation;
+    private String description;
     private List<ComponentPropertyBaseData> properties;
 
     /**
@@ -48,24 +48,24 @@ public class ComponentEventData {
     }
 
     /**
-     * Gets the public documentation of the event, that can be used to generate
+     * Gets the public description of the event, that can be used to generate
      * the corresponding Javadoc at the Java class.
      * 
-     * @return The event-level documentation.
+     * @return The event-level description.
      */
-    public String getDocumentation() {
-        return documentation;
+    public String getDescription() {
+        return description;
     }
 
     /**
-     * Sets the public documentation of the event, that can be used to generate
+     * Sets the public description of the event, that can be used to generate
      * the corresponding Javadoc at the Java class.
      * 
-     * @param documentation
-     *            The event-level documentation.
+     * @param description
+     *            The event-level description.
      */
-    public void setDocumentation(String documentation) {
-        this.documentation = documentation;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
