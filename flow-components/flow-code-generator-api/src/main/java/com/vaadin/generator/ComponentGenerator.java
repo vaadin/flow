@@ -26,6 +26,7 @@ import javax.annotation.Generated;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -154,6 +155,10 @@ public class ComponentGenerator {
             }
         }
 
+        if (StringUtils.isNotEmpty(metadata.getDocumentation())) {
+            addJavaDoc(metadata.getDocumentation(), javaClass.getJavaDoc());
+        }
+
         return javaClass.toString();
     }
 
@@ -208,13 +213,12 @@ public class ComponentGenerator {
                 .setReturnType(toJavaType(property.getType()));
 
         if (property.getType() == ComponentObjectType.BOOLEAN) {
-            method.setName(ComponentGeneratorUtils.generateMethodNameForProperty("is",
-                    property.getName()));
+            method.setName(ComponentGeneratorUtils
+                    .generateMethodNameForProperty("is", property.getName()));
         } else {
-            method.setName(ComponentGeneratorUtils.generateMethodNameForProperty("get",
-                    property.getName()));
+            method.setName(ComponentGeneratorUtils
+                    .generateMethodNameForProperty("get", property.getName()));
         }
-
         switch (property.getType()) {
         case STRING:
             method.setBody(
@@ -247,14 +251,22 @@ public class ComponentGenerator {
                     property.getName()));
             break;
         }
+
+        if (StringUtils.isNotEmpty(property.getDocumentation())) {
+            addJavaDoc(property.getDocumentation(), method.getJavaDoc());
+        }
+    }
+
+    private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
+        javaDoc.setFullText(documentation);
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
             ComponentPropertyData property) {
 
-        MethodSource<JavaClassSource> method = javaClass
-                .addMethod().setName(ComponentGeneratorUtils
-                        .generateMethodNameForProperty("set", property.getName()))
+        MethodSource<JavaClassSource> method = javaClass.addMethod()
+                .setName(ComponentGeneratorUtils.generateMethodNameForProperty(
+                        "set", property.getName()))
                 .setPublic().setReturnTypeVoid();
 
         method.addParameter(toJavaType(property.getType()), property.getName());
@@ -273,6 +285,11 @@ public class ComponentGenerator {
             break;
         }
 
+        if (StringUtils.isNotEmpty(property.getDocumentation())) {
+            addJavaDoc(property.getDocumentation(), method.getJavaDoc());
+        }
+
+        method.getJavaDoc().addTagValue("@param", property.getName());
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
@@ -282,6 +299,10 @@ public class ComponentGenerator {
                 .setName(StringUtils.uncapitalize(ComponentGeneratorUtils
                         .formatStringToValidJavaIdentifier(function.getName())))
                 .setPublic().setReturnTypeVoid();
+
+        if (StringUtils.isNotEmpty(function.getDocumentation())) {
+            addJavaDoc(function.getDocumentation(), method.getJavaDoc());
+        }
 
         StringBuilder params = new StringBuilder();
         if (function.getParameters() != null
@@ -295,6 +316,8 @@ public class ComponentGenerator {
                                         param.getName()));
                 method.addParameter(toJavaType(param.getType()), formattedName);
                 params.append(", ").append(formattedName);
+
+                method.getJavaDoc().addTagValue("@param", param.getName());
             }
         }
 
