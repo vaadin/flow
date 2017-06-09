@@ -37,6 +37,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import com.vaadin.testbench.annotations.RunOnHub;
+
 /**
  * Test that verifies no leaks happen during redeployment of a war. Uses Jetty
  * to deploy/undeploy the war file this module produces.
@@ -44,6 +46,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
  * If you run this from Eclipse it might not produce the correct result as it
  * uses files from the target folder.
  */
+@RunOnHub
 public class RedeployLeakIT {
 
     private static final String testClass = "com.vaadin.server.VaadinServlet";
