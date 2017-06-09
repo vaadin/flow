@@ -15,23 +15,23 @@
  */
 package com.vaadin.generator;
 
+import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.Date;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentEventData;
@@ -131,7 +131,7 @@ public class ComponentGenerator {
 
         addAnnotation(javaClass, Generated.class,
                 ComponentGenerator.class.getName());
-        addAnnotation(javaClass, Generated.class, metadata.getTag());
+        addAnnotation(javaClass, Tag.class, metadata.getTag());
 
         if (metadata.getProperties() != null) {
             for (ComponentPropertyData property : metadata.getProperties()) {
@@ -143,8 +143,8 @@ public class ComponentGenerator {
             }
         }
 
-        if (metadata.getFunctions() != null) {
-            for (ComponentFunctionData function : metadata.getFunctions()) {
+        if (metadata.getMethods() != null) {
+            for (ComponentFunctionData function : metadata.getMethods()) {
                 generateFunctionFor(javaClass, function);
             }
         }
@@ -155,8 +155,8 @@ public class ComponentGenerator {
             }
         }
 
-        if (StringUtils.isNotEmpty(metadata.getDocumentation())) {
-            addJavaDoc(metadata.getDocumentation(), javaClass.getJavaDoc());
+        if (StringUtils.isNotEmpty(metadata.getDescription())) {
+            addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
 
         return javaClass.toString();
@@ -252,8 +252,8 @@ public class ComponentGenerator {
             break;
         }
 
-        if (StringUtils.isNotEmpty(property.getDocumentation())) {
-            addJavaDoc(property.getDocumentation(), method.getJavaDoc());
+        if (StringUtils.isNotEmpty(property.getDescription())) {
+            addJavaDoc(property.getDescription(), method.getJavaDoc());
         }
     }
 
@@ -285,8 +285,8 @@ public class ComponentGenerator {
             break;
         }
 
-        if (StringUtils.isNotEmpty(property.getDocumentation())) {
-            addJavaDoc(property.getDocumentation(), method.getJavaDoc());
+        if (StringUtils.isNotEmpty(property.getDescription())) {
+            addJavaDoc(property.getDescription(), method.getJavaDoc());
         }
 
         method.getJavaDoc().addTagValue("@param", property.getName());
@@ -300,8 +300,8 @@ public class ComponentGenerator {
                         .formatStringToValidJavaIdentifier(function.getName())))
                 .setPublic().setReturnTypeVoid();
 
-        if (StringUtils.isNotEmpty(function.getDocumentation())) {
-            addJavaDoc(function.getDocumentation(), method.getJavaDoc());
+        if (StringUtils.isNotEmpty(function.getDescription())) {
+            addJavaDoc(function.getDescription(), method.getJavaDoc());
         }
 
         StringBuilder params = new StringBuilder();

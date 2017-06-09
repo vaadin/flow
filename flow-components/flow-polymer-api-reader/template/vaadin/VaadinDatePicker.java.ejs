@@ -1,7 +1,0 @@
-<% contentFor('classBodyEnd', include('../_value-clear.java.ejs')) -%>
-<% contentFor('classBodyEnd', include('../_value-accessors.java.ejs')) -%>
-<%
-  // TODO: https://github.com/vaadin/vaadin-date-picker/issues/213
-  publicProperties.push({name: 'autoValidate', type: 'Boolean'});
--%>
-<%- include('../element.java.ejs') -%>
