@@ -79,8 +79,9 @@ then
     # Verify build and build javadoc
     mvn -B -e -V -P validation \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
-        -Dtest.excludegroup=clean \
+        -Dtest.excludegroup= \
         -Dtest.use.hub=true \
+        clean \
         org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
     # Get the status for the previous maven command and if not exception then run sonar.
     STATUS=$?

@@ -57,6 +57,7 @@
 
         <!--Plugins-->
         <driver.binary.downloader.maven.plugin.version>1.0.12</driver.binary.downloader.maven.plugin.version>
+        <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
 
         <!--Frontend-->
         <node.version>v7.10.0</node.version>
