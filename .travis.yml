@@ -20,8 +20,8 @@ install: true
 # Make Chrome IT tests more stable
 # https://docs.travis-ci.com/user/gui-and-headless-browsers/#Using-xvfb-to-Run-Tests-That-Require-a-GUI
 before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
   - sleep 3 # give xvfb some time to start
   # The Following line fixes random Chrome startup failures (https://github.com/SeleniumHQ/docker-selenium/issues/87)
   - export DBUS_SESSION_BUS_ADDRESS=/dev/null
