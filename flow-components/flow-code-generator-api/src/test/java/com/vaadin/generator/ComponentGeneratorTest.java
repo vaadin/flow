@@ -27,6 +27,7 @@ public class ComponentGeneratorTest {
         componentMetadata = new ComponentMetadata();
         componentMetadata.setTag("my-component");
         componentMetadata.setName("MyComponent");
+        componentMetadata.setBaseUrl("MyComponent");
         componentMetadata.setVersion("0.0.1");
         componentMetadata
                 .setDescription("Test java doc creation for class file");
@@ -40,6 +41,24 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("Generated class didn't contain class JavaDoc",
                 generatedClass
                         .contains("* " + componentMetadata.getDescription()));
+    }
+
+    @Test
+    public void generateClass_generatedContainsVersions() {
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("Generator version information missing",
+                generatedClass.contains(
+                        "Generator: " + generator.getClass().getName() + "#"));
+        Assert.assertTrue("WebComponent version information missing",
+                generatedClass.contains(
+                        "\"WebComponent: " + componentMetadata.getBaseUrl()
+                                + "/" + componentMetadata.getTag() + "#"
+                                + componentMetadata.getVersion() + "\""));
+        Assert.assertTrue("Flow version missing",
+                generatedClass.contains("\"Flow#"));
+
     }
 
     @Test

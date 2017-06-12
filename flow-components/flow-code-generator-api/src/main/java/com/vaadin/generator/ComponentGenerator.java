@@ -15,23 +15,24 @@
  */
 package com.vaadin.generator;
 
+import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.Date;
+import java.util.Properties;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -137,8 +138,7 @@ public class ComponentGenerator {
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
                         .generateValidJavaClassName(metadata.getName()));
 
-        addAnnotation(javaClass, Generated.class,
-                ComponentGenerator.class.getName());
+        addGeneratedAnnotation(metadata, javaClass);
         addAnnotation(javaClass, Tag.class, metadata.getTag());
 
         if (metadata.getProperties() != null) {
@@ -175,6 +175,26 @@ public class ComponentGenerator {
         }
 
         return source;
+    }
+
+    private void addGeneratedAnnotation(ComponentMetadata metadata,
+            JavaClassSource javaClass) {
+        Properties apiVersionProperties = getAPIVersionProperties();
+        String generator = String.format("Generator: %s#%s",
+                ComponentGenerator.class.getName(),
+                apiVersionProperties.getProperty("generator.version"));
+        String webcomponent = String.format("WebComponent: %s/%s#%s",
+                metadata.getBaseUrl(), metadata.getTag(),
+                metadata.getVersion());
+
+        String flow = String.format("Flow#%s",
+                apiVersionProperties.getProperty("flow.version"));
+
+        String[] generatedValue = new String[] { generator, webcomponent,
+                flow };
+
+        javaClass.addAnnotation(Generated.class)
+                .setStringArrayValue(generatedValue);
     }
 
     /**
@@ -380,5 +400,21 @@ public class ComponentGenerator {
             throw new ComponentGenerationException(
                     "Not a supported type: " + type);
         }
+    }
+
+    public Properties getAPIVersionProperties() {
+        // Get properties resource with version information.
+        InputStream resourceAsStream = this.getClass()
+                .getResourceAsStream("/version.prop");
+
+        Properties config = new Properties();
+        try {
+            config.load(resourceAsStream);
+            return config;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return config;
     }
 }
