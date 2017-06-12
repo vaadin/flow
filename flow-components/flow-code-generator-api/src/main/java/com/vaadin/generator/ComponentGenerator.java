@@ -302,15 +302,9 @@ public class ComponentGenerator {
                             property.getName(), property.getName()));
             break;
         default:
-            String value = property.getName();
-            // Don't insert null as property value. Insert empty String instead.
-            if (String.class.equals(setterType)) {
-                value = String.format("%s == null ? \"\" : %s",
-                        property.getName(), property.getName());
-            }
-            method.setBody(
-                    String.format("getElement().setProperty(\"%s\", %s);",
-                            property.getName(), value));
+            method.setBody(String.format(
+                    "getElement().setProperty(\"%s\", %s);", property.getName(),
+                    getSetterValue(property.getName(), setterType)));
             break;
         }
 
@@ -319,6 +313,16 @@ public class ComponentGenerator {
         }
 
         method.getJavaDoc().addTagValue("@param", property.getName());
+    }
+
+    private String getSetterValue(String propertyName, Class<?> setterType) {
+        String value = propertyName;
+        // Don't insert null as property value. Insert empty String instead.
+        if (String.class.equals(setterType)) {
+            value = String.format("%s == null ? \"\" : %s", propertyName,
+                    propertyName);
+        }
+        return value;
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
