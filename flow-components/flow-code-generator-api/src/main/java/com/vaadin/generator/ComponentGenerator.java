@@ -291,7 +291,8 @@ public class ComponentGenerator {
                         "set", property.getName()))
                 .setPublic().setReturnTypeVoid();
 
-        method.addParameter(toJavaType(property.getType()), property.getName());
+        Class<?> setterType = toJavaType(property.getType());
+        method.addParameter(setterType, property.getName());
 
         switch (property.getType()) {
         case ARRAY:
@@ -301,9 +302,15 @@ public class ComponentGenerator {
                             property.getName(), property.getName()));
             break;
         default:
+            String value = property.getName();
+            // Don't insert null as property value. Insert empty String instead.
+            if (String.class.equals(setterType)) {
+                value = String.format("%s == null ? \"\" : %s",
+                        property.getName(), property.getName());
+            }
             method.setBody(
                     String.format("getElement().setProperty(\"%s\", %s);",
-                            property.getName(), property.getName()));
+                            property.getName(), value));
             break;
         }
 
