@@ -144,6 +144,11 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
+        
+        $wnd.vaadin.resolveUri = $entry(function(uriToResolve) {
+            var ur = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
+            return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
+        });
     
         client.initializing = false;
     
