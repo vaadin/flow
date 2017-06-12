@@ -137,12 +137,8 @@ public class ComponentGenerator {
     public String generateClass(ComponentMetadata metadata, String basePackage,
             String licenseNote) {
 
-        JavaClassSource javaClass = generateClassSource(metadata, basePackage,
-                licenseNote);
-        String source = addLicenseHeaderIfAvailable(javaClass.toString(),
-                licenseNote);
-
-        return source;
+        JavaClassSource javaClass = generateClassSource(metadata, basePackage);
+        return addLicenseHeaderIfAvailable(javaClass.toString(), licenseNote);
     }
 
     /*
@@ -151,7 +147,7 @@ public class ComponentGenerator {
      * beginning of the file).
      */
     private JavaClassSource generateClassSource(ComponentMetadata metadata,
-            String basePackage, String licenseNote) {
+            String basePackage) {
 
         String targetPackage = basePackage;
         if (StringUtils.isNotBlank(metadata.getBaseUrl())) {
@@ -172,25 +168,23 @@ public class ComponentGenerator {
         addAnnotation(javaClass, Tag.class, metadata.getTag());
 
         if (metadata.getProperties() != null) {
-            for (ComponentPropertyData property : metadata.getProperties()) {
+            metadata.getProperties().forEach(property -> {
                 generateGetterFor(javaClass, property);
 
                 if (!property.isReadOnly()) {
                     generateSetterFor(javaClass, property);
                 }
-            }
+            });
         }
 
         if (metadata.getMethods() != null) {
-            for (ComponentFunctionData function : metadata.getMethods()) {
-                generateFunctionFor(javaClass, function);
-            }
+            metadata.getMethods().forEach(
+                    function -> generateFunctionFor(javaClass, function));
         }
 
         if (metadata.getEvents() != null) {
-            for (ComponentEventData event : metadata.getEvents()) {
-                generateEventListenerFor(javaClass, event);
-            }
+            metadata.getEvents().forEach(
+                    event -> generateEventListenerFor(javaClass, event));
         }
 
         if (StringUtils.isNotEmpty(metadata.getDescription())) {
@@ -236,8 +230,7 @@ public class ComponentGenerator {
     public void generateClass(ComponentMetadata metadata, File targetPath,
             String basePackage, String licenseNote) {
 
-        JavaClassSource javaClass = generateClassSource(metadata, basePackage,
-                licenseNote);
+        JavaClassSource javaClass = generateClassSource(metadata, basePackage);
         String source = addLicenseHeaderIfAvailable(javaClass.toString(),
                 licenseNote);
 
