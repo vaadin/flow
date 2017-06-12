@@ -130,7 +130,7 @@ public class PolymerTemplateTest {
         }
     }
 
-    @Tag("parent-templte")
+    @Tag("parent-template")
     private static class TemplateInTemplate
             extends PolymerTemplate<ModelClass> {
 
@@ -141,7 +141,21 @@ public class PolymerTemplateTest {
 
     }
 
-    @Tag("parent-templte")
+    @Tag("parent-inject-child")
+    private static class TemplateInjectTemplate
+            extends PolymerTemplate<ModelClass> {
+
+        @Id("child")
+        private TemplateChild child;
+
+        public TemplateInjectTemplate() {
+            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><template><child-template id='child'></template></dom-module>"));
+        }
+
+    }
+
+    @Tag("parent-template")
     private static class TemplateWithChildInDomRepeat
             extends PolymerTemplate<ModelClass> {
 
@@ -154,7 +168,7 @@ public class PolymerTemplateTest {
 
     }
 
-    @Tag("parent-templte")
+    @Tag("parent-template")
     private static class TemplateWithDomRepeat
             extends PolymerTemplate<ModelClass> {
 
@@ -435,6 +449,23 @@ public class PolymerTemplateTest {
 
         Assert.assertNotNull(template.label);
         Assert.assertEquals(child, template.label.getNode());
+    }
+
+    @Test
+    public void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreate() {
+        TemplateInjectTemplate template = new TemplateInjectTemplate();
+
+        setupUI(template);
+
+        AttachTemplateChildFeature feature = template.getStateNode()
+                .getFeature(AttachTemplateChildFeature.class);
+        List<StateNode> templateNodes = new ArrayList<>();
+        feature.forEachChild(templateNodes::add);
+
+        Assert.assertEquals(1, templateNodes.size());
+        StateNode stateNode = templateNodes.get(0);
+
+        Assert.assertEquals(stateNode, template.child.getStateNode());
     }
 
     @Test
