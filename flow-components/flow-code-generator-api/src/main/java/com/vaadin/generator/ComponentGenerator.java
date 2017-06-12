@@ -23,6 +23,8 @@ import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -412,7 +414,8 @@ public class ComponentGenerator {
             config.load(resourceAsStream);
             return config;
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger(getClass().getSimpleName()).log(Level.WARNING,
+                    "Failed to load properties file 'version.prop'", e);
         }
 
         return config;
