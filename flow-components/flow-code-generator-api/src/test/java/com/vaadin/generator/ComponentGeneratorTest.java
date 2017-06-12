@@ -149,4 +149,25 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("No license header found", generatedClass.startsWith(
                 "/*\n * some license header\n */\npackage com.my.test;"));
     }
+
+    @Test
+    public void generateClassWithBaseUrl_classContainsBaseUrlInThePackage() {
+        componentMetadata.setBaseUrl("some/directory");
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Wrong generated package. It should be com.my.test.some.directory",
+                generatedClass
+                        .startsWith("package com.my.test.some.directory;"));
+
+        componentMetadata.setBaseUrl("\\Some\\Other\\Directory\\");
+        generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Wrong generated package. It should be com.my.test.some.other.directory",
+                generatedClass.startsWith(
+                        "package com.my.test.some.other.directory;"));
+    }
 }

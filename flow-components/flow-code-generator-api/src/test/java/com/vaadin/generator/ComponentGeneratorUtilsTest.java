@@ -90,4 +90,33 @@ public class ComponentGeneratorUtilsTest {
     public void formatStringToCommentAssertionForNullPrefix() {
         ComponentGeneratorUtils.formatStringToJavaComment(null);
     }
+
+    @Test
+    public void convertDirectoryToPackage() {
+        Assert.assertEquals("some.directory.structure", ComponentGeneratorUtils
+                .convertDirectoryToPackage("/some/directory/structure/"));
+
+        Assert.assertEquals("some.directory.structure", ComponentGeneratorUtils
+                .convertDirectoryToPackage("\\some\\directory\\structure\\"));
+
+        Assert.assertEquals("some.directory.structure", ComponentGeneratorUtils
+                .convertDirectoryToPackage("some directory structure"));
+
+        Assert.assertEquals("some.directory.structure", ComponentGeneratorUtils
+                .convertDirectoryToPackage("/SOME_DIRECTORY-STRUCTURE"));
+
+        Assert.assertEquals("c.my.documents.something", ComponentGeneratorUtils
+                .convertDirectoryToPackage("C:/My Documents/Something"));
+
+        Assert.assertEquals("_42",
+                ComponentGeneratorUtils.convertDirectoryToPackage("42"));
+
+        Assert.assertEquals("",
+                ComponentGeneratorUtils.convertDirectoryToPackage("/ / / /"));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void convertDirectoryToPackageForNullDirectory() {
+        ComponentGeneratorUtils.convertDirectoryToPackage(null);
+    }
 }

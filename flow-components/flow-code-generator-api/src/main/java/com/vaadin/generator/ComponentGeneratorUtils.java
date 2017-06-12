@@ -17,6 +17,8 @@ package com.vaadin.generator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -121,6 +123,26 @@ public final class ComponentGeneratorUtils {
                     "Directory \"" + directory + "\" could not be created.");
         }
         return directory;
+    }
+
+    /**
+     * Generates a package name based on a directory structure. The names are
+     * converted to lowercase, and each subfolder of the directory is converted
+     * to a package (split by ".").
+     * 
+     * @param directory
+     *            The directory to be converted to a package name, such as
+     *            "/company/components/component".
+     * @return A valid package name based on the input directory.
+     */
+    public static String convertDirectoryToPackage(String directory) {
+        assert directory != null : "Directory should not be null";
+        String normalized = directory.replaceAll("[\\W+_]", "/");
+        String[] split = normalized.split("/");
+
+        return Arrays.stream(split).filter(StringUtils::isNotBlank)
+                .map(ComponentGeneratorUtils::formatStringToValidJavaIdentifier)
+                .map(String::toLowerCase).collect(Collectors.joining("."));
     }
 
     /**
