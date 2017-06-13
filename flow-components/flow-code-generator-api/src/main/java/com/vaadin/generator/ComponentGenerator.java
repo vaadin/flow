@@ -313,7 +313,8 @@ public class ComponentGenerator {
                         "set", property.getName()))
                 .setPublic().setReturnTypeVoid();
 
-        method.addParameter(toJavaType(property.getType()), property.getName());
+        Class<?> setterType = toJavaType(property.getType());
+        method.addParameter(setterType, property.getName());
 
         switch (property.getType()) {
         case ARRAY:
@@ -323,9 +324,9 @@ public class ComponentGenerator {
                             property.getName(), property.getName()));
             break;
         default:
-            method.setBody(
-                    String.format("getElement().setProperty(\"%s\", %s);",
-                            property.getName(), property.getName()));
+            method.setBody(String.format(
+                    "getElement().setProperty(\"%s\", %s);", property.getName(),
+                    getSetterValue(property.getName(), setterType)));
             break;
         }
 
@@ -334,6 +335,16 @@ public class ComponentGenerator {
         }
 
         method.getJavaDoc().addTagValue("@param", property.getName());
+    }
+
+    private String getSetterValue(String propertyName, Class<?> setterType) {
+        String value = propertyName;
+        // Don't insert null as property value. Insert empty String instead.
+        if (String.class.equals(setterType)) {
+            value = String.format("%s == null ? \"\" : %s", propertyName,
+                    propertyName);
+        }
+        return value;
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
