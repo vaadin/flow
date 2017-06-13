@@ -39,7 +39,6 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.vaadin.flow.testutil.AbstractTestBenchTest;
-import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 
 /**
@@ -49,7 +48,6 @@ import com.vaadin.testbench.parallel.Browser;
  * If you run this from Eclipse it might not produce the correct result as it
  * uses files from the target folder.
  */
-@RunOnHub
 public class RedeployLeakIT extends AbstractTestBenchTest {
 
     private static final String testClass = "com.vaadin.server.VaadinServlet";
