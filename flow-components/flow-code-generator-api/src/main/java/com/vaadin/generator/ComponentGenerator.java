@@ -233,9 +233,13 @@ public class ComponentGenerator {
         addAnnotation(javaClass, Tag.class, metadata.getTag());
 
         properties = getProperties("variable.prop");
+
+        String importPath = metadata.getBaseUrl().replace("\\", "/");
+        if (importPath.startsWith("/")) {
+            importPath.substring(1);
+        }
         String htmlImport = String.format("frontend://%s/%s",
-                properties.get("frontend.directory"),
-                metadata.getBaseUrl());
+                properties.get("frontend.directory"), importPath);
         addAnnotation(javaClass, HtmlImport.class, htmlImport);
     }
 

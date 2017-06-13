@@ -193,7 +193,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", "some license header");
 
         Assert.assertTrue("No license header found", generatedClass.startsWith(
-                "/*\n * some license header\n */\npackage com.my.test;"));
+                "/*\n * some license header\n */\npackage com.my.test"));
     }
 
     @Test
