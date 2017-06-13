@@ -166,7 +166,8 @@ public class ComponentGeneratorTest {
                 .contains("public void setName(java.lang.String name)"));
 
         Assert.assertTrue("Setter doesn't check for null value",
-                generatedClass.contains(propertyData.getName() + " == null ? \"\" : " + propertyData.getName()));
+                generatedClass.contains(propertyData.getName()
+                        + " == null ? \"\" : " + propertyData.getName()));
     }
 
     @Test
@@ -174,8 +175,7 @@ public class ComponentGeneratorTest {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
         propertyData.setType(ComponentObjectType.BOOLEAN);
-        propertyData
-                .setDescription("This is a required field.");
+        propertyData.setDescription("This is a required field.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
@@ -186,6 +186,29 @@ public class ComponentGeneratorTest {
                 .contains("public void setRequired(boolean required)"));
 
         Assert.assertFalse("Setter checks for null value",
-                generatedClass.contains(propertyData.getName() + " == null ? \"\" : " + propertyData.getName()));
+                generatedClass.contains(propertyData.getName()
+                        + " == null ? \"\" : " + propertyData.getName()));
+    }
+
+    @Test
+    public void generateClassWithBaseUrl_classContainsBaseUrlInThePackage() {
+        componentMetadata.setBaseUrl("some/directory/some-component.html");
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Wrong generated package. It should be com.my.test.some.directory",
+                generatedClass
+                        .startsWith("package com.my.test.some.directory;"));
+
+        componentMetadata
+                .setBaseUrl("\\Some\\Other\\Directory\\some-component.html");
+        generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Wrong generated package. It should be com.my.test.some.other.directory",
+                generatedClass.startsWith(
+                        "package com.my.test.some.other.directory;"));
     }
 }
