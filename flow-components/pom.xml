@@ -35,7 +35,7 @@
         <profile>
             <id>generator</id>
             <modules>
-                <module>flow-polymer-api-reader</module>
+                <module>flow-webcomponent-api-analyzer</module>
                 <module>flow-component-generator</module>
             </modules>
         </profile>
