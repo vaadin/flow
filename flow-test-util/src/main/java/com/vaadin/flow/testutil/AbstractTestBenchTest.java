@@ -239,7 +239,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * @throws RuntimeException if host name could not be determined or {@link SocketException} was caught during
      * the determination.
      */
-    public static String getCurrentHostAddress() {
+    protected String getCurrentHostAddress() {
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface
                     .getNetworkInterfaces();
