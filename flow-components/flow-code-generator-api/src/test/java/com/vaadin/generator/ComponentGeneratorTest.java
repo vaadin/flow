@@ -81,6 +81,7 @@ public class ComponentGeneratorTest {
 
     @Test
     public void generateClass_generatedHtmlImportIsCorrect() {
+        generator.withFrontendDirectory("test-directory");
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
