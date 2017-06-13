@@ -154,6 +154,11 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     /**
      * Executes the given JavaScript.
+     * <p>
+     * To be able to use the return value of the JavaScript, you must explicitly
+     * declare a <code>return</code> statement.
+     * <p>
+     * For example: <code>executeScript("return window.name;");<code>.
      *
      * @param script
      *            the script to execute
