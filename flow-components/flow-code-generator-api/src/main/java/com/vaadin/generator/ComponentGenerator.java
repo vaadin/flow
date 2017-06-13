@@ -236,7 +236,7 @@ public class ComponentGenerator {
 
         String importPath = metadata.getBaseUrl().replace("\\", "/");
         if (importPath.startsWith("/")) {
-            importPath.substring(1);
+            importPath = importPath.substring(1);
         }
         String htmlImport = String.format("frontend://%s/%s",
                 properties.get("frontend.directory"), importPath);
@@ -466,7 +466,7 @@ public class ComponentGenerator {
         }
     }
 
-    public Properties getProperties(String fileName) {
+    private Properties getProperties(String fileName) {
         // Get properties resource with version information.
         InputStream resourceAsStream = this.getClass()
                 .getResourceAsStream("/" + fileName);
@@ -477,7 +477,7 @@ public class ComponentGenerator {
             return config;
         } catch (IOException e) {
             Logger.getLogger(getClass().getSimpleName()).log(Level.WARNING,
-                    "Failed to load properties file 'version.prop'", e);
+                    "Failed to load properties file '"+fileName+"'", e);
         }
 
         return config;
