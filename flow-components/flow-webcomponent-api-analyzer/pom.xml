@@ -8,7 +8,7 @@
         <artifactId>flow-components</artifactId>
         <version>0.1.9-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-polymer-api-reader</artifactId>
+    <artifactId>flow-webcomponent-api-analyzer</artifactId>
     <name>Flow WebComponent API Analyzer</name>
     <description>Reads WebComponent APIs with Polymer Analyzer and Transform them to Json for Component Generator</description>
     <!-- Versioning doesn't follow Flow Core. -->
