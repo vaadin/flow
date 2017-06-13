@@ -101,6 +101,14 @@ You can use the `@Include` annotation and provide a list of properties that you 
 (all other properties will be excluded) or `@Exclude` for a list you want to exclude. In this specific case the
 `@Include({"firstName","lastName","age"})` would be the same as the shown `@Exclude("id")` annotation.
 
+[TIP]
+You can include and exclude sub bean properties by using the dot-annotation, e.g. `@Exclude("account.password")`.
+
+[NOTE]
+When setting backend data directly to the model, you must exclude any bean properties that would lead to circular dependencies.
+For instance, if a `Patient` bean would have a property `Doctor doctor`, the `Doctor` bean must not have a property of type
+`Patient` (or as a generic type for a collection property), as that would lead to a circular dependency.
+
 In the template you can initialize the model by setting a new person instance to it:
 
 .Form template class
