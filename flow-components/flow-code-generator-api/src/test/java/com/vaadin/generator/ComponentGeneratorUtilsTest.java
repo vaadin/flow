@@ -90,4 +90,48 @@ public class ComponentGeneratorUtilsTest {
     public void formatStringToCommentAssertionForNullPrefix() {
         ComponentGeneratorUtils.formatStringToJavaComment(null);
     }
+
+    @Test
+    public void convertFilePathToPackage() {
+        Assert.assertEquals("some.directory.structure",
+                ComponentGeneratorUtils.convertFilePathToPackage(
+                        "/some/directory/structure/my-file.html"));
+
+        Assert.assertEquals("some.directory.structure",
+                ComponentGeneratorUtils.convertFilePathToPackage(
+                        "\\some\\directory\\structure\\my-file.html"));
+
+        Assert.assertEquals("some.directory.structure",
+                ComponentGeneratorUtils.convertFilePathToPackage(
+                        "some directory structure/my-file.html"));
+
+        Assert.assertEquals("some.directory.structure",
+                ComponentGeneratorUtils.convertFilePathToPackage(
+                        "/SOME_DIRECTORY-STRUCTURE/MY-FILE.html"));
+
+        Assert.assertEquals("c.my.documents.something",
+                ComponentGeneratorUtils.convertFilePathToPackage(
+                        "C:/My Documents/Something/My-File.html"));
+
+        Assert.assertEquals("_42", ComponentGeneratorUtils
+                .convertFilePathToPackage("42/my-file.html"));
+    }
+
+    @Test
+    public void convertFilePathToEmptyPackage() {
+        Assert.assertEquals("", ComponentGeneratorUtils
+                .convertFilePathToPackage("my-file.html"));
+
+        Assert.assertEquals("", ComponentGeneratorUtils
+                .convertFilePathToPackage("/my-file.html"));
+
+        Assert.assertEquals("",
+                ComponentGeneratorUtils.convertFilePathToPackage("/ / / /"));
+
+    }
+
+    @Test(expected = AssertionError.class)
+    public void convertFilePathToPackageForNullDirectory() {
+        ComponentGeneratorUtils.convertFilePathToPackage(null);
+    }
 }

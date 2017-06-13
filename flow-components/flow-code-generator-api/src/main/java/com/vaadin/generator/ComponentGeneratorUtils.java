@@ -17,6 +17,8 @@ package com.vaadin.generator;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -121,6 +123,39 @@ public final class ComponentGeneratorUtils {
                     "Directory \"" + directory + "\" could not be created.");
         }
         return directory;
+    }
+
+    /**
+     * Generates a package name based on a file path structure. The names are
+     * converted to lowercase, and each folder of the file path is converted to
+     * a package (split by ".").
+     * 
+     * @param path
+     *            The file path to be converted to a package name, such as
+     *            "/components/vaadin-button/vaadin-button.html".
+     * @return A valid package name based on the input file path.
+     */
+    public static String convertFilePathToPackage(String path) {
+        assert path != null : "Path should not be null";
+
+        String normalized = path.replace('\\', '/');
+
+        // the last part of the path is supposed to be the file name, which is
+        // discarded for the package
+        int idx = normalized.lastIndexOf('/');
+        if (idx > 0) {
+            normalized = normalized.substring(0, idx);
+        } else {
+            return "";
+        }
+
+        // replace all special characters for /
+        normalized = normalized.replaceAll("[\\W+_]", "/");
+        String[] split = normalized.split("/");
+
+        return Arrays.stream(split).filter(StringUtils::isNotBlank)
+                .map(ComponentGeneratorUtils::formatStringToValidJavaIdentifier)
+                .map(String::toLowerCase).collect(Collectors.joining("."));
     }
 
     /**
