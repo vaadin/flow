@@ -1,6 +1,8 @@
 package com.vaadin.generator;
 
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,7 +29,7 @@ public class ComponentGeneratorTest {
         componentMetadata = new ComponentMetadata();
         componentMetadata.setTag("my-component");
         componentMetadata.setName("MyComponent");
-        componentMetadata.setBaseUrl("MyComponent");
+        componentMetadata.setBaseUrl("my-component/my-component.html");
         componentMetadata.setVersion("0.0.1");
         componentMetadata
                 .setDescription("Test java doc creation for class file");
@@ -53,8 +55,7 @@ public class ComponentGeneratorTest {
                         "Generator: " + generator.getClass().getName() + "#"));
         Assert.assertTrue("WebComponent version information missing",
                 generatedClass.contains(
-                        "\"WebComponent: " + componentMetadata.getBaseUrl()
-                                + "/" + componentMetadata.getTag() + "#"
+                        "\"WebComponent: " + componentMetadata.getName() + "#"
                                 + componentMetadata.getVersion() + "\""));
         Assert.assertTrue("Flow version missing",
                 generatedClass.contains("\"Flow#"));
@@ -66,9 +67,35 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("Generated class had wrong generated tag",
-                generatedClass.contains(
-                        "@Tag(\"" + componentMetadata.getTag() + "\")"));
+        Pattern pattern = Pattern.compile("@Tag\\((.*?)\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        if (matcher.find()) {
+            Assert.assertEquals("Generated Tag had faulty content",
+                    "@Tag(\"" + componentMetadata.getTag() + "\")",
+                    matcher.group(0));
+        } else {
+            Assert.fail("@Tag annotation was not found for generated class.");
+        }
+
+    }
+
+    @Test
+    public void generateClass_generatedHtmlImportIsCorrect() {
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Pattern pattern = Pattern.compile("@HtmlImport\\((.*?)\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        if (matcher.find()) {
+            Assert.assertEquals(
+                    "Generated HtmlImport did not match expectation.",
+                    "@HtmlImport(\"frontend://test-directory/"
+                            + componentMetadata.getBaseUrl() + "\")",
+                    matcher.group(0));
+        } else {
+            Assert.fail(
+                    "@HtmlImport annotation was not found for generated class.");
+        }
     }
 
     @Test
@@ -200,7 +227,6 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        System.out.println(generatedClass);
         Assert.assertTrue("No setter found", generatedClass
                 .contains("public void setRequired(boolean required)"));
 

@@ -35,6 +35,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -166,8 +167,7 @@ public class ComponentGenerator {
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
                         .generateValidJavaClassName(metadata.getName()));
 
-        addGeneratedAnnotation(metadata, javaClass);
-        addAnnotation(javaClass, Tag.class, metadata.getTag());
+        addClassAnnotations(metadata, javaClass);
 
         if (metadata.getProperties() != null) {
             metadata.getProperties().forEach(property -> {
@@ -211,24 +211,32 @@ public class ComponentGenerator {
                 + source;
     }
 
-    private void addGeneratedAnnotation(ComponentMetadata metadata,
+    private void addClassAnnotations(ComponentMetadata metadata,
             JavaClassSource javaClass) {
-        Properties apiVersionProperties = getAPIVersionProperties();
+
+        Properties properties = getProperties("version.prop");
         String generator = String.format("Generator: %s#%s",
                 ComponentGenerator.class.getName(),
-                apiVersionProperties.getProperty("generator.version"));
-        String webcomponent = String.format("WebComponent: %s/%s#%s",
-                metadata.getBaseUrl(), metadata.getTag(),
-                metadata.getVersion());
+                properties.getProperty("generator.version"));
+        String webComponent = String.format("WebComponent: %s#%s",
+                metadata.getName(), metadata.getVersion());
 
         String flow = String.format("Flow#%s",
-                apiVersionProperties.getProperty("flow.version"));
+                properties.getProperty("flow.version"));
 
-        String[] generatedValue = new String[] { generator, webcomponent,
+        String[] generatedValue = new String[] { generator, webComponent,
                 flow };
 
         javaClass.addAnnotation(Generated.class)
                 .setStringArrayValue(generatedValue);
+
+        addAnnotation(javaClass, Tag.class, metadata.getTag());
+
+        properties = getProperties("variable.prop");
+        String htmlImport = String.format("frontend://%s/%s",
+                properties.get("frontend.directory"),
+                metadata.getBaseUrl());
+        addAnnotation(javaClass, HtmlImport.class, htmlImport);
     }
 
     /**
@@ -454,10 +462,10 @@ public class ComponentGenerator {
         }
     }
 
-    public Properties getAPIVersionProperties() {
+    public Properties getProperties(String fileName) {
         // Get properties resource with version information.
         InputStream resourceAsStream = this.getClass()
-                .getResourceAsStream("/version.prop");
+                .getResourceAsStream("/" + fileName);
 
         Properties config = new Properties();
         try {

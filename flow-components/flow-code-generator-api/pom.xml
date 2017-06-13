@@ -11,6 +11,10 @@
     <name>Flow code generator API</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <dependencies.working.directory>bower_components</dependencies.working.directory>
+    </properties>
+
     <dependencies>
         <!-- Project dependencies -->
         <dependency>
