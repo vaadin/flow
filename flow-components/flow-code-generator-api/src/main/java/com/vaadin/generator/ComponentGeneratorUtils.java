@@ -126,18 +126,31 @@ public final class ComponentGeneratorUtils {
     }
 
     /**
-     * Generates a package name based on a directory structure. The names are
-     * converted to lowercase, and each subfolder of the directory is converted
-     * to a package (split by ".").
+     * Generates a package name based on a file path structure. The names are
+     * converted to lowercase, and each folder of the file path is converted to
+     * a package (split by ".").
      * 
-     * @param directory
-     *            The directory to be converted to a package name, such as
-     *            "/company/components/component".
-     * @return A valid package name based on the input directory.
+     * @param path
+     *            The file path to be converted to a package name, such as
+     *            "/components/vaadin-button/vaadin-button.html".
+     * @return A valid package name based on the input file path.
      */
-    public static String convertDirectoryToPackage(String directory) {
-        assert directory != null : "Directory should not be null";
-        String normalized = directory.replaceAll("[\\W+_]", "/");
+    public static String convertFilePathToPackage(String path) {
+        assert path != null : "Path should not be null";
+
+        String normalized = path.replace('\\', '/');
+
+        // the last part of the path is supposed to be the file name, which is
+        // discarded for the package
+        int idx = normalized.lastIndexOf('/');
+        if (idx > 0) {
+            normalized = normalized.substring(0, idx);
+        } else {
+            return "";
+        }
+
+        // replace all special characters for /
+        normalized = normalized.replaceAll("[\\W+_]", "/");
         String[] split = normalized.split("/");
 
         return Arrays.stream(split).filter(StringUtils::isNotBlank)

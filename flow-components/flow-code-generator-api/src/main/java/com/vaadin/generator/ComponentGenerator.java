@@ -152,7 +152,7 @@ public class ComponentGenerator {
         String targetPackage = basePackage;
         if (StringUtils.isNotBlank(metadata.getBaseUrl())) {
             String subPackage = ComponentGeneratorUtils
-                    .convertDirectoryToPackage(metadata.getBaseUrl());
+                    .convertFilePathToPackage(metadata.getBaseUrl());
             if (StringUtils.isNotBlank(subPackage)) {
                 targetPackage += "." + subPackage;
             }

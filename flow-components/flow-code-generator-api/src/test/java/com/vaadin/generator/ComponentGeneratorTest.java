@@ -152,7 +152,7 @@ public class ComponentGeneratorTest {
 
     @Test
     public void generateClassWithBaseUrl_classContainsBaseUrlInThePackage() {
-        componentMetadata.setBaseUrl("some/directory");
+        componentMetadata.setBaseUrl("some/directory/some-component.html");
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
@@ -161,7 +161,8 @@ public class ComponentGeneratorTest {
                 generatedClass
                         .startsWith("package com.my.test.some.directory;"));
 
-        componentMetadata.setBaseUrl("\\Some\\Other\\Directory\\");
+        componentMetadata
+                .setBaseUrl("\\Some\\Other\\Directory\\some-component.html");
         generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
