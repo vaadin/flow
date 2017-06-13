@@ -151,6 +151,46 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClassWithStringGetterAndSetter_setterSetsEmptyForNullValue() {
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("name");
+        propertyData.setType(ComponentObjectType.STRING);
+        propertyData
+                .setDescription("This is the name property of the component.");
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("No setter found", generatedClass
+                .contains("public void setName(java.lang.String name)"));
+
+        Assert.assertTrue("Setter doesn't check for null value",
+                generatedClass.contains(propertyData.getName()
+                        + " == null ? \"\" : " + propertyData.getName()));
+    }
+
+    @Test
+    public void generateClassWithBooleanGetterAndSetter_setterDoesNotSetEmptyForNullValue() {
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("required");
+        propertyData.setType(ComponentObjectType.BOOLEAN);
+        propertyData.setDescription("This is a required field.");
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        System.out.println(generatedClass);
+        Assert.assertTrue("No setter found", generatedClass
+                .contains("public void setRequired(boolean required)"));
+
+        Assert.assertFalse("Setter checks for null value",
+                generatedClass.contains(propertyData.getName()
+                        + " == null ? \"\" : " + propertyData.getName()));
+    }
+
+    @Test
     public void generateClassWithBaseUrl_classContainsBaseUrlInThePackage() {
         componentMetadata.setBaseUrl("some/directory/some-component.html");
         String generatedClass = generator.generateClass(componentMetadata,
