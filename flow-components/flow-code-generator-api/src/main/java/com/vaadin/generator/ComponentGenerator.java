@@ -104,7 +104,9 @@ public class ComponentGenerator {
      * @param targetPath
      *            The output base directory for the generated Java file.
      * @param basePackage
-     *            The package to be used for the generated Java class.
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
      * @param licenseNote
      *            A note to be added on top of the class as a comment. Usually
      *            used for license headers.
@@ -125,7 +127,9 @@ public class ComponentGenerator {
      * @param metadata
      *            The webcomponent metadata.
      * @param basePackage
-     *            The package to be used for the generated Java class.
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
      * @param licenseNote
      *            A note to be added on top of the class as a comment. Usually
      *            used for license headers.
@@ -135,8 +139,30 @@ public class ComponentGenerator {
      */
     public String generateClass(ComponentMetadata metadata, String basePackage,
             String licenseNote) {
+
+        JavaClassSource javaClass = generateClassSource(metadata, basePackage);
+        return addLicenseHeaderIfAvailable(javaClass.toString(), licenseNote);
+    }
+
+    /*
+     * Gets the JavaClassSource object (note, the license is added externally to
+     * the source, since JavaClassSource doesn't support adding a comment to the
+     * beginning of the file).
+     */
+    private JavaClassSource generateClassSource(ComponentMetadata metadata,
+            String basePackage) {
+
+        String targetPackage = basePackage;
+        if (StringUtils.isNotBlank(metadata.getBaseUrl())) {
+            String subPackage = ComponentGeneratorUtils
+                    .convertFilePathToPackage(metadata.getBaseUrl());
+            if (StringUtils.isNotBlank(subPackage)) {
+                targetPackage += "." + subPackage;
+            }
+        }
+
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
-        javaClass.setPackage(basePackage).setPublic()
+        javaClass.setPackage(targetPackage).setPublic()
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
                         .generateValidJavaClassName(metadata.getName()));
 
@@ -144,39 +170,45 @@ public class ComponentGenerator {
         addAnnotation(javaClass, Tag.class, metadata.getTag());
 
         if (metadata.getProperties() != null) {
-            for (ComponentPropertyData property : metadata.getProperties()) {
+            metadata.getProperties().forEach(property -> {
                 generateGetterFor(javaClass, property);
 
                 if (!property.isReadOnly()) {
                     generateSetterFor(javaClass, property);
                 }
-            }
+            });
         }
 
         if (metadata.getMethods() != null) {
-            for (ComponentFunctionData function : metadata.getMethods()) {
-                generateFunctionFor(javaClass, function);
-            }
+            metadata.getMethods().forEach(
+                    function -> generateFunctionFor(javaClass, function));
         }
 
         if (metadata.getEvents() != null) {
-            for (ComponentEventData event : metadata.getEvents()) {
-                generateEventListenerFor(javaClass, event);
-            }
+            metadata.getEvents().forEach(
+                    event -> generateEventListenerFor(javaClass, event));
         }
 
         if (StringUtils.isNotEmpty(metadata.getDescription())) {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
 
-        String source = javaClass.toString();
+        return javaClass;
+    }
 
-        if (!StringUtils.isBlank(licenseNote)) {
-            source = ComponentGeneratorUtils
-                    .formatStringToJavaComment(licenseNote) + source;
+    /*
+     * Adds the license header to the source, if available. If the license is
+     * empty, just returns the original source.
+     */
+    private String addLicenseHeaderIfAvailable(String source,
+            String licenseNote) {
+
+        if (StringUtils.isBlank(licenseNote)) {
+            return source;
         }
 
-        return source;
+        return ComponentGeneratorUtils.formatStringToJavaComment(licenseNote)
+                + source;
     }
 
     private void addGeneratedAnnotation(ComponentMetadata metadata,
@@ -207,7 +239,9 @@ public class ComponentGenerator {
      * @param targetPath
      *            The output base directory for the generated Java file.
      * @param basePackage
-     *            The package to be used for the generated Java class.
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
      * @param licenseNote
      *            A note to be added on top of the class as a comment. Usually
      *            used for license headers.
@@ -218,9 +252,12 @@ public class ComponentGenerator {
     public void generateClass(ComponentMetadata metadata, File targetPath,
             String basePackage, String licenseNote) {
 
-        String source = generateClass(metadata, basePackage, licenseNote);
+        JavaClassSource javaClass = generateClassSource(metadata, basePackage);
+        String source = addLicenseHeaderIfAvailable(javaClass.toString(),
+                licenseNote);
+
         String fileName = ComponentGeneratorUtils
-                .generateValidJavaClassName(metadata.getName()) + ".java";
+                .generateValidJavaClassName(javaClass.getName()) + ".java";
 
         if (!targetPath.isDirectory() && !targetPath.mkdirs()) {
             throw new ComponentGenerationException(
@@ -228,8 +265,10 @@ public class ComponentGenerator {
         }
         try {
             Files.write(
-                    new File(ComponentGeneratorUtils.convertPackageToDirectory(
-                            targetPath, basePackage, true), fileName).toPath(),
+                    new File(
+                            ComponentGeneratorUtils.convertPackageToDirectory(
+                                    targetPath, javaClass.getPackage(), true),
+                            fileName).toPath(),
                     source.getBytes("UTF-8"));
         } catch (IOException ex) {
             throw new ComponentGenerationException(
