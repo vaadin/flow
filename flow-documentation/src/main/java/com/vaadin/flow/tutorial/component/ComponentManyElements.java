@@ -16,8 +16,8 @@
 package com.vaadin.flow.tutorial.component;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 
 @CodeFor("tutorial-component-many-elements.asciidoc")
@@ -45,7 +45,8 @@ public class ComponentManyElements {
 
         public TextField setLabel(String label) {
             labelElement.setText(label);
-            labelElement.appendChild(inputElement);
+            labelElement.appendChild(inputElement); //needed
+            // because setText removes content by default
             return this;
         }
 
@@ -59,9 +60,19 @@ public class ComponentManyElements {
     private Element labelElement;
     private Element inputElement;
 
+    public String getLabel() {
+        return labelElement.getText();
+    }
+
+    public String getValue() {
+        return inputElement.getProperty("value");
+    }
+
     public void setLabel(String label) {
         labelElement.setText(label);
-        labelElement.appendChild(inputElement);
+
+        labelElement.appendChild(inputElement); //needed
+        // because setText removes content by default
     }
 
     public void setValue(String value) {
