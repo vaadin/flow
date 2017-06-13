@@ -1,55 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>flow-project</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>0.1.8-SNAPSHOT</version>
+        <artifactId>flow-project</artifactId>
+        <version>0.1.9-SNAPSHOT</version>
     </parent>
     <artifactId>flow-components</artifactId>
-    <name>Flow Components</name>
+    <name>Flow components</name>
+    <description>Modules for Flow components based on code generation</description>
     <packaging>pom</packaging>
-    <modelVersion>4.0.0</modelVersion>
+
+    <modules>
+        <module>flow-code-generator-api</module>
+        <module>flow-code-generator</module>
+    </modules>
 
     <properties>
-        <maven.test.skip>true</maven.test.skip>
+        <frontend.maven.plugin.version>1.4</frontend.maven.plugin.version>
+        <flow.version>${project.version}</flow.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
-            <version>0.1.8-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
+            <version>0.1.9-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>Components-test</id>
-            <activation>
-                <property>
-                    <name>test.components</name>
-                    <value>true</value>
-                </property>
-            </activation>
-
-            <!-- Can we get this nicer somehow? -->
-            <properties>
-                <maven.test.skip>false</maven.test.skip>
-            </properties>
-        </profile>
-
-        <!-- Profile for generating components from Polymer APIs. -->
+        <!-- Profile for generating components from WC APIs. -->
         <profile>
             <id>generator</id>
             <modules>
                 <module>flow-polymer-api-reader</module>
+                <module>flow-component-generator</module>
             </modules>
         </profile>
     </profiles>
+
 </project>

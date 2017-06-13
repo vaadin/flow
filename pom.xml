@@ -7,7 +7,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.1.9-SNAPSHOT</version>
 
     <modules>
         <module>flow</module>
@@ -63,9 +63,7 @@
         <npm.version>4.6.1</npm.version>
         <frontend.working.directory>src/main/frontend</frontend.working.directory>
 
-        <!-- Set to true to run tests for components and skip other tests -->
-        <test.components>false</test.components>
-        <maven.test.skip>${test.components}</maven.test.skip>
+        <maven.test.skip>false</maven.test.skip>
     </properties>
 
     <repositories>
@@ -355,6 +353,25 @@
                                         </versionRange>
                                         <goals>
                                             <goal>highest-basedir</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-plugin-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [3.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>descriptor</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>

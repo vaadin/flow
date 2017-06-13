@@ -24,7 +24,9 @@ import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.shared.JsonConstants;
 
+import elemental.json.JsonNull;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * RPC handler for a client-side response on attach existing element by id
@@ -68,14 +70,21 @@ public class AttachTemplateChildRpcHandler
         if (assignedId == -1) {
             String tag = invocationJson
                     .getString(JsonConstants.RPC_ATTACH_TAG_NAME);
-            String id = invocationJson.getString(JsonConstants.RPC_ATTACH_ID);
+            JsonValue id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
 
             feature.unregister(requestedNode);
 
-            throw new IllegalStateException(String.format(
-                    "The element with the tag name '%s' and id '%s' was "
-                            + "not found in the parent with id='%d'",
-                    tag, id, parent.getNode().getId()));
+            if (id instanceof JsonNull) {
+                throw new IllegalStateException(String.format(
+                        "The element with the tag name '%s' was "
+                                + "not found in the parent with id='%d'",
+                        tag, parent.getNode().getId()));
+            } else {
+                throw new IllegalStateException(String.format(
+                        "The element with the tag name '%s' and id '%s' was "
+                                + "not found in the parent with id='%d'",
+                        tag, id.asString(), parent.getNode().getId()));
+            }
 
         } else {
             StateNode elementNode = tree.getNodeById(assignedId);

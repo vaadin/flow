@@ -5,13 +5,15 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>0.1.8-SNAPSHOT</version>
+        <version>0.1.9-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-root-context</artifactId>
     <name>Flow root context tests</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <skip.npm>${maven.test.skip}</skip.npm>
+        <skip.bower>${maven.test.skip}</skip.bower>
     </properties>
     <!-- uses default ports 8888 and 8889 -->
 
@@ -19,7 +21,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-resources</artifactId>
-            <version>0.1.8-SNAPSHOT</version>
+            <version>0.1.9-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

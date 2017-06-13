@@ -106,9 +106,10 @@ public class CustomElementRegistry {
             return;
         }
 
-        if (customElements.containsKey(element.getTag())
+        String tag = element.getTag();
+        if (isRegisteredCustomElement(tag)
                 && !element.getComponent().isPresent()) {
-            Component.from(element, customElements.get(element.getTag()));
+            Component.from(element, getRegisteredCustomElement(tag));
         }
     }
 }

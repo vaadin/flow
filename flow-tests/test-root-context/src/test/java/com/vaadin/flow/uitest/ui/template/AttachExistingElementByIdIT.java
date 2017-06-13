@@ -15,15 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class AttachExistingElementByIdIT extends ChromeBrowserTest {
+public class AttachExistingElementByIdIT
+        extends AbstractAttachExistingElementByIdIT {
 
     @Test
     public void elementsAreBoundOnTheServerSide() {
@@ -35,29 +30,6 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
     }
 
     private void assertTemplate(String id) {
-        WebElement input = getInput(id);
-
-        Assert.assertEquals("default", getLabel(id).getText());
-
-        Assert.assertEquals("Type here to update label",
-                input.getAttribute("placeholder"));
-
-        input.sendKeys("Harley!");
-        input.sendKeys(Keys.ENTER);
-
-        Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
-
-        // Reset values to defaults
-        getInShadowRoot(findElement(By.id(id)), By.id("button")).click();
-
-        Assert.assertEquals("default", getLabel(id).getText());
-    }
-
-    private WebElement getInput(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("input"));
-    }
-
-    private WebElement getLabel(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("label"));
+        assertTemplate(id, "default", "Type here to update label");
     }
 }
