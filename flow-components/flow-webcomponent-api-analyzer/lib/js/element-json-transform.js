@@ -169,11 +169,11 @@ const eventsToJsonArray = (events) => {
 };
 
 module.exports = class ElementJsonTransform extends Transform {
-  constructor(options) {
-    if (!options) options = {};
+  constructor(versionReader) {
+    const options = {};
     options.objectMode = true;
     super(options);
-    this._importPaths = [];
+    this.versionReader = versionReader;
   }
 
   /**
@@ -198,12 +198,12 @@ module.exports = class ElementJsonTransform extends Transform {
    */
   _transform(element, encoding, callback) {
     console.info("Generating JSON for " + element.tagName);
-
+    const version = this.versionReader.getElementVersion(element.tagName);
     const json = {
       "name": element.name ? element.name : element.tagName,
       "tag": element.tagName,
       "baseUrl": element._parsedDocument.baseUrl,
-// TODO #1765 "version": "v1.0.0",
+      "version": version,
       "properties": propertiesToJsonArray(element.properties),
       "methods": methodsToJsonArray(element.methods),
       "events": eventsToJsonArray(element.events),
