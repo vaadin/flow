@@ -2,6 +2,7 @@
   "name": "Polymer.IronA11yAnnouncer",
   "tag": "iron-a11y-announcer",
   "baseUrl": "iron-a11y-announcer/iron-a11y-announcer.html",
+  "version": "2.0.0",
   "properties": [
     {
       "name": "mode",

@@ -32,7 +32,10 @@ import com.vaadin.annotations.Tag;
  * 
  * Note: announcements are only audible if you have a screen reader enabled.
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: iron-a11y-announcer/iron-a11y-announcer.html/iron-a11y-announcer#2.0.0",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-a11y-announcer")
 public class PolymerIronA11yAnnouncer extends Component {
 

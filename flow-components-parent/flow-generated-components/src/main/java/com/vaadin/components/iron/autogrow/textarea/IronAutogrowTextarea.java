@@ -27,7 +27,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * applied to the textarea | `{}` `--iron-autogrow-textarea-placeholder` | Mixin
  * applied to the textarea placeholder | `{}`
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: iron-autogrow-textarea/iron-autogrow-textarea.html/iron-autogrow-textarea#2.0.0",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-autogrow-textarea")
 public class IronAutogrowTextarea extends Component {
 

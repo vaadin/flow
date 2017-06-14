@@ -24,7 +24,10 @@ import elemental.json.JsonObject;
  * ----------------|-------------|---------- `--paper-input-char-counter` |
  * Mixin applied to the element | `{}`
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: paper-input/paper-input-char-counter.html/paper-input-char-counter#2.0.1",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 public class PaperInputCharCounter extends Component {
 

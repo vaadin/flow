@@ -2,6 +2,7 @@
   "name": "iron-flex-layout",
   "tag": "iron-flex-layout",
   "baseUrl": "iron-flex-layout/iron-flex-layout.html",
+  "version": "2.0.0",
   "properties": [],
   "methods": [],
   "events": [],

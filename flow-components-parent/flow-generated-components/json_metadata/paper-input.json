@@ -2,6 +2,7 @@
   "name": "paper-input",
   "tag": "paper-input",
   "baseUrl": "paper-input/paper-input.html",
+  "version": "2.0.1",
   "properties": [
     {
       "name": "focused",

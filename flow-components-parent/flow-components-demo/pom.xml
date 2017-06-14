@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-components</artifactId>
+            <artifactId>flow-generated-components</artifactId>
             <version>${flow.version}</version>
         </dependency>
     </dependencies>

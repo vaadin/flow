@@ -25,7 +25,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * See `Polymer.PaperInputContainer` for a list of custom properties used to
  * style this element.
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: paper-input/paper-textarea.html/paper-textarea#2.0.1",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-textarea")
 public class PaperTextarea extends Component {
 

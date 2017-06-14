@@ -2,6 +2,7 @@
   "name": "paper-button",
   "tag": "paper-button",
   "baseUrl": "paper-button/paper-button.html",
+  "version": "2.0.0",
   "properties": [
     {
       "name": "keyEventTarget",

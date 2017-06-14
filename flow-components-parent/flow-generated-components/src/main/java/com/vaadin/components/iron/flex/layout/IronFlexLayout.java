@@ -49,7 +49,10 @@ import com.vaadin.annotations.Tag;
  * A complete [guide](https://elements.polymer-project.org/guides/flex-layout)
  * to `<iron-flex-layout>` is available.
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: iron-flex-layout/iron-flex-layout.html/iron-flex-layout#2.0.0",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-flex-layout")
 public class IronFlexLayout extends Component {
 }

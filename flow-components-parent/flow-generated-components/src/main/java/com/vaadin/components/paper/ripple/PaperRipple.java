@@ -62,7 +62,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * 
  * <paper-ripple class="circle"></paper-ripple>
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: paper-ripple/paper-ripple.html/paper-ripple#2.0.0",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-ripple")
 public class PaperRipple extends Component {
 

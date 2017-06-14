@@ -112,7 +112,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * This element is `display:block` by default, but you can set the `inline`
  * attribute to make it `display:inline-block`.
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: paper-input/paper-input-container.html/paper-input-container#2.0.1",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-input-container")
 public class PaperInputContainer extends Component {
 

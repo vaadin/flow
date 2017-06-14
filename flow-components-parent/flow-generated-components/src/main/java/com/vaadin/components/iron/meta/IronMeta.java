@@ -43,7 +43,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * 
  * <iron-meta id="meta"></iron-meta> ... this.$.meta.byKey('info');
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: iron-meta/iron-meta.html/iron-meta#2.0.0",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-meta")
 public class IronMeta extends Component {
 

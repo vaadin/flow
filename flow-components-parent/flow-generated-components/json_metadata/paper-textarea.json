@@ -2,6 +2,7 @@
   "name": "paper-textarea",
   "tag": "paper-textarea",
   "baseUrl": "paper-input/paper-textarea.html",
+  "version": "2.0.1",
   "properties": [
     {
       "name": "focused",

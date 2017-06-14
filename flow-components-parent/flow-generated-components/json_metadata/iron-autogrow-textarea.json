@@ -2,6 +2,7 @@
   "name": "iron-autogrow-textarea",
   "tag": "iron-autogrow-textarea",
   "baseUrl": "iron-autogrow-textarea/iron-autogrow-textarea.html",
+  "version": "2.0.0",
   "properties": [
     {
       "name": "validator",

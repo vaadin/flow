@@ -67,7 +67,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * `--paper-button-raised-keyboard-focus` | Mixin applied to a raised button
  * after it's been focused using the keyboard | `{}`
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: paper-button/paper-button.html/paper-button#2.0.0",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-button")
 public class PaperButton extends Component {
 

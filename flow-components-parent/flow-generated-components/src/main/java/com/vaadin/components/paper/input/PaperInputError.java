@@ -25,7 +25,10 @@ import elemental.json.JsonObject;
  * `--paper-input-container-invalid-color` | The foreground color of the error |
  * `--error-color` `--paper-input-error` | Mixin applied to the error | `{}`
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: paper-input/paper-input-error.html/paper-input-error#2.0.1",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-input-error")
 public class PaperInputError extends Component {
 

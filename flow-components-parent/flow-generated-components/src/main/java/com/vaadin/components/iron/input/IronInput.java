@@ -75,7 +75,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * // Only allow typing digits, but a valid input has exactly 5 digits.
  * <iron-input allowed-pattern="[0-9]"> <input pattern="\d{5}"> </iron-input>
  */
-@Generated("com.vaadin.generator.ComponentGenerator")
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
+		"WebComponent: iron-input/iron-input.html/iron-input#2.0.0",
+		"Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-input")
 public class IronInput extends Component {
 
