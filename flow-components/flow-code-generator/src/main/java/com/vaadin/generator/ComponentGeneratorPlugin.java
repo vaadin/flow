@@ -69,7 +69,7 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
     @Parameter(property = "generate.fail.on.error", defaultValue = "true", required = false)
     private boolean failOnError;
 
-    @Parameter(property = "dependencies.working.directory", defaultValue = "bower_components")
+    @Parameter(property = "generate.dependencies.working.directory", defaultValue = "bower_components")
     private String dependenciesWorkingDirectory;
 
     @Override
