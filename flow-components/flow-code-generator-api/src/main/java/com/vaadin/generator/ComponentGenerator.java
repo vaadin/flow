@@ -64,9 +64,11 @@ import elemental.json.JsonObject;
 public class ComponentGenerator {
 
     private ObjectMapper mapper;
-    private File jsonFile, targetPath;
-    private String basePackage, licenseNote;
-    private String frontendDirectory;
+    private File jsonFile;
+    private File targetPath;
+    private String basePackage;
+    private String licenseNote;
+    private String frontendDirectory = "bower_components/";
 
     /**
      * Converts the JSON file to {@link ComponentMetadata}.
@@ -155,7 +157,14 @@ public class ComponentGenerator {
      * @return this
      */
     public ComponentGenerator withFrontendDirectory(String frontendDirectory) {
-        this.frontendDirectory = frontendDirectory;
+        if (frontendDirectory == null) {
+            return this;
+        }
+        if (!frontendDirectory.endsWith("/")) {
+            this.frontendDirectory = frontendDirectory + "/";
+        } else {
+            this.frontendDirectory = frontendDirectory;
+        }
         return this;
     }
 
@@ -309,7 +318,7 @@ public class ComponentGenerator {
         if (importPath.startsWith("/")) {
             importPath = importPath.substring(1);
         }
-        String htmlImport = String.format("frontend://%s/%s", frontendDirectory,
+        String htmlImport = String.format("frontend://%s%s", frontendDirectory,
                 importPath);
         addAnnotation(javaClass, HtmlImport.class, htmlImport);
     }
