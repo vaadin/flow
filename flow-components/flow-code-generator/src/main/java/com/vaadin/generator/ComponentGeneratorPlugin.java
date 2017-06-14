@@ -69,9 +69,11 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
     @Parameter(property = "generate.fail.on.error", defaultValue = "true", required = false)
     private boolean failOnError;
 
+    @Parameter(property = "generate.dependencies.working.directory", defaultValue = "bower_components")
+    private String dependenciesWorkingDirectory;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        ComponentGenerator generator = new ComponentGenerator();
         if (!sourceDir.isDirectory()) {
             getLog().warn(
                     "Directory not readable. Can't generate any Java classes from "
@@ -87,11 +89,13 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
             return;
         }
 
-        String licenseNote = null;
+        ComponentGenerator generator = new ComponentGenerator();
         if (licenseFile != null) {
             try {
-                licenseNote = new String(
+                String licenseNote = new String(
                         Files.readAllBytes(licenseFile.toPath()), "UTF-8");
+
+                generator.withLicenseNote(licenseNote);
             } catch (IOException e) {
                 throw new MojoExecutionException(
                         "Error reading license file at "
@@ -102,11 +106,13 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
 
         getLog().info("Generating " + files.length + " Java classes...");
 
+        generator.withTargetPath(targetDir).withBasePackage(basePackage)
+                .withFrontendDirectory(dependenciesWorkingDirectory);
+
         for (File file : files) {
             getLog().info("Generating class for " + file.getName() + "...");
             try {
-                generator.generateClass(file, targetDir, basePackage,
-                        licenseNote);
+                generator.withJsonFile(file).build();
             } catch (Exception e) {
                 if (failOnError) {
                     throw new MojoExecutionException(
