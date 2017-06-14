@@ -35,6 +35,7 @@ import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -63,6 +64,11 @@ import elemental.json.JsonObject;
 public class ComponentGenerator {
 
     private ObjectMapper mapper;
+    private File jsonFile;
+    private File targetPath;
+    private String basePackage;
+    private String licenseNote;
+    private String frontendDirectory = "bower_components/";
 
     /**
      * Converts the JSON file to {@link ComponentMetadata}.
@@ -90,6 +96,83 @@ public class ComponentGenerator {
             mapper = new ObjectMapper(factory);
         }
         return mapper;
+    }
+
+    /**
+     * Set the input JSON file.
+     * 
+     * @param jsonFile
+     *            The input JSON file.
+     * @return this
+     */
+    public ComponentGenerator withJsonFile(File jsonFile) {
+        this.jsonFile = jsonFile;
+        return this;
+    }
+
+    /**
+     * Set the target output directory.
+     * 
+     * @param targetPath
+     *            The output base directory for the generated Java file.
+     * @return this
+     */
+    public ComponentGenerator withTargetPath(File targetPath) {
+        this.targetPath = targetPath;
+        return this;
+    }
+
+    /**
+     * Set the base package taht will be used.
+     * 
+     * @param basePackage
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
+     * @return this
+     */
+    public ComponentGenerator withBasePackage(String basePackage) {
+        this.basePackage = basePackage;
+        return this;
+    }
+
+    /**
+     * Set the license header notice for the file.
+     * 
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
+     * @return this
+     */
+    public ComponentGenerator withLicenseNote(String licenseNote) {
+        this.licenseNote = licenseNote;
+        return this;
+    }
+
+    /**
+     * Set the import frontend base package. e.g. bower_components
+     * 
+     * @param frontendDirectory
+     *            frontend base package
+     * @return this
+     */
+    public ComponentGenerator withFrontendDirectory(String frontendDirectory) {
+        if (frontendDirectory == null) {
+            return this;
+        }
+        if (!frontendDirectory.endsWith("/")) {
+            this.frontendDirectory = frontendDirectory + "/";
+        } else {
+            this.frontendDirectory = frontendDirectory;
+        }
+        return this;
+    }
+
+    /**
+     * Generate the class according to the set values.
+     */
+    public void build() {
+        generateClass(jsonFile, targetPath, basePackage, licenseNote);
     }
 
     /**
@@ -166,8 +249,7 @@ public class ComponentGenerator {
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
                         .generateValidJavaClassName(metadata.getName()));
 
-        addGeneratedAnnotation(metadata, javaClass);
-        addAnnotation(javaClass, Tag.class, metadata.getTag());
+        addClassAnnotations(metadata, javaClass);
 
         if (metadata.getProperties() != null) {
             metadata.getProperties().forEach(property -> {
@@ -211,24 +293,34 @@ public class ComponentGenerator {
                 + source;
     }
 
-    private void addGeneratedAnnotation(ComponentMetadata metadata,
+    private void addClassAnnotations(ComponentMetadata metadata,
             JavaClassSource javaClass) {
-        Properties apiVersionProperties = getAPIVersionProperties();
+
+        Properties properties = getProperties("version.prop");
         String generator = String.format("Generator: %s#%s",
                 ComponentGenerator.class.getName(),
-                apiVersionProperties.getProperty("generator.version"));
-        String webcomponent = String.format("WebComponent: %s/%s#%s",
-                metadata.getBaseUrl(), metadata.getTag(),
-                metadata.getVersion());
+                properties.getProperty("generator.version"));
+        String webComponent = String.format("WebComponent: %s#%s",
+                metadata.getName(), metadata.getVersion());
 
         String flow = String.format("Flow#%s",
-                apiVersionProperties.getProperty("flow.version"));
+                properties.getProperty("flow.version"));
 
-        String[] generatedValue = new String[] { generator, webcomponent,
+        String[] generatedValue = new String[] { generator, webComponent,
                 flow };
 
         javaClass.addAnnotation(Generated.class)
                 .setStringArrayValue(generatedValue);
+
+        addAnnotation(javaClass, Tag.class, metadata.getTag());
+
+        String importPath = metadata.getBaseUrl().replace("\\", "/");
+        if (importPath.startsWith("/")) {
+            importPath = importPath.substring(1);
+        }
+        String htmlImport = String.format("frontend://%s%s", frontendDirectory,
+                importPath);
+        addAnnotation(javaClass, HtmlImport.class, htmlImport);
     }
 
     /**
@@ -455,10 +547,10 @@ public class ComponentGenerator {
         }
     }
 
-    public Properties getAPIVersionProperties() {
+    private Properties getProperties(String fileName) {
         // Get properties resource with version information.
         InputStream resourceAsStream = this.getClass()
-                .getResourceAsStream("/version.prop");
+                .getResourceAsStream("/" + fileName);
 
         Properties config = new Properties();
         try {
@@ -466,7 +558,7 @@ public class ComponentGenerator {
             return config;
         } catch (IOException e) {
             Logger.getLogger(getClass().getSimpleName()).log(Level.WARNING,
-                    "Failed to load properties file 'version.prop'", e);
+                    "Failed to load properties file '" + fileName + "'", e);
         }
 
         return config;
