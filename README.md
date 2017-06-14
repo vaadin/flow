@@ -10,6 +10,8 @@ https://github.com/vaadin/flow/tree/master/flow-documentation
 To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md)
 for general instructions and requirements for contributing code to Flow.
 
+Flow EAP discussion in Gitter IM at https://gitter.im/vaadin-flow/Lobby
+
 Instructions on how to set up a working environment for developing the Flow project follow below.
 
 Quick Setup
