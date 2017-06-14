@@ -51,6 +51,11 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
         // src/main/webapp/VAADIN/static/frontend/es6/components
         Assert.assertEquals("File loaded from ES6 path",
                 getComponentInnerText());
+
+        Assert.assertEquals(
+                getRootURL()
+                        + "/VAADIN/static/frontend/es6/components/frontend-protocol.html",
+                executeClientSideResolveUri());
     }
 
     @Test
@@ -61,6 +66,9 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
         // src/main/webapp/components
         Assert.assertEquals("File loaded from context path",
                 getComponentInnerText());
+
+        Assert.assertEquals(getRootURL() + "/components/frontend-protocol.html",
+                executeClientSideResolveUri());
     }
 
     @Test
@@ -71,6 +79,16 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
         // src/main/webapp/com/vaadin/flow/uitest/components
         Assert.assertEquals("File loaded from property-defined path",
                 getComponentInnerText());
+
+        Assert.assertEquals(
+                getRootURL()
+                        + "/com/vaadin/flow/uitest/components/frontend-protocol.html",
+                executeClientSideResolveUri());
+    }
+
+    private Object executeClientSideResolveUri() {
+        return executeScript("return window.vaadin.resolveUri(arguments[0]);",
+                "frontend://components/frontend-protocol.html");
     }
 
     private String getComponentInnerText() {
