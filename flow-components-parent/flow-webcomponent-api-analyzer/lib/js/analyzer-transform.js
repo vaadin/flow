@@ -33,7 +33,7 @@ let analyzer = new Analyzer({
 const getBowerPath = (filePath) => path.relative(globalVar.bowerTargetDir, filePath);
 
 /**
- * Analyzer gulp transform
+ * Analyzer gulp transform.
  * <p>
  * Runs Analyzer for all the files and emits the Element (?) instance with the analysis data for every element found.
  */
