@@ -1,0 +1,30 @@
+{
+  "name": "demo-hello-world-es5",
+  "homepage": "https://github.com/vaadin/flow-demo/demo-hello-world-es5",
+  "authors": [],
+  "description": "",
+  "main": "",
+  "license": "Apache2",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "2.0.0",
+    "paper-button": "2.0.0",
+    "paper-input": "2.0.0",
+    "app-layout": "PolymerElements/app-layout#2.0-preview",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0-preview",
+    "iron-iconset-svg": "PolymerElements/iron-iconset-svg#2.0-preview",
+    "iron-media-query": "PolymerElements/iron-media-query#2.0-preview",
+    "iron-selector": "PolymerElements/iron-selector#2.0-preview"
+  },
+  "resolutions": {
+    "iron-flex-layout": "1 - 2",
+    "iron-meta": "1 - 2"
+  }
+}

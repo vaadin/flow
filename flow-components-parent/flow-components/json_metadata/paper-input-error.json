@@ -1,0 +1,30 @@
+{
+  "name": "paper-input-error",
+  "tag": "paper-input-error",
+  "baseUrl": "paper-input/paper-input-error.html",
+  "properties": [
+    {
+      "name": "invalid",
+      "type": "BOOLEAN",
+      "description": "True if the error is showing.\n       "
+    }
+  ],
+  "methods": [
+    {
+      "name": "update",
+      "description": "This overrides the update function in PaperInputAddonBehavior.",
+      "parameters": [
+        {
+          "name": "state",
+          "type": "OBJECT",
+          "description": "    inputElement: The input element.\n    value: The input value.\n    invalid: True if the input value is invalid."
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "behaviors": [
+    "Polymer.PaperInputAddonBehavior"
+  ],
+  "description": "`<paper-input-error>` is an error message for use with `<paper-input-container>`. The error is\ndisplayed when the `<paper-input-container>` is `invalid`.\n\n    <paper-input-container>\n      <input pattern=\"[0-9]*\">\n      <paper-input-error slot=\"add-on\">Only numbers are allowed!</paper-input-error>\n    </paper-input-container>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-input-container-invalid-color` | The foreground color of the error | `--error-color`\n`--paper-input-error`                   | Mixin applied to the error        | `{}`"
+}
