@@ -27,11 +27,6 @@ import java.util.Locale;
 public class SharedUtil implements Serializable {
 
     /**
-     * RegEx pattern to extract the width/height values.
-     */
-    public static final String SIZE_PATTERN = "^(-?\\d*(?:\\.\\d+)?)(%|px|em|rem|ex|in|cm|mm|pt|pc)?$";
-
-    /**
      * Trims trailing slashes (if any) from a string.
      *
      * @param value
