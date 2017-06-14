@@ -16,15 +16,15 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.core.client.GWT;
+import com.vaadin.client.flow.binding.Binder;
 import com.google.gwt.core.client.Scheduler;
-import com.vaadin.client.communication.PollConfigurator;
+import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
+import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.flow.RouterLinkHandler;
-import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.shared.Version;
+import com.google.gwt.core.client.GWT;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -108,7 +108,6 @@ public class ApplicationConnection {
             registry.getRequestResponseTracker().startRequest();
             registry.getMessageHandler().handleMessage(initialUidl);
         }
-
     }
 
     /**
@@ -144,6 +143,11 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
+        
+        $wnd.vaadin.resolveUri = $entry(function(uriToResolve) {
+            var ur = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
+            return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
+        });
     
         client.initializing = false;
     
@@ -170,5 +174,4 @@ public class ApplicationConnection {
             return false;
         }
     }
-
 }

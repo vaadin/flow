@@ -154,6 +154,15 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     /**
      * Executes the given JavaScript.
+     * <p>
+     * To send arguments to the script, you can use the <code>arguments</code>
+     * variable. <br>
+     * For example:
+     * <code>executeScript("window.alert(arguments[0]);", "Alert message!");</code>.
+     * <p>
+     * To be able to use the return value of the JavaScript, you must explicitly
+     * declare a <code>return</code> statement. <br>
+     * For example: <code>executeScript("return window.name;");</code>.
      *
      * @param script
      *            the script to execute
