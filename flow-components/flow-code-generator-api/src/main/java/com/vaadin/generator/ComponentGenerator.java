@@ -429,11 +429,10 @@ public class ComponentGenerator {
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
-        documentation = documentation.replaceAll("`(.*?)`", "{@code $1}");
         String nl = System.getProperty("line.separator");
         String text = String.format("%s%s%s%s",
                 "Description copied from corresponding location in WebComponent:",
-                nl, nl, documentation);
+                nl, nl, documentation.replaceAll("`(.*?)`", "{@code $1}"));
         javaDoc.setFullText(text);
     }
 
