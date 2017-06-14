@@ -7,7 +7,7 @@
         <artifactId>flow-components-parent</artifactId>
         <version>0.1.9-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-components</artifactId>
+    <artifactId>flow-generated-components</artifactId>
     <name>Flow Generated Component</name>
     <description>Package with the generated Java Components for Flow</description>
     <packaging>jar</packaging>
@@ -21,6 +21,21 @@
 
     <build>
         <plugins>
+            <!-- Clears the source folder so it can be generated again -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>src/main/java</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+        
+            <!-- Code generator configuration -->
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-code-generator</artifactId>

@@ -22,7 +22,7 @@ let targetDir;
 /* Since we cannot get the target directory from maven as a parameter,
  * need to hard code it here when the flow-components script is triggered. */
 if (args.flow_components) {
-  targetDir = path.join(currentDir, '/../flow-components/json_metadata/');
+  targetDir = path.join(currentDir, '/../flow-generated-components/json_metadata/');
 } else {
   targetDir = currentDir + (args.targetDir || 'generated_json').replace(/,+$/, "");
 }

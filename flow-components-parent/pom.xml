@@ -44,7 +44,7 @@
             <id>generator</id>
             <modules>
                 <module>flow-webcomponent-api-analyzer</module>
-                <module>flow-components</module>
+                <module>flow-generated-components</module>
                 <module>flow-components-demo</module>
             </modules>
         </profile>
