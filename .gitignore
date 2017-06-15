@@ -24,6 +24,7 @@ scripts/*.pyc
 bower_components
 node
 node_modules
+yarn.lock
 
 # Intellij Idea files
 .idea

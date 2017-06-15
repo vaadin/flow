@@ -43,10 +43,10 @@ else
       fi
     fi
 
-    if [[ $change == *"flow-components/"* ]]
+    if [[ $change == *"flow-components-parent/"* ]]
     then
       echo "Setting components flag to true"
-      modules="$modules -pl flow-components"
+      modules="$modules -pl flow-components-parent"
     fi
 
     if [[ $change == *"flow-client/"* ]]

@@ -7,8 +7,8 @@
         <artifactId>flow-project</artifactId>
         <version>0.1.9-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-components</artifactId>
-    <name>Flow components</name>
+    <artifactId>flow-components-parent</artifactId>
+    <name>Flow components parent project</name>
     <description>Modules for Flow components based on code generation</description>
     <packaging>pom</packaging>
 
@@ -22,21 +22,30 @@
         <flow.version>${project.version}</flow.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
-            <version>0.1.9-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow</artifactId>
+                <version>${flow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-server</artifactId>
+                <version>${flow.version}</version>
+            </dependency>
+        </dependencies>        
+    </dependencyManagement>
+
 
     <profiles>
-        <!-- Profile for generating components from WC APIs. -->
+        <!-- Profile for generating components from webcomponents APIs. -->
         <profile>
             <id>generator</id>
             <modules>
                 <module>flow-webcomponent-api-analyzer</module>
-                <module>flow-component-generator</module>
+                <module>flow-generated-components</module>
+                <module>flow-components-demo</module>
             </modules>
         </profile>
     </profiles>

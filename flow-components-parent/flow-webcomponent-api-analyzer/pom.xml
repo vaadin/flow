@@ -5,7 +5,7 @@
         license etc. information from it. Drawback is some not needed dependencies. -->
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-components</artifactId>
+        <artifactId>flow-components-parent</artifactId>
         <version>0.1.9-SNAPSHOT</version>
     </parent>
     <artifactId>flow-webcomponent-api-analyzer</artifactId>
@@ -70,7 +70,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
-                <!-- Clean up generated sources and downloaded WCs -->
+                <!-- Clean up generated sources and downloaded webcomponents -->
                 <configuration>
                     <filesets>
                         <fileset>
@@ -84,6 +84,12 @@
                         </fileset>
                         <fileset>
                             <directory>bower_components</directory>
+                        </fileset>
+                        
+                        <!-- Since this module is responsible for generating the json_metadata 
+                            directory, it is also responsible for cleaning it out -->
+                        <fileset>
+                            <directory>../flow-generated-components/json_metadata</directory>
                         </fileset>
                     </filesets>
                 </configuration>
