@@ -130,6 +130,8 @@ public class MessageHandler {
     private int lastSeenServerSyncId = UNDEFINED_SYNC_ID;
     private final Registry registry;
 
+    private boolean initialMessageHandled = false;
+
     /**
      * Timer used to make sure that no misbehaving components can delay response
      * handling forever.
@@ -303,6 +305,18 @@ public class MessageHandler {
             registry.getDependencyLoader().loadDependencies(deps);
         }
 
+        if (!initialMessageHandled) {
+            /*
+             * When handling the initial JSON message, dependencies are embedded
+             * in the HTML document instead of being injected by
+             * DependencyLoader. We must still explicitly wait for all HTML
+             * imports from the HTML document to be loaded. It's not necessary
+             * to explicitly wait for JavaScript dependencies since the browser
+             * already takes care of that for us.
+             */
+            registry.getDependencyLoader().requireHtmlImportsReady();
+        }
+
         /*
          * Hook for e.g. TestBench to get details about server performance
          */
@@ -409,7 +423,8 @@ public class MessageHandler {
             lastProcessingTime = (int) ((new Date().getTime())
                     - start.getTime());
             totalProcessingTime += lastProcessingTime;
-            if (bootstrapTime == 0) {
+            if (!initialMessageHandled) {
+                initialMessageHandled = true;
 
                 double fetchStart = getFetchStartTime();
                 if (fetchStart != 0) {
