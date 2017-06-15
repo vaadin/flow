@@ -1,0 +1,71 @@
+{
+  "name": "iron-input",
+  "tag": "iron-input",
+  "baseUrl": "iron-input/iron-input.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "validator",
+      "type": "STRING",
+      "description": "Name of the validator to use.\n       "
+    },
+    {
+      "name": "invalid",
+      "type": "BOOLEAN",
+      "description": "True if the last call to `validate` is invalid.\n       "
+    },
+    {
+      "name": "bindValue",
+      "type": "STRING",
+      "description": "Use this property instead of `value` for two-way data binding, or to\nset a default value for the input. **Do not** use the distributed\ninput's `value` property to set a default value.\n         "
+    },
+    {
+      "name": "value",
+      "type": "OBJECT",
+      "description": "Computed property that echoes `bindValue` (mostly used for Polymer 1.0\nbackcompatibility, if you were one-way binding to the Polymer 1.0\n`input is=\"iron-input\"` value attribute).\n         "
+    },
+    {
+      "name": "allowedPattern",
+      "type": "STRING",
+      "description": "Regex-like list of characters allowed as input; all characters not in the list\nwill be rejected. The recommended format should be a list of allowed characters,\nfor example, `[a-zA-Z0-9.+-!;:]`.\n\nThis pattern represents the allowed characters for the field; as the user inputs text,\neach individual character will be checked against the pattern (rather than checking\nthe entire value as a whole). If a character is not a match, it will be rejected.\n\nPasted input will have each character checked individually; if any character\ndoesn't match `allowedPattern`, the entire pasted string will be rejected.\n\nNote: if you were using `iron-input` in 1.0, you were also required to\nset `prevent-invalid-input`. This is no longer needed as of Polymer 2.0,\nand will be set automatically for you if an `allowedPattern` is provided.\n\n         "
+    },
+    {
+      "name": "autoValidate",
+      "type": "BOOLEAN",
+      "description": "Set to true to auto-validate the input value as you type.\n         "
+    },
+    {
+      "name": "inputElement",
+      "type": "OBJECT",
+      "description": "Returns the distributed <input> element.\n       "
+    }
+  ],
+  "methods": [
+    {
+      "name": "hasValidator",
+      "description": "",
+      "parameters": []
+    },
+    {
+      "name": "validate",
+      "description": "Returns true if `value` is valid. The validator provided in `validator` will be used first,\nthen any constraints.",
+      "parameters": []
+    }
+  ],
+  "events": [
+    {
+      "name": "invalid-changed",
+      "description": "Fired when the `invalid` property changes.",
+      "properties": []
+    },
+    {
+      "name": "iron-input-validate",
+      "description": "iron-input-validate",
+      "properties": []
+    }
+  ],
+  "behaviors": [
+    "Polymer.IronValidatableBehavior"
+  ],
+  "description": "`<iron-input>` is a wrapper to a native `<input>` element, that adds two-way binding\nand prevention of invalid input. To use it, you must distribute a native `<input>`\nyourself. You can continue to use the native `input` as you would normally:\n\n    <iron-input>\n      <input>\n    </iron-input>\n\n    <iron-input>\n      <input type=\"email\" disabled>\n    </iron-input>\n\n### Two-way binding\n\nBy default you can only get notified of changes to a native `<input>`'s `value`\ndue to user input:\n\n    <input value=\"{{myValue::input}}\">\n\nThis means that if you imperatively set the value (i.e. `someNativeInput.value = 'foo'`),\nno events will be fired and this change cannot be observed.\n\n`iron-input` adds the `bind-value` property that mirrors the native `input`'s '`value` property; this\nproperty can be used for two-way data binding.\n`bind-value` will notify if it is changed either by user input or by script.\n\n    <iron-input bind-value=\"{{myValue}}\">\n      <input>\n    </iron-input>\n\nNote: this means that if you want to imperatively set the native `input`'s, you _must_\nset `bind-value` instead, so that the wrapper `iron-input` can be notified.\n\n### Validation\n\n`iron-input` uses the native `input`'s validation. For simplicity, `iron-input`\nhas a `validate()` method (which internally just checks the distributed `input`'s\nvalidity), which sets an `invalid` attribute that can also be used for styling.\n\nTo validate automatically as you type, you can use the `auto-validate` attribute.\n\n`iron-input` also fires an `iron-input-validate` event after `validate()` is\ncalled. You can use it to implement a custom validator:\n\n    var CatsOnlyValidator = {\n      validate: function(ironInput) {\n        var valid = !ironInput.bindValue || ironInput.bindValue === 'cat';\n        ironInput.invalid = !valid;\n        return valid;\n      }\n    }\n    ironInput.addEventListener('iron-input-validate', function() {\n      CatsOnly.validate(input2);\n    });\n\nYou can also use an element implementing an [`IronValidatorBehavior`](/element/PolymerElements/iron-validatable-behavior).\nThis example can also be found in the demo for this element:\n\n    <iron-input validator=\"cats-only\">\n      <input>\n    </iron-input>\n\n### Preventing invalid input\n\nIt may be desirable to only allow users to enter certain characters. You can use the\n`allowed-pattern` attribute to accomplish this. This feature\nis separate from validation, and `allowed-pattern` does not affect how the input is validated.\n\n    // Only allow typing digits, but a valid input has exactly 5 digits.\n    <iron-input allowed-pattern=\"[0-9]\">\n      <input pattern=\"\\d{5}\">\n    </iron-input>"
+}

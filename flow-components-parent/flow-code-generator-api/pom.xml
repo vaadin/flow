@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-components</artifactId>
+        <artifactId>flow-components-parent</artifactId>
         <version>0.1.9-SNAPSHOT</version>
     </parent>
     <artifactId>flow-code-generator-api</artifactId>

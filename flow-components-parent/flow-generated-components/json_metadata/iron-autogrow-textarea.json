@@ -1,0 +1,147 @@
+{
+  "name": "iron-autogrow-textarea",
+  "tag": "iron-autogrow-textarea",
+  "baseUrl": "iron-autogrow-textarea/iron-autogrow-textarea.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "validator",
+      "type": "STRING",
+      "description": "Name of the validator to use.\n       "
+    },
+    {
+      "name": "invalid",
+      "type": "BOOLEAN",
+      "description": "True if the last call to `validate` is invalid.\n       "
+    },
+    {
+      "name": "focused",
+      "type": "BOOLEAN",
+      "description": "If true, the element currently has focus.\n       "
+    },
+    {
+      "name": "disabled",
+      "type": "BOOLEAN",
+      "description": "If true, the user cannot interact with this element.\n       "
+    },
+    {
+      "name": "value",
+      "type": "OBJECT",
+      "description": "Use this property instead of `bind-value` for two-way data binding."
+    },
+    {
+      "name": "bindValue",
+      "type": "OBJECT",
+      "description": "This property is deprecated, and just mirrors `value`. Use `value` instead."
+    },
+    {
+      "name": "rows",
+      "type": "NUMBER",
+      "description": "The initial number of rows."
+    },
+    {
+      "name": "maxRows",
+      "type": "NUMBER",
+      "description": "The maximum number of rows this element can grow to until it\nscrolls. 0 means no maximum."
+    },
+    {
+      "name": "autocomplete",
+      "type": "STRING",
+      "description": "Bound to the textarea's `autocomplete` attribute.\n       "
+    },
+    {
+      "name": "autofocus",
+      "type": "BOOLEAN",
+      "description": "Bound to the textarea's `autofocus` attribute.\n       "
+    },
+    {
+      "name": "inputmode",
+      "type": "STRING",
+      "description": "Bound to the textarea's `inputmode` attribute.\n       "
+    },
+    {
+      "name": "placeholder",
+      "type": "STRING",
+      "description": "Bound to the textarea's `placeholder` attribute.\n       "
+    },
+    {
+      "name": "readonly",
+      "type": "STRING",
+      "description": "Bound to the textarea's `readonly` attribute.\n       "
+    },
+    {
+      "name": "required",
+      "type": "BOOLEAN",
+      "description": "Set to true to mark the textarea as required.\n       "
+    },
+    {
+      "name": "minlength",
+      "type": "NUMBER",
+      "description": "The minimum length of the input value.\n       "
+    },
+    {
+      "name": "maxlength",
+      "type": "NUMBER",
+      "description": "The maximum length of the input value.\n       "
+    },
+    {
+      "name": "textarea",
+      "type": "OBJECT",
+      "description": "Returns the underlying textarea."
+    },
+    {
+      "name": "selectionStart",
+      "type": "OBJECT",
+      "description": "Returns textarea's selection start."
+    },
+    {
+      "name": "selectionEnd",
+      "type": "OBJECT",
+      "description": "Returns textarea's selection end."
+    }
+  ],
+  "methods": [
+    {
+      "name": "hasValidator",
+      "description": "",
+      "parameters": []
+    },
+    {
+      "name": "validate",
+      "description": "Returns true if `value` is valid. The validator provided in `validator`\nwill be used first, if it exists; otherwise, the `textarea`'s validity\nis used.",
+      "parameters": []
+    }
+  ],
+  "events": [
+    {
+      "name": "invalid-changed",
+      "description": "Fired when the `invalid` property changes.",
+      "properties": []
+    },
+    {
+      "name": "focused-changed",
+      "description": "Fired when the `focused` property changes.",
+      "properties": []
+    },
+    {
+      "name": "disabled-changed",
+      "description": "Fired when the `disabled` property changes.",
+      "properties": []
+    },
+    {
+      "name": "value-changed",
+      "description": "Fired when the `value` property changes.",
+      "properties": []
+    },
+    {
+      "name": "bind-value-changed",
+      "description": "Fired when the `bindValue` property changes.",
+      "properties": []
+    }
+  ],
+  "behaviors": [
+    "Polymer.IronValidatableBehavior",
+    "Polymer.IronControlState"
+  ],
+  "description": "`iron-autogrow-textarea` is an element containing a textarea that grows in height as more\nlines of input are entered. Unless an explicit height or the `maxRows` property is set, it will\nnever scroll.\n\nExample:\n\n    <iron-autogrow-textarea></iron-autogrow-textarea>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--iron-autogrow-textarea` | Mixin applied to the textarea | `{}`\n`--iron-autogrow-textarea-placeholder` | Mixin applied to the textarea placeholder | `{}`"
+}

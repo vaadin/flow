@@ -1,0 +1,164 @@
+{
+  "name": "paper-button",
+  "tag": "paper-button",
+  "baseUrl": "paper-button/paper-button.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "keyEventTarget",
+      "type": "OBJECT",
+      "description": "The EventTarget that will be firing relevant KeyboardEvents. Set it to\n`null` to disable the listeners."
+    },
+    {
+      "name": "stopKeyboardEventPropagation",
+      "type": "BOOLEAN",
+      "description": "If true, this property will cause the implementing element to\nautomatically stop propagation on any handled KeyboardEvents.\n         "
+    },
+    {
+      "name": "keyBindings",
+      "type": "OBJECT",
+      "description": ""
+    },
+    {
+      "name": "pressed",
+      "type": "BOOLEAN",
+      "description": "If true, the user is currently holding down the button.\n       "
+    },
+    {
+      "name": "toggles",
+      "type": "BOOLEAN",
+      "description": "If true, the button toggles the active state with each tap or press\nof the spacebar.\n       "
+    },
+    {
+      "name": "active",
+      "type": "BOOLEAN",
+      "description": "If true, the button is a toggle and is currently in the active state.\n       "
+    },
+    {
+      "name": "pointerDown",
+      "type": "BOOLEAN",
+      "description": "True if the element is currently being pressed by a \"pointer,\" which\nis loosely defined as mouse or touch input (but specifically excluding\nkeyboard input).\n       "
+    },
+    {
+      "name": "receivedFocusFromKeyboard",
+      "type": "BOOLEAN",
+      "description": "True if the input device that caused the element to receive focus\nwas a keyboard.\n       "
+    },
+    {
+      "name": "ariaActiveAttribute",
+      "type": "STRING",
+      "description": "The aria attribute to be set if the button is a toggle and in the\nactive state.\n       "
+    },
+    {
+      "name": "focused",
+      "type": "BOOLEAN",
+      "description": "If true, the element currently has focus.\n       "
+    },
+    {
+      "name": "disabled",
+      "type": "BOOLEAN",
+      "description": "If true, the user cannot interact with this element.\n       "
+    },
+    {
+      "name": "noink",
+      "type": "BOOLEAN",
+      "description": "If true, the element will not produce a ripple effect when interacted\nwith via the pointer.\n       "
+    },
+    {
+      "name": "elevation",
+      "type": "NUMBER",
+      "description": "The z-depth of this element, from 0-5. Setting to 0 will remove the\nshadow, and each increasing number greater than 0 will be \"deeper\"\nthan the last."
+    },
+    {
+      "name": "raised",
+      "type": "BOOLEAN",
+      "description": "If true, the button should be styled with a shadow.\n         "
+    }
+  ],
+  "methods": [
+    {
+      "name": "addOwnKeyBinding",
+      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.\n       ",
+      "parameters": [
+        {
+          "name": "eventString",
+          "type": "OBJECT",
+          "description": "Missing documentation!"
+        },
+        {
+          "name": "handlerName",
+          "type": "OBJECT",
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "removeOwnKeyBindings",
+      "description": "When called, will remove all imperatively-added key bindings.\n       ",
+      "parameters": []
+    },
+    {
+      "name": "keyboardEventMatchesKeys",
+      "description": "Returns true if a keyboard event matches `eventString`.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "OBJECT",
+          "description": "Missing documentation!"
+        },
+        {
+          "name": "eventString",
+          "type": "STRING",
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "ensureRipple",
+      "description": "Ensures this element contains a ripple effect. For startup efficiency\nthe ripple effect is dynamically on demand when needed.",
+      "parameters": [
+        {
+          "name": "optTriggeringEvent",
+          "type": "OBJECT",
+          "description": "(optional) event that triggered the\nripple."
+        }
+      ]
+    },
+    {
+      "name": "getRipple",
+      "description": "Returns the `<paper-ripple>` element used by this element to create\nripple effects. The element's ripple is created on demand, when\nnecessary, and calling this method will force the\nripple to be created.\n     ",
+      "parameters": []
+    },
+    {
+      "name": "hasRipple",
+      "description": "Returns true if this element currently contains a ripple effect.",
+      "parameters": []
+    }
+  ],
+  "events": [
+    {
+      "name": "active-changed",
+      "description": "Fired when the `active` property changes.",
+      "properties": []
+    },
+    {
+      "name": "focused-changed",
+      "description": "Fired when the `focused` property changes.",
+      "properties": []
+    },
+    {
+      "name": "disabled-changed",
+      "description": "Fired when the `disabled` property changes.",
+      "properties": []
+    },
+    {
+      "name": "transitionend",
+      "description": "transitionend\n      Event param: {{node: Object}} detail Contains the animated node.",
+      "properties": []
+    }
+  ],
+  "behaviors": [
+    "Polymer.PaperButtonBehavior"
+  ],
+  "description": "Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)\n\n`paper-button` is a button. When the user touches the button, a ripple effect emanates\nfrom the point of contact. It may be flat or raised. A raised button is styled with a\nshadow.\n\nExample:\n\n    <paper-button>Flat button</paper-button>\n    <paper-button raised>Raised button</paper-button>\n    <paper-button noink>No ripple effect</paper-button>\n    <paper-button toggles>Toggle-able button</paper-button>\n\nA button that has `toggles` true will remain `active` after being clicked (and\nwill have an `active` attribute set). For more information, see the `Polymer.IronButtonState`\nbehavior.\n\nYou may use custom DOM in the button body to create a variety of buttons. For example, to\ncreate a button with an icon and some text:\n\n    <paper-button>\n      <iron-icon icon=\"favorite\"></iron-icon>\n      custom button content\n    </paper-button>\n\nTo use `paper-button` as a link, wrap it in an anchor tag. Since `paper-button` will already\nreceive focus, you may want to prevent the anchor tag from receiving focus as well by setting\nits tabindex to -1.\n\n    <a href=\"https://www.polymer-project.org/\" tabindex=\"-1\">\n      <paper-button raised>Polymer Project</paper-button>\n    </a>\n\n### Styling\n\nStyle the button with CSS as you would a normal DOM element.\n\n    paper-button.fancy {\n      background: green;\n      color: yellow;\n    }\n\n    paper-button.fancy:hover {\n      background: lime;\n    }\n\n    paper-button[disabled],\n    paper-button[toggles][active] {\n      background: red;\n    }\n\nBy default, the ripple is the same color as the foreground at 25% opacity. You may\ncustomize the color using the `--paper-button-ink-color` custom property.\n\nThe following custom properties and mixins are also available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-button-ink-color` | Background color of the ripple | `Based on the button's color`\n`--paper-button` | Mixin applied to the button | `{}`\n`--paper-button-disabled` | Mixin applied to the disabled button. Note that you can also use the `paper-button[disabled]` selector | `{}`\n`--paper-button-flat-keyboard-focus` | Mixin applied to a flat button after it's been focused using the keyboard | `{}`\n`--paper-button-raised-keyboard-focus` | Mixin applied to a raised button after it's been focused using the keyboard | `{}`"
+}

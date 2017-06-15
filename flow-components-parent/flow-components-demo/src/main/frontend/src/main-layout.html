@@ -1,0 +1,99 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+
+<dom-module id="main-layout">
+  <template>
+    <style>
+      :host {
+        --app-primary-color: #4285f4;
+        --app-secondary-color: black;
+
+        display: block;
+      }
+
+      app-drawer-layout:not([narrow]) [drawer-toggle] {
+        display: none;
+      }
+
+      app-header {
+        color: #fff;
+        background-color: var(--app-primary-color);
+      }
+
+      app-header paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      .drawer-list {
+        margin: 0 20px;
+      }
+
+      .drawer-list a {
+        display: block;
+        padding: 0 16px;
+        text-decoration: none;
+        color: var(--app-secondary-color);
+        line-height: 40px;
+      }
+
+      .drawer-list a.iron-selected {
+        color: black;
+        font-weight: bold;
+      }
+    </style>
+
+    <app-drawer-layout fullbleed>
+      <!-- Side menu -->
+      <app-drawer id="drawer" slot="drawer">
+        <app-toolbar>Components</app-toolbar>
+        <iron-selector id="selector" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+            <template is="dom-repeat" items="{{selectors}}">
+                <a href="[[item.href]]" name="[[item.name]]" router-link>[[item.name]]</a>
+            </template>
+        </iron-selector>
+      </app-drawer>
+
+      <!-- Main area -->
+      <app-header-layout has-scrolling-region>
+
+        <app-header slot="header" condenses reveals effects="waterfall">
+          <app-toolbar>
+            <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
+            <div main-title>Vaadin Flow Components</div>
+          </app-toolbar>
+        </app-header>
+        
+        <slot>
+            <!-- Main content added via server-side -->
+        </slot>
+       
+      </app-header-layout>
+    </app-drawer-layout>
+  </template>
+
+  <script>
+    class MainLayout extends Polymer.Element {
+
+      static get is() { return 'main-layout'; }
+      
+      static get properties() {
+          return {
+            page: {
+              type: String,
+              reflectToAttribute: true,
+            },
+            selectors: []
+          };
+        }
+
+    }
+
+    window.customElements.define(MainLayout.is, MainLayout);
+  </script>
+</dom-module>
