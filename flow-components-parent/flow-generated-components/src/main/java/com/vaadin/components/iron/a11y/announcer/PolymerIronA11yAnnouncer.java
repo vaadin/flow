@@ -3,6 +3,7 @@ package com.vaadin.components.iron.a11y.announcer;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -34,9 +35,9 @@ import com.vaadin.annotations.Tag;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: iron-a11y-announcer/iron-a11y-announcer.html/iron-a11y-announcer#2.0.0",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: Polymer.IronA11yAnnouncer#2.0.0", "Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-a11y-announcer")
+@HtmlImport("frontend://bower_components/iron-a11y-announcer/iron-a11y-announcer.html")
 public class PolymerIronA11yAnnouncer extends Component {
 
 	/**

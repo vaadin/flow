@@ -3,6 +3,7 @@ package com.vaadin.components.paper.input;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 
 /**
@@ -27,9 +28,9 @@ import elemental.json.JsonObject;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-input/paper-input-error.html/paper-input-error#2.0.1",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-input-error")
+@HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class PaperInputError extends Component {
 
 	/**

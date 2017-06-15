@@ -34,7 +34,7 @@
         margin: 0 20px;
       }
 
-      ::slotted(a) {
+      .drawer-list a {
         display: block;
         padding: 0 16px;
         text-decoration: none;
@@ -42,7 +42,7 @@
         line-height: 40px;
       }
 
-      ::slotted(a.iron-selected) {
+      .drawer-list a.iron-selected {
         color: black;
         font-weight: bold;
       }
@@ -53,8 +53,9 @@
       <app-drawer id="drawer" slot="drawer">
         <app-toolbar>Components</app-toolbar>
         <iron-selector id="selector" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-            <!-- Elements added via server-side -->
-            <slot name="selectors"></slot>
+            <template is="dom-repeat" items="{{selectors}}">
+                <a href="[[item.href]]" name="[[item.name]]" router-link>[[item.name]]</a>
+            </template>
         </iron-selector>
       </app-drawer>
 
@@ -86,7 +87,8 @@
             page: {
               type: String,
               reflectToAttribute: true,
-            }
+            },
+            selectors: []
           };
         }
 

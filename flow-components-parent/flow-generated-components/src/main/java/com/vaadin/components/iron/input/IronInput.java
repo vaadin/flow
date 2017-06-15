@@ -3,6 +3,7 @@ package com.vaadin.components.iron.input;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.shared.Registration;
 import com.vaadin.flow.dom.DomEventListener;
@@ -77,9 +78,9 @@ import com.vaadin.flow.dom.DomEventListener;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: iron-input/iron-input.html/iron-input#2.0.0",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: iron-input#2.0.0", "Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-input")
+@HtmlImport("frontend://bower_components/iron-input/iron-input.html")
 public class IronInput extends Component {
 
 	/**

@@ -15,14 +15,19 @@
  */
 package com.vaadin.flow.demo;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
+import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
-import com.vaadin.flow.html.Anchor;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.ui.AttachEvent;
-import com.vaadin.ui.Component;
 
 /**
  * Main layout of the application. It contains the menu, header and the main
@@ -30,24 +35,42 @@ import com.vaadin.ui.Component;
  */
 @Tag("main-layout")
 @HtmlImport("frontend://src/main-layout.html")
-public class MainLayout extends Component implements HasChildView {
+public class MainLayout extends PolymerTemplate<MainLayoutModel>
+        implements HasChildView {
 
     private View selectedView;
+
+    /**
+     * The model of the layout, allowing to set the properties needed for the
+     * layout to function.
+     */
+    public interface MainLayoutModel extends TemplateModel {
+        /**
+         * Sets the selected page, making the selection on the mnu to appear.
+         * 
+         * @param page
+         *            The name selected page in the selection menu.
+         */
+        void setPage(String page);
+
+        /**
+         * Sets the options on the menu.
+         * 
+         * @param selectors
+         *            The selectable demos in the page menu.
+         */
+        void setSelectors(List<DemoObject> selectors);
+    }
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         if (attachEvent.isInitialAttach()) {
-            appendViewAnchor("paper-button", "Paper Button");
-            appendViewAnchor("paper-input", "Paper Input");
+            getModel().setSelectors(Arrays.asList(
+                    new DemoObject().setName("Paper Button")
+                            .setHref("paper-button"),
+                    new DemoObject().setName("Paper Input")
+                            .setHref("paper-input")));
         }
-    }
-
-    private void appendViewAnchor(String href, String text) {
-        Anchor anchor = new Anchor(href, text);
-        anchor.getElement().setProperty("slot", "selectors");
-        anchor.getElement().setProperty("name", text);
-        anchor.getElement().setAttribute("router-link", true);
-        getElement().appendChild(anchor.getElement());
     }
 
     @Override
@@ -63,8 +86,7 @@ public class MainLayout extends Component implements HasChildView {
         // uses the <slot> at the template
         getElement().appendChild(childView.getElement());
         if (childView instanceof DemoView) {
-            getElement().setProperty("page",
-                    ((DemoView) childView).getViewName());
+            getModel().setPage(((DemoView) childView).getViewName());
         }
     }
 }

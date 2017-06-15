@@ -3,6 +3,7 @@ package com.vaadin.components.paper.button;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.shared.Registration;
 import com.vaadin.flow.dom.DomEventListener;
@@ -69,9 +70,9 @@ import com.vaadin.flow.dom.DomEventListener;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-button/paper-button.html/paper-button#2.0.0",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: paper-button#2.0.0", "Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-button")
+@HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class PaperButton extends Component {
 
 	/**

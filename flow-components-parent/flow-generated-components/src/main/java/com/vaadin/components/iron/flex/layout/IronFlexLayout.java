@@ -3,6 +3,7 @@ package com.vaadin.components.iron.flex.layout;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -51,8 +52,8 @@ import com.vaadin.annotations.Tag;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: iron-flex-layout/iron-flex-layout.html/iron-flex-layout#2.0.0",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: iron-flex-layout#2.0.0", "Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-flex-layout")
+@HtmlImport("frontend://bower_components/iron-flex-layout/iron-flex-layout.html")
 public class IronFlexLayout extends Component {
 }

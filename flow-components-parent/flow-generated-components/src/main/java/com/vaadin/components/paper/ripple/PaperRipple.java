@@ -3,6 +3,7 @@ package com.vaadin.components.paper.ripple;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
 import com.vaadin.shared.Registration;
@@ -64,9 +65,9 @@ import com.vaadin.flow.dom.DomEventListener;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-ripple/paper-ripple.html/paper-ripple#2.0.0",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: paper-ripple#2.0.0", "Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-ripple")
+@HtmlImport("frontend://bower_components/paper-ripple/paper-ripple.html")
 public class PaperRipple extends Component {
 
 	/**

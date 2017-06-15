@@ -3,6 +3,7 @@ package com.vaadin.components.paper.input;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.shared.Registration;
 import com.vaadin.flow.dom.DomEventListener;
@@ -27,9 +28,9 @@ import com.vaadin.flow.dom.DomEventListener;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-input/paper-textarea.html/paper-textarea#2.0.1",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-textarea")
+@HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class PaperTextarea extends Component {
 
 	/**

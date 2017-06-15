@@ -3,6 +3,7 @@ package com.vaadin.components.iron.meta;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.shared.Registration;
 import com.vaadin.flow.dom.DomEventListener;
@@ -45,9 +46,9 @@ import com.vaadin.flow.dom.DomEventListener;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: iron-meta/iron-meta.html/iron-meta#2.0.0",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: iron-meta#2.0.0", "Flow#0.1.9-SNAPSHOT"})
 @Tag("iron-meta")
+@HtmlImport("frontend://bower_components/iron-meta/iron-meta.html")
 public class IronMeta extends Component {
 
 	/**

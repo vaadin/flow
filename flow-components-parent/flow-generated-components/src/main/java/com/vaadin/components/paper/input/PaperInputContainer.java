@@ -3,6 +3,7 @@ package com.vaadin.components.paper.input;
 import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.shared.Registration;
 import com.vaadin.flow.dom.DomEventListener;
@@ -114,9 +115,9 @@ import com.vaadin.flow.dom.DomEventListener;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-input/paper-input-container.html/paper-input-container#2.0.1",
-		"Flow#0.1.9-SNAPSHOT"})
+		"WebComponent: paper-input-container#2.0.1", "Flow#0.1.9-SNAPSHOT"})
 @Tag("paper-input-container")
+@HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
 public class PaperInputContainer extends Component {
 
 	/**
