@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.components.paper.input.PaperInput;
 import com.vaadin.flow.html.Div;
@@ -24,7 +23,6 @@ import com.vaadin.flow.html.Div;
  * View for {@link PaperInput} demo.
  */
 @Tag("div")
-@HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class PaperInputView extends DemoView {
 
     /**

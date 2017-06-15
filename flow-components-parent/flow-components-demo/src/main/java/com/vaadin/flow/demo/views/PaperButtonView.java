@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.flow.html.Div;
@@ -24,7 +23,6 @@ import com.vaadin.flow.html.Div;
  * View for {@link PaperButton} demo.
  */
 @Tag("div")
-@HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class PaperButtonView extends DemoView {
 
     /**

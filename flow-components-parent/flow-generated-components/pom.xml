@@ -31,6 +31,9 @@
                         <fileset>
                             <directory>src/main/java</directory>
                         </fileset>
+                        <fileset>
+                            <directory>json_metadata</directory>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>
