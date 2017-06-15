@@ -1,2 +1,2 @@
-// See eager.js for attachTestDiv code
-attachTestDiv("lazy.js");
+// See eager.js for window.messsages implementation
+window.messages.push("lazy.js");
