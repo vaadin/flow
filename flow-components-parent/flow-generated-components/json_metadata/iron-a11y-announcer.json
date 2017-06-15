@@ -1,0 +1,29 @@
+{
+  "name": "Polymer.IronA11yAnnouncer",
+  "tag": "iron-a11y-announcer",
+  "baseUrl": "iron-a11y-announcer/iron-a11y-announcer.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "mode",
+      "type": "STRING",
+      "description": "The value of mode is used to set the `aria-live` attribute\nfor the element that will be announced. Valid values are: `off`,\n`polite` and `assertive`.\n           "
+    }
+  ],
+  "methods": [
+    {
+      "name": "announce",
+      "description": "Cause a text string to be announced by screen readers.",
+      "parameters": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "description": "The text that should be announced."
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "behaviors": [],
+  "description": "`iron-a11y-announcer` is a singleton element that is intended to add a11y\nto features that require on-demand announcement from screen readers. In\norder to make use of the announcer, it is best to request its availability\nin the announcing element.\n\nExample:\n\n    Polymer({\n\n      is: 'x-chatty',\n\n      attached: function() {\n        // This will create the singleton element if it has not\n        // been created yet:\n        Polymer.IronA11yAnnouncer.requestAvailability();\n      }\n    });\n\nAfter the `iron-a11y-announcer` has been made available, elements can\nmake announces by firing bubbling `iron-announce` events.\n\nExample:\n\n    this.fire('iron-announce', {\n      text: 'This is an announcement!'\n    }, { bubbles: true });\n\nNote: announcements are only audible if you have a screen reader enabled."
+}
