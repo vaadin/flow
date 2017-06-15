@@ -376,4 +376,16 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
         return rootUrl;
     }
+
+    protected void scrollBy(int deltaX, int deltaY) {
+        executeScript("window.scrollBy(" + deltaX + ',' + deltaY + ");");
+    }
+
+    protected int getScrollX() {
+        return ((Long) executeScript("return window.pageXOffset")).intValue();
+    }
+
+    protected int getScrollY() {
+        return ((Long) executeScript("return window.pageYOffset")).intValue();
+    }
 }

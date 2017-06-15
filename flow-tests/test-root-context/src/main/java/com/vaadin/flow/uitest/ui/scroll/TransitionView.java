@@ -24,6 +24,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
  * @author Vaadin Ltd.
  */
 public class TransitionView extends AbstractDivView {
+    static final String URL_ID = "urlId";
 
     public TransitionView() {
         Div spacer = new Div();
@@ -34,6 +35,7 @@ public class TransitionView extends AbstractDivView {
                 "com.vaadin.flow.uitest.ui.scroll.LongToOpenView", "Go to LongToOpenView");
         url.getElement().setAttribute("router-link", true);
         url.getStyle().set("display", "block");
+        url.setId(URL_ID);
 
         add(spacer, url);
     }

@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.uitest.ui.scroll;
 
+import java.util.concurrent.TimeUnit;
+
 import com.vaadin.flow.html.Button;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
@@ -24,11 +26,14 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
  * @author Vaadin Ltd.
  */
 public class LongToOpenView extends AbstractDivView {
+    static final String BACK_BUTTON_ID = "backButton";
+
     public LongToOpenView() {
         Div div = new Div();
         div.setText("I am the long to open view");
 
         Button back = new Button("Back", event -> getPage().getHistory().back());
+        back.setId(BACK_BUTTON_ID);
 
         add(div, back);
     }
@@ -36,9 +41,9 @@ public class LongToOpenView extends AbstractDivView {
     @Override
     protected void onShow() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(3L));
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Not supposed to be interrupted", e);
         }
     }
 }
