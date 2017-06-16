@@ -22,6 +22,7 @@ public class CustomBootstrapListener implements BootstrapListener {
     public void modifyBootstrapPage(BootstrapPageResponse response) {
         Document document = response.getDocument();
 
+
         Element head = document.head();
 
         head.appendChild(createMeta(document, "og:title", "The Rock"));
