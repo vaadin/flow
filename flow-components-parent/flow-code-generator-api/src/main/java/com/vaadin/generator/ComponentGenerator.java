@@ -15,7 +15,6 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,15 +25,17 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.DomEventListener;
@@ -63,12 +64,15 @@ import elemental.json.JsonObject;
  */
 public class ComponentGenerator {
 
+    private static final String GENERIC_TYPE = "R";
+
     private ObjectMapper mapper;
     private File jsonFile;
     private File targetPath;
     private String basePackage;
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
+    private boolean fluentSetters = true;
 
     /**
      * Converts the JSON file to {@link ComponentMetadata}.
@@ -96,6 +100,11 @@ public class ComponentGenerator {
             mapper = new ObjectMapper(factory);
         }
         return mapper;
+    }
+
+    public ComponentGenerator withFluentSetters(boolean fluentSetters) {
+        this.fluentSetters = fluentSetters;
+        return this;
     }
 
     /**
@@ -275,7 +284,25 @@ public class ComponentGenerator {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
 
+        if (fluentSetters) {
+            javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                    .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
+            generateGetSelf(javaClass);
+        }
+
         return javaClass;
+    }
+
+    private void generateGetSelf(JavaClassSource javaClass) {
+        MethodSource<JavaClassSource> method = javaClass.addMethod()
+                .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
+
+        method.getJavaDoc()
+                .setText(
+                        "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
+                .addTagValue("@return", "This object casted to its type.");
+
+        method.setBody("return (" + GENERIC_TYPE + ") this;");
     }
 
     /*
@@ -442,7 +469,7 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName(ComponentGeneratorUtils.generateMethodNameForProperty(
                         "set", property.getName()))
-                .setPublic().setReturnTypeVoid();
+                .setPublic();
 
         Class<?> setterType = toJavaType(property.getType());
         method.addParameter(setterType, property.getName());
@@ -466,6 +493,13 @@ public class ComponentGenerator {
         }
 
         method.getJavaDoc().addTagValue("@param", property.getName());
+
+        if (fluentSetters) {
+            method.setReturnType(GENERIC_TYPE);
+            method.setBody(method.getBody() + "\n" + "return getSelf();");
+            method.getJavaDoc().addTagValue("@return",
+                    "This instance, for method chaining.");
+        }
     }
 
     private String getSetterValue(String propertyName, Class<?> setterType) {

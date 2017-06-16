@@ -11,9 +11,9 @@ import com.vaadin.flow.dom.DomEventListener;
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * `iron-autogrow-textarea` is an element containing a textarea that grows in
- * height as more lines of input are entered. Unless an explicit height or the
- * `maxRows` property is set, it will never scroll.
+ * {@code iron-autogrow-textarea} is an element containing a textarea that grows
+ * in height as more lines of input are entered. Unless an explicit height or
+ * the {@code maxRows} property is set, it will never scroll.
  * 
  * Example:
  * 
@@ -24,16 +24,19 @@ import com.vaadin.flow.dom.DomEventListener;
  * The following custom properties and mixins are available for styling:
  * 
  * Custom property | Description | Default
- * ----------------|-------------|---------- `--iron-autogrow-textarea` | Mixin
- * applied to the textarea | `{}` `--iron-autogrow-textarea-placeholder` | Mixin
- * applied to the textarea placeholder | `{}`
+ * ----------------|-------------|---------- {@code --iron-autogrow-textarea} |
+ * Mixin applied to the textarea | {@code
+ * {@code --iron-autogrow-textarea-placeholder} | Mixin applied to the textarea
+ * placeholder | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("iron-autogrow-textarea")
 @HtmlImport("frontend://bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html")
-public class IronAutogrowTextarea extends Component {
+public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
+		extends
+			Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -50,16 +53,18 @@ public class IronAutogrowTextarea extends Component {
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
+	 * @return This instance, for method chaining.
 	 */
-	public void setValidator(java.lang.String validator) {
+	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the last call to `validate` is invalid.
+	 * True if the last call to {@code validate} is invalid.
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
@@ -68,12 +73,14 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the last call to `validate` is invalid.
+	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
+	 * @return This instance, for method chaining.
 	 */
-	public void setInvalid(boolean invalid) {
+	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
+		return getSelf();
 	}
 
 	/**
@@ -91,9 +98,11 @@ public class IronAutogrowTextarea extends Component {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
+	 * @return This instance, for method chaining.
 	 */
-	public void setFocused(boolean focused) {
+	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
+		return getSelf();
 	}
 
 	/**
@@ -111,15 +120,17 @@ public class IronAutogrowTextarea extends Component {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 * @return This instance, for method chaining.
 	 */
-	public void setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Use this property instead of `bind-value` for two-way data binding.
+	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 */
 	public JsonObject getValue() {
 		return (JsonObject) getElement().getPropertyRaw("value");
@@ -128,19 +139,21 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Use this property instead of `bind-value` for two-way data binding.
+	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * 
 	 * @param value
+	 * @return This instance, for method chaining.
 	 */
-	public void setValue(elemental.json.JsonObject value) {
+	public R setValue(elemental.json.JsonObject value) {
 		getElement().setPropertyJson("value", value);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * This property is deprecated, and just mirrors `value`. Use `value`
-	 * instead.
+	 * This property is deprecated, and just mirrors {@code value}. Use
+	 * {@code value} instead.
 	 */
 	public JsonObject getBindValue() {
 		return (JsonObject) getElement().getPropertyRaw("bindValue");
@@ -149,13 +162,15 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * This property is deprecated, and just mirrors `value`. Use `value`
-	 * instead.
+	 * This property is deprecated, and just mirrors {@code value}. Use
+	 * {@code value} instead.
 	 * 
 	 * @param bindValue
+	 * @return This instance, for method chaining.
 	 */
-	public void setBindValue(elemental.json.JsonObject bindValue) {
+	public R setBindValue(elemental.json.JsonObject bindValue) {
 		getElement().setPropertyJson("bindValue", bindValue);
+		return getSelf();
 	}
 
 	/**
@@ -173,9 +188,11 @@ public class IronAutogrowTextarea extends Component {
 	 * The initial number of rows.
 	 * 
 	 * @param rows
+	 * @return This instance, for method chaining.
 	 */
-	public void setRows(double rows) {
+	public R setRows(double rows) {
 		getElement().setProperty("rows", rows);
+		return getSelf();
 	}
 
 	/**
@@ -195,15 +212,17 @@ public class IronAutogrowTextarea extends Component {
 	 * means no maximum.
 	 * 
 	 * @param maxRows
+	 * @return This instance, for method chaining.
 	 */
-	public void setMaxRows(double maxRows) {
+	public R setMaxRows(double maxRows) {
 		getElement().setProperty("maxRows", maxRows);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `autocomplete` attribute.
+	 * Bound to the textarea's {@code autocomplete} attribute.
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -212,19 +231,21 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `autocomplete` attribute.
+	 * Bound to the textarea's {@code autocomplete} attribute.
 	 * 
 	 * @param autocomplete
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutocomplete(java.lang.String autocomplete) {
+	public R setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
 				autocomplete == null ? "" : autocomplete);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `autofocus` attribute.
+	 * Bound to the textarea's {@code autofocus} attribute.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -233,18 +254,20 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `autofocus` attribute.
+	 * Bound to the textarea's {@code autofocus} attribute.
 	 * 
 	 * @param autofocus
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutofocus(boolean autofocus) {
+	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `inputmode` attribute.
+	 * Bound to the textarea's {@code inputmode} attribute.
 	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
@@ -253,19 +276,21 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `inputmode` attribute.
+	 * Bound to the textarea's {@code inputmode} attribute.
 	 * 
 	 * @param inputmode
+	 * @return This instance, for method chaining.
 	 */
-	public void setInputmode(java.lang.String inputmode) {
+	public R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
 				inputmode == null ? "" : inputmode);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `placeholder` attribute.
+	 * Bound to the textarea's {@code placeholder} attribute.
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -274,19 +299,21 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `placeholder` attribute.
+	 * Bound to the textarea's {@code placeholder} attribute.
 	 * 
 	 * @param placeholder
+	 * @return This instance, for method chaining.
 	 */
-	public void setPlaceholder(java.lang.String placeholder) {
+	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `readonly` attribute.
+	 * Bound to the textarea's {@code readonly} attribute.
 	 */
 	public String getReadonly() {
 		return getElement().getProperty("readonly");
@@ -295,12 +322,14 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Bound to the textarea's `readonly` attribute.
+	 * Bound to the textarea's {@code readonly} attribute.
 	 * 
 	 * @param readonly
+	 * @return This instance, for method chaining.
 	 */
-	public void setReadonly(java.lang.String readonly) {
+	public R setReadonly(java.lang.String readonly) {
 		getElement().setProperty("readonly", readonly == null ? "" : readonly);
+		return getSelf();
 	}
 
 	/**
@@ -318,9 +347,11 @@ public class IronAutogrowTextarea extends Component {
 	 * Set to true to mark the textarea as required.
 	 * 
 	 * @param required
+	 * @return This instance, for method chaining.
 	 */
-	public void setRequired(boolean required) {
+	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
+		return getSelf();
 	}
 
 	/**
@@ -338,9 +369,11 @@ public class IronAutogrowTextarea extends Component {
 	 * The minimum length of the input value.
 	 * 
 	 * @param minlength
+	 * @return This instance, for method chaining.
 	 */
-	public void setMinlength(double minlength) {
+	public R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
+		return getSelf();
 	}
 
 	/**
@@ -358,9 +391,11 @@ public class IronAutogrowTextarea extends Component {
 	 * The maximum length of the input value.
 	 * 
 	 * @param maxlength
+	 * @return This instance, for method chaining.
 	 */
-	public void setMaxlength(double maxlength) {
+	public R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
+		return getSelf();
 	}
 
 	/**
@@ -378,9 +413,11 @@ public class IronAutogrowTextarea extends Component {
 	 * Returns the underlying textarea.
 	 * 
 	 * @param textarea
+	 * @return This instance, for method chaining.
 	 */
-	public void setTextarea(elemental.json.JsonObject textarea) {
+	public R setTextarea(elemental.json.JsonObject textarea) {
 		getElement().setPropertyJson("textarea", textarea);
+		return getSelf();
 	}
 
 	/**
@@ -398,9 +435,11 @@ public class IronAutogrowTextarea extends Component {
 	 * Returns textarea's selection start.
 	 * 
 	 * @param selectionStart
+	 * @return This instance, for method chaining.
 	 */
-	public void setSelectionStart(elemental.json.JsonObject selectionStart) {
+	public R setSelectionStart(elemental.json.JsonObject selectionStart) {
 		getElement().setPropertyJson("selectionStart", selectionStart);
+		return getSelf();
 	}
 
 	/**
@@ -418,9 +457,11 @@ public class IronAutogrowTextarea extends Component {
 	 * Returns textarea's selection end.
 	 * 
 	 * @param selectionEnd
+	 * @return This instance, for method chaining.
 	 */
-	public void setSelectionEnd(elemental.json.JsonObject selectionEnd) {
+	public R setSelectionEnd(elemental.json.JsonObject selectionEnd) {
 		getElement().setPropertyJson("selectionEnd", selectionEnd);
+		return getSelf();
 	}
 
 	public void hasValidator() {
@@ -430,9 +471,9 @@ public class IronAutogrowTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns true if `value` is valid. The validator provided in `validator`
-	 * will be used first, if it exists; otherwise, the `textarea`'s validity is
-	 * used.
+	 * Returns true if {@code value} is valid. The validator provided in
+	 * {@code validator} will be used first, if it exists; otherwise, the
+	 * {@code textarea}'s validity is used.
 	 */
 	public void validate() {
 		getElement().callFunction("validate");
@@ -460,5 +501,15 @@ public class IronAutogrowTextarea extends Component {
 	public Registration addBindValueChangedListener(
 			com.vaadin.flow.dom.DomEventListener listener) {
 		return getElement().addEventListener("bind-value-changed", listener);
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

@@ -16,11 +16,11 @@ import com.vaadin.flow.dom.DomEventListener;
  * 2.0. Expect some conditional code (especially in the tests).
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-input#2.0.1", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: paper-input#2.0.1", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
-public class PaperInput extends Component {
+public class PaperInput<R extends PaperInput<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -37,9 +37,11 @@ public class PaperInput extends Component {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
+	 * @return This instance, for method chaining.
 	 */
-	public void setFocused(boolean focused) {
+	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
+		return getSelf();
 	}
 
 	/**
@@ -47,7 +49,8 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to disable this input. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `disabled` property.
+	 * {@code <paper-input-container>}'s and the input's {@code disabled}
+	 * property.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -58,19 +61,22 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to disable this input. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `disabled` property.
+	 * {@code <paper-input-container>}'s and the input's {@code disabled}
+	 * property.
 	 * 
 	 * @param disabled
+	 * @return This instance, for method chaining.
 	 */
-	public void setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -80,12 +86,14 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 * @return This instance, for method chaining.
 	 */
-	public void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+		return getSelf();
 	}
 
 	/**
@@ -105,11 +113,13 @@ public class PaperInput extends Component {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 * @return This instance, for method chaining.
 	 */
-	public void setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
+		return getSelf();
 	}
 
 	public JsonObject getKeyBindings() {
@@ -118,18 +128,21 @@ public class PaperInput extends Component {
 
 	/**
 	 * @param keyBindings
+	 * @return This instance, for method chaining.
 	 */
-	public void setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The label for this input. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to `<label>`'s content and
-	 * `hidden` property, e.g. `<label hidden$="[[!label]]">[[label]]</label>`
-	 * in your `template`
+	 * your own paper-input-like element, bind this to {@code <label>}'s content
+	 * and {@code hidden} property, e.g.
+	 * {@code <label hidden$="[[!label]]">[[label]]</label>} in your
+	 * {@code template}
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -139,14 +152,17 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The label for this input. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to `<label>`'s content and
-	 * `hidden` property, e.g. `<label hidden$="[[!label]]">[[label]]</label>`
-	 * in your `template`
+	 * your own paper-input-like element, bind this to {@code <label>}'s content
+	 * and {@code hidden} property, e.g.
+	 * {@code <label hidden$="[[!label]]">[[label]]</label>} in your
+	 * {@code template}
 	 * 
 	 * @param label
+	 * @return This instance, for method chaining.
 	 */
-	public void setLabel(java.lang.String label) {
+	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
+		return getSelf();
 	}
 
 	/**
@@ -164,9 +180,11 @@ public class PaperInput extends Component {
 	 * The value for this element.
 	 * 
 	 * @param value
+	 * @return This instance, for method chaining.
 	 */
-	public void setValue(java.lang.String value) {
+	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
+		return getSelf();
 	}
 
 	/**
@@ -174,9 +192,10 @@ public class PaperInput extends Component {
 	 * 
 	 * Returns true if the value is invalid. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `invalid` property.
+	 * {@code <paper-input-container>}'s and the input's {@code invalid}
+	 * property.
 	 * 
-	 * If `autoValidate` is true, the `invalid` attribute is managed
+	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
 	 */
 	public boolean isInvalid() {
@@ -188,24 +207,27 @@ public class PaperInput extends Component {
 	 * 
 	 * Returns true if the value is invalid. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `invalid` property.
+	 * {@code <paper-input-container>}'s and the input's {@code invalid}
+	 * property.
 	 * 
-	 * If `autoValidate` is true, the `invalid` attribute is managed
+	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
 	 * 
 	 * @param invalid
+	 * @return This instance, for method chaining.
 	 */
-	public void setInvalid(boolean invalid) {
+	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Set this to specify the pattern allowed by `preventInvalidInput`. If
-	 * you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `allowedPattern`
-	 * property.
+	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
+	 * If you're using PaperInputBehavior to implement your own paper-input-like
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code allowedPattern} property.
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
@@ -214,25 +236,27 @@ public class PaperInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Set this to specify the pattern allowed by `preventInvalidInput`. If
-	 * you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `allowedPattern`
-	 * property.
+	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
+	 * If you're using PaperInputBehavior to implement your own paper-input-like
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code allowedPattern} property.
 	 * 
 	 * @param allowedPattern
+	 * @return This instance, for method chaining.
 	 */
-	public void setAllowedPattern(java.lang.String allowedPattern) {
+	public R setAllowedPattern(java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
 				allowedPattern == null ? "" : allowedPattern);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The type of the input. The supported types are `text`, `number` and
-	 * `password`. If you're using PaperInputBehavior to implement your own
-	 * paper-input-like element, bind this to the `<input is="iron-input">`'s
-	 * `type` property.
+	 * The type of the input. The supported types are {@code text},
+	 * {@code number} and {@code password}. If you're using PaperInputBehavior
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code type} property.
 	 */
 	public String getType() {
 		return getElement().getProperty("type");
@@ -241,24 +265,26 @@ public class PaperInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The type of the input. The supported types are `text`, `number` and
-	 * `password`. If you're using PaperInputBehavior to implement your own
-	 * paper-input-like element, bind this to the `<input is="iron-input">`'s
-	 * `type` property.
+	 * The type of the input. The supported types are {@code text},
+	 * {@code number} and {@code password}. If you're using PaperInputBehavior
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code type} property.
 	 * 
 	 * @param type
+	 * @return This instance, for method chaining.
 	 */
-	public void setType(java.lang.String type) {
+	public R setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The datalist of the input (if any). This should match the id of an
-	 * existing `<datalist>`. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `list` property.
+	 * existing {@code <datalist>}. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code list} property.
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
@@ -268,22 +294,24 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The datalist of the input (if any). This should match the id of an
-	 * existing `<datalist>`. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `list` property.
+	 * existing {@code <datalist>}. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code list} property.
 	 * 
 	 * @param list
+	 * @return This instance, for method chaining.
 	 */
-	public void setList(java.lang.String list) {
+	public R setList(java.lang.String list) {
 		getElement().setProperty("list", list == null ? "" : list);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A pattern to validate the `input` with. If you're using
+	 * A pattern to validate the {@code input} with. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `pattern` property.
+	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
@@ -292,14 +320,16 @@ public class PaperInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A pattern to validate the `input` with. If you're using
+	 * A pattern to validate the {@code input} with. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `pattern` property.
+	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 * 
 	 * @param pattern
+	 * @return This instance, for method chaining.
 	 */
-	public void setPattern(java.lang.String pattern) {
+	public R setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
+		return getSelf();
 	}
 
 	/**
@@ -308,9 +338,9 @@ public class PaperInput extends Component {
 	 * Set to true to mark the input as required. If used in a form, a custom
 	 * element that uses this behavior should also use
 	 * Polymer.IronValidatableBehavior and define a custom validation method.
-	 * Otherwise, a `required` element will always be considered valid. It's
-	 * also strongly recommended to provide a visual style for the element when
-	 * its value is invalid.
+	 * Otherwise, a {@code required} element will always be considered valid.
+	 * It's also strongly recommended to provide a visual style for the element
+	 * when its value is invalid.
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -322,14 +352,16 @@ public class PaperInput extends Component {
 	 * Set to true to mark the input as required. If used in a form, a custom
 	 * element that uses this behavior should also use
 	 * Polymer.IronValidatableBehavior and define a custom validation method.
-	 * Otherwise, a `required` element will always be considered valid. It's
-	 * also strongly recommended to provide a visual style for the element when
-	 * its value is invalid.
+	 * Otherwise, a {@code required} element will always be considered valid.
+	 * It's also strongly recommended to provide a visual style for the element
+	 * when its value is invalid.
 	 * 
 	 * @param required
+	 * @return This instance, for method chaining.
 	 */
-	public void setRequired(boolean required) {
+	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
+		return getSelf();
 	}
 
 	/**
@@ -337,7 +369,7 @@ public class PaperInput extends Component {
 	 * 
 	 * The error message to display when the input is invalid. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-error>`'s content, if using.
+	 * this to the {@code <paper-input-error>}'s content, if using.
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -348,13 +380,15 @@ public class PaperInput extends Component {
 	 * 
 	 * The error message to display when the input is invalid. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-error>`'s content, if using.
+	 * this to the {@code <paper-input-error>}'s content, if using.
 	 * 
 	 * @param errorMessage
+	 * @return This instance, for method chaining.
 	 */
-	public void setErrorMessage(java.lang.String errorMessage) {
+	public R setErrorMessage(java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
+		return getSelf();
 	}
 
 	/**
@@ -372,9 +406,11 @@ public class PaperInput extends Component {
 	 * Set to true to show a character counter.
 	 * 
 	 * @param charCounter
+	 * @return This instance, for method chaining.
 	 */
-	public void setCharCounter(boolean charCounter) {
+	public R setCharCounter(boolean charCounter) {
 		getElement().setProperty("charCounter", charCounter);
+		return getSelf();
 	}
 
 	/**
@@ -382,7 +418,8 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to disable the floating label. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `noLabelFloat` property.
+	 * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
+	 * property.
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -393,12 +430,15 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to disable the floating label. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `noLabelFloat` property.
+	 * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
+	 * property.
 	 * 
 	 * @param noLabelFloat
+	 * @return This instance, for method chaining.
 	 */
-	public void setNoLabelFloat(boolean noLabelFloat) {
+	public R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
+		return getSelf();
 	}
 
 	/**
@@ -406,7 +446,7 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to always float the label. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
-	 * `<paper-input-container>`'s `alwaysFloatLabel` property.
+	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -417,12 +457,14 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to always float the label. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
-	 * `<paper-input-container>`'s `alwaysFloatLabel` property.
+	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * 
 	 * @param alwaysFloatLabel
+	 * @return This instance, for method chaining.
 	 */
-	public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
+		return getSelf();
 	}
 
 	/**
@@ -430,7 +472,8 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to auto-validate the input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `autoValidate` property.
+	 * this to the {@code <paper-input-container>}'s {@code autoValidate}
+	 * property.
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -441,20 +484,23 @@ public class PaperInput extends Component {
 	 * 
 	 * Set to true to auto-validate the input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `autoValidate` property.
+	 * this to the {@code <paper-input-container>}'s {@code autoValidate}
+	 * property.
 	 * 
 	 * @param autoValidate
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutoValidate(boolean autoValidate) {
+	public R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Name of the validator to use. If you're using PaperInputBehavior to
-	 * implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `validator` property.
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -464,22 +510,24 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Name of the validator to use. If you're using PaperInputBehavior to
-	 * implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `validator` property.
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 * 
 	 * @param validator
+	 * @return This instance, for method chaining.
 	 */
-	public void setValidator(java.lang.String validator) {
+	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocomplete`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocomplete} property.
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -489,22 +537,24 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocomplete`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocomplete} property.
 	 * 
 	 * @param autocomplete
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutocomplete(java.lang.String autocomplete) {
+	public R setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
 				autocomplete == null ? "" : autocomplete);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autofocus`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autofocus} property.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -514,21 +564,23 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autofocus`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autofocus} property.
 	 * 
 	 * @param autofocus
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutofocus(boolean autofocus) {
+	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `inputmode`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code inputmode} property.
 	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
@@ -538,22 +590,24 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `inputmode`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code inputmode} property.
 	 * 
 	 * @param inputmode
+	 * @return This instance, for method chaining.
 	 */
-	public void setInputmode(java.lang.String inputmode) {
+	public R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
 				inputmode == null ? "" : inputmode);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The minimum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `minlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
@@ -563,21 +617,23 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The minimum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `minlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 * 
 	 * @param minlength
+	 * @return This instance, for method chaining.
 	 */
-	public void setMinlength(double minlength) {
+	public R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `maxlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
@@ -587,13 +643,15 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `maxlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 * 
 	 * @param maxlength
+	 * @return This instance, for method chaining.
 	 */
-	public void setMaxlength(double maxlength) {
+	public R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
+		return getSelf();
 	}
 
 	/**
@@ -601,7 +659,7 @@ public class PaperInput extends Component {
 	 * 
 	 * The minimum (numeric or date-time) input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `min` property.
+	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 */
 	public String getMin() {
 		return getElement().getProperty("min");
@@ -612,21 +670,23 @@ public class PaperInput extends Component {
 	 * 
 	 * The minimum (numeric or date-time) input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `min` property.
+	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 * 
 	 * @param min
+	 * @return This instance, for method chaining.
 	 */
-	public void setMin(java.lang.String min) {
+	public R setMin(java.lang.String min) {
 		getElement().setProperty("min", min == null ? "" : min);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum (numeric or date-time) input value. Can be a String (e.g.
-	 * `"2000-01-01"`) or a Number (e.g. `2`). If you're using
+	 * {@code "2000-01-01"}) or a Number (e.g. {@code 2}). If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `max` property.
+	 * this to the {@code <input is="iron-input">}'s {@code max} property.
 	 */
 	public String getMax() {
 		return getElement().getProperty("max");
@@ -636,14 +696,16 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum (numeric or date-time) input value. Can be a String (e.g.
-	 * `"2000-01-01"`) or a Number (e.g. `2`). If you're using
+	 * {@code "2000-01-01"}) or a Number (e.g. {@code 2}). If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `max` property.
+	 * this to the {@code <input is="iron-input">}'s {@code max} property.
 	 * 
 	 * @param max
+	 * @return This instance, for method chaining.
 	 */
-	public void setMax(java.lang.String max) {
+	public R setMax(java.lang.String max) {
 		getElement().setProperty("max", max == null ? "" : max);
+		return getSelf();
 	}
 
 	/**
@@ -651,7 +713,7 @@ public class PaperInput extends Component {
 	 * 
 	 * Limits the numeric or date-time increments. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `step` property.
+	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 */
 	public String getStep() {
 		return getElement().getProperty("step");
@@ -662,12 +724,14 @@ public class PaperInput extends Component {
 	 * 
 	 * Limits the numeric or date-time increments. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `step` property.
+	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 * 
 	 * @param step
+	 * @return This instance, for method chaining.
 	 */
-	public void setStep(java.lang.String step) {
+	public R setStep(java.lang.String step) {
 		getElement().setProperty("step", step == null ? "" : step);
+		return getSelf();
 	}
 
 	/**
@@ -685,9 +749,11 @@ public class PaperInput extends Component {
 	 * The name of this element.
 	 * 
 	 * @param name
+	 * @return This instance, for method chaining.
 	 */
-	public void setName(java.lang.String name) {
+	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
+		return getSelf();
 	}
 
 	/**
@@ -707,18 +773,20 @@ public class PaperInput extends Component {
 	 * will always float.
 	 * 
 	 * @param placeholder
+	 * @return This instance, for method chaining.
 	 */
-	public void setPlaceholder(java.lang.String placeholder) {
+	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `readonly`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code readonly} property.
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -728,20 +796,23 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `readonly`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code readonly} property.
 	 * 
 	 * @param readonly
+	 * @return This instance, for method chaining.
 	 */
-	public void setReadonly(boolean readonly) {
+	public R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `size` property.
+	 * element, bind this to the {@code <input is="iron-input">}'s {@code size}
+	 * property.
 	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
@@ -751,20 +822,23 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `size` property.
+	 * element, bind this to the {@code <input is="iron-input">}'s {@code size}
+	 * property.
 	 * 
 	 * @param size
+	 * @return This instance, for method chaining.
 	 */
-	public void setSize(double size) {
+	public R setSize(double size) {
 		getElement().setProperty("size", size);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocapitalize`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocapitalize} property.
 	 */
 	public String getAutocapitalize() {
 		return getElement().getProperty("autocapitalize");
@@ -774,22 +848,24 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocapitalize`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocapitalize} property.
 	 * 
 	 * @param autocapitalize
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutocapitalize(java.lang.String autocapitalize) {
+	public R setAutocapitalize(java.lang.String autocapitalize) {
 		getElement().setProperty("autocapitalize",
 				autocapitalize == null ? "" : autocapitalize);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocorrect`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocorrect} property.
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
@@ -799,22 +875,24 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocorrect`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocorrect} property.
 	 * 
 	 * @param autocorrect
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutocorrect(java.lang.String autocorrect) {
+	public R setAutocorrect(java.lang.String autocorrect) {
 		getElement().setProperty("autocorrect",
 				autocorrect == null ? "" : autocorrect);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autosave`
-	 * property, used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autosave} property, used with type=search.
 	 */
 	public String getAutosave() {
 		return getElement().getProperty("autosave");
@@ -824,21 +902,23 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autosave`
-	 * property, used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autosave} property, used with type=search.
 	 * 
 	 * @param autosave
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutosave(java.lang.String autosave) {
+	public R setAutosave(java.lang.String autosave) {
 		getElement().setProperty("autosave", autosave == null ? "" : autosave);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `results` property,
-	 * used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code results} property, used with type=search.
 	 */
 	public double getResults() {
 		return getElement().getProperty("results", 0.0);
@@ -848,21 +928,23 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `results` property,
-	 * used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code results} property, used with type=search.
 	 * 
 	 * @param results
+	 * @return This instance, for method chaining.
 	 */
-	public void setResults(double results) {
+	public R setResults(double results) {
 		getElement().setProperty("results", results);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `accept` property,
-	 * used with type=file.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code accept} property, used with type=file.
 	 */
 	public String getAccept() {
 		return getElement().getProperty("accept");
@@ -872,21 +954,23 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `accept` property,
-	 * used with type=file.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code accept} property, used with type=file.
 	 * 
 	 * @param accept
+	 * @return This instance, for method chaining.
 	 */
-	public void setAccept(java.lang.String accept) {
+	public R setAccept(java.lang.String accept) {
 		getElement().setProperty("accept", accept == null ? "" : accept);
+		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the`<input is="iron-input">`'s `multiple` property,
-	 * used with type=file.
+	 * element, bind this to the{@code <input is="iron-input">}'s
+	 * {@code multiple} property, used with type=file.
 	 */
 	public boolean isMultiple() {
 		return getElement().getProperty("multiple", false);
@@ -896,13 +980,15 @@ public class PaperInput extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the`<input is="iron-input">`'s `multiple` property,
-	 * used with type=file.
+	 * element, bind this to the{@code <input is="iron-input">}'s
+	 * {@code multiple} property, used with type=file.
 	 * 
 	 * @param multiple
+	 * @return This instance, for method chaining.
 	 */
-	public void setMultiple(boolean multiple) {
+	public R setMultiple(boolean multiple) {
 		getElement().setProperty("multiple", multiple);
+		return getSelf();
 	}
 
 	/**
@@ -910,7 +996,7 @@ public class PaperInput extends Component {
 	 * 
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
-	 * the `keyBindings` prototype property.
+	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
 	 * @param handlerName
@@ -932,7 +1018,7 @@ public class PaperInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns true if a keyboard event matches `eventString`.
+	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
 	 * @param eventString
@@ -1006,5 +1092,15 @@ public class PaperInput extends Component {
 			com.vaadin.flow.dom.DomEventListener listener) {
 		return getElement().addEventListener("iron-form-element-unregister",
 				listener);
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

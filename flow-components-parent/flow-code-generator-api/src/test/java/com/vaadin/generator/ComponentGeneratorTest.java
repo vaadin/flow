@@ -143,7 +143,9 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithGetterAndSetter_methodContainsJavaDoc() {
+    public void generateClassWithGetterAndNonFluentSetter_methodContainsJavaDoc() {
+        generator.withFluentSetters(false);
+
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
         propertyData.setType(ComponentObjectType.STRING);
@@ -164,6 +166,34 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("JavaDoc parameter for setter was not found",
                 generatedClass.contains("* @param " + propertyData.getName()));
+    }
+
+    @Test
+    public void generateClassWithGetterAndFluentSetter_methodContainsJavaDoc() {
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("name");
+        propertyData.setType(ComponentObjectType.STRING);
+        propertyData
+                .setDescription("This is the name property of the component.");
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("No getter found",
+                generatedClass.contains("public String getName()"));
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setName(java.lang.String name)"));
+
+        Assert.assertTrue("Method javaDoc was not found",
+                generatedClass.contains("* " + propertyData.getDescription()));
+
+        Assert.assertTrue("JavaDoc parameter for fluent setter was not found",
+                generatedClass.contains("* @param " + propertyData.getName()));
+
+        Assert.assertTrue("JavaDoc return for fluent setter was not found",
+                generatedClass.contains(
+                        "* @return This instance, for method chaining."));
     }
 
     @Test
@@ -193,8 +223,8 @@ public class ComponentGeneratorTest {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
         propertyData.setType(ComponentObjectType.STRING);
-        propertyData
-                .setDescription("This is the `<input value=\"name\">` property of the component.");
+        propertyData.setDescription(
+                "This is the `<input value=\"name\">` property of the component.");
         propertyData.setReadOnly(true);
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
@@ -206,7 +236,8 @@ public class ComponentGeneratorTest {
 
         System.out.println(generatedClass);
         Assert.assertTrue("Method javaDoc was not found",
-                generatedClass.contains("* This is the {@code <input value=\"name\">} property of the component."));
+                generatedClass.contains(
+                        "* This is the {@code <input value=\"name\">} property of the component."));
     }
 
     @Test
@@ -219,7 +250,9 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithStringGetterAndSetter_setterSetsEmptyForNullValue() {
+    public void generateClassWithStringGetterAndNonFluentSetter_setterSetsEmptyForNullValue() {
+        generator.withFluentSetters(false);
+
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
         propertyData.setType(ComponentObjectType.STRING);
@@ -239,7 +272,29 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithBooleanGetterAndSetter_setterDoesNotSetEmptyForNullValue() {
+    public void generateClassWithStringGetterAndFluentSetter_setterSetsEmptyForNullValue() {
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("name");
+        propertyData.setType(ComponentObjectType.STRING);
+        propertyData
+                .setDescription("This is the name property of the component.");
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setName(java.lang.String name)"));
+
+        Assert.assertTrue("Fluent setter doesn't check for null value",
+                generatedClass.contains(propertyData.getName()
+                        + " == null ? \"\" : " + propertyData.getName()));
+    }
+
+    @Test
+    public void generateClassWithBooleanGetterAndNonFluentSetter_setterDoesNotSetEmptyForNullValue() {
+        generator.withFluentSetters(false);
+
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
         propertyData.setType(ComponentObjectType.BOOLEAN);
@@ -253,6 +308,25 @@ public class ComponentGeneratorTest {
                 .contains("public void setRequired(boolean required)"));
 
         Assert.assertFalse("Setter checks for null value",
+                generatedClass.contains(propertyData.getName()
+                        + " == null ? \"\" : " + propertyData.getName()));
+    }
+
+    @Test
+    public void generateClassWithBooleanGetterAndFluentSetter_setterDoesNotSetEmptyForNullValue() {
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("required");
+        propertyData.setType(ComponentObjectType.BOOLEAN);
+        propertyData.setDescription("This is a required field.");
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setRequired(boolean required)"));
+
+        Assert.assertFalse("Fluent setter checks for null value",
                 generatedClass.contains(propertyData.getName()
                         + " == null ? \"\" : " + propertyData.getName()));
     }
@@ -277,5 +351,19 @@ public class ComponentGeneratorTest {
                 "Wrong generated package. It should be com.my.test.some.other.directory",
                 generatedClass.startsWith(
                         "package com.my.test.some.other.directory;"));
+    }
+
+    @Test
+    public void generateClassWithFluentSetters_classContainsGenericTypeAndGetSelf() {
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Wrong class definition. It should be MyComponent<R extends MyComponent<R>>",
+                generatedClass.contains(
+                        "public class MyComponent<R extends MyComponent<R>>"));
+
+        Assert.assertTrue("The method getSelf() wasn't found",
+                generatedClass.contains("protected R getSelf()"));
     }
 }
