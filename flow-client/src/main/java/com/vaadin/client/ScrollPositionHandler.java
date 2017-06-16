@@ -273,12 +273,6 @@ public class ScrollPositionHandler {
                 createStateObjectWithHistoryIndexAndToken(), "",
                 Browser.getWindow().getLocation().getHref());
 
-        // move to page top only if there is no fragment so scroll position
-        // doesn't bounce around
-        if (!newHref.contains("#")) {
-            Browser.getWindow().scrollTo(0, 0);
-        }
-
         currentHistoryIndex++;
 
         if (triggersServerSideRoundtrip) {

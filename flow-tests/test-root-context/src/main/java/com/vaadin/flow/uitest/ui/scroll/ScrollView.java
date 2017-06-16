@@ -1,72 +1,69 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package com.vaadin.flow.uitest.ui.scroll;
 
 import com.vaadin.flow.html.Anchor;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H1;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
+/**
+ * @author Vaadin Ltd.
+ */
 public class ScrollView extends AbstractDivView {
+    private static final String ROUTER_LINK_ATTRIBUTE_NAME = "router-link";
+
+    static final String ANCHOR_DIV_ID = "anchorDivId";
+    static final String ANCHOR_URL = ScrollView.class.getCanonicalName() + '#'
+            + ANCHOR_DIV_ID;
+    static final String SIMPLE_ANCHOR_URL_ID = "simpleAnchorUrlId";
+    static final String ROUTER_ANCHOR_URL_ID = "routerAnchorUrlId";
+    static final String TRANSITION_URL_ID = "transitionUrlId";
 
     public ScrollView() {
-        Div scrollY = new Div();
-        scrollY.setText("ScrollY:");
-        scrollY.setWidth("100px");
-        scrollY.setId("scrolly");
-        scrollY.addClickListener(event -> {
-            getUI().get().getPage().executeJavaScript(
-                    "document.getElementById('scrolly').textContent = '' + window.scrollY;");
-        });
-        Div scrollX = new Div();
-        scrollX.setText("ScrollX:");
-        scrollX.setWidth("100px");
-        scrollX.setId("scrollx");
-        scrollX.addClickListener(event -> {
-            getUI().get().getPage().executeJavaScript(
-                    "document.getElementById('scrollx').textContent = '' + window.scrollX;");
-        });
+        Div spacer1 = new Div();
+        spacer1.setText(
+                "This is an intentionally long div (see urls at the bottom)");
+        spacer1.setHeight("300px");
 
-        Div historyLength = new Div();
-        historyLength.setText("historyIndex");
-        historyLength.setWidth("100px");
-        historyLength.setId("historylength");
-        historyLength.addClickListener(event -> {
-            getUI().get().getPage().executeJavaScript(
-                    "document.getElementById('historylength').textContent = '' + (history.state ? history.state.historyIndex : 'nan')");
-        });
+        Div anchorDiv = new Div();
+        anchorDiv.setText("I'm the anchor div");
+        anchorDiv.setId(ANCHOR_DIV_ID);
 
-        Div floatingMenu = new Div(new H1(getClass().getSimpleName()),
-                createLink("ScrollView"), createLink("ScrollView#row3"),
-                createLink("ScrollView2"), createLink("ScrollView2#row5"),
-                createLink("ScrollView3"),
-                new Anchor(
-                        "com.vaadin.flow.uitest.ui.scroll.ScrollView3#row10",
-                        "ScrollView3#row10"),
-                scrollY, scrollX, historyLength);
-        floatingMenu.getStyle().set("float", "right").set("position", "fixed")
-                .set("right", "0").set("top", "20px");
+        Div spacer2 = new Div();
+        spacer2.setText(
+                "This is an intentionally long div (see urls at the bottom)");
+        spacer2.setHeight("2000px");
 
-        add(floatingMenu);
-
-        for (int i = 1; i <= getRows(); i++) {
-            Div div = new Div();
-            div.setId("row" + i);
-            div.setText("Row " + i);
-            div.setHeight("500px");
-            div.setWidth("2000px");
-            add(div);
-        }
+        add(spacer1, anchorDiv, spacer2,
+                createAnchorUrl(false, SIMPLE_ANCHOR_URL_ID, ANCHOR_URL,
+                        "Go to anchor div (simple link)"),
+                createAnchorUrl(true, ROUTER_ANCHOR_URL_ID, ANCHOR_URL,
+                        "Go to anchor div (router-link)"),
+                createAnchorUrl(true, TRANSITION_URL_ID,
+                        LongToOpenView.class.getCanonicalName(),
+                        "Go to different page (router-link)"));
     }
 
-    private Anchor createLink(String href) {
-        Anchor a1 = new Anchor(
-                "com.vaadin.flow.uitest.ui.scroll." + href, href);
-        a1.getElement().setAttribute("router-link", true);
-        a1.getStyle().set("display", "block");
-        return a1;
+    private static Anchor createAnchorUrl(boolean isRouterLink, String id,
+            String url, String text) {
+        Anchor result = new Anchor(url, text);
+        result.getElement().setAttribute(ROUTER_LINK_ATTRIBUTE_NAME, isRouterLink);
+        result.getStyle().set("display", "block");
+        result.setId(id);
+        return result;
     }
-
-    protected int getRows() {
-        return 3;
-    }
-
 }
