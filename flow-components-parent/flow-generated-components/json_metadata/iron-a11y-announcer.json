@@ -6,7 +6,10 @@
   "properties": [
     {
       "name": "mode",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The value of mode is used to set the `aria-live` attribute\nfor the element that will be announced. Valid values are: `off`,\n`polite` and `assertive`.\n           "
     }
   ],
@@ -17,7 +20,10 @@
       "parameters": [
         {
           "name": "text",
-          "type": "STRING",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "The text that should be announced."
         }
       ]

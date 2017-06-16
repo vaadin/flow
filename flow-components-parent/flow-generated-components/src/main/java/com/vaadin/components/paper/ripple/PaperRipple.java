@@ -16,9 +16,9 @@ import com.vaadin.flow.dom.DomEventListener;
  * reaction](https://www.google.com/design/spec/animation
  * /responsive-interaction.html#responsive-interaction-surface-reaction)
  * 
- * `paper-ripple` provides a visual effect that other paper elements can use to
- * simulate a rippling effect emanating from the point of contact. The effect
- * can be visualized as a concentric circle with motion.
+ * {@code paper-ripple} provides a visual effect that other paper elements can
+ * use to simulate a rippling effect emanating from the point of contact. The
+ * effect can be visualized as a concentric circle with motion.
  * 
  * Example:
  * 
@@ -27,12 +27,12 @@ import com.vaadin.flow.dom.DomEventListener;
  * Note, it's important that the parent container of the ripple be relative
  * position, otherwise the ripple will emanate outside of the desired container.
  * 
- * `paper-ripple` listens to "mousedown" and "mouseup" events so it would
+ * {@code paper-ripple} listens to "mousedown" and "mouseup" events so it would
  * display ripple effect when touches on it. You can also defeat the default
  * behavior and manually route the down and up actions to the ripple element.
- * Note that it is important if you call `downAction()` you will have to make
- * sure to call `upAction()` so that `paper-ripple` would end the animation
- * loop.
+ * Note that it is important if you call {@code downAction()} you will have to
+ * make sure to call {@code upAction()} so that {@code paper-ripple} would end
+ * the animation loop.
  * 
  * Example:
  * 
@@ -47,10 +47,10 @@ import com.vaadin.flow.dom.DomEventListener;
  * paper-ripple { color: #4285f4; }
  * 
  * Note that CSS color property is inherited so it is not required to set it on
- * the `paper-ripple` element directly.
+ * the {@code paper-ripple} element directly.
  * 
  * By default, the ripple is centered on the point of contact. Apply the
- * `recenters` attribute to have the ripple grow toward the center of its
+ * {@code recenters} attribute to have the ripple grow toward the center of its
  * container.
  * 
  * <paper-ripple recenters></paper-ripple>
@@ -59,13 +59,13 @@ import com.vaadin.flow.dom.DomEventListener;
  * 
  * <paper-ripple center></paper-ripple>
  * 
- * Apply `circle` class to make the rippling effect within a circle.
+ * Apply {@code circle} class to make the rippling effect within a circle.
  * 
  * <paper-ripple class="circle"></paper-ripple>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-ripple#2.0.0", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: paper-ripple#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-ripple")
 @HtmlImport("frontend://bower_components/paper-ripple/paper-ripple.html")
 public class PaperRipple extends Component {
@@ -74,7 +74,7 @@ public class PaperRipple extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -84,7 +84,7 @@ public class PaperRipple extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
 	 */
@@ -252,8 +252,8 @@ public class PaperRipple extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the ripple will remain in the "down" state until `holdDown` is
-	 * set to false again.
+	 * If true, the ripple will remain in the "down" state until
+	 * {@code holdDown} is set to false again.
 	 */
 	public boolean isHoldDown() {
 		return getElement().getProperty("holdDown", false);
@@ -262,8 +262,8 @@ public class PaperRipple extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the ripple will remain in the "down" state until `holdDown` is
-	 * set to false again.
+	 * If true, the ripple will remain in the "down" state until
+	 * {@code holdDown} is set to false again.
 	 * 
 	 * @param holdDown
 	 */
@@ -275,8 +275,8 @@ public class PaperRipple extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the ripple will not generate a ripple effect via pointer
-	 * interaction. Calling ripple's imperative api like `simulatedRipple` will
-	 * still generate the ripple effect.
+	 * interaction. Calling ripple's imperative api like {@code simulatedRipple}
+	 * will still generate the ripple effect.
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
@@ -286,8 +286,8 @@ public class PaperRipple extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the ripple will not generate a ripple effect via pointer
-	 * interaction. Calling ripple's imperative api like `simulatedRipple` will
-	 * still generate the ripple effect.
+	 * interaction. Calling ripple's imperative api like {@code simulatedRipple}
+	 * will still generate the ripple effect.
 	 * 
 	 * @param noink
 	 */
@@ -324,13 +324,13 @@ public class PaperRipple extends Component {
 	 * 
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
-	 * the `keyBindings` prototype property.
+	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
 	 * @param handlerName
 	 */
-	public void addOwnKeyBinding(elemental.json.JsonObject eventString,
-			elemental.json.JsonObject handlerName) {
+	public void addOwnKeyBinding(java.lang.String eventString,
+			java.lang.String handlerName) {
 		getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
 	}
 
@@ -346,7 +346,7 @@ public class PaperRipple extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns true if a keyboard event matches `eventString`.
+	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
 	 * @param eventString
@@ -364,8 +364,8 @@ public class PaperRipple extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Provokes a ripple down effect via a UI event, respecting the `noink`
-	 * property.
+	 * Provokes a ripple down effect via a UI event, respecting the
+	 * {@code noink} property.
 	 * 
 	 * @param event
 	 */
@@ -376,8 +376,8 @@ public class PaperRipple extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Provokes a ripple down effect via a UI event, not* respecting the `noink`
-	 * property.
+	 * Provokes a ripple down effect via a UI event, not* respecting the
+	 * {@code noink} property.
 	 * 
 	 * @param event
 	 */
@@ -388,7 +388,7 @@ public class PaperRipple extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Provokes a ripple up effect via a UI event, respecting the `noink`
+	 * Provokes a ripple up effect via a UI event, respecting the {@code noink}
 	 * property.
 	 * 
 	 * @param event
@@ -400,8 +400,8 @@ public class PaperRipple extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Provokes a ripple up effect via a UI event, not* respecting the `noink`
-	 * property.
+	 * Provokes a ripple up effect via a UI event, not* respecting the
+	 * {@code noink} property.
 	 * 
 	 * @param event
 	 */

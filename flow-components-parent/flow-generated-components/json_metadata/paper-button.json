@@ -6,88 +6,136 @@
   "properties": [
     {
       "name": "keyEventTarget",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "The EventTarget that will be firing relevant KeyboardEvents. Set it to\n`null` to disable the listeners."
     },
     {
       "name": "stopKeyboardEventPropagation",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, this property will cause the implementing element to\nautomatically stop propagation on any handled KeyboardEvents.\n         "
     },
     {
       "name": "keyBindings",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": ""
     },
     {
       "name": "pressed",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the user is currently holding down the button.\n       "
     },
     {
       "name": "toggles",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the button toggles the active state with each tap or press\nof the spacebar.\n       "
     },
     {
       "name": "active",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the button is a toggle and is currently in the active state.\n       "
     },
     {
       "name": "pointerDown",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "True if the element is currently being pressed by a \"pointer,\" which\nis loosely defined as mouse or touch input (but specifically excluding\nkeyboard input).\n       "
     },
     {
       "name": "receivedFocusFromKeyboard",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "True if the input device that caused the element to receive focus\nwas a keyboard.\n       "
     },
     {
       "name": "ariaActiveAttribute",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The aria attribute to be set if the button is a toggle and in the\nactive state.\n       "
     },
     {
       "name": "focused",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the element currently has focus.\n       "
     },
     {
       "name": "disabled",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the user cannot interact with this element.\n       "
     },
     {
       "name": "noink",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the element will not produce a ripple effect when interacted\nwith via the pointer.\n       "
     },
     {
       "name": "elevation",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The z-depth of this element, from 0-5. Setting to 0 will remove the\nshadow, and each increasing number greater than 0 will be \"deeper\"\nthan the last."
     },
     {
       "name": "raised",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the button should be styled with a shadow.\n         "
     }
   ],
   "methods": [
     {
       "name": "addOwnKeyBinding",
-      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.\n       ",
+      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.",
       "parameters": [
         {
           "name": "eventString",
-          "type": "OBJECT",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         },
         {
           "name": "handlerName",
-          "type": "OBJECT",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -103,12 +151,18 @@
       "parameters": [
         {
           "name": "event",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         },
         {
           "name": "eventString",
-          "type": "STRING",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -119,7 +173,10 @@
       "parameters": [
         {
           "name": "optTriggeringEvent",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "(optional) event that triggered the\nripple."
         }
       ]
