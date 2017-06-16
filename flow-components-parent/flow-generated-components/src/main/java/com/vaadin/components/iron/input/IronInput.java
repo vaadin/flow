@@ -5,16 +5,18 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * `<iron-input>` is a wrapper to a native `<input>` element, that adds two-way
- * binding and prevention of invalid input. To use it, you must distribute a
- * native `<input>` yourself. You can continue to use the native `input` as you
- * would normally:
+ * {@code <iron-input>} is a wrapper to a native {@code <input>} element, that
+ * adds two-way binding and prevention of invalid input. To use it, you must
+ * distribute a native {@code <input>} yourself. You can continue to use the
+ * native {@code input} as you would normally:
  * 
  * <iron-input> <input> </iron-input>
  * 
@@ -22,63 +24,63 @@ import com.vaadin.flow.dom.DomEventListener;
  * 
  * ### Two-way binding
  * 
- * By default you can only get notified of changes to a native `<input>`'s
- * `value` due to user input:
+ * By default you can only get notified of changes to a native {@code <input>}'s
+ * {@code value} due to user input:
  * 
  * <input value="{{myValue::input}}">
  * 
  * This means that if you imperatively set the value (i.e.
- * `someNativeInput.value = 'foo'`), no events will be fired and this change
- * cannot be observed.
+ * {@code someNativeInput.value = 'foo'}), no events will be fired and this
+ * change cannot be observed.
  * 
- * `iron-input` adds the `bind-value` property that mirrors the native `input`'s
- * '`value` property; this property can be used for two-way data binding.
- * `bind-value` will notify if it is changed either by user input or by script.
+ * {@code iron-input} adds the {@code bind-value} property that mirrors the
+ * native {@code input}'s '{@code value} property; this property can be used for
+ * two-way data binding. {@code bind-value} will notify if it is changed either
+ * by user input or by script.
  * 
  * <iron-input bind-value="{{myValue}}"> <input> </iron-input>
  * 
- * Note: this means that if you want to imperatively set the native `input`'s,
- * you _must_ set `bind-value` instead, so that the wrapper `iron-input` can be
- * notified.
+ * Note: this means that if you want to imperatively set the native
+ * {@code input}'s, you _must_ set {@code bind-value} instead, so that the
+ * wrapper {@code iron-input} can be notified.
  * 
  * ### Validation
  * 
- * `iron-input` uses the native `input`'s validation. For simplicity,
- * `iron-input` has a `validate()` method (which internally just checks the
- * distributed `input`'s validity), which sets an `invalid` attribute that can
- * also be used for styling.
+ * {@code iron-input} uses the native {@code input}'s validation. For
+ * simplicity, {@code iron-input} has a {@code validate()} method (which
+ * internally just checks the distributed {@code input}'s validity), which sets
+ * an {@code invalid} attribute that can also be used for styling.
  * 
- * To validate automatically as you type, you can use the `auto-validate`
+ * To validate automatically as you type, you can use the {@code auto-validate}
  * attribute.
  * 
- * `iron-input` also fires an `iron-input-validate` event after `validate()` is
- * called. You can use it to implement a custom validator:
+ * {@code iron-input} also fires an {@code iron-input-validate} event after
+ * {@code validate()} is called. You can use it to implement a custom validator:
  * 
  * var CatsOnlyValidator = { validate: function(ironInput) { var valid =
  * !ironInput.bindValue || ironInput.bindValue === 'cat'; ironInput.invalid =
  * !valid; return valid; } } ironInput.addEventListener('iron-input-validate',
  * function() { CatsOnly.validate(input2); });
  * 
- * You can also use an element implementing an
- * [`IronValidatorBehavior`](/element
- * /PolymerElements/iron-validatable-behavior). This example can also be found
- * in the demo for this element:
+ * You can also use an element implementing an [{@code IronValidatorBehavior}
+ * ](/element/PolymerElements/iron-validatable-behavior). This example can also
+ * be found in the demo for this element:
  * 
  * <iron-input validator="cats-only"> <input> </iron-input>
  * 
  * ### Preventing invalid input
  * 
  * It may be desirable to only allow users to enter certain characters. You can
- * use the `allowed-pattern` attribute to accomplish this. This feature is
- * separate from validation, and `allowed-pattern` does not affect how the input
- * is validated.
+ * use the {@code allowed-pattern} attribute to accomplish this. This feature is
+ * separate from validation, and {@code allowed-pattern} does not affect how the
+ * input is validated.
  * 
  * // Only allow typing digits, but a valid input has exactly 5 digits.
  * <iron-input allowed-pattern="[0-9]"> <input pattern="\d{5}"> </iron-input>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: iron-input#2.0.0", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: iron-input#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("iron-input")
 @HtmlImport("frontend://bower_components/iron-input/iron-input.html")
 public class IronInput extends Component {
@@ -107,7 +109,7 @@ public class IronInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the last call to `validate` is invalid.
+	 * True if the last call to {@code validate} is invalid.
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
@@ -116,7 +118,7 @@ public class IronInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the last call to `validate` is invalid.
+	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
 	 */
@@ -127,9 +129,9 @@ public class IronInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Use this property instead of `value` for two-way data binding, or to set
-	 * a default value for the input. **Do not** use the distributed input's
-	 * `value` property to set a default value.
+	 * Use this property instead of {@code value} for two-way data binding, or
+	 * to set a default value for the input. **Do not** use the distributed
+	 * input's {@code value} property to set a default value.
 	 */
 	public String getBindValue() {
 		return getElement().getProperty("bindValue");
@@ -138,9 +140,9 @@ public class IronInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Use this property instead of `value` for two-way data binding, or to set
-	 * a default value for the input. **Do not** use the distributed input's
-	 * `value` property to set a default value.
+	 * Use this property instead of {@code value} for two-way data binding, or
+	 * to set a default value for the input. **Do not** use the distributed
+	 * input's {@code value} property to set a default value.
 	 * 
 	 * @param bindValue
 	 */
@@ -152,9 +154,9 @@ public class IronInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Computed property that echoes `bindValue` (mostly used for Polymer 1.0
-	 * backcompatibility, if you were one-way binding to the Polymer 1.0 `input
-	 * is="iron-input"` value attribute).
+	 * Computed property that echoes {@code bindValue} (mostly used for Polymer
+	 * 1.0 backcompatibility, if you were one-way binding to the Polymer 1.0
+	 * {@code input is="iron-input"} value attribute).
 	 */
 	public JsonObject getValue() {
 		return (JsonObject) getElement().getPropertyRaw("value");
@@ -163,9 +165,9 @@ public class IronInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Computed property that echoes `bindValue` (mostly used for Polymer 1.0
-	 * backcompatibility, if you were one-way binding to the Polymer 1.0 `input
-	 * is="iron-input"` value attribute).
+	 * Computed property that echoes {@code bindValue} (mostly used for Polymer
+	 * 1.0 backcompatibility, if you were one-way binding to the Polymer 1.0
+	 * {@code input is="iron-input"} value attribute).
 	 * 
 	 * @param value
 	 */
@@ -178,7 +180,7 @@ public class IronInput extends Component {
 	 * 
 	 * Regex-like list of characters allowed as input; all characters not in the
 	 * list will be rejected. The recommended format should be a list of allowed
-	 * characters, for example, `[a-zA-Z0-9.+-!;:]`.
+	 * characters, for example, {@code [a-zA-Z0-9.+-!;:]}.
 	 * 
 	 * This pattern represents the allowed characters for the field; as the user
 	 * inputs text, each individual character will be checked against the
@@ -186,12 +188,13 @@ public class IronInput extends Component {
 	 * character is not a match, it will be rejected.
 	 * 
 	 * Pasted input will have each character checked individually; if any
-	 * character doesn't match `allowedPattern`, the entire pasted string will
-	 * be rejected.
+	 * character doesn't match {@code allowedPattern}, the entire pasted string
+	 * will be rejected.
 	 * 
-	 * Note: if you were using `iron-input` in 1.0, you were also required to
-	 * set `prevent-invalid-input`. This is no longer needed as of Polymer 2.0,
-	 * and will be set automatically for you if an `allowedPattern` is provided.
+	 * Note: if you were using {@code iron-input} in 1.0, you were also required
+	 * to set {@code prevent-invalid-input}. This is no longer needed as of
+	 * Polymer 2.0, and will be set automatically for you if an
+	 * {@code allowedPattern} is provided.
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
@@ -202,7 +205,7 @@ public class IronInput extends Component {
 	 * 
 	 * Regex-like list of characters allowed as input; all characters not in the
 	 * list will be rejected. The recommended format should be a list of allowed
-	 * characters, for example, `[a-zA-Z0-9.+-!;:]`.
+	 * characters, for example, {@code [a-zA-Z0-9.+-!;:]}.
 	 * 
 	 * This pattern represents the allowed characters for the field; as the user
 	 * inputs text, each individual character will be checked against the
@@ -210,12 +213,13 @@ public class IronInput extends Component {
 	 * character is not a match, it will be rejected.
 	 * 
 	 * Pasted input will have each character checked individually; if any
-	 * character doesn't match `allowedPattern`, the entire pasted string will
-	 * be rejected.
+	 * character doesn't match {@code allowedPattern}, the entire pasted string
+	 * will be rejected.
 	 * 
-	 * Note: if you were using `iron-input` in 1.0, you were also required to
-	 * set `prevent-invalid-input`. This is no longer needed as of Polymer 2.0,
-	 * and will be set automatically for you if an `allowedPattern` is provided.
+	 * Note: if you were using {@code iron-input} in 1.0, you were also required
+	 * to set {@code prevent-invalid-input}. This is no longer needed as of
+	 * Polymer 2.0, and will be set automatically for you if an
+	 * {@code allowedPattern} is provided.
 	 * 
 	 * 
 	 * @param allowedPattern
@@ -272,19 +276,36 @@ public class IronInput extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns true if `value` is valid. The validator provided in `validator`
-	 * will be used first, then any constraints.
+	 * Returns true if {@code value} is valid. The validator provided in
+	 * {@code validator} will be used first, then any constraints.
 	 */
 	public void validate() {
 		getElement().callFunction("validate");
 	}
 
-	public Registration addInvalidChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("invalid-changed", listener);
+	@DomEvent("invalid-changed")
+	public static class InvalidChangedEvent extends ComponentEvent<IronInput> {
+		public InvalidChangedEvent(IronInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addInvalidChangedListener(
+			ComponentEventListener<InvalidChangedEvent> listener) {
+		return addListener(InvalidChangedEvent.class, listener);
+	}
+
+	@DomEvent("iron-input-validate")
+	public static class IronInputValidateEvent
+			extends
+				ComponentEvent<IronInput> {
+		public IronInputValidateEvent(IronInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addIronInputValidateListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("iron-input-validate", listener);
+			ComponentEventListener<IronInputValidateEvent> listener) {
+		return addListener(IronInputValidateEvent.class, listener);
 	}
 }

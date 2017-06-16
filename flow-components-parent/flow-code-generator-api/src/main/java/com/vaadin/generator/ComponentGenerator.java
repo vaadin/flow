@@ -34,19 +34,24 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
 
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -513,17 +518,69 @@ public class ComponentGenerator {
 
     private void generateEventListenerFor(JavaClassSource javaClass,
             ComponentEventData event) {
+        String eventName = ComponentGeneratorUtils
+                .formatStringToValidJavaIdentifier(event.getName());
 
+        JavaClassSource eventListener = createEventListenerEventClass(javaClass,
+                event);
+
+        javaClass.addNestedType(eventListener);
         MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("add" + StringUtils.capitalize(ComponentGeneratorUtils
-                        .formatStringToValidJavaIdentifier(event.getName())
-                        + "Listener"))
+                .setName("add" + StringUtils.capitalize(eventName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
-        method.addParameter(DomEventListener.class, "listener");
+        method.addParameter("ComponentEventListener<"+eventListener.getName()+">", "listener");
 
-        method.setBody(String.format(
-                "return getElement().addEventListener(\"%s\", listener);",
-                event.getName()));
+        method.setBody(
+                String.format("return addListener(%s.class, listener);", eventListener.getName()));
+    }
+
+    private JavaClassSource createEventListenerEventClass(
+            JavaClassSource javaClass, ComponentEventData event) {
+        String eventName = ComponentGeneratorUtils
+                .formatStringToValidJavaIdentifier(event.getName());
+        String eventClassName = StringUtils.capitalize(eventName);
+        String eventListenerString = String.format(
+                "public static class %sEvent extends ComponentEvent<%s> {}",
+                eventClassName, javaClass.getName());
+
+        JavaClassSource eventListener = Roaster.parse(JavaClassSource.class,
+                eventListenerString);
+
+        MethodSource<JavaClassSource> eventConstructor = eventListener
+                .addMethod().setConstructor(true).setPublic()
+                .setBody("super(source, fromClient);");
+        eventConstructor.addParameter(javaClass.getName(), "source");
+        eventConstructor.addParameter("boolean", "fromClient");
+
+        for (ComponentPropertyBaseData property : event.getProperties()) {
+            // Add new parameter to constructor
+            ParameterSource<JavaClassSource> parameter = eventConstructor
+                    .addParameter(toJavaType(property.getType()),
+                            property.getName());
+            parameter.addAnnotation(EventData.class).setLiteralValue(
+                    String.format("\"event.%s\"", property.getName()));
+
+            // Create private field
+            eventListener.addProperty(toJavaType(property.getType()),
+                    property.getName()).setAccessible(true).setMutable(false);
+
+            // Set value to private field
+            eventConstructor.setBody(String.format("%s\nthis.%s = %s;",
+                    eventConstructor.getBody(), property.getName(),
+                    property.getName()));
+            // Add the EventData as a import
+            javaClass.addImport(EventData.class);
+        }
+
+        eventListener.addAnnotation(DomEvent.class)
+                .setLiteralValue("\"" + event.getName() + "\"");
+
+        // Add event imports.
+        javaClass.addImport(DomEvent.class);
+        javaClass.addImport(ComponentEvent.class);
+        javaClass.addImport(ComponentEventListener.class);
+
+        return eventListener;
     }
 
     private Class<?> toJavaType(ComponentObjectType type) {

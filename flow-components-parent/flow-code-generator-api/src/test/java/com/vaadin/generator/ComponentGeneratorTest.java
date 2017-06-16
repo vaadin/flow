@@ -8,10 +8,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 
 /**
@@ -216,6 +218,72 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("No license header found", generatedClass.startsWith(
                 "/*\n * some license header\n */\npackage com.my.test"));
+    }
+
+    @Test
+    public void generateClassWithEvent_classTypedComponentEvent() {
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("change");
+        eventData.setDescription("Component change event.");
+        componentMetadata.setEvents(Arrays.asList(eventData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("Custom event class was not found.",
+                generatedClass.contains(
+                        "public static class ChangeEvent extends ComponentEvent<MyComponent> {"));
+
+        Assert.assertTrue("No DomEvent annotation found", generatedClass.contains("@DomEvent(\"change\")"));
+
+        // Using matcher as the formatter may cut the method.
+        Pattern pattern = Pattern.compile(
+                "addChangeListener\\((\\w?)(\\s*?)ComponentEventListener<ChangeEvent> listener\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        Assert.assertTrue("Couldn't find correct listener for event.",
+                matcher.find());
+
+        Assert.assertTrue(
+                "Missing DomEvent import", generatedClass.contains("import com.vaadin.annotations.DomEvent;"));
+        Assert.assertTrue("Missing ComponentEvent import", generatedClass.contains("import com.vaadin.ui.ComponentEvent;"));
+        Assert.assertTrue("Missing ComponentEventListener import", generatedClass.contains("import com.vaadin.flow.event.ComponentEventListener;"));
+        Assert.assertFalse("EventData imported even without events", generatedClass.contains("import com.vaadin.annotations.EventData;"));
+    }
+
+    @Test
+    public void generateClassWithEventWithEventData_classTypedComponentEventWithEventData() {
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("change");
+        eventData.setDescription("Component change event.");
+        componentMetadata.setEvents(Arrays.asList(eventData));
+
+        ComponentPropertyBaseData property = new ComponentPropertyBaseData();
+        property.setName("button");
+        property.setType(ComponentObjectType.NUMBER);
+
+        eventData.setProperties(Arrays.asList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        System.out.println(generatedClass);
+        // Using matcher as the formatter may cut the method.
+        Pattern pattern = Pattern.compile(
+                "public ChangeEvent\\(MyComponent source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.button\"\\) double button\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        Assert.assertTrue("Couldn't find constructor with EventData.",
+                matcher.find());
+
+        Assert.assertTrue("Couldn't find variable reference",
+                generatedClass.contains("private final double button;"));
+
+        Assert.assertTrue("Couldn't find getter for event data",
+                generatedClass.contains("public double getButton() {"));
+
+        Assert.assertFalse("Found setter even though one shouldn't exist",
+                generatedClass.contains("public void setButton("));
+
+        Assert.assertTrue("Missing EventData import", generatedClass.contains("import com.vaadin.annotations.EventData;"));
     }
 
     @Test
