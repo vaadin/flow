@@ -50,32 +50,32 @@ const getObjectType = (type) => {
 
 const getTypes = (type) => {
   const types = [];
-  if (typeof type !== 'undefined') {
-    if (type.startsWith('{') && type.endsWith('}')) {
-      // handled separately via getObjectType(type)
-    } else if (type.includes('|')) {
-      // might be wrapped with parenthesis
-      if (type.startsWith('(') && type.endsWith(')')) {
-        type = type.substring(1, type.length - 1);
-      }
-      for (let someType of type.split('|')) {
-        if (someType.trim() === 'undefined') {
-          // this means it is optional, handled elsewhere
-          continue;
-        }
-        types.push(getType(someType));
-      }
-    } else {
-      types.push(getType(type));
+  if (typeof type === 'undefined') {
+    types.push(getType(type));
+  } else if (type.startsWith('{') && type.endsWith('}')) {
+    // handled separately via getObjectType(type)
+  } else if (type.includes('|')) {
+    // might be wrapped with parenthesis
+    if (type.startsWith('(') && type.endsWith(')')) {
+      type = type.substring(1, type.length - 1);
     }
+    for (let someType of type.split('|')) {
+      if (someType.trim() === 'undefined') {
+        // this means it is optional, handled elsewhere
+        continue;
+      }
+      types.push(getType(someType));
+    }
+  } else {
+    types.push(getType(type));
   }
   return types;
 };
 
 const getType = (type) => {
   if (typeof type === 'undefined') {
-    console.error("Undefined type, this should never happen!");
-    type = "OBJECT";
+    console.warn(`Undefined type, missing jsdoc parameter {type}`);
+    type = "UNDEFINED";
   } else {
     type = type.toUpperCase();
   }
@@ -132,7 +132,7 @@ const propertiesToJsonArray = (properties) => {
  * Converts method parameters array to desired JSON output:
  *
  * "parameters" : [
- * {"name" : "paramName", "types": {"STRING", "ELEMENT} },
+ * {"name" : "paramName", "type": {"STRING", "ELEMENT} },
  * {"name" : "optionalParameter", "types": {"NUMBER"}, "optional" : true }
  * ]}
  *
@@ -144,7 +144,7 @@ const parametersToJsonArray = (parameters) => {
   for (let parameter of parameters) {
     const parameterJson = {
       "name": parameter.name,
-      "types": parameter.type ? getTypes(parameter.type) : 'STRING',
+      "type": getTypes(parameter.type),
       "objectType": getObjectType(parameter.type),
       "description": parameter.description ? parameter.description :
         (parameter.desc ? parameter.desc : "Missing documentation!"),
