@@ -35,7 +35,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class ScrollIT extends ChromeBrowserTest {
 
     @Test
-    public void testTransitionUrls() {
+    public void scrollPositionIsRestoredAfterNavigatingToNewPageAndBack() {
         open();
 
         final String initialPageUrl = driver.getCurrentUrl();
@@ -64,7 +64,7 @@ public class ScrollIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void testAnchorUrls() {
+    public void anchorUrlsWorkProperly() {
         open();
 
         final int xScrollAmount = 0;

@@ -24,6 +24,8 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
  * @author Vaadin Ltd.
  */
 public class ScrollView extends AbstractDivView {
+    private static final String ROUTER_LINK_ATTRIBUTE_NAME = "router-link";
+
     static final String ANCHOR_DIV_ID = "anchorDivId";
     static final String ANCHOR_URL = ScrollView.class.getCanonicalName() + '#'
             + ANCHOR_DIV_ID;
@@ -59,7 +61,7 @@ public class ScrollView extends AbstractDivView {
     private static Anchor createAnchorUrl(boolean isRouterLink, String id,
             String url, String text) {
         Anchor result = new Anchor(url, text);
-        result.getElement().setAttribute("router-link", isRouterLink);
+        result.getElement().setAttribute(ROUTER_LINK_ATTRIBUTE_NAME, isRouterLink);
         result.getStyle().set("display", "block");
         result.setId(id);
         return result;
