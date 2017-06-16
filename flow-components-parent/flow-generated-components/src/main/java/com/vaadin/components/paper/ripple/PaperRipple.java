@@ -332,8 +332,8 @@ public class PaperRipple extends Component {
 	 * @param eventString
 	 * @param handlerName
 	 */
-	public void addOwnKeyBinding(elemental.json.JsonObject eventString,
-			elemental.json.JsonObject handlerName) {
+	public void addOwnKeyBinding(java.lang.String eventString,
+			java.lang.String handlerName) {
 		getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
 	}
 

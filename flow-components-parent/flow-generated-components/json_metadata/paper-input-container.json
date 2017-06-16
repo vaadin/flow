@@ -6,32 +6,50 @@
   "properties": [
     {
       "name": "noLabelFloat",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to disable the floating label. The label disappears when the input value is\nnot null.\n       "
     },
     {
       "name": "alwaysFloatLabel",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to always float the floating label.\n       "
     },
     {
       "name": "attrForValue",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The attribute to listen for value changes on.\n       "
     },
     {
       "name": "autoValidate",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to auto-validate the input value when it changes.\n       "
     },
     {
       "name": "invalid",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "True if the input is invalid. This property is set automatically when the input value\nchanges if auto-validating, or when the `iron-input-validate` event is heard from a child.\n       "
     },
     {
       "name": "focused",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "True if the input has focus.\n       "
     }
   ],
@@ -42,7 +60,10 @@
       "parameters": [
         {
           "name": "state",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Add-on state."
         }
       ]
