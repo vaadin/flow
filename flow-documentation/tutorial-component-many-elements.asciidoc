@@ -12,9 +12,8 @@ You can create a TextField component with support for a label using the followin
 [source,html]
 ----
 <div>
-    <label>
-        <input>
-    </label>
+    <label></label>
+    <input>
 </div>
 ----
 
@@ -29,8 +28,8 @@ public class TextField extends Component {
   Element inputElement = new Element("input");
 
   public TextField() {
-    inputElement.synchronizeProperty("value", "change");
-    getElement().appendChild(labelElement,inputElement);
+      inputElement.synchronizeProperty("value", "change");
+      getElement().appendChild(labelElement, inputElement);
   }
 }
 ----
@@ -43,14 +42,17 @@ You can add API for setting the value of the input and the text of the label, us
 [source,java]
 ----
   public String getLabel() {
-    return labelElement.getText();
+      return labelElement.getText();
   }
-  public void setLabel(String label) {
-    labelElement.setText(label);
-  }
+
   public String getValue() {
-    return inputElement.getProperty("value");
+      return inputElement.getProperty("value");
   }
+
+  public void setLabel(String label) {
+      labelElement.setText(label);
+  }
+
   public void setValue(String value) {
     inputElement.setProperty("value", value);
   }
@@ -61,12 +63,13 @@ To make it even more convenient to use, the API can be made fluent by making the
 [source,java]
 ----
   public TextField setLabel(String label) {
-    labelElement.setText(label);
-    return this;
+      labelElement.setText(label);
+      return this;
   }
+
   public TextField setValue(String value) {
-    inputElement.setProperty("value", value);
-    return this;
+      inputElement.setProperty("value", value);
+      return this;
   }
 ----
 
