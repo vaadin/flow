@@ -15,14 +15,77 @@
  */
 package com.vaadin.generator.metadata;
 
-/**
- * Enum with all the supported types that are read from the webcomponent and
- * translated to Java types.
- * 
- * @see ComponentMetadata
- */
-public enum ComponentObjectType {
+import java.util.List;
 
-    BOOLEAN, DATE, NUMBER, STRING, ARRAY, OBJECT;
+/**
+ * Class that represents a webcomponent's property / method parameter of type object.
+ * <p>
+ * An example output from Analyzer for the type is:
+ * <code>{inputElement: (Element|undefined), value: (string|undefined), invalid: boolean}
+ * </code>
+ *
+ * @see ComponentPropertyBaseData
+ * @see ComponentFunctionParameterData
+ */
+public class ComponentObjectType {
+
+    private String name;
+    private List<ComponentBasicType> type;
+    private boolean optional;
+
+    /**
+     * Gets the name of the property.
+     *
+     * @return the name The name of the property.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Sets the name of the property.
+     *
+     * @param name The name of the property.
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the type of the property.
+     *
+     * @return the type The type of the property.
+     */
+    public List<ComponentBasicType> getType() {
+        return type;
+    }
+
+    /**
+     * Sets the type of the property.
+     *
+     * @param type The type of the property.
+     */
+    public void setType(List<ComponentBasicType> type) {
+        this.type = type;
+    }
+
+    /**
+     * Returns whether the this property is optional or not.
+     *
+     * @return {@code true} if optional and doesn't have to be defined,
+     * {@code false} if this property should be defined always
+     */
+    public boolean isOptional() {
+        return optional;
+    }
+
+    /**
+     * Set this property as optional or not.
+     *
+     * @param optional
+     */
+    public void setOptional(boolean optional) {
+        this.optional = optional;
+    }
 
 }

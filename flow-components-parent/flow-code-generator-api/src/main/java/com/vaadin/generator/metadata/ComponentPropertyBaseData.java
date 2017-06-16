@@ -15,6 +15,8 @@
  */
 package com.vaadin.generator.metadata;
 
+import java.util.List;
+
 /**
  * Base class of properties exposed by the webcomponent, that can be properties
  * themselves, event properties or function parameters.
@@ -24,8 +26,18 @@ package com.vaadin.generator.metadata;
 public class ComponentPropertyBaseData {
 
     private String name;
-    private ComponentObjectType type;
+    private List<ComponentBasicType> type;
     private String description;
+
+    public List<ComponentObjectType> getObjectType() {
+        return objectType;
+    }
+
+    public void setObjectType(List<ComponentObjectType> objectType) {
+        this.objectType = objectType;
+    }
+
+    private List<ComponentObjectType> objectType;
 
     /**
      * Gets the name of the property.
@@ -38,7 +50,7 @@ public class ComponentPropertyBaseData {
 
     /**
      * Sets the name of the property.
-     * 
+     *
      * @param name
      *            The name of the property.
      */
@@ -48,20 +60,20 @@ public class ComponentPropertyBaseData {
 
     /**
      * Gets the type of the property.
-     * 
+     *
      * @return the type The type of the property.
      */
-    public ComponentObjectType getType() {
+    public List<ComponentBasicType> getType() {
         return type;
     }
 
     /**
      * Sets the type of the property.
-     * 
+     *
      * @param type
      *            The type of the property.
      */
-    public void setType(ComponentObjectType type) {
+    public void setType(List<ComponentBasicType> type) {
         this.type = type;
     }
 

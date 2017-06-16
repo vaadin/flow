@@ -1,18 +1,17 @@
 package com.vaadin.generator;
 
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.vaadin.generator.metadata.ComponentBasicType;
+import com.vaadin.generator.metadata.ComponentFunctionData;
+import com.vaadin.generator.metadata.ComponentFunctionParameterData;
+import com.vaadin.generator.metadata.ComponentMetadata;
+import com.vaadin.generator.metadata.ComponentPropertyData;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.generator.metadata.ComponentFunctionData;
-import com.vaadin.generator.metadata.ComponentFunctionParameterData;
-import com.vaadin.generator.metadata.ComponentMetadata;
-import com.vaadin.generator.metadata.ComponentObjectType;
-import com.vaadin.generator.metadata.ComponentPropertyData;
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Unit tests for the component generator
@@ -130,7 +129,7 @@ public class ComponentGeneratorTest {
 
         ComponentFunctionParameterData parameter = new ComponentFunctionParameterData();
         parameter.setName("text");
-        parameter.setType(ComponentObjectType.STRING);
+        parameter.setType(Arrays.asList(ComponentBasicType.STRING));
 
         functionData.setParameters(Arrays.asList(parameter));
         componentMetadata.setMethods(Arrays.asList(functionData));
@@ -146,7 +145,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetterAndSetter_methodContainsJavaDoc() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
@@ -170,7 +169,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetter_methodContainsJavaDoc_noSetter() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         propertyData.setReadOnly(true);
@@ -192,7 +191,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetter_methodContainsJavaDocWithAtCodeWrap() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the `<input value=\"name\">` property of the component.");
         propertyData.setReadOnly(true);
@@ -222,7 +221,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithStringGetterAndSetter_setterSetsEmptyForNullValue() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
@@ -242,7 +241,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithBooleanGetterAndSetter_setterDoesNotSetEmptyForNullValue() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
-        propertyData.setType(ComponentObjectType.BOOLEAN);
+        propertyData.setType(Arrays.asList(ComponentBasicType.BOOLEAN));
         propertyData.setDescription("This is a required field.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
