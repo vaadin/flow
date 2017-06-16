@@ -44,7 +44,7 @@ public class HelloWorldUI extends UI {
         MemoryUsageMonitor.registerUI(this);
 
         int buttonCount = Optional.ofNullable(request.getParameter("buttons"))
-                .map(Integer::new).orElse(Integer.valueOf(1)).intValue();
+                .map(Integer::valueOf).orElse(1);
 
         addButtons(buttonCount);
     }

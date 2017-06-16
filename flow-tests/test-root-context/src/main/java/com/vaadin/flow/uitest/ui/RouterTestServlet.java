@@ -64,7 +64,7 @@ public class RouterTestServlet extends VaadinServlet {
                             .findAny();
                     NavigationHandler handler = res.map(
                             clazz -> new TestViewRenderer(clazz, Layout.class))
-                            .orElse(new TestViewRenderer(
+                            .orElseGet(() -> new TestViewRenderer(
                                     DefaultErrorView.class));
                     return Optional.of(handler);
                 }
