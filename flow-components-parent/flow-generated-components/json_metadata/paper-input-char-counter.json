@@ -1,0 +1,25 @@
+{
+  "name": "paper-input-char-counter",
+  "tag": "paper-input-char-counter",
+  "baseUrl": "paper-input/paper-input-char-counter.html",
+  "version": "2.0.1",
+  "properties": [],
+  "methods": [
+    {
+      "name": "update",
+      "description": "This overrides the update function in PaperInputAddonBehavior.",
+      "parameters": [
+        {
+          "name": "state",
+          "type": "OBJECT",
+          "description": "    inputElement: The input element.\n    value: The input value.\n    invalid: True if the input value is invalid."
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "behaviors": [
+    "Polymer.PaperInputAddonBehavior"
+  ],
+  "description": "`<paper-input-char-counter>` is a character counter for use with `<paper-input-container>`. It\nshows the number of characters entered in the input and the max length if it is specified.\n\n    <paper-input-container>\n      <input maxlength=\"20\">\n      <paper-input-char-counter></paper-input-char-counter>\n    </paper-input-container>\n\n### Styling\n\nThe following mixin is available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-input-char-counter` | Mixin applied to the element | `{}`"
+}

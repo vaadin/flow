@@ -5,5 +5,7 @@
         d.classList.add("message");
         document.body.appendChild(d);
     };
-    logMessage("Messagehandler initialized in HTML import 4");
+    window.addEventListener('WebComponentsReady', function(e) {
+        logMessage("Messagehandler initialized in HTML import 4");
+    });
 </script>

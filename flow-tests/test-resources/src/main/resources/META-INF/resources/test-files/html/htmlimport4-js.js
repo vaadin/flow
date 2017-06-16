@@ -5,4 +5,6 @@ window.logMessage = function(msg) {
     document.body.appendChild(d);
 };
 
-logMessage("HTML import 4 companion JS loaded");
+window.addEventListener('WebComponentsReady', function(e) {
+    logMessage("HTML import 4 companion JS loaded");
+});

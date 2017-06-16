@@ -43,10 +43,10 @@ else
       fi
     fi
 
-    if [[ $change == *"flow-components/"* ]]
+    if [[ $change == *"flow-components-parent/"* ]]
     then
       echo "Setting components flag to true"
-      modules="$modules -pl flow-components"
+      modules="$modules -pl flow-components-parent"
     fi
 
     if [[ $change == *"flow-client/"* ]]
@@ -93,7 +93,7 @@ then
     # master build
     mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Pall-tests -Dgatling.skip=true clean org.jacoco:jacoco-maven-plugin:prepare-agent install
     # Sonar should be run after the project is built so that findbugs can analyze compiled sources
-    mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dgatling.skip=true -Dsonar.verbose=true -Dsonar.analysis.mode=publish -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_LOGIN sonar:sonar
+    mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dgatling.skip=true -Dsonar.verbose=true -Dsonar.analysis.mode=publish -Dsonar.host.url=$SONAR_HOST -Dsonar.login=$SONAR_LOGIN -DskipTests compile sonar:sonar
 else
     # Something else than a "safe" pull request
     mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Pall-tests verify javadoc:javadoc $modules -amd
