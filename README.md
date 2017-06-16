@@ -69,6 +69,18 @@ Running tests
 The unit tests for the projects can be run using
 <pre><code>mvn test</code></pre>
 
+IT tests can be run with 
+<pre><code>mvn verify</code></pre>
+
+To run IT tests locally, you'll need a [Testbench](https://vaadin.com/testbench) license and a Chrome browser installed (currently this is the only browser that IT tests are run in).
+IT tests are run in parallel, one thread per CPU core with thread limit = 5 (see `maven-failsafe-plugin` configuration in root [pom.xml](./pom.xml) for details).
+
+When running IT tests locally, by default, local Chrome is used to run tests.
+The other opportunity is to run tests using test hub, to do so, you need to start a hub on a `localhost:4444` address.
+This can be done with [Selenoid](https://github.com/aerokube/selenoid), for instance.
+
+Normally, you don't need to run IT tests yourself, Travis can do this for you. See next section for details.
+
 Remote tests execution
 --------
 Each pull request requires validation via Travis, so before the pull request is merged
