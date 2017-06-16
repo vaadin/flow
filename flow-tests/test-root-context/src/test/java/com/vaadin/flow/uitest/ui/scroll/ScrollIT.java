@@ -20,16 +20,48 @@ import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.Objects;
+
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+
 
 /**
  * @author Vaadin Ltd.
  */
-public class AnchorIT extends ChromeBrowserTest {
+public class ScrollIT extends ChromeBrowserTest {
+
+    @Test
+    public void testTransitionUrls() {
+        open();
+
+        final String initialPageUrl = driver.getCurrentUrl();
+        final int xScrollAmount = 0;
+        final int yScrollAmount = 400;
+
+        scrollBy(xScrollAmount, yScrollAmount);
+        checkPageScroll(xScrollAmount, yScrollAmount);
+
+        // Cannot use findElement(By.id(ScrollView.URL_ID)).click() because it changes scroll position
+        executeScript(String.format("document.getElementById('%s').click();", ScrollView.TRANSITION_URL_ID));
+
+        while (true) {
+            if (Objects.equals(initialPageUrl, driver.getCurrentUrl())) {
+                checkPageScroll(xScrollAmount, yScrollAmount);
+            } else {
+                ensureThatNewPageIsNotScrolled();
+                break;
+            }
+        }
+
+        findElement(By.id(LongToOpenView.BACK_BUTTON_ID)).click();
+
+        assertThat("Did not return back on initial page", driver.getCurrentUrl(), is(initialPageUrl));
+        checkPageScroll(xScrollAmount, yScrollAmount);
+    }
 
     @Test
     public void testAnchorUrls() {
@@ -39,31 +71,35 @@ public class AnchorIT extends ChromeBrowserTest {
         final int yScrollAmount = 400;
 
         Point anchorElementLocation = findElement(
-                By.id(AnchorView.ANCHOR_DIV_ID)).getLocation();
+                com.vaadin.testbench.By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
 
         scrollBy(xScrollAmount, yScrollAmount);
         checkPageScroll(xScrollAmount, yScrollAmount);
 
-        // Cannot use findElement(By.id(TransitionView.URL_ID)).click() because
+        // Cannot use findElement(By.id(ScrollView.URL_ID)).click() because
         // it changes scroll position
         executeScript(String.format("document.getElementById('%s').click();",
-                AnchorView.SIMPLE_ANCHOR_URL_ID));
+                ScrollView.SIMPLE_ANCHOR_URL_ID));
         checkPageScroll(anchorElementLocation.getX(),
                 anchorElementLocation.getY());
         assertThat("Expected url to change to anchor one",
-                driver.getCurrentUrl(), endsWith(AnchorView.ANCHOR_URL));
+                driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
 
         scrollBy(xScrollAmount, yScrollAmount);
         executeScript(String.format("document.getElementById('%s').click();",
-                AnchorView.ROUTER_ANCHOR_URL_ID));
+                ScrollView.ROUTER_ANCHOR_URL_ID));
         checkPageScroll(anchorElementLocation.getX(),
                 anchorElementLocation.getY());
         assertThat("Expected url to change to anchor one",
-                driver.getCurrentUrl(), endsWith(AnchorView.ANCHOR_URL));
+                driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
     }
 
     private void checkPageScroll(int x, int y) {
         assertThat("Unexpected x scroll position", getScrollX(), is(x));
         assertThat("Unexpected y scroll position", getScrollY(), is(y));
+    }
+
+    private void ensureThatNewPageIsNotScrolled() {
+        checkPageScroll(0, 0);
     }
 }
