@@ -40,7 +40,7 @@ public class TransitionIT extends ChromeBrowserTest {
         final int xScrollAmount = 0;
         final int yScrollAmount = 400;
 
-        scrollBy(0, yScrollAmount);
+        scrollBy(xScrollAmount, yScrollAmount);
         ensureThatPageRemainsScrolled(xScrollAmount, yScrollAmount);
 
         // Cannot use findElement(By.id(TransitionView.URL_ID)).click() because it changes scroll position

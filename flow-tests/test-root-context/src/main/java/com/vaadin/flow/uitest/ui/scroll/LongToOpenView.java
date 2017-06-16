@@ -41,6 +41,8 @@ public class LongToOpenView extends AbstractDivView {
     @Override
     protected void onShow() {
         try {
+            // Delay is added to check that we don't jump to the beginning of the page right after we click a link to this page.
+            // We should update our scroll position only after the new page is loaded.
             Thread.sleep(TimeUnit.SECONDS.toMillis(3L));
         } catch (InterruptedException e) {
             throw new IllegalStateException("Not supposed to be interrupted", e);
