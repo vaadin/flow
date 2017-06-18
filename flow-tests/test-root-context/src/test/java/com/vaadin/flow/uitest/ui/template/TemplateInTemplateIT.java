@@ -28,8 +28,8 @@ public class TemplateInTemplateIT extends ChromeBrowserTest {
     public void childTemplateHanInstanceHandlesEvent() {
         open();
 
-        WebElement tempalte = findElement(By.id("template"));
-        WebElement child = getInShadowRoot(tempalte, By.id("child"));
+        WebElement template = findElement(By.id("template"));
+        WebElement child = getInShadowRoot(template, By.id("child"));
 
         child.click();
         Assert.assertTrue(isElementPresent(By.id("click-handler")));

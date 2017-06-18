@@ -1,8 +1,15 @@
 package com.vaadin.server;
 
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.either;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -29,7 +36,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.UI;
 
 public class BootstrapHandlerDependenciesTest {
-
+    @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
@@ -123,9 +130,9 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    @JavaScript(value = "1.js")
-    @JavaScript(value = "2.js")
-    @JavaScript(value = "1.js")
+    @JavaScript("1.js")
+    @JavaScript("2.js")
+    @JavaScript("1.js")
     private static class UIAnnotated_DuplicateDependencies_Eager extends UI {
     }
 
@@ -172,11 +179,10 @@ public class BootstrapHandlerDependenciesTest {
         };
         testUis(uiPageTestingMethod, new UIAnnotated_BothLazyAndEagerTest(),
                 new UIWithMethods_BothBothLazyAndEagerTest());
-
     }
 
     @Test
-    public void checkEagerDependencies() throws Exception {
+    public void checkEagerDependencies() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
@@ -215,10 +221,10 @@ public class BootstrapHandlerDependenciesTest {
             Elements jsElements = page.getElementsByTag("script");
             Elements deferElements = page.getElementsByAttribute("defer");
 
-            // Ignore polyfills that should be loaded immediately
+            // Ignore polyfills that should be loaded immediately and scripts without src (separate test)
             jsElements.removeIf(element -> {
                 String jsUrl = element.attr("src");
-                return jsUrl.contains("es6-collections.js")
+                return jsUrl.isEmpty() || jsUrl.contains("es6-collections.js")
                         || jsUrl.contains("webcomponents-lite.js");
             });
 
@@ -294,6 +300,79 @@ public class BootstrapHandlerDependenciesTest {
         testUis(uiPageTestingMethod,
                 new UIAnnotated_DuplicateDependencies_Lazy(),
                 new UIWithMethods_DuplicateDependencies_Lazy());
+    }
+
+    @Test
+    public void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            boolean foundClientEngine = false;
+            int flowDependencyMaxIndex = Integer.MAX_VALUE;
+            int userDependencyMinIndex = Integer.MAX_VALUE;
+
+            Elements children = page.head().children();
+            for (int i = 0; i < children.size(); i++) {
+                Element element = children.get(i);
+                String elementString = element.toString();
+                if (foundClientEngine) {
+                    if (userDependencyMinIndex > i) {
+                        userDependencyMinIndex = i;
+                    }
+                    assertThat("Expected to have here dependencies added with Flow public api",
+                            elementString, either(containsString("eager"))
+                                    .or(containsString("lazy")));
+                } else {
+                    flowDependencyMaxIndex = i;
+                    // skip element with uidl that contains lazy dependencies
+                    if (!elementString.contains("//<![CDATA[\n")) {
+                        assertThat("Flow dependencies should not contain user dependencies",
+                                elementString, both(not(containsString("eager")))
+                                        .and(not(containsString("lazy"))));
+                        if (elementString
+                                .contains(BootstrapHandler.clientEngineFile)) {
+                            foundClientEngine = true;
+                        }
+                    } else {
+                        assertThat("uidl should not contain eager dependencies",
+                                elementString, not(containsString("eager")));
+                    }
+                }
+
+                assertThat(
+                        String.format(
+                                "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
+                                element.attr("src")),
+                        element.attr("async"), is(""));
+            }
+
+
+            assertThat("Flow dependencies should be imported before user dependencies",
+                    flowDependencyMaxIndex, is(lessThan(userDependencyMinIndex)));
+
+        };
+
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
+                new UIWithMethods_LoadingOrderTest());
+    }
+
+    @Test
+    public void checkThatJsImportsWithoutSrcHaveNoDeferAttribute() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            List<Element> scriptsWithNoSrc = page.getElementsByTag("script").stream()
+                    .filter(jsElement -> !jsElement.hasAttr("src"))
+                    .collect(Collectors.toList());
+
+            for (Element element : scriptsWithNoSrc) {
+                String deferAttributeValue = element.attr("defer");
+                // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
+                assertThat("Scripts without src should not be loaded as defer",
+                        deferAttributeValue, either(is("")).or(is("false")));
+            }
+        };
+
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
+                new UIWithMethods_LoadingOrderTest(),
+                new UIAnnotated_ImportOrderTest_Lazy(),
+                new UIWithMethods_ImportOrderTest_Lazy());
     }
 
     private void testUis(Consumer<Document> uiPageTestingMethod,
@@ -385,7 +464,7 @@ public class BootstrapHandlerDependenciesTest {
                 secondPosition = i;
             }
 
-            if (firstPosition > 0 && secondPosition > 0) {
+            if (firstPosition >= 0 && secondPosition >= 0) {
                 break;
             }
         }
