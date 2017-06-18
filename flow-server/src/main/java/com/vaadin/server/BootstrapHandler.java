@@ -40,6 +40,7 @@ import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.parser.Tag;
+import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -314,28 +315,72 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void setupDocumentHead(Element head,
             BootstrapContext context) {
-        head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
-                .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
-
-        head.appendElement("base").attr("href", getServiceUrl(context));
-
-        Class<? extends UI> uiClass = context.getUI().getClass();
-
-        String viewportContent = getViewportContent(uiClass,
-                context.getRequest());
-        if (viewportContent != null) {
-            head.appendElement(META_TAG).attr("name", "viewport")
-                    .attr(CONTENT_ATTRIBUTE, viewportContent);
-        }
-
-        Optional<String> title = resolvePageTitle(context);
-        if (title.isPresent() && !title.get().isEmpty()) {
-            head.appendElement("title").appendText(title.get());
-        }
+        setupMetaAndTitle(head, context);
+        setupCss(head);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
-        loadEagerDependencies(head, initialUIDL, context.getUriResolver());
+        JsonArray eagerDependencies = popEagerDependencies(initialUIDL);
+        setupFrameworkLibraries(head, initialUIDL, context);
+        JsonUtils.<JsonObject> stream(eagerDependencies)
+                .forEach(dependency -> head.appendChild(createDependencyElement(
+                        context.getUriResolver(), dependency)));
+    }
 
+    private static JsonArray popEagerDependencies(JsonObject initialUIDL) {
+        JsonArray dependencies = Optional
+                .ofNullable(initialUIDL.getArray(DependencyList.DEPENDENCY_KEY))
+                .orElseGet(JsonUtils::createArray);
+        JsonArray lazyDependencies = Json.createArray();
+        JsonArray eagerDependencies = Json.createArray();
+        int eagerDependenciesIndex = 0;
+        int lazyDependenciesIndex = 0;
+
+        for (int i = 0; i < dependencies.length(); i++) {
+            JsonObject dependency = dependencies.getObject(i);
+            LoadMode loadMode = LoadMode.valueOf(
+                    dependency.getString(DependencyList.KEY_LOAD_MODE));
+            switch (loadMode) {
+            case EAGER:
+                eagerDependencies.set(eagerDependenciesIndex, dependency);
+                eagerDependenciesIndex += 1;
+                break;
+            case LAZY:
+                lazyDependencies.set(lazyDependenciesIndex, dependency);
+                lazyDependenciesIndex += 1;
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown load mode = " + loadMode);
+            }
+        }
+
+        // Initial UIDL should contain lazy dependencies only
+        initialUIDL.put(DependencyList.DEPENDENCY_KEY, lazyDependencies);
+        return eagerDependencies;
+    }
+
+    private static void setupFrameworkLibraries(Element head,
+            JsonObject initialUIDL, BootstrapContext context) {
+        // Collections polyfill maybe needed for googlebot
+        head.appendChild(
+                createJavaScriptElement(
+                        context.getUriResolver()
+                                .resolveVaadinUri("context://"
+                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                        + "server/es6-collections.js"),
+                        false));
+
+        appendWebComponentsElements(head, context);
+
+        if (context.getPushMode().isEnabled()) {
+            head.appendChild(getPushScript(context));
+        }
+
+        head.appendChild(getBootstrapScript(initialUIDL, context));
+        head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
+    }
+
+    private static void setupCss(Element head) {
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
         // Basic reconnect dialog style just to make it visible and outside of
@@ -360,24 +405,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "padding: 1em;" //
                 + "z-index: 10000;" //
                 + "}");
+    }
 
-        // Collections polyfill maybe needed for googlebot
-        head.appendChild(
-                createJavaScriptElement(
-                        context.getUriResolver()
-                                .resolveVaadinUri("context://"
-                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                        + "server/es6-collections.js"),
-                        false));
+    private static void setupMetaAndTitle(Element head,
+            BootstrapContext context) {
+        head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
+                .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
-        appendWebComponentsElements(head, context);
+        head.appendElement("base").attr("href", getServiceUrl(context));
 
-        if (context.getPushMode().isEnabled()) {
-            head.appendChild(getPushScript(context));
-        }
+        getViewportContent(context.getUI().getClass(), context.getRequest())
+                .ifPresent(content -> head.appendElement(META_TAG)
+                        .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
+                                content));
 
-        head.appendChild(getBootstrapScript(initialUIDL, context));
-        head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
+        resolvePageTitle(context).ifPresent(title -> {
+            if (!title.isEmpty()) {
+                head.appendElement("title").appendText(title);
+            }
+        });
     }
 
     private static void appendWebComponentsElements(Element head,
@@ -450,36 +496,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         // converts the String to the desired type
         return converter.apply(value);
-    }
-
-    private static void loadEagerDependencies(Element head,
-            JsonObject initialUIDL, VaadinUriResolver resolver) {
-        // Extract style sheets and load them eagerly
-        JsonArray dependencies = initialUIDL
-                .getArray(DependencyList.DEPENDENCY_KEY);
-        if (dependencies == null || dependencies.length() == 0) {
-            // No dependencies at all
-            return;
-        }
-
-        JsonArray loadedAtClientDependencies = Json.createArray();
-        int uidlDependenciesIndex = 0;
-        for (int i = 0; i < dependencies.length(); i++) {
-            JsonObject dependency = dependencies.getObject(i);
-            LoadMode loadMode = LoadMode.valueOf(
-                    dependency.getString(DependencyList.KEY_LOAD_MODE));
-            if (loadMode == LoadMode.EAGER) {
-                head.appendChild(createDependencyElement(resolver, dependency));
-            } else {
-                loadedAtClientDependencies.set(uidlDependenciesIndex,
-                        dependency);
-                uidlDependenciesIndex += 1;
-            }
-        }
-
-        // Remove from initial UIDL
-        initialUIDL.put(DependencyList.DEPENDENCY_KEY,
-                loadedAtClientDependencies);
     }
 
     private static Element createDependencyElement(VaadinUriResolver resolver,
@@ -867,9 +883,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the request for the ui
      * @return the content value string for viewport meta tag
      */
-    private static String getViewportContent(Class<? extends UI> uiClass,
-            VaadinRequest request) {
-        String viewportContent = null;
+    private static Optional<String> getViewportContent(
+            Class<? extends UI> uiClass, VaadinRequest request) {
         Optional<Viewport> viewportAnnotation = AnnotationReader
                 .getAnnotationFor(uiClass, Viewport.class);
         Optional<ViewportGeneratorClass> viewportGeneratorClassAnnotation = AnnotationReader
@@ -882,6 +897,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     + ViewportGeneratorClass.class.getSimpleName());
         }
 
+        String viewportContent = null;
         if (viewportAnnotation.isPresent()) {
             viewportContent = viewportAnnotation.get().value();
         } else if (viewportGeneratorClassAnnotation.isPresent()) {
@@ -891,6 +907,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .createInstance(viewportGeneratorClass)
                     .getViewport(request);
         }
-        return viewportContent;
+        return Optional.ofNullable(viewportContent);
     }
 }
