@@ -558,7 +558,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapContext context) {
         String scriptData = "//<![CDATA[\n"
                 + getBootstrapJS(initialUIDL, context) + "//]]>";
-        Element mainScript = createJavaScriptElement(null);
+        // defer makes no sense without src: https://developer.mozilla.org/en/docs/Web/HTML/Element/script
+        Element mainScript = createJavaScriptElement(null, false);
         mainScript.appendChild(new DataNode(scriptData, mainScript.baseUri()));
         return mainScript;
     }
