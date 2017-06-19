@@ -150,7 +150,7 @@ public class ComponentEventBusUtil {
     @SuppressWarnings("unchecked")
     private static <T extends ComponentEvent<?>> Constructor<T> findEventConstructor(
             Class<T> eventType) {
-        ReflectTools.checkClassAccessability(eventType);
+        ReflectTools.checkClassAccessibility(eventType);
         List<Constructor<T>> constructors = new ArrayList<>();
         for (Constructor<?> c : eventType.getConstructors()) {
             if (isDomEventConstructor(c)) {

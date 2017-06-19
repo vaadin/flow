@@ -139,7 +139,7 @@ public class SpringExample implements RouterConfigurator {
         @Override
         public void setChildView(View childView) {
             getElement().setChild(1, Optional.of(childView)
-                    .map(View::getElement).orElse(Element.createText("Empty")));
+                    .map(View::getElement).orElseGet(() -> Element.createText("Empty")));
         }
     }
 

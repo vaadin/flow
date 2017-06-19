@@ -55,7 +55,7 @@ public class BoundClassList extends AbstractSet<String> implements ClassList {
 
         String[] attributeClasses = templateNode.getAttributeBinding("class")
                 .map(binding -> binding.getValue(node, "").split("\\s+"))
-                .orElse(new String[0]);
+                .orElseGet(() -> new String[0]);
         staticClasses = new LinkedHashSet<>(Arrays.asList(attributeClasses));
         // Remove defaults that are always overridden by bindings
         templateNode.getClassNames().forEach(staticClasses::remove);
