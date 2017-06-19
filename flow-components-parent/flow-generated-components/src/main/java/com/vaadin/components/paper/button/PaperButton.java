@@ -5,8 +5,10 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -14,9 +16,9 @@ import com.vaadin.flow.dom.DomEventListener;
  * Material design:
  * [Buttons](https://www.google.com/design/spec/components/buttons.html)
  * 
- * `paper-button` is a button. When the user touches the button, a ripple effect
- * emanates from the point of contact. It may be flat or raised. A raised button
- * is styled with a shadow.
+ * {@code paper-button} is a button. When the user touches the button, a ripple
+ * effect emanates from the point of contact. It may be flat or raised. A raised
+ * button is styled with a shadow.
  * 
  * Example:
  * 
@@ -24,9 +26,9 @@ import com.vaadin.flow.dom.DomEventListener;
  * button</paper-button> <paper-button noink>No ripple effect</paper-button>
  * <paper-button toggles>Toggle-able button</paper-button>
  * 
- * A button that has `toggles` true will remain `active` after being clicked
- * (and will have an `active` attribute set). For more information, see the
- * `Polymer.IronButtonState` behavior.
+ * A button that has {@code toggles} true will remain {@code active} after being
+ * clicked (and will have an {@code active} attribute set). For more
+ * information, see the {@code Polymer.IronButtonState} behavior.
  * 
  * You may use custom DOM in the button body to create a variety of buttons. For
  * example, to create a button with an icon and some text:
@@ -34,9 +36,9 @@ import com.vaadin.flow.dom.DomEventListener;
  * <paper-button> <iron-icon icon="favorite"></iron-icon> custom button content
  * </paper-button>
  * 
- * To use `paper-button` as a link, wrap it in an anchor tag. Since
- * `paper-button` will already receive focus, you may want to prevent the anchor
- * tag from receiving focus as well by setting its tabindex to -1.
+ * To use {@code paper-button} as a link, wrap it in an anchor tag. Since
+ * {@code paper-button} will already receive focus, you may want to prevent the
+ * anchor tag from receiving focus as well by setting its tabindex to -1.
  * 
  * <a href="https://www.polymer-project.org/" tabindex="-1"> <paper-button
  * raised>Polymer Project</paper-button> </a>
@@ -52,25 +54,25 @@ import com.vaadin.flow.dom.DomEventListener;
  * paper-button[disabled], paper-button[toggles][active] { background: red; }
  * 
  * By default, the ripple is the same color as the foreground at 25% opacity.
- * You may customize the color using the `--paper-button-ink-color` custom
+ * You may customize the color using the {@code --paper-button-ink-color} custom
  * property.
  * 
  * The following custom properties and mixins are also available for styling:
  * 
  * Custom property | Description | Default
- * ----------------|-------------|---------- `--paper-button-ink-color` |
- * Background color of the ripple | `Based on the button's color`
- * `--paper-button` | Mixin applied to the button | `{}`
- * `--paper-button-disabled` | Mixin applied to the disabled button. Note that
- * you can also use the `paper-button[disabled]` selector | `{}`
- * `--paper-button-flat-keyboard-focus` | Mixin applied to a flat button after
- * it's been focused using the keyboard | `{}`
- * `--paper-button-raised-keyboard-focus` | Mixin applied to a raised button
- * after it's been focused using the keyboard | `{}`
+ * ----------------|-------------|---------- {@code --paper-button-ink-color} |
+ * Background color of the ripple | {@code Based on the button's color}
+ * {@code --paper-button} | Mixin applied to the button | {@code
+ * {@code --paper-button-disabled} | Mixin applied to the disabled button. Note
+ * that you can also use the {@code paper-button[disabled]} selector | {@code
+ * {@code --paper-button-flat-keyboard-focus} | Mixin applied to a flat button
+ * after it's been focused using the keyboard | {@code
+ * {@code --paper-button-raised-keyboard-focus} | Mixin applied to a raised
+ * button after it's been focused using the keyboard | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-button#2.0.0", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: paper-button#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class PaperButton extends Component {
@@ -79,7 +81,7 @@ public class PaperButton extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -89,7 +91,7 @@ public class PaperButton extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
 	 */
@@ -375,7 +377,7 @@ public class PaperButton extends Component {
 	 * 
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
-	 * the `keyBindings` prototype property.
+	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
 	 * @param handlerName
@@ -397,7 +399,7 @@ public class PaperButton extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns true if a keyboard event matches `eventString`.
+	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
 	 * @param eventString
@@ -423,7 +425,7 @@ public class PaperButton extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns the `<paper-ripple>` element used by this element to create
+	 * Returns the {@code <paper-ripple>} element used by this element to create
 	 * ripple effects. The element's ripple is created on demand, when
 	 * necessary, and calling this method will force the ripple to be created.
 	 */
@@ -440,22 +442,53 @@ public class PaperButton extends Component {
 		getElement().callFunction("hasRipple");
 	}
 
-	public Registration addActiveChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("active-changed", listener);
+	@DomEvent("active-changed")
+	public static class ActiveChangedEvent extends ComponentEvent<PaperButton> {
+		public ActiveChangedEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addActiveChangedListener(
+			ComponentEventListener<ActiveChangedEvent> listener) {
+		return addListener(ActiveChangedEvent.class, listener);
+	}
+
+	@DomEvent("focused-changed")
+	public static class FocusedChangedEvent extends ComponentEvent<PaperButton> {
+		public FocusedChangedEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addFocusedChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("focused-changed", listener);
+			ComponentEventListener<FocusedChangedEvent> listener) {
+		return addListener(FocusedChangedEvent.class, listener);
+	}
+
+	@DomEvent("disabled-changed")
+	public static class DisabledChangedEvent
+			extends
+				ComponentEvent<PaperButton> {
+		public DisabledChangedEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addDisabledChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("disabled-changed", listener);
+			ComponentEventListener<DisabledChangedEvent> listener) {
+		return addListener(DisabledChangedEvent.class, listener);
+	}
+
+	@DomEvent("transitionend")
+	public static class TransitionendEvent extends ComponentEvent<PaperButton> {
+		public TransitionendEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addTransitionendListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("transitionend", listener);
+			ComponentEventListener<TransitionendEvent> listener) {
+		return addListener(TransitionendEvent.class, listener);
 	}
 }
