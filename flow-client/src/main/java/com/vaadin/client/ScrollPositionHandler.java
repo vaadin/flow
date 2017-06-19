@@ -195,12 +195,6 @@ public class ScrollPositionHandler {
     public void onPopStateEvent(PopStateEvent event,
             boolean triggersServerSideRoundtrip) {
         if (ignoreScrollRestorationOnNextPopStateEvent) {
-            // beforeNavigation has been visited and scroll positions stored,
-            // just update current history entry since this history state is
-            // empty
-            assert Browser.getWindow().getHistory()
-                    .getState() == null : "History.state expected to be null on this popState event";
-
             Browser.getWindow().getHistory().replaceState(
                     createStateObjectWithHistoryIndexAndToken(), "",
                     Browser.getDocument().getLocation().getHref());
