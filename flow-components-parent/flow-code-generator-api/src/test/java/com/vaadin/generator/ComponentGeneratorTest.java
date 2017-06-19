@@ -206,7 +206,6 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
 
-        System.out.println(generatedClass);
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* This is the {@code <input value=\"name\">} property of the component."));
     }
@@ -266,7 +265,6 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        System.out.println(generatedClass);
         // Using matcher as the formatter may cut the method.
         Pattern pattern = Pattern.compile(
                 "public ChangeEvent\\(MyComponent source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.button\"\\) double button\\)");

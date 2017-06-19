@@ -565,7 +565,7 @@ public class ComponentGenerator {
                     property.getName()).setAccessible(true).setMutable(false);
 
             // Set value to private field
-            eventConstructor.setBody(String.format("%s\nthis.%s = %s;",
+            eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
                     eventConstructor.getBody(), property.getName(),
                     property.getName()));
             // Add the EventData as a import
