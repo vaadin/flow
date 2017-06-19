@@ -84,7 +84,7 @@ public abstract class ViewRenderer implements NavigationHandler {
                 .getActiveViewChain().stream()
                 .filter(view -> view.getClass().equals(viewType)).findAny();
         return (T) currentInstance
-                .orElse(ReflectTools.createInstance(viewType));
+                .orElseGet(() -> ReflectTools.createInstance(viewType));
     }
 
     /**

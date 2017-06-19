@@ -36,11 +36,18 @@ public class ViewRendererTest {
     private final static String ANOTHER_VIEW_TITLE = "test";
     private final static String DYNAMIC_VIEW_TITLE = "dynamic";
 
+    private static final ThreadLocal<Boolean> blockNewViewInstances = new ThreadLocal<>();
+
     public static class TestView implements View {
         private Element element = ElementFactory.createDiv();
         private List<Location> locations = new ArrayList<>();
         private String namePlaceholderValue;
         private String wildcardValue;
+
+        public TestView() {
+            Assert.assertFalse("View instance creation is not allowed",
+                    Boolean.TRUE.equals(blockNewViewInstances.get()));
+        }
 
         @Override
         public final Element getElement() {
@@ -228,9 +235,14 @@ public class ViewRendererTest {
         new TestViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        // setChildView throws if it's invoked
-        new TestViewRenderer(TestView.class, ParentView.class,
-                AnotherParentView.class).handle(dummyEvent);
+        try {
+            blockNewViewInstances.set(Boolean.TRUE);
+            // setChildView and view constructors throws if invoked
+            new TestViewRenderer(TestView.class, ParentView.class,
+                    AnotherParentView.class).handle(dummyEvent);
+        } finally {
+            blockNewViewInstances.remove();
+        }
     }
 
     @Test
