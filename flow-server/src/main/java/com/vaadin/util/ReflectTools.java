@@ -456,7 +456,7 @@ public class ReflectTools implements Serializable {
      */
     public static <T> T createProxyInstance(Class<T> proxyClass,
             Class<?> originalClass) {
-        checkClassAccessability(originalClass);
+        checkClassAccessibility(originalClass);
         try {
             return proxyClass.getConstructor().newInstance();
         } catch (NoSuchMethodException e) {
@@ -496,7 +496,7 @@ public class ReflectTools implements Serializable {
      * @param clazz
      *            type to check
      */
-    public static void checkClassAccessability(Class<?> clazz) {
+    public static void checkClassAccessibility(Class<?> clazz) {
         if (clazz.isMemberClass() && !Modifier.isStatic(clazz.getModifiers())) {
             throw new IllegalArgumentException(String.format(
                     CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
