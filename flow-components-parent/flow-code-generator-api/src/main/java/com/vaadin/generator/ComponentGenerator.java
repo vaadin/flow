@@ -490,39 +490,50 @@ public class ComponentGenerator {
             addJavaDoc(function.getDescription(), method.getJavaDoc());
         }
 
-        StringBuilder params = new StringBuilder();
-        if (function.getParameters() != null
-                && !function.getParameters().isEmpty()) {
+        method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
+                function.getName(), generateFunctionParameters(function, method)));
+    }
 
-            for (ComponentFunctionParameterData param : function
-                    .getParameters()) {
-                List<ComponentBasicType> typeVariants = param.getType();
-                boolean useTypePostfixForVariableName = typeVariants.size() > 1;
-
-                // there might be multiple types accepted for same parameter,
-                // for now just different types are allowed
-                for (ComponentBasicType basicType : typeVariants) {
-
-                    String formattedName = StringUtils
-                            .uncapitalize(ComponentGeneratorUtils
-                                    .formatStringToValidJavaIdentifier(
-                                            param.getName()));
-                    if (useTypePostfixForVariableName) {
-                        formattedName = formattedName + StringUtils.capitalize(basicType.name().toLowerCase());
-                    }
-
-                    method.addParameter(toJavaType(basicType), formattedName);
-                    params.append(", ").append(formattedName);
-
-                    method.getJavaDoc().addTagValue("@param",
-                            param.getName() + (useTypePostfixForVariableName ? " can be <code>null</code>" : ""));
-                }
-
-            }
+    /**
+     * Adds the function parameters in a string separated with commas.
+     * <p>
+     * Also adds the parameters to the to the javadocs for the given method.
+     *
+     * @param function the function data
+     * @param method the method to add javadocs to, not {@code null}
+     * @return a string of the parameters of the function, or an empty string if no parameters
+     */
+    private String generateFunctionParameters(ComponentFunctionData function, MethodSource<JavaClassSource> method) {
+        if (function.getParameters() == null || function.getParameters().isEmpty()) {
+            return "";
         }
 
-        method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
-                function.getName(), params.toString()));
+        StringBuilder params = new StringBuilder();
+        for (ComponentFunctionParameterData param : function
+                .getParameters()) {
+            List<ComponentBasicType> typeVariants = param.getType();
+            boolean useTypePostfixForVariableName = typeVariants.size() > 1;
+
+            // there might be multiple types accepted for same parameter,
+            // for now different types are allowed and parameter name is postfixed with type
+            for (ComponentBasicType basicType : typeVariants) {
+
+                String formattedName = StringUtils
+                        .uncapitalize(ComponentGeneratorUtils
+                                .formatStringToValidJavaIdentifier(
+                                        param.getName()));
+                if (useTypePostfixForVariableName) {
+                    formattedName = formattedName + StringUtils.capitalize(basicType.name().toLowerCase());
+                }
+
+                method.addParameter(toJavaType(basicType), formattedName);
+                params.append(", ").append(formattedName);
+
+                method.getJavaDoc().addTagValue("@param",
+                        param.getName() + (useTypePostfixForVariableName ? " can be <code>null</code>" : ""));
+            }
+        }
+        return params.toString();
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,

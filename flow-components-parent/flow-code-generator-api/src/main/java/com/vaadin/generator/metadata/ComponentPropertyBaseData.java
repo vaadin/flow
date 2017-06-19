@@ -28,16 +28,25 @@ public class ComponentPropertyBaseData {
     private String name;
     private List<ComponentBasicType> type;
     private String description;
+    private List<ComponentObjectType> objectType;
 
+    /**
+     * Gets the object type properties.
+     *
+     * @return a list of the object type properties
+     */
     public List<ComponentObjectType> getObjectType() {
         return objectType;
     }
 
+    /**
+     * Sets the object type properties.
+     *
+     * @param objectType the
+     */
     public void setObjectType(List<ComponentObjectType> objectType) {
         this.objectType = objectType;
     }
-
-    private List<ComponentObjectType> objectType;
 
     /**
      * Gets the name of the property.
@@ -59,19 +68,19 @@ public class ComponentPropertyBaseData {
     }
 
     /**
-     * Gets the type of the property.
+     * Gets the type of the property, or if property allows varying types, a list of those.
      *
-     * @return the type The type of the property.
+     * @return the type the type in a list or the a list of allowed types
      */
     public List<ComponentBasicType> getType() {
         return type;
     }
 
     /**
-     * Sets the type of the property.
+     * Sets the type of the property, or if property allows varying types, a list of those.
      *
      * @param type
-     *            The type of the property.
+     *            The type of the property in a list or a list of allowed types
      */
     public void setType(List<ComponentBasicType> type) {
         this.type = type;
