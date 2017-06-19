@@ -34,21 +34,11 @@ public class ScrollView extends AbstractDivView {
     static final String TRANSITION_URL_ID = "transitionUrlId";
 
     public ScrollView() {
-        Div spacer1 = new Div();
-        spacer1.setText(
-                "This is an intentionally long div (see urls at the bottom)");
-        spacer1.setHeight("300px");
-
         Div anchorDiv = new Div();
         anchorDiv.setText("I'm the anchor div");
         anchorDiv.setId(ANCHOR_DIV_ID);
 
-        Div spacer2 = new Div();
-        spacer2.setText(
-                "This is an intentionally long div (see urls at the bottom)");
-        spacer2.setHeight("2000px");
-
-        add(spacer1, anchorDiv, spacer2,
+        add(createSpacerDiv(300), anchorDiv, createSpacerDiv(2000),
                 createAnchorUrl(false, SIMPLE_ANCHOR_URL_ID, ANCHOR_URL,
                         "Go to anchor div (simple link)"),
                 createAnchorUrl(true, ROUTER_ANCHOR_URL_ID, ANCHOR_URL,
@@ -58,12 +48,18 @@ public class ScrollView extends AbstractDivView {
                         "Go to different page (router-link)"));
     }
 
-    private static Anchor createAnchorUrl(boolean isRouterLink, String id,
+    static Anchor createAnchorUrl(boolean isRouterLink, String id,
             String url, String text) {
         Anchor result = new Anchor(url, text);
         result.getElement().setAttribute(ROUTER_LINK_ATTRIBUTE_NAME, isRouterLink);
         result.getStyle().set("display", "block");
         result.setId(id);
         return result;
+    }
+
+    static Div createSpacerDiv(int heightPx) {
+        Div spacer = new Div();
+        spacer.setHeight(heightPx + "px");
+        return spacer;
     }
 }

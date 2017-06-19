@@ -256,4 +256,15 @@ public class TestBenchHelpers extends ParallelTest {
         return ((Long) executeScript("return window.pageYOffset")).intValue();
     }
 
+    /**
+     * Clicks on the element, using JS.
+     * This method is more convenient then Selenium {@code findElement(By.id(urlId)).click()}, because
+     * Selenium method changes scroll position, which is not always needed.
+     *
+     * @param elementId id of the
+     */
+    protected void clickElementWithJs(String elementId) {
+        executeScript(String.format("document.getElementById('%s').click();",
+                elementId));
+    }
 }
