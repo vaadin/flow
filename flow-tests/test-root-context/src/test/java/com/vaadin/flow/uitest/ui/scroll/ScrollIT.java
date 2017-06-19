@@ -45,8 +45,7 @@ public class ScrollIT extends ChromeBrowserTest {
         scrollBy(xScrollAmount, yScrollAmount);
         checkPageScroll(xScrollAmount, yScrollAmount);
 
-        // Cannot use findElement(By.id(ScrollView.URL_ID)).click() because it changes scroll position
-        executeScript(String.format("document.getElementById('%s').click();", ScrollView.TRANSITION_URL_ID));
+        clickElementWithJs(ScrollView.TRANSITION_URL_ID);
 
         while (true) {
             if (Objects.equals(initialPageUrl, driver.getCurrentUrl())) {
@@ -76,22 +75,53 @@ public class ScrollIT extends ChromeBrowserTest {
         scrollBy(xScrollAmount, yScrollAmount);
         checkPageScroll(xScrollAmount, yScrollAmount);
 
-        // Cannot use findElement(By.id(ScrollView.URL_ID)).click() because
-        // it changes scroll position
-        executeScript(String.format("document.getElementById('%s').click();",
-                ScrollView.SIMPLE_ANCHOR_URL_ID));
+        clickElementWithJs(ScrollView.SIMPLE_ANCHOR_URL_ID);
         checkPageScroll(anchorElementLocation.getX(),
                 anchorElementLocation.getY());
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
 
         scrollBy(xScrollAmount, yScrollAmount);
-        executeScript(String.format("document.getElementById('%s').click();",
-                ScrollView.ROUTER_ANCHOR_URL_ID));
+        clickElementWithJs(ScrollView.ROUTER_ANCHOR_URL_ID);
         checkPageScroll(anchorElementLocation.getX(),
                 anchorElementLocation.getY());
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
+    }
+
+    @Test
+    public void scrollPositionIsRestoredWhenNavigatingToHistoryWithAnchorLink() {
+        open();
+
+        clickElementWithJs(ScrollView.ROUTER_ANCHOR_URL_ID);
+        assertThat("Expected url to change to anchor one",
+                driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
+
+        scrollBy(0, 400);
+        final int originalScrollX = getScrollX();
+        final int originalScrollY = getScrollY();
+
+        clickElementWithJs(ScrollView.TRANSITION_URL_ID);
+        findElement(By.id(LongToOpenView.BACK_BUTTON_ID)).click();
+
+        assertThat("Expected url to change to anchor one",
+                driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
+        checkPageScroll(originalScrollX, originalScrollY);
+    }
+
+    @Test
+    public void scrollPositionShouldBeAtAnchorWhenNavigatingFromOtherPage() {
+        open();
+
+        Point anchorElementLocation = findElement(
+                com.vaadin.testbench.By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
+        scrollBy(0, 400);
+
+        clickElementWithJs(ScrollView.TRANSITION_URL_ID);
+        clickElementWithJs(LongToOpenView.ANCHOR_LINK_ID);
+        assertThat("Expected url to change to anchor one",
+                driver.getCurrentUrl(), endsWith(ScrollView.ANCHOR_URL));
+        checkPageScroll(anchorElementLocation.getX(), anchorElementLocation.getY());
     }
 
     private void checkPageScroll(int x, int y) {
