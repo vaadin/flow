@@ -34,10 +34,10 @@ public class DomRepeatIT extends ChromeBrowserTest {
 
         WebElement template = findElement(By.id("template"));
 
-        for (int i = 0; i < DomRepeatUI.NUMBER_OF_EMPLOYEES; i++) {
-            getInShadowRoot(template, By.id(DomRepeatUI.TR_ID_PREFIX + i)).click();
-            String eventIndex = getInShadowRoot(template, By.id(DomRepeatUI.EVENT_INDEX_ID)).getText();
-            String repeatIndex = getInShadowRoot(template, By.id(DomRepeatUI.REPEAT_INDEX_ID)).getText();
+        for (int i = 0; i < DomRepeatView.NUMBER_OF_EMPLOYEES; i++) {
+            getInShadowRoot(template, By.id(DomRepeatView.TR_ID_PREFIX + i)).click();
+            String eventIndex = getInShadowRoot(template, By.id(DomRepeatView.EVENT_INDEX_ID)).getText();
+            String repeatIndex = getInShadowRoot(template, By.id(DomRepeatView.REPEAT_INDEX_ID)).getText();
 
             Assert.assertEquals(eventIndex, repeatIndex);
             Assert.assertEquals(i, Integer.parseInt(repeatIndex));

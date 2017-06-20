@@ -23,5 +23,4 @@ import com.vaadin.flow.template.model.TemplateModel;
 @Tag("router-link")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/RouterLinks.html")
 public class RouterLinksTemplate extends PolymerTemplate<TemplateModel> {
-
 }

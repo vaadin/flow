@@ -24,13 +24,16 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 
 @Tag("event-handler")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/EventHandler.html")
-public class EventHandlerPolymerTemplate
-        extends PolymerTemplate<TemplateModel> {
+public class EventHandlerView extends PolymerTemplate<TemplateModel> implements View {
+    public EventHandlerView() {
+        setId("template");
+    }
 
     @EventHandler
     private void handleClick() {
