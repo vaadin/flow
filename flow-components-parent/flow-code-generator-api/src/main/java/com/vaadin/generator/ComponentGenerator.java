@@ -18,13 +18,6 @@ package com.vaadin.generator;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.JavaDocSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
-import org.jboss.forge.roaster.model.source.ParameterSource;
-
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
@@ -36,13 +29,11 @@ import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
-import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
-
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -51,6 +42,7 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
 
 import javax.annotation.Generated;
 import java.io.File;
@@ -500,7 +492,7 @@ public class ComponentGenerator {
      * Also adds the parameters to the to the javadocs for the given method.
      *
      * @param function the function data
-     * @param method the method to add javadocs to, not {@code null}
+     * @param method   the method to add javadocs to, not {@code null}
      * @return a string of the parameters of the function, or an empty string if no parameters
      */
     private String generateFunctionParameters(ComponentFunctionData function, MethodSource<JavaClassSource> method) {
@@ -537,7 +529,7 @@ public class ComponentGenerator {
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
-            ComponentEventData event) {
+                                          ComponentEventData event) {
         String eventName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(event.getName());
 
@@ -548,7 +540,7 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("add" + StringUtils.capitalize(eventName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
-        method.addParameter("ComponentEventListener<"+eventListener.getName()+">", "listener");
+        method.addParameter("ComponentEventListener<" + eventListener.getName() + ">", "listener");
 
         method.setBody(
                 String.format("return addListener(%s.class, listener);", eventListener.getName()));
@@ -574,20 +566,29 @@ public class ComponentGenerator {
 
         for (ComponentPropertyBaseData property : event.getProperties()) {
             // Add new parameter to constructor
-            ParameterSource<JavaClassSource> parameter = eventConstructor
-                    .addParameter(toJavaType(property.getType()),
-                            property.getName());
-            parameter.addAnnotation(EventData.class).setLiteralValue(
-                    String.format("\"event.%s\"", property.getName()));
+            final String propertyName = property.getName();
+            Class<?> propertyJavaType;
 
+            if (!property.getType().isEmpty()) {
+                // for varying types, using the first type declared in the JSDoc
+                // it is anyway very rare to have varying property type
+                propertyJavaType = toJavaType(property.getType().get(0));
+            } else { // object property
+                propertyJavaType = JsonObject.class;
+            }
+            ParameterSource<JavaClassSource> parameter = eventConstructor
+                    .addParameter(propertyJavaType,
+                            propertyName);
+            parameter.addAnnotation(EventData.class).setLiteralValue(
+                    String.format("\"event.%s\"", propertyName));
             // Create private field
-            eventListener.addProperty(toJavaType(property.getType()),
-                    property.getName()).setAccessible(true).setMutable(false);
+            eventListener.addProperty(propertyJavaType,
+                    propertyName).setAccessible(true).setMutable(false);
 
             // Set value to private field
             eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
-                    eventConstructor.getBody(), property.getName(),
-                    property.getName()));
+                    eventConstructor.getBody(), propertyName,
+                    propertyName));
             // Add the EventData as a import
             javaClass.addImport(EventData.class);
         }

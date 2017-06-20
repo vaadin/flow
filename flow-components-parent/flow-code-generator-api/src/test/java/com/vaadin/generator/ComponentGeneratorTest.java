@@ -1,19 +1,10 @@
 package com.vaadin.generator;
 
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
-import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import org.junit.Assert;
@@ -266,7 +257,7 @@ public class ComponentGeneratorTest {
 
         ComponentPropertyBaseData property = new ComponentPropertyBaseData();
         property.setName("button");
-        property.setType(ComponentObjectType.NUMBER);
+        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
 
         eventData.setProperties(Arrays.asList(property));
 
