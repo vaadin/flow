@@ -124,8 +124,17 @@ public class IronAutogrowTextarea extends Component {
 	 * 
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 */
-	public JsonObject getValue() {
-		return (JsonObject) getElement().getPropertyRaw("value");
+	public String getValueString() {
+		return getElement().getProperty("value");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Use this property instead of {@code bind-value} for two-way data binding.
+	 */
+	public double getValueNumber() {
+		return getElement().getProperty("value", 0.0);
 	}
 
 	/**
@@ -135,8 +144,19 @@ public class IronAutogrowTextarea extends Component {
 	 * 
 	 * @param value
 	 */
-	public void setValue(elemental.json.JsonObject value) {
-		getElement().setPropertyJson("value", value);
+	public void setValue(java.lang.String value) {
+		getElement().setProperty("value", value == null ? "" : value);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Use this property instead of {@code bind-value} for two-way data binding.
+	 * 
+	 * @param value
+	 */
+	public void setValue(double value) {
+		getElement().setProperty("value", value);
 	}
 
 	/**
@@ -145,8 +165,18 @@ public class IronAutogrowTextarea extends Component {
 	 * This property is deprecated, and just mirrors {@code value}. Use
 	 * {@code value} instead.
 	 */
-	public JsonObject getBindValue() {
-		return (JsonObject) getElement().getPropertyRaw("bindValue");
+	public String getBindValueString() {
+		return getElement().getProperty("bindValue");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * This property is deprecated, and just mirrors {@code value}. Use
+	 * {@code value} instead.
+	 */
+	public double getBindValueNumber() {
+		return getElement().getProperty("bindValue", 0.0);
 	}
 
 	/**
@@ -157,8 +187,21 @@ public class IronAutogrowTextarea extends Component {
 	 * 
 	 * @param bindValue
 	 */
-	public void setBindValue(elemental.json.JsonObject bindValue) {
-		getElement().setPropertyJson("bindValue", bindValue);
+	public void setBindValue(java.lang.String bindValue) {
+		getElement().setProperty("bindValue",
+				bindValue == null ? "" : bindValue);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * This property is deprecated, and just mirrors {@code value}. Use
+	 * {@code value} instead.
+	 * 
+	 * @param bindValue
+	 */
+	public void setBindValue(double bindValue) {
+		getElement().setProperty("bindValue", bindValue);
 	}
 
 	/**

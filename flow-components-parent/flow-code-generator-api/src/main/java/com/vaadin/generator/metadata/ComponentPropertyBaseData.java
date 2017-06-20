@@ -15,6 +15,9 @@
  */
 package com.vaadin.generator.metadata;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Base class of properties exposed by the webcomponent, that can be properties
  * themselves, event properties or function parameters.
@@ -24,8 +27,27 @@ package com.vaadin.generator.metadata;
 public class ComponentPropertyBaseData {
 
     private String name;
-    private ComponentObjectType type;
+    private List<ComponentBasicType> type;
     private String description;
+    private List<ComponentObjectType> objectType = new ArrayList<>();
+
+    /**
+     * Gets the object type properties.
+     *
+     * @return a list of the object type properties
+     */
+    public List<ComponentObjectType> getObjectType() {
+        return objectType;
+    }
+
+    /**
+     * Sets the object type properties.
+     *
+     * @param objectType the
+     */
+    public void setObjectType(List<ComponentObjectType> objectType) {
+        this.objectType = objectType;
+    }
 
     /**
      * Gets the name of the property.
@@ -38,7 +60,7 @@ public class ComponentPropertyBaseData {
 
     /**
      * Sets the name of the property.
-     * 
+     *
      * @param name
      *            The name of the property.
      */
@@ -47,21 +69,21 @@ public class ComponentPropertyBaseData {
     }
 
     /**
-     * Gets the type of the property.
-     * 
-     * @return the type The type of the property.
+     * Gets the type of the property, or if property allows varying types, a list of those.
+     *
+     * @return the type the type in a list or the a list of allowed types
      */
-    public ComponentObjectType getType() {
+    public List<ComponentBasicType> getType() {
         return type;
     }
 
     /**
-     * Sets the type of the property.
-     * 
+     * Sets the type of the property, or if property allows varying types, a list of those.
+     *
      * @param type
-     *            The type of the property.
+     *            The type of the property in a list or a list of allowed types
      */
-    public void setType(ComponentObjectType type) {
+    public void setType(List<ComponentBasicType> type) {
         this.type = type;
     }
 

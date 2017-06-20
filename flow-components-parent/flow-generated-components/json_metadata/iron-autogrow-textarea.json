@@ -6,97 +6,156 @@
   "properties": [
     {
       "name": "validator",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Name of the validator to use.\n       "
     },
     {
       "name": "invalid",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "True if the last call to `validate` is invalid.\n       "
     },
     {
       "name": "focused",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the element currently has focus.\n       "
     },
     {
       "name": "disabled",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the user cannot interact with this element.\n       "
     },
     {
       "name": "value",
-      "type": "OBJECT",
+      "type": [
+        "STRING",
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "Use this property instead of `bind-value` for two-way data binding."
     },
     {
       "name": "bindValue",
-      "type": "OBJECT",
+      "type": [
+        "STRING",
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "This property is deprecated, and just mirrors `value`. Use `value` instead."
     },
     {
       "name": "rows",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The initial number of rows."
     },
     {
       "name": "maxRows",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The maximum number of rows this element can grow to until it\nscrolls. 0 means no maximum."
     },
     {
       "name": "autocomplete",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Bound to the textarea's `autocomplete` attribute.\n       "
     },
     {
       "name": "autofocus",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Bound to the textarea's `autofocus` attribute.\n       "
     },
     {
       "name": "inputmode",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Bound to the textarea's `inputmode` attribute.\n       "
     },
     {
       "name": "placeholder",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Bound to the textarea's `placeholder` attribute.\n       "
     },
     {
       "name": "readonly",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Bound to the textarea's `readonly` attribute.\n       "
     },
     {
       "name": "required",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to mark the textarea as required.\n       "
     },
     {
       "name": "minlength",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The minimum length of the input value.\n       "
     },
     {
       "name": "maxlength",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The maximum length of the input value.\n       "
     },
     {
       "name": "textarea",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "Returns the underlying textarea."
     },
     {
       "name": "selectionStart",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "Returns textarea's selection start."
     },
     {
       "name": "selectionEnd",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "Returns textarea's selection end."
     }
   ],

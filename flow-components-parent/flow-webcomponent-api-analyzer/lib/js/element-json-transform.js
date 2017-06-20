@@ -24,9 +24,58 @@ const skipInherited = (inheritedFrom) => {
   return globalVar.skipInheritedAPI && inheritedFrom === 'undefined';
 };
 
+const getObjectType = (type) => {
+  // This is for JS Object types that have some properties
+  // {inputElement: (Element|undefined), value: (string|undefined), invalid: boolean}
+  const objectTypesJson = [];
+  if (typeof type !== 'undefined' && type.startsWith('{') && type.endsWith('}')) {
+    // remove { and } and split from commas
+    const types = type.substring(1, type.length - 1).split(',');
+    for (let option of types) {
+      option = option.trim();
+      const name = option.substring(0, option.indexOf(':'));
+      const objectType = option.substring(option.indexOf(':') + 1, option.length).trim();
+      const objectTypeJson = {
+        "name": name,
+        "type": getTypes(objectType)
+      }
+      if (objectType.includes('undefined')) {
+        objectTypeJson['optional'] = true;
+      }
+      objectTypesJson.push(objectTypeJson);
+    }
+  }
+  return objectTypesJson;
+};
+
+const getTypes = (type) => {
+  const types = [];
+  if (typeof type === 'undefined') {
+    types.push(getType(type));
+  } else if (type.startsWith('{') && type.endsWith('}')) {
+    // handled separately via getObjectType(type)
+  } else if (type.includes('|')) {
+    // might be wrapped with parenthesis
+    if (type.startsWith('(') && type.endsWith(')')) {
+      type = type.substring(1, type.length - 1);
+    }
+    for (let someType of type.split('|')) {
+      if (someType.trim() === 'undefined') {
+        // this means it is optional, handled elsewhere
+        continue;
+      }
+      types.push(getType(someType));
+    }
+  } else {
+    types.push(getType(type));
+  }
+  return types;
+};
+
 const getType = (type) => {
   if (typeof type === 'undefined') {
-    type = "OBJECT";
+    console.warn(`Undefined type, missing jsdoc parameter {type}`);
+    type = "UNDEFINED";
   } else {
     type = type.toUpperCase();
   }
@@ -38,6 +87,7 @@ const getType = (type) => {
     type === 'ARRAY') {
     return type;
   } else {
+    console.warn(`Unsupported type requested: ${type}`);
     return 'OBJECT';
   }
 };
@@ -65,7 +115,9 @@ const propertiesToJsonArray = (properties) => {
     if (!skipInherited(property.inheritedFrom) && property.privacy === 'public') {
       const propertyJson = {
         "name": property.name,
-        "type": getType(property.type),
+        // property can be of only one type, but in case there is an object property, need to use an empty array here
+        "type": getTypes(property.type),
+        "objectType": getObjectType(property.type),
         "description": property.jsdoc ? property.jsdoc.description : 'Missing documentation!',
 // TODO #1768 "readonly": true
       }
@@ -80,8 +132,8 @@ const propertiesToJsonArray = (properties) => {
  * Converts method parameters array to desired JSON output:
  *
  * "parameters" : [
- * {"name" : "paramName", "type": "STRING" },
- * {"name" : "optionalParameter", "type": "NUMBER", "optional" : true }
+ * {"name" : "paramName", "type": {"STRING", "ELEMENT} },
+ * {"name" : "optionalParameter", "types": {"NUMBER"}, "optional" : true }
  * ]}
  *
  * @param parameters the parameters array from method.parameters
@@ -92,8 +144,8 @@ const parametersToJsonArray = (parameters) => {
   for (let parameter of parameters) {
     const parameterJson = {
       "name": parameter.name,
-// TODO #1771 write multiple accepted types as an array
-      "type": getType(parameter.type),
+      "type": getTypes(parameter.type),
+      "objectType": getObjectType(parameter.type),
       "description": parameter.description ? parameter.description :
         (parameter.desc ? parameter.desc : "Missing documentation!"),
 // TODO #1767 "optional": false
@@ -164,7 +216,7 @@ const eventsToJsonArray = (events) => {
       eventsJson.push(eventJson);
     }
   }
-  console.log(`    Wrote ${eventsJson.length} methods out of ${events.size}`);
+  console.log(`    Wrote ${eventsJson.length} events out of ${events.size}`);
   return eventsJson;
 };
 

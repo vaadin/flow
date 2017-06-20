@@ -6,83 +6,128 @@
   "properties": [
     {
       "name": "keyEventTarget",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "The EventTarget that will be firing relevant KeyboardEvents. Set it to\n`null` to disable the listeners."
     },
     {
       "name": "stopKeyboardEventPropagation",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, this property will cause the implementing element to\nautomatically stop propagation on any handled KeyboardEvents.\n         "
     },
     {
       "name": "keyBindings",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": ""
     },
     {
       "name": "initialOpacity",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The initial opacity set on the wave."
     },
     {
       "name": "opacityDecayVelocity",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "How fast (opacity per second) the wave fades out."
     },
     {
       "name": "recenters",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, ripples will exhibit a gravitational pull towards\nthe center of their container as they fade away."
     },
     {
       "name": "center",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, ripples will center inside its container"
     },
     {
       "name": "ripples",
-      "type": "ARRAY",
+      "type": [
+        "ARRAY"
+      ],
+      "objectType": [],
       "description": "A list of the visual ripples."
     },
     {
       "name": "animating",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "True when there are visible ripples animating within the\nelement.\n         "
     },
     {
       "name": "holdDown",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the ripple will remain in the \"down\" state until `holdDown`\nis set to false again.\n         "
     },
     {
       "name": "noink",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the ripple will not generate a ripple effect\nvia pointer interaction.\nCalling ripple's imperative api like `simulatedRipple` will\nstill generate the ripple effect.\n         "
     },
     {
       "name": "target",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": ""
     },
     {
       "name": "shouldKeepAnimating",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": ""
     }
   ],
   "methods": [
     {
       "name": "addOwnKeyBinding",
-      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.\n       ",
+      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.",
       "parameters": [
         {
           "name": "eventString",
-          "type": "OBJECT",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         },
         {
           "name": "handlerName",
-          "type": "OBJECT",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -98,12 +143,18 @@
       "parameters": [
         {
           "name": "event",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         },
         {
           "name": "eventString",
-          "type": "STRING",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -119,7 +170,10 @@
       "parameters": [
         {
           "name": "event",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -130,7 +184,10 @@
       "parameters": [
         {
           "name": "event",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -141,7 +198,10 @@
       "parameters": [
         {
           "name": "event",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -152,7 +212,10 @@
       "parameters": [
         {
           "name": "event",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -173,7 +236,10 @@
       "parameters": [
         {
           "name": "ripple",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -191,7 +257,15 @@
       "properties": [
         {
           "name": "detail",
-          "type": "OBJECT",
+          "type": [],
+          "objectType": [
+            {
+              "name": "node",
+              "type": [
+                "OBJECT"
+              ]
+            }
+          ],
           "description": "Contains the animated node."
         }
       ]
