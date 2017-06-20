@@ -82,7 +82,7 @@ module.exports = class AnalyzerTransform extends Transform {
 
           transform.push(element);
         }
-        console.info("For " + importsContent.length + " files, Analyzer found " + elementSet.size + " elements and " + elements.length + " were NOT filtered.");
+        console.info(`Analyzed ${elements.length} UI-elements out of total ${elementSet.size} found elements from ${importsContent.length} files.`);
         callback();
       }).catch((error) => {
         console.error("Error: " + error);

@@ -2,6 +2,14 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.DOM_CHANGE_TEXT;
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseUI.PRELOADED_DIV_ID;
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.either;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +47,7 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         waitUntil(input -> input.findElements(By.className("dependenciesTest"))
                 .size() == 5);
 
-        ensureDependenciesHaveCorrectAttributes();
+        flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes();
 
         WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
         Assert.assertEquals(
@@ -78,27 +86,42 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 testMessages.get(4).startsWith(LAZY_PREFIX));
     }
 
-    private void ensureDependenciesHaveCorrectAttributes() {
-        findElements(By.tagName("script")).stream()
-                // FW needs these elements to be loaded asap, that's why it's an
-                // exclusion
-                .filter(javaScriptImport -> {
-                    String jsUrl = javaScriptImport.getAttribute("src");
-                    return !jsUrl.endsWith("es6-collections.js")
-                            && !jsUrl.endsWith("webcomponents-lite.js")
-                    // development time XSI client engine file
-                            && !jsUrl.endsWith(".cache.js");
-                }).forEach(javaScriptImport -> {
-                    Assert.assertEquals(
-                            String.format(
-                                    "All javascript dependencies should be loaded with 'defer' attribute. Dependency with url %s does not have this attribute",
-                                    javaScriptImport.getAttribute("src")),
-                            "true", javaScriptImport.getAttribute("defer"));
-                    Assert.assertNull(
-                            String.format(
-                                    "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
-                                    javaScriptImport.getAttribute("src")),
-                            javaScriptImport.getAttribute("async"));
-                });
+    private void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {
+        boolean foundClientEngine = false;
+        int flowDependencyMaxIndex = Integer.MAX_VALUE;
+        int userDependencyMinIndex = Integer.MAX_VALUE;
+
+        List<WebElement> jsImports = findElements(By.tagName("script"));
+        for (int i = 0; i < jsImports.size(); i++) {
+            WebElement jsImport = jsImports.get(i);
+            String jsUrl = jsImport.getAttribute("src");
+            if (foundClientEngine) {
+                if (userDependencyMinIndex > i) {
+                    userDependencyMinIndex = i;
+                }
+                assertThat("Expected to have here dependencies added with Flow public api",
+                        jsUrl, either(containsString("eager"))
+                                .or(containsString("lazy")));
+            } else {
+                flowDependencyMaxIndex = i;
+                assertThat("Flow dependencies should not contain user dependencies",
+                        jsUrl, both(not(containsString("eager")))
+                                .and(not(containsString("lazy"))));
+
+                if (jsUrl.endsWith(".cache.js")) {
+                    foundClientEngine = true;
+                }
+            }
+
+            assertThat(
+                    String.format(
+                            "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
+                            jsImport.getAttribute("src")),
+                    jsImport.getAttribute("async"), is(nullValue()));
+        }
+
+
+        assertThat("Flow dependencies should be imported before user dependencies",
+                flowDependencyMaxIndex, is(lessThan(userDependencyMinIndex)));
     }
 }

@@ -8,10 +8,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.generator.metadata.ComponentBasicType;
+import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
-import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 
 /**
@@ -130,7 +132,7 @@ public class ComponentGeneratorTest {
 
         ComponentFunctionParameterData parameter = new ComponentFunctionParameterData();
         parameter.setName("text");
-        parameter.setType(ComponentObjectType.STRING);
+        parameter.setType(Arrays.asList(ComponentBasicType.STRING));
 
         functionData.setParameters(Arrays.asList(parameter));
         componentMetadata.setMethods(Arrays.asList(functionData));
@@ -148,7 +150,7 @@ public class ComponentGeneratorTest {
 
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
@@ -172,7 +174,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetterAndFluentSetter_methodContainsJavaDoc() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
@@ -200,7 +202,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetter_methodContainsJavaDoc_noSetter() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         propertyData.setReadOnly(true);
@@ -222,7 +224,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetter_methodContainsJavaDocWithAtCodeWrap() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData.setDescription(
                 "This is the `<input value=\"name\">` property of the component.");
         propertyData.setReadOnly(true);
@@ -234,7 +236,6 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
 
-        System.out.println(generatedClass);
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains(
                         "* This is the {@code <input value=\"name\">} property of the component."));
@@ -250,12 +251,84 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClassWithEvent_classTypedComponentEvent() {
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("change");
+        eventData.setDescription("Component change event.");
+        componentMetadata.setEvents(Arrays.asList(eventData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("Custom event class was not found.",
+                generatedClass.contains(
+                        "public static class ChangeEvent extends ComponentEvent<MyComponent> {"));
+
+        Assert.assertTrue("No DomEvent annotation found",
+                generatedClass.contains("@DomEvent(\"change\")"));
+
+        // Using matcher as the formatter may cut the method.
+        Pattern pattern = Pattern.compile(
+                "addChangeListener\\((\\w?)(\\s*?)ComponentEventListener<ChangeEvent> listener\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        Assert.assertTrue("Couldn't find correct listener for event.",
+                matcher.find());
+
+        Assert.assertTrue("Missing DomEvent import", generatedClass
+                .contains("import com.vaadin.annotations.DomEvent;"));
+        Assert.assertTrue("Missing ComponentEvent import", generatedClass
+                .contains("import com.vaadin.ui.ComponentEvent;"));
+        Assert.assertTrue("Missing ComponentEventListener import",
+                generatedClass.contains(
+                        "import com.vaadin.flow.event.ComponentEventListener;"));
+        Assert.assertFalse("EventData imported even without events",
+                generatedClass
+                        .contains("import com.vaadin.annotations.EventData;"));
+    }
+
+    @Test
+    public void generateClassWithEventWithEventData_classTypedComponentEventWithEventData() {
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("change");
+        eventData.setDescription("Component change event.");
+        componentMetadata.setEvents(Arrays.asList(eventData));
+
+        ComponentPropertyBaseData property = new ComponentPropertyBaseData();
+        property.setName("button");
+        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
+
+        eventData.setProperties(Arrays.asList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        // Using matcher as the formatter may cut the method.
+        Pattern pattern = Pattern.compile(
+                "public ChangeEvent\\(MyComponent source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.button\"\\) double button\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        Assert.assertTrue("Couldn't find constructor with EventData.",
+                matcher.find());
+
+        Assert.assertTrue("Couldn't find variable reference",
+                generatedClass.contains("private final double button;"));
+
+        Assert.assertTrue("Couldn't find getter for event data",
+                generatedClass.contains("public double getButton() {"));
+
+        Assert.assertFalse("Found setter even though one shouldn't exist",
+                generatedClass.contains("public void setButton("));
+
+        Assert.assertTrue("Missing EventData import", generatedClass
+                .contains("import com.vaadin.annotations.EventData;"));
+    }
+
+    @Test
     public void generateClassWithStringGetterAndNonFluentSetter_setterSetsEmptyForNullValue() {
         generator.withFluentSetters(false);
 
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
@@ -275,7 +348,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithStringGetterAndFluentSetter_setterSetsEmptyForNullValue() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(ComponentObjectType.STRING);
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
                 .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
@@ -297,7 +370,7 @@ public class ComponentGeneratorTest {
 
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
-        propertyData.setType(ComponentObjectType.BOOLEAN);
+        propertyData.setType(Arrays.asList(ComponentBasicType.BOOLEAN));
         propertyData.setDescription("This is a required field.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
@@ -316,7 +389,7 @@ public class ComponentGeneratorTest {
     public void generateClassWithBooleanGetterAndFluentSetter_setterDoesNotSetEmptyForNullValue() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
-        propertyData.setType(ComponentObjectType.BOOLEAN);
+        propertyData.setType(Arrays.asList(ComponentBasicType.BOOLEAN));
         propertyData.setDescription("This is a required field.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 

@@ -4,7 +4,6 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -38,11 +37,9 @@ public class PaperInputCharCounter<R extends PaperInputCharCounter<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * This overrides the update function in PaperInputAddonBehavior.
-	 * 
-	 * @param state
 	 */
-	public void update(JsonObject state) {
-		getElement().callFunction("update", state);
+	public void update() {
+		getElement().callFunction("update");
 	}
 
 	/**

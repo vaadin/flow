@@ -5,8 +5,10 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -163,8 +165,16 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 		getElement().callFunction("byKey", key);
 	}
 
-	public Registration addValueChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("value-changed", listener);
+	@DomEvent("value-changed")
+	public static class ValueChangedEvent extends ComponentEvent<IronMeta> {
+		public ValueChangedEvent(IronMeta source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addValueChangedListener(
+			ComponentEventListener<ValueChangedEvent> listener) {
+		return addListener(ValueChangedEvent.class, listener);
 	}
 
 	/**

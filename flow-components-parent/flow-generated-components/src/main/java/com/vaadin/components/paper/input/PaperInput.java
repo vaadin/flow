@@ -5,8 +5,10 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -1001,8 +1003,8 @@ public class PaperInput<R extends PaperInput<R>> extends Component {
 	 * @param eventString
 	 * @param handlerName
 	 */
-	public void addOwnKeyBinding(elemental.json.JsonObject eventString,
-			elemental.json.JsonObject handlerName) {
+	public void addOwnKeyBinding(java.lang.String eventString,
+			java.lang.String handlerName) {
 		getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
 	}
 
@@ -1058,40 +1060,94 @@ public class PaperInput<R extends PaperInput<R>> extends Component {
 		getElement().callFunction("updateValueAndPreserveCaret", newValue);
 	}
 
-	public Registration addFocusedChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("focused-changed", listener);
+	@DomEvent("focused-changed")
+	public static class FocusedChangedEvent extends ComponentEvent<PaperInput> {
+		public FocusedChangedEvent(PaperInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addFocusedChangedListener(
+			ComponentEventListener<FocusedChangedEvent> listener) {
+		return addListener(FocusedChangedEvent.class, listener);
+	}
+
+	@DomEvent("disabled-changed")
+	public static class DisabledChangedEvent extends ComponentEvent<PaperInput> {
+		public DisabledChangedEvent(PaperInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addDisabledChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("disabled-changed", listener);
+			ComponentEventListener<DisabledChangedEvent> listener) {
+		return addListener(DisabledChangedEvent.class, listener);
+	}
+
+	@DomEvent("change")
+	public static class ChangeEvent extends ComponentEvent<PaperInput> {
+		public ChangeEvent(PaperInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addChangeListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("change", listener);
+			ComponentEventListener<ChangeEvent> listener) {
+		return addListener(ChangeEvent.class, listener);
+	}
+
+	@DomEvent("value-changed")
+	public static class ValueChangedEvent extends ComponentEvent<PaperInput> {
+		public ValueChangedEvent(PaperInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addValueChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("value-changed", listener);
+			ComponentEventListener<ValueChangedEvent> listener) {
+		return addListener(ValueChangedEvent.class, listener);
+	}
+
+	@DomEvent("invalid-changed")
+	public static class InvalidChangedEvent extends ComponentEvent<PaperInput> {
+		public InvalidChangedEvent(PaperInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addInvalidChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("invalid-changed", listener);
+			ComponentEventListener<InvalidChangedEvent> listener) {
+		return addListener(InvalidChangedEvent.class, listener);
+	}
+
+	@DomEvent("iron-form-element-register")
+	public static class IronFormElementRegisterEvent
+			extends
+				ComponentEvent<PaperInput> {
+		public IronFormElementRegisterEvent(PaperInput source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addIronFormElementRegisterListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("iron-form-element-register",
-				listener);
+			ComponentEventListener<IronFormElementRegisterEvent> listener) {
+		return addListener(IronFormElementRegisterEvent.class, listener);
+	}
+
+	@DomEvent("iron-form-element-unregister")
+	public static class IronFormElementUnregisterEvent
+			extends
+				ComponentEvent<PaperInput> {
+		public IronFormElementUnregisterEvent(PaperInput source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addIronFormElementUnregisterListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("iron-form-element-unregister",
-				listener);
+			ComponentEventListener<IronFormElementUnregisterEvent> listener) {
+		return addListener(IronFormElementUnregisterEvent.class, listener);
 	}
 
 	/**

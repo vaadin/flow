@@ -26,7 +26,7 @@ import java.util.List;
 public class ComponentFunctionData {
 
     private String name;
-    private ComponentObjectType returns;
+    private ComponentBasicType returns;
     private String description;
     private List<ComponentFunctionParameterData> parameters;
 
@@ -54,7 +54,7 @@ public class ComponentFunctionData {
      * 
      * @return The type of the return, or <code>null</code> if void.
      */
-    public ComponentObjectType getReturns() {
+    public ComponentBasicType getReturns() {
         return returns;
     }
 
@@ -64,7 +64,7 @@ public class ComponentFunctionData {
      * @param returns
      *            The type of the return, or <code>null</code> if void.
      */
-    public void setReturns(ComponentObjectType returns) {
+    public void setReturns(ComponentBasicType returns) {
         this.returns = returns;
     }
 

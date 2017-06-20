@@ -6,27 +6,42 @@
   "properties": [
     {
       "name": "type",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The type of meta-data.  All meta-data of the same type is stored\ntogether.\n         "
     },
     {
       "name": "key",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The key used to store `value` under the `type` namespace.\n         "
     },
     {
       "name": "value",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The meta-data to store or retrieve.\n         "
     },
     {
       "name": "self",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, `value` is set to the iron-meta instance itself.\n         "
     },
     {
       "name": "list",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": ""
     }
   ],
@@ -37,7 +52,10 @@
       "parameters": [
         {
           "name": "key",
-          "type": "STRING",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "The key of the meta-data to be returned."
         }
       ]

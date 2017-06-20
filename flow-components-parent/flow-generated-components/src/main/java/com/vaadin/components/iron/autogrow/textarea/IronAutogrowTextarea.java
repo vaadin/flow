@@ -5,8 +5,10 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -132,8 +134,17 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 */
-	public JsonObject getValue() {
-		return (JsonObject) getElement().getPropertyRaw("value");
+	public String getValueString() {
+		return getElement().getProperty("value");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Use this property instead of {@code bind-value} for two-way data binding.
+	 */
+	public double getValueNumber() {
+		return getElement().getProperty("value", 0.0);
 	}
 
 	/**
@@ -144,8 +155,21 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param value
 	 * @return This instance, for method chaining.
 	 */
-	public R setValue(elemental.json.JsonObject value) {
-		getElement().setPropertyJson("value", value);
+	public R setValue(java.lang.String value) {
+		getElement().setProperty("value", value == null ? "" : value);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Use this property instead of {@code bind-value} for two-way data binding.
+	 * 
+	 * @param value
+	 * @return This instance, for method chaining.
+	 */
+	public R setValue(double value) {
+		getElement().setProperty("value", value);
 		return getSelf();
 	}
 
@@ -155,8 +179,18 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * This property is deprecated, and just mirrors {@code value}. Use
 	 * {@code value} instead.
 	 */
-	public JsonObject getBindValue() {
-		return (JsonObject) getElement().getPropertyRaw("bindValue");
+	public String getBindValueString() {
+		return getElement().getProperty("bindValue");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * This property is deprecated, and just mirrors {@code value}. Use
+	 * {@code value} instead.
+	 */
+	public double getBindValueNumber() {
+		return getElement().getProperty("bindValue", 0.0);
 	}
 
 	/**
@@ -168,8 +202,23 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param bindValue
 	 * @return This instance, for method chaining.
 	 */
-	public R setBindValue(elemental.json.JsonObject bindValue) {
-		getElement().setPropertyJson("bindValue", bindValue);
+	public R setBindValue(java.lang.String bindValue) {
+		getElement().setProperty("bindValue",
+				bindValue == null ? "" : bindValue);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * This property is deprecated, and just mirrors {@code value}. Use
+	 * {@code value} instead.
+	 * 
+	 * @param bindValue
+	 * @return This instance, for method chaining.
+	 */
+	public R setBindValue(double bindValue) {
+		getElement().setProperty("bindValue", bindValue);
 		return getSelf();
 	}
 
@@ -479,28 +528,78 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 		getElement().callFunction("validate");
 	}
 
-	public Registration addInvalidChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("invalid-changed", listener);
+	@DomEvent("invalid-changed")
+	public static class InvalidChangedEvent
+			extends
+				ComponentEvent<IronAutogrowTextarea> {
+		public InvalidChangedEvent(IronAutogrowTextarea source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addInvalidChangedListener(
+			ComponentEventListener<InvalidChangedEvent> listener) {
+		return addListener(InvalidChangedEvent.class, listener);
+	}
+
+	@DomEvent("focused-changed")
+	public static class FocusedChangedEvent
+			extends
+				ComponentEvent<IronAutogrowTextarea> {
+		public FocusedChangedEvent(IronAutogrowTextarea source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addFocusedChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("focused-changed", listener);
+			ComponentEventListener<FocusedChangedEvent> listener) {
+		return addListener(FocusedChangedEvent.class, listener);
+	}
+
+	@DomEvent("disabled-changed")
+	public static class DisabledChangedEvent
+			extends
+				ComponentEvent<IronAutogrowTextarea> {
+		public DisabledChangedEvent(IronAutogrowTextarea source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addDisabledChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("disabled-changed", listener);
+			ComponentEventListener<DisabledChangedEvent> listener) {
+		return addListener(DisabledChangedEvent.class, listener);
+	}
+
+	@DomEvent("value-changed")
+	public static class ValueChangedEvent
+			extends
+				ComponentEvent<IronAutogrowTextarea> {
+		public ValueChangedEvent(IronAutogrowTextarea source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addValueChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("value-changed", listener);
+			ComponentEventListener<ValueChangedEvent> listener) {
+		return addListener(ValueChangedEvent.class, listener);
+	}
+
+	@DomEvent("bind-value-changed")
+	public static class BindValueChangedEvent
+			extends
+				ComponentEvent<IronAutogrowTextarea> {
+		public BindValueChangedEvent(IronAutogrowTextarea source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addBindValueChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("bind-value-changed", listener);
+			ComponentEventListener<BindValueChangedEvent> listener) {
+		return addListener(BindValueChangedEvent.class, listener);
 	}
 
 	/**

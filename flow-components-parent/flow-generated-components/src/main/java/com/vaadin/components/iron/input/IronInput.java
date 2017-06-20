@@ -5,8 +5,10 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -295,13 +297,30 @@ public class IronInput<R extends IronInput<R>> extends Component {
 		getElement().callFunction("validate");
 	}
 
-	public Registration addInvalidChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("invalid-changed", listener);
+	@DomEvent("invalid-changed")
+	public static class InvalidChangedEvent extends ComponentEvent<IronInput> {
+		public InvalidChangedEvent(IronInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addInvalidChangedListener(
+			ComponentEventListener<InvalidChangedEvent> listener) {
+		return addListener(InvalidChangedEvent.class, listener);
+	}
+
+	@DomEvent("iron-input-validate")
+	public static class IronInputValidateEvent
+			extends
+				ComponentEvent<IronInput> {
+		public IronInputValidateEvent(IronInput source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addIronInputValidateListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("iron-input-validate", listener);
+			ComponentEventListener<IronInputValidateEvent> listener) {
+		return addListener(IronInputValidateEvent.class, listener);
 	}
 
 	/**

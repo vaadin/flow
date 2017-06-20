@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,35 +33,40 @@ import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
+import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
-import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Base class of the component generation process. It takes a
  * {@link ComponentMetadata} as input and generates the corresponding Java class
  * that can interacts with the original webcomponent. The metadata can also be
  * set as a JSON format.
- * 
+ *
  * @see #generateClass(ComponentMetadata, String, String)
  * @see #generateClass(File, File, String, String)
- *
  */
 public class ComponentGenerator {
 
@@ -76,7 +82,7 @@ public class ComponentGenerator {
 
     /**
      * Converts the JSON file to {@link ComponentMetadata}.
-     * 
+     *
      * @param jsonFile
      *            The input JSON file.
      * @return the converted ComponentMetadata.
@@ -120,7 +126,7 @@ public class ComponentGenerator {
 
     /**
      * Set the input JSON file.
-     * 
+     *
      * @param jsonFile
      *            The input JSON file.
      * @return this
@@ -132,7 +138,7 @@ public class ComponentGenerator {
 
     /**
      * Set the target output directory.
-     * 
+     *
      * @param targetPath
      *            The output base directory for the generated Java file.
      * @return this
@@ -144,7 +150,7 @@ public class ComponentGenerator {
 
     /**
      * Set the base package taht will be used.
-     * 
+     *
      * @param basePackage
      *            The base package to be used for the generated Java class. The
      *            final package of the class is basePackage plus the
@@ -158,7 +164,7 @@ public class ComponentGenerator {
 
     /**
      * Set the license header notice for the file.
-     * 
+     *
      * @param licenseNote
      *            A note to be added on top of the class as a comment. Usually
      *            used for license headers.
@@ -171,7 +177,7 @@ public class ComponentGenerator {
 
     /**
      * Set the import frontend base package. e.g. bower_components
-     * 
+     *
      * @param frontendDirectory
      *            frontend base package
      * @return this
@@ -198,10 +204,7 @@ public class ComponentGenerator {
     /**
      * Generates the Java class by reading the webcomponent metadata from a JSON
      * file.
-     * 
-     * @see #toMetadata(File)
-     * @see #generateClass(ComponentMetadata, File, String, String)
-     * 
+     *
      * @param jsonFile
      *            The input JSON file.
      * @param targetPath
@@ -215,6 +218,8 @@ public class ComponentGenerator {
      *            used for license headers.
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
+     * @see #toMetadata(File)
+     * @see #generateClass(ComponentMetadata, File, String, String)
      */
     public void generateClass(File jsonFile, File targetPath,
             String basePackage, String licenseNote) {
@@ -226,7 +231,7 @@ public class ComponentGenerator {
     /**
      * Generates and returns the Java class based on the
      * {@link ComponentMetadata}. Doesn't write anything to the disk.
-     * 
+     *
      * @param metadata
      *            The webcomponent metadata.
      * @param basePackage
@@ -363,7 +368,7 @@ public class ComponentGenerator {
 
     /**
      * Generates the Java class by using the {@link ComponentMetadata} object.
-     * 
+     *
      * @param metadata
      *            The webcomponent metadata.
      * @param targetPath
@@ -375,7 +380,6 @@ public class ComponentGenerator {
      * @param licenseNote
      *            A note to be added on top of the class as a comment. Usually
      *            used for license headers.
-     * 
      * @throws ComponentGenerationException
      *             If an error occurs when generating the class.
      */
@@ -417,52 +421,63 @@ public class ComponentGenerator {
 
     private void generateGetterFor(JavaClassSource javaClass,
             ComponentPropertyData property) {
+        boolean postfixWithVariableType = property.getType().size() > 1;
+        for (ComponentBasicType basicType : property.getType()) {
+            MethodSource<JavaClassSource> method = javaClass.addMethod()
+                    .setPublic().setReturnType(toJavaType(basicType));
 
-        MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
-                .setReturnType(toJavaType(property.getType()));
+            if (basicType == ComponentBasicType.BOOLEAN) {
+                method.setName(
+                        ComponentGeneratorUtils.generateMethodNameForProperty(
+                                "is", property.getName()));
+            } else {
+                method.setName(ComponentGeneratorUtils
+                        .generateMethodNameForProperty("get",
+                                property.getName())
+                        + (postfixWithVariableType ? StringUtils.capitalize(
+                                basicType.name().toLowerCase()) : ""));
+            }
+            switch (basicType) {
+            case STRING:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\");",
+                        property.getName()));
+                break;
+            case BOOLEAN:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\", false);",
+                        property.getName()));
+                break;
+            case NUMBER:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\", 0.0);",
+                        property.getName()));
+                break;
+            case DATE:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\");",
+                        property.getName()));
+                break;
+            case ARRAY:
+                method.setBody(String.format(
+                        "return (JsonArray) getElement().getPropertyRaw(\"%s\");",
+                        property.getName()));
+                break;
+            case OBJECT:
+                method.setBody(String.format(
+                        "return (JsonObject) getElement().getPropertyRaw(\"%s\");",
+                        property.getName()));
+                break;
+            case UNDEFINED:
+                method.setBody(String.format(
+                        "return (JsonValue) getElement().getPropertyRaw(\"%s\");",
+                        property.getName()));
+                break;
+            }
 
-        if (property.getType() == ComponentObjectType.BOOLEAN) {
-            method.setName(ComponentGeneratorUtils
-                    .generateMethodNameForProperty("is", property.getName()));
-        } else {
-            method.setName(ComponentGeneratorUtils
-                    .generateMethodNameForProperty("get", property.getName()));
-        }
-        switch (property.getType()) {
-        case STRING:
-            method.setBody(
-                    String.format("return getElement().getProperty(\"%s\");",
-                            property.getName()));
-            break;
-        case BOOLEAN:
-            method.setBody(String.format(
-                    "return getElement().getProperty(\"%s\", false);",
-                    property.getName()));
-            break;
-        case NUMBER:
-            method.setBody(String.format(
-                    "return getElement().getProperty(\"%s\", 0.0);",
-                    property.getName()));
-            break;
-        case DATE:
-            method.setBody(
-                    String.format("return getElement().getProperty(\"%s\");",
-                            property.getName()));
-            break;
-        case ARRAY:
-            method.setBody(String.format(
-                    "return (JsonArray) getElement().getPropertyRaw(\"%s\");",
-                    property.getName()));
-            break;
-        case OBJECT:
-            method.setBody(String.format(
-                    "return (JsonObject) getElement().getPropertyRaw(\"%s\");",
-                    property.getName()));
-            break;
-        }
-
-        if (StringUtils.isNotEmpty(property.getDescription())) {
-            addJavaDoc(property.getDescription(), method.getJavaDoc());
+            if (StringUtils.isNotEmpty(property.getDescription())) {
+                addJavaDoc(property.getDescription(), method.getJavaDoc());
+            }
         }
     }
 
@@ -477,39 +492,44 @@ public class ComponentGenerator {
     private void generateSetterFor(JavaClassSource javaClass,
             ComponentPropertyData property) {
 
-        MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName(ComponentGeneratorUtils.generateMethodNameForProperty(
-                        "set", property.getName()))
-                .setPublic();
+        for (ComponentBasicType basicType : property.getType()) {
+            MethodSource<JavaClassSource> method = javaClass.addMethod()
+                    .setName(ComponentGeneratorUtils
+                            .generateMethodNameForProperty("set",
+                                    property.getName()))
+                    .setPublic();
 
-        Class<?> setterType = toJavaType(property.getType());
-        method.addParameter(setterType, property.getName());
+            Class<?> setterType = toJavaType(basicType);
+            method.addParameter(setterType, property.getName());
 
-        switch (property.getType()) {
-        case ARRAY:
-        case OBJECT:
-            method.setBody(
-                    String.format("getElement().setPropertyJson(\"%s\", %s);",
-                            property.getName(), property.getName()));
-            break;
-        default:
-            method.setBody(String.format(
-                    "getElement().setProperty(\"%s\", %s);", property.getName(),
-                    getSetterValue(property.getName(), setterType)));
-            break;
-        }
+            switch (basicType) {
+            case ARRAY:
+            case UNDEFINED:
+            case OBJECT:
+                method.setBody(String.format(
+                        "getElement().setPropertyJson(\"%s\", %s);",
+                        property.getName(), property.getName()));
+                break;
+            default:
+                method.setBody(String.format(
+                        "getElement().setProperty(\"%s\", %s);",
+                        property.getName(),
+                        getSetterValue(property.getName(), setterType)));
+                break;
+            }
 
-        if (StringUtils.isNotEmpty(property.getDescription())) {
-            addJavaDoc(property.getDescription(), method.getJavaDoc());
-        }
+            if (StringUtils.isNotEmpty(property.getDescription())) {
+                addJavaDoc(property.getDescription(), method.getJavaDoc());
+            }
 
-        method.getJavaDoc().addTagValue("@param", property.getName());
+            method.getJavaDoc().addTagValue("@param", property.getName());
 
-        if (fluentSetters) {
-            method.setReturnType(GENERIC_TYPE);
-            method.setBody(method.getBody() + "\n" + "return getSelf();");
-            method.getJavaDoc().addTagValue("@return",
-                    "This instance, for method chaining.");
+            if (fluentSetters) {
+                method.setReturnType(GENERIC_TYPE);
+                method.setBody(method.getBody() + "\n" + "return getSelf();");
+                method.getJavaDoc().addTagValue("@return",
+                        "This instance, for method chaining.");
+            }
         }
     }
 
@@ -535,43 +555,137 @@ public class ComponentGenerator {
             addJavaDoc(function.getDescription(), method.getJavaDoc());
         }
 
-        StringBuilder params = new StringBuilder();
-        if (function.getParameters() != null
-                && !function.getParameters().isEmpty()) {
+        method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
+                function.getName(),
+                generateFunctionParameters(function, method)));
+    }
 
-            for (ComponentFunctionParameterData param : function
-                    .getParameters()) {
+    /**
+     * Adds the function parameters in a string separated with commas.
+     * <p>
+     * Also adds the parameters to the to the javadocs for the given method.
+     *
+     * @param function
+     *            the function data
+     * @param method
+     *            the method to add javadocs to, not {@code null}
+     * @return a string of the parameters of the function, or an empty string if
+     *         no parameters
+     */
+    private String generateFunctionParameters(ComponentFunctionData function,
+            MethodSource<JavaClassSource> method) {
+        if (function.getParameters() == null
+                || function.getParameters().isEmpty()) {
+            return "";
+        }
+
+        StringBuilder params = new StringBuilder();
+        for (ComponentFunctionParameterData param : function.getParameters()) {
+            List<ComponentBasicType> typeVariants = param.getType();
+            boolean useTypePostfixForVariableName = typeVariants.size() > 1;
+
+            // there might be multiple types accepted for same parameter,
+            // for now different types are allowed and parameter name is
+            // postfixed with type
+            for (ComponentBasicType basicType : typeVariants) {
+
                 String formattedName = StringUtils
                         .uncapitalize(ComponentGeneratorUtils
                                 .formatStringToValidJavaIdentifier(
                                         param.getName()));
-                method.addParameter(toJavaType(param.getType()), formattedName);
+                if (useTypePostfixForVariableName) {
+                    formattedName = formattedName + StringUtils
+                            .capitalize(basicType.name().toLowerCase());
+                }
+
+                method.addParameter(toJavaType(basicType), formattedName);
                 params.append(", ").append(formattedName);
 
-                method.getJavaDoc().addTagValue("@param", param.getName());
+                method.getJavaDoc().addTagValue("@param",
+                        param.getName() + (useTypePostfixForVariableName
+                                ? " can be <code>null</code>" : ""));
             }
         }
-
-        method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
-                function.getName(), params.toString()));
+        return params.toString();
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
             ComponentEventData event) {
+        String eventName = ComponentGeneratorUtils
+                .formatStringToValidJavaIdentifier(event.getName());
 
+        JavaClassSource eventListener = createEventListenerEventClass(javaClass,
+                event);
+
+        javaClass.addNestedType(eventListener);
         MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("add" + StringUtils.capitalize(ComponentGeneratorUtils
-                        .formatStringToValidJavaIdentifier(event.getName())
-                        + "Listener"))
+                .setName("add" + StringUtils.capitalize(eventName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
-        method.addParameter(DomEventListener.class, "listener");
+        method.addParameter(
+                "ComponentEventListener<" + eventListener.getName() + ">",
+                "listener");
 
-        method.setBody(String.format(
-                "return getElement().addEventListener(\"%s\", listener);",
-                event.getName()));
+        method.setBody(String.format("return addListener(%s.class, listener);",
+                eventListener.getName()));
     }
 
-    private Class<?> toJavaType(ComponentObjectType type) {
+    private JavaClassSource createEventListenerEventClass(
+            JavaClassSource javaClass, ComponentEventData event) {
+        String eventName = ComponentGeneratorUtils
+                .formatStringToValidJavaIdentifier(event.getName());
+        String eventClassName = StringUtils.capitalize(eventName);
+        String eventListenerString = String.format(
+                "public static class %sEvent extends ComponentEvent<%s> {}",
+                eventClassName, javaClass.getName());
+
+        JavaClassSource eventListener = Roaster.parse(JavaClassSource.class,
+                eventListenerString);
+
+        MethodSource<JavaClassSource> eventConstructor = eventListener
+                .addMethod().setConstructor(true).setPublic()
+                .setBody("super(source, fromClient);");
+        eventConstructor.addParameter(javaClass.getName(), "source");
+        eventConstructor.addParameter("boolean", "fromClient");
+
+        for (ComponentPropertyBaseData property : event.getProperties()) {
+            // Add new parameter to constructor
+            final String propertyName = property.getName();
+            Class<?> propertyJavaType;
+
+            if (!property.getType().isEmpty()) {
+                // for varying types, using the first type declared in the JSDoc
+                // it is anyway very rare to have varying property type
+                propertyJavaType = toJavaType(property.getType().get(0));
+            } else { // object property
+                propertyJavaType = JsonObject.class;
+            }
+            ParameterSource<JavaClassSource> parameter = eventConstructor
+                    .addParameter(propertyJavaType, propertyName);
+            parameter.addAnnotation(EventData.class).setLiteralValue(
+                    String.format("\"event.%s\"", propertyName));
+            // Create private field
+            eventListener.addProperty(propertyJavaType, propertyName)
+                    .setAccessible(true).setMutable(false);
+
+            // Set value to private field
+            eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
+                    eventConstructor.getBody(), propertyName, propertyName));
+            // Add the EventData as a import
+            javaClass.addImport(EventData.class);
+        }
+
+        eventListener.addAnnotation(DomEvent.class)
+                .setLiteralValue("\"" + event.getName() + "\"");
+
+        // Add event imports.
+        javaClass.addImport(DomEvent.class);
+        javaClass.addImport(ComponentEvent.class);
+        javaClass.addImport(ComponentEventListener.class);
+
+        return eventListener;
+    }
+
+    private Class<?> toJavaType(ComponentBasicType type) {
         switch (type) {
         case STRING:
             return String.class;
@@ -585,6 +699,8 @@ public class ComponentGenerator {
             return Date.class;
         case OBJECT:
             return JsonObject.class;
+        case UNDEFINED:
+            return JsonValue.class;
         default:
             throw new ComponentGenerationException(
                     "Not a supported type: " + type);

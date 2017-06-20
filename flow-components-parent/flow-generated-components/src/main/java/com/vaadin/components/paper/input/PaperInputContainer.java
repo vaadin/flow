@@ -5,8 +5,10 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -279,8 +281,19 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 		getElement().callFunction("updateAddons", state);
 	}
 
-	public Registration addFocusedChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("focused-changed", listener);
+	@DomEvent("focused-changed")
+	public static class FocusedChangedEvent
+			extends
+				ComponentEvent<PaperInputContainer> {
+		public FocusedChangedEvent(PaperInputContainer source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addFocusedChangedListener(
+			ComponentEventListener<FocusedChangedEvent> listener) {
+		return addListener(FocusedChangedEvent.class, listener);
 	}
 
 	/**

@@ -5,8 +5,10 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -408,8 +410,8 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * @param eventString
 	 * @param handlerName
 	 */
-	public void addOwnKeyBinding(elemental.json.JsonObject eventString,
-			elemental.json.JsonObject handlerName) {
+	public void addOwnKeyBinding(java.lang.String eventString,
+			java.lang.String handlerName) {
 		getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
 	}
 
@@ -468,23 +470,54 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 		getElement().callFunction("hasRipple");
 	}
 
-	public Registration addActiveChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("active-changed", listener);
+	@DomEvent("active-changed")
+	public static class ActiveChangedEvent extends ComponentEvent<PaperButton> {
+		public ActiveChangedEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addActiveChangedListener(
+			ComponentEventListener<ActiveChangedEvent> listener) {
+		return addListener(ActiveChangedEvent.class, listener);
+	}
+
+	@DomEvent("focused-changed")
+	public static class FocusedChangedEvent extends ComponentEvent<PaperButton> {
+		public FocusedChangedEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addFocusedChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("focused-changed", listener);
+			ComponentEventListener<FocusedChangedEvent> listener) {
+		return addListener(FocusedChangedEvent.class, listener);
+	}
+
+	@DomEvent("disabled-changed")
+	public static class DisabledChangedEvent
+			extends
+				ComponentEvent<PaperButton> {
+		public DisabledChangedEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addDisabledChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("disabled-changed", listener);
+			ComponentEventListener<DisabledChangedEvent> listener) {
+		return addListener(DisabledChangedEvent.class, listener);
+	}
+
+	@DomEvent("transitionend")
+	public static class TransitionendEvent extends ComponentEvent<PaperButton> {
+		public TransitionendEvent(PaperButton source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addTransitionendListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("transitionend", listener);
+			ComponentEventListener<TransitionendEvent> listener) {
+		return addListener(TransitionendEvent.class, listener);
 	}
 
 	/**

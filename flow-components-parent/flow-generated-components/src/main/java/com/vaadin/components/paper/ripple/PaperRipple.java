@@ -6,8 +6,11 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
+import com.vaadin.annotations.EventData;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -355,8 +358,8 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * @param eventString
 	 * @param handlerName
 	 */
-	public void addOwnKeyBinding(elemental.json.JsonObject eventString,
-			elemental.json.JsonObject handlerName) {
+	public void addOwnKeyBinding(java.lang.String eventString,
+			java.lang.String handlerName) {
 		getElement().callFunction("addOwnKeyBinding", eventString, handlerName);
 	}
 
@@ -460,8 +463,24 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 		getElement().callFunction("animate");
 	}
 
-	public Registration addTransitionendListener(DomEventListener listener) {
-		return getElement().addEventListener("transitionend", listener);
+	@DomEvent("transitionend")
+	public static class TransitionendEvent extends ComponentEvent<PaperRipple> {
+		private final JsonObject detail;
+
+		public TransitionendEvent(PaperRipple source, boolean fromClient,
+				@EventData("event.detail") JsonObject detail) {
+			super(source, fromClient);
+			this.detail = detail;
+		}
+
+		public JsonObject getDetail() {
+			return detail;
+		}
+	}
+
+	public Registration addTransitionendListener(
+			ComponentEventListener<TransitionendEvent> listener) {
+		return addListener(TransitionendEvent.class, listener);
 	}
 
 	/**
