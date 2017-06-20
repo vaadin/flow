@@ -69,6 +69,7 @@ Running tests
 The unit tests for the projects can be run using
 <pre><code>mvn test</code></pre>
 
+<<<<<<< HEAD
 IT tests can be run with
 <pre><code>mvn verify</code></pre>
 
@@ -76,15 +77,18 @@ To run IT tests locally, you'll need a [Testbench](https://vaadin.com/testbench)
 IT tests are run in parallel, one thread per CPU core with thread limit = 5 (see `maven-failsafe-plugin` configuration in root [pom.xml](./pom.xml) for details).
 
 When running IT tests locally, by default, local Chrome is used to run tests.
-The other opportunity is to run tests using test hub, to do so, you need to start a hub on a `localhost:4444` address.
-This can be done with [Selenoid](https://github.com/aerokube/selenoid), for instance.
+The other opportunity is to run tests using test hub, to do so, you need to start a hub on a `localhost:4444` address and start tests with `-Dtest.use.hub=true` property.
+
+Currently, when integration tests are run on CI server, they use [Selenoid](https://github.com/aerokube/selenoid) a local hub and target `localhost` as a hub hostname.
+If you want to change hub hostname, this can be done via setting the variable `-Dcom.vaadin.testbench.Parameters.hubHostname="foo"`
 
 Normally, you don't need to run IT tests yourself, Travis can do this for you. See next section for details.
 
+>>>>>>> Explicitly specified a hub hostname to be able to change it later, updated README.md with corresponding information.
 Remote tests execution
 --------
 Each pull request requires validation via Travis, so before the pull request is merged
-all the tests are executed remotely by Travis CI server. 
+all the tests are executed remotely by Travis CI server.
 If you want to run the tests remotely for your branch but don't want to create a PR for your patch then you can use
 instructions from [here](https://docs.travis-ci.com/user/triggering-builds).
 There is a script <code>scripts/runTests.sh</code> which you can use to run validation tests with various options.
@@ -123,5 +127,5 @@ Navigate to [localhost:9876](localhost:9876) and use the bookmarks to control
 dev mode.
 
 > NOTE! SuperDevMode should be compiled before the application server is launched
-> as else the application won't be able to run SDM and you will receive the 
+> as else the application won't be able to run SDM and you will receive the
 > exception `Can't find any GWT Modules on this page.`
