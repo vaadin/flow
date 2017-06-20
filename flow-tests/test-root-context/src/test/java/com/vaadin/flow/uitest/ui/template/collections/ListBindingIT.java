@@ -44,7 +44,7 @@ public class ListBindingIT extends ChromeBrowserTest {
         checkModelItemWorks(template);
 
         // Before running those methods list is set to ["1", "2", "3"]
-        // see (ListBindingTemplate.INITIAL_STATE)
+        // see (ListBindingView.INITIAL_STATE)
 
         assertMethodWorksCorrectly("addElement", template, "1", "2", "3", "4");
 
@@ -71,9 +71,9 @@ public class ListBindingIT extends ChromeBrowserTest {
         assertMethodWorksCorrectly("sortDescending", template, "3", "2", "1");
 
         assertMethodWorksCorrectly("setInitialStateToEachMessage", template,
-                ListBindingTemplate.INITIAL_STATE,
-                ListBindingTemplate.INITIAL_STATE,
-                ListBindingTemplate.INITIAL_STATE);
+                ListBindingView.INITIAL_STATE,
+                ListBindingView.INITIAL_STATE,
+                ListBindingView.INITIAL_STATE);
     }
 
     private void checkModelItemWorks(WebElement template) {
@@ -92,7 +92,7 @@ public class ListBindingIT extends ChromeBrowserTest {
 
     private void checkInitialState(WebElement template) {
         Assert.assertEquals(
-                Collections.singletonList(ListBindingTemplate.INITIAL_STATE),
+                Collections.singletonList(ListBindingView.INITIAL_STATE),
                 getMessages(template));
     }
 
@@ -107,7 +107,7 @@ public class ListBindingIT extends ChromeBrowserTest {
 
     private void resetState(WebElement template) {
         getInShadowRoot(template, By.id("reset")).click();
-        Assert.assertEquals(ListBindingTemplate.RESET_STATE,
+        Assert.assertEquals(ListBindingView.RESET_STATE,
                 getMessages(template));
     }
 

@@ -53,7 +53,7 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
                 .getText();
         String titleDivText = getInShadowRoot(template, By.id("titleDiv"))
                 .getText();
-        Assert.assertEquals(OneWayPolymerBindingTemplate.MESSAGE,
+        Assert.assertEquals(OneWayPolymerBindingView.MESSAGE,
                 messageDivText);
         Assert.assertEquals("", titleDivText);
     }
@@ -69,7 +69,7 @@ public class OneWayPolymerBindingIT extends ChromeBrowserTest {
         String titleDivText = getInShadowRoot(template, By.id("titleDiv"))
                 .getText();
 
-        Assert.assertEquals(OneWayPolymerBindingTemplate.NEW_MESSAGE,
+        Assert.assertEquals(OneWayPolymerBindingView.NEW_MESSAGE,
                 changedMessageDivText);
         Assert.assertEquals("", titleDivText);
     }

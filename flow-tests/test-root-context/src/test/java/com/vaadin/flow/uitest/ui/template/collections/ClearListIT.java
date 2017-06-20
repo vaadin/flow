@@ -35,7 +35,7 @@ public class ClearListIT extends ChromeBrowserTest {
     }
 
     private void checkThatModelHasNoDefaultConstructor() {
-        Constructor<?>[] modelConstructors = ClearListUI.Message.class.getConstructors();
+        Constructor<?>[] modelConstructors = ClearListView.Message.class.getConstructors();
         Assert.assertEquals("Expect model to have one constructor exactly", 1, modelConstructors.length);
         Assert.assertTrue("Expect model to have at least one parameter in its single constructor",modelConstructors[0].getParameterCount() > 0);
     }

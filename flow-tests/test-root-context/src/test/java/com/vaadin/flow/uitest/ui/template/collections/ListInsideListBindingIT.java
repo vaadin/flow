@@ -68,6 +68,6 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
         Assert.assertEquals("Wrong amount of nested messages", initialSize,
                 msgs.size());
         msgs.forEach(msg -> Assert.assertEquals("Message was not updated",
-                ListInsideListBindingTemplate.UPDATED_TEXT, msg.getText()));
+                ListInsideListBindingView.UPDATED_TEXT, msg.getText()));
     }
 }

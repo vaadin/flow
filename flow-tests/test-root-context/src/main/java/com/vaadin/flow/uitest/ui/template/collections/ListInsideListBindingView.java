@@ -25,13 +25,14 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 
 @Tag("list-inside-list-binding")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ListInsideListBinding.html")
-public class ListInsideListBindingTemplate extends
-        PolymerTemplate<ListInsideListBindingTemplate.ListInsideListBindingModel> {
+public class ListInsideListBindingView extends
+        PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> implements View {
     static final String UPDATED_TEXT = "test";
 
     public static class Message {
@@ -61,7 +62,8 @@ public class ListInsideListBindingTemplate extends
         List<List<Message>> getNestedMessages();
     }
 
-    public ListInsideListBindingTemplate() {
+    public ListInsideListBindingView() {
+        setId("template");
         setInitialState();
     }
 

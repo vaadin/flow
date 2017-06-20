@@ -7,27 +7,27 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.template.DomRepeatPolymerTemplate;
-import com.vaadin.flow.uitest.ui.template.EventHandlerPolymerTemplate;
-import com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingTemplate;
+import com.vaadin.flow.uitest.ui.template.DomRepeatView;
+import com.vaadin.flow.uitest.ui.template.EventHandlerView;
+import com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingView;
 import com.vaadin.flow.uitest.ui.template.RouterLinksTemplate;
 import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate;
-import com.vaadin.flow.uitest.ui.template.TwoWayPolymerBindingTemplate;
+import com.vaadin.flow.uitest.ui.template.TwoWayPolymerBindingView;
 import com.vaadin.server.CustomElementRegistry;
 
 @Title("Registered custom elements view")
 public class CustomElementMappingView extends AbstractDivView {
 
     List<Class<? extends PolymerTemplate>> customElements = Arrays.asList(
-            DomRepeatPolymerTemplate.class, EventHandlerPolymerTemplate.class,
-            OneWayPolymerBindingTemplate.class, RouterLinksTemplate.class,
-            SubPropertyModelTemplate.class, TwoWayPolymerBindingTemplate.class);
+            DomRepeatView.class, EventHandlerView.class,
+            OneWayPolymerBindingView.class, RouterLinksTemplate.class,
+            SubPropertyModelTemplate.class, TwoWayPolymerBindingView.class);
 
     @Override
     protected void onShow() {
         removeAll();
 
-        customElements.forEach(clazz -> addKeyIfRegistered(clazz));
+        customElements.forEach(this::addKeyIfRegistered);
     }
 
     private void addKeyIfRegistered(Class<? extends PolymerTemplate> clazz) {
