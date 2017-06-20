@@ -83,10 +83,10 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
 
-        Mockito.when(context.getResourceAsStream("bar.html")).thenReturn(
+        Mockito.when(context.getResourceAsStream("/bar.html")).thenReturn(
                 new ByteArrayInputStream(("<dom-module id='bar'></dom-module>")
                         .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("bar1.html")).thenReturn(
+        Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(
                 new ByteArrayInputStream(("<dom-module id='foo'></dom-module>")
                         .getBytes(StandardCharsets.UTF_8)));
 
@@ -152,7 +152,7 @@ public class DefaultTemplateParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void defaultParser_templateResourceIsNotFound_throws() {
-        Mockito.when(context.getResourceAsStream("bar1.html")).thenReturn(null);
+        Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(null);
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
         parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
