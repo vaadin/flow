@@ -3,6 +3,7 @@ jdk: oraclejdk8
 # Run on a dedicated Trusty VM to avoid random problems like "User limit of inotify watches reached"
 sudo: required
 dist: trusty
+group: edge
 
 addons:
   apt:
