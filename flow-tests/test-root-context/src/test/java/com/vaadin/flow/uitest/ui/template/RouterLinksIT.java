@@ -31,7 +31,8 @@ public class RouterLinksIT extends ChromeBrowserTest {
         open();
 
         String originalUrl = getDriver().getCurrentUrl();
-        WebElement textInput = getInShadowRoot(findElement(By.id("template")),
+        WebElement template = findElement(By.id("template"));
+        WebElement textInput = getInShadowRoot(template,
                 By.id("input"));
 
         Assert.assertTrue("Input was not empty",
@@ -39,7 +40,7 @@ public class RouterLinksIT extends ChromeBrowserTest {
         textInput.sendKeys(TEXT_INPUT);
         Assert.assertEquals("Input was missing contents", TEXT_INPUT,
                 textInput.getAttribute("value"));
-        WebElement link = getInShadowRoot(findElement(By.id("template")),
+        WebElement link = getInShadowRoot(template,
                 By.linkText("Navigate"));
 
         Assert.assertEquals("Navigate", link.getText());
@@ -50,8 +51,7 @@ public class RouterLinksIT extends ChromeBrowserTest {
         // Original url should end with UI and the navigation link Template
         Assert.assertNotEquals(originalUrl, getDriver().getCurrentUrl());
 
-        textInput = getInShadowRoot(findElement(By.id("template")),
-                By.id("input"));
+        textInput = getInShadowRoot(template, By.id("input"));
 
         Assert.assertEquals("Input didn't keep content through navigation",
                 TEXT_INPUT, textInput.getAttribute("value"));

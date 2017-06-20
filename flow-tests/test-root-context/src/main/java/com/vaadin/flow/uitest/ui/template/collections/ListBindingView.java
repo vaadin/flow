@@ -26,13 +26,14 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.flow.uitest.ui.template.collections.ListBindingTemplate.ListBindingModel;
+import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindingModel;
 
 @Tag("list-binding")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ListBinding.html")
-public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
+public class ListBindingView extends PolymerTemplate<ListBindingModel> implements View {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
     static final String INITIAL_STATE = "foo";
 
@@ -63,7 +64,8 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
         List<Message> getMessages();
     }
 
-    public ListBindingTemplate() {
+    public ListBindingView() {
+        setId("template");
         getModel().setMessages(
                 Collections.singletonList(new Message(INITIAL_STATE)));
     }

@@ -13,34 +13,43 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 
-@Tag("my-template")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/TwoWayPolymerBinding.html")
-public class TwoWayPolymerBindingTemplate
-        extends PolymerTemplate<TwoWayPolymerBindingTemplate.TwoWayModel> {
-    public interface TwoWayModel extends TemplateModel {
-        void setValue(String value);
-
-        String getValue();
-
-        void setStatus(String status);
-    }
+/**
+ * @author Vaadin Ltd.
+ */
+@Tag("my-one-way-template")
+@HtmlImport("/com/vaadin/flow/uitest/ui/template/OneWayPolymerBinding.html")
+public class OneWayPolymerBindingView
+        extends PolymerTemplate<OneWayPolymerBindingView.MessageModel> implements View {
+    static final String MESSAGE = "testMessage";
+    static final String NEW_MESSAGE = "newMessage";
 
     @EventHandler
-    private void valueUpdated() {
-        getModel().setStatus("Value: " + getModel().getValue());
+    private void changeModelValue() {
+        getModel().setMessage(NEW_MESSAGE);
     }
 
-    @EventHandler
-    private void resetValue() {
-        getModel().setValue("");
-        valueUpdated();
+    public interface MessageModel extends TemplateModel {
+        void setMessage(String message);
+
+        void setTitle(String title);
+
+        String getMessage();
+
+        String getTitle();
+    }
+
+    public OneWayPolymerBindingView() {
+        setId("template");
+        getModel().setMessage(MESSAGE);
     }
 }
