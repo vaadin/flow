@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -202,4 +203,68 @@ public class TestBenchHelpers extends ParallelTest {
         return root.findElements(by);
     }
 
+    /**
+     * Executes the given JavaScript.
+     * <p>
+     * To send arguments to the script, you can use the <code>arguments</code>
+     * variable. <br>
+     * For example:
+     * <code>executeScript("window.alert(arguments[0]);", "Alert message!");</code>.
+     * <p>
+     * To be able to use the return value of the JavaScript, you must explicitly
+     * declare a <code>return</code> statement. <br>
+     * For example: <code>executeScript("return window.name;");</code>.
+     *
+     * @param script
+     *            the script to execute
+     * @param args
+     *            optional arguments for the script
+     * @return whatever
+     *         {@link JavascriptExecutor#executeScript(String, Object...)}
+     *         returns
+     */
+    protected Object executeScript(String script, Object... args) {
+        return ((JavascriptExecutor) getDriver()).executeScript(script, args);
+    }
+
+    /**
+     * Scrolls the page by given amount of x and y deltas.
+     * Actual scroll values can be different if any delta is bigger then the corresponding document dimension.
+     *
+     * @param deltaX the offset in pixels to scroll horizontally
+     * @param deltaY the offset in pixels to scroll vertically
+     */
+    protected void scrollBy(int deltaX, int deltaY) {
+        executeScript("window.scrollBy(" + deltaX + ',' + deltaY + ");");
+    }
+
+    /**
+     * Gets current scroll position on x axis.
+     *
+     * @return current scroll position on x axis.
+     */
+    protected int getScrollX() {
+        return ((Long) executeScript("return window.pageXOffset")).intValue();
+    }
+
+    /**
+     * Gets current scroll position on y axis.
+     *
+     * @return current scroll position on y axis.
+     */
+    protected int getScrollY() {
+        return ((Long) executeScript("return window.pageYOffset")).intValue();
+    }
+
+    /**
+     * Clicks on the element, using JS.
+     * This method is more convenient then Selenium {@code findElement(By.id(urlId)).click()}, because
+     * Selenium method changes scroll position, which is not always needed.
+     *
+     * @param elementId id of the
+     */
+    protected void clickElementWithJs(String elementId) {
+        executeScript(String.format("document.getElementById('%s').click();",
+                elementId));
+    }
 }

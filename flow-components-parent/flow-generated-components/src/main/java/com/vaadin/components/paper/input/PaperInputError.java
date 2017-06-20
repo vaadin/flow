@@ -9,9 +9,9 @@ import elemental.json.JsonObject;
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * `<paper-input-error>` is an error message for use with
- * `<paper-input-container>`. The error is displayed when the
- * `<paper-input-container>` is `invalid`.
+ * {@code <paper-input-error>} is an error message for use with
+ * {@code <paper-input-container>}. The error is displayed when the
+ * {@code <paper-input-container>} is {@code invalid}.
  * 
  * <paper-input-container> <input pattern="[0-9]*"> <paper-input-error
  * slot="add-on">Only numbers are allowed!</paper-input-error>
@@ -23,12 +23,13 @@ import elemental.json.JsonObject;
  * 
  * Custom property | Description | Default
  * ----------------|-------------|----------
- * `--paper-input-container-invalid-color` | The foreground color of the error |
- * `--error-color` `--paper-input-error` | Mixin applied to the error | `{}`
+ * {@code --paper-input-container-invalid-color} | The foreground color of the
+ * error | {@code --error-color} {@code --paper-input-error} | Mixin applied to
+ * the error | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class PaperInputError extends Component {

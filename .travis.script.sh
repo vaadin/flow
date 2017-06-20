@@ -52,17 +52,17 @@ else
     if [[ $change == *"flow-client/"* ]]
     then
       modules="$modules -pl flow-client"
-    else
-      if [[ $change == *"flow-test-util/"* ]]
-      then
-        modules="$modules -pl flow-test-util"
-      else
-        if [[ $change == *"flow-tests/"* ]]
-        then
-          modules="$modules -pl flow-tests"
-        fi
-      fi
     fi
+  fi
+fi
+
+if [[ $change == *"flow-test-util/"* ]]
+then
+  modules="$modules -pl flow-test-util"
+else
+  if [[ $change == *"flow-tests/"* ]]
+  then
+    modules="$modules -pl flow-tests"
   fi
 fi
 

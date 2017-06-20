@@ -5,30 +5,34 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * `<paper-textarea>` is a multi-line text field with Material Design styling.
+ * {@code <paper-textarea>} is a multi-line text field with Material Design
+ * styling.
  * 
  * <paper-textarea label="Textarea label"></paper-textarea>
  * 
- * See `Polymer.PaperInputBehavior` for more API docs.
+ * See {@code Polymer.PaperInputBehavior} for more API docs.
  * 
  * ### Validation
  * 
- * Currently only `required` and `maxlength` validation is supported.
+ * Currently only {@code required} and {@code maxlength} validation is
+ * supported.
  * 
  * ### Styling
  * 
- * See `Polymer.PaperInputContainer` for a list of custom properties used to
- * style this element.
+ * See {@code Polymer.PaperInputContainer} for a list of custom properties used
+ * to style this element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class PaperTextarea extends Component {
@@ -58,7 +62,8 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to disable this input. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `disabled` property.
+	 * {@code <paper-input-container>}'s and the input's {@code disabled}
+	 * property.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -69,7 +74,8 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to disable this input. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `disabled` property.
+	 * {@code <paper-input-container>}'s and the input's {@code disabled}
+	 * property.
 	 * 
 	 * @param disabled
 	 */
@@ -81,7 +87,7 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -91,7 +97,7 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
-	 * `null` to disable the listeners.
+	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
 	 */
@@ -138,9 +144,10 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The label for this input. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to `<label>`'s content and
-	 * `hidden` property, e.g. `<label hidden$="[[!label]]">[[label]]</label>`
-	 * in your `template`
+	 * your own paper-input-like element, bind this to {@code <label>}'s content
+	 * and {@code hidden} property, e.g.
+	 * {@code <label hidden$="[[!label]]">[[label]]</label>} in your
+	 * {@code template}
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -150,9 +157,10 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The label for this input. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to `<label>`'s content and
-	 * `hidden` property, e.g. `<label hidden$="[[!label]]">[[label]]</label>`
-	 * in your `template`
+	 * your own paper-input-like element, bind this to {@code <label>}'s content
+	 * and {@code hidden} property, e.g.
+	 * {@code <label hidden$="[[!label]]">[[label]]</label>} in your
+	 * {@code template}
 	 * 
 	 * @param label
 	 */
@@ -185,9 +193,10 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Returns true if the value is invalid. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `invalid` property.
+	 * {@code <paper-input-container>}'s and the input's {@code invalid}
+	 * property.
 	 * 
-	 * If `autoValidate` is true, the `invalid` attribute is managed
+	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
 	 */
 	public boolean isInvalid() {
@@ -199,9 +208,10 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Returns true if the value is invalid. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to both the
-	 * `<paper-input-container>`'s and the input's `invalid` property.
+	 * {@code <paper-input-container>}'s and the input's {@code invalid}
+	 * property.
 	 * 
-	 * If `autoValidate` is true, the `invalid` attribute is managed
+	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
 	 * 
 	 * @param invalid
@@ -213,10 +223,10 @@ public class PaperTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Set this to specify the pattern allowed by `preventInvalidInput`. If
-	 * you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `allowedPattern`
-	 * property.
+	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
+	 * If you're using PaperInputBehavior to implement your own paper-input-like
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code allowedPattern} property.
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
@@ -225,10 +235,10 @@ public class PaperTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Set this to specify the pattern allowed by `preventInvalidInput`. If
-	 * you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `allowedPattern`
-	 * property.
+	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
+	 * If you're using PaperInputBehavior to implement your own paper-input-like
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code allowedPattern} property.
 	 * 
 	 * @param allowedPattern
 	 */
@@ -240,10 +250,10 @@ public class PaperTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The type of the input. The supported types are `text`, `number` and
-	 * `password`. If you're using PaperInputBehavior to implement your own
-	 * paper-input-like element, bind this to the `<input is="iron-input">`'s
-	 * `type` property.
+	 * The type of the input. The supported types are {@code text},
+	 * {@code number} and {@code password}. If you're using PaperInputBehavior
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code type} property.
 	 */
 	public String getType() {
 		return getElement().getProperty("type");
@@ -252,10 +262,10 @@ public class PaperTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The type of the input. The supported types are `text`, `number` and
-	 * `password`. If you're using PaperInputBehavior to implement your own
-	 * paper-input-like element, bind this to the `<input is="iron-input">`'s
-	 * `type` property.
+	 * The type of the input. The supported types are {@code text},
+	 * {@code number} and {@code password}. If you're using PaperInputBehavior
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code type} property.
 	 * 
 	 * @param type
 	 */
@@ -267,9 +277,9 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The datalist of the input (if any). This should match the id of an
-	 * existing `<datalist>`. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `list` property.
+	 * existing {@code <datalist>}. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code list} property.
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
@@ -279,9 +289,9 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The datalist of the input (if any). This should match the id of an
-	 * existing `<datalist>`. If you're using PaperInputBehavior to implement
-	 * your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `list` property.
+	 * existing {@code <datalist>}. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code list} property.
 	 * 
 	 * @param list
 	 */
@@ -292,9 +302,9 @@ public class PaperTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A pattern to validate the `input` with. If you're using
+	 * A pattern to validate the {@code input} with. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `pattern` property.
+	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
@@ -303,9 +313,9 @@ public class PaperTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A pattern to validate the `input` with. If you're using
+	 * A pattern to validate the {@code input} with. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `pattern` property.
+	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 * 
 	 * @param pattern
 	 */
@@ -319,9 +329,9 @@ public class PaperTextarea extends Component {
 	 * Set to true to mark the input as required. If used in a form, a custom
 	 * element that uses this behavior should also use
 	 * Polymer.IronValidatableBehavior and define a custom validation method.
-	 * Otherwise, a `required` element will always be considered valid. It's
-	 * also strongly recommended to provide a visual style for the element when
-	 * its value is invalid.
+	 * Otherwise, a {@code required} element will always be considered valid.
+	 * It's also strongly recommended to provide a visual style for the element
+	 * when its value is invalid.
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -333,9 +343,9 @@ public class PaperTextarea extends Component {
 	 * Set to true to mark the input as required. If used in a form, a custom
 	 * element that uses this behavior should also use
 	 * Polymer.IronValidatableBehavior and define a custom validation method.
-	 * Otherwise, a `required` element will always be considered valid. It's
-	 * also strongly recommended to provide a visual style for the element when
-	 * its value is invalid.
+	 * Otherwise, a {@code required} element will always be considered valid.
+	 * It's also strongly recommended to provide a visual style for the element
+	 * when its value is invalid.
 	 * 
 	 * @param required
 	 */
@@ -348,7 +358,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * The error message to display when the input is invalid. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-error>`'s content, if using.
+	 * this to the {@code <paper-input-error>}'s content, if using.
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -359,7 +369,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * The error message to display when the input is invalid. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-error>`'s content, if using.
+	 * this to the {@code <paper-input-error>}'s content, if using.
 	 * 
 	 * @param errorMessage
 	 */
@@ -393,7 +403,8 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to disable the floating label. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `noLabelFloat` property.
+	 * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
+	 * property.
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -404,7 +415,8 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to disable the floating label. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `noLabelFloat` property.
+	 * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
+	 * property.
 	 * 
 	 * @param noLabelFloat
 	 */
@@ -417,7 +429,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to always float the label. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
-	 * `<paper-input-container>`'s `alwaysFloatLabel` property.
+	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -428,7 +440,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to always float the label. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
-	 * `<paper-input-container>`'s `alwaysFloatLabel` property.
+	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * 
 	 * @param alwaysFloatLabel
 	 */
@@ -441,7 +453,8 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to auto-validate the input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `autoValidate` property.
+	 * this to the {@code <paper-input-container>}'s {@code autoValidate}
+	 * property.
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -452,7 +465,8 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Set to true to auto-validate the input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<paper-input-container>`'s `autoValidate` property.
+	 * this to the {@code <paper-input-container>}'s {@code autoValidate}
+	 * property.
 	 * 
 	 * @param autoValidate
 	 */
@@ -464,8 +478,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Name of the validator to use. If you're using PaperInputBehavior to
-	 * implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `validator` property.
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -475,8 +489,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Name of the validator to use. If you're using PaperInputBehavior to
-	 * implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `validator` property.
+	 * implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 * 
 	 * @param validator
 	 */
@@ -489,8 +503,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocomplete`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocomplete} property.
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -500,8 +514,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocomplete`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocomplete} property.
 	 * 
 	 * @param autocomplete
 	 */
@@ -514,8 +528,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autofocus`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autofocus} property.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -525,8 +539,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autofocus`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autofocus} property.
 	 * 
 	 * @param autofocus
 	 */
@@ -538,8 +552,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `inputmode`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code inputmode} property.
 	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
@@ -549,8 +563,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `inputmode`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code inputmode} property.
 	 * 
 	 * @param inputmode
 	 */
@@ -563,8 +577,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The minimum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `minlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
@@ -574,8 +588,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The minimum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `minlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 * 
 	 * @param minlength
 	 */
@@ -587,8 +601,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `maxlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
@@ -598,8 +612,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum length of the input value. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the `<input
-	 * is="iron-input">`'s `maxlength` property.
+	 * to implement your own paper-input-like element, bind this to the
+	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 * 
 	 * @param maxlength
 	 */
@@ -612,7 +626,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * The minimum (numeric or date-time) input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `min` property.
+	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 */
 	public String getMin() {
 		return getElement().getProperty("min");
@@ -623,7 +637,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * The minimum (numeric or date-time) input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `min` property.
+	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 * 
 	 * @param min
 	 */
@@ -635,9 +649,9 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum (numeric or date-time) input value. Can be a String (e.g.
-	 * `"2000-01-01"`) or a Number (e.g. `2`). If you're using
+	 * {@code "2000-01-01"}) or a Number (e.g. {@code 2}). If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `max` property.
+	 * this to the {@code <input is="iron-input">}'s {@code max} property.
 	 */
 	public String getMax() {
 		return getElement().getProperty("max");
@@ -647,9 +661,9 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum (numeric or date-time) input value. Can be a String (e.g.
-	 * `"2000-01-01"`) or a Number (e.g. `2`). If you're using
+	 * {@code "2000-01-01"}) or a Number (e.g. {@code 2}). If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `max` property.
+	 * this to the {@code <input is="iron-input">}'s {@code max} property.
 	 * 
 	 * @param max
 	 */
@@ -662,7 +676,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Limits the numeric or date-time increments. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `step` property.
+	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 */
 	public String getStep() {
 		return getElement().getProperty("step");
@@ -673,7 +687,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Limits the numeric or date-time increments. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the `<input is="iron-input">`'s `step` property.
+	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 * 
 	 * @param step
 	 */
@@ -728,8 +742,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `readonly`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code readonly} property.
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -739,8 +753,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `readonly`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code readonly} property.
 	 * 
 	 * @param readonly
 	 */
@@ -752,7 +766,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `size` property.
+	 * element, bind this to the {@code <input is="iron-input">}'s {@code size}
+	 * property.
 	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
@@ -762,7 +777,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `size` property.
+	 * element, bind this to the {@code <input is="iron-input">}'s {@code size}
+	 * property.
 	 * 
 	 * @param size
 	 */
@@ -774,8 +790,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocapitalize`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocapitalize} property.
 	 */
 	public String getAutocapitalize() {
 		return getElement().getProperty("autocapitalize");
@@ -785,8 +801,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocapitalize`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocapitalize} property.
 	 * 
 	 * @param autocapitalize
 	 */
@@ -799,8 +815,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocorrect`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocorrect} property.
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
@@ -810,8 +826,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autocorrect`
-	 * property.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autocorrect} property.
 	 * 
 	 * @param autocorrect
 	 */
@@ -824,8 +840,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autosave`
-	 * property, used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autosave} property, used with type=search.
 	 */
 	public String getAutosave() {
 		return getElement().getProperty("autosave");
@@ -835,8 +851,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `autosave`
-	 * property, used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code autosave} property, used with type=search.
 	 * 
 	 * @param autosave
 	 */
@@ -848,8 +864,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `results` property,
-	 * used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code results} property, used with type=search.
 	 */
 	public double getResults() {
 		return getElement().getProperty("results", 0.0);
@@ -859,8 +875,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `results` property,
-	 * used with type=search.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code results} property, used with type=search.
 	 * 
 	 * @param results
 	 */
@@ -872,8 +888,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `accept` property,
-	 * used with type=file.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code accept} property, used with type=file.
 	 */
 	public String getAccept() {
 		return getElement().getProperty("accept");
@@ -883,8 +899,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the `<input is="iron-input">`'s `accept` property,
-	 * used with type=file.
+	 * element, bind this to the {@code <input is="iron-input">}'s
+	 * {@code accept} property, used with type=file.
 	 * 
 	 * @param accept
 	 */
@@ -896,8 +912,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the`<input is="iron-input">`'s `multiple` property,
-	 * used with type=file.
+	 * element, bind this to the{@code <input is="iron-input">}'s
+	 * {@code multiple} property, used with type=file.
 	 */
 	public boolean isMultiple() {
 		return getElement().getProperty("multiple", false);
@@ -907,8 +923,8 @@ public class PaperTextarea extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
-	 * element, bind this to the`<input is="iron-input">`'s `multiple` property,
-	 * used with type=file.
+	 * element, bind this to the{@code <input is="iron-input">}'s
+	 * {@code multiple} property, used with type=file.
 	 * 
 	 * @param multiple
 	 */
@@ -963,7 +979,7 @@ public class PaperTextarea extends Component {
 	 * 
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
-	 * the `keyBindings` prototype property.
+	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
 	 * @param handlerName
@@ -985,7 +1001,7 @@ public class PaperTextarea extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns true if a keyboard event matches `eventString`.
+	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
 	 * @param eventString
@@ -1025,39 +1041,99 @@ public class PaperTextarea extends Component {
 		getElement().callFunction("updateValueAndPreserveCaret", newValue);
 	}
 
-	public Registration addFocusedChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("focused-changed", listener);
+	@DomEvent("focused-changed")
+	public static class FocusedChangedEvent
+			extends
+				ComponentEvent<PaperTextarea> {
+		public FocusedChangedEvent(PaperTextarea source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addFocusedChangedListener(
+			ComponentEventListener<FocusedChangedEvent> listener) {
+		return addListener(FocusedChangedEvent.class, listener);
+	}
+
+	@DomEvent("disabled-changed")
+	public static class DisabledChangedEvent
+			extends
+				ComponentEvent<PaperTextarea> {
+		public DisabledChangedEvent(PaperTextarea source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addDisabledChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("disabled-changed", listener);
+			ComponentEventListener<DisabledChangedEvent> listener) {
+		return addListener(DisabledChangedEvent.class, listener);
+	}
+
+	@DomEvent("change")
+	public static class ChangeEvent extends ComponentEvent<PaperTextarea> {
+		public ChangeEvent(PaperTextarea source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addChangeListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("change", listener);
+			ComponentEventListener<ChangeEvent> listener) {
+		return addListener(ChangeEvent.class, listener);
+	}
+
+	@DomEvent("value-changed")
+	public static class ValueChangedEvent extends ComponentEvent<PaperTextarea> {
+		public ValueChangedEvent(PaperTextarea source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addValueChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("value-changed", listener);
+			ComponentEventListener<ValueChangedEvent> listener) {
+		return addListener(ValueChangedEvent.class, listener);
+	}
+
+	@DomEvent("invalid-changed")
+	public static class InvalidChangedEvent
+			extends
+				ComponentEvent<PaperTextarea> {
+		public InvalidChangedEvent(PaperTextarea source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addInvalidChangedListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("invalid-changed", listener);
+			ComponentEventListener<InvalidChangedEvent> listener) {
+		return addListener(InvalidChangedEvent.class, listener);
+	}
+
+	@DomEvent("iron-form-element-register")
+	public static class IronFormElementRegisterEvent
+			extends
+				ComponentEvent<PaperTextarea> {
+		public IronFormElementRegisterEvent(PaperTextarea source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addIronFormElementRegisterListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("iron-form-element-register",
-				listener);
+			ComponentEventListener<IronFormElementRegisterEvent> listener) {
+		return addListener(IronFormElementRegisterEvent.class, listener);
+	}
+
+	@DomEvent("iron-form-element-unregister")
+	public static class IronFormElementUnregisterEvent
+			extends
+				ComponentEvent<PaperTextarea> {
+		public IronFormElementUnregisterEvent(PaperTextarea source,
+				boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
 	public Registration addIronFormElementUnregisterListener(
-			com.vaadin.flow.dom.DomEventListener listener) {
-		return getElement().addEventListener("iron-form-element-unregister",
-				listener);
+			ComponentEventListener<IronFormElementUnregisterEvent> listener) {
+		return addListener(IronFormElementUnregisterEvent.class, listener);
 	}
 }
