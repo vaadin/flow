@@ -15,6 +15,7 @@
  */
 package com.vaadin.generator.metadata;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,7 +76,7 @@ public class ComponentEventData {
      * @return The list of properties that are part of the event.
      */
     public List<ComponentPropertyBaseData> getProperties() {
-        return properties;
+        return properties == null ? new ArrayList<>(0) : properties;
     }
 
     /**

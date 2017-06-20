@@ -5,22 +5,24 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.flow.dom.DomEventListener;
 
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * `iron-meta` is a generic element you can use for sharing information across
- * the DOM tree. It uses [monostate
+ * {@code iron-meta} is a generic element you can use for sharing information
+ * across the DOM tree. It uses [monostate
  * pattern](http://c2.com/cgi/wiki?MonostatePattern) such that any instance of
- * iron-meta has access to the shared information. You can use `iron-meta` to
- * share whatever you want (or create an extension [like x-meta] for
+ * iron-meta has access to the shared information. You can use {@code iron-meta}
+ * to share whatever you want (or create an extension [like x-meta] for
  * enhancements).
  * 
- * The `iron-meta` instances containing your actual data can be loaded in an
- * import, or constructed in any way you see fit. The only requirement is that
- * you create them before you try to access them.
+ * The {@code iron-meta} instances containing your actual data can be loaded in
+ * an import, or constructed in any way you see fit. The only requirement is
+ * that you create them before you try to access them.
  * 
  * Examples:
  * 
@@ -45,8 +47,8 @@ import com.vaadin.flow.dom.DomEventListener;
  * <iron-meta id="meta"></iron-meta> ... this.$.meta.byKey('info');
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.9-SNAPSHOT",
-		"WebComponent: iron-meta#2.0.0", "Flow#0.1.9-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: iron-meta#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("iron-meta")
 @HtmlImport("frontend://bower_components/iron-meta/iron-meta.html")
 public class IronMeta extends Component {
@@ -74,7 +76,7 @@ public class IronMeta extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The key used to store `value` under the `type` namespace.
+	 * The key used to store {@code value} under the {@code type} namespace.
 	 */
 	public String getKey() {
 		return getElement().getProperty("key");
@@ -83,7 +85,7 @@ public class IronMeta extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The key used to store `value` under the `type` namespace.
+	 * The key used to store {@code value} under the {@code type} namespace.
 	 * 
 	 * @param key
 	 */
@@ -114,7 +116,7 @@ public class IronMeta extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, `value` is set to the iron-meta instance itself.
+	 * If true, {@code value} is set to the iron-meta instance itself.
 	 */
 	public boolean isSelf() {
 		return getElement().getProperty("self", false);
@@ -123,7 +125,7 @@ public class IronMeta extends Component {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, `value` is set to the iron-meta instance itself.
+	 * If true, {@code value} is set to the iron-meta instance itself.
 	 * 
 	 * @param self
 	 */
@@ -153,7 +155,15 @@ public class IronMeta extends Component {
 		getElement().callFunction("byKey", key);
 	}
 
-	public Registration addValueChangedListener(DomEventListener listener) {
-		return getElement().addEventListener("value-changed", listener);
+	@DomEvent("value-changed")
+	public static class ValueChangedEvent extends ComponentEvent<IronMeta> {
+		public ValueChangedEvent(IronMeta source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addValueChangedListener(
+			ComponentEventListener<ValueChangedEvent> listener) {
+		return addListener(ValueChangedEvent.class, listener);
 	}
 }
