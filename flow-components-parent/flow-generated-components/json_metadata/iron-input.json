@@ -6,37 +6,58 @@
   "properties": [
     {
       "name": "validator",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Name of the validator to use.\n       "
     },
     {
       "name": "invalid",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "True if the last call to `validate` is invalid.\n       "
     },
     {
       "name": "bindValue",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Use this property instead of `value` for two-way data binding, or to\nset a default value for the input. **Do not** use the distributed\ninput's `value` property to set a default value.\n         "
     },
     {
       "name": "value",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "Computed property that echoes `bindValue` (mostly used for Polymer 1.0\nbackcompatibility, if you were one-way binding to the Polymer 1.0\n`input is=\"iron-input\"` value attribute).\n         "
     },
     {
       "name": "allowedPattern",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Regex-like list of characters allowed as input; all characters not in the list\nwill be rejected. The recommended format should be a list of allowed characters,\nfor example, `[a-zA-Z0-9.+-!;:]`.\n\nThis pattern represents the allowed characters for the field; as the user inputs text,\neach individual character will be checked against the pattern (rather than checking\nthe entire value as a whole). If a character is not a match, it will be rejected.\n\nPasted input will have each character checked individually; if any character\ndoesn't match `allowedPattern`, the entire pasted string will be rejected.\n\nNote: if you were using `iron-input` in 1.0, you were also required to\nset `prevent-invalid-input`. This is no longer needed as of Polymer 2.0,\nand will be set automatically for you if an `allowedPattern` is provided.\n\n         "
     },
     {
       "name": "autoValidate",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to auto-validate the input value as you type.\n         "
     },
     {
       "name": "inputElement",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "Returns the distributed <input> element.\n       "
     }
   ],

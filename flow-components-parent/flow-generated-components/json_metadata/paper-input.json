@@ -6,203 +6,320 @@
   "properties": [
     {
       "name": "focused",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, the element currently has focus.\n       "
     },
     {
       "name": "disabled",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to disable this input. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to\nboth the `<paper-input-container>`'s and the input's `disabled` property.\n       "
     },
     {
       "name": "keyEventTarget",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": "The EventTarget that will be firing relevant KeyboardEvents. Set it to\n`null` to disable the listeners."
     },
     {
       "name": "stopKeyboardEventPropagation",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If true, this property will cause the implementing element to\nautomatically stop propagation on any handled KeyboardEvents.\n         "
     },
     {
       "name": "keyBindings",
-      "type": "OBJECT",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
       "description": ""
     },
     {
       "name": "label",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The label for this input. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to\n`<label>`'s content and `hidden` property, e.g.\n`<label hidden$=\"[[!label]]\">[[label]]</label>` in your `template`\n       "
     },
     {
       "name": "value",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The value for this element.\n       "
     },
     {
       "name": "invalid",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Returns true if the value is invalid. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to both the\n`<paper-input-container>`'s and the input's `invalid` property.\n\nIf `autoValidate` is true, the `invalid` attribute is managed automatically,\nwhich can clobber attempts to manage it manually.\n       "
     },
     {
       "name": "allowedPattern",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Set this to specify the pattern allowed by `preventInvalidInput`. If\nyou're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `allowedPattern`\nproperty.\n       "
     },
     {
       "name": "type",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The type of the input. The supported types are `text`, `number` and `password`.\nIf you're using PaperInputBehavior to implement your own paper-input-like element,\nbind this to the `<input is=\"iron-input\">`'s `type` property.\n       "
     },
     {
       "name": "list",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The datalist of the input (if any). This should match the id of an existing `<datalist>`.\nIf you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `list` property.\n       "
     },
     {
       "name": "pattern",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "A pattern to validate the `input` with. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to\nthe `<input is=\"iron-input\">`'s `pattern` property.\n       "
     },
     {
       "name": "required",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to mark the input as required. If used in a form, a\ncustom element that uses this behavior should also use\nPolymer.IronValidatableBehavior and define a custom validation method.\nOtherwise, a `required` element will always be considered valid.\nIt's also strongly recommended to provide a visual style for the element\nwhen its value is invalid.\n       "
     },
     {
       "name": "errorMessage",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The error message to display when the input is invalid. If you're using\nPaperInputBehavior to implement your own paper-input-like element,\nbind this to the `<paper-input-error>`'s content, if using.\n       "
     },
     {
       "name": "charCounter",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to show a character counter.\n       "
     },
     {
       "name": "noLabelFloat",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to disable the floating label. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to\nthe `<paper-input-container>`'s `noLabelFloat` property.\n       "
     },
     {
       "name": "alwaysFloatLabel",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to always float the label. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to\nthe `<paper-input-container>`'s `alwaysFloatLabel` property.\n       "
     },
     {
       "name": "autoValidate",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "Set to true to auto-validate the input value. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to\nthe `<paper-input-container>`'s `autoValidate` property.\n       "
     },
     {
       "name": "validator",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Name of the validator to use. If you're using PaperInputBehavior to\nimplement your own paper-input-like element, bind this to\nthe `<input is=\"iron-input\">`'s `validator` property.\n       "
     },
     {
       "name": "autocomplete",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `autocomplete` property.\n       "
     },
     {
       "name": "autofocus",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `autofocus` property.\n       "
     },
     {
       "name": "inputmode",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `inputmode` property.\n       "
     },
     {
       "name": "minlength",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The minimum length of the input value.\nIf you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `minlength` property.\n       "
     },
     {
       "name": "maxlength",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "The maximum length of the input value.\nIf you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `maxlength` property.\n       "
     },
     {
       "name": "min",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The minimum (numeric or date-time) input value.\nIf you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `min` property.\n       "
     },
     {
       "name": "max",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The maximum (numeric or date-time) input value.\nCan be a String (e.g. `\"2000-01-01\"`) or a Number (e.g. `2`).\nIf you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `max` property.\n       "
     },
     {
       "name": "step",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "Limits the numeric or date-time increments.\nIf you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `step` property.\n       "
     },
     {
       "name": "name",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "The name of this element.\n       "
     },
     {
       "name": "placeholder",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "A placeholder string in addition to the label. If this is set, the label will always float.\n       "
     },
     {
       "name": "readonly",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `readonly` property.\n       "
     },
     {
       "name": "size",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `size` property.\n       "
     },
     {
       "name": "autocapitalize",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `autocapitalize` property.\n       "
     },
     {
       "name": "autocorrect",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `autocorrect` property.\n       "
     },
     {
       "name": "autosave",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `autosave` property,\nused with type=search.\n       "
     },
     {
       "name": "results",
-      "type": "NUMBER",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `results` property,\nused with type=search.\n       "
     },
     {
       "name": "accept",
-      "type": "STRING",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the `<input is=\"iron-input\">`'s `accept` property,\nused with type=file.\n       "
     },
     {
       "name": "multiple",
-      "type": "BOOLEAN",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
       "description": "If you're using PaperInputBehavior to implement your own paper-input-like\nelement, bind this to the`<input is=\"iron-input\">`'s `multiple` property,\nused with type=file.\n       "
     }
   ],
   "methods": [
     {
       "name": "addOwnKeyBinding",
-      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.\n       ",
+      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.",
       "parameters": [
         {
           "name": "eventString",
-          "type": "OBJECT",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         },
         {
           "name": "handlerName",
-          "type": "OBJECT",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -218,12 +335,18 @@
       "parameters": [
         {
           "name": "event",
-          "type": "OBJECT",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         },
         {
           "name": "eventString",
-          "type": "STRING",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "Missing documentation!"
         }
       ]
@@ -244,7 +367,10 @@
       "parameters": [
         {
           "name": "newValue",
-          "type": "STRING",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
           "description": "The value that should be saved."
         }
       ]
