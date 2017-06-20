@@ -47,6 +47,4 @@ public class ComponentPropertyData extends ComponentPropertyBaseData {
         this.readOnly = readOnly;
     }
 
-
-
 }

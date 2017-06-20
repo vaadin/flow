@@ -15,6 +15,7 @@
  */
 package com.vaadin.generator.metadata;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ import java.util.List;
 public class ComponentObjectType {
 
     private String name;
-    private List<ComponentBasicType> type;
+    private List<ComponentBasicType> type = new ArrayList<>();
     private boolean optional;
 
     /**

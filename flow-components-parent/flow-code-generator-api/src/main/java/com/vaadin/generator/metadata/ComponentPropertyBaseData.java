@@ -15,6 +15,7 @@
  */
 package com.vaadin.generator.metadata;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ public class ComponentPropertyBaseData {
     private String name;
     private List<ComponentBasicType> type;
     private String description;
-    private List<ComponentObjectType> objectType;
+    private List<ComponentObjectType> objectType = new ArrayList<>();
 
     /**
      * Gets the object type properties.
