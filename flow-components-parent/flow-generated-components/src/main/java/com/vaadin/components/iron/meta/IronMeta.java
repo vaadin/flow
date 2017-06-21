@@ -51,7 +51,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-meta#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("iron-meta")
 @HtmlImport("frontend://bower_components/iron-meta/iron-meta.html")
-public class IronMeta extends Component {
+public class IronMeta<R extends IronMeta<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -68,9 +68,11 @@ public class IronMeta extends Component {
 	 * The type of meta-data. All meta-data of the same type is stored together.
 	 * 
 	 * @param type
+	 * @return This instance, for method chaining.
 	 */
-	public void setType(java.lang.String type) {
+	public R setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
+		return getSelf();
 	}
 
 	/**
@@ -88,9 +90,11 @@ public class IronMeta extends Component {
 	 * The key used to store {@code value} under the {@code type} namespace.
 	 * 
 	 * @param key
+	 * @return This instance, for method chaining.
 	 */
-	public void setKey(java.lang.String key) {
+	public R setKey(java.lang.String key) {
 		getElement().setProperty("key", key == null ? "" : key);
+		return getSelf();
 	}
 
 	/**
@@ -108,9 +112,11 @@ public class IronMeta extends Component {
 	 * The meta-data to store or retrieve.
 	 * 
 	 * @param value
+	 * @return This instance, for method chaining.
 	 */
-	public void setValue(java.lang.String value) {
+	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
+		return getSelf();
 	}
 
 	/**
@@ -128,9 +134,11 @@ public class IronMeta extends Component {
 	 * If true, {@code value} is set to the iron-meta instance itself.
 	 * 
 	 * @param self
+	 * @return This instance, for method chaining.
 	 */
-	public void setSelf(boolean self) {
+	public R setSelf(boolean self) {
 		getElement().setProperty("self", self);
+		return getSelf();
 	}
 
 	public JsonObject getList() {
@@ -139,9 +147,11 @@ public class IronMeta extends Component {
 
 	/**
 	 * @param list
+	 * @return This instance, for method chaining.
 	 */
-	public void setList(elemental.json.JsonObject list) {
+	public R setList(elemental.json.JsonObject list) {
 		getElement().setPropertyJson("list", list);
+		return getSelf();
 	}
 
 	/**
@@ -165,5 +175,15 @@ public class IronMeta extends Component {
 	public Registration addValueChangedListener(
 			ComponentEventListener<ValueChangedEvent> listener) {
 		return addListener(ValueChangedEvent.class, listener);
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

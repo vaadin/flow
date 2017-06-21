@@ -71,7 +71,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-ripple#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-ripple")
 @HtmlImport("frontend://bower_components/paper-ripple/paper-ripple.html")
-public class PaperRipple extends Component {
+public class PaperRipple<R extends PaperRipple<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -90,9 +90,11 @@ public class PaperRipple extends Component {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 * @return This instance, for method chaining.
 	 */
-	public void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+		return getSelf();
 	}
 
 	/**
@@ -112,11 +114,13 @@ public class PaperRipple extends Component {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 * @return This instance, for method chaining.
 	 */
-	public void setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
+		return getSelf();
 	}
 
 	public JsonObject getKeyBindings() {
@@ -125,9 +129,11 @@ public class PaperRipple extends Component {
 
 	/**
 	 * @param keyBindings
+	 * @return This instance, for method chaining.
 	 */
-	public void setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
+		return getSelf();
 	}
 
 	/**
@@ -145,9 +151,11 @@ public class PaperRipple extends Component {
 	 * The initial opacity set on the wave.
 	 * 
 	 * @param initialOpacity
+	 * @return This instance, for method chaining.
 	 */
-	public void setInitialOpacity(double initialOpacity) {
+	public R setInitialOpacity(double initialOpacity) {
 		getElement().setProperty("initialOpacity", initialOpacity);
+		return getSelf();
 	}
 
 	/**
@@ -165,9 +173,11 @@ public class PaperRipple extends Component {
 	 * How fast (opacity per second) the wave fades out.
 	 * 
 	 * @param opacityDecayVelocity
+	 * @return This instance, for method chaining.
 	 */
-	public void setOpacityDecayVelocity(double opacityDecayVelocity) {
+	public R setOpacityDecayVelocity(double opacityDecayVelocity) {
 		getElement().setProperty("opacityDecayVelocity", opacityDecayVelocity);
+		return getSelf();
 	}
 
 	/**
@@ -187,9 +197,11 @@ public class PaperRipple extends Component {
 	 * their container as they fade away.
 	 * 
 	 * @param recenters
+	 * @return This instance, for method chaining.
 	 */
-	public void setRecenters(boolean recenters) {
+	public R setRecenters(boolean recenters) {
 		getElement().setProperty("recenters", recenters);
+		return getSelf();
 	}
 
 	/**
@@ -207,9 +219,11 @@ public class PaperRipple extends Component {
 	 * If true, ripples will center inside its container
 	 * 
 	 * @param center
+	 * @return This instance, for method chaining.
 	 */
-	public void setCenter(boolean center) {
+	public R setCenter(boolean center) {
 		getElement().setProperty("center", center);
+		return getSelf();
 	}
 
 	/**
@@ -227,9 +241,11 @@ public class PaperRipple extends Component {
 	 * A list of the visual ripples.
 	 * 
 	 * @param ripples
+	 * @return This instance, for method chaining.
 	 */
-	public void setRipples(elemental.json.JsonArray ripples) {
+	public R setRipples(elemental.json.JsonArray ripples) {
 		getElement().setPropertyJson("ripples", ripples);
+		return getSelf();
 	}
 
 	/**
@@ -247,9 +263,11 @@ public class PaperRipple extends Component {
 	 * True when there are visible ripples animating within the element.
 	 * 
 	 * @param animating
+	 * @return This instance, for method chaining.
 	 */
-	public void setAnimating(boolean animating) {
+	public R setAnimating(boolean animating) {
 		getElement().setProperty("animating", animating);
+		return getSelf();
 	}
 
 	/**
@@ -269,9 +287,11 @@ public class PaperRipple extends Component {
 	 * {@code holdDown} is set to false again.
 	 * 
 	 * @param holdDown
+	 * @return This instance, for method chaining.
 	 */
-	public void setHoldDown(boolean holdDown) {
+	public R setHoldDown(boolean holdDown) {
 		getElement().setProperty("holdDown", holdDown);
+		return getSelf();
 	}
 
 	/**
@@ -293,9 +313,11 @@ public class PaperRipple extends Component {
 	 * will still generate the ripple effect.
 	 * 
 	 * @param noink
+	 * @return This instance, for method chaining.
 	 */
-	public void setNoink(boolean noink) {
+	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
+		return getSelf();
 	}
 
 	public JsonObject getTarget() {
@@ -304,9 +326,11 @@ public class PaperRipple extends Component {
 
 	/**
 	 * @param target
+	 * @return This instance, for method chaining.
 	 */
-	public void setTarget(elemental.json.JsonObject target) {
+	public R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
+		return getSelf();
 	}
 
 	public JsonObject getShouldKeepAnimating() {
@@ -315,11 +339,13 @@ public class PaperRipple extends Component {
 
 	/**
 	 * @param shouldKeepAnimating
+	 * @return This instance, for method chaining.
 	 */
-	public void setShouldKeepAnimating(
+	public R setShouldKeepAnimating(
 			elemental.json.JsonObject shouldKeepAnimating) {
 		getElement()
 				.setPropertyJson("shouldKeepAnimating", shouldKeepAnimating);
+		return getSelf();
 	}
 
 	/**
@@ -455,5 +481,15 @@ public class PaperRipple extends Component {
 	public Registration addTransitionendListener(
 			ComponentEventListener<TransitionendEvent> listener) {
 		return addListener(TransitionendEvent.class, listener);
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

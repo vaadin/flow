@@ -16,11 +16,14 @@
     "polymer": "2.0.0",
     "paper-button": "2.0.0",
     "paper-input": "2.0.0",
-    "app-layout": "PolymerElements/app-layout#2.0-preview",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0-preview",
-    "iron-iconset-svg": "PolymerElements/iron-iconset-svg#2.0-preview",
-    "iron-media-query": "PolymerElements/iron-media-query#2.0-preview",
-    "iron-selector": "PolymerElements/iron-selector#2.0-preview"
+    "paper-spinner": "PolymerElements/paper-spinner#^2.0.0",
+    "paper-card": "PolymerElements/paper-card#^2.0.0",
+    "paper-progress": "PolymerElements/paper-progress#^2.0.1",
+    "app-layout": "PolymerElements/app-layout#2.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0.0",
+    "iron-iconset-svg": "PolymerElements/iron-iconset-svg#2.0.0",
+    "iron-media-query": "PolymerElements/iron-media-query#2.0.0",
+    "iron-selector": "PolymerElements/iron-selector#2.0.0"
   },
   "resolutions": {
     "iron-flex-layout": "1 - 2",
