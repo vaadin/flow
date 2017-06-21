@@ -15,30 +15,21 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.Tag;
 import com.vaadin.components.paper.button.PaperButton;
-import com.vaadin.flow.html.Div;
+import com.vaadin.flow.demo.ComponentDemo;
 
 /**
  * View for {@link PaperButton} demo.
  */
-@Tag("div")
+@ComponentDemo(name = "Paper Button", href = "paper-button")
 public class PaperButtonView extends DemoView {
 
-    /**
-     * Base constructor that builds the layout of the view.
-     */
-    public PaperButtonView() {
-        Div div = new Div();
-        add(div);
-
+    @Override
+    public void initView() {
         PaperButton button = new PaperButton();
         button.getElement().setText("Button");
-        div.add(button);
-    }
-
-    @Override
-    public String getViewName() {
-        return "Paper Button";
+        button.getElement().setAttribute("raised", "");
+        button.getElement().getStyle().set("backgroundColor", "white");
+        add(button);
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -62,15 +63,12 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         void setSelectors(List<DemoObject> selectors);
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        if (attachEvent.isInitialAttach()) {
-            getModel().setSelectors(Arrays.asList(
-                    new DemoObject().setName("Paper Button")
-                            .setHref("paper-button"),
-                    new DemoObject().setName("Paper Input")
-                            .setHref("paper-input")));
+    public MainLayout() {
+        List<DemoObject> selectors = new ArrayList<>();
+        for(Class<? extends DemoView> view: ComponentDemoRegister.getAvailableViews()) {
+            selectors.add(new DemoObject(view.getAnnotation(ComponentDemo.class)));
         }
+        getModel().setSelectors(selectors);
     }
 
     @Override
@@ -86,7 +84,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         // uses the <slot> at the template
         getElement().appendChild(childView.getElement());
         if (childView instanceof DemoView) {
-            getModel().setPage(((DemoView) childView).getViewName());
+            getModel().setPage(childView.getClass().getAnnotation(ComponentDemo.class).name());
         }
     }
 }
