@@ -1,0 +1,84 @@
+{
+  "name": "paper-card",
+  "tag": "paper-card",
+  "baseUrl": "paper-card/paper-card.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "heading",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The title of the card.\n         "
+    },
+    {
+      "name": "image",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The url of the title image of the card.\n         "
+    },
+    {
+      "name": "alt",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The text alternative of the card's title image.\n         "
+    },
+    {
+      "name": "preloadImage",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When `true`, any change to the image url property will cause the\n`placeholder` image to be shown until the image is fully rendered.\n         "
+    },
+    {
+      "name": "fadeImage",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When `preloadImage` is true, setting `fadeImage` to true will cause the\nimage to fade into place.\n         "
+    },
+    {
+      "name": "placeholderImage",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "This image will be used as a background/placeholder until the src image has\nloaded. Use of a data-URI for placeholder is encouraged for instant rendering.\n         "
+    },
+    {
+      "name": "elevation",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "The z-depth of the card, from 0-5.\n         "
+    },
+    {
+      "name": "animatedShadow",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set this to true to animate the card shadow when setting a new\n`z` value.\n         "
+    },
+    {
+      "name": "animated",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Read-only property used to pass down the `animatedShadow` value to\nthe underlying paper-material style (since they have different names).\n         "
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "behaviors": [],
+  "description": "Material design: [Cards](https://www.google.com/design/spec/components/cards.html)\n\n`paper-card` is a container with a drop shadow.\n\nExample:\n\n    <paper-card heading=\"Card Title\">\n      <div class=\"card-content\">Some content</div>\n      <div class=\"card-actions\">\n        <paper-button>Some action</paper-button>\n      </div>\n    </paper-card>\n\nExample - top card image:\n\n    <paper-card heading=\"Card Title\" image=\"/path/to/image.png\" alt=\"image\">\n      ...\n    </paper-card>\n\n### Accessibility\n\nBy default, the `aria-label` will be set to the value of the `heading` attribute.\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-card-background-color` | The background color of the card | `--primary-background-color`\n`--paper-card-header-color` | The color of the header text | `#000`\n`--paper-card-header` | Mixin applied to the card header section | `{}`\n`--paper-card-header-text` | Mixin applied to the title in the card header section | `{}`\n`--paper-card-header-image` | Mixin applied to the image in the card header section | `{}`\n`--paper-card-header-image-text` | Mixin applied to the text overlapping the image in the card header section | `{}`\n`--paper-card-content` | Mixin applied to the card content section| `{}`\n`--paper-card-actions` | Mixin applied to the card action section | `{}`\n`--paper-card` | Mixin applied to the card | `{}`"
+}

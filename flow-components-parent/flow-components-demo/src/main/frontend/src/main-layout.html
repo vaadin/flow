@@ -46,6 +46,9 @@
         color: black;
         font-weight: bold;
       }
+      .content {
+        margin: 50px 25px;
+      }
     </style>
 
     <app-drawer-layout fullbleed>
@@ -68,11 +71,13 @@
             <div main-title>Vaadin Flow Components</div>
           </app-toolbar>
         </app-header>
-        
-        <slot>
-            <!-- Main content added via server-side -->
-        </slot>
-       
+
+        <div class="content">
+            <slot>
+                <!-- Main content added via server-side -->
+            </slot>
+        </div>
+
       </app-header-layout>
     </app-drawer-layout>
   </template>
@@ -81,7 +86,7 @@
     class MainLayout extends Polymer.Element {
 
       static get is() { return 'main-layout'; }
-      
+
       static get properties() {
           return {
             page: {

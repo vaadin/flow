@@ -1,0 +1,15 @@
+.component-card {
+    background-Color: GhostWhite;
+
+    box-shadow: 5px 5px 10px 0px rgba(0, 0, 0, 0.75);
+
+    min-width: 250px;
+    max-width: 400px;
+    min-height: 300px;
+
+    padding: 15px;
+    margin: 0 10px;
+
+    text-align: center;
+    display: inline-block;
+}
