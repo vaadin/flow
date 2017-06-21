@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 FILES=flow-tests/*/error-screenshots/*
 for file in $FILES
 do
