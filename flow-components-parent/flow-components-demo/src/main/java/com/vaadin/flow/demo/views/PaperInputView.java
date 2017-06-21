@@ -32,8 +32,7 @@ public class PaperInputView extends DemoView {
         Div div = new Div();
         add(div);
 
-        PaperInput input = new PaperInput();
-        div.add(input);
+        div.add(new PaperInput().setLabel("Name").setPlaceholder("John Doe"));
     }
 
     @Override
