@@ -1,0 +1,425 @@
+package com.vaadin.components.iron.image;
+
+import com.vaadin.ui.Component;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
+
+/**
+ * Description copied from corresponding location in WebComponent:
+ * 
+ * {@code iron-image} is an element for displaying an image that provides useful
+ * sizing and preloading options not found on the standard {@code <img>} tag.
+ * 
+ * The {@code sizing} option allows the image to be either cropped ({@code cover}
+ * ) or letterboxed ({@code contain}) to fill a fixed user-size placed on the
+ * element.
+ * 
+ * The {@code preload} option prevents the browser from rendering the image
+ * until the image is fully loaded. In the interim, either the element's CSS
+ * {@code background-color} can be be used as the placeholder, or the
+ * {@code placeholder} property can be set to a URL (preferably a data-URI, for
+ * instant rendering) for an placeholder image.
+ * 
+ * The {@code fade} option (only valid when {@code preload} is set) will cause
+ * the placeholder image/color to be faded out once the image is rendered.
+ * 
+ * Examples:
+ * 
+ * Basically identical to {@code <img src="...">} tag:
+ * 
+ * <iron-image src="http://lorempixel.com/400/400"></iron-image>
+ * 
+ * Will letterbox the image to fit:
+ * 
+ * <iron-image style="width:400px; height:400px;" sizing="contain"
+ * src="http://lorempixel.com/600/400"></iron-image>
+ * 
+ * Will crop the image to fit:
+ * 
+ * <iron-image style="width:400px; height:400px;" sizing="cover"
+ * src="http://lorempixel.com/600/400"></iron-image>
+ * 
+ * Will show light-gray background until the image loads:
+ * 
+ * <iron-image style="width:400px; height:400px; background-color: lightgray;"
+ * sizing="cover" preload src="http://lorempixel.com/600/400"></iron-image>
+ * 
+ * Will show a base-64 encoded placeholder image until the image loads:
+ * 
+ * <iron-image style="width:400px; height:400px;"
+ * placeholder="data:image/gif;base64,..." sizing="cover" preload
+ * src="http://lorempixel.com/600/400"></iron-image>
+ * 
+ * Will fade the light-gray background out once the image is loaded:
+ * 
+ * <iron-image style="width:400px; height:400px; background-color: lightgray;"
+ * sizing="cover" preload fade src="http://lorempixel.com/600/400"></iron-image>
+ * 
+ * Custom property | Description | Default
+ * ----------------|-------------|---------- {@code --iron-image-placeholder} |
+ * Mixin applied to #placeholder | {@code {@code --iron-image-width} | Sets the
+ * width of the wrapped image | {@code auto} {@code --iron-image-height} | Sets
+ * the height of the wrapped image | {@code auto}
+ */
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: iron-image#2.1.1", "Flow#0.1.10-SNAPSHOT"})
+@Tag("iron-image")
+@HtmlImport("frontend://bower_components/iron-image/iron-image.html")
+public class IronImage extends Component {
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * The URL of an image.
+	 */
+	public String getSrc() {
+		return getElement().getProperty("src");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * The URL of an image.
+	 * 
+	 * @param src
+	 */
+	public void setSrc(java.lang.String src) {
+		getElement().setProperty("src", src == null ? "" : src);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * A short text alternative for the image.
+	 */
+	public String getAlt() {
+		return getElement().getProperty("alt");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * A short text alternative for the image.
+	 * 
+	 * @param alt
+	 */
+	public void setAlt(java.lang.String alt) {
+		getElement().setProperty("alt", alt == null ? "" : alt);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * CORS enabled images support:
+	 * https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+	 */
+	public String getCrossorigin() {
+		return getElement().getProperty("crossorigin");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * CORS enabled images support:
+	 * https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+	 * 
+	 * @param crossorigin
+	 */
+	public void setCrossorigin(java.lang.String crossorigin) {
+		getElement().setProperty("crossorigin",
+				crossorigin == null ? "" : crossorigin);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When true, the image is prevented from loading and any placeholder is
+	 * shown. This may be useful when a binding to the src property is known to
+	 * be invalid, to prevent 404 requests.
+	 */
+	public boolean isPreventLoad() {
+		return getElement().getProperty("preventLoad", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When true, the image is prevented from loading and any placeholder is
+	 * shown. This may be useful when a binding to the src property is known to
+	 * be invalid, to prevent 404 requests.
+	 * 
+	 * @param preventLoad
+	 */
+	public void setPreventLoad(boolean preventLoad) {
+		getElement().setProperty("preventLoad", preventLoad);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Sets a sizing option for the image. Valid values are {@code contain}
+	 * (full aspect ratio of the image is contained within the element and
+	 * letterboxed) or {@code cover} (image is cropped in order to fully cover
+	 * the bounds of the element), or {@code null} (default: image takes natural
+	 * size).
+	 */
+	public String getSizing() {
+		return getElement().getProperty("sizing");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Sets a sizing option for the image. Valid values are {@code contain}
+	 * (full aspect ratio of the image is contained within the element and
+	 * letterboxed) or {@code cover} (image is cropped in order to fully cover
+	 * the bounds of the element), or {@code null} (default: image takes natural
+	 * size).
+	 * 
+	 * @param sizing
+	 */
+	public void setSizing(java.lang.String sizing) {
+		getElement().setProperty("sizing", sizing == null ? "" : sizing);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When a sizing option is used ({@code cover} or {@code contain}), this
+	 * determines how the image is aligned within the element bounds.
+	 */
+	public String getPosition() {
+		return getElement().getProperty("position");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When a sizing option is used ({@code cover} or {@code contain}), this
+	 * determines how the image is aligned within the element bounds.
+	 * 
+	 * @param position
+	 */
+	public void setPosition(java.lang.String position) {
+		getElement().setProperty("position", position == null ? "" : position);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When {@code true}, any change to the {@code src} property will cause the
+	 * {@code placeholder} image to be shown until the new image has loaded.
+	 */
+	public boolean isPreload() {
+		return getElement().getProperty("preload", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When {@code true}, any change to the {@code src} property will cause the
+	 * {@code placeholder} image to be shown until the new image has loaded.
+	 * 
+	 * @param preload
+	 */
+	public void setPreload(boolean preload) {
+		getElement().setProperty("preload", preload);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * This image will be used as a background/placeholder until the src image
+	 * has loaded. Use of a data-URI for placeholder is encouraged for instant
+	 * rendering.
+	 */
+	public String getPlaceholder() {
+		return getElement().getProperty("placeholder");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * This image will be used as a background/placeholder until the src image
+	 * has loaded. Use of a data-URI for placeholder is encouraged for instant
+	 * rendering.
+	 * 
+	 * @param placeholder
+	 */
+	public void setPlaceholder(java.lang.String placeholder) {
+		getElement().setProperty("placeholder",
+				placeholder == null ? "" : placeholder);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When {@code preload} is true, setting {@code fade} to true will cause the
+	 * image to fade into place.
+	 */
+	public boolean isFade() {
+		return getElement().getProperty("fade", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * When {@code preload} is true, setting {@code fade} to true will cause the
+	 * image to fade into place.
+	 * 
+	 * @param fade
+	 */
+	public void setFade(boolean fade) {
+		getElement().setProperty("fade", fade);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Read-only value that is true when the image is loaded.
+	 */
+	public boolean isLoaded() {
+		return getElement().getProperty("loaded", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Read-only value that is true when the image is loaded.
+	 * 
+	 * @param loaded
+	 */
+	public void setLoaded(boolean loaded) {
+		getElement().setProperty("loaded", loaded);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Read-only value that tracks the loading state of the image when the
+	 * {@code preload} option is used.
+	 */
+	public boolean isLoading() {
+		return getElement().getProperty("loading", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Read-only value that tracks the loading state of the image when the
+	 * {@code preload} option is used.
+	 * 
+	 * @param loading
+	 */
+	public void setLoading(boolean loading) {
+		getElement().setProperty("loading", loading);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Read-only value that indicates that the last set {@code src} failed to
+	 * load.
+	 */
+	public boolean isError() {
+		return getElement().getProperty("error", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Read-only value that indicates that the last set {@code src} failed to
+	 * load.
+	 * 
+	 * @param error
+	 */
+	public void setError(boolean error) {
+		getElement().setProperty("error", error);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Can be used to set the width of image (e.g. via binding); size may also
+	 * be set via CSS.
+	 */
+	public double getWidth() {
+		return getElement().getProperty("width", 0.0);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Can be used to set the width of image (e.g. via binding); size may also
+	 * be set via CSS.
+	 * 
+	 * @param width
+	 */
+	public void setWidth(double width) {
+		getElement().setProperty("width", width);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Can be used to set the height of image (e.g. via binding); size may also
+	 * be set via CSS.
+	 */
+	public double getHeight() {
+		return getElement().getProperty("height", 0.0);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Can be used to set the height of image (e.g. via binding); size may also
+	 * be set via CSS.
+	 * 
+	 * @param height
+	 */
+	public void setHeight(double height) {
+		getElement().setProperty("height", height);
+	}
+
+	@DomEvent("loaded-changed")
+	public static class LoadedChangedEvent extends ComponentEvent<IronImage> {
+		public LoadedChangedEvent(IronImage source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addLoadedChangedListener(
+			ComponentEventListener<LoadedChangedEvent> listener) {
+		return addListener(LoadedChangedEvent.class, listener);
+	}
+
+	@DomEvent("loading-changed")
+	public static class LoadingChangedEvent extends ComponentEvent<IronImage> {
+		public LoadingChangedEvent(IronImage source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addLoadingChangedListener(
+			ComponentEventListener<LoadingChangedEvent> listener) {
+		return addListener(LoadingChangedEvent.class, listener);
+	}
+
+	@DomEvent("error-changed")
+	public static class ErrorChangedEvent extends ComponentEvent<IronImage> {
+		public ErrorChangedEvent(IronImage source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addErrorChangedListener(
+			ComponentEventListener<ErrorChangedEvent> listener) {
+		return addListener(ErrorChangedEvent.class, listener);
+	}
+}

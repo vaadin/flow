@@ -15,20 +15,19 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.paper.input.PaperInput;
+import com.vaadin.components.paper.spinner.PaperSpinner;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
 
 /**
- * View for {@link PaperInput} demo.
+ * View for {@link PaperSpinner} demo.
  */
-@ComponentDemo(name = "Paper Input", href = "paper-input")
-public class PaperInputView extends DemoView {
+@ComponentDemo(name = "Paper Spinner", href = "paper-spinner")
+public class PaperSpinnerView extends DemoView {
 
     @Override
     public void initView() {
-        PaperInput input = new PaperInput();
-        add(input);
+        PaperSpinner paperSpinner = new PaperSpinner();
+        paperSpinner.getElement().setAttribute("active", "");
+        add(paperSpinner);
     }
-
 }

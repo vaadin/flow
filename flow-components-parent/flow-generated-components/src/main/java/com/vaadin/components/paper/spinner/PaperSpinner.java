@@ -1,0 +1,96 @@
+package com.vaadin.components.paper.spinner;
+
+import com.vaadin.ui.Component;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
+
+/**
+ * Description copied from corresponding location in WebComponent:
+ * 
+ * Material design: [Progress &
+ * activity](https://www.google.com/design/spec/components
+ * /progress-activity.html)
+ * 
+ * Element providing a multiple color material design circular spinner.
+ * 
+ * <paper-spinner active></paper-spinner>
+ * 
+ * The default spinner cycles between four layers of colors; by default they are
+ * blue, red, yellow and green. It can be customized to cycle between four
+ * different colors. Use <paper-spinner-lite> for single color spinners.
+ * 
+ * ### Accessibility
+ * 
+ * Alt attribute should be set to provide adequate context for accessibility. If
+ * not provided, it defaults to 'loading'. Empty alt can be provided to mark the
+ * element as decorative if alternative content is provided in another form
+ * (e.g. a text block following the spinner).
+ * 
+ * <paper-spinner alt="Loading contacts list" active></paper-spinner>
+ * 
+ * ### Styling
+ * 
+ * The following custom properties and mixins are available for styling:
+ * 
+ * Custom property | Description | Default
+ * ----------------|-------------|----------
+ * {@code --paper-spinner-layer-1-color} | Color of the first spinner rotation |
+ * {@code --google-blue-500} {@code --paper-spinner-layer-2-color} | Color of
+ * the second spinner rotation | {@code --google-red-500}
+ * {@code --paper-spinner-layer-3-color} | Color of the third spinner rotation |
+ * {@code --google-yellow-500} {@code --paper-spinner-layer-4-color} | Color of
+ * the fourth spinner rotation | {@code --google-green-500}
+ * {@code --paper-spinner-stroke-width} | The width of the spinner stroke | 3px
+ */
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
+		"WebComponent: paper-spinner#2.0.0", "Flow#0.1.10-SNAPSHOT"})
+@Tag("paper-spinner")
+@HtmlImport("frontend://bower_components/paper-spinner/paper-spinner.html")
+public class PaperSpinner extends Component {
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Displays the spinner.
+	 */
+	public boolean isActive() {
+		return getElement().getProperty("active", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Displays the spinner.
+	 * 
+	 * @param active
+	 */
+	public void setActive(boolean active) {
+		getElement().setProperty("active", active);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Alternative text content for accessibility support. If alt is present, it
+	 * will add an aria-label whose content matches alt when active. If alt is
+	 * not present, it will default to 'loading' as the alt value.
+	 */
+	public String getAlt() {
+		return getElement().getProperty("alt");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Alternative text content for accessibility support. If alt is present, it
+	 * will add an aria-label whose content matches alt when active. If alt is
+	 * not present, it will default to 'loading' as the alt value.
+	 * 
+	 * @param alt
+	 */
+	public void setAlt(java.lang.String alt) {
+		getElement().setProperty("alt", alt == null ? "" : alt);
+	}
+}

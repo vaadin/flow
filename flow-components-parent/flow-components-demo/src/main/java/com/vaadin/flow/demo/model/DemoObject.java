@@ -17,6 +17,8 @@ package com.vaadin.flow.demo.model;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.demo.ComponentDemo;
+
 /**
  * Object that defines a demo to be shown at the application.
  *
@@ -25,6 +27,14 @@ public class DemoObject implements Serializable {
 
     private String href;
     private String name;
+
+    public DemoObject() {
+
+    }
+
+    public DemoObject(ComponentDemo componentDemo) {
+        setHref(componentDemo.href()).setName(componentDemo.name());
+    }
 
     /**
      * Gets the relative URL of the demo page.
