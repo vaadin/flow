@@ -54,7 +54,7 @@ And define the server class as:
 ----
 @Tag("event-handler")
 @HtmlImport("/com/example/EventHandler.html")
-public class EventHandlerPolymerTemplate extends PolymerTemplate {
+public class EventHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
 
     @EventHandler
     private void handleClick() {
@@ -86,7 +86,7 @@ To get some extra data on event type and element tag name the server class defin
 ----
 @Tag("event-handler")
 @HtmlImport("/com/example/EventHandler.html")
-public class EventDataHandlerPolymerTemplate extends PolymerTemplate {
+public class EventDataHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
 
     @EventHandler
     private void sendData(@EventData("event.altKey") boolean altPressed,
