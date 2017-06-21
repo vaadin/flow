@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.template;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,7 +29,9 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.template.PolymerTemplateTest.ModelClass;
+import com.vaadin.server.ServletHelper;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinUriResolverFactory;
 import com.vaadin.server.WrappedHttpSession;
@@ -60,7 +61,7 @@ public class DefaultTemplateParserTest {
 
     @Before
     public void setUp() {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         VaadinSession session = Mockito.mock(VaadinSession.class);
         WrappedHttpSession wrappedSession = Mockito
                 .mock(WrappedHttpSession.class);
@@ -82,6 +83,7 @@ public class DefaultTemplateParserTest {
         Mockito.when(httpSession.getServletContext()).thenReturn(context);
 
         Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
+        Mockito.when(request.getServletPath()).thenReturn("");
 
         Mockito.when(context.getResourceAsStream("/bar.html")).thenReturn(
                 new ByteArrayInputStream(("<dom-module id='bar'></dom-module>")
@@ -104,32 +106,7 @@ public class DefaultTemplateParserTest {
     }
 
     @Test
-    public void defaultParser_hasTemplateUsingPathInfo_returnsContent() {
-        VaadinRequest vaadinRequest = CurrentInstance.get(VaadinRequest.class);
-
-        Mockito.when(vaadinRequest.getPathInfo()).thenReturn("/path");
-
-        Mockito.when(context.getResourceAsStream("/path/bar.html")).thenReturn(
-                new ByteArrayInputStream(("<dom-module id='bar'></dom-module>")
-                        .getBytes(StandardCharsets.UTF_8)));
-
-        Mockito.when(context.getResourceAsStream("/path/bar1.html")).thenReturn(
-                new ByteArrayInputStream(("<dom-module id='foo'></dom-module>")
-                        .getBytes(StandardCharsets.UTF_8)));
-
-        DefaultTemplateParser parser = new DefaultTemplateParser();
-        Element element = parser
-                .getTemplateContent(ImportsInspectTemplate.class, "foo");
-
-        Assert.assertTrue(element.getElementById("foo") != null);
-    }
-
-    @Test
     public void defaultParser_templateWithLeadingSlash_returnsContent() {
-        VaadinRequest vaadinRequest = CurrentInstance.get(VaadinRequest.class);
-
-        Mockito.when(vaadinRequest.getPathInfo()).thenReturn("/path");
-
         Mockito.when(resolver.resolveVaadinUri("/bar.html"))
                 .thenReturn("/foo.html");
 
@@ -144,6 +121,40 @@ public class DefaultTemplateParserTest {
         Assert.assertTrue(element.getElementById("foo") != null);
     }
 
+    @Test
+    public void defaultParser_servletPathIsEmpty_returnsContent() {
+        VaadinServletRequest request = (VaadinServletRequest) CurrentInstance
+                .get(VaadinRequest.class);
+
+        Mockito.when(request.getServletPath()).thenReturn("");
+
+        DefaultTemplateParser parser = new DefaultTemplateParser();
+        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+    }
+
+    @Test
+    public void defaultParser_servletPathIsNotEmpty_returnsContent() {
+        VaadinServletRequest request = (VaadinServletRequest) CurrentInstance
+                .get(VaadinRequest.class);
+        Mockito.when(resolver.resolveVaadinUri("/bar.html"))
+                .thenReturn("./../bar.html");
+        Mockito.when(resolver.resolveVaadinUri("bar1.html"))
+                .thenReturn("./../bar1.html");
+
+        Mockito.when(request.getServletPath()).thenReturn("/run/");
+
+
+        Mockito.when(context.getResourceAsStream("/run/./../bar.html")).thenReturn(
+                new ByteArrayInputStream(("<dom-module id='bar'></dom-module>")
+                        .getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(context.getResourceAsStream("/run/./../bar1.html")).thenReturn(
+                new ByteArrayInputStream(("<dom-module id='foo'></dom-module>")
+                        .getBytes(StandardCharsets.UTF_8)));
+
+        DefaultTemplateParser parser = new DefaultTemplateParser();
+        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+    }
+
     @Test(expected = IllegalStateException.class)
     public void defaultParser_noTemplate_throws() {
         DefaultTemplateParser parser = new DefaultTemplateParser();
@@ -152,7 +163,8 @@ public class DefaultTemplateParserTest {
 
     @Test(expected = IllegalStateException.class)
     public void defaultParser_templateResourceIsNotFound_throws() {
-        Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(null);
+        Mockito.when(context.getResourceAsStream("/bar1.html"))
+                .thenReturn(null);
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
         parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
