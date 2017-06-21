@@ -69,7 +69,6 @@ Running tests
 The unit tests for the projects can be run using
 <pre><code>mvn test</code></pre>
 
-<<<<<<< HEAD
 IT tests can be run with
 <pre><code>mvn verify</code></pre>
 
