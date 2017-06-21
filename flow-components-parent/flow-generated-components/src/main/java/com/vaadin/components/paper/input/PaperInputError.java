@@ -31,7 +31,7 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
-public class PaperInputError extends Component {
+public class PaperInputError<R extends PaperInputError<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -48,9 +48,11 @@ public class PaperInputError extends Component {
 	 * True if the error is showing.
 	 * 
 	 * @param invalid
+	 * @return This instance, for method chaining.
 	 */
-	public void setInvalid(boolean invalid) {
+	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
+		return getSelf();
 	}
 
 	/**
@@ -60,5 +62,15 @@ public class PaperInputError extends Component {
 	 */
 	public void update() {
 		getElement().callFunction("update");
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

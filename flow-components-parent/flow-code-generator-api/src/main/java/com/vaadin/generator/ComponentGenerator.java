@@ -15,7 +15,6 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +25,15 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.annotation.Generated;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.JavaClassSource;
+import org.jboss.forge.roaster.model.source.JavaDocSource;
+import org.jboss.forge.roaster.model.source.MethodSource;
+import org.jboss.forge.roaster.model.source.ParameterSource;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -46,15 +54,10 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import org.apache.commons.lang3.StringUtils;
-import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.source.JavaClassSource;
-import org.jboss.forge.roaster.model.source.JavaDocSource;
-import org.jboss.forge.roaster.model.source.MethodSource;
-import org.jboss.forge.roaster.model.source.ParameterSource;
 
 /**
  * Base class of the component generation process. It takes a
@@ -67,21 +70,24 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
  */
 public class ComponentGenerator {
 
+    private static final String GENERIC_TYPE = "R";
+
     private ObjectMapper mapper;
     private File jsonFile;
     private File targetPath;
     private String basePackage;
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
+    private boolean fluentSetters = true;
 
     /**
      * Converts the JSON file to {@link ComponentMetadata}.
      *
      * @param jsonFile
-     *         The input JSON file.
+     *            The input JSON file.
      * @return the converted ComponentMetadata.
      * @throws ComponentGenerationException
-     *         If an error occurs when reading the file.
+     *             If an error occurs when reading the file.
      */
     protected ComponentMetadata toMetadata(File jsonFile) {
         try {
@@ -103,10 +109,26 @@ public class ComponentGenerator {
     }
 
     /**
+     * Set whether the generator should use fluent setters - setters that return
+     * the own object so it's possible to use method chaining.
+     * <p>
+     * By default, fluentSetters is <code>true</code>.
+     * 
+     * @param fluentSetters
+     *            <code>true</code> to enable fluent setters, <code>false</code>
+     *            to disable them.
+     * @return this
+     */
+    public ComponentGenerator withFluentSetters(boolean fluentSetters) {
+        this.fluentSetters = fluentSetters;
+        return this;
+    }
+
+    /**
      * Set the input JSON file.
      *
      * @param jsonFile
-     *         The input JSON file.
+     *            The input JSON file.
      * @return this
      */
     public ComponentGenerator withJsonFile(File jsonFile) {
@@ -118,7 +140,7 @@ public class ComponentGenerator {
      * Set the target output directory.
      *
      * @param targetPath
-     *         The output base directory for the generated Java file.
+     *            The output base directory for the generated Java file.
      * @return this
      */
     public ComponentGenerator withTargetPath(File targetPath) {
@@ -130,8 +152,9 @@ public class ComponentGenerator {
      * Set the base package taht will be used.
      *
      * @param basePackage
-     *         The base package to be used for the generated Java class. The final package of the class is basePackage
-     *         plus the {@link ComponentMetadata#getBaseUrl()}.
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
      * @return this
      */
     public ComponentGenerator withBasePackage(String basePackage) {
@@ -143,7 +166,8 @@ public class ComponentGenerator {
      * Set the license header notice for the file.
      *
      * @param licenseNote
-     *         A note to be added on top of the class as a comment. Usually used for license headers.
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @return this
      */
     public ComponentGenerator withLicenseNote(String licenseNote) {
@@ -155,7 +179,7 @@ public class ComponentGenerator {
      * Set the import frontend base package. e.g. bower_components
      *
      * @param frontendDirectory
-     *         frontend base package
+     *            frontend base package
      * @return this
      */
     public ComponentGenerator withFrontendDirectory(String frontendDirectory) {
@@ -182,21 +206,23 @@ public class ComponentGenerator {
      * file.
      *
      * @param jsonFile
-     *         The input JSON file.
+     *            The input JSON file.
      * @param targetPath
-     *         The output base directory for the generated Java file.
+     *            The output base directory for the generated Java file.
      * @param basePackage
-     *         The base package to be used for the generated Java class. The final package of the class is basePackage
-     *         plus the {@link ComponentMetadata#getBaseUrl()}.
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
      * @param licenseNote
-     *         A note to be added on top of the class as a comment. Usually used for license headers.
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @throws ComponentGenerationException
-     *         If an error occurs when generating the class.
+     *             If an error occurs when generating the class.
      * @see #toMetadata(File)
      * @see #generateClass(ComponentMetadata, File, String, String)
      */
     public void generateClass(File jsonFile, File targetPath,
-                              String basePackage, String licenseNote) {
+            String basePackage, String licenseNote) {
 
         generateClass(toMetadata(jsonFile), targetPath, basePackage,
                 licenseNote);
@@ -207,18 +233,20 @@ public class ComponentGenerator {
      * {@link ComponentMetadata}. Doesn't write anything to the disk.
      *
      * @param metadata
-     *         The webcomponent metadata.
+     *            The webcomponent metadata.
      * @param basePackage
-     *         The base package to be used for the generated Java class. The final package of the class is basePackage
-     *         plus the {@link ComponentMetadata#getBaseUrl()}.
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
      * @param licenseNote
-     *         A note to be added on top of the class as a comment. Usually used for license headers.
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @return The generated Java class in String format.
      * @throws ComponentGenerationException
-     *         If an error occurs when generating the class.
+     *             If an error occurs when generating the class.
      */
     public String generateClass(ComponentMetadata metadata, String basePackage,
-                                String licenseNote) {
+            String licenseNote) {
 
         JavaClassSource javaClass = generateClassSource(metadata, basePackage);
         return addLicenseHeaderIfAvailable(javaClass.toString(), licenseNote);
@@ -230,7 +258,7 @@ public class ComponentGenerator {
      * beginning of the file).
      */
     private JavaClassSource generateClassSource(ComponentMetadata metadata,
-                                                String basePackage) {
+            String basePackage) {
 
         String targetPackage = basePackage;
         if (StringUtils.isNotBlank(metadata.getBaseUrl())) {
@@ -244,7 +272,7 @@ public class ComponentGenerator {
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(targetPackage).setPublic()
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
-                .generateValidJavaClassName(metadata.getName()));
+                        .generateValidJavaClassName(metadata.getName()));
 
         addClassAnnotations(metadata, javaClass);
 
@@ -272,7 +300,25 @@ public class ComponentGenerator {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
 
+        if (fluentSetters) {
+            javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                    .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
+            generateGetSelf(javaClass);
+        }
+
         return javaClass;
+    }
+
+    private void generateGetSelf(JavaClassSource javaClass) {
+        MethodSource<JavaClassSource> method = javaClass.addMethod()
+                .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
+
+        method.getJavaDoc()
+                .setText(
+                        "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
+                .addTagValue("@return", "This object casted to its type.");
+
+        method.setBody("return (" + GENERIC_TYPE + ") this;");
     }
 
     /*
@@ -280,7 +326,7 @@ public class ComponentGenerator {
      * empty, just returns the original source.
      */
     private String addLicenseHeaderIfAvailable(String source,
-                                               String licenseNote) {
+            String licenseNote) {
 
         if (StringUtils.isBlank(licenseNote)) {
             return source;
@@ -291,7 +337,7 @@ public class ComponentGenerator {
     }
 
     private void addClassAnnotations(ComponentMetadata metadata,
-                                     JavaClassSource javaClass) {
+            JavaClassSource javaClass) {
 
         Properties properties = getProperties("version.prop");
         String generator = String.format("Generator: %s#%s",
@@ -303,8 +349,8 @@ public class ComponentGenerator {
         String flow = String.format("Flow#%s",
                 properties.getProperty("flow.version"));
 
-        String[] generatedValue = new String[]{generator, webComponent,
-                flow};
+        String[] generatedValue = new String[] { generator, webComponent,
+                flow };
 
         javaClass.addAnnotation(Generated.class)
                 .setStringArrayValue(generatedValue);
@@ -324,19 +370,21 @@ public class ComponentGenerator {
      * Generates the Java class by using the {@link ComponentMetadata} object.
      *
      * @param metadata
-     *         The webcomponent metadata.
+     *            The webcomponent metadata.
      * @param targetPath
-     *         The output base directory for the generated Java file.
+     *            The output base directory for the generated Java file.
      * @param basePackage
-     *         The base package to be used for the generated Java class. The final package of the class is basePackage
-     *         plus the {@link ComponentMetadata#getBaseUrl()}.
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
      * @param licenseNote
-     *         A note to be added on top of the class as a comment. Usually used for license headers.
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
      * @throws ComponentGenerationException
-     *         If an error occurs when generating the class.
+     *             If an error occurs when generating the class.
      */
     public void generateClass(ComponentMetadata metadata, File targetPath,
-                              String basePackage, String licenseNote) {
+            String basePackage, String licenseNote) {
 
         JavaClassSource javaClass = generateClassSource(metadata, basePackage);
         String source = addLicenseHeaderIfAvailable(javaClass.toString(),
@@ -366,62 +414,65 @@ public class ComponentGenerator {
     }
 
     private void addAnnotation(JavaClassSource javaClass,
-                               Class<? extends Annotation> annotation, String literalValue) {
+            Class<? extends Annotation> annotation, String literalValue) {
         javaClass.addAnnotation(annotation)
                 .setLiteralValue("\"" + literalValue + "\"");
     }
 
     private void generateGetterFor(JavaClassSource javaClass,
-                                   ComponentPropertyData property) {
+            ComponentPropertyData property) {
         boolean postfixWithVariableType = property.getType().size() > 1;
         for (ComponentBasicType basicType : property.getType()) {
-            MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
-                    .setReturnType(toJavaType(basicType));
+            MethodSource<JavaClassSource> method = javaClass.addMethod()
+                    .setPublic().setReturnType(toJavaType(basicType));
 
             if (basicType == ComponentBasicType.BOOLEAN) {
-                method.setName(ComponentGeneratorUtils
-                        .generateMethodNameForProperty("is", property.getName()));
+                method.setName(
+                        ComponentGeneratorUtils.generateMethodNameForProperty(
+                                "is", property.getName()));
             } else {
                 method.setName(ComponentGeneratorUtils
-                        .generateMethodNameForProperty("get", property.getName())
-                        + (postfixWithVariableType ? StringUtils.capitalize(basicType.name().toLowerCase()) : ""));
+                        .generateMethodNameForProperty("get",
+                                property.getName())
+                        + (postfixWithVariableType ? StringUtils.capitalize(
+                                basicType.name().toLowerCase()) : ""));
             }
             switch (basicType) {
-                case STRING:
-                    method.setBody(
-                            String.format("return getElement().getProperty(\"%s\");",
-                                    property.getName()));
-                    break;
-                case BOOLEAN:
-                    method.setBody(String.format(
-                            "return getElement().getProperty(\"%s\", false);",
-                            property.getName()));
-                    break;
-                case NUMBER:
-                    method.setBody(String.format(
-                            "return getElement().getProperty(\"%s\", 0.0);",
-                            property.getName()));
-                    break;
-                case DATE:
-                    method.setBody(
-                            String.format("return getElement().getProperty(\"%s\");",
-                                    property.getName()));
-                    break;
-                case ARRAY:
-                    method.setBody(String.format(
-                            "return (JsonArray) getElement().getPropertyRaw(\"%s\");",
-                            property.getName()));
-                    break;
-                case OBJECT:
-                    method.setBody(String.format(
-                            "return (JsonObject) getElement().getPropertyRaw(\"%s\");",
-                            property.getName()));
-                    break;
-                case UNDEFINED:
-                    method.setBody(String.format(
-                            "return (JsonValue) getElement().getPropertyRaw(\"%s\");",
-                            property.getName()));
-                    break;
+            case STRING:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\");",
+                        property.getName()));
+                break;
+            case BOOLEAN:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\", false);",
+                        property.getName()));
+                break;
+            case NUMBER:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\", 0.0);",
+                        property.getName()));
+                break;
+            case DATE:
+                method.setBody(String.format(
+                        "return getElement().getProperty(\"%s\");",
+                        property.getName()));
+                break;
+            case ARRAY:
+                method.setBody(String.format(
+                        "return (JsonArray) getElement().getPropertyRaw(\"%s\");",
+                        property.getName()));
+                break;
+            case OBJECT:
+                method.setBody(String.format(
+                        "return (JsonObject) getElement().getPropertyRaw(\"%s\");",
+                        property.getName()));
+                break;
+            case UNDEFINED:
+                method.setBody(String.format(
+                        "return (JsonValue) getElement().getPropertyRaw(\"%s\");",
+                        property.getName()));
+                break;
             }
 
             if (StringUtils.isNotEmpty(property.getDescription())) {
@@ -439,30 +490,32 @@ public class ComponentGenerator {
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
-                                   ComponentPropertyData property) {
+            ComponentPropertyData property) {
 
         for (ComponentBasicType basicType : property.getType()) {
             MethodSource<JavaClassSource> method = javaClass.addMethod()
-                    .setName(ComponentGeneratorUtils.generateMethodNameForProperty(
-                            "set", property.getName()))
-                    .setPublic().setReturnTypeVoid();
+                    .setName(ComponentGeneratorUtils
+                            .generateMethodNameForProperty("set",
+                                    property.getName()))
+                    .setPublic();
 
             Class<?> setterType = toJavaType(basicType);
             method.addParameter(setterType, property.getName());
 
             switch (basicType) {
-                case ARRAY:
-                case UNDEFINED:
-                case OBJECT:
-                    method.setBody(
-                            String.format("getElement().setPropertyJson(\"%s\", %s);",
-                                    property.getName(), property.getName()));
-                    break;
-                default:
-                    method.setBody(String.format(
-                            "getElement().setProperty(\"%s\", %s);", property.getName(),
-                            getSetterValue(property.getName(), setterType)));
-                    break;
+            case ARRAY:
+            case UNDEFINED:
+            case OBJECT:
+                method.setBody(String.format(
+                        "getElement().setPropertyJson(\"%s\", %s);",
+                        property.getName(), property.getName()));
+                break;
+            default:
+                method.setBody(String.format(
+                        "getElement().setProperty(\"%s\", %s);",
+                        property.getName(),
+                        getSetterValue(property.getName(), setterType)));
+                break;
             }
 
             if (StringUtils.isNotEmpty(property.getDescription())) {
@@ -470,6 +523,13 @@ public class ComponentGenerator {
             }
 
             method.getJavaDoc().addTagValue("@param", property.getName());
+
+            if (fluentSetters) {
+                method.setReturnType(GENERIC_TYPE);
+                method.setBody(method.getBody() + "\n" + "return getSelf();");
+                method.getJavaDoc().addTagValue("@return",
+                        "This instance, for method chaining.");
+            }
         }
     }
 
@@ -484,7 +544,7 @@ public class ComponentGenerator {
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
-                                     ComponentFunctionData function) {
+            ComponentFunctionData function) {
 
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName(StringUtils.uncapitalize(ComponentGeneratorUtils
@@ -496,7 +556,8 @@ public class ComponentGenerator {
         }
 
         method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
-                function.getName(), generateFunctionParameters(function, method)));
+                function.getName(),
+                generateFunctionParameters(function, method)));
     }
 
     /**
@@ -505,24 +566,27 @@ public class ComponentGenerator {
      * Also adds the parameters to the to the javadocs for the given method.
      *
      * @param function
-     *         the function data
+     *            the function data
      * @param method
-     *         the method to add javadocs to, not {@code null}
-     * @return a string of the parameters of the function, or an empty string if no parameters
+     *            the method to add javadocs to, not {@code null}
+     * @return a string of the parameters of the function, or an empty string if
+     *         no parameters
      */
-    private String generateFunctionParameters(ComponentFunctionData function, MethodSource<JavaClassSource> method) {
-        if (function.getParameters() == null || function.getParameters().isEmpty()) {
+    private String generateFunctionParameters(ComponentFunctionData function,
+            MethodSource<JavaClassSource> method) {
+        if (function.getParameters() == null
+                || function.getParameters().isEmpty()) {
             return "";
         }
 
         StringBuilder params = new StringBuilder();
-        for (ComponentFunctionParameterData param : function
-                .getParameters()) {
+        for (ComponentFunctionParameterData param : function.getParameters()) {
             List<ComponentBasicType> typeVariants = param.getType();
             boolean useTypePostfixForVariableName = typeVariants.size() > 1;
 
             // there might be multiple types accepted for same parameter,
-            // for now different types are allowed and parameter name is postfixed with type
+            // for now different types are allowed and parameter name is
+            // postfixed with type
             for (ComponentBasicType basicType : typeVariants) {
 
                 String formattedName = StringUtils
@@ -530,21 +594,23 @@ public class ComponentGenerator {
                                 .formatStringToValidJavaIdentifier(
                                         param.getName()));
                 if (useTypePostfixForVariableName) {
-                    formattedName = formattedName + StringUtils.capitalize(basicType.name().toLowerCase());
+                    formattedName = formattedName + StringUtils
+                            .capitalize(basicType.name().toLowerCase());
                 }
 
                 method.addParameter(toJavaType(basicType), formattedName);
                 params.append(", ").append(formattedName);
 
                 method.getJavaDoc().addTagValue("@param",
-                        param.getName() + (useTypePostfixForVariableName ? " can be <code>null</code>" : ""));
+                        param.getName() + (useTypePostfixForVariableName
+                                ? " can be <code>null</code>" : ""));
             }
         }
         return params.toString();
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
-                                          ComponentEventData event) {
+            ComponentEventData event) {
         String eventName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(event.getName());
 
@@ -555,10 +621,12 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("add" + StringUtils.capitalize(eventName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
-        method.addParameter("ComponentEventListener<" + eventListener.getName() + ">", "listener");
+        method.addParameter(
+                "ComponentEventListener<" + eventListener.getName() + ">",
+                "listener");
 
-        method.setBody(
-                String.format("return addListener(%s.class, listener);", eventListener.getName()));
+        method.setBody(String.format("return addListener(%s.class, listener);",
+                eventListener.getName()));
     }
 
     private JavaClassSource createEventListenerEventClass(
@@ -592,18 +660,16 @@ public class ComponentGenerator {
                 propertyJavaType = JsonObject.class;
             }
             ParameterSource<JavaClassSource> parameter = eventConstructor
-                    .addParameter(propertyJavaType,
-                            propertyName);
+                    .addParameter(propertyJavaType, propertyName);
             parameter.addAnnotation(EventData.class).setLiteralValue(
                     String.format("\"event.%s\"", propertyName));
             // Create private field
-            eventListener.addProperty(propertyJavaType,
-                    propertyName).setAccessible(true).setMutable(false);
+            eventListener.addProperty(propertyJavaType, propertyName)
+                    .setAccessible(true).setMutable(false);
 
             // Set value to private field
             eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
-                    eventConstructor.getBody(), propertyName,
-                    propertyName));
+                    eventConstructor.getBody(), propertyName, propertyName));
             // Add the EventData as a import
             javaClass.addImport(EventData.class);
         }
@@ -621,23 +687,23 @@ public class ComponentGenerator {
 
     private Class<?> toJavaType(ComponentBasicType type) {
         switch (type) {
-            case STRING:
-                return String.class;
-            case NUMBER:
-                return double.class;
-            case BOOLEAN:
-                return boolean.class;
-            case ARRAY:
-                return JsonArray.class;
-            case DATE:
-                return Date.class;
-            case OBJECT:
-                return JsonObject.class;
-            case UNDEFINED:
-                return JsonValue.class;
-            default:
-                throw new ComponentGenerationException(
-                        "Not a supported type: " + type);
+        case STRING:
+            return String.class;
+        case NUMBER:
+            return double.class;
+        case BOOLEAN:
+            return boolean.class;
+        case ARRAY:
+            return JsonArray.class;
+        case DATE:
+            return Date.class;
+        case OBJECT:
+            return JsonObject.class;
+        case UNDEFINED:
+            return JsonValue.class;
+        default:
+            throw new ComponentGenerationException(
+                    "Not a supported type: " + type);
         }
     }
 

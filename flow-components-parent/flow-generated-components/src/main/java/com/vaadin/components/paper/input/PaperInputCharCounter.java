@@ -29,7 +29,9 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-input-char-counter#2.0.1", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
-public class PaperInputCharCounter extends Component {
+public class PaperInputCharCounter<R extends PaperInputCharCounter<R>>
+		extends
+			Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -38,5 +40,15 @@ public class PaperInputCharCounter extends Component {
 	 */
 	public void update() {
 		getElement().callFunction("update");
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }
