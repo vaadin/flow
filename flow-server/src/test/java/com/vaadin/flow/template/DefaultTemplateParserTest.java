@@ -29,7 +29,6 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.template.PolymerTemplateTest.ModelClass;
-import com.vaadin.server.ServletHelper;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
@@ -129,30 +128,69 @@ public class DefaultTemplateParserTest {
         Mockito.when(request.getServletPath()).thenReturn("");
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+        Element element = parser
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+
+        Assert.assertTrue(element.getElementById("foo") != null);
     }
 
     @Test
     public void defaultParser_servletPathIsNotEmpty_returnsContent() {
         VaadinServletRequest request = (VaadinServletRequest) CurrentInstance
                 .get(VaadinRequest.class);
-        Mockito.when(resolver.resolveVaadinUri("/bar.html"))
+        Mockito.when(resolver.resolveVaadinUri("bar.html"))
                 .thenReturn("./../bar.html");
         Mockito.when(resolver.resolveVaadinUri("bar1.html"))
                 .thenReturn("./../bar1.html");
 
         Mockito.when(request.getServletPath()).thenReturn("/run/");
 
-
-        Mockito.when(context.getResourceAsStream("/run/./../bar.html")).thenReturn(
-                new ByteArrayInputStream(("<dom-module id='bar'></dom-module>")
-                        .getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(context.getResourceAsStream("/run/./../bar1.html")).thenReturn(
-                new ByteArrayInputStream(("<dom-module id='foo'></dom-module>")
-                        .getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
+                .thenReturn(new ByteArrayInputStream(
+                        ("<dom-module id='bar'></dom-module>")
+                                .getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
+                .thenReturn(new ByteArrayInputStream(
+                        ("<dom-module id='foo'></dom-module>")
+                                .getBytes(StandardCharsets.UTF_8)));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
-        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+        Element element = parser
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+
+        Assert.assertTrue(element.getElementById("foo") != null);
+    }
+
+    @Test
+    public void defaultParser_servletPathIsNotEmpty_doubleSlashIsRemovedFromRequest() {
+        VaadinServletRequest request = (VaadinServletRequest) CurrentInstance
+                .get(VaadinRequest.class);
+        Mockito.when(resolver.resolveVaadinUri("bar.html"))
+                .thenReturn("/./../bar.html");
+        Mockito.when(resolver.resolveVaadinUri("bar1.html"))
+                .thenReturn("/./../bar1.html");
+
+        Mockito.when(request.getServletPath()).thenReturn("/run/");
+
+        Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
+                .thenReturn(new ByteArrayInputStream(
+                        ("<dom-module id='bar'></dom-module>")
+                                .getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
+                .thenReturn(new ByteArrayInputStream(
+                        ("<dom-module id='foo'></dom-module>")
+                                .getBytes(StandardCharsets.UTF_8)));
+
+        DefaultTemplateParser parser = new DefaultTemplateParser();
+        Element element = parser
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+
+        Assert.assertTrue(element.getElementById("foo") != null);
+
+        // The double slash should be ignored e.g. `/run//./..` should become
+        // `/run/./..`
+        Mockito.verify(context).getResourceAsStream("/run/./../bar.html");
+        Mockito.verify(context).getResourceAsStream("/run/./../bar1.html");
     }
 
     @Test(expected = IllegalStateException.class)

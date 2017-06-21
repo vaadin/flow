@@ -115,6 +115,8 @@ public class DefaultTemplateParser implements TemplateParser {
             assert servletPath != null;
             if (!servletPath.endsWith("/") && !uri.startsWith("/")) {
                 servletPath += "/";
+            } else if(servletPath.endsWith("/") && uri.startsWith("/")) {
+                servletPath = servletPath.substring(0, servletPath.length()-1);
             }
             // "Revert" the `../` from uri resolver so that we point to the
             // context root.
