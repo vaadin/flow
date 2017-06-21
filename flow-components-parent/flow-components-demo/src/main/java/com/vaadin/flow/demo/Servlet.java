@@ -48,6 +48,10 @@ public class Servlet extends VaadinServlet {
             if (!availableViews.isEmpty()) {
                 configuration.setRoute("", availableViews.get(0),
                         MainLayout.class);
+            } else {
+                throw new IllegalStateException(
+                        "No views found for ComponentDemo.\n"
+                                + "Check that at least one DemoView with the @ComponentDemo annotation exists!");
             }
         }
 

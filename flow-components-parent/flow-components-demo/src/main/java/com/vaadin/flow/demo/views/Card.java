@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -26,26 +27,14 @@ import com.vaadin.ui.Component;
  * Card to hold components for DemoViews
  */
 @Tag(Tag.DIV)
+@StyleSheet("frontend://src/component-card.css")
 public class Card extends HtmlContainer {
 
     /**
      * Card constructor that set wanted styles.
      */
     public Card() {
-        Style style = getElement().getStyle();
-        style.set("backgroundColor", "GhostWhite");
-
-        style.set("boxShadow", "5px 5px 10px 0px rgba(0,0,0,0.75)");
-
-        style.set("minWidth", "250px");
-        style.set("maxWidth", "400px");
-        style.set("minHeight", "300px");
-
-        style.set("padding", "15px");
-        style.set("margin", "0 10px");
-
-        style.set("textAlign", "center");
-        style.set("display", "inline-block");
+        getElement().setAttribute("class", "component-card");
     }
 
     @Override

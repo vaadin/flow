@@ -84,7 +84,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         // uses the <slot> at the template
         getElement().appendChild(childView.getElement());
         if (childView instanceof DemoView) {
-            getModel().setPage(((DemoView) childView).getClass().getAnnotation(ComponentDemo.class).name());
+            getModel().setPage(childView.getClass().getAnnotation(ComponentDemo.class).name());
         }
     }
 }
