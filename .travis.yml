@@ -35,6 +35,13 @@ deploy:
     on:
       branch: master
 
+after_deploy:
+  - provider: script
+    script: ./.travis.trigger_demo_build.sh
+    skip_cleanup: true
+    on:
+      branch: master
+
 # Cache requires a master build
 branches:
   only:
