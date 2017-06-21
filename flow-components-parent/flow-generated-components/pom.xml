@@ -45,6 +45,7 @@
                         <goals><goal>generate</goal></goals>
                         <configuration>
                             <basePackage>com.vaadin.components</basePackage>
+                            <licenseFile>license_header</licenseFile>
                         </configuration>
                     </execution>
                 </executions>
