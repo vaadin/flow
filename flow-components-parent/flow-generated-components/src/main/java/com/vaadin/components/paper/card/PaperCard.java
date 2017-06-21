@@ -53,7 +53,7 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-card#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
-public class PaperCard extends Component {
+public class PaperCard<R extends PaperCard<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -70,9 +70,11 @@ public class PaperCard extends Component {
 	 * The title of the card.
 	 * 
 	 * @param heading
+	 * @return This instance, for method chaining.
 	 */
-	public void setHeading(java.lang.String heading) {
+	public R setHeading(java.lang.String heading) {
 		getElement().setProperty("heading", heading == null ? "" : heading);
+		return getSelf();
 	}
 
 	/**
@@ -90,9 +92,11 @@ public class PaperCard extends Component {
 	 * The url of the title image of the card.
 	 * 
 	 * @param image
+	 * @return This instance, for method chaining.
 	 */
-	public void setImage(java.lang.String image) {
+	public R setImage(java.lang.String image) {
 		getElement().setProperty("image", image == null ? "" : image);
+		return getSelf();
 	}
 
 	/**
@@ -110,9 +114,11 @@ public class PaperCard extends Component {
 	 * The text alternative of the card's title image.
 	 * 
 	 * @param alt
+	 * @return This instance, for method chaining.
 	 */
-	public void setAlt(java.lang.String alt) {
+	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
+		return getSelf();
 	}
 
 	/**
@@ -132,9 +138,11 @@ public class PaperCard extends Component {
 	 * {@code placeholder} image to be shown until the image is fully rendered.
 	 * 
 	 * @param preloadImage
+	 * @return This instance, for method chaining.
 	 */
-	public void setPreloadImage(boolean preloadImage) {
+	public R setPreloadImage(boolean preloadImage) {
 		getElement().setProperty("preloadImage", preloadImage);
+		return getSelf();
 	}
 
 	/**
@@ -154,9 +162,11 @@ public class PaperCard extends Component {
 	 * cause the image to fade into place.
 	 * 
 	 * @param fadeImage
+	 * @return This instance, for method chaining.
 	 */
-	public void setFadeImage(boolean fadeImage) {
+	public R setFadeImage(boolean fadeImage) {
 		getElement().setProperty("fadeImage", fadeImage);
+		return getSelf();
 	}
 
 	/**
@@ -178,10 +188,12 @@ public class PaperCard extends Component {
 	 * rendering.
 	 * 
 	 * @param placeholderImage
+	 * @return This instance, for method chaining.
 	 */
-	public void setPlaceholderImage(java.lang.String placeholderImage) {
+	public R setPlaceholderImage(java.lang.String placeholderImage) {
 		getElement().setProperty("placeholderImage",
 				placeholderImage == null ? "" : placeholderImage);
+		return getSelf();
 	}
 
 	/**
@@ -199,9 +211,11 @@ public class PaperCard extends Component {
 	 * The z-depth of the card, from 0-5.
 	 * 
 	 * @param elevation
+	 * @return This instance, for method chaining.
 	 */
-	public void setElevation(double elevation) {
+	public R setElevation(double elevation) {
 		getElement().setProperty("elevation", elevation);
+		return getSelf();
 	}
 
 	/**
@@ -221,9 +235,11 @@ public class PaperCard extends Component {
 	 * value.
 	 * 
 	 * @param animatedShadow
+	 * @return This instance, for method chaining.
 	 */
-	public void setAnimatedShadow(boolean animatedShadow) {
+	public R setAnimatedShadow(boolean animatedShadow) {
 		getElement().setProperty("animatedShadow", animatedShadow);
+		return getSelf();
 	}
 
 	/**
@@ -243,8 +259,20 @@ public class PaperCard extends Component {
 	 * the underlying paper-material style (since they have different names).
 	 * 
 	 * @param animated
+	 * @return This instance, for method chaining.
 	 */
-	public void setAnimated(boolean animated) {
+	public R setAnimated(boolean animated) {
 		getElement().setProperty("animated", animated);
+		return getSelf();
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

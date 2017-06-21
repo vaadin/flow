@@ -71,7 +71,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-image#2.1.1", "Flow#0.1.10-SNAPSHOT"})
 @Tag("iron-image")
 @HtmlImport("frontend://bower_components/iron-image/iron-image.html")
-public class IronImage extends Component {
+public class IronImage<R extends IronImage<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -88,9 +88,11 @@ public class IronImage extends Component {
 	 * The URL of an image.
 	 * 
 	 * @param src
+	 * @return This instance, for method chaining.
 	 */
-	public void setSrc(java.lang.String src) {
+	public R setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);
+		return getSelf();
 	}
 
 	/**
@@ -108,9 +110,11 @@ public class IronImage extends Component {
 	 * A short text alternative for the image.
 	 * 
 	 * @param alt
+	 * @return This instance, for method chaining.
 	 */
-	public void setAlt(java.lang.String alt) {
+	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
+		return getSelf();
 	}
 
 	/**
@@ -130,10 +134,12 @@ public class IronImage extends Component {
 	 * https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
 	 * 
 	 * @param crossorigin
+	 * @return This instance, for method chaining.
 	 */
-	public void setCrossorigin(java.lang.String crossorigin) {
+	public R setCrossorigin(java.lang.String crossorigin) {
 		getElement().setProperty("crossorigin",
 				crossorigin == null ? "" : crossorigin);
+		return getSelf();
 	}
 
 	/**
@@ -155,9 +161,11 @@ public class IronImage extends Component {
 	 * be invalid, to prevent 404 requests.
 	 * 
 	 * @param preventLoad
+	 * @return This instance, for method chaining.
 	 */
-	public void setPreventLoad(boolean preventLoad) {
+	public R setPreventLoad(boolean preventLoad) {
 		getElement().setProperty("preventLoad", preventLoad);
+		return getSelf();
 	}
 
 	/**
@@ -183,9 +191,11 @@ public class IronImage extends Component {
 	 * size).
 	 * 
 	 * @param sizing
+	 * @return This instance, for method chaining.
 	 */
-	public void setSizing(java.lang.String sizing) {
+	public R setSizing(java.lang.String sizing) {
 		getElement().setProperty("sizing", sizing == null ? "" : sizing);
+		return getSelf();
 	}
 
 	/**
@@ -205,9 +215,11 @@ public class IronImage extends Component {
 	 * determines how the image is aligned within the element bounds.
 	 * 
 	 * @param position
+	 * @return This instance, for method chaining.
 	 */
-	public void setPosition(java.lang.String position) {
+	public R setPosition(java.lang.String position) {
 		getElement().setProperty("position", position == null ? "" : position);
+		return getSelf();
 	}
 
 	/**
@@ -227,9 +239,11 @@ public class IronImage extends Component {
 	 * {@code placeholder} image to be shown until the new image has loaded.
 	 * 
 	 * @param preload
+	 * @return This instance, for method chaining.
 	 */
-	public void setPreload(boolean preload) {
+	public R setPreload(boolean preload) {
 		getElement().setProperty("preload", preload);
+		return getSelf();
 	}
 
 	/**
@@ -251,10 +265,12 @@ public class IronImage extends Component {
 	 * rendering.
 	 * 
 	 * @param placeholder
+	 * @return This instance, for method chaining.
 	 */
-	public void setPlaceholder(java.lang.String placeholder) {
+	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
+		return getSelf();
 	}
 
 	/**
@@ -274,9 +290,11 @@ public class IronImage extends Component {
 	 * image to fade into place.
 	 * 
 	 * @param fade
+	 * @return This instance, for method chaining.
 	 */
-	public void setFade(boolean fade) {
+	public R setFade(boolean fade) {
 		getElement().setProperty("fade", fade);
+		return getSelf();
 	}
 
 	/**
@@ -294,9 +312,11 @@ public class IronImage extends Component {
 	 * Read-only value that is true when the image is loaded.
 	 * 
 	 * @param loaded
+	 * @return This instance, for method chaining.
 	 */
-	public void setLoaded(boolean loaded) {
+	public R setLoaded(boolean loaded) {
 		getElement().setProperty("loaded", loaded);
+		return getSelf();
 	}
 
 	/**
@@ -316,9 +336,11 @@ public class IronImage extends Component {
 	 * {@code preload} option is used.
 	 * 
 	 * @param loading
+	 * @return This instance, for method chaining.
 	 */
-	public void setLoading(boolean loading) {
+	public R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
+		return getSelf();
 	}
 
 	/**
@@ -338,9 +360,11 @@ public class IronImage extends Component {
 	 * load.
 	 * 
 	 * @param error
+	 * @return This instance, for method chaining.
 	 */
-	public void setError(boolean error) {
+	public R setError(boolean error) {
 		getElement().setProperty("error", error);
+		return getSelf();
 	}
 
 	/**
@@ -360,9 +384,11 @@ public class IronImage extends Component {
 	 * be set via CSS.
 	 * 
 	 * @param width
+	 * @return This instance, for method chaining.
 	 */
-	public void setWidth(double width) {
+	public R setWidth(double width) {
 		getElement().setProperty("width", width);
+		return getSelf();
 	}
 
 	/**
@@ -382,9 +408,11 @@ public class IronImage extends Component {
 	 * be set via CSS.
 	 * 
 	 * @param height
+	 * @return This instance, for method chaining.
 	 */
-	public void setHeight(double height) {
+	public R setHeight(double height) {
 		getElement().setProperty("height", height);
+		return getSelf();
 	}
 
 	@DomEvent("loaded-changed")
@@ -421,5 +449,15 @@ public class IronImage extends Component {
 	public Registration addErrorChangedListener(
 			ComponentEventListener<ErrorChangedEvent> listener) {
 		return addListener(ErrorChangedEvent.class, listener);
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

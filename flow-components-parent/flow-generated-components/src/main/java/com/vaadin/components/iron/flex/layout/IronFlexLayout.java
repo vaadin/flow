@@ -58,5 +58,15 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: iron-flex-layout#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("iron-flex-layout")
 @HtmlImport("frontend://bower_components/iron-flex-layout/iron-flex-layout.html")
-public class IronFlexLayout extends Component {
+public class IronFlexLayout<R extends IronFlexLayout<R>> extends Component {
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
+	}
 }

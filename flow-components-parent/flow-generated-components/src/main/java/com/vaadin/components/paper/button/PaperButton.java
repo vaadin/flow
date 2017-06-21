@@ -75,7 +75,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-button#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
-public class PaperButton extends Component {
+public class PaperButton<R extends PaperButton<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -94,9 +94,11 @@ public class PaperButton extends Component {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 * @return This instance, for method chaining.
 	 */
-	public void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
+		return getSelf();
 	}
 
 	/**
@@ -116,11 +118,13 @@ public class PaperButton extends Component {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 * @return This instance, for method chaining.
 	 */
-	public void setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
+		return getSelf();
 	}
 
 	public JsonObject getKeyBindings() {
@@ -129,9 +133,11 @@ public class PaperButton extends Component {
 
 	/**
 	 * @param keyBindings
+	 * @return This instance, for method chaining.
 	 */
-	public void setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
+		return getSelf();
 	}
 
 	/**
@@ -149,9 +155,11 @@ public class PaperButton extends Component {
 	 * If true, the user is currently holding down the button.
 	 * 
 	 * @param pressed
+	 * @return This instance, for method chaining.
 	 */
-	public void setPressed(boolean pressed) {
+	public R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
+		return getSelf();
 	}
 
 	/**
@@ -171,9 +179,11 @@ public class PaperButton extends Component {
 	 * the spacebar.
 	 * 
 	 * @param toggles
+	 * @return This instance, for method chaining.
 	 */
-	public void setToggles(boolean toggles) {
+	public R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
+		return getSelf();
 	}
 
 	/**
@@ -191,9 +201,11 @@ public class PaperButton extends Component {
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
+	 * @return This instance, for method chaining.
 	 */
-	public void setActive(boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
+		return getSelf();
 	}
 
 	/**
@@ -215,9 +227,11 @@ public class PaperButton extends Component {
 	 * keyboard input).
 	 * 
 	 * @param pointerDown
+	 * @return This instance, for method chaining.
 	 */
-	public void setPointerDown(boolean pointerDown) {
+	public R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
+		return getSelf();
 	}
 
 	/**
@@ -237,10 +251,12 @@ public class PaperButton extends Component {
 	 * keyboard.
 	 * 
 	 * @param receivedFocusFromKeyboard
+	 * @return This instance, for method chaining.
 	 */
-	public void setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
+	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
 				receivedFocusFromKeyboard);
+		return getSelf();
 	}
 
 	/**
@@ -260,10 +276,12 @@ public class PaperButton extends Component {
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
+	 * @return This instance, for method chaining.
 	 */
-	public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
+		return getSelf();
 	}
 
 	/**
@@ -281,9 +299,11 @@ public class PaperButton extends Component {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
+	 * @return This instance, for method chaining.
 	 */
-	public void setFocused(boolean focused) {
+	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
+		return getSelf();
 	}
 
 	/**
@@ -301,9 +321,11 @@ public class PaperButton extends Component {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 * @return This instance, for method chaining.
 	 */
-	public void setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
+		return getSelf();
 	}
 
 	/**
@@ -323,9 +345,11 @@ public class PaperButton extends Component {
 	 * with via the pointer.
 	 * 
 	 * @param noink
+	 * @return This instance, for method chaining.
 	 */
-	public void setNoink(boolean noink) {
+	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
+		return getSelf();
 	}
 
 	/**
@@ -347,9 +371,11 @@ public class PaperButton extends Component {
 	 * the last.
 	 * 
 	 * @param elevation
+	 * @return This instance, for method chaining.
 	 */
-	public void setElevation(double elevation) {
+	public R setElevation(double elevation) {
 		getElement().setProperty("elevation", elevation);
+		return getSelf();
 	}
 
 	/**
@@ -367,9 +393,11 @@ public class PaperButton extends Component {
 	 * If true, the button should be styled with a shadow.
 	 * 
 	 * @param raised
+	 * @return This instance, for method chaining.
 	 */
-	public void setRaised(boolean raised) {
+	public R setRaised(boolean raised) {
 		getElement().setProperty("raised", raised);
+		return getSelf();
 	}
 
 	/**
@@ -490,5 +518,15 @@ public class PaperButton extends Component {
 	public Registration addTransitionendListener(
 			ComponentEventListener<TransitionendEvent> listener) {
 		return addListener(TransitionendEvent.class, listener);
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

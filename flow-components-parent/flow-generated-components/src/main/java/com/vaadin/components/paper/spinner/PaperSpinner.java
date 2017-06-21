@@ -48,7 +48,7 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-spinner#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("paper-spinner")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner.html")
-public class PaperSpinner extends Component {
+public class PaperSpinner<R extends PaperSpinner<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -65,9 +65,11 @@ public class PaperSpinner extends Component {
 	 * Displays the spinner.
 	 * 
 	 * @param active
+	 * @return This instance, for method chaining.
 	 */
-	public void setActive(boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
+		return getSelf();
 	}
 
 	/**
@@ -89,8 +91,20 @@ public class PaperSpinner extends Component {
 	 * not present, it will default to 'loading' as the alt value.
 	 * 
 	 * @param alt
+	 * @return This instance, for method chaining.
 	 */
-	public void setAlt(java.lang.String alt) {
+	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
+		return getSelf();
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }

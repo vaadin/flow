@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.components.paper.input.PaperInput;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
 
 /**
  * View for {@link PaperInput} demo.
@@ -27,7 +26,8 @@ public class PaperInputView extends DemoView {
 
     @Override
     public void initView() {
-        PaperInput input = new PaperInput();
+        PaperInput input = new PaperInput().setLabel("Name")
+                .setPlaceholder("John Doe");
         add(input);
     }
 

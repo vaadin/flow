@@ -83,7 +83,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-input#2.0.0", "Flow#0.1.10-SNAPSHOT"})
 @Tag("iron-input")
 @HtmlImport("frontend://bower_components/iron-input/iron-input.html")
-public class IronInput extends Component {
+public class IronInput<R extends IronInput<R>> extends Component {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -100,10 +100,12 @@ public class IronInput extends Component {
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
+	 * @return This instance, for method chaining.
 	 */
-	public void setValidator(java.lang.String validator) {
+	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
+		return getSelf();
 	}
 
 	/**
@@ -121,9 +123,11 @@ public class IronInput extends Component {
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
+	 * @return This instance, for method chaining.
 	 */
-	public void setInvalid(boolean invalid) {
+	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
+		return getSelf();
 	}
 
 	/**
@@ -145,10 +149,12 @@ public class IronInput extends Component {
 	 * input's {@code value} property to set a default value.
 	 * 
 	 * @param bindValue
+	 * @return This instance, for method chaining.
 	 */
-	public void setBindValue(java.lang.String bindValue) {
+	public R setBindValue(java.lang.String bindValue) {
 		getElement().setProperty("bindValue",
 				bindValue == null ? "" : bindValue);
+		return getSelf();
 	}
 
 	/**
@@ -170,9 +176,11 @@ public class IronInput extends Component {
 	 * {@code input is="iron-input"} value attribute).
 	 * 
 	 * @param value
+	 * @return This instance, for method chaining.
 	 */
-	public void setValue(elemental.json.JsonObject value) {
+	public R setValue(elemental.json.JsonObject value) {
 		getElement().setPropertyJson("value", value);
+		return getSelf();
 	}
 
 	/**
@@ -223,10 +231,12 @@ public class IronInput extends Component {
 	 * 
 	 * 
 	 * @param allowedPattern
+	 * @return This instance, for method chaining.
 	 */
-	public void setAllowedPattern(java.lang.String allowedPattern) {
+	public R setAllowedPattern(java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
 				allowedPattern == null ? "" : allowedPattern);
+		return getSelf();
 	}
 
 	/**
@@ -244,9 +254,11 @@ public class IronInput extends Component {
 	 * Set to true to auto-validate the input value as you type.
 	 * 
 	 * @param autoValidate
+	 * @return This instance, for method chaining.
 	 */
-	public void setAutoValidate(boolean autoValidate) {
+	public R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
+		return getSelf();
 	}
 
 	/**
@@ -264,9 +276,11 @@ public class IronInput extends Component {
 	 * Returns the distributed <input> element.
 	 * 
 	 * @param inputElement
+	 * @return This instance, for method chaining.
 	 */
-	public void setInputElement(elemental.json.JsonObject inputElement) {
+	public R setInputElement(elemental.json.JsonObject inputElement) {
 		getElement().setPropertyJson("inputElement", inputElement);
+		return getSelf();
 	}
 
 	public void hasValidator() {
@@ -307,5 +321,15 @@ public class IronInput extends Component {
 	public Registration addIronInputValidateListener(
 			ComponentEventListener<IronInputValidateEvent> listener) {
 		return addListener(IronInputValidateEvent.class, listener);
+	}
+
+	/**
+	 * Gets the narrow typed reference to this object. Subclasses should
+	 * override this method to support method chaining using the inherited type.
+	 * 
+	 * @return This object casted to its type.
+	 */
+	protected R getSelf() {
+		return (R) this;
 	}
 }
