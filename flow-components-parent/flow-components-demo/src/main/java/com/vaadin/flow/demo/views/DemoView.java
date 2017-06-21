@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
@@ -22,14 +23,46 @@ import com.vaadin.ui.HasComponents;
 /**
  * Base class for all the Views that demo some component.
  */
+@Tag("div")
 public abstract class DemoView extends Component
         implements View, HasComponents {
 
-    /**
-     * Gets the name of the view, to be shown on menus and titles.
-     * 
-     * @return The name of the view, for UI purposes.
-     */
-    public abstract String getViewName();
+    // Default card. All views need one.
+    private Card container;
 
+    protected DemoView() {
+
+        getElement().getStyle().set("textAlign", "center");
+        container = new Card();
+
+        getElement().appendChild(container.getElement());
+
+        initView();
+    }
+
+    /**
+     * Method run where the actual view builds its contents
+     */
+    abstract void initView();
+
+    @Override
+    public void add(Component... components) {
+        container.add(components);
+    }
+
+    /**
+     * Create and add a new component card to the view
+     * 
+     * @param components
+     *            components to add on creation
+     * @return created component container card
+     */
+    public Card addCard(Component... components) {
+        Card card = new Card();
+        card.add(components);
+
+        getElement().appendChild(card.getElement());
+
+        return card;
+    }
 }

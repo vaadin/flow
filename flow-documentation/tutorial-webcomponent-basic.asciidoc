@@ -172,4 +172,3 @@ For listening to events from a web component, see
 
 [NOTE]
 Web components implemented using Polymer should be used with Polymer's own https://www.polymer-project.org/1.0/docs/devguide/local-dom[DOM API]. Flow will automatically use the Polymer DOM API when appropriate.
-s

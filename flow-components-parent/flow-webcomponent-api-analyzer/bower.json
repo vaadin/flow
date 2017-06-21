@@ -26,6 +26,9 @@
   ],
   "dependencies": {
     "paper-button": "PolymerElements/paper-button#^2.0.0",
-    "paper-input": "PolymerElements/paper-input#^2.0.0"
+    "paper-input": "PolymerElements/paper-input#^2.0.0",
+    "paper-spinner": "PolymerElements/paper-spinner#^2.0.0",
+    "paper-card": "PolymerElements/paper-card#^2.0.0",
+    "paper-progress": "PolymerElements/paper-progress#^2.0.1"
   }
 }
