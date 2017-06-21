@@ -17,12 +17,15 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 
@@ -31,8 +34,20 @@ import com.vaadin.flow.template.model.TemplateModel;
  */
 @Tag("employees-list")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/DomRepeatPolymerTemplate.html")
-public class DomRepeatPolymerTemplate
-        extends PolymerTemplate<DomRepeatPolymerTemplate.EmployeesModel> {
+public class DomRepeatView
+        extends PolymerTemplate<DomRepeatView.EmployeesModel> implements View {
+    static final int NUMBER_OF_EMPLOYEES = 3;
+    static final String EVENT_INDEX_ID = "eventIndex";
+    static final String REPEAT_INDEX_ID = "repeatIndex";
+    static final String TR_ID_PREFIX = "name";
+
+    public DomRepeatView() {
+        setId("template");
+        setEmployees(IntStream.range(0, NUMBER_OF_EMPLOYEES)
+                .mapToObj(i -> new DomRepeatView.Employee("name" + i,
+                        "title" + i, "email" + i))
+                .collect(Collectors.toList()));
+    }
 
     public static class Employee {
         private String name;
