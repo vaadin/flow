@@ -34,4 +34,8 @@ public class SourceContent extends Div {
         code.setText(text);
         getElement().appendChild(pre);
     }
+
+    public void add(Element element) {
+        getElement().appendChild(element);
+    }
 }
