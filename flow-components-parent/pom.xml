@@ -48,6 +48,20 @@
                 <module>flow-components-demo</module>
             </modules>
         </profile>
+        
+        <profile>
+            <id>whenTesting</id>
+            <activation>
+                <property>
+                    <name>maven.test.skip</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <modules>
+                <module>flow-components-demo</module>
+            </modules>
+        </profile>
+        
     </profiles>
 
 </project>
