@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.SourceContent;
 
 /**
  * View for {@link PaperButton} demo.
@@ -27,9 +28,17 @@ public class PaperButtonView extends DemoView {
     @Override
     public void initView() {
         PaperButton button = new PaperButton();
+        button.setRaised(true);
         button.getElement().setText("Button");
-        button.getElement().setAttribute("raised", "");
         button.getElement().getStyle().set("backgroundColor", "white");
         add(button);
+    }
+
+    @Override
+    public void populateSources(SourceContent container) {
+        container.addCode("PaperButton button = new PaperButton();\n"
+                + "button.setRaised(true);\n"
+                + "button.getElement().setText(\"Button\");\n"
+                + "layoutComponent.add(button);");
     }
 }

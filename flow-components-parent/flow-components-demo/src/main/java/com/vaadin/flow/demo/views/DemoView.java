@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
@@ -24,6 +26,7 @@ import com.vaadin.ui.HasComponents;
  * Base class for all the Views that demo some component.
  */
 @Tag("div")
+@StyleSheet("frontend://src/css/demo.css")
 public abstract class DemoView extends Component
         implements View, HasComponents {
 
@@ -31,8 +34,7 @@ public abstract class DemoView extends Component
     private Card container;
 
     protected DemoView() {
-
-        getElement().getStyle().set("textAlign", "center");
+        getElement().setAttribute("class", "demo-view");
         container = new Card();
 
         getElement().appendChild(container.getElement());
@@ -44,6 +46,15 @@ public abstract class DemoView extends Component
      * Method run where the actual view builds its contents
      */
     abstract void initView();
+
+    /**
+     * When called the view should populate the given SourceContainer with
+     * sample source code to be shown
+     * 
+     * @param container
+     *            sample source code container
+     */
+    public abstract void populateSources(SourceContent container);
 
     @Override
     public void add(Component... components) {

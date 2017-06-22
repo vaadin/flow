@@ -19,6 +19,7 @@
     "paper-spinner": "PolymerElements/paper-spinner#^2.0.0",
     "paper-card": "PolymerElements/paper-card#^2.0.0",
     "paper-progress": "PolymerElements/paper-progress#^2.0.1",
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
     "app-layout": "PolymerElements/app-layout#2.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0.0",
     "iron-iconset-svg": "PolymerElements/iron-iconset-svg#2.0.0",
