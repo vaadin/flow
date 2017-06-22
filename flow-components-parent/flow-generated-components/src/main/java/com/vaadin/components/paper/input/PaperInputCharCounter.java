@@ -40,8 +40,8 @@ import com.vaadin.annotations.HtmlImport;
  * | Mixin applied to the element | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
-		"WebComponent: paper-input-char-counter#2.0.1", "Flow#0.1.10-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"WebComponent: paper-input-char-counter#2.0.1", "Flow#0.1.11-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
 public class PaperInputCharCounter<R extends PaperInputCharCounter<R>>
