@@ -28,7 +28,7 @@ You specify the tag name of the element using the `@Tag` annotation, just like y
 == Configuring the Project
 
 [NOTE]
-If you are using some skeleton project or a demo such as flow-hello-world as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
+If you are using some skeleton project or a demo such as `flow-hello-world` as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
 
 The imported file `paper-slider.html` contains a client side code which needs to be available as a web resource. So it should be 
 fetched and saved in some directory which is served by your server. 
