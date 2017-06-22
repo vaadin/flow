@@ -31,7 +31,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 public class PolymerTemplateEvents {
     @Tag("event-handler")
     @HtmlImport("/com/example/EventHandler.html")
-    public class EventHandlerPolymerTemplate extends PolymerTemplate {
+    public class EventHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
 
         @EventHandler
         private void handleClick() {
@@ -41,7 +41,7 @@ public class PolymerTemplateEvents {
 
     @Tag("event-handler")
     @HtmlImport("/com/example/EventHandler.html")
-    public class EventDataHandlerPolymerTemplate extends PolymerTemplate {
+    public class EventDataHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
 
         @EventHandler
         private void sendData(@EventData("event.altKey") boolean altPressed,
