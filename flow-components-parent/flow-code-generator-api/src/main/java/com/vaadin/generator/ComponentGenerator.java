@@ -70,6 +70,7 @@ import elemental.json.JsonValue;
 public class ComponentGenerator {
 
     private static final String GENERIC_TYPE = "R";
+    private static final Logger logger = Logger.getLogger("ComponentGenerator");
 
     private ObjectMapper mapper;
     private File jsonFile;
@@ -489,10 +490,9 @@ public class ComponentGenerator {
         try {
             javaDoc.setFullText(text);
         } catch (IllegalArgumentException ile) {
-            Logger.getLogger(getClass().getSimpleName()).warning(
-                    "Javadoc exception for file " + jsonFile.getName());
-            Logger.getLogger(getClass().getSimpleName())
-                    .warning("Failed to set javadoc: " + text);
+            logger.log(Level.WARNING,
+                    "Javadoc exception for file " + jsonFile.getName(), ile);
+            logger.warning("Failed to set javadoc: " + text);
         }
     }
 
