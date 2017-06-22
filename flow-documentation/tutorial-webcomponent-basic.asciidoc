@@ -39,7 +39,7 @@ If you use maven then just add  the following snippet in your `pom.xml` file ins
     <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>1.4<</version>
+        <version>1.4</version>
         <configuration>
             <nodeVersion>v7.10.0</nodeVersion>
             <npmVersion>5.0.3</npmVersion>
@@ -85,7 +85,7 @@ The `bower.json` content is:
   ],
   "dependencies": {
     "polymer": "2.0.0",
-    "paper-input": "2.0.0"
+    "paper-slider": "2.0.0"
   }
 }
 ----
@@ -97,7 +97,6 @@ The `package.json` content is:
 {
   "name": "your project name",
   "version": "1.0.0",
-  "description": "This file exists only to define the Bower version",
   "main": "",
   "dependencies": {
     "bower": "^1.8.0"
@@ -130,7 +129,8 @@ might be required. E.g. jetty requires this kind of configuration:
     </plugin>
 ----
 
-In case you don't use maven you should take care about webcomponent files by yourself.
+[NOTE] Workflows not using Maven are not supported at the moment. If your project doesn't use Maven, you will need to install and run bower directly, which is described bellow.
+
 In this example it is assumed that you are using bower and have a `bower_components` folder in the root of you `WAR` file.
 
 You can set up the `bower_components` folder by running
