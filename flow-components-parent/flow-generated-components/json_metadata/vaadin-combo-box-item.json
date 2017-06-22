@@ -1,0 +1,52 @@
+{
+  "name": "vaadin-combo-box-item",
+  "tag": "vaadin-combo-box-item",
+  "baseUrl": "vaadin-combo-box/vaadin-combo-box-item.html",
+  "properties": [
+    {
+      "name": "index",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "The index of the item\n       "
+    },
+    {
+      "name": "item",
+      "type": [
+        "STRING",
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The item to render"
+    },
+    {
+      "name": "label",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The text label corresponding to the item\n       "
+    },
+    {
+      "name": "selected",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True when item is selected\n       "
+    },
+    {
+      "name": "focused",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True when item is focused\n       "
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "behaviors": [],
+  "description": ""
+}
