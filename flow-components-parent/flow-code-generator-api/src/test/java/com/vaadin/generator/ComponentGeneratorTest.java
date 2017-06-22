@@ -242,6 +242,27 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClassWithGetterJavaDocBlock_methodContainsJavaDocWithAtCodeWrap() {
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("name");
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        propertyData.setDescription(
+                "This is the ```<input value=\"name\">``` property of the component.");
+        propertyData.setReadOnly(true);
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue("No getter found",
+                generatedClass.contains("public String getName()"));
+
+        Assert.assertTrue("Method javaDoc was not found",
+                generatedClass.contains(
+                        "* This is the {@code <input value=\"name\">} property of the component."));
+    }
+
+    @Test
     public void generateClassWithLicenseNote_classContainsLicenseHeader() {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", "some license header");
