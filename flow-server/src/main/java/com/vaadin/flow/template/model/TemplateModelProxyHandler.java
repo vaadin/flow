@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -208,7 +210,8 @@ public class TemplateModelProxyHandler implements Serializable {
         Builder<InterfaceProxy> builder = new ByteBuddy()
                 .subclass(InterfaceProxy.class).implement(modelType);
 
-        return createProxyConstructor(modelType.getClassLoader(), builder);
+        return createProxyConstructor(modelType.getClassLoader(), builder,
+                modelType.getCanonicalName());
     }
 
     private static BiFunction<StateNode, BeanModelType<?>, Object> createClassConstructor(
@@ -216,11 +219,13 @@ public class TemplateModelProxyHandler implements Serializable {
         Builder<?> builder = new ByteBuddy().subclass(modelType)
                 .implement(ModelProxy.class);
 
-        return createProxyConstructor(modelType.getClassLoader(), builder);
+        return createProxyConstructor(modelType.getClassLoader(), builder,
+                modelType.getCanonicalName());
     }
 
     private static BiFunction<StateNode, BeanModelType<?>, Object> createProxyConstructor(
-            ClassLoader classLoader, Builder<?> proxyBuilder) {
+            ClassLoader classLoader, Builder<?> proxyBuilder, String classFqn) {
+        String proxyClassName = generateProxyClassName(classFqn, classLoader);
         Class<?> proxyType = proxyBuilder
 
                 // Handle bean methods (and abstract methods for error handling)
@@ -238,7 +243,8 @@ public class TemplateModelProxyHandler implements Serializable {
                 .intercept(FieldAccessor.ofField("$modelType"))
 
                 // Create the class
-                .make().load(classLoader, ClassLoadingStrategy.Default.WRAPPER)
+                .name(proxyClassName).make()
+                .load(classLoader, ClassLoadingStrategy.Default.WRAPPER)
                 .getLoaded();
 
         return (node, modelType) -> {
@@ -249,6 +255,23 @@ public class TemplateModelProxyHandler implements Serializable {
             modelProxy.$modelType(modelType);
             return instance;
         };
+    }
+
+    private static String generateProxyClassName(String classFqn,
+            ClassLoader classLoader) {
+        StringBuilder fqnBuilder = new StringBuilder(classFqn);
+        boolean classExists = true;
+        do {
+            fqnBuilder.append('$');
+            try {
+                Class.forName(fqnBuilder.toString(), false, classLoader);
+            } catch (ClassNotFoundException exception) {
+                Logger.getLogger(TemplateModelProxyHandler.class.getName())
+                        .log(Level.OFF, null, exception);
+                classExists = false;
+            }
+        } while (classExists);
+        return fqnBuilder.toString();
     }
 
     private static boolean isAccessor(MethodDescription method) {
