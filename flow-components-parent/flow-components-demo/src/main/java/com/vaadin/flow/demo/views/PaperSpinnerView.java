@@ -27,7 +27,7 @@ public class PaperSpinnerView extends DemoView {
     @Override
     public void initView() {
         PaperSpinner paperSpinner = new PaperSpinner();
-        paperSpinner.getElement().setAttribute("active", "");
+        paperSpinner.setActive(true);
         add(paperSpinner);
     }
 }
