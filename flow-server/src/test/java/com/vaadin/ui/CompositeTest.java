@@ -9,9 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.ComponentTest.TracksAttachDetach;
@@ -28,6 +32,15 @@ public class CompositeTest {
     CompositeWithComponent compositeWithComponent;
     TestLayout layoutInsideComposite;
     Component componentInsideLayoutInsideComposite;
+
+    @Tag("div")
+    public static class MyTemplate extends PolymerTemplate<TemplateModel> {
+
+        public MyTemplate() {
+            super((clazz, tag) -> Jsoup
+                    .parse("<dom-module id='div'></dom-module>"));
+        }
+    }
 
     protected Component createTestComponent() {
         return new TestComponent(
@@ -374,6 +387,22 @@ public class CompositeTest {
 
         TestUtil.assertArrays(triggered.toArray(),
                 new Integer[] { -1, -2, -3, -4, -5, -6, 1, 2, 3, 4, 5, 6 });
+    }
+
+    /*
+     * This is just a test for #1181.
+     */
+    @Test
+    public void templateInsideComposite_compositeCanBeAdded() {
+        class MyComponent extends Composite<MyTemplate> {
+
+        }
+
+        MyComponent component = new MyComponent();
+
+        UI ui = new UI();
+        // Doesn't throw any exception
+        ui.add(component);
     }
 
     public static void assertElementChildren(Element parent,
