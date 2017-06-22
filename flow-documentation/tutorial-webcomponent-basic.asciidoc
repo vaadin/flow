@@ -25,6 +25,11 @@ public class PaperSlider extends Component {
 
 You specify the tag name of the element using the `@Tag` annotation, just like you would with any built in element such as `<div>`. The actual implementation of the `<paper-slider>` element is in the `paper-slider.html` file, which you can  import using `@HtmlImport`.
 
+== Configuring the Project
+
+[NOTE]
+If you are using some skeleton project or a demo such as flow-hello-world as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
+
 The imported file `paper-slider.html` contains a client side code which needs to be available as a web resource. So it should be 
 fetched and saved in some directory which is served by your server. 
 If you use maven then just add  the following snippet in your `pom.xml` file inside your `plugins` section:
@@ -142,7 +147,9 @@ You can then install `bower` by running `npm install -g bower`.
 `bower init` will ask a you couple of questions and it creates the `bower.json` file.
 The default answers for all the questions are suitable for this kind of integration, so you can simply proceed by pressing `enter` to accept each default answer.
 
-The following command will install the `paper-slider` component.
+== Installing the Web Component
+
+Running the following command in `src/main/frontend` will install the `paper-slider` component.
 
 [source,sh]
 ----
@@ -150,7 +157,7 @@ bower install paper-slider --save
 ----
 
 [NOTE]
-You can also install web components by manually adding dependencies to the bower.json file and running bower install, which will download all the dependencies declared in the file.
+You can also install web components by manually adding dependencies to the `bower.json` file and running `bower install`, which will download all the dependencies declared in the file.
 
 With this basic integration, you can use add the `PaperSlider` class to a view to see that it works:
 [source,java]
