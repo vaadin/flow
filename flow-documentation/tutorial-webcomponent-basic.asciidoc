@@ -149,11 +149,8 @@ The following command will install the `paper-slider` component.
 bower install paper-slider --save
 ----
 
-You can do the same thing via editing the `bower.json` file in the same way as it's shown above and run `bower install`.
-
 [NOTE]
-You can edit the `bower.json` file directly and add there any number of components you need of course. 
-The `bower install` command will install all of them based on the `bower.json` content for you.
+You can also install web components by manually adding dependencies to the bower.json file and running bower install, which will download all the dependencies declared in the file.
 
 With this basic integration, you can use add the `PaperSlider` class to a view to see that it works:
 [source,java]

@@ -35,6 +35,8 @@ deploy:
     on:
       branch: master
 
+after_deploy: ./.travis.trigger_demo_build.sh
+
 # Cache requires a master build
 branches:
   only:
