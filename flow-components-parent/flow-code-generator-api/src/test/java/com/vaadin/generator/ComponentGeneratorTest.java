@@ -344,6 +344,42 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClassWithEventWithEventDataContainingDotNotation_classTypedComponentEventWithEventData() {
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("change");
+        eventData.setDescription("Component change event.");
+        componentMetadata.setEvents(Arrays.asList(eventData));
+
+        ComponentPropertyBaseData property = new ComponentPropertyBaseData();
+        property.setName("details.property");
+        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
+
+        eventData.setProperties(Arrays.asList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        // Using matcher as the formatter may cut the method.
+        Pattern pattern = Pattern.compile(
+                "public ChangeEvent\\(MyComponent source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.details\\.property\"\\) double detailsProperty\\)");
+        Matcher matcher = pattern.matcher(generatedClass);
+        Assert.assertTrue("Couldn't find constructor with EventData.",
+                matcher.find());
+
+        Assert.assertTrue("Couldn't find variable reference",
+                generatedClass.contains("private final double detailsProperty;"));
+
+        Assert.assertTrue("Couldn't find getter for event data",
+                generatedClass.contains("public double getDetailsProperty() {"));
+
+        Assert.assertFalse("Found setter even though one shouldn't exist",
+                generatedClass.contains("public void setDetailsProperty("));
+
+        Assert.assertTrue("Missing EventData import", generatedClass
+                .contains("import com.vaadin.annotations.EventData;"));
+    }
+
+    @Test
     public void generateClassWithStringGetterAndNonFluentSetter_setterSetsEmptyForNullValue() {
         generator.withFluentSetters(false);
 
