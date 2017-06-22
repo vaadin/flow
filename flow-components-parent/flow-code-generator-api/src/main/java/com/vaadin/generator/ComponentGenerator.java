@@ -15,6 +15,7 @@
  */
 package com.vaadin.generator;
 
+import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,8 +27,9 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.annotation.Generated;
-
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -35,9 +37,6 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
@@ -71,6 +70,7 @@ import elemental.json.JsonValue;
 public class ComponentGenerator {
 
     private static final String GENERIC_TYPE = "R";
+    private static final Logger logger = Logger.getLogger("ComponentGenerator");
 
     private ObjectMapper mapper;
     private File jsonFile;
@@ -485,8 +485,15 @@ public class ComponentGenerator {
         String nl = System.getProperty("line.separator");
         String text = String.format("%s%s%s%s",
                 "Description copied from corresponding location in WebComponent:",
-                nl, nl, documentation.replaceAll("`(.*?)`", "{@code $1}"));
-        javaDoc.setFullText(text);
+                nl, nl, documentation.replaceAll("```(.*?)```", "{@code $1}")
+                        .replaceAll("`(.*?)`", "{@code $1}"));
+        try {
+            javaDoc.setFullText(text);
+        } catch (IllegalArgumentException ile) {
+            logger.log(Level.WARNING,
+                    "Javadoc exception for file " + jsonFile.getName(), ile);
+            logger.warning("Failed to set javadoc: " + text);
+        }
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
