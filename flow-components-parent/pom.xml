@@ -11,7 +11,7 @@
     <name>Flow components parent project</name>
     <description>Modules for Flow components based on code generation</description>
     <packaging>pom</packaging>
-
+    
     <modules>
         <module>flow-code-generator-api</module>
         <module>flow-code-generator</module>
@@ -20,6 +20,7 @@
     <properties>
         <frontend.maven.plugin.version>1.4</frontend.maven.plugin.version>
         <flow.version>${project.version}</flow.version>
+        <build.demos.alone>true</build.demos.alone>
     </properties>
 
     <dependencyManagement>
@@ -42,26 +43,28 @@
         <!-- Profile for generating components from webcomponents APIs. -->
         <profile>
             <id>generator</id>
+            <properties>
+                <build.demos.alone>false</build.demos.alone>
+            </properties>
+            
             <modules>
                 <module>flow-webcomponent-api-analyzer</module>
                 <module>flow-generated-components</module>
                 <module>flow-components-demo</module>
             </modules>
         </profile>
-        
+
         <profile>
             <id>whenTesting</id>
             <activation>
                 <property>
-                    <name>maven.test.skip</name>
-                    <value>false</value>
+                    <name>!build.demos.alone</name>
                 </property>
             </activation>
             <modules>
                 <module>flow-components-demo</module>
             </modules>
         </profile>
-        
     </profiles>
 
 </project>
