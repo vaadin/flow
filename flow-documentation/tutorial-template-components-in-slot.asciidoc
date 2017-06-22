@@ -34,7 +34,7 @@ and the server-side template as:
 ----
 @Tag("component-container")
 @HtmlImport("/com/example/ComponentContainer.html")
-public class ComponentContainer extends PolymerTemplate {
+public class ComponentContainer extends PolymerTemplate<TemplateModel> {
 
     public ComponentContainer() {
         Element label = ElementFactory.createLabel("Main layout header");
@@ -127,7 +127,7 @@ Right now you need to also extend the `HasChildView` interface and implement the
 ----
 @Tag("main-layout")
 @HtmlImport("/com/example/ComponentContainer.html")
-public class MainLayout extends PolymerTemplate implements HasChildView {
+public class MainLayout extends PolymerTemplate<TemplateModel> implements HasChildView {
 
     private View childView;
 

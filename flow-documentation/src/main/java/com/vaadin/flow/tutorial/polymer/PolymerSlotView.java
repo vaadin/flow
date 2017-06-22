@@ -17,9 +17,6 @@ package com.vaadin.flow.tutorial.polymer;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.tutorial.routing.Routing.CompanyView;
-import com.vaadin.flow.tutorial.routing.Routing.HomeView;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.HasChildView;
@@ -27,13 +24,16 @@ import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.flow.tutorial.routing.Routing.CompanyView;
+import com.vaadin.flow.tutorial.routing.Routing.HomeView;
 
 @CodeFor("tutorial-template-components-in-slot.asciidoc")
 public class PolymerSlotView {
     @Tag("component-container")
     @HtmlImport("/com/example/ComponentContainer.html")
-    public class ComponentContainer extends PolymerTemplate {
+    public class ComponentContainer extends PolymerTemplate<TemplateModel> {
 
         public ComponentContainer() {
             Element label = ElementFactory.createLabel("Main layout header");
@@ -43,7 +43,7 @@ public class PolymerSlotView {
 
     @Tag("main-layout")
     @HtmlImport("/com/example/MainLayout.html")
-    public class MainLayout extends PolymerTemplate implements HasChildView {
+    public class MainLayout extends PolymerTemplate<TemplateModel> implements HasChildView {
 
         private View childView;
 
