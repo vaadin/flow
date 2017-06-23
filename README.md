@@ -83,7 +83,6 @@ If you want to change hub hostname, this can be done via setting the variable `-
 
 Normally, you don't need to run IT tests yourself, Travis can do this for you. See next section for details.
 
->>>>>>> Explicitly specified a hub hostname to be able to change it later, updated README.md with corresponding information.
 Remote tests execution
 --------
 Each pull request requires validation via Travis, so before the pull request is merged
