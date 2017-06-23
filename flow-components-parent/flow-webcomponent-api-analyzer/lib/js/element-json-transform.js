@@ -112,7 +112,7 @@ const getType = (type) => {
 const propertiesToJsonArray = (properties) => {
   const propertiesJson = [];
   for (let property of properties.values()) {
-    if (!skipInherited(property.inheritedFrom) && property.privacy === 'public') {
+    if (typeof property !== 'undefined' && !skipInherited(property.inheritedFrom) && property.privacy === 'public') {
       const propertyJson = {
         "name": property.name,
         // property can be of only one type, but in case there is an object property, need to use an empty array here
@@ -177,7 +177,7 @@ const methodsToJsonArray = (methods) => {
   const methodsJson = [];
   for (let method of methods.values()) {
     // do not add inherited or non-public functions
-    if (!skipInherited(method.inheritedFrom) && method.privacy === 'public') {
+    if (typeof method !== 'undefined' && !skipInherited(method.inheritedFrom) && method.privacy === 'public') {
       const methodJson = {
         "name": method.name,
         "description": method.jsdoc ? method.jsdoc.description : "Missing documentation!",
@@ -206,7 +206,7 @@ const methodsToJsonArray = (methods) => {
 const eventsToJsonArray = (events) => {
   const eventsJson = [];
   for (let event of events.values()) {
-    if (!skipInherited(event.inheritedFrom)) {
+    if (typeof event !== 'undefined' && !skipInherited(event.inheritedFrom)) {
       const eventJson = {
         "name": event.name,
         "description": event.jsondoc ? event.jsondoc.description :
