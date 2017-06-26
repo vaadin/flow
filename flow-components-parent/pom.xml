@@ -62,6 +62,7 @@
                 </property>
             </activation>
             <modules>
+                <module>flow-generated-components</module>
                 <module>flow-components-demo</module>
             </modules>
         </profile>
