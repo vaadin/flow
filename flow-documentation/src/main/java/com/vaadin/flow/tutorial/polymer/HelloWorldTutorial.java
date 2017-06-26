@@ -49,7 +49,7 @@ public class HelloWorldTutorial {
     }
 
     @Tag("hello-world")
-    @HtmlImport("/com/example/HelloWorld.html")
+    @HtmlImport("/src/HelloWorld.html")
     public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
         private static final String EMPTY_NAME_GREETING = "Please enter your name";
 

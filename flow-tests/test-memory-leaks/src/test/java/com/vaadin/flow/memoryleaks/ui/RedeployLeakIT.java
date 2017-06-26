@@ -18,6 +18,7 @@ package com.vaadin.flow.memoryleaks.ui;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.plus.webapp.EnvConfiguration;
@@ -34,8 +35,11 @@ import org.eclipse.jetty.webapp.WebXmlConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
+import com.vaadin.flow.testutil.AbstractTestBenchTest;
+import com.vaadin.testbench.parallel.Browser;
 
 /**
  * Test that verifies no leaks happen during redeployment of a war. Uses Jetty
@@ -44,12 +48,29 @@ import org.openqa.selenium.remote.DesiredCapabilities;
  * If you run this from Eclipse it might not produce the correct result as it
  * uses files from the target folder.
  */
-public class RedeployLeakIT {
+public class RedeployLeakIT extends AbstractTestBenchTest {
 
     private static final String testClass = "com.vaadin.server.VaadinServlet";
     private Server server;
     private WebAppContext context;
     private WeakReference<Class<?>> testReference;
+
+    @Override
+    public void checkIfServerAvailable() {
+        // do nothing, since it's a special test that starts server manually
+    }
+
+    @Override
+    protected String getTestPath() {
+        // We open test pages manually, no need to specify other paths.
+        return null;
+    }
+
+    @Override
+    protected List<DesiredCapabilities> getHubBrowsersToTest() {
+        // Because other browsers are not supported
+        return getBrowserCapabilities(Browser.CHROME);
+    }
 
     @Test
     public void deployUndeployCheck() throws Exception {
@@ -64,9 +85,9 @@ public class RedeployLeakIT {
         // DO NOT RUN FROM ECLIPSE
         // The test uses files from the target folder
         setup(7778);
-        ChromeDriver driver = new ChromeDriver(DesiredCapabilities.chrome());
+        RemoteWebDriver driver = new RemoteWebDriver(DesiredCapabilities.chrome());
         try {
-            driver.get("http://localhost:7778/");
+            driver.get("http://"+ getCurrentHostAddress() + ":7778/");
             Assert.assertNotNull(driver.findElement(By.id("hello")));
         } finally {
             driver.close();
