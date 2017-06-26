@@ -34,6 +34,23 @@
                     </filesets>
                 </configuration>
             </plugin>
+            
+            <!-- Ignores javadoc errors for generated components -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+                <executions>
+                    <execution>
+                    <goals>
+                        <goal>javadoc</goal>
+                    </goals>
+                    <configuration>
+                        <failOnError>false</failOnError>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         
             <!-- Code generator configuration -->
             <plugin>
