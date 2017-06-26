@@ -20,8 +20,8 @@
     </dependencies>
 
     <properties>
-        <!-- Ignores javadoc errors for generated components -->
-        <additionalparam>-Xdoclint:none</additionalparam>
+        <!-- Skip javadoc for generated components to avoid formatting errors on the build -->
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <build>
