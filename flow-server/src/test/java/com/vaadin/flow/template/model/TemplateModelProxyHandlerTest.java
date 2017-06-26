@@ -115,4 +115,13 @@ public class TemplateModelProxyHandlerTest {
                 template.getElement().getNode(), new BeanModelType<>(
                         NotStaticModel.class, PropertyFilter.ACCEPT_ALL));
     }
+
+    @Test
+    public void proxyModelTypeNameIsOriginalTypeNameWithSuffix() {
+        EmptyModelTemplate emptyModelTemplate1 = new EmptyModelTemplate();
+        TemplateModelTest.EmptyModel model = emptyModelTemplate1.getModel();
+
+        Assert.assertTrue(model.getClass().getCanonicalName().startsWith(
+                TemplateModelTest.EmptyModel.class.getCanonicalName()));
+    }
 }
