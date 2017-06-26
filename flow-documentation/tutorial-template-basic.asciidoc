@@ -23,8 +23,8 @@ First, we need to define a template with all components:
 
 [source,html]
 ----
-<link rel="import" href="/polymer/location/polymer.html">
-<link rel="import" href="/paper-input/location/paper-input.html">
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
 
 <dom-module id="hello-world">
     <template>
@@ -60,7 +60,7 @@ We've also imported some dependencies:
 
 * Polymer library
 
-The `/polymer/location/polymer.html` is a link to Polymer library that should be imported in order to have the
+The `../bower_components/polymer/polymer.html` is a link to Polymer library that should be imported in order to have the
 functionality working.
 
 [NOTE] You should take care about proper handling of the polymer template file URL, it should be available via URL.
@@ -87,7 +87,7 @@ and our template:
 [source,java]
 ----
 @Tag("hello-world")
-@HtmlImport("/com/example/HelloWorld.html")
+@HtmlImport("/src/HelloWorld.html")
 public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
     private static final String EMPTY_NAME_GREETING = "Please enter your name";
 
@@ -143,7 +143,7 @@ In order for a component to be processed correctly, we need tovbind a Java class
 [NOTE] Java class name and template file name doesn't have to match each other, this is just a resource file which you can put to any location.
 But you have to be sure that it's accessible via the web.
 
-The `/com/example/HelloWorld.html` is the URL of the polymer template file declared earlier.
+The `/src/HelloWorld.html` is the URL of the polymer template file declared earlier.
 
 If needed, more html resources can be imported using the same approach.
 
