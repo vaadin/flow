@@ -11,13 +11,18 @@
     <name>Flow Generated Component</name>
     <description>Package with the generated Java Components for Flow</description>
     <packaging>jar</packaging>
-    
+
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
         </dependency>
     </dependencies>
+
+    <properties>
+        <!-- Skip javadoc for generated components to avoid formatting errors on the build -->
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
 
     <build>
         <plugins>
@@ -34,7 +39,7 @@
                     </filesets>
                 </configuration>
             </plugin>
-        
+
             <!-- Code generator configuration -->
             <plugin>
                 <groupId>com.vaadin</groupId>
@@ -42,7 +47,9 @@
                 <version>${flow.version}</version>
                 <executions>
                     <execution>
-                        <goals><goal>generate</goal></goals>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
                         <configuration>
                             <basePackage>com.vaadin.components</basePackage>
                             <licenseFile>license_header</licenseFile>

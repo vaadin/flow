@@ -64,8 +64,8 @@ import com.vaadin.annotations.HtmlImport;
  * {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
-		"WebComponent: paper-card#2.0.0", "Flow#0.1.10-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"WebComponent: paper-card#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
 public class PaperCard<R extends PaperCard<R>> extends Component {
