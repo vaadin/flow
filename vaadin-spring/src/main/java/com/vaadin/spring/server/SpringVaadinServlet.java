@@ -15,32 +15,35 @@
  */
 package com.vaadin.spring.server;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-
 import com.vaadin.server.DefaultUIProvider;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
+import com.vaadin.server.ServiceInitEvent;
 import com.vaadin.server.SessionDestroyEvent;
 import com.vaadin.server.SessionDestroyListener;
 import com.vaadin.server.SessionInitEvent;
 import com.vaadin.server.SessionInitListener;
 import com.vaadin.server.UIProvider;
+import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.internal.UIScopeImpl;
 import com.vaadin.spring.internal.VaadinSessionScope;
+
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Subclass of the standard {@link com.vaadin.server.VaadinServlet Vaadin
@@ -111,6 +114,17 @@ public class SpringVaadinServlet extends VaadinServlet {
                 VaadinSessionScope.cleanupSession(session);
             }
         });
+
+        WebApplicationContext webApplicationContext = WebApplicationContextUtils
+                .getWebApplicationContext(getServletContext());
+
+        final Map<String, VaadinServiceInitListener> serviceInitListeners = webApplicationContext.getBeansOfType(VaadinServiceInitListener.class);
+
+        ServiceInitEvent event = new ServiceInitEvent(service);
+
+        for (VaadinServiceInitListener vaadinServiceInitListener : serviceInitListeners.values()) {
+            vaadinServiceInitListener.serviceInit(event);
+        }
     }
 
     /**
