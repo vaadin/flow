@@ -25,7 +25,6 @@ change=`diff <(git show --name-only $actualCommits) <(git show --summary $actual
 
 # Collect changed modules to build and build also modules that depend on the
 # selected modules (see the flag '-amd')
-
 modules=
 if [[ $change == *"flow-push/"* ]]
 then
@@ -48,8 +47,9 @@ else
 
     if [[ $change == *"flow-components-parent/"* ]]
     then
+      ## only trigger the analyzer & generator for validation builds on PRs that touched component generation
       echo "Setting components flag to true"
-      modules="$modules -pl flow-components-parent"
+      modules="$modules -pl flow-components-parent -P generator"
     fi
 
     if [[ $change == *"flow-client/"* ]]
@@ -105,7 +105,7 @@ then
             -Dsonar.login=$SONAR_LOGIN \
             -Dsonar.exclusions=$SONAR_EXCLUSIONS \
             -DskipTests \
-            compile sonar:sonar
+            compile sonar:sonar -pl \!:flow-generated-components
     else
         exit 1
     fi
@@ -131,7 +131,7 @@ then
         -Dsonar.login=$SONAR_LOGIN \
         -Dsonar.exclusions=$SONAR_EXCLUSIONS \
         -DskipTests \
-        compile sonar:sonar
+        compile sonar:sonar -pl \!:flow-generated-components
 else
     # Something else than a "safe" pull request
     mvn -B -e -V \
