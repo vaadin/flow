@@ -1,10 +1,15 @@
 package com.vaadin.flow.template.model;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.template.model.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.template.model.TemplateModelTest.EmptyModelTemplate;
+import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
 
 public class TemplateModelProxyHandlerTest {
@@ -20,6 +25,23 @@ public class TemplateModelProxyHandlerTest {
     public static class BadModel {
         public BadModel(String name) {
         }
+    }
+
+    @Before
+    public void setUp() {
+        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService service = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinService.setCurrent(service);
+    }
+
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
     }
 
     @Test

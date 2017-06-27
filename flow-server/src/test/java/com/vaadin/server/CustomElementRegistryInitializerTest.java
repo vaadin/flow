@@ -20,9 +20,11 @@ import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.Jsoup;
@@ -42,6 +44,19 @@ public class CustomElementRegistryInitializerTest {
     @Before
     public void setup() {
         CustomElementRegistryAccess.resetRegistry();
+        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService service = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinService.setCurrent(service);
+    }
+
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
     }
 
     @Test
