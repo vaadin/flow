@@ -21,7 +21,6 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
-import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -32,7 +31,7 @@ import com.vaadin.shared.Registration;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: iron-list#2.0.3", "Flow#0.1.11-SNAPSHOT"})
+		"WebComponent: iron-list#2.0.1", "Flow#0.1.11-SNAPSHOT"})
 @Tag("iron-list")
 @HtmlImport("frontend://bower_components/iron-list/iron-list.html")
 public class IronList<R extends IronList<R>> extends Component {
@@ -487,10 +486,10 @@ public class IronList<R extends IronList<R>> extends Component {
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
-	 * @return It would return a interface elemental.json.JsonObject
+	 * @param model
 	 */
-	@NotSupported
-	protected void stamp() {
+	public void stamp(elemental.json.JsonObject model) {
+		getElement().callFunction("stamp", model);
 	}
 
 	/**
@@ -501,10 +500,10 @@ public class IronList<R extends IronList<R>> extends Component {
 	 * instance the element is contained in. A template model should be used to
 	 * manipulate data associated with this template instance.
 	 * 
-	 * @return It would return a interface elemental.json.JsonObject
+	 * @param el
 	 */
-	@NotSupported
-	protected void modelForElement() {
+	public void modelForElement(elemental.json.JsonObject el) {
+		getElement().callFunction("modelForElement", el);
 	}
 
 	/**
@@ -548,10 +547,10 @@ public class IronList<R extends IronList<R>> extends Component {
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
-	 * @return It would return a boolean
+	 * @param element
 	 */
-	@NotSupported
-	protected void resizerShouldNotify() {
+	public void resizerShouldNotify(elemental.json.JsonObject element) {
+		getElement().callFunction("resizerShouldNotify", element);
 	}
 
 	/**

@@ -193,14 +193,12 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "removeOwnKeyBindings",
       "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "keyboardEventMatchesKeys",
@@ -222,8 +220,7 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "BOOLEAN"
+      ]
     },
     {
       "name": "templatize",
@@ -245,8 +242,7 @@
           "objectType": [],
           "description": "When `true`, the generated class will skip\n  strict dirty-checking for objects and arrays (always consider them to\n  be \"dirty\"). Defaults to false."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "stamp",
@@ -260,8 +256,7 @@
           "objectType": [],
           "description": "Object containing initial property values to\n  populate into the template bindings."
         }
-      ],
-      "returns": "OBJECT"
+      ]
     },
     {
       "name": "modelForElement",
@@ -275,26 +270,22 @@
           "objectType": [],
           "description": "Element for which to return a template model."
         }
-      ],
-      "returns": "OBJECT"
+      ]
     },
     {
       "name": "open",
       "description": "Opens the dropdown list.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "close",
       "description": "Closes the dropdown list.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "cancel",
       "description": "Reverts back to original value.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     }
   ],
   "events": [

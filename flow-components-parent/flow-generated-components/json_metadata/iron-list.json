@@ -2,7 +2,7 @@
   "name": "iron-list",
   "tag": "iron-list",
   "baseUrl": "iron-list/iron-list.html",
-  "version": "2.0.3",
+  "version": "2.0.1",
   "properties": [
     {
       "name": "scrollTarget",
@@ -146,8 +146,7 @@
           "objectType": [],
           "description": "When `true`, the generated class will skip\n  strict dirty-checking for objects and arrays (always consider them to\n  be \"dirty\"). Defaults to false."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "stamp",
@@ -161,8 +160,7 @@
           "objectType": [],
           "description": "Object containing initial property values to\n  populate into the template bindings."
         }
-      ],
-      "returns": "OBJECT"
+      ]
     },
     {
       "name": "modelForElement",
@@ -176,14 +174,12 @@
           "objectType": [],
           "description": "Element for which to return a template model."
         }
-      ],
-      "returns": "OBJECT"
+      ]
     },
     {
       "name": "notifyResize",
       "description": "Can be called to manually notify a resizable and its descendant\nresizables of a resize change.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "assignParentResizable",
@@ -197,8 +193,7 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "stopResizeNotificationsFor",
@@ -212,8 +207,7 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "resizerShouldNotify",
@@ -227,8 +221,7 @@
           "objectType": [],
           "description": "A candidate descendant element that\nimplements `IronResizableBehavior`."
         }
-      ],
-      "returns": "BOOLEAN"
+      ]
     },
     {
       "name": "scroll",
@@ -250,8 +243,7 @@
           "objectType": [],
           "description": "The top position"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "toggleScrollListener",
@@ -265,14 +257,12 @@
           "objectType": [],
           "description": "True to add the event, False to remove it."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "updateViewportBoundaries",
       "description": "Invoke this method if you dynamically update the viewport's\nsize or CSS padding.",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "scrollToItem",
@@ -286,8 +276,7 @@
           "objectType": [],
           "description": "The item to be scrolled to"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "scrollToIndex",
@@ -301,8 +290,7 @@
           "objectType": [],
           "description": "The index of the item"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "selectItem",
@@ -316,8 +304,7 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "selectIndex",
@@ -331,8 +318,7 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "deselectItem",
@@ -346,8 +332,7 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "deselectIndex",
@@ -361,8 +346,7 @@
           "objectType": [],
           "description": "The index of the item in the items array."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "toggleSelectionForItem",
@@ -376,8 +360,7 @@
           "objectType": [],
           "description": "The item object."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "toggleSelectionForIndex",
@@ -391,14 +374,12 @@
           "objectType": [],
           "description": "The index of the item in the items array."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "clearSelection",
       "description": "Clears the current selection in the list.",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "updateSizeForItem",
@@ -412,8 +393,7 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "updateSizeForIndex",
@@ -427,8 +407,7 @@
           "objectType": [],
           "description": "The index of the item in the items array."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "focusItem",
@@ -442,8 +421,452 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "selected-item-changed",
+      "description": "Fired when the `selectedItem` property changes.",
+      "properties": []
+    },
+    {
+      "name": "selected-items-changed",
+      "description": "Fired when the `selectedItems` property changes.",
+      "properties": []
+    }
+  ],
+  "behaviors": [
+    "Polymer.Templatizer",
+    "Polymer.IronResizableBehavior",
+    "Polymer.IronScrollTargetBehavior",
+    "Polymer.OptionalMutableDataBehavior"
+  ],
+  "description": "`iron-list` displays a virtual, 'infinite' list. The template inside\nthe iron-list element represents the DOM to create for each list item.\nThe `items` property specifies an array of list item data.\n\nFor performance reasons, not every item in the list is rendered at once;\ninstead a small subset of actual template elements *(enough to fill the viewport)*\nare rendered and reused as the user scrolls. As such, it is important that all\nstate of the list template is bound to the model driving it, since the view may\nbe reused with a new model at any time. Particularly, any state that may change\nas the result of a user interaction with the list item must be bound to the model\nto avoid view state inconsistency.\n\n### Sizing iron-list\n\n`iron-list` must either be explicitly sized, or delegate scrolling to an\nexplicitly sized parent. By \"explicitly sized\", we mean it either has an explicit\nCSS `height` property set via a class or inline style, or else is sized by other\nlayout means (e.g. the `flex` or `fit` classes).\n\n#### Flexbox - [jsbin](http://jsbin.com/kokaki/edit?html,output)\n\n```html\n<template is=\"x-list\">\n  <style>\n    :host {\n      display: block;\n      height: 100vh;\n      display: flex;\n      flex-direction: column;\n    }\n\n    iron-list {\n      flex: 1 1 auto;\n    }\n  </style>\n  <app-toolbar>App name</app-toolbar>\n  <iron-list items=\"[[items]]\">\n    <template>\n      <div>\n        ...\n      </div>\n    </template>\n  </iron-list>\n</template>\n```\n#### Explicit size - [jsbin](http://jsbin.com/pibefo/edit?html,output)\n```html\n<template is=\"x-list\">\n  <style>\n    :host {\n      display: block;\n    }\n\n    iron-list {\n      height: 100vh; /* don't use % values unless the parent element is sized. */\n    }\n  </style>\n  <iron-list items=\"[[items]]\">\n    <template>\n      <div>\n        ...\n      </div>\n    </template>\n  </iron-list>\n</template>\n```\n#### Main document scrolling - [jsbin](http://jsbin.com/cojuli/edit?html,output)\n```html\n<head>\n  <style>\n    body {\n      height: 100vh;\n      margin: 0;\n      display: flex;\n      flex-direction: column;\n    }\n\n    app-toolbar {\n      position: fixed;\n      top: 0;\n      left: 0;\n      right: 0;\n    }\n\n    iron-list {\n      /* add padding since the app-toolbar is fixed at the top */\n      padding-top: 64px;\n    }\n  </style>\n</head>\n<body>\n  <app-toolbar>App name</app-toolbar>\n  <iron-list scroll-target=\"document\">\n    <template>\n      <div>\n        ...\n      </div>\n    </template>\n  </iron-list>\n</body>\n```\n\n`iron-list` must be given a `<template>` which contains exactly one element. In the examples\nabove we used a `<div>`, but you can provide any element (including custom elements).\n\n### Template model\n\nList item templates should bind to template models of the following structure:\n\n```js\n{\n  index: 0,        // index in the item array\n  selected: false, // true if the current item is selected\n  tabIndex: -1,    // a dynamically generated tabIndex for focus management\n  item: {}         // user data corresponding to items[index]\n}\n```\n\nAlternatively, you can change the property name used as data index by changing the\n`indexAs` property. The `as` property defines the name of the variable to add to the binding\nscope for the array.\n\nFor example, given the following `data` array:\n\n##### data.json\n\n```js\n[\n  {\"name\": \"Bob\"},\n  {\"name\": \"Tim\"},\n  {\"name\": \"Mike\"}\n]\n```\n\nThe following code would render the list (note the name property is bound from the model\nobject provided to the template scope):\n\n```html\n<iron-ajax url=\"data.json\" last-response=\"{{data}}\" auto></iron-ajax>\n<iron-list items=\"[[data]]\" as=\"item\">\n  <template>\n    <div>\n      Name: [[item.name]]\n    </div>\n  </template>\n</iron-list>\n```\n\n### Grid layout\n\n`iron-list` supports a grid layout in addition to linear layout by setting\nthe `grid` attribute.  In this case, the list template item must have both fixed\nwidth and height (e.g. via CSS). Based on this, the number of items\nper row are determined automatically based on the size of the list viewport.\n\n### Accessibility\n\n`iron-list` automatically manages the focus state for the items. It also provides\na `tabIndex` property within the template scope that can be used for keyboard navigation.\nFor example, users can press the up and down keys to move to previous and next\nitems in the list:\n\n```html\n<iron-list items=\"[[data]]\" as=\"item\">\n  <template>\n    <div tabindex$=\"[[tabIndex]]\">\n      Name: [[item.name]]\n    </div>\n  </template>\n</iron-list>\n```\n\n### Styling\n\nYou can use the `--iron-list-items-container` mixin to style the container of items:\n\n```css\niron-list {\n --iron-list-items-container: {\n    margin: auto;\n  };\n}\n```\n\n### Resizing\n\n`iron-list` lays out the items when it receives a notification via the `iron-resize` event.\nThis event is fired by any element that implements `IronResizableBehavior`.\n\nBy default, elements such as `iron-pages`, `paper-tabs` or `paper-dialog` will trigger\nthis event automatically. If you hide the list manually (e.g. you use `display: none`)\nyou might want to implement `IronResizableBehavior` or fire this event manually right\nafter the list became visible again. For example:\n\n```js\ndocument.querySelector('iron-list').fire('iron-resize');\n```\n\n### When should `<iron-list>` be used?\n\n`iron-list` should be used when a page has significantly more DOM nodes than the ones\nvisible on the screen. e.g. the page has 500 nodes, but only 20 are visible at a time.\nThis is why we refer to it as a `virtual` list. In this case, a `dom-repeat` will still\ncreate 500 nodes which could slow down the web app, but `iron-list` will only create 20.\n\nHowever, having an `iron-list` does not mean that you can load all the data at once.\nSay you have a million records in the database, you want to split the data into pages\nso you can bring in a page at the time. The page could contain 500 items, and iron-list\nwill only render 20."
+}{
+  "name": "iron-list",
+  "tag": "iron-list",
+  "baseUrl": "iron-list/iron-list.html",
+  "version": "2.0.1",
+  "properties": [
+    {
+      "name": "scrollTarget",
+      "type": [
+        "OBJECT"
       ],
-      "returns": "UNDEFINED"
+      "objectType": [],
+      "description": "Specifies the element that will handle the scroll event\non the behalf of the current element. This is typically a reference to an element,\nbut there are a few more posibilities:\n\n### Elements id\n\n```html\n<div id=\"scrollable-element\" style=\"overflow: auto;\">\n <x-element scroll-target=\"scrollable-element\">\n   <!-- Content-->\n </x-element>\n</div>\n```\nIn this case, the `scrollTarget` will point to the outer div element.\n\n### Document scrolling\n\nFor document scrolling, you can use the reserved word `document`:\n\n```html\n<x-element scroll-target=\"document\">\n  <!-- Content -->\n</x-element>\n```\n\n### Elements reference\n\n```js\nappHeader.scrollTarget = document.querySelector('#scrollable-element');\n```"
+    },
+    {
+      "name": "mutableData",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Instance-level flag for configuring the dirty-checking strategy\nfor this element.  When true, Objects and Arrays will skip dirty\nchecking, otherwise strict equality checking will be used.\n       "
+    },
+    {
+      "name": "items",
+      "type": [
+        "ARRAY"
+      ],
+      "objectType": [],
+      "description": "An array containing items determining how many instances of the template\nto stamp and that that each template instance should bind to.\n       "
+    },
+    {
+      "name": "maxPhysicalCount",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "The max count of physical items the pool can extend to.\n       "
+    },
+    {
+      "name": "as",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the variable to add to the binding scope for the array\nelement associated with a given template instance.\n       "
+    },
+    {
+      "name": "indexAs",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the variable to add to the binding scope with the index\nfor the row.\n       "
+    },
+    {
+      "name": "selectedAs",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the variable to add to the binding scope to indicate\nif the row is selected.\n       "
+    },
+    {
+      "name": "grid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, the list is rendered as a grid. Grid items must have\nfixed width and height set via CSS. e.g.\n\n```html\n<iron-list grid>\n  <template>\n     <div style=\"width: 100px; height: 100px;\"> 100x100 </div>\n  </template>\n</iron-list>\n```\n       "
+    },
+    {
+      "name": "selectionEnabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When true, tapping a row will select the item, placing its data model\nin the set of selected items retrievable via the selection property.\n\nNote that tapping focusable elements within the list item will not\nresult in selection, since they are presumed to have their * own action.\n       "
+    },
+    {
+      "name": "selectedItem",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "When `multiSelection` is false, this is the currently selected item, or `null`\nif no item is selected.\n       "
+    },
+    {
+      "name": "selectedItems",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "When `multiSelection` is true, this is an array that contains the selected items.\n       "
+    },
+    {
+      "name": "multiSelection",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "When `true`, multiple items may be selected at once (in this case,\n`selected` is an array of currently selected items).  When `false`,\nonly one item may be selected at a time.\n       "
+    },
+    {
+      "name": "scrollOffset",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "The offset top from the scrolling element to the iron-list element.\nThis value can be computed using the position returned by `getBoundingClientRect()`\nalthough it's preferred to use a constant value when possible.\n\nThis property is useful when an external scrolling element is used and there's\nsome offset between the scrolling element and the list.\nFor example: a header is placed above the list.\n       "
+    },
+    {
+      "name": "firstVisibleIndex",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Gets the index of the first visible item in the viewport."
+    },
+    {
+      "name": "lastVisibleIndex",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Gets the index of the last visible item in the viewport."
+    }
+  ],
+  "methods": [
+    {
+      "name": "templatize",
+      "description": "Generates an anonymous `TemplateInstance` class (stored as `this.ctor`)\nfor the provided template.  This method should be called once per\ntemplate to prepare an element for stamping the template, followed\nby `stamp` to create new instances of the template.",
+      "parameters": [
+        {
+          "name": "template",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Template to prepare"
+        },
+        {
+          "name": "mutableData",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "When `true`, the generated class will skip\n  strict dirty-checking for objects and arrays (always consider them to\n  be \"dirty\"). Defaults to false."
+        }
+      ]
+    },
+    {
+      "name": "stamp",
+      "description": "Creates an instance of the template prepared by `templatize`.  The object\nreturned is an instance of the anonymous class generated by `templatize`\nwhose `root` property is a document fragment containing newly cloned\ntemplate content, and which has property accessors corresponding to\nproperties referenced in template bindings.",
+      "parameters": [
+        {
+          "name": "model",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Object containing initial property values to\n  populate into the template bindings."
+        }
+      ]
+    },
+    {
+      "name": "modelForElement",
+      "description": "Returns the template \"model\" (`TemplateInstance`) associated with\na given element, which serves as the binding scope for the template\ninstance the element is contained in.  A template model should be used\nto manipulate data associated with this template instance.",
+      "parameters": [
+        {
+          "name": "el",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Element for which to return a template model."
+        }
+      ]
+    },
+    {
+      "name": "notifyResize",
+      "description": "Can be called to manually notify a resizable and its descendant\nresizables of a resize change.\n     ",
+      "parameters": []
+    },
+    {
+      "name": "assignParentResizable",
+      "description": "Used to assign the closest resizable ancestor to this resizable\nif the ancestor detects a request for notifications.\n     ",
+      "parameters": [
+        {
+          "name": "parentResizable",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "stopResizeNotificationsFor",
+      "description": "Used to remove a resizable descendant from the list of descendants\nthat should be notified of a resize change.\n     ",
+      "parameters": [
+        {
+          "name": "target",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "resizerShouldNotify",
+      "description": "This method can be overridden to filter nested elements that should or\nshould not be notified by the current element. Return true if an element\nshould be notified, or false if it should not be notified.",
+      "parameters": [
+        {
+          "name": "element",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "A candidate descendant element that\nimplements `IronResizableBehavior`."
+        }
+      ]
+    },
+    {
+      "name": "scroll",
+      "description": "Scrolls the content to a particular place.",
+      "parameters": [
+        {
+          "name": "left",
+          "type": [
+            "NUMBER"
+          ],
+          "objectType": [],
+          "description": "The left position"
+        },
+        {
+          "name": "top",
+          "type": [
+            "NUMBER"
+          ],
+          "objectType": [],
+          "description": "The top position"
+        }
+      ]
+    },
+    {
+      "name": "toggleScrollListener",
+      "description": "Enables or disables the scroll event listener.",
+      "parameters": [
+        {
+          "name": "yes",
+          "type": [
+            "BOOLEAN"
+          ],
+          "objectType": [],
+          "description": "True to add the event, False to remove it."
+        }
+      ]
+    },
+    {
+      "name": "updateViewportBoundaries",
+      "description": "Invoke this method if you dynamically update the viewport's\nsize or CSS padding.",
+      "parameters": []
+    },
+    {
+      "name": "scrollToItem",
+      "description": "Scroll to a specific item in the virtual list regardless\nof the physical items in the DOM tree.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "The item to be scrolled to"
+        }
+      ]
+    },
+    {
+      "name": "scrollToIndex",
+      "description": "Scroll to a specific index in the virtual list regardless\nof the physical items in the DOM tree.",
+      "parameters": [
+        {
+          "name": "idx",
+          "type": [
+            "NUMBER"
+          ],
+          "objectType": [],
+          "description": "The index of the item"
+        }
+      ]
+    },
+    {
+      "name": "selectItem",
+      "description": "Selects the given item.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "The item instance."
+        }
+      ]
+    },
+    {
+      "name": "selectIndex",
+      "description": "Selects the item at the given index in the items array.",
+      "parameters": [
+        {
+          "name": "index",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "The item instance."
+        }
+      ]
+    },
+    {
+      "name": "deselectItem",
+      "description": "Deselects the given item.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "The item instance."
+        }
+      ]
+    },
+    {
+      "name": "deselectIndex",
+      "description": "Deselects the item at the given index in the items array.",
+      "parameters": [
+        {
+          "name": "index",
+          "type": [
+            "NUMBER"
+          ],
+          "objectType": [],
+          "description": "The index of the item in the items array."
+        }
+      ]
+    },
+    {
+      "name": "toggleSelectionForItem",
+      "description": "Selects or deselects a given item depending on whether the item\nhas already been selected.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "The item object."
+        }
+      ]
+    },
+    {
+      "name": "toggleSelectionForIndex",
+      "description": "Selects or deselects the item at the given index in the items array\ndepending on whether the item has already been selected.",
+      "parameters": [
+        {
+          "name": "index",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "The index of the item in the items array."
+        }
+      ]
+    },
+    {
+      "name": "clearSelection",
+      "description": "Clears the current selection in the list.",
+      "parameters": []
+    },
+    {
+      "name": "updateSizeForItem",
+      "description": "Updates the size of a given list item.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "The item instance."
+        }
+      ]
+    },
+    {
+      "name": "updateSizeForIndex",
+      "description": "Updates the size of the item at the given index in the items array.",
+      "parameters": [
+        {
+          "name": "index",
+          "type": [
+            "NUMBER"
+          ],
+          "objectType": [],
+          "description": "The index of the item in the items array."
+        }
+      ]
+    },
+    {
+      "name": "focusItem",
+      "description": "",
+      "parameters": [
+        {
+          "name": "idx",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
     }
   ],
   "events": [

@@ -141,6 +141,9 @@ const propertiesToJsonArray = (properties) => {
  */
 const parametersToJsonArray = (parameters) => {
   const parametersJson = [];
+  if (typeof parameters === 'undefined') {
+    return parametersJson;
+  }
   for (let parameter of parameters) {
     const parameterJson = {
       "name": parameter.name,

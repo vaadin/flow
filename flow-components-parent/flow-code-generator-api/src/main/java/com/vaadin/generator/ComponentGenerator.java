@@ -671,8 +671,6 @@ public class ComponentGenerator {
         for (ComponentPropertyBaseData property : event.getProperties()) {
             // Add new parameter to constructor
             final String propertyName = property.getName();
-            final String normalizedPropertyName = ComponentGeneratorUtils
-                    .formatStringToValidJavaIdentifier(propertyName);
             Class<?> propertyJavaType;
 
             if (!property.getType().isEmpty()) {
@@ -682,18 +680,20 @@ public class ComponentGenerator {
             } else { // object property
                 propertyJavaType = JsonObject.class;
             }
+            String normalizedProperty = ComponentGeneratorUtils
+                    .formatStringToValidJavaIdentifier(propertyName);
             ParameterSource<JavaClassSource> parameter = eventConstructor
-                    .addParameter(propertyJavaType, normalizedPropertyName);
+                    .addParameter(propertyJavaType, normalizedProperty);
             parameter.addAnnotation(EventData.class).setLiteralValue(
                     String.format("\"event.%s\"", propertyName));
             // Create private field
-            eventListener.addProperty(propertyJavaType, normalizedPropertyName)
+            eventListener.addProperty(propertyJavaType, normalizedProperty)
                     .setAccessible(true).setMutable(false);
 
             // Set value to private field
             eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
-                    eventConstructor.getBody(), normalizedPropertyName,
-                    normalizedPropertyName));
+                    eventConstructor.getBody(), normalizedProperty,
+                    normalizedProperty));
             // Add the EventData as a import
             javaClass.addImport(EventData.class);
         }

@@ -21,7 +21,6 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
-import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -745,22 +744,18 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * Request options suitable for generating an {@code iron-request} instance
 	 * based on the current state of the {@code iron-ajax} instance's
 	 * properties.
-	 * 
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	@NotSupported
-	protected void toRequestOptions() {
+	public void toRequestOptions() {
+		getElement().callFunction("toRequestOptions");
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Performs an AJAX request to the specified URL.
-	 * 
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	@NotSupported
-	protected void generateRequest() {
+	public void generateRequest() {
+		getElement().callFunction("generateRequest");
 	}
 
 	@DomEvent("error")

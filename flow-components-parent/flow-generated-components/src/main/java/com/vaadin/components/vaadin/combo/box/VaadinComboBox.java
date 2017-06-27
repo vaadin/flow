@@ -21,7 +21,6 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -789,11 +788,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 		return getSelf();
 	}
 
-	/**
-	 * @return It would return a boolean
-	 */
-	@NotSupported
-	protected void hasValidator() {
+	public void hasValidator() {
+		getElement().callFunction("hasValidator");
 	}
 
 	/**
@@ -803,10 +799,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * If you want your element to have custom validation logic, do not override
 	 * this method; override {@code _getValidity(value)} instead.
 	 * 
-	 * @return It would return a boolean
+	 * @param value
 	 */
-	@NotSupported
-	protected void validate() {
+	public void validate(elemental.json.JsonObject value) {
+		getElement().callFunction("validate", value);
 	}
 
 	/**
@@ -834,10 +830,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
-	 * @return It would return a interface elemental.json.JsonObject
+	 * @param model
 	 */
-	@NotSupported
-	protected void stamp() {
+	public void stamp(elemental.json.JsonObject model) {
+		getElement().callFunction("stamp", model);
 	}
 
 	/**
@@ -848,10 +844,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * instance the element is contained in. A template model should be used to
 	 * manipulate data associated with this template instance.
 	 * 
-	 * @return It would return a interface elemental.json.JsonObject
+	 * @param el
 	 */
-	@NotSupported
-	protected void modelForElement() {
+	public void modelForElement(elemental.json.JsonObject el) {
+		getElement().callFunction("modelForElement", el);
 	}
 
 	/**

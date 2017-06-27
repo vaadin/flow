@@ -40,8 +40,7 @@
     {
       "name": "notifyResize",
       "description": "Can be called to manually notify a resizable and its descendant\nresizables of a resize change.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "assignParentResizable",
@@ -55,8 +54,7 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "stopResizeNotificationsFor",
@@ -70,8 +68,7 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "resizerShouldNotify",
@@ -85,8 +82,7 @@
           "objectType": [],
           "description": "A candidate descendant element that\nimplements `IronResizableBehavior`."
         }
-      ],
-      "returns": "BOOLEAN"
+      ]
     },
     {
       "name": "indexOfLabel",
@@ -100,8 +96,7 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "NUMBER"
+      ]
     },
     {
       "name": "getItemLabel",
@@ -115,26 +110,22 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "STRING"
+      ]
     },
     {
       "name": "ensureItemsRendered",
       "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "adjustScrollPosition",
       "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "updateViewportBoundaries",
       "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     }
   ],
   "events": [],

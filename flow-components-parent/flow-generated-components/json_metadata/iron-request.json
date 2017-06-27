@@ -159,20 +159,17 @@
           ],
           "description": "    url The url to which the request is sent.\n    method The HTTP method to use, default is GET.\n    async By default, all requests are sent asynchronously. To send synchronous requests,\n        set to false.\n    body The content for the request body for POST method.\n    headers HTTP request headers.\n    handleAs The response type. Default is 'text'.\n    withCredentials Whether or not to send credentials on the request. Default is false.\n  timeout: (Number|undefined)"
         }
-      ],
-      "returns": "OBJECT"
+      ]
     },
     {
       "name": "parseResponse",
       "description": "Attempts to parse the response body of the XHR. If parsing succeeds,\nthe value returned will be deserialized based on the `responseType`\nset on the XHR.",
-      "parameters": [],
-      "returns": "OBJECT"
+      "parameters": []
     },
     {
       "name": "abort",
       "description": "Aborts the request.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     }
   ],
   "events": [

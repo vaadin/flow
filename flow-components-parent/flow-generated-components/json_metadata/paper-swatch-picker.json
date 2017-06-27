@@ -1,0 +1,71 @@
+{
+  "name": "paper-swatch-picker",
+  "tag": "paper-swatch-picker",
+  "baseUrl": "paper-swatch-picker/paper-swatch-picker.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "color",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The selected color, as hex (i.e. #ffffff).\nvalue.\n         "
+    },
+    {
+      "name": "colorList",
+      "type": [
+        "ARRAY"
+      ],
+      "objectType": [],
+      "description": "The colors to be displayed. By default, these are the Material Design\ncolors. This array is arranged by \"generic color\", so for example,\nall the reds (from light to dark), then the pinks, then the blues, etc.\nDepending on how many of these generic colors you have, you should\nupdate the `columnCount` property.\n         "
+    },
+    {
+      "name": "columnCount",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": " The number of columns to display in the picker. This corresponds to\nthe number of generic colors (i.e. not counting the light/dark) variants\nof a specific color) you are using in your `colorList`. For example,\nthe Material Design palette has 18 colors "
+    },
+    {
+      "name": "horizontalAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The orientation against which to align the menu dropdown\nhorizontally relative to the dropdown trigger.\n         "
+    },
+    {
+      "name": "verticalAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The orientation against which to align the menu dropdown\nvertically relative to the dropdown trigger.\n         "
+    },
+    {
+      "name": "noink",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the color picker button will not produce a ripple effect when interacted\nwith via the pointer.\n         "
+    }
+  ],
+  "methods": [],
+  "events": [
+    {
+      "name": "color-picker-selected",
+      "description": "color-picker-selected",
+      "properties": []
+    },
+    {
+      "name": "color-changed",
+      "description": "Fired when the `color` property changes.",
+      "properties": []
+    }
+  ],
+  "behaviors": [],
+  "description": "This is a simple color picker element that will allow you to choose one\nof the Material Design colors from a list of available swatches.\n\nExample:\n\n    <paper-swatch-picker></paper-swatch-picker>\n\n    <paper-swatch-picker color=\"{{selectedColor}}\"></paper-swatch-picker>\n\nYou can configure the color palette being used using the `colorList` array and\nthe `columnCount` property, which specifies how many \"generic\" colours (i.e. columns\nin the picker) you want to display.\n\n    <paper-swatch-picker column-count=5 color-list='[\"#65a5f2\", \"#83be54\", \"#f0d551\", \"#e5943c\", \"#a96ddb\"]'></paper-swatch-picker>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-swatch-picker-color-size` | The size of each of the color boxes | `20px`\n`--paper-swatch-picker-icon-size` | The size of the color picker icon | `24px`\n`--paper-swatch-picker-icon` | Mixin applied to the color picker icon | `{}`"
+}

@@ -20,7 +20,6 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -412,10 +411,13 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component {
 	 * 
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
-	 * @return It would return a boolean
+	 * @param event
+	 * @param eventString
 	 */
-	@NotSupported
-	protected void keyboardEventMatchesKeys() {
+	public void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+			java.lang.String eventString) {
+		getElement().callFunction("keyboardEventMatchesKeys", event,
+				eventString);
 	}
 
 	/**
@@ -445,11 +447,9 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns true if this element currently contains a ripple effect.
-	 * 
-	 * @return It would return a boolean
 	 */
-	@NotSupported
-	protected void hasRipple() {
+	public void hasRipple() {
+		getElement().callFunction("hasRipple");
 	}
 
 	@DomEvent("active-changed")

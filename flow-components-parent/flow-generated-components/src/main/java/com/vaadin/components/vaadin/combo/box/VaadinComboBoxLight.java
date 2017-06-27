@@ -21,7 +21,6 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
-import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -642,10 +641,13 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
-	 * @return It would return a boolean
+	 * @param event
+	 * @param eventString
 	 */
-	@NotSupported
-	protected void keyboardEventMatchesKeys() {
+	public void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+			java.lang.String eventString) {
+		getElement().callFunction("keyboardEventMatchesKeys", event,
+				eventString);
 	}
 
 	/**
@@ -673,10 +675,10 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
-	 * @return It would return a interface elemental.json.JsonObject
+	 * @param model
 	 */
-	@NotSupported
-	protected void stamp() {
+	public void stamp(elemental.json.JsonObject model) {
+		getElement().callFunction("stamp", model);
 	}
 
 	/**
@@ -687,10 +689,10 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * instance the element is contained in. A template model should be used to
 	 * manipulate data associated with this template instance.
 	 * 
-	 * @return It would return a interface elemental.json.JsonObject
+	 * @param el
 	 */
-	@NotSupported
-	protected void modelForElement() {
+	public void modelForElement(elemental.json.JsonObject el) {
+		getElement().callFunction("modelForElement", el);
 	}
 
 	/**

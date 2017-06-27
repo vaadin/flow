@@ -20,7 +20,6 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
@@ -160,10 +159,10 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
-	 * @return It would return a boolean
+	 * @param element
 	 */
-	@NotSupported
-	protected void resizerShouldNotify() {
+	public void resizerShouldNotify(elemental.json.JsonObject element) {
+		getElement().callFunction("resizerShouldNotify", element);
 	}
 
 	/**
@@ -171,10 +170,10 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * 
 	 * Gets the index of the item with the provided label.
 	 * 
-	 * @return It would return a double
+	 * @param label
 	 */
-	@NotSupported
-	protected void indexOfLabel() {
+	public void indexOfLabel(elemental.json.JsonObject label) {
+		getElement().callFunction("indexOfLabel", label);
 	}
 
 	/**
@@ -182,10 +181,10 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * 
 	 * Gets the label string for the item based on the {@code _itemLabelPath}.
 	 * 
-	 * @return It would return a class java.lang.String
+	 * @param item
 	 */
-	@NotSupported
-	protected void getItemLabel() {
+	public void getItemLabel(elemental.json.JsonObject item) {
+		getElement().callFunction("getItemLabel", item);
 	}
 
 	public void ensureItemsRendered() {

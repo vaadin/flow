@@ -146,14 +146,12 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "removeOwnKeyBindings",
       "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "keyboardEventMatchesKeys",
@@ -175,8 +173,7 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ],
-      "returns": "BOOLEAN"
+      ]
     },
     {
       "name": "ensureRipple",
@@ -190,20 +187,17 @@
           "objectType": [],
           "description": "(optional) event that triggered the\nripple."
         }
-      ],
-      "returns": "UNDEFINED"
+      ]
     },
     {
       "name": "getRipple",
       "description": "Returns the `<paper-ripple>` element used by this element to create\nripple effects. The element's ripple is created on demand, when\nnecessary, and calling this method will force the\nripple to be created.\n     ",
-      "parameters": [],
-      "returns": "UNDEFINED"
+      "parameters": []
     },
     {
       "name": "hasRipple",
       "description": "Returns true if this element currently contains a ripple effect.",
-      "parameters": [],
-      "returns": "BOOLEAN"
+      "parameters": []
     }
   ],
   "events": [
