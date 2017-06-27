@@ -1,0 +1,136 @@
+{
+  "name": "vaadin-combo-box-overlay",
+  "tag": "vaadin-combo-box-overlay",
+  "baseUrl": "vaadin-combo-box/vaadin-combo-box-overlay.html",
+  "properties": [
+    {
+      "name": "positionTarget",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The element to position/align the dropdown by.\n       "
+    },
+    {
+      "name": "verticalOffset",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Vertical offset for the overlay position.\n       "
+    },
+    {
+      "name": "touchDevice",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the device supports touch events.\n       "
+    },
+    {
+      "name": "loading",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "`true` when new items are being loaded.\n       "
+    }
+  ],
+  "methods": [
+    {
+      "name": "notifyResize",
+      "description": "Can be called to manually notify a resizable and its descendant\nresizables of a resize change.\n     ",
+      "parameters": []
+    },
+    {
+      "name": "assignParentResizable",
+      "description": "Used to assign the closest resizable ancestor to this resizable\nif the ancestor detects a request for notifications.\n     ",
+      "parameters": [
+        {
+          "name": "parentResizable",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "stopResizeNotificationsFor",
+      "description": "Used to remove a resizable descendant from the list of descendants\nthat should be notified of a resize change.\n     ",
+      "parameters": [
+        {
+          "name": "target",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "resizerShouldNotify",
+      "description": "This method can be overridden to filter nested elements that should or\nshould not be notified by the current element. Return true if an element\nshould be notified, or false if it should not be notified.",
+      "parameters": [
+        {
+          "name": "element",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "A candidate descendant element that\nimplements `IronResizableBehavior`."
+        }
+      ]
+    },
+    {
+      "name": "indexOfLabel",
+      "description": "Gets the index of the item with the provided label.",
+      "parameters": [
+        {
+          "name": "label",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "getItemLabel",
+      "description": "Gets the label string for the item based on the `_itemLabelPath`.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "ensureItemsRendered",
+      "description": "",
+      "parameters": []
+    },
+    {
+      "name": "adjustScrollPosition",
+      "description": "",
+      "parameters": []
+    },
+    {
+      "name": "updateViewportBoundaries",
+      "description": "",
+      "parameters": []
+    }
+  ],
+  "events": [],
+  "behaviors": [
+    "vaadin.elements.combobox.OverlayBehavior"
+  ],
+  "description": ""
+}

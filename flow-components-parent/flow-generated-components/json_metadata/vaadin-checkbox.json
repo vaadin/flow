@@ -1,0 +1,89 @@
+{
+  "name": "Vaadin.CheckboxElement",
+  "tag": "vaadin-checkbox",
+  "baseUrl": "vaadin-checkbox/vaadin-checkbox.html",
+  "properties": [
+    {
+      "name": "autofocus",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Specify that this control should have input focus when the page loads.\n         "
+    },
+    {
+      "name": "focused",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the element currently has focus.\n         "
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the user cannot interact with this element.\n         "
+    },
+    {
+      "name": "checked",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the checkbox is checked.\n             "
+    },
+    {
+      "name": "indeterminate",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Indeterminate state of the checkbox when it's neither checked nor unchecked, but undetermined.\nhttps://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#Indeterminate_state_checkboxes\n             "
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the control, which is submitted with the form data.\n             "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The value given to the data submitted with the checkbox's name to the server when the control is inside a form.\n             "
+    }
+  ],
+  "methods": [
+    {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": []
+    },
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": []
+    }
+  ],
+  "events": [
+    {
+      "name": "checked-changed",
+      "description": "Fired when the `checked` property changes.",
+      "properties": []
+    },
+    {
+      "name": "indeterminate-changed",
+      "description": "Fired when the `indeterminate` property changes.",
+      "properties": []
+    }
+  ],
+  "behaviors": [],
+  "description": "`<vaadin-checkbox>` is a Polymer element for customized checkboxes.\n\n```html\n<vaadin-checkbox>\n  Make my profile visible\n</vaadin-checkbox>\n```\n\n### Styling\n\nThe following shadow DOM parts are exposed for styling:\n\nPart name         | Description\n------------------|----------------\n`wrapper`         | The `<label>` element which wrapps the checkbox and [part=\"label\"]\n`native-checkbox` | The `<input type=\"checkbox\">` element\n`checkbox`        | The `<span>` element for a custom graphical check\n`label`           | The `<span>` element for slotted text/HTML label\n\nThe following attributes are exposed for styling:\n\nAttribute    | Description\n-------------|------------\n`active`     | Set when the checkbox is pressed down, either with mouse, touch or the keyboard.\n`disabled`   | Set when the checkbox is disabled.\n`focus-ring` | Set when the checkbox is focused using the keyboard.\n`focused`    | Set when the checkbox is focused."
+}

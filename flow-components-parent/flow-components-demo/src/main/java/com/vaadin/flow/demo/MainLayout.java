@@ -16,19 +16,25 @@
 package com.vaadin.flow.demo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
+import com.vaadin.components.paper.button.PaperButton;
+import com.vaadin.components.paper.dialog.PaperDialog;
 import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
 import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.UI;
 
 /**
  * Main layout of the application. It contains the menu, header and the main
@@ -36,9 +42,12 @@ import com.vaadin.ui.AttachEvent;
  */
 @Tag("main-layout")
 @HtmlImport("frontend://src/main-layout.html")
+@JavaScript("frontend://src/script/prism.js")
+@StyleSheet("frontend://src/css/prism.css")
 public class MainLayout extends PolymerTemplate<MainLayoutModel>
         implements HasChildView {
 
+    private PaperDialog sourceDialog;
     private View selectedView;
 
     /**
@@ -63,10 +72,15 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         void setSelectors(List<DemoObject> selectors);
     }
 
+    /**
+     * Default constructor of the layout.
+     */
     public MainLayout() {
         List<DemoObject> selectors = new ArrayList<>();
-        for(Class<? extends DemoView> view: ComponentDemoRegister.getAvailableViews()) {
-            selectors.add(new DemoObject(view.getAnnotation(ComponentDemo.class)));
+        for (Class<? extends DemoView> view : ComponentDemoRegister
+                .getAvailableViews()) {
+            selectors.add(
+                    new DemoObject(view.getAnnotation(ComponentDemo.class)));
         }
         getModel().setSelectors(selectors);
     }
@@ -84,7 +98,53 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         // uses the <slot> at the template
         getElement().appendChild(childView.getElement());
         if (childView instanceof DemoView) {
-            getModel().setPage(childView.getClass().getAnnotation(ComponentDemo.class).name());
+            getModel().setPage(childView.getClass()
+                    .getAnnotation(ComponentDemo.class).name());
         }
+    }
+
+    /**
+     * Opens a dialog with a source code relevant to the current view.
+     */
+    @EventHandler
+    public void showSource() {
+        prepareDialog();
+
+        SourceContent content = new SourceContent();
+        if (selectedView instanceof DemoView) {
+            ((DemoView) selectedView).populateSources(content);
+        } else {
+            content.setText("No source content available for non demo view");
+        }
+
+        Element element = sourceDialog.getElement();
+        element.appendChild(ElementFactory.createHeading2(
+                selectedView.getClass().getAnnotation(ComponentDemo.class)
+                        .name() + " sources"));
+        element.appendChild(content.getElement());
+
+        sourceDialog.setOpened(true);
+
+        PaperButton closeButton = new PaperButton();
+        closeButton.getElement().setText("Close");
+        closeButton.getElement().getStyle().set("float", "right");
+        closeButton.setRaised(true);
+        closeButton.getElement().addEventListener("click",
+                event -> sourceDialog.setOpened(false));
+
+        sourceDialog.getElement().appendChild(closeButton.getElement());
+
+        UI.getCurrent().getPage().executeJavaScript("Prism.highlightAll();");
+    }
+
+    private void prepareDialog() {
+        if (sourceDialog == null) {
+            sourceDialog = new PaperDialog();
+            sourceDialog.setModal(true);
+
+            getUI().get().getElement().appendChild(sourceDialog.getElement());
+        }
+
+        sourceDialog.getElement().removeAllChildren();
     }
 }
