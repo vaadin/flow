@@ -18,6 +18,7 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
+import com.vaadin.flow.html.Div;
 
 /**
  * View for {@link PaperButton} demo.
@@ -25,13 +26,30 @@ import com.vaadin.flow.demo.SourceContent;
 @ComponentDemo(name = "Paper Button", href = "paper-button")
 public class PaperButtonView extends DemoView {
 
+    private Div message;
+
     @Override
     public void initView() {
+        add(createButton("Link").setNoink(true));
+        add(createButton("Raised").setRaised(true));
+        add(createButton("Toggles").setRaised(true).setToggles(true));
+        add(createButton("Disabled").setDisabled(true));
+
+        message = new Div();
+        message.setId("buttonsMessage");
+        add(message);
+    }
+
+    private PaperButton createButton(String text) {
         PaperButton button = new PaperButton();
         button.setRaised(true);
-        button.getElement().setText("Button");
+        button.getElement().setText(text);
         button.getElement().getStyle().set("backgroundColor", "white");
-        add(button);
+        button.getElement().addEventListener("click", evt -> {
+            message.setText("Button " + evt.getSource().getText().toUpperCase()
+                    + " was clicked.");
+        });
+        return button;
     }
 
     @Override

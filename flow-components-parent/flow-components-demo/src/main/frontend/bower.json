@@ -33,6 +33,9 @@
   },
   "resolutions": {
     "iron-flex-layout": "1 - 2",
-    "iron-meta": "1 - 2"
+    "iron-meta": "1 - 2",
+    "iron-media-query": "1 - 2",
+    "iron-resizable-behavior": "1 - 2",
+    "iron-scroll-target-behavior": "1 - 2"
   }
 }
