@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -293,9 +294,11 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * The handling of the {@code body} parameter will vary based on the
 	 * Content-Type header. See the docs for iron-ajax's {@code body} param for
 	 * details.
+	 * 
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void send() {
-		getElement().callFunction("send");
+	@NotSupported
+	protected void send() {
 	}
 
 	/**
@@ -304,9 +307,11 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * Attempts to parse the response body of the XHR. If parsing succeeds, the
 	 * value returned will be deserialized based on the {@code responseType} set
 	 * on the XHR.
+	 * 
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void parseResponse() {
-		getElement().callFunction("parseResponse");
+	@NotSupported
+	protected void parseResponse() {
 	}
 
 	/**

@@ -21,6 +21,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -429,10 +430,10 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
-	 * @param element
+	 * @return It would return a boolean
 	 */
-	public void resizerShouldNotify(elemental.json.JsonObject element) {
-		getElement().callFunction("resizerShouldNotify", element);
+	@NotSupported
+	protected void resizerShouldNotify() {
 	}
 
 	/**
@@ -440,10 +441,10 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * Returns the index of the given item.
 	 * 
-	 * @param item
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void indexOf(elemental.json.JsonObject item) {
-		getElement().callFunction("indexOf", item);
+	@NotSupported
+	protected void indexOf() {
 	}
 
 	/**

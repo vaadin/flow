@@ -34,7 +34,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "setPrefixedProperty",
@@ -64,12 +65,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "complete",
       "description": "Called when the animation finishes.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [],

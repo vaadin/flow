@@ -32,12 +32,14 @@
     {
       "name": "connectedCallback",
       "description": "",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "disconnectedCallback",
       "description": "",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [],

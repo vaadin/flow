@@ -21,6 +21,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -788,8 +789,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 		return getSelf();
 	}
 
-	public void hasValidator() {
-		getElement().callFunction("hasValidator");
+	/**
+	 * @return It would return a boolean
+	 */
+	@NotSupported
+	protected void hasValidator() {
 	}
 
 	/**
@@ -799,10 +803,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * If you want your element to have custom validation logic, do not override
 	 * this method; override {@code _getValidity(value)} instead.
 	 * 
-	 * @param value
+	 * @return It would return a boolean
 	 */
-	public void validate(elemental.json.JsonObject value) {
-		getElement().callFunction("validate", value);
+	@NotSupported
+	protected void validate() {
 	}
 
 	/**
@@ -830,10 +834,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
-	 * @param model
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void stamp(elemental.json.JsonObject model) {
-		getElement().callFunction("stamp", model);
+	@NotSupported
+	protected void stamp() {
 	}
 
 	/**
@@ -844,10 +848,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * instance the element is contained in. A template model should be used to
 	 * manipulate data associated with this template instance.
 	 * 
-	 * @param el
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void modelForElement(elemental.json.JsonObject el) {
-		getElement().callFunction("modelForElement", el);
+	@NotSupported
+	protected void modelForElement() {
 	}
 
 	/**

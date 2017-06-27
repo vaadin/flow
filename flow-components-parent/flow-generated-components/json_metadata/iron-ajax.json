@@ -201,12 +201,14 @@
     {
       "name": "toRequestOptions",
       "description": "Request options suitable for generating an `iron-request` instance based\non the current state of the `iron-ajax` instance's properties.",
-      "parameters": []
+      "parameters": [],
+      "returns": "OBJECT"
     },
     {
       "name": "generateRequest",
       "description": "Performs an AJAX request to the specified URL.",
-      "parameters": []
+      "parameters": [],
+      "returns": "OBJECT"
     }
   ],
   "events": [

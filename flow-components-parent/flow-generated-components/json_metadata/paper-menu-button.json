@@ -186,12 +186,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "removeOwnKeyBindings",
       "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "keyboardEventMatchesKeys",
@@ -213,22 +215,26 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     },
     {
       "name": "toggle",
       "description": "Toggles the drowpdown content between opened and closed.\n         ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "open",
       "description": "Make the dropdown content appear as an overlay positioned relative\nto the dropdown trigger.\n         ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "close",
       "description": "Hide the dropdown content.\n         ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [

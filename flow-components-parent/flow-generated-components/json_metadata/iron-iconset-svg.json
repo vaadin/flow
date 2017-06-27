@@ -33,7 +33,8 @@
     {
       "name": "getIconNames",
       "description": "Construct an array of all icon names in this iconset.",
-      "parameters": []
+      "parameters": [],
+      "returns": "OBJECT"
     },
     {
       "name": "applyIcon",
@@ -55,7 +56,8 @@
           "objectType": [],
           "description": "Name of the icon to apply."
         }
-      ]
+      ],
+      "returns": "OBJECT"
     },
     {
       "name": "removeIcon",
@@ -69,7 +71,8 @@
           "objectType": [],
           "description": "The element from which the icon is removed."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [],

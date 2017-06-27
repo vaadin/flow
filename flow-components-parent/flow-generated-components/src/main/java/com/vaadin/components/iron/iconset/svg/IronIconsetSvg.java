@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.NotSupported;
 import elemental.json.JsonObject;
 
 /**
@@ -137,9 +138,11 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Construct an array of all icon names in this iconset.
+	 * 
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void getIconNames() {
-		getElement().callFunction("getIconNames");
+	@NotSupported
+	protected void getIconNames() {
 	}
 
 	/**
@@ -156,11 +159,10 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
 	 * This direction will apply to all future icon applications, although only
 	 * icons marked to be mirrored will be affected.
 	 * 
-	 * @param element
-	 * @param iconName
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void applyIcon(JsonObject element, java.lang.String iconName) {
-		getElement().callFunction("applyIcon", element, iconName);
+	@NotSupported
+	protected void applyIcon() {
 	}
 
 	/**
@@ -171,7 +173,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
 	 * 
 	 * @param element
 	 */
-	public void removeIcon(elemental.json.JsonObject element) {
+	public void removeIcon(JsonObject element) {
 		getElement().callFunction("removeIcon", element);
 	}
 

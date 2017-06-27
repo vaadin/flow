@@ -290,12 +290,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "removeOwnKeyBindings",
       "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "keyboardEventMatchesKeys",
@@ -317,42 +319,50 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     },
     {
       "name": "fit",
       "description": "Positions and fits the element into the `fitInto` element.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "resetFit",
       "description": "Resets the target element's position and size constraints, and clear\nthe memoized data.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "refit",
       "description": "Equivalent to calling `resetFit()` and `fit()`. Useful to call this after\nthe element or the `fitInto` element has been resized, or if any of the\npositioning properties (e.g. `horizontalAlign, verticalAlign`) is updated.\nIt preserves the scroll position of the sizingTarget.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "position",
       "description": "Positions the element according to `horizontalAlign, verticalAlign`.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "constrain",
       "description": "Constrains the size of the element to `fitInto` by setting `max-height`\nand/or `max-width`.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "center",
       "description": "Centers horizontally and vertically if not already positioned. This also sets\n`position:fixed`.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "notifyResize",
       "description": "Can be called to manually notify a resizable and its descendant\nresizables of a resize change.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "assignParentResizable",
@@ -366,7 +376,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "stopResizeNotificationsFor",
@@ -380,7 +391,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "resizerShouldNotify",
@@ -394,27 +406,32 @@
           "objectType": [],
           "description": "A candidate descendant element that\nimplements `IronResizableBehavior`."
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     },
     {
       "name": "backdropElement",
       "description": "The backdrop element.",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "toggle",
       "description": "Toggle the opened state of the overlay.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "open",
       "description": "Open the overlay.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "close",
       "description": "Close the overlay.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "cancel",
@@ -428,12 +445,14 @@
           "objectType": [],
           "description": "The original event"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "invalidateTabbables",
       "description": "Invalidates the cached tabbable nodes. To be called when any of the focusable\ncontent changes (e.g. a button is disabled).\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "getAnimationConfig",
@@ -447,7 +466,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "playAnimation",
@@ -469,12 +489,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "cancelAnimation",
       "description": "Cancels the currently running animations.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [

@@ -42,12 +42,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "notifyResize",
       "description": "Can be called to manually notify a resizable and its descendant\nresizables of a resize change.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "assignParentResizable",
@@ -61,7 +63,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "stopResizeNotificationsFor",
@@ -75,7 +78,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "resizerShouldNotify",
@@ -89,7 +93,8 @@
           "objectType": [],
           "description": "A candidate descendant element that\nimplements `IronResizableBehavior`."
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     }
   ],
   "events": [],
