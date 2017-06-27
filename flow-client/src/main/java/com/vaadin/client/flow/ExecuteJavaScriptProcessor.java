@@ -15,6 +15,9 @@
  */
 package com.vaadin.client.flow;
 
+import java.util.Arrays;
+
+import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -107,9 +110,26 @@ public class ExecuteJavaScriptProcessor {
             JsMap<Object, StateNode> nodeParameters) {
         assert parameterNamesAndCode.length == parameters.length() + 1;
 
-        NativeFunction function = new NativeFunction(parameterNamesAndCode);
+        try {
+            NativeFunction function = new NativeFunction(parameterNamesAndCode);
 
-        function.apply(getContextExecutionObject(nodeParameters), parameters);
+            function.apply(getContextExecutionObject(nodeParameters),
+                    parameters);
+        } catch (Exception exception) {
+            Console.error("Exception is thrown during JavaScript execution.");
+            registry.getSystemErrorHandler().handleError(exception);
+            if (!registry.getApplicationConfiguration().isProductionMode()) {
+                String code = Arrays.asList(parameterNamesAndCode).toString();
+                if (code.charAt(0) == '[') {
+                    code = code.substring(1);
+                }
+                if (code.charAt(code.length() - 1) == ']') {
+                    code = code.substring(0, code.length() - 1);
+                }
+                Console.warn(
+                        "The error has occured in the JS code: '" + code + "'");
+            }
+        }
     }
 
     private static native JsonObject getContextExecutionObject(
