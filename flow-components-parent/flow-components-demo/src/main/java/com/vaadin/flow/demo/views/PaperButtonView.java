@@ -30,10 +30,10 @@ public class PaperButtonView extends DemoView {
 
     @Override
     public void initView() {
-        add(createButton("Link").setNoink(true));
+        add(createButton("Link").setRaised(false).setNoink(true));
         add(createButton("Raised").setRaised(true));
         add(createButton("Toggles").setRaised(true).setToggles(true));
-        add(createButton("Disabled").setDisabled(true));
+        add(createButton("Disabled").setRaised(false).setDisabled(true));
 
         message = new Div();
         message.setId("buttonsMessage");
