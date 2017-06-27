@@ -15,7 +15,6 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +26,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -37,10 +35,14 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -556,15 +558,26 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName(StringUtils.uncapitalize(ComponentGeneratorUtils
                         .formatStringToValidJavaIdentifier(function.getName())))
-                .setPublic().setReturnTypeVoid();
+                .setReturnTypeVoid();
 
         if (StringUtils.isNotEmpty(function.getDescription())) {
             addJavaDoc(function.getDescription(), method.getJavaDoc());
         }
 
-        method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
-                function.getName(),
-                generateFunctionParameters(function, method)));
+        // methods with return values are not supported
+        if (function.getReturns() != null
+                && function.getReturns() != ComponentBasicType.UNDEFINED) {
+            method.setProtected();
+            method.addAnnotation(NotSupported.class);
+            method.getJavaDoc().addTagValue("@return",
+                    "It would return a " + toJavaType(function.getReturns()));
+        } else {
+            method.setPublic();
+            method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
+                    function.getName(),
+                    generateFunctionParameters(function, method)));
+        }
+
     }
 
     /**
@@ -657,6 +670,8 @@ public class ComponentGenerator {
         for (ComponentPropertyBaseData property : event.getProperties()) {
             // Add new parameter to constructor
             final String propertyName = property.getName();
+            final String normalizedPropertyName = ComponentGeneratorUtils
+                    .formatStringToValidJavaIdentifier(propertyName);
             Class<?> propertyJavaType;
 
             if (!property.getType().isEmpty()) {
@@ -667,16 +682,17 @@ public class ComponentGenerator {
                 propertyJavaType = JsonObject.class;
             }
             ParameterSource<JavaClassSource> parameter = eventConstructor
-                    .addParameter(propertyJavaType, propertyName);
+                    .addParameter(propertyJavaType, normalizedPropertyName);
             parameter.addAnnotation(EventData.class).setLiteralValue(
                     String.format("\"event.%s\"", propertyName));
             // Create private field
-            eventListener.addProperty(propertyJavaType, propertyName)
+            eventListener.addProperty(propertyJavaType, normalizedPropertyName)
                     .setAccessible(true).setMutable(false);
 
             // Set value to private field
             eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
-                    eventConstructor.getBody(), propertyName, propertyName));
+                    eventConstructor.getBody(), normalizedPropertyName,
+                    normalizedPropertyName));
             // Add the EventData as a import
             javaClass.addImport(EventData.class);
         }

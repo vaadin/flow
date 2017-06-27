@@ -1,0 +1,105 @@
+{
+  "name": "iron-form",
+  "tag": "iron-form",
+  "baseUrl": "iron-form/iron-form.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "allowRedirect",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set this to true if you don't want the form to be submitted through an\najax request, and you want the page to redirect to the action URL\nafter the form has been submitted.\n         "
+    },
+    {
+      "name": "headers",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "HTTP request headers to send. See PolymerElements/iron-ajax for\nmore details. Only works when `allowRedirect` is false.\n        "
+    },
+    {
+      "name": "withCredentials",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set the `withCredentials` flag on the request. See PolymerElements/iron-ajax for\nmore details. Only works when `allowRedirect` is false.\n        "
+    }
+  ],
+  "methods": [
+    {
+      "name": "validate",
+      "description": "Validates all the required elements (custom and native) in the form.",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "submit",
+      "description": "Submits the form.\n       ",
+      "parameters": [
+        {
+          "name": "event",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "reset",
+      "description": "Resets the form to the default values.\n       ",
+      "parameters": [
+        {
+          "name": "event",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "serializeForm",
+      "description": "Serializes the form as will be used in submission. Note that `serialize`\nis a Polymer reserved keyword, so calling `someIronForm`.serialize()`\nwill give you unexpected results.",
+      "parameters": [],
+      "returns": "OBJECT"
+    }
+  ],
+  "events": [
+    {
+      "name": "iron-form-error",
+      "description": "iron-form-error",
+      "properties": []
+    },
+    {
+      "name": "iron-form-invalid",
+      "description": "iron-form-invalid",
+      "properties": []
+    },
+    {
+      "name": "iron-form-presubmit",
+      "description": "iron-form-presubmit",
+      "properties": []
+    },
+    {
+      "name": "iron-form-response",
+      "description": "iron-form-response",
+      "properties": []
+    },
+    {
+      "name": "iron-form-submit",
+      "description": "iron-form-submit",
+      "properties": []
+    }
+  ],
+  "behaviors": [],
+  "description": "`<iron-form>` is a wrapper around the HTML `<form>` element, that can\nvalidate and submit both custom and native HTML elements. Note that this\nis a breaking change from iron-form 1.0, which was a type extension.\n\nIt has two modes: if `allow-redirect` is true, then after the form submission you\nwill be redirected to the server response. Otherwise, if it is false, it will\nuse an `iron-ajax` element to submit the form contents to the server.\n\n  Example:\n\n    <iron-form>\n      <form method=\"get\" action=\"/form/handler\">\n        <input type=\"text\" name=\"name\" value=\"Batman\">\n        <input type=\"checkbox\" name=\"donuts\" checked> I like donuts<br>\n        <paper-checkbox name=\"cheese\" value=\"yes\" checked></paper-checkbox>\n      </form>\n    </iron-form>\n\nBy default, a native `<button>` element will submit this form. However, if you\nwant to submit it from a custom element's click handler, you need to explicitly\ncall the `iron-form`'s `submit` method.\n\n  Example:\n\n    <paper-button raised onclick=\"submitForm()\">Submit</paper-button>\n\n    function submitForm() {\n      document.getElementById('iron-form').submit();\n    }\n\nIf you are not using the `allow-redirect` mode, then you also have the option of\ncustomizing the request sent to the server. To do so, you can listen to the `iron-form-presubmit`\nevent, and modify the form's [`iron-ajax`](https://elements.polymer-project.org/elements/iron-ajax)\nobject. However, If you want to not use `iron-ajax` at all, you can cancel the\nevent and do your own custom submission:\n\n  Example of modifying the request, but still using the build-in form submission:\n\n    form.addEventListener('iron-form-presubmit', function() {\n      this.request.method = 'put';\n      this.request.params['extraParam'] = 'someValue';\n    });\n\n  Example of bypassing the build-in form submission:\n\n    form.addEventListener('iron-form-presubmit', function(event) {\n      event.preventDefault();\n      var firebase = new Firebase(form.getAttribute('action'));\n      firebase.set(form.serializeForm());\n    });\n\nNote that if you're dynamically creating this element, it's mandatory that you\nfirst create the contained `<form>` element and all its children, and only then\nattach it to the `<iron-form>`:\n\n  var wrapper = document.createElement('iron-form');\n  var form = document.createElement('form');\n  var input = document.createElement('input');\n  form.appendChild(input);\n  document.body.appendChild(wrapper);\n  wrapper.appendChild(form);"
+}

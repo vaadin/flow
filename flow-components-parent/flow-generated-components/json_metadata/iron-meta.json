@@ -58,7 +58,8 @@
           "objectType": [],
           "description": "The key of the meta-data to be returned."
         }
-      ]
+      ],
+      "returns": "OBJECT"
     }
   ],
   "events": [

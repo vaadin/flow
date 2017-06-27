@@ -158,7 +158,7 @@ const parametersToJsonArray = (parameters) => {
 /**
  * Converts methods Map to desired json output:
  *
- * "functions": [
+ * "methods": [
  *  {"name": "doSomething",
  *   "returns" : "STRING",
  *   "description": "Call this method to do something",
@@ -181,7 +181,8 @@ const methodsToJsonArray = (methods) => {
       const methodJson = {
         "name": method.name,
         "description": method.jsdoc ? method.jsdoc.description : "Missing documentation!",
-        "parameters": parametersToJsonArray(method.params)
+        "parameters": parametersToJsonArray(method.params),
+        "returns": typeof method['return'] === 'undefined' ? 'UNDEFINED' : getType(method['return'].type)
       };
       methodsJson.push(methodJson);
     }

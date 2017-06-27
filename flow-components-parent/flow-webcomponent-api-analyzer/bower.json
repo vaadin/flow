@@ -29,6 +29,9 @@
     "paper-input": "PolymerElements/paper-input#^2.0.0",
     "paper-spinner": "PolymerElements/paper-spinner#^2.0.0",
     "paper-card": "PolymerElements/paper-card#^2.0.0",
-    "paper-progress": "PolymerElements/paper-progress#^2.0.1"
+    "paper-progress": "PolymerElements/paper-progress#^2.0.1",
+    "vaadin-button": "vaadin/vaadin-button#^1.0.0-beta3",
+    "vaadin-checkbox": "vaadin/vaadin-checkbox#^1.0.0-alpha1",
+    "vaadin-combo-box": "vaadin/vaadin-combo-box#^2.0.0-alpha4"
   }
 }

@@ -1,0 +1,19 @@
+{
+  "name": "vaadin-spinner",
+  "tag": "vaadin-spinner",
+  "baseUrl": "vaadin-combo-box/vaadin-spinner.html",
+  "properties": [
+    {
+      "name": "active",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": ""
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "behaviors": [],
+  "description": ""
+}

@@ -15,7 +15,8 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
+            <artifactId>flow-components-commons</artifactId>
+            <version>${flow.version}</version>
         </dependency>
     </dependencies>
 
