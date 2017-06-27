@@ -1,0 +1,224 @@
+{
+  "name": "iron-request",
+  "tag": "iron-request",
+  "baseUrl": "iron-ajax/iron-request.html",
+  "version": "2.0.2",
+  "properties": [
+    {
+      "name": "xhr",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "A reference to the XMLHttpRequest instance used to generate the\nnetwork request."
+    },
+    {
+      "name": "response",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "A reference to the parsed response body, if the `xhr` has completely\nresolved."
+    },
+    {
+      "name": "status",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "A reference to the status code, if the `xhr` has completely resolved.\n       "
+    },
+    {
+      "name": "statusText",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "A reference to the status text, if the `xhr` has completely resolved.\n       "
+    },
+    {
+      "name": "completes",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "A promise that resolves when the `xhr` response comes back, or rejects\nif there is an error before the `xhr` completes."
+    },
+    {
+      "name": "progress",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "An object that contains progress information emitted by the XHR if\navailable."
+    },
+    {
+      "name": "aborted",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Aborted will be true if an abort of the request is attempted.\n       "
+    },
+    {
+      "name": "errored",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Errored will be true if the browser fired an error event from the\nXHR object (mainly network errors).\n       "
+    },
+    {
+      "name": "timedOut",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "TimedOut will be true if the XHR threw a timeout event.\n       "
+    },
+    {
+      "name": "succeeded",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Succeeded is true if the request succeeded. The request succeeded if it\nloaded without error, wasn't aborted, and the status code is ≥ 200, and\n< 300, or if the status code is 0.\n\nThe status code 0 is accepted as a success because some schemes - e.g.\nfile:// - don't provide status codes."
+    }
+  ],
+  "methods": [
+    {
+      "name": "send",
+      "description": "Sends an HTTP request to the server and returns the XHR object.\n\nThe handling of the `body` parameter will vary based on the Content-Type\nheader. See the docs for iron-ajax's `body` param for details.",
+      "parameters": [
+        {
+          "name": "options",
+          "type": [],
+          "objectType": [
+            {
+              "name": "url",
+              "type": [
+                "STRING"
+              ]
+            },
+            {
+              "name": "method",
+              "type": [
+                "STRING"
+              ],
+              "optional": true
+            },
+            {
+              "name": "async",
+              "type": [
+                "BOOLEAN"
+              ],
+              "optional": true
+            },
+            {
+              "name": "body",
+              "type": [
+                "OBJECT",
+                "OBJECT",
+                "OBJECT",
+                "OBJECT",
+                "OBJECT",
+                "OBJECT",
+                "STRING",
+                "OBJECT"
+              ],
+              "optional": true
+            },
+            {
+              "name": "headers",
+              "type": [
+                "OBJECT"
+              ],
+              "optional": true
+            },
+            {
+              "name": "handleAs",
+              "type": [
+                "STRING"
+              ],
+              "optional": true
+            },
+            {
+              "name": "jsonPrefix",
+              "type": [
+                "STRING"
+              ],
+              "optional": true
+            },
+            {
+              "name": "withCredentials",
+              "type": [
+                "BOOLEAN"
+              ],
+              "optional": true
+            }
+          ],
+          "description": "    url The url to which the request is sent.\n    method The HTTP method to use, default is GET.\n    async By default, all requests are sent asynchronously. To send synchronous requests,\n        set to false.\n    body The content for the request body for POST method.\n    headers HTTP request headers.\n    handleAs The response type. Default is 'text'.\n    withCredentials Whether or not to send credentials on the request. Default is false.\n  timeout: (Number|undefined)"
+        }
+      ]
+    },
+    {
+      "name": "parseResponse",
+      "description": "Attempts to parse the response body of the XHR. If parsing succeeds,\nthe value returned will be deserialized based on the `responseType`\nset on the XHR.",
+      "parameters": []
+    },
+    {
+      "name": "abort",
+      "description": "Aborts the request.\n     ",
+      "parameters": []
+    }
+  ],
+  "events": [
+    {
+      "name": "xhr-changed",
+      "description": "Fired when the `xhr` property changes.",
+      "properties": []
+    },
+    {
+      "name": "response-changed",
+      "description": "Fired when the `response` property changes.",
+      "properties": []
+    },
+    {
+      "name": "status-changed",
+      "description": "Fired when the `status` property changes.",
+      "properties": []
+    },
+    {
+      "name": "status-text-changed",
+      "description": "Fired when the `statusText` property changes.",
+      "properties": []
+    },
+    {
+      "name": "completes-changed",
+      "description": "Fired when the `completes` property changes.",
+      "properties": []
+    },
+    {
+      "name": "progress-changed",
+      "description": "Fired when the `progress` property changes.",
+      "properties": []
+    },
+    {
+      "name": "aborted-changed",
+      "description": "Fired when the `aborted` property changes.",
+      "properties": []
+    },
+    {
+      "name": "errored-changed",
+      "description": "Fired when the `errored` property changes.",
+      "properties": []
+    },
+    {
+      "name": "timed-out-changed",
+      "description": "Fired when the `timedOut` property changes.",
+      "properties": []
+    }
+  ],
+  "behaviors": [],
+  "description": "iron-request can be used to perform XMLHttpRequests.\n\n    <iron-request id=\"xhr\"></iron-request>\n    ...\n    this.$.xhr.send({url: url, body: params});"
+}

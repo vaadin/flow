@@ -21,8 +21,10 @@ import com.vaadin.components.paper.input.PaperInput;
 import com.vaadin.components.paper.progress.PaperProgress;
 import com.vaadin.components.paper.spinner.PaperSpinner;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.html.Label;
 
 /**
  * Collection view that showcases multiple components on multiple cards.
@@ -50,6 +52,11 @@ public class Collection extends DemoView {
         paperSpinner.getElement().setAttribute("active", "");
 
         Card card = addCard(button, input, paperSpinner);
+    }
+
+    @Override
+    public void populateSources(SourceContent container) {
+        container.add(new Label("No sources here. Go to the wanted component for examples."));
     }
 
     private PaperCard createCard() {

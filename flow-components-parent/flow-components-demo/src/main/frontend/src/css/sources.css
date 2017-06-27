@@ -1,0 +1,18 @@
+.sources {
+    margin: 10px 20px;
+    line-height: 1.5em;
+    font-family: monospace;
+}
+
+pre, code {
+    font-family: monospace, monospace;
+}
+pre {
+    overflow: auto;
+}
+pre > code {
+    display: block;
+    padding: 1rem;
+    word-wrap: normal;
+    border: 1px solid lightgray;
+}
