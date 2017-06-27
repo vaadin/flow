@@ -30,20 +30,22 @@ public class PaperProgressView extends DemoView {
     @Override
     public void initView() {
         PaperProgress slowBlue = new PaperProgress();
+        slowBlue.setIndeterminate(true);
 
-        slowBlue.getElement().setAttribute("indeterminate", "");
         slowBlue.getElement().setAttribute("class", "slow blue");
 
         PaperProgress red = new PaperProgress();
 
-        red.getElement().setAttribute("indeterminate", "");
+        red.setIndeterminate(true);
         red.getElement().setAttribute("class", "red");
 
         PaperProgress staticGreen = new PaperProgress();
 
-        staticGreen.getElement().setAttribute("value", "45");
-        staticGreen.getElement().setAttribute("secondary-progress", "70");
+        staticGreen.setValue(45);
+        staticGreen.setSecondaryProgress(70);
 
-        add(new Label("Indeterminate slow blue"), slowBlue, new Label("Indeterminate red"), red, new Label("Static green with 2 states"),staticGreen);
+        add(new Label("Indeterminate slow blue"), slowBlue,
+                new Label("Indeterminate red"), red,
+                new Label("Static green with 2 states"), staticGreen);
     }
 }

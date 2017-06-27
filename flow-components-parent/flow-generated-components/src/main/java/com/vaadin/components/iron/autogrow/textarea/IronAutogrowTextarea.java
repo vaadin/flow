@@ -47,8 +47,8 @@ import com.vaadin.shared.Registration;
  * placeholder | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
-		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.10-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("iron-autogrow-textarea")
 @HtmlImport("frontend://bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html")
 public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
