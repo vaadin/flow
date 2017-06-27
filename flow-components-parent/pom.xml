@@ -46,6 +46,7 @@
             <id>generator</id>
             <properties>
                 <build.demos.alone>false</build.demos.alone>
+                <generate.code>true</generate.code>
             </properties>
             
             <modules>

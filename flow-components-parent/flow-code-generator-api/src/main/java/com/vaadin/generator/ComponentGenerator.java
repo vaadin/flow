@@ -571,6 +571,7 @@ public class ComponentGenerator {
             method.addAnnotation(NotSupported.class);
             method.getJavaDoc().addTagValue("@return",
                     "It would return a " + toJavaType(function.getReturns()));
+            method.setBody("");
         } else {
             method.setPublic();
             method.setBody(String.format("getElement().callFunction(\"%s\"%s);",

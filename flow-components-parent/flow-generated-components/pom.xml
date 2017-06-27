@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -21,44 +21,59 @@
     </dependencies>
 
     <properties>
-        <!-- Skip javadoc for generated components to avoid formatting errors on the build -->
+        <!-- Skip javadoc for generated components to avoid formatting errors 
+            on the build -->
         <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
-    <build>
-        <plugins>
-            <!-- Clears the source folder so it can be generated again -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>src/main/java</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-
-            <!-- Code generator configuration -->
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-code-generator</artifactId>
-                <version>${flow.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
+    <profiles>
+        <profile>
+            <id>generator</id>
+            <activation>
+                <property>
+                    <name>generate.code</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!-- Clears the source folder so it can be generated 
+                        again -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.0.0</version>
                         <configuration>
-                            <basePackage>com.vaadin.components</basePackage>
-                            <licenseFile>license_header</licenseFile>
+                            <filesets>
+                                <fileset>
+                                    <directory>src/main/java</directory>
+                                </fileset>
+                            </filesets>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+                    </plugin>
+
+                    <!-- Code generator configuration -->
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>flow-code-generator</artifactId>
+                        <version>${flow.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <basePackage>com.vaadin.components</basePackage>
+                                    <licenseFile>license_header</licenseFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+    </profiles>
+
 
 </project>
