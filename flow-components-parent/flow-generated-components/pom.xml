@@ -24,40 +24,44 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
-    <build>
-        <plugins>
-            <!-- Clears the source folder so it can be generated again -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>src/main/java</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-
-            <!-- Code generator configuration -->
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-code-generator</artifactId>
-                <version>${flow.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
+    <profiles>
+        <profile>
+            <id>generator</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.0.0</version>
                         <configuration>
-                            <basePackage>com.vaadin.components</basePackage>
-                            <licenseFile>license_header</licenseFile>
+                            <filesets>
+                                <fileset>
+                                    <directory>src/main/java</directory>
+                                </fileset>
+                            </filesets>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+                    </plugin>
+
+                    <!-- Code generator configuration -->
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>flow-code-generator</artifactId>
+                        <version>${flow.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <configuration>
+                                    <basePackage>com.vaadin.components</basePackage>
+                                    <licenseFile>license_header</licenseFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -18,34 +18,62 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.components.paper.progress.PaperProgress;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.SourceContent;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.html.Label;
 
 /**
  * View for {@link PaperProgress} demo.
  */
 @ComponentDemo(name = "Paper Progress", href = "paper-progress")
-@StyleSheet("frontend://src/progress.css")
+@StyleSheet("frontend://src/css/progress.css")
 public class PaperProgressView extends DemoView {
 
     @Override
     public void initView() {
         PaperProgress slowBlue = new PaperProgress();
         slowBlue.setIndeterminate(true);
-
         slowBlue.getElement().setAttribute("class", "slow blue");
 
         PaperProgress red = new PaperProgress();
-
         red.setIndeterminate(true);
         red.getElement().setAttribute("class", "red");
 
         PaperProgress staticGreen = new PaperProgress();
-
         staticGreen.setValue(45);
         staticGreen.setSecondaryProgress(70);
 
         add(new Label("Indeterminate slow blue"), slowBlue,
                 new Label("Indeterminate red"), red,
                 new Label("Static green with 2 states"), staticGreen);
+    }
+
+    @Override
+    public void populateSources(SourceContent container) {
+        container.add(ElementFactory.createHeading3("Modified and default indeterminate and static progress:"));
+        container.addCode("PaperProgress slowBlue = new PaperProgress();\n"
+                + "slowBlue.setIndeterminate(true);\n"
+                + "slowBlue.getElement().setAttribute(\"class\", \"slow blue\";\n"
+                + "\n"
+
+                + "PaperProgress indeterminate = new PaperProgress();\n"
+                + "indeterminate.setIndeterminate(true);\n"
+
+                + "\n"
+                + "PaperProgress static = new PaperProgress();\n"
+                + "static.setValue(45);\n"
+
+                + "\n"
+                + "parentComponent.add(slowBlue, indeterminate, static)");
+
+        container.add(ElementFactory.createHeading3("Style sheet:"));
+        container.addCss("paper-progress.blue {\n"
+                + "    --paper-progress-active-color: var(--paper-light-blue-500);\n"
+                + "    --paper-progress-secondary-color: var(--paper-light-blue-100);\n"
+                + "}\n\n"
+
+                + "paper-progress.slow {\n"
+                + "    --paper-progress-indeterminate-cycle-duration: 5s;\n"
+                + "}");
     }
 }

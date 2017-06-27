@@ -27,7 +27,7 @@ import com.vaadin.ui.Component;
  * Card to hold components for DemoViews
  */
 @Tag(Tag.DIV)
-@StyleSheet("frontend://src/component-card.css")
+@StyleSheet("frontend://src/css/component-card.css")
 public class Card extends HtmlContainer {
 
     /**

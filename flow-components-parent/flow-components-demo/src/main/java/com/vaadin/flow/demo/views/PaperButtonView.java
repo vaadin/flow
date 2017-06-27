@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Div;
 
 /**
@@ -29,10 +30,10 @@ public class PaperButtonView extends DemoView {
 
     @Override
     public void initView() {
-        add(createButton("Link").setNoink(true));
+        add(createButton("Link").setRaised(false).setNoink(true));
         add(createButton("Raised").setRaised(true));
         add(createButton("Toggles").setRaised(true).setToggles(true));
-        add(createButton("Disabled").setDisabled(true));
+        add(createButton("Disabled").setRaised(false).setDisabled(true));
 
         message = new Div();
         message.setId("buttonsMessage");
@@ -41,6 +42,7 @@ public class PaperButtonView extends DemoView {
 
     private PaperButton createButton(String text) {
         PaperButton button = new PaperButton();
+        button.setRaised(true);
         button.getElement().setText(text);
         button.getElement().getStyle().set("backgroundColor", "white");
         button.getElement().addEventListener("click", evt -> {
@@ -48,5 +50,13 @@ public class PaperButtonView extends DemoView {
                     + " was clicked.");
         });
         return button;
+    }
+
+    @Override
+    public void populateSources(SourceContent container) {
+        container.addCode("PaperButton button = new PaperButton();\n"
+                + "button.setRaised(true);\n"
+                + "button.getElement().setText(\"Button\");\n"
+                + "layoutComponent.add(button);");
     }
 }

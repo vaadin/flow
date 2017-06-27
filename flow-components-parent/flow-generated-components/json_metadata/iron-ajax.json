@@ -1,0 +1,266 @@
+{
+  "name": "iron-ajax",
+  "tag": "iron-ajax",
+  "baseUrl": "iron-ajax/iron-ajax.html",
+  "version": "2.0.2",
+  "properties": [
+    {
+      "name": "url",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The URL target of the request.\n       "
+    },
+    {
+      "name": "params",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "An object that contains query parameters to be appended to the\nspecified `url` when generating a request. If you wish to set the body\ncontent when making a POST request, you should use the `body` property\ninstead.\n       "
+    },
+    {
+      "name": "method",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The HTTP method to use such as 'GET', 'POST', 'PUT', or 'DELETE'.\nDefault is 'GET'.\n       "
+    },
+    {
+      "name": "headers",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "HTTP request headers to send.\n\nExample:\n\n    <iron-ajax\n        auto\n        url=\"http://somesite.com\"\n        headers='{\"X-Requested-With\": \"XMLHttpRequest\"}'\n        handle-as=\"json\"></iron-ajax>\n\nNote: setting a `Content-Type` header here will override the value\nspecified by the `contentType` property of this element.\n       "
+    },
+    {
+      "name": "contentType",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Content type to use when sending data. If the `contentType` property\nis set and a `Content-Type` header is specified in the `headers`\nproperty, the `headers` property value will take precedence.\n\nVaries the handling of the `body` param.\n       "
+    },
+    {
+      "name": "body",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Body content to send with the request, typically used with \"POST\"\nrequests.\n\nIf body is a string it will be sent unmodified.\n\nIf Content-Type is set to a value listed below, then\nthe body will be encoded accordingly.\n\n   * `content-type=\"application/json\"`\n     * body is encoded like `{\"foo\":\"bar baz\",\"x\":1}`\n   * `content-type=\"application/x-www-form-urlencoded\"`\n     * body is encoded like `foo=bar+baz&x=1`\n\nOtherwise the body will be passed to the browser unmodified, and it\nwill handle any encoding (e.g. for FormData, Blob, ArrayBuffer)."
+    },
+    {
+      "name": "sync",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Toggle whether XHR is synchronous or asynchronous. Don't change this\nto true unless You Know What You Are Doing™.\n       "
+    },
+    {
+      "name": "handleAs",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Specifies what data to store in the `response` property, and\nto deliver as `event.detail.response` in `response` events.\n\nOne of:\n\n   `text`: uses `XHR.responseText`.\n\n   `xml`: uses `XHR.responseXML`.\n\n   `json`: uses `XHR.responseText` parsed as JSON.\n\n   `arraybuffer`: uses `XHR.response`.\n\n   `blob`: uses `XHR.response`.\n\n   `document`: uses `XHR.response`.\n       "
+    },
+    {
+      "name": "withCredentials",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set the withCredentials flag on the request.\n       "
+    },
+    {
+      "name": "timeout",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Set the timeout flag on the request.\n       "
+    },
+    {
+      "name": "auto",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, automatically performs an Ajax request when either `url` or\n`params` changes.\n       "
+    },
+    {
+      "name": "verbose",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, error messages will automatically be logged to the console.\n       "
+    },
+    {
+      "name": "lastRequest",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The most recent request made by this iron-ajax element.\n       "
+    },
+    {
+      "name": "loading",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True while lastRequest is in flight.\n       "
+    },
+    {
+      "name": "lastResponse",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "lastRequest's response.\n\nNote that lastResponse and lastError are set when lastRequest finishes,\nso if loading is true, then lastResponse and lastError will correspond\nto the result of the previous request.\n\nThe type of the response is determined by the value of `handleAs` at\nthe time that the request was generated."
+    },
+    {
+      "name": "lastError",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "lastRequest's error, if any."
+    },
+    {
+      "name": "activeRequests",
+      "type": [
+        "ARRAY"
+      ],
+      "objectType": [],
+      "description": "An Array of all in-flight requests originating from this iron-ajax\nelement.\n       "
+    },
+    {
+      "name": "debounceDuration",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Length of time in milliseconds to debounce multiple automatically generated requests.\n       "
+    },
+    {
+      "name": "jsonPrefix",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Prefix to be stripped from a JSON response before parsing it.\n\nIn order to prevent an attack using CSRF with Array responses\n(http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx/)\nmany backends will mitigate this by prefixing all JSON response bodies\nwith a string that would be nonsensical to a JavaScript parser.\n\n       "
+    },
+    {
+      "name": "bubbles",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "By default, iron-ajax's events do not bubble. Setting this attribute will cause its\nrequest and response events as well as its iron-ajax-request, -response,  and -error\nevents to bubble to the window object. The vanilla error event never bubbles when\nusing shadow dom even if this.bubbles is true because a scoped flag is not passed with\nit (first link) and because the shadow dom spec did not used to allow certain events,\nincluding events named error, to leak outside of shadow trees (second link).\nhttps://www.w3.org/TR/shadow-dom/#scoped-flag\nhttps://www.w3.org/TR/2015/WD-shadow-dom-20151215/#events-that-are-not-leaked-into-ancestor-trees\n       "
+    },
+    {
+      "name": "rejectWithRequest",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Changes the completes promise chain from generateRequest to reject with an object\n containing the error message as well as the request.\n       "
+    },
+    {
+      "name": "queryString",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The query string that should be appended to the `url`, serialized from\nthe current value of `params`."
+    },
+    {
+      "name": "requestUrl",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The `url` with query string (if `params` are specified), suitable for\nproviding to an `iron-request` instance."
+    },
+    {
+      "name": "requestHeaders",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "An object that maps header names to header values, first applying the\nthe value of `Content-Type` and then overlaying the headers specified\nin the `headers` property."
+    }
+  ],
+  "methods": [
+    {
+      "name": "toRequestOptions",
+      "description": "Request options suitable for generating an `iron-request` instance based\non the current state of the `iron-ajax` instance's properties.",
+      "parameters": []
+    },
+    {
+      "name": "generateRequest",
+      "description": "Performs an AJAX request to the specified URL.",
+      "parameters": []
+    }
+  ],
+  "events": [
+    {
+      "name": "error",
+      "description": "error",
+      "properties": []
+    },
+    {
+      "name": "iron-ajax-presend",
+      "description": "iron-ajax-presend",
+      "properties": []
+    },
+    {
+      "name": "request",
+      "description": "request",
+      "properties": []
+    },
+    {
+      "name": "response",
+      "description": "response",
+      "properties": []
+    },
+    {
+      "name": "last-request-changed",
+      "description": "Fired when the `lastRequest` property changes.",
+      "properties": []
+    },
+    {
+      "name": "loading-changed",
+      "description": "Fired when the `loading` property changes.",
+      "properties": []
+    },
+    {
+      "name": "last-response-changed",
+      "description": "Fired when the `lastResponse` property changes.",
+      "properties": []
+    },
+    {
+      "name": "last-error-changed",
+      "description": "Fired when the `lastError` property changes.",
+      "properties": []
+    },
+    {
+      "name": "active-requests-changed",
+      "description": "Fired when the `activeRequests` property changes.",
+      "properties": []
+    },
+    {
+      "name": "debounce-duration-changed",
+      "description": "Fired when the `debounceDuration` property changes.",
+      "properties": []
+    }
+  ],
+  "behaviors": [],
+  "description": "The `iron-ajax` element exposes network request functionality.\n\n    <iron-ajax\n        auto\n        url=\"https://www.googleapis.com/youtube/v3/search\"\n        params='{\"part\":\"snippet\", \"q\":\"polymer\", \"key\": \"YOUTUBE_API_KEY\", \"type\": \"video\"}'\n        handle-as=\"json\"\n        on-response=\"handleResponse\"\n        debounce-duration=\"300\"></iron-ajax>\n\nWith `auto` set to `true`, the element performs a request whenever\nits `url`, `params` or `body` properties are changed. Automatically generated\nrequests will be debounced in the case that multiple attributes are changed\nsequentially.\n\nNote: The `params` attribute must be double quoted JSON.\n\nYou can trigger a request explicitly by calling `generateRequest` on the\nelement."
+}

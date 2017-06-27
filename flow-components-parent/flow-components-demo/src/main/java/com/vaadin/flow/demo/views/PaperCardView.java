@@ -17,8 +17,8 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.components.paper.card.PaperCard;
-import com.vaadin.components.paper.spinner.PaperSpinner;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
@@ -31,16 +31,17 @@ public class PaperCardView extends DemoView {
     @Override
     public void initView() {
         PaperCard card = new PaperCard();
-        card.setImage("https://vaadin.com/image/image_gallery?uuid=42c717c0-b63b-4c39-8ee8-3a14b6f477f6&groupId=10187&t=1359960061382");
+        card.setImage(
+                "https://vaadin.com/image/image_gallery?uuid=42c717c0-b63b-4c39-8ee8-3a14b6f477f6&groupId=10187&t=1359960061382");
         Element cardContent = ElementFactory.createDiv();
         cardContent.setAttribute("class", "card-content");
 
         cardContent.appendChild(ElementFactory.createHeading2("Demo card"));
 
         Element cardActions = ElementFactory.createDiv();
-        cardActions.setAttribute("class","card-actions");
+        cardActions.setAttribute("class", "card-actions");
         Element buttons = ElementFactory.createDiv();
-        buttons.setAttribute("class","horizontal justified");
+        buttons.setAttribute("class", "horizontal justified");
 
         cardActions.appendChild(buttons);
 
@@ -52,8 +53,31 @@ public class PaperCardView extends DemoView {
         PaperButton visit = new PaperButton();
         visit.getElement().setText("Visit page");
 
-        buttons.appendChild(visit.getElement()).appendChild(reserve.getElement());
+        buttons.appendChild(visit.getElement())
+                .appendChild(reserve.getElement());
 
         add(card);
+    }
+
+    @Override
+    public void populateSources(SourceContent container) {
+        container.addCode("PaperCard card = new PaperCard();\n"
+                + "card.setImage(\"my-image.jpg\");\n"
+                + "Element cardContent = ElementFactory.createDiv();\n"
+                + "cardContent.setAttribute(\"class\", \"card-content\");\n"
+                + "\n"
+                + "cardContent.appendChild(ElementFactory.createHeading2(\"Demo card\"));\n"
+                + "\n" + "Element cardActions = ElementFactory.createDiv();\n"
+                + "cardActions.setAttribute(\"class\",\"card-actions\");\n"
+                + "Element buttons = ElementFactory.createDiv();\n"
+                + "buttons.setAttribute(\"class\",\"horizontal justified\");\n"
+                + "\n" + "cardActions.appendChild(buttons);\n" + "\n"
+                + "card.getElement().appendChild(cardContent, cardActions);\n"
+                + "\n" + "PaperButton reserve = new PaperButton();\n"
+                + "reserve.getElement().setText(\"Reserve\");\n" + "\n"
+                + "PaperButton visit = new PaperButton();\n"
+                + "visit.getElement().setText(\"Visit page\");\n" + "\n"
+                + "buttons.appendChild(visit.getElement()).appendChild(reserve.getElement());\n"
+                + "\n" + "layoutContainer.add(card);");
     }
 }
