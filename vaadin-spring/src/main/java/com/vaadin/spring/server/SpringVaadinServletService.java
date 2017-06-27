@@ -15,7 +15,10 @@
  */
 package com.vaadin.spring.server;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -23,6 +26,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.ServiceException;
+import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.communication.ServletBootstrapHandler;
@@ -82,5 +86,20 @@ public class SpringVaadinServletService extends VaadinServletService {
     public WebApplicationContext getWebApplicationContext() {
         return WebApplicationContextUtils
                 .getWebApplicationContext(getServlet().getServletContext());
+    }
+
+    @Override
+    protected Iterator<VaadinServiceInitListener> getServiceInitListeners() {
+        // Collect from both sources to return a combined iterator
+        ArrayList<VaadinServiceInitListener> listeners = new ArrayList<>();
+
+        Iterator<VaadinServiceInitListener> superListeners = super.getServiceInitListeners();
+        superListeners.forEachRemaining(listeners::add);
+
+        Map<String, VaadinServiceInitListener> listenerBeans = getWebApplicationContext()
+                .getBeansOfType(VaadinServiceInitListener.class);
+        listeners.addAll(listenerBeans.values());
+
+        return listeners.iterator();
     }
 }
