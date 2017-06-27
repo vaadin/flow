@@ -61,7 +61,8 @@ public class VaadinComboBoxView extends DemoView {
                 + "comboBox.setItems(items);\n"
                 + "layoutContainer.add(comboBox);");
 
-        container.add(ElementFactory.createHeading3("Moderate sample using JsonItem:"));
+        container.add(ElementFactory
+                .createHeading3("Moderate sample using JsonItem:"));
         container.addCode("VaadinComboBox comboBox = new VaadinComboBox();\n"
                 + "comboBox.setLabel(\"Music selection\");\n"
                 + "comboBox.setItemLabelPath(\"Song\");\n"
@@ -94,9 +95,9 @@ public class VaadinComboBoxView extends DemoView {
         }
     }
 
-    private void updateLabels(String _song, String _artist, String _album) {
-        song.setText("Song:   " + _song);
-        artist.setText("Artist: " + _artist);
-        album.setText("Album:  " + _album);
+    private void updateLabels(String song, String artist, String album) {
+        this.song.setText("Song:   " + song);
+        this.artist.setText("Artist: " + artist);
+        this.album.setText("Album:  " + album);
     }
 }

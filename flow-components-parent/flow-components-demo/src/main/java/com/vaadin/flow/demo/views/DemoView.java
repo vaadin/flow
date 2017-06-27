@@ -43,16 +43,16 @@ public abstract class DemoView extends Component
     }
 
     /**
-     * Method run where the actual view builds its contents
+     * Method run where the actual view builds its contents.
      */
     abstract void initView();
 
     /**
      * When called the view should populate the given SourceContainer with
-     * sample source code to be shown
+     * sample source code to be shown.
      * 
      * @param container
-     *            sample source code container
+     *            sample source code container.
      */
     public abstract void populateSources(SourceContent container);
 
@@ -62,11 +62,11 @@ public abstract class DemoView extends Component
     }
 
     /**
-     * Create and add a new component card to the view
+     * Create and add a new component card to the view.
      * 
      * @param components
-     *            components to add on creation
-     * @return created component container card
+     *            components to add on creation.
+     * @return created component container card.
      */
     public Card addCard(Component... components) {
         Card card = new Card();

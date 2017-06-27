@@ -30,7 +30,6 @@ import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
@@ -48,6 +47,7 @@ import com.vaadin.ui.UI;
 public class MainLayout extends PolymerTemplate<MainLayoutModel>
         implements HasChildView {
 
+    private PaperDialog sourceDialog;
     private View selectedView;
 
     /**
@@ -72,6 +72,9 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         void setSelectors(List<DemoObject> selectors);
     }
 
+    /**
+     * Default constructor of the layout.
+     */
     public MainLayout() {
         List<DemoObject> selectors = new ArrayList<>();
         for (Class<? extends DemoView> view : ComponentDemoRegister
@@ -100,9 +103,12 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         }
     }
 
+    /**
+     * Opens a dialog with a source code relevant to the current view.
+     */
     @EventHandler
     public void showSource() {
-        PaperDialog sourceDialog = getNewDialog();
+        prepareDialog();
 
         SourceContent content = new SourceContent();
         if (selectedView instanceof DemoView) {
@@ -131,9 +137,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         UI.getCurrent().getPage().executeJavaScript("Prism.highlightAll();");
     }
 
-    private PaperDialog sourceDialog;
-
-    private PaperDialog getNewDialog() {
+    private void prepareDialog() {
         if (sourceDialog == null) {
             sourceDialog = new PaperDialog();
             sourceDialog.setModal(true);
@@ -142,7 +146,5 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         }
 
         sourceDialog.getElement().removeAllChildren();
-
-        return sourceDialog;
     }
 }
