@@ -1,7 +1,7 @@
 Vaadin Spring
 ======================
 
-Vaadin Spring is the official Spring integration for Vaadin Framework version 7.
+Vaadin Spring is the official Spring integration for Vaadin Framework version 8.
 
 Getting started
 ----
@@ -35,7 +35,7 @@ Contributions to the project can be done using pull requests. Try to make as
 small PRs as possible and fix only one issue per PR.
 
 
-Copyright 2016 Vaadin Ltd.
+Copyright 2015-2017 Vaadin Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
