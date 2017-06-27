@@ -136,11 +136,14 @@ public class DependencyLoader {
     private static void endEagerDependencyLoading() {
         eagerDependenciesLoading--;
         if (eagerDependenciesLoading == 0 && callbacks.length() != 0) {
-            for (int i = 0; i < callbacks.length(); i++) {
-                Command cmd = callbacks.get(i);
-                cmd.execute();
+            try {
+                for (int i = 0; i < callbacks.length(); i++) {
+                    Command cmd = callbacks.get(i);
+                    cmd.execute();
+                }
+            } finally {
+                callbacks.clear();
             }
-            callbacks.clear();
         }
     }
 
