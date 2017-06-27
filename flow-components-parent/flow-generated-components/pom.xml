@@ -29,16 +29,8 @@
     <profiles>
         <profile>
             <id>generator</id>
-            <activation>
-                <property>
-                    <name>generate.code</name>
-                    <value>true</value>
-                </property>
-            </activation>
             <build>
                 <plugins>
-                    <!-- Clears the source folder so it can be generated 
-                        again -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-clean-plugin</artifactId>
@@ -71,9 +63,7 @@
                     </plugin>
                 </plugins>
             </build>
-
         </profile>
     </profiles>
-
 
 </project>
