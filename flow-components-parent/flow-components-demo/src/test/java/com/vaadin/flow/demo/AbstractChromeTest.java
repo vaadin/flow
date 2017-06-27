@@ -13,21 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.demo.views;
+package com.vaadin.flow.demo;
 
-import com.vaadin.components.paper.spinner.PaperSpinner;
-import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
- * View for {@link PaperSpinner} demo.
+ * Base class for the integration tests of this project.
+ *
  */
-@ComponentDemo(name = "Paper Spinner", href = "paper-spinner")
-public class PaperSpinnerView extends DemoView {
+public abstract class AbstractChromeTest extends ChromeBrowserTest {
 
     @Override
-    public void initView() {
-        PaperSpinner paperSpinner = new PaperSpinner();
-        paperSpinner.setActive(true);
-        add(paperSpinner);
+    protected int getDeploymentPort() {
+        return 8080;
     }
 }

@@ -49,8 +49,8 @@ import com.vaadin.annotations.HtmlImport;
  * Note: announcements are only audible if you have a screen reader enabled.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
-		"WebComponent: Polymer.IronA11yAnnouncer#2.0.0", "Flow#0.1.10-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"WebComponent: Polymer.IronA11yAnnouncer#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("iron-a11y-announcer")
 @HtmlImport("frontend://bower_components/iron-a11y-announcer/iron-a11y-announcer.html")
 public class PolymerIronA11yAnnouncer<R extends PolymerIronA11yAnnouncer<R>>

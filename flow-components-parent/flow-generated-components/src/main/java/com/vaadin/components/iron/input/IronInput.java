@@ -94,8 +94,8 @@ import com.vaadin.shared.Registration;
  * <iron-input allowed-pattern="[0-9]"> <input pattern="\d{5}"> </iron-input>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.10-SNAPSHOT",
-		"WebComponent: iron-input#2.0.0", "Flow#0.1.10-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"WebComponent: iron-input#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("iron-input")
 @HtmlImport("frontend://bower_components/iron-input/iron-input.html")
 public class IronInput<R extends IronInput<R>> extends Component {
