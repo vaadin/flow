@@ -80,6 +80,7 @@ then
 
     # Trigger Sonar analysis
     # Verify build and build javadoc
+    echo "Running clean verify $modules -amd"
     mvn -B -e -V \
         -Pvalidation \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
@@ -105,7 +106,7 @@ then
             -Dsonar.login=$SONAR_LOGIN \
             -Dsonar.exclusions=$SONAR_EXCLUSIONS \
             -DskipTests \
-            compile sonar:sonar -pl \!:flow-generated-components
+            compile sonar:sonar
     else
         exit 1
     fi
@@ -131,7 +132,7 @@ then
         -Dsonar.login=$SONAR_LOGIN \
         -Dsonar.exclusions=$SONAR_EXCLUSIONS \
         -DskipTests \
-        compile sonar:sonar -pl \!:flow-generated-components
+        compile sonar:sonar
 else
     # Something else than a "safe" pull request
     mvn -B -e -V \
