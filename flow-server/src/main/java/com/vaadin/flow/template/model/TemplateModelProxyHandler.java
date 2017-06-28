@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -266,8 +264,6 @@ public class TemplateModelProxyHandler implements Serializable {
             try {
                 Class.forName(fqnBuilder.toString(), false, classLoader);
             } catch (ClassNotFoundException exception) {
-                Logger.getLogger(TemplateModelProxyHandler.class.getName())
-                        .log(Level.OFF, null, exception);
                 classExists = false;
             }
         } while (classExists);
