@@ -5,9 +5,6 @@
 # TRAVIS_SECURE_ENV_VARS == true if encrypted variables, e.g. SONAR_HOST is available
 # TRAVIS_REPO_SLUG == the repository, e.g. vaadin/vaadin
 
-# Exclude the bower_components, node_modules and generated components from Sonar analysis
-SONAR_EXCLUSIONS=**/bower_components/**,**/node_modules/**,**/node/**,**/flow-generated-components/**
-
 # Get all changes to branch (no-merges)
 actualCommits=`git log --no-merges --pretty=oneline master^..HEAD`
 
@@ -25,7 +22,6 @@ change=`diff <(git show --name-only $actualCommits) <(git show --summary $actual
 
 # Collect changed modules to build and build also modules that depend on the
 # selected modules (see the flag '-amd')
-
 modules=
 if [[ $change == *"flow-push/"* ]]
 then
@@ -48,8 +44,9 @@ else
 
     if [[ $change == *"flow-components-parent/"* ]]
     then
+      ## only trigger the analyzer & generator for validation builds on PRs that touched component generation
       echo "Setting components flag to true"
-      modules="$modules -pl flow-components-parent"
+      modules="$modules -pl flow-components-parent -P generator"
     fi
 
     if [[ $change == *"flow-client/"* ]]
@@ -80,6 +77,7 @@ then
 
     # Trigger Sonar analysis
     # Verify build and build javadoc
+    echo "Running clean verify $modules -amd"
     mvn -B -e -V \
         -Pvalidation \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
@@ -103,7 +101,6 @@ then
             -Dsonar.analysis.mode=issues \
             -Dsonar.host.url=$SONAR_HOST \
             -Dsonar.login=$SONAR_LOGIN \
-            -Dsonar.exclusions=$SONAR_EXCLUSIONS \
             -DskipTests \
             compile sonar:sonar
     else
@@ -129,7 +126,6 @@ then
         -Dsonar.analysis.mode=publish \
         -Dsonar.host.url=$SONAR_HOST \
         -Dsonar.login=$SONAR_LOGIN \
-        -Dsonar.exclusions=$SONAR_EXCLUSIONS \
         -DskipTests \
         compile sonar:sonar
 else

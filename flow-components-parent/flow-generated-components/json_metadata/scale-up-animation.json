@@ -1,0 +1,80 @@
+{
+  "name": "scale-up-animation",
+  "tag": "scale-up-animation",
+  "baseUrl": "neon-animation/animations/scale-up-animation.html",
+  "version": "UNKNOWN",
+  "properties": [
+    {
+      "name": "animationTiming",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "Defines the animation timing.\n       "
+    },
+    {
+      "name": "isNeonAnimation",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Can be used to determine that elements implement this behavior.\n     "
+    }
+  ],
+  "methods": [
+    {
+      "name": "timingFromConfig",
+      "description": "Returns the animation timing by mixing in properties from `config` to the defaults defined\nby the animation.\n     ",
+      "parameters": [
+        {
+          "name": "config",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "setPrefixedProperty",
+      "description": "Sets `transform` and `transformOrigin` properties along with the prefixed versions.\n     ",
+      "parameters": [
+        {
+          "name": "node",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        },
+        {
+          "name": "property",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        },
+        {
+          "name": "value",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ]
+    },
+    {
+      "name": "complete",
+      "description": "Called when the animation finishes.\n     ",
+      "parameters": []
+    }
+  ],
+  "events": [],
+  "behaviors": [
+    "Polymer.NeonAnimationBehavior"
+  ],
+  "description": "`<scale-up-animation>` animates the scale transform of an element from 0 to 1. By default it\nscales in both the x and y axes.\n\nConfiguration:\n```\n{\n  name: 'scale-up-animation',\n  node: <node>,\n  axis: 'x' | 'y' | '',\n  transformOrigin: <transform-origin>,\n  timing: <animation-timing>\n}\n```"
+}

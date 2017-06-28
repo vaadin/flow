@@ -83,7 +83,8 @@ public final class ComponentGeneratorUtils {
 
         for (char c : trimmed.toCharArray()) {
             if (!Character.isJavaIdentifierPart(c) || Character
-                    .getType(c) == Character.CONNECTOR_PUNCTUATION) {
+                    .getType(c) == Character.CONNECTOR_PUNCTUATION|| Character
+                    .getType(c) == Character.END_PUNCTUATION) {
                 toTitleCase = true;
             } else if (toTitleCase) {
                 sb.append(Character.toTitleCase(c));

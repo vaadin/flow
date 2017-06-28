@@ -23,23 +23,141 @@ public class PaperSlider extends Component {
 }
 ----
 
-You specify the tag name of the element using the `@Tag` annotation, just like you would with any built in element such as `<div>`. The actual implementation of the `<paper-slider>` element is in the `paper-slider.html` file, which you can  import using `@HtmlImport`. In this example it is assumed that you are using bower and have a `bower_components` folder in the root of you `WAR` file.
+You specify the tag name of the element using the `@Tag` annotation, just like you would with any built in element such as `<div>`. The actual implementation of the `<paper-slider>` element is in the `paper-slider.html` file, which you can  import using `@HtmlImport`.
+
+== Configuring the Project
+
+[NOTE]
+If you are using some skeleton project or a demo such as `flow-hello-world` as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
+
+The imported file `paper-slider.html` contains a client side code which needs to be available as a web resource. So it should be 
+fetched and saved in some directory which is served by your server. 
+If you use maven then just add  the following snippet in your `pom.xml` file inside your `plugins` section:
+
+[source,xml]
+----
+    <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>1.4</version>
+        <configuration>
+            <nodeVersion>v7.10.0</nodeVersion>
+            <npmVersion>5.0.3</npmVersion>
+        </configuration>
+        <executions>
+            <execution>
+                <id>install-node-and-npm</id>
+                <goals>
+                    <goal>install-node-and-npm</goal>
+                    <goal>npm</goal>
+                    <goal>bower</goal>
+                </goals>
+                <configuration>
+                    <workingDirectory>src/main/frontend</workingDirectory>
+                </configuration>
+            </execution>
+        </executions>
+    </plugin>
+----
+
+This plugin will install for you tools for webcomponents management (`npm` and `bower`) assuming you are using 
+`src/main/frontend` directory as a web resource folder in your project. This directory should have files `bower.json` and
+`package.json`.
+
+The `bower.json` content is:
+
+[source,json]
+----
+{
+  "name": "your project name",
+  "homepage": "",
+  "authors": [],
+  "description": "",
+  "main": "",
+  "license": "Apache2",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "2.0.0",
+    "paper-slider": "2.0.0"
+  }
+}
+----
+
+The `package.json` content is:
+
+[source,json]
+----
+{
+  "name": "your project name",
+  "version": "1.0.0",
+  "main": "",
+  "dependencies": {
+    "bower": "^1.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}
+----
+
+[NOTE]
+You should take care explicitly about availability of your `src/main/frontend` folder 
+as a _Web resource_ served by your Web server.  It means that some additional configuration
+might be required. E.g. jetty requires this kind of configuration:
+
+[source,json]
+----
+    <plugin>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-maven-plugin</artifactId>
+        <configuration>
+            <webAppConfig>
+                <resourceBases>
+                    <resourceBase>src/main/frontend</resourceBase>
+                </resourceBases>
+            </webAppConfig>
+        </configuration>
+    </plugin>
+----
+
+[NOTE] Workflows not using Maven are not supported at the moment. If your project doesn't use Maven, you will need to install and run bower directly, which is described bellow.
+
+In this example it is assumed that you are using bower and have a `bower_components` folder in the root of you `WAR` file.
 
 You can set up the `bower_components` folder by running
+
 [source,sh]
 ----
 bower init
-bower install paper-slider --save
 ----
 
 [NOTE]
 To install `bower`, you first need to install _Node.js_ through a https://nodejs.org/en/download/package-manager/[package manager] or by https://nodejs.org/en/download/[downloading the installer].
 You can then install `bower` by running `npm install -g bower`.
 
-If you are using Maven, the command can be run in the `src/main/webapp` folder to make `bower_components` available as `/bower_components`. If you are using something else, make sure the files end up in the root of the `WAR` file.
-
-`bower init` will ask a you couple of questions.
+`bower init` will ask a you couple of questions and it creates the `bower.json` file.
 The default answers for all the questions are suitable for this kind of integration, so you can simply proceed by pressing `enter` to accept each default answer.
+
+== Installing the Web Component
+
+Running the following command in `src/main/frontend` will install the `paper-slider` component.
+
+[source,sh]
+----
+bower install paper-slider --save
+----
+
+[NOTE]
+You can also install web components by manually adding dependencies to the `bower.json` file and running `bower install`, which will download all the dependencies declared in the file.
 
 With this basic integration, you can use add the `PaperSlider` class to a view to see that it works:
 [source,java]
