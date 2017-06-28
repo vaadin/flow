@@ -20,11 +20,24 @@
     </dependencies>
 
     <properties>
-        <!-- Skip javadoc for generated components to avoid formatting errors on the build -->
+        <!-- Skip javadoc for generated components -->
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- Skip Sonar for generated components for now -->
         <sonar.exclusions>**/*.java</sonar.exclusions>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <!-- When javadocs are created, let's not fail since we cannot guarantee perfect syntax for now -->
+                    <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <profiles>
         <profile>
