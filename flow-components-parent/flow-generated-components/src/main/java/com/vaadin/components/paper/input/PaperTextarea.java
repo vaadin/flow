@@ -1097,10 +1097,13 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component {
 	 * 
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
+	 * @param event
+	 * @param eventString
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void keyboardEventMatchesKeys() {
+	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+			java.lang.String eventString) {
 	}
 
 	/**

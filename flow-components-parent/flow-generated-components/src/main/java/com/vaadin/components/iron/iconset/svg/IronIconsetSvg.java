@@ -159,10 +159,12 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
 	 * This direction will apply to all future icon applications, although only
 	 * icons marked to be mirrored will be affected.
 	 * 
+	 * @param element
+	 * @param iconName
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void applyIcon() {
+	protected void applyIcon(JsonObject element, java.lang.String iconName) {
 	}
 
 	/**
@@ -173,7 +175,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
 	 * 
 	 * @param element
 	 */
-	public void removeIcon(JsonObject element) {
+	public void removeIcon(elemental.json.JsonObject element) {
 		getElement().callFunction("removeIcon", element);
 	}
 

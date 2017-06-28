@@ -803,10 +803,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * If you want your element to have custom validation logic, do not override
 	 * this method; override {@code _getValidity(value)} instead.
 	 * 
+	 * @param value
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void validate() {
+	protected void validate(elemental.json.JsonObject value) {
 	}
 
 	/**
@@ -834,10 +835,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
+	 * @param model
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void stamp() {
+	protected void stamp(elemental.json.JsonObject model) {
 	}
 
 	/**
@@ -848,10 +850,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * instance the element is contained in. A template model should be used to
 	 * manipulate data associated with this template instance.
 	 * 
+	 * @param el
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void modelForElement() {
+	protected void modelForElement(elemental.json.JsonObject el) {
 	}
 
 	/**

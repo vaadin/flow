@@ -408,10 +408,11 @@ public class IronSelector<R extends IronSelector<R>> extends Component {
 	 * 
 	 * Returns the index of the given item.
 	 * 
+	 * @param item
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void indexOf() {
+	protected void indexOf(elemental.json.JsonObject item) {
 	}
 
 	/**

@@ -430,10 +430,11 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
+	 * @param element
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void resizerShouldNotify() {
+	protected void resizerShouldNotify(elemental.json.JsonObject element) {
 	}
 
 	/**
@@ -441,10 +442,11 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * Returns the index of the given item.
 	 * 
+	 * @param item
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void indexOf() {
+	protected void indexOf(elemental.json.JsonObject item) {
 	}
 
 	/**

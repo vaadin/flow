@@ -642,10 +642,13 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
+	 * @param event
+	 * @param eventString
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void keyboardEventMatchesKeys() {
+	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+			java.lang.String eventString) {
 	}
 
 	/**
@@ -673,10 +676,11 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
+	 * @param model
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void stamp() {
+	protected void stamp(elemental.json.JsonObject model) {
 	}
 
 	/**
@@ -687,10 +691,11 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * instance the element is contained in. A template model should be used to
 	 * manipulate data associated with this template instance.
 	 * 
+	 * @param el
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void modelForElement() {
+	protected void modelForElement(elemental.json.JsonObject el) {
 	}
 
 	/**

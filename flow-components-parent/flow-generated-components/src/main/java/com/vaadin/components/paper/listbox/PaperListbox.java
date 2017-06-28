@@ -527,10 +527,11 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * Returns the index of the given item.
 	 * 
+	 * @param item
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void indexOf() {
+	protected void indexOf(elemental.json.JsonObject item) {
 	}
 
 	/**
@@ -632,10 +633,13 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
+	 * @param event
+	 * @param eventString
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void keyboardEventMatchesKeys() {
+	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+			java.lang.String eventString) {
 	}
 
 	@DomEvent("iron-activate")

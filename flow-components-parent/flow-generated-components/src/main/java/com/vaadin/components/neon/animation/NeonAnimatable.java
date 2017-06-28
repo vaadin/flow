@@ -173,10 +173,11 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component {
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
+	 * @param element
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void resizerShouldNotify() {
+	protected void resizerShouldNotify(elemental.json.JsonObject element) {
 	}
 
 	/**

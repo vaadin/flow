@@ -937,10 +937,13 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
+	 * @param event
+	 * @param eventString
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void keyboardEventMatchesKeys() {
+	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+			java.lang.String eventString) {
 	}
 
 	/**
@@ -1046,10 +1049,11 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
+	 * @param element
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void resizerShouldNotify() {
+	protected void resizerShouldNotify(elemental.json.JsonObject element) {
 	}
 
 	/**

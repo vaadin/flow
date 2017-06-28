@@ -487,10 +487,11 @@ public class IronList<R extends IronList<R>> extends Component {
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
+	 * @param model
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void stamp() {
+	protected void stamp(elemental.json.JsonObject model) {
 	}
 
 	/**
@@ -501,10 +502,11 @@ public class IronList<R extends IronList<R>> extends Component {
 	 * instance the element is contained in. A template model should be used to
 	 * manipulate data associated with this template instance.
 	 * 
+	 * @param el
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void modelForElement() {
+	protected void modelForElement(elemental.json.JsonObject el) {
 	}
 
 	/**
@@ -548,10 +550,11 @@ public class IronList<R extends IronList<R>> extends Component {
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
+	 * @param element
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void resizerShouldNotify() {
+	protected void resizerShouldNotify(elemental.json.JsonObject element) {
 	}
 
 	/**

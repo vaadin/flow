@@ -160,10 +160,11 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * 
+	 * @param element
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void resizerShouldNotify() {
+	protected void resizerShouldNotify(elemental.json.JsonObject element) {
 	}
 
 	/**
@@ -171,10 +172,11 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * 
 	 * Gets the index of the item with the provided label.
 	 * 
+	 * @param label
 	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void indexOfLabel() {
+	protected void indexOfLabel(elemental.json.JsonObject label) {
 	}
 
 	/**
@@ -182,10 +184,11 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * 
 	 * Gets the label string for the item based on the {@code _itemLabelPath}.
 	 * 
+	 * @param item
 	 * @return It would return a class java.lang.String
 	 */
 	@NotSupported
-	protected void getItemLabel() {
+	protected void getItemLabel(elemental.json.JsonObject item) {
 	}
 
 	public void ensureItemsRendered() {

@@ -569,6 +569,7 @@ public class ComponentGenerator {
                 && function.getReturns() != ComponentBasicType.UNDEFINED) {
             method.setProtected();
             method.addAnnotation(NotSupported.class);
+            generateFunctionParameters(function, method);
             method.getJavaDoc().addTagValue("@return",
                     "It would return a " + toJavaType(function.getReturns()));
             method.setBody("");

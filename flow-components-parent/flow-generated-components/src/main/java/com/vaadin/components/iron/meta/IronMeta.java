@@ -175,10 +175,11 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 	 * 
 	 * Retrieves meta data value by key.
 	 * 
+	 * @param key
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void byKey() {
+	protected void byKey(java.lang.String key) {
 	}
 
 	@DomEvent("value-changed")
