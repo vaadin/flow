@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -528,8 +529,11 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 		return getSelf();
 	}
 
-	public void hasValidator() {
-		getElement().callFunction("hasValidator");
+	/**
+	 * @return It would return a boolean
+	 */
+	@NotSupported
+	protected void hasValidator() {
 	}
 
 	/**
@@ -538,9 +542,11 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Returns true if {@code value} is valid. The validator provided in
 	 * {@code validator} will be used first, if it exists; otherwise, the
 	 * {@code textarea}'s validity is used.
+	 * 
+	 * @return It would return a boolean
 	 */
-	public void validate() {
-		getElement().callFunction("validate");
+	@NotSupported
+	protected void validate() {
 	}
 
 	@DomEvent("invalid-changed")

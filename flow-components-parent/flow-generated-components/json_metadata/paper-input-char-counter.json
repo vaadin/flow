@@ -36,7 +36,8 @@
           ],
           "description": "    inputElement: The input element.\n    value: The input value.\n    invalid: True if the input value is invalid."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [],

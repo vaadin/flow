@@ -322,12 +322,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "removeOwnKeyBindings",
       "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "keyboardEventMatchesKeys",
@@ -349,17 +351,20 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     },
     {
       "name": "inputElement",
       "description": "Returns a reference to the input element.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "validate",
       "description": "Validates the input element and sets an error style if needed.",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     },
     {
       "name": "updateValueAndPreserveCaret",
@@ -373,7 +378,8 @@
           "objectType": [],
           "description": "The value that should be saved."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [

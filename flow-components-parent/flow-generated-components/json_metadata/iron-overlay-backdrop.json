@@ -17,22 +17,26 @@
     {
       "name": "prepare",
       "description": "Appends the backdrop to document body if needed.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "open",
       "description": "Shows the backdrop.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "close",
       "description": "Hides the backdrop.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "complete",
       "description": "Removes the backdrop from document body if needed.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [],

@@ -114,12 +114,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "removeOwnKeyBindings",
       "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "keyboardEventMatchesKeys",
@@ -141,7 +143,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     }
   ],
   "events": [

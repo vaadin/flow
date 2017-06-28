@@ -2,7 +2,7 @@
   "name": "iron-list",
   "tag": "iron-list",
   "baseUrl": "iron-list/iron-list.html",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "properties": [
     {
       "name": "scrollTarget",
@@ -146,7 +146,8 @@
           "objectType": [],
           "description": "When `true`, the generated class will skip\n  strict dirty-checking for objects and arrays (always consider them to\n  be \"dirty\"). Defaults to false."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "stamp",
@@ -160,7 +161,8 @@
           "objectType": [],
           "description": "Object containing initial property values to\n  populate into the template bindings."
         }
-      ]
+      ],
+      "returns": "OBJECT"
     },
     {
       "name": "modelForElement",
@@ -174,12 +176,14 @@
           "objectType": [],
           "description": "Element for which to return a template model."
         }
-      ]
+      ],
+      "returns": "OBJECT"
     },
     {
       "name": "notifyResize",
       "description": "Can be called to manually notify a resizable and its descendant\nresizables of a resize change.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "assignParentResizable",
@@ -193,7 +197,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "stopResizeNotificationsFor",
@@ -207,7 +212,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "resizerShouldNotify",
@@ -221,7 +227,8 @@
           "objectType": [],
           "description": "A candidate descendant element that\nimplements `IronResizableBehavior`."
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     },
     {
       "name": "scroll",
@@ -243,7 +250,8 @@
           "objectType": [],
           "description": "The top position"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "toggleScrollListener",
@@ -257,12 +265,14 @@
           "objectType": [],
           "description": "True to add the event, False to remove it."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "updateViewportBoundaries",
       "description": "Invoke this method if you dynamically update the viewport's\nsize or CSS padding.",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "scrollToItem",
@@ -276,7 +286,8 @@
           "objectType": [],
           "description": "The item to be scrolled to"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "scrollToIndex",
@@ -290,7 +301,8 @@
           "objectType": [],
           "description": "The index of the item"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "selectItem",
@@ -304,7 +316,8 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "selectIndex",
@@ -318,7 +331,8 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "deselectItem",
@@ -332,7 +346,8 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "deselectIndex",
@@ -346,7 +361,8 @@
           "objectType": [],
           "description": "The index of the item in the items array."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "toggleSelectionForItem",
@@ -360,7 +376,8 @@
           "objectType": [],
           "description": "The item object."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "toggleSelectionForIndex",
@@ -374,12 +391,14 @@
           "objectType": [],
           "description": "The index of the item in the items array."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "clearSelection",
       "description": "Clears the current selection in the list.",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "updateSizeForItem",
@@ -393,7 +412,8 @@
           "objectType": [],
           "description": "The item instance."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "updateSizeForIndex",
@@ -407,7 +427,8 @@
           "objectType": [],
           "description": "The index of the item in the items array."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "focusItem",
@@ -421,7 +442,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [

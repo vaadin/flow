@@ -21,6 +21,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -527,9 +528,10 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Returns the index of the given item.
 	 * 
 	 * @param item
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void indexOf(elemental.json.JsonObject item) {
-		getElement().callFunction("indexOf", item);
+	@NotSupported
+	protected void indexOf(elemental.json.JsonObject item) {
 	}
 
 	/**
@@ -633,11 +635,11 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * @param event
 	 * @param eventString
+	 * @return It would return a boolean
 	 */
-	public void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+	@NotSupported
+	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
 			java.lang.String eventString) {
-		getElement().callFunction("keyboardEventMatchesKeys", event,
-				eventString);
 	}
 
 	@DomEvent("iron-activate")
