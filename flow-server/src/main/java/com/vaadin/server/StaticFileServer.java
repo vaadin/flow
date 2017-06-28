@@ -46,11 +46,13 @@ public class StaticFileServer implements Serializable {
 
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
+    private final VaadinService service;
+
     /**
      * Constructs a file server.
      */
-    public StaticFileServer() {
-        // Empty default constructor
+    public StaticFileServer(VaadinService service) {
+        this.service = service;
     }
 
     /**
@@ -210,7 +212,12 @@ public class StaticFileServer implements Serializable {
             HttpServletRequest request, HttpServletResponse response) {
         int resourceCacheTime = getCacheTime(filenameWithPath);
         String cacheControl;
-        if (resourceCacheTime > 0) {
+        boolean isProductionMode = service.getDeploymentConfiguration()
+                .isProductionMode();
+        if (!isProductionMode) {
+            System.out.println("WWWWWWWWWWWWWWWWW");
+            cacheControl = "no-cache";
+        } else if (resourceCacheTime > 0) {
             cacheControl = "max-age=" + resourceCacheTime;
         } else {
             cacheControl = "public, max-age=0, must-revalidate";
@@ -299,7 +306,7 @@ public class StaticFileServer implements Serializable {
      */
     protected void writeData(String filenameWithPath, URL resourceUrl,
             HttpServletRequest request, HttpServletResponse response)
-                    throws IOException {
+            throws IOException {
 
         URLConnection connection = null;
         InputStream dataStream = null;
