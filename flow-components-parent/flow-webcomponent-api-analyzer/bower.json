@@ -29,7 +29,7 @@
     "paper-input": "PolymerElements/paper-input#^2.0.0",
     "paper-spinner": "PolymerElements/paper-spinner#^2.0.0",
     "paper-card": "PolymerElements/paper-card#^2.0.0",
-    "paper-progress": "PolymerElements/paper-progress#^2.0.1",
+	"paper-progress": "PolymerElements/paper-progress#^2.0.1",
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
     "paper-swatch-picker": "PolymerElements/paper-swatch-picker#^2.0.0",
     "vaadin-text-field": "vaadin/vaadin-text-field#^1.0.0-beta1",

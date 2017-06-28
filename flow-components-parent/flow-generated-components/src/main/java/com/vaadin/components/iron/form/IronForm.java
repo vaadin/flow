@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -172,9 +173,11 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Validates all the required elements (custom and native) in the form.
+	 * 
+	 * @return It would return a boolean
 	 */
-	public void validate() {
-		getElement().callFunction("validate");
+	@NotSupported
+	protected void validate() {
 	}
 
 	/**
@@ -205,9 +208,11 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * Serializes the form as will be used in submission. Note that
 	 * {@code serialize} is a Polymer reserved keyword, so calling
 	 * {@code someIronForm}.serialize()` will give you unexpected results.
+	 * 
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void serializeForm() {
-		getElement().callFunction("serializeForm");
+	@NotSupported
+	protected void serializeForm() {
 	}
 
 	@DomEvent("iron-form-error")

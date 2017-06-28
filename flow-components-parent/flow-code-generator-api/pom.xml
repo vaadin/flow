@@ -15,13 +15,12 @@
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
+            <artifactId>flow-components-commons</artifactId>
             <version>${flow.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.5</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.forge.roaster</groupId>

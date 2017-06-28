@@ -163,12 +163,14 @@
     {
       "name": "hasValidator",
       "description": "",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     },
     {
       "name": "validate",
       "description": "Returns true if `value` is valid. The validator provided in `validator`\nwill be used first, if it exists; otherwise, the `textarea`'s validity\nis used.",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     }
   ],
   "events": [

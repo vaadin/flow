@@ -163,7 +163,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "OBJECT"
     },
     {
       "name": "select",
@@ -178,17 +179,20 @@
           "objectType": [],
           "description": "the value to select."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "selectPrevious",
       "description": "Selects the previous item.",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "selectNext",
       "description": "Selects the next item.",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "selectIndex",
@@ -202,12 +206,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "forceSynchronousItemUpdate",
       "description": "Force a synchronous update of the `items` property.\n\nNOTE: Consider listening for the `iron-items-changed` event to respond to\nupdates to the set of selectable items after updates to the DOM list and\nselection state have been made.\n\nWARNING: If you are using this method, you should probably consider an\nalternate approach. Synchronously querying for items is potentially\nslow for many use cases. The `items` property will update asynchronously\non its own to reflect selectable items in the DOM.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "multiChanged",
@@ -221,7 +227,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "addOwnKeyBinding",
@@ -243,12 +250,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "removeOwnKeyBindings",
       "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "keyboardEventMatchesKeys",
@@ -270,7 +279,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     }
   ],
   "events": [

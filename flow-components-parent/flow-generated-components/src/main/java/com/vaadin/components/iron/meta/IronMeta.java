@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -175,9 +176,10 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 	 * Retrieves meta data value by key.
 	 * 
 	 * @param key
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void byKey(java.lang.String key) {
-		getElement().callFunction("byKey", key);
+	@NotSupported
+	protected void byKey(java.lang.String key) {
 	}
 
 	@DomEvent("value-changed")

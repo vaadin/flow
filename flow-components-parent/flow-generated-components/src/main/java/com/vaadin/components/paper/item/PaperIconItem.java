@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -346,11 +347,11 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component {
 	 * 
 	 * @param event
 	 * @param eventString
+	 * @return It would return a boolean
 	 */
-	public void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+	@NotSupported
+	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
 			java.lang.String eventString) {
-		getElement().callFunction("keyboardEventMatchesKeys", event,
-				eventString);
 	}
 
 	@DomEvent("active-changed")

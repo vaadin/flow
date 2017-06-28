@@ -33,7 +33,8 @@
     {
       "name": "validate",
       "description": "Validates all the required elements (custom and native) in the form.",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     },
     {
       "name": "submit",
@@ -47,7 +48,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "reset",
@@ -61,12 +63,14 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "serializeForm",
       "description": "Serializes the form as will be used in submission. Note that `serialize`\nis a Polymer reserved keyword, so calling `someIronForm`.serialize()`\nwill give you unexpected results.",
-      "parameters": []
+      "parameters": [],
+      "returns": "OBJECT"
     }
   ],
   "events": [

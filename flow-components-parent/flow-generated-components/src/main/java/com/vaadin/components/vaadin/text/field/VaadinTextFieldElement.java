@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.NotSupported;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -537,9 +538,11 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * Returns true if {@code value} is valid. {@code <iron-form>} uses this to
 	 * check the validity or all its elements.
+	 * 
+	 * @return It would return a boolean
 	 */
-	public void validate() {
-		getElement().callFunction("validate");
+	@NotSupported
+	protected void validate() {
 	}
 
 	/**

@@ -256,7 +256,8 @@
     {
       "name": "hasValidator",
       "description": "",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     },
     {
       "name": "validate",
@@ -270,7 +271,8 @@
           "objectType": [],
           "description": "Deprecated: The value to be validated. By default,\nit is passed to the validator's `validate()` function, if a validator is set.\nIf this argument is not specified, then the element's `value` property\nis used, if it exists."
         }
-      ]
+      ],
+      "returns": "BOOLEAN"
     },
     {
       "name": "templatize",
@@ -292,7 +294,8 @@
           "objectType": [],
           "description": "When `true`, the generated class will skip\n  strict dirty-checking for objects and arrays (always consider them to\n  be \"dirty\"). Defaults to false."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     },
     {
       "name": "stamp",
@@ -306,7 +309,8 @@
           "objectType": [],
           "description": "Object containing initial property values to\n  populate into the template bindings."
         }
-      ]
+      ],
+      "returns": "OBJECT"
     },
     {
       "name": "modelForElement",
@@ -320,32 +324,38 @@
           "objectType": [],
           "description": "Element for which to return a template model."
         }
-      ]
+      ],
+      "returns": "OBJECT"
     },
     {
       "name": "open",
       "description": "Opens the dropdown list.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "close",
       "description": "Closes the dropdown list.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "cancel",
       "description": "Reverts back to original value.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "focus",
       "description": "Sets focus on the input field.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "blur",
       "description": "Removes focus from the input field.\n     ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [
