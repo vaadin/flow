@@ -21,6 +21,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
+import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -643,11 +644,11 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * @param event
 	 * @param eventString
+	 * @return It would return a boolean
 	 */
-	public void keyboardEventMatchesKeys(elemental.json.JsonObject event,
+	@NotSupported
+	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
 			java.lang.String eventString) {
-		getElement().callFunction("keyboardEventMatchesKeys", event,
-				eventString);
 	}
 
 	/**
@@ -676,9 +677,10 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
 	 * @param model
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void stamp(elemental.json.JsonObject model) {
-		getElement().callFunction("stamp", model);
+	@NotSupported
+	protected void stamp(elemental.json.JsonObject model) {
 	}
 
 	/**
@@ -690,9 +692,10 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * manipulate data associated with this template instance.
 	 * 
 	 * @param el
+	 * @return It would return a interface elemental.json.JsonObject
 	 */
-	public void modelForElement(elemental.json.JsonObject el) {
-		getElement().callFunction("modelForElement", el);
+	@NotSupported
+	protected void modelForElement(elemental.json.JsonObject el) {
 	}
 
 	/**

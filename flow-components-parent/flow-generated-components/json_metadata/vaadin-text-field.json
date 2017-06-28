@@ -168,22 +168,26 @@
     {
       "name": "connectedCallback",
       "description": "",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "disconnectedCallback",
       "description": "",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "validate",
       "description": "Returns true if `value` is valid.\n`<iron-form>` uses this to check the validity or all its elements.",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     },
     {
       "name": "checkValidity",
       "description": "Returns true if the current input value satisfies all constraints (if any)\n         ",
-      "parameters": []
+      "parameters": [],
+      "returns": "UNDEFINED"
     },
     {
       "name": "attributeChangedCallback",
@@ -213,7 +217,8 @@
           "objectType": [],
           "description": "Missing documentation!"
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [

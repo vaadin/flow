@@ -15,7 +15,6 @@
  */
 package com.vaadin.generator;
 
-import javax.annotation.Generated;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +26,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -37,10 +35,14 @@ import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 import org.jboss.forge.roaster.model.source.ParameterSource;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -556,15 +558,28 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName(StringUtils.uncapitalize(ComponentGeneratorUtils
                         .formatStringToValidJavaIdentifier(function.getName())))
-                .setPublic().setReturnTypeVoid();
+                .setReturnTypeVoid();
 
         if (StringUtils.isNotEmpty(function.getDescription())) {
             addJavaDoc(function.getDescription(), method.getJavaDoc());
         }
 
-        method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
-                function.getName(),
-                generateFunctionParameters(function, method)));
+        // methods with return values are not supported
+        if (function.getReturns() != null
+                && function.getReturns() != ComponentBasicType.UNDEFINED) {
+            method.setProtected();
+            method.addAnnotation(NotSupported.class);
+            generateFunctionParameters(function, method);
+            method.getJavaDoc().addTagValue("@return",
+                    "It would return a " + toJavaType(function.getReturns()));
+            method.setBody("");
+        } else {
+            method.setPublic();
+            method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
+                    function.getName(),
+                    generateFunctionParameters(function, method)));
+        }
+
     }
 
     /**

@@ -65,12 +65,14 @@
     {
       "name": "hasValidator",
       "description": "",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     },
     {
       "name": "validate",
       "description": "Returns true if `value` is valid. The validator provided in `validator` will be used first,\nthen any constraints.",
-      "parameters": []
+      "parameters": [],
+      "returns": "BOOLEAN"
     }
   ],
   "events": [

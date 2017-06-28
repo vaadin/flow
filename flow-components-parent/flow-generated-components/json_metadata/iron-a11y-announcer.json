@@ -26,7 +26,8 @@
           "objectType": [],
           "description": "The text that should be announced."
         }
-      ]
+      ],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [],
