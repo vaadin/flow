@@ -65,12 +65,14 @@ public class PopStateHandler {
     }
 
     private void updateCurrentPathAndScroll() {
+        String oldPath = pathAfterPreviousResponse;
         pathAfterPreviousResponse = Browser.getWindow().getLocation()
                 .getPathname();
 
         // move to page top only if there is no fragment so scroll position
         // doesn't bounce around
-        if (!pathAfterPreviousResponse.contains("#")) {
+        if (!pathAfterPreviousResponse.equals(oldPath)
+                && !pathAfterPreviousResponse.contains("#")) {
             Browser.getWindow().scrollTo(0, 0);
         }
     }
