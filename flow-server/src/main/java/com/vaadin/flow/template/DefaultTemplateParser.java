@@ -71,11 +71,9 @@ public class DefaultTemplateParser implements TemplateParser {
                 HtmlImport.class)) {
             String path = resolvePath(request, htmlImport.value());
 
-            if (logEnabled) {
-                getLogger().info(String.format(
-                        "Html import path '%s' is resolved to '%s'",
-                        htmlImport.value(), path));
-            }
+            log(logEnabled, Level.INFO,
+                    String.format("Html import path '%s' is resolved to '%s'",
+                            htmlImport.value(), path));
             try (InputStream content = context.getResourceAsStream(path)) {
                 if (content == null) {
                     throw new IllegalStateException(String.format(
@@ -86,20 +84,17 @@ public class DefaultTemplateParser implements TemplateParser {
                 Element templateElement = parseHtmlImport(content,
                         htmlImport.value());
                 if (isTemplateImport(templateElement, tag)) {
-                    if (logEnabled) {
-                        getLogger().info(String.format(
-                                "Found a template file containing template "
-                                        + "definition for the tag '%s' by the path '%s'",
-                                tag, htmlImport.value()));
-                    }
+                    log(logEnabled, Level.INFO,
+                            String.format(
+                                    "Found a template file containing template "
+                                            + "definition for the tag '%s' by the path '%s'",
+                                    tag, htmlImport.value()));
                     return templateElement;
                 }
             } catch (IOException exception) {
                 // ignore exception on close()
-                if (logEnabled) {
-                    getLogger().log(Level.WARNING,
-                            "Couldn't close template input stream", exception);
-                }
+                log(logEnabled, Level.WARNING,
+                        "Couldn't close template input stream", exception);
             }
         }
         throw new IllegalStateException(String.format(
@@ -163,6 +158,19 @@ public class DefaultTemplateParser implements TemplateParser {
             throw new RuntimeException(String.format(
                     "Can't parse the template declared using '%s' path", path),
                     exception);
+        }
+    }
+
+    private void log(boolean enabled, Level level, String msg) {
+        if (enabled) {
+            getLogger().log(level, msg);
+        }
+    }
+
+    private void log(boolean enabled, Level level, String msg,
+            Exception exception) {
+        if (enabled) {
+            getLogger().log(level, msg, exception);
         }
     }
 
