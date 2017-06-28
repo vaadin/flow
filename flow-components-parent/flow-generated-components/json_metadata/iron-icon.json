@@ -1,0 +1,36 @@
+{
+  "name": "iron-icon",
+  "tag": "iron-icon",
+  "baseUrl": "iron-icon/iron-icon.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "icon",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the icon to use. The name should be of the form:\n`iconset_name:icon_name`.\n         "
+    },
+    {
+      "name": "theme",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of the theme to used, if one is specified by the\niconset.\n         "
+    },
+    {
+      "name": "src",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "If using iron-icon without an iconset, you can set the src to be\nthe URL of an individual icon image file. Note that this will take\nprecedence over a given icon attribute.\n         "
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "behaviors": [],
+  "description": "The `iron-icon` element displays an icon. By default an icon renders as a 24px square.\n\nExample using src:\n\n    <iron-icon src=\"star.png\"></iron-icon>\n\nExample setting size to 32px x 32px:\n\n    <iron-icon class=\"big\" src=\"big_star.png\"></iron-icon>\n\n    <style is=\"custom-style\">\n      .big {\n        --iron-icon-height: 32px;\n        --iron-icon-width: 32px;\n      }\n    </style>\n\nThe iron elements include several sets of icons.\nTo use the default set of icons, import `iron-icons.html` and use the `icon` attribute to specify an icon:\n\n    <link rel=\"import\" href=\"/components/iron-icons/iron-icons.html\">\n\n    <iron-icon icon=\"menu\"></iron-icon>\n\nTo use a different built-in set of icons, import the specific `iron-icons/<iconset>-icons.html`, and\nspecify the icon as `<iconset>:<icon>`. For example, to use a communication icon, you would\nuse:\n\n    <link rel=\"import\" href=\"/components/iron-icons/communication-icons.html\">\n\n    <iron-icon icon=\"communication:email\"></iron-icon>\n\nYou can also create custom icon sets of bitmap or SVG icons.\n\nExample of using an icon named `cherry` from a custom iconset with the ID `fruit`:\n\n    <iron-icon icon=\"fruit:cherry\"></iron-icon>\n\nSee [iron-iconset](iron-iconset) and [iron-iconset-svg](iron-iconset-svg) for more information about\nhow to create a custom iconset.\n\nSee the [iron-icons demo](iron-icons?view=demo:demo/index.html) to see the icons available\nin the various iconsets.\n\nTo load a subset of icons from one of the default `iron-icons` sets, you can\nuse the [poly-icon](https://poly-icon.appspot.com/) tool. It allows you\nto select individual icons, and creates an iconset from them that you can\nuse directly in your elements.\n\n### Styling\n\nThe following custom properties are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--iron-icon` | Mixin applied to the icon | {}\n`--iron-icon-width` | Width of the icon | `24px`\n`--iron-icon-height` | Height of the icon | `24px`\n`--iron-icon-fill-color` | Fill color of the svg icon | `currentcolor`\n`--iron-icon-stroke-color` | Stroke color of the svg icon | none"
+}

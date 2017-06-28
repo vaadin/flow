@@ -666,17 +666,20 @@ public class ComponentGenerator {
             } else { // object property
                 propertyJavaType = JsonObject.class;
             }
+            String normalizedProperty = ComponentGeneratorUtils
+                    .formatStringToValidJavaIdentifier(propertyName);
             ParameterSource<JavaClassSource> parameter = eventConstructor
-                    .addParameter(propertyJavaType, propertyName);
+                    .addParameter(propertyJavaType, normalizedProperty);
             parameter.addAnnotation(EventData.class).setLiteralValue(
                     String.format("\"event.%s\"", propertyName));
             // Create private field
-            eventListener.addProperty(propertyJavaType, propertyName)
+            eventListener.addProperty(propertyJavaType, normalizedProperty)
                     .setAccessible(true).setMutable(false);
 
             // Set value to private field
             eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
-                    eventConstructor.getBody(), propertyName, propertyName));
+                    eventConstructor.getBody(), normalizedProperty,
+                    normalizedProperty));
             // Add the EventData as a import
             javaClass.addImport(EventData.class);
         }

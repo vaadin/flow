@@ -25,7 +25,6 @@ change=`diff <(git show --name-only $actualCommits) <(git show --summary $actual
 
 # Collect changed modules to build and build also modules that depend on the
 # selected modules (see the flag '-amd')
-
 modules=
 if [[ $change == *"flow-push/"* ]]
 then
@@ -48,8 +47,9 @@ else
 
     if [[ $change == *"flow-components-parent/"* ]]
     then
+      ## only trigger the analyzer & generator for validation builds on PRs that touched component generation
       echo "Setting components flag to true"
-      modules="$modules -pl flow-components-parent"
+      modules="$modules -pl flow-components-parent -P generator"
     fi
 
     if [[ $change == *"flow-client/"* ]]
@@ -80,6 +80,7 @@ then
 
     # Trigger Sonar analysis
     # Verify build and build javadoc
+    echo "Running clean verify $modules -amd"
     mvn -B -e -V \
         -Pvalidation \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
