@@ -77,16 +77,24 @@ public class Bootstrapper implements EntryPoint {
      */
     public static void startApplication(final String applicationId) {
         Scheduler.get().scheduleDeferred(() -> {
-            Profiler.enter("Bootstrapper.startApplication");
-            ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
-            ApplicationConnection applicationConnection = new ApplicationConnection(
-                    appConf);
-            runningApplications.push(applicationConnection);
-            Profiler.leave("Bootstrapper.startApplication");
-
-            ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();
-            applicationConnection.start(initialUidl);
+            if (isWebComponentsReady()) {
+                doStartApplication(applicationId);
+            } else {
+                deferStartApplication(applicationId);
+            }
         });
+    }
+
+    private static void doStartApplication(final String applicationId) {
+        Profiler.enter("Bootstrapper.startApplication");
+        ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
+        ApplicationConnection applicationConnection = new ApplicationConnection(
+                appConf);
+        runningApplications.push(applicationConnection);
+        Profiler.leave("Bootstrapper.startApplication");
+
+        ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();
+        applicationConnection.start(initialUidl);
     }
 
     /**
@@ -178,6 +186,18 @@ public class Bootstrapper implements EntryPoint {
     /*-{
          return $wnd.flow != null;
      }-*/;
+
+    private static native void deferStartApplication(String applicationId)
+    /*-{
+        $wnd.addEventListener('WebComponentsReady', function() {
+            @Bootstrapper::doStartApplication(*)(applicationId);
+        });
+    }-*/;
+
+    private static native boolean isWebComponentsReady()
+    /*-{
+        return $wnd.WebComponents && $wnd.WebComponents.ready;
+    }-*/;
 
     /**
      * Registers the callback that the bootstrap javascript uses to start

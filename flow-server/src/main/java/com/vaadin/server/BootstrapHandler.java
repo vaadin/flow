@@ -463,7 +463,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendChild(createJavaScriptElement(
                 context.getUriResolver().resolveVaadinUri(
-                        webComponentsPolyfillBase + "webcomponents-lite.js"),
+                        webComponentsPolyfillBase + "webcomponents-loader.js"),
                 false).attr("shadydom", forceShadyDom));
     }
 
@@ -558,7 +558,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapContext context) {
         String scriptData = "//<![CDATA[\n"
                 + getBootstrapJS(initialUIDL, context) + "//]]>";
-        // defer makes no sense without src: https://developer.mozilla.org/en/docs/Web/HTML/Element/script
+        // defer makes no sense without src:
+        // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
         Element mainScript = createJavaScriptElement(null, false);
         mainScript.appendChild(new DataNode(scriptData, mainScript.baseUri()));
         return mainScript;
