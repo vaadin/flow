@@ -39,6 +39,7 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -99,6 +100,10 @@ public class StaticFileServerTest implements Serializable {
         private Integer overrideCacheTime;
         private Boolean overrideAcceptsGzippedResource;
 
+        OverrideableStaticFileServer(VaadinService service) {
+            super(service);
+        }
+
         @Override
         protected boolean browserHasNewestVersion(HttpServletRequest request,
                 long resourceLastModifiedTimestamp) {
@@ -136,10 +141,13 @@ public class StaticFileServerTest implements Serializable {
     private AtomicInteger responseCode;
     private AtomicLong responseContentLength;
 
+    private VaadinService service = Mockito.mock(VaadinService.class);
+    private DeploymentConfiguration configuration;
+
     @Before
     public void setUp() throws IOException {
         servletContext = Mockito.mock(ServletContext.class);
-        fileServer = new OverrideableStaticFileServer();
+        fileServer = new OverrideableStaticFileServer(service);
         request = Mockito.mock(HttpServletRequest.class);
         response = Mockito.mock(HttpServletResponse.class);
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
@@ -161,7 +169,8 @@ public class StaticFileServerTest implements Serializable {
             dateHeaders.put((String) invocation.getArguments()[0],
                     (Long) invocation.getArguments()[1]);
             return null;
-        }).when(response).setDateHeader(Matchers.anyString(), Matchers.anyLong());
+        }).when(response).setDateHeader(Matchers.anyString(),
+                Matchers.anyLong());
         Mockito.doAnswer(invocation -> {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
@@ -175,6 +184,16 @@ public class StaticFileServerTest implements Serializable {
             return null;
         }).when(response).setContentLengthLong(Matchers.anyLong());
 
+        Assert.assertNull(VaadinService.getCurrent());
+        configuration = Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+    }
+
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
     }
 
     @Test
@@ -405,12 +424,30 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void nonProductionMode_writeCacheHeadersCacheResource_noCache() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+
+        fileServer.overrideCacheTime = 12;
+        fileServer.writeCacheHeaders("/folder/myfile.txt", request, response);
+        Assert.assertTrue(headers.get("Cache-Control").equals("no-cache"));
+    }
+
+    @Test
     public void writeCacheHeadersDoNotCacheResource() {
         fileServer.overrideCacheTime = 0;
         fileServer.writeCacheHeaders("/folder/myfile.txt", request, response);
         Assert.assertTrue(headers.get("Cache-Control").contains("max-age=0"));
         Assert.assertTrue(
                 headers.get("Cache-Control").contains("must-revalidate"));
+    }
+
+    @Test
+    public void nonProductionMode_writeCacheHeadersDoNotCacheResource() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+
+        fileServer.overrideCacheTime = 0;
+        fileServer.writeCacheHeaders("/folder/myfile.txt", request, response);
+        Assert.assertTrue(headers.get("Cache-Control").equals("no-cache"));
     }
 
     @Test

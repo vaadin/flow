@@ -561,7 +561,7 @@ public class VaadinServlet extends HttpServlet {
      * @return the static file server instance to use.
      */
     protected StaticFileServer createStaticFileServer() {
-        return new StaticFileServer();
+        return new StaticFileServer(servletService);
     }
 
 }
