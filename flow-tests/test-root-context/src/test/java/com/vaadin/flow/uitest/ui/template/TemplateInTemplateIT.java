@@ -25,7 +25,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class TemplateInTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void childTemplateHanInstanceHandlesEvent() {
+    public void childTemplateInstanceHandlesEvent() {
         open();
 
         WebElement template = findElement(By.id("template"));

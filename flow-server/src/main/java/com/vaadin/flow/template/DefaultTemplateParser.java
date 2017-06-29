@@ -18,6 +18,7 @@ package com.vaadin.flow.template;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,6 +28,7 @@ import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServletRequest;
@@ -41,13 +43,16 @@ import com.vaadin.shared.VaadinUriResolver;
  * The implementation scans all HTML imports annotations for the given template
  * class and tries to find the one that contains template definition using the
  * tag name.
- * 
+ *
  * @see TemplateParser
- * 
+ *
  * @author Vaadin Ltd
  *
  */
 public class DefaultTemplateParser implements TemplateParser {
+
+    private static final ReflectionCache<PolymerTemplate, AtomicBoolean> LOG_CACHE = new ReflectionCache<>(
+            clazz -> new AtomicBoolean());
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -59,10 +64,14 @@ public class DefaultTemplateParser implements TemplateParser {
         assert session != null;
 
         ServletContext context = session.getHttpSession().getServletContext();
+
+        boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
+
         for (HtmlImport htmlImport : AnnotationReader.getAnnotationsFor(clazz,
                 HtmlImport.class)) {
             String path = resolvePath(request, htmlImport.value());
-            getLogger().info(
+
+            log(logEnabled, Level.INFO,
                     String.format("Html import path '%s' is resolved to '%s'",
                             htmlImport.value(), path));
             try (InputStream content = context.getResourceAsStream(path)) {
@@ -75,15 +84,16 @@ public class DefaultTemplateParser implements TemplateParser {
                 Element templateElement = parseHtmlImport(content,
                         htmlImport.value());
                 if (isTemplateImport(templateElement, tag)) {
-                    getLogger().info(String.format(
-                            "Found a template file containing template "
-                                    + "definition for the tag '%s' by the path '%s'",
-                            tag, htmlImport.value()));
+                    log(logEnabled, Level.INFO,
+                            String.format(
+                                    "Found a template file containing template "
+                                            + "definition for the tag '%s' by the path '%s'",
+                                    tag, htmlImport.value()));
                     return templateElement;
                 }
             } catch (IOException exception) {
                 // ignore exception on close()
-                getLogger().log(Level.WARNING,
+                log(logEnabled, Level.WARNING,
                         "Couldn't close template input stream", exception);
             }
         }
@@ -115,8 +125,9 @@ public class DefaultTemplateParser implements TemplateParser {
             assert servletPath != null;
             if (!servletPath.endsWith("/") && !uri.startsWith("/")) {
                 servletPath += "/";
-            } else if(servletPath.endsWith("/") && uri.startsWith("/")) {
-                servletPath = servletPath.substring(0, servletPath.length()-1);
+            } else if (servletPath.endsWith("/") && uri.startsWith("/")) {
+                servletPath = servletPath.substring(0,
+                        servletPath.length() - 1);
             }
             // "Revert" the `../` from uri resolver so that we point to the
             // context root.
@@ -147,6 +158,19 @@ public class DefaultTemplateParser implements TemplateParser {
             throw new RuntimeException(String.format(
                     "Can't parse the template declared using '%s' path", path),
                     exception);
+        }
+    }
+
+    private void log(boolean enabled, Level level, String msg) {
+        if (enabled) {
+            getLogger().log(level, msg);
+        }
+    }
+
+    private void log(boolean enabled, Level level, String msg,
+            Exception exception) {
+        if (enabled) {
+            getLogger().log(level, msg, exception);
         }
     }
 
