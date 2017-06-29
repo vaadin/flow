@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +48,8 @@ import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.CustomElementRegistry;
 import com.vaadin.server.CustomElementRegistryAccess;
+import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
@@ -57,6 +61,34 @@ import elemental.json.JsonArray;
  */
 public class PolymerTemplateTest {
     private static final String TAG = "FFS";
+
+    private DeploymentConfiguration configuration;
+
+    private static class TestTemplateParser implements TemplateParser {
+
+        private final Function<String, String> templateProducer;
+
+        private int callCount;
+
+        TestTemplateParser(Function<String, String> tagToTemplateContent) {
+            templateProducer = tagToTemplateContent;
+        }
+
+        @Override
+        public Element getTemplateContent(
+                Class<? extends PolymerTemplate> clazz, String tag) {
+            callCount++;
+            return Jsoup.parse(templateProducer.apply(tag));
+        }
+    }
+
+    private static class SimpleTemplateParser extends TestTemplateParser {
+
+        SimpleTemplateParser() {
+            super(tag -> "<dom-module id='" + tag + "'></dom-module>");
+        }
+
+    }
 
     private static class TestPage extends Page {
 
@@ -90,19 +122,11 @@ public class PolymerTemplateTest {
 
     }
 
-    private static class TestTemplateParser implements TemplateParser {
-        @Override
-        public Element getTemplateContent(
-                Class<? extends PolymerTemplate> clazz, String tag) {
-            return Jsoup.parse("<dom-module id='" + tag + "'></dom-module>");
-        }
-    }
-
     @Tag(TAG)
     public static class TestPolymerTemplate
             extends PolymerTemplate<ModelClass> {
         public TestPolymerTemplate() {
-            super(new TestTemplateParser());
+            super(new SimpleTemplateParser());
         }
     }
 
@@ -112,13 +136,16 @@ public class PolymerTemplateTest {
         @Id("child")
         private CustomComponent child;
 
+        private final TestTemplateParser parser;
+
         public IdChildTemplate() {
-            this((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+            this(new TestTemplateParser(tag -> "<dom-module id='" + tag
                     + "'><template><div id='child'></template></dom-module>"));
         }
 
-        IdChildTemplate(TemplateParser parser) {
+        IdChildTemplate(TestTemplateParser parser) {
             super(parser);
+            this.parser = parser;
         }
 
     }
@@ -126,7 +153,7 @@ public class PolymerTemplateTest {
     @Tag("child-template")
     public static class TemplateChild extends PolymerTemplate<ModelClass> {
         public TemplateChild() {
-            super(new TestTemplateParser());
+            super(new SimpleTemplateParser());
         }
     }
 
@@ -134,9 +161,16 @@ public class PolymerTemplateTest {
     private static class TemplateInTemplate
             extends PolymerTemplate<ModelClass> {
 
+        private final TestTemplateParser parser;
+
         public TemplateInTemplate() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+            this(new TestTemplateParser(tag -> "<dom-module id='" + tag
                     + "'><template><div><ffs></div><span></span><child-template></template></dom-module>"));
+        }
+
+        public TemplateInTemplate(TestTemplateParser parser) {
+            super(parser);
+            this.parser = parser;
         }
 
     }
@@ -172,12 +206,18 @@ public class PolymerTemplateTest {
     private static class TemplateWithDomRepeat
             extends PolymerTemplate<ModelClass> {
 
+        private final TestTemplateParser parser;
+
         public TemplateWithDomRepeat() {
-            super((clazz,
-                    tag) -> Jsoup.parse("<dom-module id='" + tag
-                            + "'><template><child-template>"
-                            + "<dom-repeat items='[[messages]]'><template><div></template></dom-repeat>"
-                            + "</template></dom-module>"));
+            this(new TestTemplateParser(tag -> "<dom-module id='" + tag
+                    + "'><template><child-template>"
+                    + "<dom-repeat items='[[messages]]'><template><div></template></dom-repeat>"
+                    + "</template></dom-module>"));
+        }
+
+        TemplateWithDomRepeat(TestTemplateParser parser) {
+            super(parser);
+            this.parser = parser;
         }
 
     }
@@ -185,6 +225,8 @@ public class PolymerTemplateTest {
     @Tag(TAG)
     private static class TextNodesInHtmlTemplate
             extends PolymerTemplate<ModelClass> {
+
+        private final TestTemplateParser parser;
 
         // @formatter:off
         private static String HTML_TEMPLATE = "<template>\n"+
@@ -196,7 +238,12 @@ public class PolymerTemplateTest {
         // @formatter:on
 
         public TextNodesInHtmlTemplate() {
-            super((clazz, tag) -> Jsoup.parse(HTML_TEMPLATE));
+            this(new TestTemplateParser(tag -> HTML_TEMPLATE));
+        }
+
+        public TextNodesInHtmlTemplate(TestTemplateParser parser) {
+            super(parser);
+            this.parser = parser;
         }
 
     }
@@ -230,7 +277,7 @@ public class PolymerTemplateTest {
     private static class IdWrongChildTemplate extends IdChildTemplate {
 
         public IdWrongChildTemplate() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
                     + "'><div id='foo'></dom-module>"));
         }
 
@@ -239,7 +286,7 @@ public class PolymerTemplateTest {
     private static class IdWrongTagChildTemplate extends IdChildTemplate {
 
         public IdWrongTagChildTemplate() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
                     + "'><label id='child'></dom-module>"));
         }
 
@@ -249,6 +296,15 @@ public class PolymerTemplateTest {
             extends PolymerTemplate<ModelClass> {
     }
 
+    @Tag(TAG)
+    private static class NoModelTemplate extends PolymerTemplate {
+
+        NoModelTemplate() {
+            super(new SimpleTemplateParser());
+        }
+
+    }
+
     @Before
     public void setUp() {
         CustomElementRegistryAccess.resetRegistry();
@@ -256,15 +312,19 @@ public class PolymerTemplateTest {
         map.put("child-template", TemplateChild.class);
         map.put("ffs", TestPolymerTemplate.class);
         CustomElementRegistry.getInstance().setCustomElements(map);
+
+        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService service = Mockito.mock(VaadinService.class);
+        configuration = Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinService.setCurrent(service);
     }
 
-    @Tag(TAG)
-    private static class NoModelTemplate extends PolymerTemplate {
-
-        NoModelTemplate() {
-            super(new TestTemplateParser());
-        }
-
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
     }
 
     @Test
@@ -328,16 +388,27 @@ public class PolymerTemplateTest {
 
     @Test
     public void parseTemplate_hasIdChild_childIsRegisteredInFeature() {
+        doParseTemplate_hasIdChild_childIsRegisteredInFeature(
+                new IdChildTemplate());
+    }
+
+    @Test
+    public void parseCachedTemplate_hasIdChild_childIsRegisteredInFeature() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
+        // run in the production mode (with caching enabled) for the first time
         IdChildTemplate template = new IdChildTemplate();
+        TestTemplateParser parser = template.parser;
+        Assert.assertEquals(1, parser.callCount);
+        // check the result for the first run
+        doParseTemplate_hasIdChild_childIsRegisteredInFeature(template);
 
-        UI ui = new UI();
-        ui.add(template);
-
-        AttachTemplateChildFeature feature = template.getElement().getNode()
-                .getFeature(AttachTemplateChildFeature.class);
-        AtomicInteger counter = new AtomicInteger(0);
-        feature.forEachChild(child -> counter.incrementAndGet());
-        Assert.assertEquals(1, counter.get());
+        // run in the production mode (with caching enabled) for the second time
+        template = new IdChildTemplate(parser);
+        // parser shouldn't be called
+        Assert.assertEquals(1, parser.callCount);
+        // the result should be the same
+        doParseTemplate_hasIdChild_childIsRegisteredInFeature(template);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -352,49 +423,53 @@ public class PolymerTemplateTest {
 
     @Test
     public void parseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
+        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+                new TemplateInTemplate());
+    }
+
+    @Test
+    public void parseCachedTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
+        // run in the production mode (with caching enabled) for the first time
         TemplateInTemplate template = new TemplateInTemplate();
+        TestTemplateParser parser = template.parser;
 
-        TestPage page = setupUI(template);
+        Assert.assertEquals(1, parser.callCount);
+        // check the result for the first run
+        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+                template);
 
-        AttachTemplateChildFeature feature = template.getStateNode()
-                .getFeature(AttachTemplateChildFeature.class);
-        List<StateNode> templateNodes = new ArrayList<>();
-        feature.forEachChild(templateNodes::add);
-
-        Assert.assertEquals(2, templateNodes.size());
-        StateNode child1 = templateNodes.get(0);
-        StateNode child2 = templateNodes.get(1);
-        String tag = child1.getFeature(ElementData.class).getTag();
-        if ("child-template".equals(tag)) {
-            Assert.assertEquals("ffs",
-                    child2.getFeature(ElementData.class).getTag());
-        } else {
-            Assert.assertEquals("ffs",
-                    child1.getFeature(ElementData.class).getTag());
-            Assert.assertEquals("child-template",
-                    child2.getFeature(ElementData.class).getTag());
-        }
-
-        Set<Object> paths = new HashSet<>();
-        paths.add(convertIntArray((JsonArray) page.params.get(0)[3]));
-        paths.add(convertIntArray((JsonArray) page.params.get(1)[3]));
-
-        // check arrays of indices
-        Assert.assertTrue(paths.contains(Arrays.asList(0, 0)));
-        Assert.assertTrue(paths.contains(Arrays.asList(2)));
+        // run in the production mode (with caching enabled) for the second time
+        template = new TemplateInTemplate(parser);
+        // parser shouldn't be called
+        Assert.assertEquals(1, parser.callCount);
+        // the result should be the same
+        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+                template);
     }
 
     @Test
     public void parseTemplate_hasTextNodesInTemmplate_correctRequestIsSent() {
+        doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(
+                new TextNodesInHtmlTemplate());
+    }
+
+    @Test
+    public void parseCachedTemplate_hasTextNodesInTemmplate_correctRequestIsSent() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
+        // run in the production mode (with caching enabled) for the first time
         TextNodesInHtmlTemplate template = new TextNodesInHtmlTemplate();
+        TestTemplateParser parser = template.parser;
+        doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(template);
 
-        TestPage page = setupUI(template);
-
-        JsonArray path = (JsonArray) page.params.get(0)[3];
-
-        // check arrays of indices
-        Assert.assertEquals(1, path.length());
-        Assert.assertEquals(1, (int) path.get(0).asNumber());
+        // run in the production mode (with caching enabled) for the second time
+        template = new TextNodesInHtmlTemplate(parser);
+        // parser shouldn't be called
+        Assert.assertEquals(1, parser.callCount);
+        // the result should be the same
+        doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(template);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -404,17 +479,27 @@ public class PolymerTemplateTest {
 
     @Test
     public void parseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
+        doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+                new TemplateWithDomRepeat());
+    }
+
+    @Test
+    public void parseCachedTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
+        // run in the production mode (with caching enabled) for the first time
         TemplateWithDomRepeat template = new TemplateWithDomRepeat();
+        TestTemplateParser parser = template.parser;
+        doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+                new TemplateWithDomRepeat());
 
-        UI ui = new UI();
-        ui.add(template);
-
-        AttachTemplateChildFeature feature = template.getStateNode()
-                .getFeature(AttachTemplateChildFeature.class);
-        List<StateNode> templateNodes = new ArrayList<>();
-        feature.forEachChild(templateNodes::add);
-
-        Assert.assertEquals(1, templateNodes.size());
+        // run in the production mode (with caching enabled) for the second time
+        template = new TemplateWithDomRepeat(parser);
+        // parser shouldn't be called
+        Assert.assertEquals(1, parser.callCount);
+        // the result should be the same
+        doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+                template);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -522,5 +607,73 @@ public class PolymerTemplateTest {
         };
         ui.add(template);
         return page;
+    }
+
+    private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(
+            IdChildTemplate template) {
+        UI ui = new UI();
+        ui.add(template);
+
+        AttachTemplateChildFeature feature = template.getElement().getNode()
+                .getFeature(AttachTemplateChildFeature.class);
+        AtomicInteger counter = new AtomicInteger(0);
+        feature.forEachChild(child -> counter.incrementAndGet());
+        Assert.assertEquals(1, counter.get());
+    }
+
+    private void doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+            TemplateInTemplate template) {
+        TestPage page = setupUI(template);
+
+        AttachTemplateChildFeature feature = template.getStateNode()
+                .getFeature(AttachTemplateChildFeature.class);
+        List<StateNode> templateNodes = new ArrayList<>();
+        feature.forEachChild(templateNodes::add);
+
+        Assert.assertEquals(2, templateNodes.size());
+        StateNode child1 = templateNodes.get(0);
+        StateNode child2 = templateNodes.get(1);
+        String tag = child1.getFeature(ElementData.class).getTag();
+        if ("child-template".equals(tag)) {
+            Assert.assertEquals("ffs",
+                    child2.getFeature(ElementData.class).getTag());
+        } else {
+            Assert.assertEquals("ffs",
+                    child1.getFeature(ElementData.class).getTag());
+            Assert.assertEquals("child-template",
+                    child2.getFeature(ElementData.class).getTag());
+        }
+
+        Set<Object> paths = new HashSet<>();
+        paths.add(convertIntArray((JsonArray) page.params.get(0)[3]));
+        paths.add(convertIntArray((JsonArray) page.params.get(1)[3]));
+
+        // check arrays of indices
+        Assert.assertTrue(paths.contains(Arrays.asList(0, 0)));
+        Assert.assertTrue(paths.contains(Arrays.asList(2)));
+    }
+
+    private void doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(
+            TextNodesInHtmlTemplate template) {
+        TestPage page = setupUI(template);
+
+        JsonArray path = (JsonArray) page.params.get(0)[3];
+
+        // check arrays of indices
+        Assert.assertEquals(1, path.length());
+        Assert.assertEquals(1, (int) path.get(0).asNumber());
+    }
+
+    private void doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
+            TemplateWithDomRepeat template) {
+        UI ui = new UI();
+        ui.add(template);
+
+        AttachTemplateChildFeature feature = template.getStateNode()
+                .getFeature(AttachTemplateChildFeature.class);
+        List<StateNode> templateNodes = new ArrayList<>();
+        feature.forEachChild(templateNodes::add);
+
+        Assert.assertEquals(1, templateNodes.size());
     }
 }

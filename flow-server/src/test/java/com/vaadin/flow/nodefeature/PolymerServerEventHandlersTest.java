@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
@@ -42,6 +43,8 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.server.VaadinService;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -117,7 +120,6 @@ public class PolymerServerEventHandlersTest {
     @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
-
         Collection<Class<? extends NodeFeature>> features = BasicElementStateProvider
                 .getFeatures();
         stateNode = new StateNode(features.toArray(new Class[features.size()]));
@@ -128,6 +130,14 @@ public class PolymerServerEventHandlersTest {
                 CorrectAnnotationUsage.class);
         wronglyAnnotatedHandlers = getEventHandlerNamesAndMethods(
                 WrongAnnotationUsage.class);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinService.setCurrent(service);
     }
 
     private void addAndVerifyMethod(Method method) {

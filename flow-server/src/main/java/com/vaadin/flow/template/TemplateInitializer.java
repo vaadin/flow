@@ -17,6 +17,7 @@ package com.vaadin.flow.template;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
+import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.CustomElementRegistry;
+import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
@@ -55,7 +58,57 @@ public class TemplateInitializer {
     // id to Element map
     private Map<String, Element> registeredCustomElements = new HashMap<String, Element>();
 
-    private final Function<String, Optional<String>> tagProvider;
+    @SuppressWarnings("rawtypes")
+    private static final ReflectionCache<PolymerTemplate, ParserData> CACHE = new ReflectionCache<>(
+            clazz -> new ParserData());
+
+    private boolean useCache;
+
+    private ParserData parseData;
+
+    private com.vaadin.external.jsoup.nodes.Element contentElement;
+
+    private static class SubTemplateData {
+        private String id;
+        private String tag;
+        private JsonArray path;
+
+        private SubTemplateData(String id, String tag, JsonArray path) {
+            this.id = id;
+            this.tag = tag;
+            this.path = path;
+        }
+    }
+
+    private static class ParserData
+            implements Function<String, Optional<String>> {
+
+        private final Map<String, String> tagById = new HashMap<>();
+
+        private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
+
+        @Override
+        public Optional<String> apply(String id) {
+            return Optional.ofNullable(tagById.get(id));
+        }
+
+        private void addTag(String id, String tag) {
+            if (isProduction()) {
+                tagById.put(id, tag);
+            }
+        }
+
+        private void addSubTemplate(String id, String tag, JsonArray path) {
+            if (isProduction()) {
+                subTemplates.add(new SubTemplateData(id, tag, path));
+            }
+        }
+
+        private boolean isProduction() {
+            return VaadinService.getCurrent().getDeploymentConfiguration()
+                    .isProductionMode();
+        }
+    }
 
     /**
      * Creates a new initializer instance.
@@ -69,8 +122,23 @@ public class TemplateInitializer {
             TemplateParser parser) {
         this.template = template;
 
-        tagProvider = parseTemplate(parser.getTemplateContent(
-                template.getClass(), getElement().getTag()));
+        boolean productionMode = VaadinService.getCurrent()
+                .getDeploymentConfiguration().isProductionMode();
+        useCache = CACHE.contains(template.getClass()) && productionMode;
+        if (productionMode) {
+            parseData = CACHE.get(template.getClass());
+        } else {
+            // always initialize parseData to avoid check against null
+            parseData = new ParserData();
+        }
+
+        if (useCache) {
+            createSubTemplates();
+        } else {
+            contentElement = parser.getTemplateContent(template.getClass(),
+                    getElement().getTag());
+            parseTemplate();
+        }
     }
 
     /**
@@ -92,15 +160,13 @@ public class TemplateInitializer {
         }
     }
 
-    private Function<String, Optional<String>> parseTemplate(
-            com.vaadin.external.jsoup.nodes.Element element) {
-        Elements templates = element.getElementsByTag("template");
+    private void parseTemplate() {
+        assert contentElement != null;
+        Elements templates = contentElement.getElementsByTag("template");
         if (!templates.isEmpty()) {
             inspectCustomElements(templates.get(0), templates.get(0),
                     registeredCustomElements);
         }
-        return id -> Optional.ofNullable(element.getElementById(id))
-                .map(com.vaadin.external.jsoup.nodes.Element::tagName);
     }
 
     private boolean isInsideTemplate(
@@ -127,30 +193,37 @@ public class TemplateInitializer {
                         + "sub-templates are not supported. Sub-template found: \n"
                         + element);
             }
-            StateNode customNode = BasicElementStateProvider
-                    .createStateNode(tag);
-            Element customElement = Element.get(customNode);
-            CustomElementRegistry.getInstance()
-                    .wrapElementIfNeeded(customElement);
 
-            if (element.hasAttr("id")) {
-                registeredCustomElements.put(element.attr("id"), customElement);
-            }
-
-            // make sure that shadow root is available
-            getShadowRoot();
-
-            StateNode stateNode = getElement().getNode();
-
-            stateNode.runWhenAttached(ui -> {
-                stateNode.getFeature(AttachTemplateChildFeature.class)
-                        .register(getElement(), customNode);
-                ui.getPage().executeJavaScript(
-                        "this.attachCustomElement($0, $1, $2, $3);",
-                        getElement(), tag, customNode.getId(),
-                        getPath(element, templateRoot));
-            });
+            String id = element.hasAttr("id") ? element.attr("id") : null;
+            JsonArray path = getPath(element, templateRoot);
+            assert !useCache;
+            parseData.addSubTemplate(id, tag, path);
+            doRequestAttachCustomElement(id, tag, path);
         }
+    }
+
+    private void doRequestAttachCustomElement(String id, String tag,
+            JsonArray path) {
+        StateNode customNode = BasicElementStateProvider.createStateNode(tag);
+        Element customElement = Element.get(customNode);
+        CustomElementRegistry.getInstance().wrapElementIfNeeded(customElement);
+
+        if (id != null) {
+            registeredCustomElements.put(id, customElement);
+        }
+
+        // make sure that shadow root is available
+        getShadowRoot();
+
+        StateNode stateNode = getElement().getNode();
+
+        stateNode.runWhenAttached(ui -> {
+            stateNode.getFeature(AttachTemplateChildFeature.class)
+                    .register(getElement(), customNode);
+            ui.getPage().executeJavaScript(
+                    "this.attachCustomElement($0, $1, $2, $3);", getElement(),
+                    tag, customNode.getId(), path);
+        });
     }
 
     private JsonArray getPath(com.vaadin.external.jsoup.nodes.Element element,
@@ -195,13 +268,11 @@ public class TemplateInitializer {
                 .filter(field -> !field.isSynthetic());
 
         annotatedComponentFields
-                .forEach(field -> tryMapComponentOrElement(field, tagProvider,
+                .forEach(field -> tryMapComponentOrElement(field,
                         registeredCustomElements));
     }
 
-    @SuppressWarnings("unchecked")
     private void tryMapComponentOrElement(Field field,
-            Function<String, Optional<String>> tagProvider,
             Map<String, Element> registeredCustomElements) {
         Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
                 Id.class);
@@ -209,7 +280,8 @@ public class TemplateInitializer {
             return;
         }
         String id = idAnnotation.get().value();
-        Optional<String> tagName = tagProvider.apply(id);
+
+        Optional<String> tagName = getTagName(id);
         if (!tagName.isPresent()) {
             throw new IllegalStateException(String.format(
                     "There is no element with "
@@ -224,6 +296,20 @@ public class TemplateInitializer {
                     registeredCustomElements);
         } else {
             injectServerSideElement(element, field);
+        }
+    }
+
+    private Optional<String> getTagName(String id) {
+        if (useCache) {
+            return parseData.apply(id);
+        } else {
+            Optional<String> tag = Optional
+                    .ofNullable(contentElement.getElementById(id))
+                    .map(com.vaadin.external.jsoup.nodes.Element::tagName);
+            if (tag.isPresent()) {
+                parseData.addTag(id, tag.get());
+            }
+            return tag;
         }
     }
 
@@ -345,6 +431,12 @@ public class TemplateInitializer {
 
             throw new IllegalArgumentException(msg);
         }
+    }
+
+    private void createSubTemplates() {
+        parseData.subTemplates
+                .forEach(data -> doRequestAttachCustomElement(data.id, data.tag,
+                        data.path));
     }
 
 }

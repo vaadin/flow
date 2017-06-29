@@ -10,8 +10,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.annotations.Exclude;
 import com.vaadin.annotations.Include;
@@ -22,6 +25,8 @@ import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.server.VaadinService;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
@@ -444,6 +449,23 @@ public class TemplateModelTest {
             return super.getModel();
         }
 
+    }
+
+    @Before
+    public void setUp() {
+        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService service = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinService.setCurrent(service);
+    }
+
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
     }
 
     @Test
