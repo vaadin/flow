@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -104,18 +104,18 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String lazyCssUrl = "https://foo.bar/style.css";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(lazyJsUrl, DependencyList.TYPE_JAVASCRIPT,
+                createDependency(lazyJsUrl, Dependency.Type.JAVASCRIPT,
                         LoadMode.LAZY),
                 createDependency(lazyHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, LoadMode.LAZY),
-                createDependency(lazyCssUrl, DependencyList.TYPE_STYLESHEET,
+                        Dependency.Type.HTML_IMPORT, LoadMode.LAZY),
+                createDependency(lazyCssUrl, Dependency.Type.STYLESHEET,
                         LoadMode.LAZY),
 
-                createDependency(eagerJsUrl, DependencyList.TYPE_JAVASCRIPT,
+                createDependency(eagerJsUrl, Dependency.Type.JAVASCRIPT,
                         LoadMode.EAGER),
                 createDependency(eagerHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, LoadMode.EAGER),
-                createDependency(eagerCssUrl, DependencyList.TYPE_STYLESHEET,
+                        Dependency.Type.HTML_IMPORT, LoadMode.EAGER),
+                createDependency(eagerCssUrl, Dependency.Type.STYLESHEET,
                         LoadMode.EAGER)));
 
         assertEquals(Arrays.asList(eagerJsUrl, lazyJsUrl),
@@ -139,15 +139,15 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String htmlUrl2 = "2.html";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT, LoadMode.LAZY),
-                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT, LoadMode.LAZY),
-                createDependency(cssUrl1, DependencyList.TYPE_STYLESHEET,
+                createDependency(jsUrl1, Dependency.Type.JAVASCRIPT, LoadMode.LAZY),
+                createDependency(jsUrl2, Dependency.Type.JAVASCRIPT, LoadMode.LAZY),
+                createDependency(cssUrl1, Dependency.Type.STYLESHEET,
                         LoadMode.LAZY),
-                createDependency(cssUrl2, DependencyList.TYPE_STYLESHEET,
+                createDependency(cssUrl2, Dependency.Type.STYLESHEET,
                         LoadMode.LAZY),
-                createDependency(htmlUrl1, DependencyList.TYPE_HTML_IMPORT,
+                createDependency(htmlUrl1, Dependency.Type.HTML_IMPORT,
                         LoadMode.LAZY),
-                createDependency(htmlUrl2, DependencyList.TYPE_HTML_IMPORT,
+                createDependency(htmlUrl2, Dependency.Type.HTML_IMPORT,
                         LoadMode.LAZY)));
 
         assertEquals(
@@ -174,12 +174,12 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         return result;
     }
 
-    private JsonObject createDependency(String url, String type,
+    private JsonObject createDependency(String url, Dependency.Type type,
                                         LoadMode loadMode) {
         JsonObject dependency = Json.createObject();
-        dependency.put(DependencyList.KEY_TYPE, type);
-        dependency.put(DependencyList.KEY_URL, url);
-        dependency.put(DependencyList.KEY_LOAD_MODE, loadMode.name());
+        dependency.put(Dependency.KEY_TYPE, type.name());
+        dependency.put(Dependency.KEY_URL, url);
+        dependency.put(Dependency.KEY_LOAD_MODE, loadMode.name());
         return dependency;
     }
 

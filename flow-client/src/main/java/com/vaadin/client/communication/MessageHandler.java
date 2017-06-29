@@ -40,8 +40,9 @@ import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.DependencyList;
+import com.vaadin.shared.ui.LoadMode;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -104,7 +105,7 @@ public class MessageHandler {
      *
      * Note: also used for tracking whether the first UIDL has been handled
      */
-    private int bootstrapTime = 0;
+    private int bootstrapTime;
 
     /**
      * Holds the timing information from the server-side. How much time was
@@ -130,7 +131,7 @@ public class MessageHandler {
     private int lastSeenServerSyncId = UNDEFINED_SYNC_ID;
     private final Registry registry;
 
-    private boolean initialMessageHandled = false;
+    private boolean initialMessageHandled;
 
     /**
      * Timer used to make sure that no misbehaving components can delay response
@@ -142,7 +143,7 @@ public class MessageHandler {
             forceMessageHandling();
         }
     };
-    private Command nextResponseSessionExpiredHandler = null;
+    private Command nextResponseSessionExpiredHandler;
 
     /**
      * Data structure holding information about pending UIDL messages.
@@ -298,12 +299,7 @@ public class MessageHandler {
                     .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
 
-        Console.log("Handling dependencies");
-        if (valueMap.containsKey(DependencyList.DEPENDENCY_KEY)) {
-            JsonArray deps = ((JsonObject) valueMap.cast())
-                    .getArray(DependencyList.DEPENDENCY_KEY);
-            registry.getDependencyLoader().loadDependencies(deps);
-        }
+        handleDependencies(valueMap.cast());
 
         if (!initialMessageHandled) {
             /*
@@ -328,6 +324,23 @@ public class MessageHandler {
                 DomApi::updateApiImplementation);
         DependencyLoader.runWhenEagerDependenciesLoaded(
                 () -> processMessage(valueMap, lock, start));
+    }
+
+    private void handleDependencies(JsonObject inputJson) {
+        Console.log("Handling dependencies");
+        JsonArray dependencies = Json.createArray();
+        for (LoadMode loadMode : LoadMode.values()) {
+            if (inputJson.hasKey(loadMode.name())) {
+                JsonArray newDependencies = inputJson.getArray(loadMode.name());
+                for (int i = 0; i < newDependencies.length(); i++) {
+                    dependencies.set(dependencies.length(), newDependencies.getObject(i));
+                }
+            }
+        }
+
+        if (dependencies.length() > 0) {
+            registry.getDependencyLoader().loadDependencies(dependencies);
+        }
     }
 
     /**

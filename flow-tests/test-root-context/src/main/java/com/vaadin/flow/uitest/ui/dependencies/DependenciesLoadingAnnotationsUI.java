@@ -10,6 +10,9 @@ import com.vaadin.shared.ui.LoadMode;
  *
  * @author Vaadin Ltd.
  */
+@JavaScript(value = "/com/vaadin/flow/uitest/ui/dependencies/inline.js", loadMode = LoadMode.INLINE)
+@StyleSheet(value = "/com/vaadin/flow/uitest/ui/dependencies/inline.css", loadMode = LoadMode.INLINE)
+@HtmlImport(value = "/com/vaadin/flow/uitest/ui/dependencies/inline.html", loadMode = LoadMode.INLINE)
 @JavaScript(value = "/com/vaadin/flow/uitest/ui/dependencies/lazy.js", loadMode = LoadMode.LAZY)
 @StyleSheet(value = "/com/vaadin/flow/uitest/ui/dependencies/lazy.css", loadMode = LoadMode.LAZY)
 @HtmlImport(value = "/com/vaadin/flow/uitest/ui/dependencies/lazy.html", loadMode = LoadMode.LAZY)

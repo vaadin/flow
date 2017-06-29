@@ -24,8 +24,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -87,7 +87,7 @@ public class DependencyLoaderTest {
         String TEST_URL = "http://foo.bar/baz";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(TEST_URL, DependencyList.TYPE_STYLESHEET)));
+                createDependency(TEST_URL, Dependency.Type.STYLESHEET)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingStyles);
@@ -98,7 +98,7 @@ public class DependencyLoaderTest {
         String TEST_URL = "http://foo.bar/baz.js";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(TEST_URL, DependencyList.TYPE_JAVASCRIPT)));
+                createDependency(TEST_URL, Dependency.Type.JAVASCRIPT)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingScripts);
@@ -109,7 +109,7 @@ public class DependencyLoaderTest {
         String TEST_URL = "http://foo.bar/baz.html";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(TEST_URL, DependencyList.TYPE_HTML_IMPORT)));
+                createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingHtml);
@@ -122,10 +122,10 @@ public class DependencyLoaderTest {
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(TEST_JS_URL, DependencyList.TYPE_JAVASCRIPT),
-                createDependency(TEST_JS_URL2, DependencyList.TYPE_JAVASCRIPT),
+                createDependency(TEST_JS_URL, Dependency.Type.JAVASCRIPT),
+                createDependency(TEST_JS_URL2, Dependency.Type.JAVASCRIPT),
                 createDependency(TEST_CSS_URL,
-                        DependencyList.TYPE_STYLESHEET)));
+                        Dependency.Type.STYLESHEET)));
 
         assertEquals(Arrays.asList(TEST_JS_URL, TEST_JS_URL2),
                 mockResourceLoader.loadingScripts);
@@ -143,7 +143,7 @@ public class DependencyLoaderTest {
         config.setFrontendRootUrl("http://someplace.com/es6/");
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(TEST_URL, DependencyList.TYPE_HTML_IMPORT)));
+                createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
 
         assertEquals(
                 Collections.singletonList(
@@ -162,7 +162,7 @@ public class DependencyLoaderTest {
         config.setContextRootUrl("http://someplace.com/");
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(TEST_URL, DependencyList.TYPE_HTML_IMPORT)));
+                createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
 
         assertEquals(
                 Collections.singletonList(
@@ -184,12 +184,12 @@ public class DependencyLoaderTest {
         String htmlUrl2 = "2.html";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT),
-                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT),
-                createDependency(cssUrl1, DependencyList.TYPE_STYLESHEET),
-                createDependency(cssUrl2, DependencyList.TYPE_STYLESHEET),
-                createDependency(htmlUrl1, DependencyList.TYPE_HTML_IMPORT),
-                createDependency(htmlUrl2, DependencyList.TYPE_HTML_IMPORT)));
+                createDependency(jsUrl1, Dependency.Type.JAVASCRIPT),
+                createDependency(jsUrl2, Dependency.Type.JAVASCRIPT),
+                createDependency(cssUrl1, Dependency.Type.STYLESHEET),
+                createDependency(cssUrl2, Dependency.Type.STYLESHEET),
+                createDependency(htmlUrl1, Dependency.Type.HTML_IMPORT),
+                createDependency(htmlUrl2, Dependency.Type.HTML_IMPORT)));
 
         assertEquals(
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
@@ -207,11 +207,11 @@ public class DependencyLoaderTest {
                 mockResourceLoader.loadingHtml);
     }
 
-    private JsonObject createDependency(String url, String type) {
+    private JsonObject createDependency(String url, Dependency.Type type) {
         JsonObject dependency = Json.createObject();
-        dependency.put(DependencyList.KEY_TYPE, type);
-        dependency.put(DependencyList.KEY_URL, url);
-        dependency.put(DependencyList.KEY_LOAD_MODE, LoadMode.EAGER.name());
+        dependency.put(Dependency.KEY_TYPE, type.name());
+        dependency.put(Dependency.KEY_URL, url);
+        dependency.put(Dependency.KEY_LOAD_MODE, LoadMode.EAGER.name());
         return dependency;
     }
 

@@ -51,5 +51,11 @@ public enum LoadMode {
      * It is guaranteed that all {@link LoadMode#EAGER} dependencies are loaded
      * before any {@link LoadMode#LAZY} dependency.
      */
-    LAZY
+    LAZY,
+
+    /**
+     * Forced the dependency to be inlined in the body of the html page,
+     * removing the requirement to have additional roundtrips to fetch the script.
+     */
+    INLINE
 }

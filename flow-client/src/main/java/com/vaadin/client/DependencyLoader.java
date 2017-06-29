@@ -24,8 +24,8 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.DependencyList;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -135,7 +135,7 @@ public class DependencyLoader {
      */
     private static void endEagerDependencyLoading() {
         eagerDependenciesLoading--;
-        if (eagerDependenciesLoading == 0 && callbacks.length() != 0) {
+        if (eagerDependenciesLoading == 0 && !callbacks.isEmpty()) {
             try {
                 for (int i = 0; i < callbacks.length(); i++) {
                     Command cmd = callbacks.get(i);
@@ -160,15 +160,17 @@ public class DependencyLoader {
 
         for (int i = 0; i < deps.length(); i++) {
             JsonObject dependencyJson = deps.getObject(i);
-            String url = dependencyJson.getString(DependencyList.KEY_URL);
+            String url = dependencyJson.hasKey(Dependency.KEY_URL) ?
+                    dependencyJson.getString(Dependency.KEY_URL) : null;
             LoadMode loadMode = LoadMode.valueOf(
-                    dependencyJson.getString(DependencyList.KEY_LOAD_MODE));
-            BiConsumer<String, ResourceLoadListener> loader = getResourceLoader(
-                    dependencyJson.getString(DependencyList.KEY_TYPE));
-            if (loadMode == LoadMode.EAGER) {
-                loadDependency(url, true, loader);
-            } else {
+                    dependencyJson.getString(Dependency.KEY_LOAD_MODE));
+            Dependency.Type type = Dependency.Type.valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+            BiConsumer<String, ResourceLoadListener> loader = getResourceLoader(type);
+            if (loadMode == LoadMode.LAZY) {
                 lazyDependencies.put(url, loader);
+            } else {
+                // TODO kirill take care of inline dependencies
+                loadDependency(url, true, loader);
             }
         }
 
@@ -188,19 +190,19 @@ public class DependencyLoader {
     }
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(
-            String resourceType) {
+            Dependency.Type resourceType) {
         ResourceLoader resourceLoader = registry.getResourceLoader();
         switch (resourceType) {
-        case DependencyList.TYPE_STYLESHEET:
-            return resourceLoader::loadStylesheet;
-        case DependencyList.TYPE_HTML_IMPORT:
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
+            case STYLESHEET:
+                return resourceLoader::loadStylesheet;
+            case HTML_IMPORT:
+                return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadHtml(scriptUrl, resourceLoadListener, false);
-        case DependencyList.TYPE_JAVASCRIPT:
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
+            case JAVASCRIPT:
+                return (scriptUrl, resourceLoadListener) -> resourceLoader
                     .loadScript(scriptUrl, resourceLoadListener, false, true);
-        default:
-            throw new IllegalArgumentException(
+            default:
+                throw new IllegalArgumentException(
                     "Unknown dependency type " + resourceType);
         }
     }

@@ -16,13 +16,25 @@
 
 package com.vaadin.server.communication;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateTree;
@@ -36,9 +48,12 @@ import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
@@ -108,12 +123,8 @@ public class UidlWriter implements Serializable {
 
         encodeChanges(ui, stateChanges, templates);
 
-        DependencyList dependencyList = uiInternals.getDependencyList();
-        JsonArray pendingDeps = dependencyList.getPendingSendToClient();
-        if (pendingDeps.length() != 0) {
-            response.put(DependencyList.DEPENDENCY_KEY, pendingDeps);
-            dependencyList.clearPendingSendToClient();
-        }
+        populateDependencies(response, uiInternals.getDependencyList());
+
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.put("constants",
                     uiInternals.getConstantPool().dumpConstants());
@@ -137,6 +148,76 @@ public class UidlWriter implements Serializable {
         }
         uiInternals.incrementServerId();
         return response;
+    }
+
+    private static void populateDependencies(JsonObject response,
+            DependencyList dependencyList) {
+        Collection<Dependency> pendingSendToClient = dependencyList
+                .getPendingSendToClient();
+        if (!pendingSendToClient.isEmpty()) {
+            groupDependenciesByLoadMode(pendingSendToClient)
+                    .forEach((loadMode, dependencies) -> response
+                            .put(loadMode.name(), dependencies));
+            dependencyList.clearPendingSendToClient();
+        }
+    }
+
+    private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(
+            Collection<Dependency> dependencies) {
+        Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
+        dependencies
+                .forEach(dependency -> result.merge(dependency.getLoadMode(),
+                        JsonUtils.createArray(dependencyToJson(dependency)),
+                        JsonUtils.asArray().combiner()));
+        return result;
+    }
+
+    private static JsonObject dependencyToJson(Dependency dependency) {
+        JsonObject dependencyJson = dependency.toJson();
+        if (dependency.getLoadMode() == LoadMode.INLINE) {
+            dependencyJson.put(Dependency.KEY_CONTENTS,
+                    getDependencyContents(dependency.getUrl()));
+            dependencyJson.remove(Dependency.KEY_URL);
+        }
+        return dependencyJson;
+    }
+
+    private static String getDependencyContents(String url) {
+        HttpServletRequest currentRequest = ((VaadinServletRequest) VaadinService
+                .getCurrentRequest()).getHttpServletRequest();
+        Charset requestCharset = Charset.forName(
+                Optional.ofNullable(currentRequest.getCharacterEncoding())
+                        .filter(s -> !s.isEmpty()).orElse("utf-8"));
+
+        try (InputStream inlineResourceStream = getInlineResourceStream(url, currentRequest);
+             BufferedReader bf = new BufferedReader(new InputStreamReader(
+                     inlineResourceStream, requestCharset))) {
+            return bf.lines().collect(Collectors.joining(System.lineSeparator()));
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                    String.format("Could not read url %s contents", url), e);
+        }
+    }
+
+    private static InputStream getInlineResourceStream(String url,
+            HttpServletRequest currentRequest) {
+        InputStream stream = currentRequest.getServletContext()
+                .getResourceAsStream(url);
+        if (stream == null) {
+            try {
+                stream = new URL(url).openConnection().getInputStream();
+            } catch (IOException e) {
+                throw new IllegalArgumentException(
+                        String.format("Could not read url %s contents", url),
+                        e);
+            }
+        }
+
+        if (stream == null) {
+            throw new IllegalArgumentException(
+                    String.format("Could not read url %s contents", url));
+        }
+        return stream;
     }
 
     // non-private for testing purposes

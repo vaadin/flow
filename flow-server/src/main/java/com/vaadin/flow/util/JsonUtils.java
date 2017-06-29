@@ -186,7 +186,10 @@ public final class JsonUtils {
      * @return a stream of JSON values
      */
     public static <T extends JsonValue> Stream<T> stream(JsonArray array) {
-        assert array != null;
+        if (array == null) {
+            return Stream.empty();
+        }
+
         return new AbstractList<T>() {
             @Override
             public T get(int index) {
