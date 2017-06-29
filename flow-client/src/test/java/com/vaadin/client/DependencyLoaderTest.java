@@ -20,7 +20,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -86,7 +88,7 @@ public class DependencyLoaderTest {
     public void loadStylesheet() {
         String TEST_URL = "http://foo.bar/baz";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(TEST_URL, Dependency.Type.STYLESHEET)));
 
         assertEquals(Collections.singletonList(TEST_URL),
@@ -97,7 +99,7 @@ public class DependencyLoaderTest {
     public void loadScript() {
         String TEST_URL = "http://foo.bar/baz.js";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(TEST_URL, Dependency.Type.JAVASCRIPT)));
 
         assertEquals(Collections.singletonList(TEST_URL),
@@ -108,7 +110,7 @@ public class DependencyLoaderTest {
     public void loadHtml() {
         String TEST_URL = "http://foo.bar/baz.html";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
 
         assertEquals(Collections.singletonList(TEST_URL),
@@ -121,7 +123,7 @@ public class DependencyLoaderTest {
         String TEST_JS_URL2 = "my.js";
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(TEST_JS_URL, Dependency.Type.JAVASCRIPT),
                 createDependency(TEST_JS_URL2, Dependency.Type.JAVASCRIPT),
                 createDependency(TEST_CSS_URL,
@@ -142,7 +144,7 @@ public class DependencyLoaderTest {
         registry.set(ApplicationConfiguration.class, config);
         config.setFrontendRootUrl("http://someplace.com/es6/");
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
 
         assertEquals(
@@ -161,7 +163,7 @@ public class DependencyLoaderTest {
         config.setFrontendRootUrl("context://es6/");
         config.setContextRootUrl("http://someplace.com/");
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
 
         assertEquals(
@@ -183,7 +185,7 @@ public class DependencyLoaderTest {
         String htmlUrl1 = "1.html";
         String htmlUrl2 = "2.html";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(jsUrl1, Dependency.Type.JAVASCRIPT),
                 createDependency(jsUrl2, Dependency.Type.JAVASCRIPT),
                 createDependency(cssUrl1, Dependency.Type.STYLESHEET),
@@ -215,11 +217,22 @@ public class DependencyLoaderTest {
         return dependency;
     }
 
-    private JsonArray createJsonArray(JsonObject... contents) {
-        JsonArray result = Json.createArray();
-        for (int i = 0; i < contents.length; i++) {
-            result.set(i, contents[i]);
+    private Map<LoadMode, JsonArray> createDependenciesMap(JsonObject... dependencies) {
+        Map<LoadMode, JsonArray> result = new HashMap<>();
+        for (int i = 0; i < dependencies.length; i++) {
+            JsonObject dependency = dependencies[i];
+            LoadMode loadMode = LoadMode.valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
+            JsonArray jsonArray = Json.createArray();
+            jsonArray.set(0, dependency);
+            result.merge(loadMode, jsonArray, this::mergeArrays);
         }
         return result;
+    }
+
+    private JsonArray mergeArrays(JsonArray jsonArray1, JsonArray jsonArray2) {
+        for (int i = 0; i < jsonArray2.length(); i++) {
+            jsonArray1.set(jsonArray1.length(), jsonArray2.getObject(i));
+        }
+        return jsonArray1;
     }
 }

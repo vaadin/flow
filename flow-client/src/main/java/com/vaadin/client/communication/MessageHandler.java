@@ -16,6 +16,8 @@
 package com.vaadin.client.communication;
 
 import java.util.Date;
+import java.util.EnumMap;
+import java.util.Map;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
@@ -42,7 +44,6 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.LoadMode;
 
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -328,17 +329,14 @@ public class MessageHandler {
 
     private void handleDependencies(JsonObject inputJson) {
         Console.log("Handling dependencies");
-        JsonArray dependencies = Json.createArray();
+        Map<LoadMode, JsonArray> dependencies = new EnumMap<>(LoadMode.class);
         for (LoadMode loadMode : LoadMode.values()) {
             if (inputJson.hasKey(loadMode.name())) {
-                JsonArray newDependencies = inputJson.getArray(loadMode.name());
-                for (int i = 0; i < newDependencies.length(); i++) {
-                    dependencies.set(dependencies.length(), newDependencies.getObject(i));
-                }
+                dependencies.put(loadMode, inputJson.getArray(loadMode.name()));
             }
         }
 
-        if (dependencies.length() > 0) {
+        if (!dependencies.isEmpty()) {
             registry.getDependencyLoader().loadDependencies(dependencies);
         }
     }

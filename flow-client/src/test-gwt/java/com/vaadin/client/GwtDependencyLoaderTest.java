@@ -17,7 +17,9 @@ package com.vaadin.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
 import com.vaadin.shared.ui.Dependency;
@@ -103,7 +105,7 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String lazyHtmlUrl = "https://foo.bar/page.html";
         String lazyCssUrl = "https://foo.bar/style.css";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(lazyJsUrl, Dependency.Type.JAVASCRIPT,
                         LoadMode.LAZY),
                 createDependency(lazyHtmlUrl,
@@ -138,7 +140,7 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String htmlUrl1 = "1.html";
         String htmlUrl2 = "2.html";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createDependency(jsUrl1, Dependency.Type.JAVASCRIPT, LoadMode.LAZY),
                 createDependency(jsUrl2, Dependency.Type.JAVASCRIPT, LoadMode.LAZY),
                 createDependency(cssUrl1, Dependency.Type.STYLESHEET,
@@ -166,12 +168,23 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 mockResourceLoader.loadingHtml);
     }
 
-    private JsonArray createJsonArray(JsonObject... contents) {
-        JsonArray result = Json.createArray();
-        for (int i = 0; i < contents.length; i++) {
-            result.set(i, contents[i]);
+    private Map<LoadMode, JsonArray> createDependenciesMap(JsonObject... dependencies) {
+        Map<LoadMode, JsonArray> result = new HashMap<>();
+        for (int i = 0; i < dependencies.length; i++) {
+            JsonObject dependency = dependencies[i];
+            LoadMode loadMode = LoadMode.valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
+            JsonArray jsonArray = Json.createArray();
+            jsonArray.set(0, dependency);
+            result.merge(loadMode, jsonArray, this::mergeArrays);
         }
         return result;
+    }
+
+    private JsonArray mergeArrays(JsonArray jsonArray1, JsonArray jsonArray2) {
+        for (int i = 0; i < jsonArray2.length(); i++) {
+            jsonArray1.set(jsonArray1.length(), jsonArray2.getObject(i));
+        }
+        return jsonArray1;
     }
 
     private JsonObject createDependency(String url, Dependency.Type type,

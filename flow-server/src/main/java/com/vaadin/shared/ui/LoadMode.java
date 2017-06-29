@@ -46,7 +46,6 @@ public enum LoadMode {
      * Allows the dependency being loaded independent of the initial page load.
      * This mode is suitable for situation when the application have no strict
      * requirements on dependency load time.
-     *
      * <p>
      * It is guaranteed that all {@link LoadMode#EAGER} dependencies are loaded
      * before any {@link LoadMode#LAZY} dependency.
@@ -56,6 +55,9 @@ public enum LoadMode {
     /**
      * Forced the dependency to be inlined in the body of the html page,
      * removing the requirement to have additional roundtrips to fetch the script.
+     * <p>
+     * It is guaranteed that all {@link LoadMode#INLINE} dependencies are loaded
+     * before any {@link LoadMode#LAZY} dependency.
      */
     INLINE
 }
