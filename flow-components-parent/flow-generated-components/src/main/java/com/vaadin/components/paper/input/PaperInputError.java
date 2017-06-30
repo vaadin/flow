@@ -52,6 +52,9 @@ public class PaperInputError<R extends PaperInputError<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the error is showing.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);

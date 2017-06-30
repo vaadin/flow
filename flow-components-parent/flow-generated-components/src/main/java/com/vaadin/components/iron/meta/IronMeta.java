@@ -74,6 +74,9 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The type of meta-data. All meta-data of the same type is stored together.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getType() {
 		return getElement().getProperty("type");
@@ -96,6 +99,9 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The key used to store {@code value} under the {@code type} namespace.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getKey() {
 		return getElement().getProperty("key");
@@ -118,6 +124,9 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The meta-data to store or retrieve.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -141,6 +150,9 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, {@code value} is set to the iron-meta instance itself.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isSelf() {
 		return getElement().getProperty("self", false);
@@ -159,6 +171,10 @@ public class IronMeta<R extends IronMeta<R>> extends Component {
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public JsonObject getList() {
 		return (JsonObject) getElement().getPropertyRaw("list");
 	}

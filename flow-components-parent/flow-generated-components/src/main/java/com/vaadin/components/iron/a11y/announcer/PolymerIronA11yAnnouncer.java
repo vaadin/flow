@@ -63,6 +63,9 @@ public class PolymerIronA11yAnnouncer<R extends PolymerIronA11yAnnouncer<R>>
 	 * The value of mode is used to set the {@code aria-live} attribute for the
 	 * element that will be announced. Valid values are: {@code off},
 	 * {@code polite} and {@code assertive}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getMode() {
 		return getElement().getProperty("mode");

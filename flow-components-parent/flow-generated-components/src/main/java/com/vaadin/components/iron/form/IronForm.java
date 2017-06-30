@@ -99,6 +99,9 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * Set this to true if you don't want the form to be submitted through an
 	 * ajax request, and you want the page to redirect to the action URL after
 	 * the form has been submitted.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAllowRedirect() {
 		return getElement().getProperty("allowRedirect", false);
@@ -124,6 +127,9 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * 
 	 * HTTP request headers to send. See PolymerElements/iron-ajax for more
 	 * details. Only works when {@code allowRedirect} is false.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getHeaders() {
 		return (JsonObject) getElement().getPropertyRaw("headers");
@@ -149,6 +155,9 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * Set the {@code withCredentials} flag on the request. See
 	 * PolymerElements/iron-ajax for more details. Only works when
 	 * {@code allowRedirect} is false.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isWithCredentials() {
 		return getElement().getProperty("withCredentials", false);

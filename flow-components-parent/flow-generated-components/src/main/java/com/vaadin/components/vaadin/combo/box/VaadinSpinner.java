@@ -27,6 +27,10 @@ import com.vaadin.annotations.HtmlImport;
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
 public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component {
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
 	}

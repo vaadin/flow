@@ -34,6 +34,9 @@ public class VaadinComboBoxItem<R extends VaadinComboBoxItem<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The index of the item
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getIndex() {
 		return getElement().getProperty("index", 0.0);
@@ -56,6 +59,9 @@ public class VaadinComboBoxItem<R extends VaadinComboBoxItem<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The item to render
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getItemString() {
 		return getElement().getProperty("item");
@@ -65,6 +71,9 @@ public class VaadinComboBoxItem<R extends VaadinComboBoxItem<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The item to render
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getItemObject() {
 		return (JsonObject) getElement().getPropertyRaw("item");
@@ -100,6 +109,9 @@ public class VaadinComboBoxItem<R extends VaadinComboBoxItem<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The text label corresponding to the item
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -122,6 +134,9 @@ public class VaadinComboBoxItem<R extends VaadinComboBoxItem<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True when item is selected
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isSelected() {
 		return getElement().getProperty("selected", false);
@@ -144,6 +159,9 @@ public class VaadinComboBoxItem<R extends VaadinComboBoxItem<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True when item is focused
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);

@@ -64,6 +64,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "focused-changed" event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -87,6 +90,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "disabled-changed" event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -111,6 +117,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -135,6 +144,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -161,6 +173,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * To be used to express what combination of keys will trigger the relative
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
@@ -187,6 +202,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * default it is the same as {@code this}, but it can be set to a child
 	 * element. This is useful, for example, for implementing a scrolling region
 	 * inside the element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSizingTarget() {
 		return (JsonObject) getElement().getPropertyRaw("sizingTarget");
@@ -212,6 +230,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The element to fit {@code this} into.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getFitInto() {
 		return (JsonObject) getElement().getPropertyRaw("fitInto");
@@ -235,6 +256,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * Will position the element around the positionTarget without overlapping
 	 * it.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoOverlap() {
 		return getElement().getProperty("noOverlap", false);
@@ -259,6 +283,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * The element that should be used to position the element. If not set, it
 	 * will default to the parent node.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
@@ -284,6 +311,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * The orientation against which to align the dropdown content horizontally
 	 * relative to the dropdown trigger. Overridden from
 	 * {@code Polymer.IronFitBehavior}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
@@ -311,6 +341,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * The orientation against which to align the dropdown content vertically
 	 * relative to the dropdown trigger. Overridden from
 	 * {@code Polymer.IronFitBehavior}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
@@ -338,6 +371,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * If true, it will use {@code horizontalAlign} and {@code verticalAlign}
 	 * values as preferred alignment and if there's not enough space, it will
 	 * pick the values which minimize the cropping.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDynamicAlign() {
 		return getElement().getProperty("dynamicAlign", false);
@@ -374,6 +410,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * increase or decrease the distance to the right side of the screen: a
 	 * negative offset will move the dropdown to the right; a positive one, to
 	 * the left.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getHorizontalOffset() {
 		return getElement().getProperty("horizontalOffset", 0.0);
@@ -420,6 +459,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * increase or decrease the distance to the bottom side of the screen: a
 	 * negative offset will move the dropdown downwards; a positive one,
 	 * upwards.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getVerticalOffset() {
 		return getElement().getProperty("verticalOffset", 0.0);
@@ -454,6 +496,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to auto-fit on attach.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutoFitOnAttach() {
 		return getElement().getProperty("autoFitOnAttach", false);
@@ -476,6 +521,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the overlay is currently displayed.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "opened-changed" event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -499,6 +547,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the overlay was canceled when it was last closed.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isCanceled() {
 		return getElement().getProperty("canceled", false);
@@ -522,6 +573,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * Set to true to display a backdrop behind the overlay. It traps the focus
 	 * within the light DOM of the overlay.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isWithBackdrop() {
 		return getElement().getProperty("withBackdrop", false);
@@ -546,6 +600,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * Set to true to disable auto-focusing the overlay or child nodes with the
 	 * {@code autofocus} attribute` when the overlay is opened.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoAutoFocus() {
 		return getElement().getProperty("noAutoFocus", false);
@@ -569,6 +626,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable canceling the overlay with the ESC key.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoCancelOnEscKey() {
 		return getElement().getProperty("noCancelOnEscKey", false);
@@ -591,6 +651,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable canceling the overlay by clicking outside it.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoCancelOnOutsideClick() {
 		return getElement().getProperty("noCancelOnOutsideClick", false);
@@ -617,6 +680,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * {@code iron-overlay-closed}). {@code IronOverlayBehavior} provides the
 	 * {@code canceled} reason; implementers of the behavior can provide other
 	 * reasons in addition to {@code canceled}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getClosingReason() {
 		return (JsonObject) getElement().getPropertyRaw("closingReason");
@@ -642,6 +708,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to enable restoring of focus when overlay is closed.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRestoreFocusOnClose() {
 		return getElement().getProperty("restoreFocusOnClose", false);
@@ -664,6 +733,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to keep overlay always on top.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAlwaysOnTop() {
 		return getElement().getProperty("alwaysOnTop", false);
@@ -686,6 +758,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Animation configuration. See README for more info.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
@@ -710,6 +785,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Convenience property for setting an 'entry' animation. Do not set
 	 * {@code animationConfig.entry} manually if using this. The animated node
 	 * is set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getEntryAnimation() {
 		return getElement().getProperty("entryAnimation");
@@ -737,6 +815,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Convenience property for setting an 'exit' animation. Do not set
 	 * {@code animationConfig.exit} manually if using this. The animated node is
 	 * set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getExitAnimation() {
 		return getElement().getProperty("exitAnimation");
@@ -765,6 +846,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * opening of the dropdown. Pass an Array for multiple animations. See
 	 * {@code neon-animation} documentation for more animation configuration
 	 * details.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getOpenAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("openAnimationConfig");
@@ -795,6 +879,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * closing of the dropdown. Pass an Array for multiple animations. See
 	 * {@code neon-animation} documentation for more animation configuration
 	 * details.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getCloseAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("closeAnimationConfig");
@@ -823,6 +910,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * If provided, this will be the element that will be focused when the
 	 * dropdown opens.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getFocusTarget() {
 		return (JsonObject) getElement().getPropertyRaw("focusTarget");
@@ -846,6 +936,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable animations when opening and closing the dropdown.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoAnimations() {
 		return getElement().getProperty("noAnimations", false);
@@ -870,6 +963,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * By default, the dropdown will constrain scrolling on the page to itself
 	 * when opened. Set to true in order to prevent scroll from being
 	 * constrained to the dropdown when it opens.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAllowOutsideScroll() {
 		return getElement().getProperty("allowOutsideScroll", false);
@@ -894,6 +990,9 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The element that is contained by the dropdown, if any.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getContainedElement() {
 		return (JsonObject) getElement().getPropertyRaw("containedElement");

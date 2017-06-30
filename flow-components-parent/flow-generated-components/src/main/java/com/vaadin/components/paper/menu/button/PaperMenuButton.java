@@ -82,6 +82,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -106,6 +109,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -132,6 +138,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * To be used to express what combination of keys will trigger the relative
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
@@ -155,6 +164,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "focused-changed" event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -178,6 +190,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "disabled-changed" event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -201,6 +216,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the content is currently displayed.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "opened-changed" event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -225,6 +243,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * The orientation against which to align the menu dropdown horizontally
 	 * relative to the dropdown trigger.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
@@ -250,6 +271,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * The orientation against which to align the menu dropdown vertically
 	 * relative to the dropdown trigger.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
@@ -277,6 +301,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * will be considered preferences instead of strict requirements when
 	 * positioning the dropdown and may be changed if doing so reduces the area
 	 * of the dropdown falling outside of {@code fitInto}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDynamicAlign() {
 		return getElement().getProperty("dynamicAlign", false);
@@ -304,6 +331,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * A pixel value that will be added to the position calculated for the given
 	 * {@code horizontalAlign}. Use a negative value to offset to the left, or a
 	 * positive value to offset to the right.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getHorizontalOffset() {
 		return getElement().getProperty("horizontalOffset", 0.0);
@@ -330,6 +360,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * A pixel value that will be added to the position calculated for the given
 	 * {@code verticalAlign}. Use a negative value to offset towards the top, or
 	 * a positive value to offset towards the bottom.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getVerticalOffset() {
 		return getElement().getProperty("verticalOffset", 0.0);
@@ -355,6 +388,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * If true, the dropdown will be positioned so that it doesn't overlap the
 	 * button.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoOverlap() {
 		return getElement().getProperty("noOverlap", false);
@@ -378,6 +414,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable animations when opening and closing the dropdown.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoAnimations() {
 		return getElement().getProperty("noAnimations", false);
@@ -401,6 +440,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * Set to true to disable automatically closing the dropdown after a
 	 * selection has been made.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isIgnoreSelect() {
 		return getElement().getProperty("ignoreSelect", false);
@@ -425,6 +467,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * Set to true to enable automatically closing the dropdown after an item
 	 * has been activated, even if the selection did not change.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isCloseOnActivate() {
 		return getElement().getProperty("closeOnActivate", false);
@@ -449,6 +494,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * An animation config. If provided, this will be used to animate the
 	 * opening of the dropdown.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getOpenAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("openAnimationConfig");
@@ -475,6 +523,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * An animation config. If provided, this will be used to animate the
 	 * closing of the dropdown.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getCloseAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("closeAnimationConfig");
@@ -502,6 +553,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * By default, the dropdown will constrain scrolling on the page to itself
 	 * when opened. Set to true in order to prevent scroll from being
 	 * constrained to the dropdown when it opens.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAllowOutsideScroll() {
 		return getElement().getProperty("allowOutsideScroll", false);
@@ -526,6 +580,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Whether focus should be restored to the button when the menu closes.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRestoreFocusOnClose() {
 		return getElement().getProperty("restoreFocusOnClose", false);
@@ -548,6 +605,9 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The content element that is contained by the menu button, if any.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getContentElement() {
 		return (JsonObject) getElement().getPropertyRaw("contentElement");

@@ -35,6 +35,9 @@ public class HeroAnimation<R extends HeroAnimation<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Defines the animation timing.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
@@ -57,6 +60,9 @@ public class HeroAnimation<R extends HeroAnimation<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Can be used to determine that elements implement this behavior.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isIsNeonAnimation() {
 		return getElement().getProperty("isNeonAnimation", false);
@@ -79,6 +85,9 @@ public class HeroAnimation<R extends HeroAnimation<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Cached copy of shared elements.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSharedElements() {
 		return (JsonObject) getElement().getPropertyRaw("sharedElements");

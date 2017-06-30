@@ -99,6 +99,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -123,6 +126,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * 
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -144,6 +150,10 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
@@ -161,6 +171,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user is currently holding down the button.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPressed() {
 		return getElement().getProperty("pressed", false);
@@ -184,6 +197,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * 
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isToggles() {
 		return getElement().getProperty("toggles", false);
@@ -207,6 +223,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the button is a toggle and is currently in the active state.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "active-changed" event happens.
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -232,6 +251,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * True if the element is currently being pressed by a "pointer," which is
 	 * loosely defined as mouse or touch input (but specifically excluding
 	 * keyboard input).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPointerDown() {
 		return getElement().getProperty("pointerDown", false);
@@ -257,6 +279,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * 
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
@@ -282,6 +307,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * 
 	 * The aria attribute to be set if the button is a toggle and in the active
 	 * state.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAriaActiveAttribute() {
 		return getElement().getProperty("ariaActiveAttribute");
@@ -306,6 +334,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "focused-changed" event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -329,6 +360,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "disabled-changed" event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -353,6 +387,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * 
 	 * If true, the element will not produce a ripple effect when interacted
 	 * with via the pointer.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
@@ -378,6 +415,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * The z-depth of this element, from 0-5. Setting to 0 will remove the
 	 * shadow, and each increasing number greater than 0 will be "deeper" than
 	 * the last.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getElevation() {
 		return getElement().getProperty("elevation", 0.0);
@@ -402,6 +442,9 @@ public class PaperButton<R extends PaperButton<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the button should be styled with a shadow.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRaised() {
 		return getElement().getProperty("raised", false);

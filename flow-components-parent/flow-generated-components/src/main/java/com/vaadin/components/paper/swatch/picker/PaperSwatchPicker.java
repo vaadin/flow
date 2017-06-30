@@ -69,6 +69,9 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The selected color, as hex (i.e. #ffffff). value.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "color-changed" event happens.
 	 */
 	@Synchronize(property = "color", value = "color-changed")
 	public String getColor() {
@@ -96,6 +99,9 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * the reds (from light to dark), then the pinks, then the blues, etc.
 	 * Depending on how many of these generic colors you have, you should update
 	 * the {@code columnCount} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getColorList() {
 		return (JsonArray) getElement().getPropertyRaw("colorList");
@@ -125,6 +131,9 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * number of generic colors (i.e. not counting the light/dark) variants of a
 	 * specific color) you are using in your {@code colorList}. For example, the
 	 * Material Design palette has 18 colors
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getColumnCount() {
 		return getElement().getProperty("columnCount", 0.0);
@@ -151,6 +160,9 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * 
 	 * The orientation against which to align the menu dropdown horizontally
 	 * relative to the dropdown trigger.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
@@ -176,6 +188,9 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * 
 	 * The orientation against which to align the menu dropdown vertically
 	 * relative to the dropdown trigger.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
@@ -201,6 +216,9 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * 
 	 * If true, the color picker button will not produce a ripple effect when
 	 * interacted with via the pointer.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);

@@ -61,6 +61,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * recommended that you provide the hyphenated form of the name so that
 	 * selection works in both cases. (Use {@code attr-or-property-name} instead
 	 * of {@code attrOrPropertyName}.)
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAttrForSelected() {
 		return getElement().getProperty("attrForSelected");
@@ -92,6 +95,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "selected-changed" event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -103,6 +109,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "selected-changed" event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -141,6 +150,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns the currently selected item.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -159,6 +171,10 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public String getActivateEvent() {
 		return getElement().getProperty("activateEvent");
 	}
@@ -178,6 +194,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * This is a CSS selector string. If this is set, only items that match the
 	 * CSS selector are selectable.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSelectable() {
 		return getElement().getProperty("selectable");
@@ -202,6 +221,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The class to set on elements when selected.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSelectedClass() {
 		return getElement().getProperty("selectedClass");
@@ -225,6 +247,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The attribute to set on elements when selected.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSelectedAttribute() {
 		return getElement().getProperty("selectedAttribute");
@@ -249,6 +274,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * Default fallback if the selection based on selected with
 	 * {@code attrForSelected} is not found.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getFallbackSelection() {
 		return getElement().getProperty("fallbackSelection");
@@ -273,6 +301,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The list of items from which a selection can be made.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "items-changed" event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -296,6 +327,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Animation configuration. See README for more info.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
@@ -320,6 +354,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Convenience property for setting an 'entry' animation. Do not set
 	 * {@code animationConfig.entry} manually if using this. The animated node
 	 * is set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getEntryAnimation() {
 		return getElement().getProperty("entryAnimation");
@@ -347,6 +384,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Convenience property for setting an 'exit' animation. Do not set
 	 * {@code animationConfig.exit} manually if using this. The animated node is
 	 * set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getExitAnimation() {
 		return getElement().getProperty("exitAnimation");
@@ -373,6 +413,9 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * if true, the initial page selection will also be animated according to
 	 * its animation config.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAnimateInitialSelection() {
 		return getElement().getProperty("animateInitialSelection", false);

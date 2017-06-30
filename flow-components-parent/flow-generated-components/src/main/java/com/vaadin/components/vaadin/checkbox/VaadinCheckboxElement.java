@@ -64,6 +64,9 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Specify that this control should have input focus when the page loads.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -86,6 +89,9 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
@@ -108,6 +114,9 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -130,6 +139,9 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the checkbox is checked.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "checked-changed" event happens.
 	 */
 	@Synchronize(property = "checked", value = "checked-changed")
 	public boolean isChecked() {
@@ -156,6 +168,9 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * unchecked, but undetermined.
 	 * https://developer.mozilla.org/en-US/docs/Web/
 	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "indeterminate-changed" event happens.
 	 */
 	@Synchronize(property = "indeterminate", value = "indeterminate-changed")
 	public boolean isIndeterminate() {
@@ -182,6 +197,9 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of the control, which is submitted with the form data.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -205,6 +223,9 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * 
 	 * The value given to the data submitted with the checkbox's name to the
 	 * server when the control is inside a form.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getValue() {
 		return getElement().getProperty("value");

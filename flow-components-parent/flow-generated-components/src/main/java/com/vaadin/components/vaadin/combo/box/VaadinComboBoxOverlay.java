@@ -35,6 +35,9 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The element to position/align the dropdown by.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
@@ -57,6 +60,9 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Vertical offset for the overlay position.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getVerticalOffset() {
 		return getElement().getProperty("verticalOffset", 0.0);
@@ -79,6 +85,9 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the device supports touch events.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isTouchDevice() {
 		return getElement().getProperty("touchDevice", false);
@@ -101,6 +110,9 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * {@code true} when new items are being loaded.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);

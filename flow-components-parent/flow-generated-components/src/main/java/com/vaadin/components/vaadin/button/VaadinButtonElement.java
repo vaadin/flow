@@ -56,6 +56,9 @@ public class VaadinButtonElement<R extends VaadinButtonElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Specify that this control should have input focus when the page loads.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -78,6 +81,9 @@ public class VaadinButtonElement<R extends VaadinButtonElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
@@ -100,6 +106,9 @@ public class VaadinButtonElement<R extends VaadinButtonElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);

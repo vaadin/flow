@@ -152,6 +152,9 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * 
 	 * Set to true to disable the floating label. The label disappears when the
 	 * input value is not null.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -175,6 +178,9 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to always float the floating label.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -197,6 +203,9 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The attribute to listen for value changes on.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAttrForValue() {
 		return getElement().getProperty("attrForValue");
@@ -220,6 +229,9 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to auto-validate the input value when it changes.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -244,6 +256,9 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * True if the input is invalid. This property is set automatically when the
 	 * input value changes if auto-validating, or when the
 	 * {@code iron-input-validate} event is heard from a child.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
@@ -268,6 +283,9 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the input has focus.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "focused-changed" event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {

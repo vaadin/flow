@@ -52,6 +52,9 @@ public class IronOverlayBackdrop<R extends IronOverlayBackdrop<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns true if the backdrop is opened.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);

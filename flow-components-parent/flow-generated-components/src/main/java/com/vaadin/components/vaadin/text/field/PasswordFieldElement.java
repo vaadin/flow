@@ -33,6 +33,9 @@ public class PasswordFieldElement<R extends PasswordFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to hide the eye icon which toggles the password visibility.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isHideToggleButton() {
 		return getElement().getProperty("hideToggleButton", false);
@@ -55,6 +58,9 @@ public class PasswordFieldElement<R extends PasswordFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the password is visible ([type=text]).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPasswordVisible() {
 		return getElement().getProperty("passwordVisible", false);

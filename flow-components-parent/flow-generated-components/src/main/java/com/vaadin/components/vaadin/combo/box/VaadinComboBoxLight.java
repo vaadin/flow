@@ -75,6 +75,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -99,6 +102,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -125,6 +131,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * To be used to express what combination of keys will trigger the relative
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
@@ -148,6 +157,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -176,6 +188,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * Use {@code selectedItem} property to get the raw selected item from the
 	 * {@code items} array.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -210,6 +225,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Otherwise, a {@code required} element will always be considered valid.
 	 * It's also strongly recommended to provide a visual style for the element
 	 * when its value is invalid.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -237,6 +255,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the dropdown is open, false otherwise.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "opened-changed" event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -260,6 +281,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -282,6 +306,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * When present, it specifies that the element field is read-only.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -305,6 +332,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * A full set of items to filter the visible options from. The items can be
 	 * of either {@code String} or {@code Object} type.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
@@ -331,6 +361,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * items list. {@code value} property will be set to the input value in this
 	 * case. Also, when {@code value} is set programmatically, the input value
 	 * will be set to reflect that value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAllowCustomValue() {
 		return getElement().getProperty("allowCustomValue", false);
@@ -358,6 +391,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * A subset of items, filtered based on the user input. Filtered items can
 	 * be assigned directly to omit the internal filtering functionality. The
 	 * items can be of either {@code String} or {@code Object} type.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getFilteredItems() {
 		return (JsonArray) getElement().getPropertyRaw("filteredItems");
@@ -383,6 +419,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * A read-only property indicating whether this combo box has a value
 	 * selected or not. It can be used for example in styling of the component.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isHasValue() {
 		return getElement().getProperty("hasValue", false);
@@ -407,6 +446,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * When set to {@code true}, a loading spinner is displayed on top of the
 	 * list of options.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
@@ -430,6 +472,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Filtering string the user has typed into the input field.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "filter-changed" event happens.
 	 */
 	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
@@ -453,6 +498,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The selected item from the {@code items} array.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -484,6 +532,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * When using item templates, the property is still needed because it is
 	 * used for filtering, and for displaying the selected item value in the
 	 * input box.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getItemLabelPath() {
 		return getElement().getProperty("itemLabelPath");
@@ -521,6 +572,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * The item value is used in the {@code value} property of the combo box, to
 	 * provide the form value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getItemValuePath() {
 		return getElement().getProperty("itemValuePath");
@@ -549,6 +603,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns a reference to the native input element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
@@ -572,6 +629,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * Name of the two-way data-bindable property representing the value of the
 	 * custom input field.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAttrForValue() {
 		return getElement().getProperty("attrForValue");
@@ -597,6 +657,9 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * Number of pixels used as the vertical offset in positioning of the
 	 * dropdown.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getOverlayVerticalOffset() {
 		return getElement().getProperty("overlayVerticalOffset", 0.0);
