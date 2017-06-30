@@ -17,8 +17,8 @@ package com.vaadin.generator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +34,7 @@ import com.vaadin.ui.HasText;
  */
 public final class BehaviorRegistry {
 
-    private static final Map<String, List<Class<?>>> REGISTRY = new HashMap<>();
+    private static final Map<String, List<Class<?>>> REGISTRY = new LinkedHashMap<>();
 
     static {
         put(HasClickListeners.class, "Polymer.PaperButtonBehavior",
@@ -69,7 +69,7 @@ public final class BehaviorRegistry {
      */
     public static Set<Class<?>> getClassesForBehaviors(
             Iterable<String> behaviors) {
-        Set<Class<?>> setOfClasses = new HashSet<>();
+        Set<Class<?>> setOfClasses = new LinkedHashSet<>();
 
         if (behaviors != null) {
             for (String behavior : behaviors) {
