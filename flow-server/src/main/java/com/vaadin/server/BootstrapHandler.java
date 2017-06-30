@@ -267,7 +267,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         List<Element> dependenciesToInlineInBody = setupDocumentHead(head,
                 context);
-        dependenciesToInlineInBody.forEach(document::appendChild);
+        dependenciesToInlineInBody.forEach(dependency -> document.body().appendChild(dependency));
         setupDocumentBody(document);
 
         document.outputSettings().prettyPrint(false);
@@ -533,7 +533,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .attr("rel", "stylesheet").attr("type", "text/css")
                     .attr("href", url);
         } else {
-            cssElement = new Element(Tag.valueOf("style"), "");
+            cssElement = new Element(Tag.valueOf("style"), "").attr("type", "text/css");
         }
         return cssElement;
     }

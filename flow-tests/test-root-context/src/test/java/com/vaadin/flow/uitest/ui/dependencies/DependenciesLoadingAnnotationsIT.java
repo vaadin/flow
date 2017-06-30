@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -38,14 +40,15 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  */
 public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
     private static final String EAGER_PREFIX = "eager.";
+    private static final String INLINE_PREFIX = "inline.";
     private static final String LAZY_PREFIX = "lazy.";
 
     @Test
     public void dependenciesLoadedAsExpectedWithAnnotationApi() {
         open();
 
-        waitUntil(input -> input.findElements(By.className("dependenciesTest"))
-                .size() == 5);
+        waitUntil(input -> !input.findElements(By.className("dependenciesTest"))
+                .isEmpty());
 
         flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes();
 
@@ -58,32 +61,38 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 By.className("dependenciesTest")).stream()
                         .map(WebElement::getText).collect(Collectors.toList());
 
-        Assert.assertEquals(
-                "5 elements are expected to be added: 2 for eager dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
-                5, testMessages.size());
+        assertThat(
+                "7 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",
+                testMessages, hasSize(7));
 
-        Assert.assertTrue(
-                "Eager dependencies should be loaded first, but got "
-                        + testMessages.get(0),
-                testMessages.get(0).startsWith(EAGER_PREFIX));
-        Assert.assertTrue(
-                "Eager dependencies should be loaded first, but got "
-                        + testMessages.get(1),
-                testMessages.get(1).startsWith(EAGER_PREFIX));
+        List<String> inlineAndEagerMessages = testMessages.subList(0, 4);
+
+        List<String> eagerMessages = inlineAndEagerMessages.stream()
+                .filter(message -> message.startsWith(EAGER_PREFIX))
+                .collect(Collectors.toList());
+        assertThat("2 eager messages should be posted before lazy messages",
+                eagerMessages, hasSize(2));
+
+        List<String> inlineMessages = inlineAndEagerMessages.stream()
+                .filter(message -> message.startsWith(INLINE_PREFIX))
+                .collect(Collectors.toList());
+        assertThat("2 inline messages should be posted before lazy messages",
+                inlineMessages, hasSize(2));
 
         Assert.assertTrue(
                 "Expected dom change to happen after eager dependencies loaded and before lazy dependencies have loaded, but got "
-                        + testMessages.get(2),
-                testMessages.get(2).equals(DOM_CHANGE_TEXT));
-
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager, but got "
-                        + testMessages.get(3),
-                testMessages.get(3).startsWith(LAZY_PREFIX));
-        Assert.assertTrue(
-                "Lazy dependencies should be loaded after eager, but got "
                         + testMessages.get(4),
-                testMessages.get(4).startsWith(LAZY_PREFIX));
+                testMessages.get(4).equals(DOM_CHANGE_TEXT));
+
+        List<String> lazyMessages = testMessages.subList(5, 7);
+        Assert.assertTrue(
+                "Lazy dependencies should be loaded after eager and inline, but got "
+                        + lazyMessages.get(0),
+                lazyMessages.get(0).startsWith(LAZY_PREFIX));
+        Assert.assertTrue(
+                "Lazy dependencies should be loaded after eager and inline, but got "
+                        + lazyMessages.get(1),
+                lazyMessages.get(1).startsWith(LAZY_PREFIX));
     }
 
     private void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {
@@ -99,12 +108,17 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 if (userDependencyMinIndex > i) {
                     userDependencyMinIndex = i;
                 }
-                assertThat("Expected to have here dependencies added with Flow public api",
-                        jsUrl, either(containsString("eager"))
-                                .or(containsString("lazy")));
+                assertThat(
+                        "Expected to have here dependencies added with Flow public api",
+                        jsUrl,
+                        either(containsString("eager"))
+                                .or(containsString("lazy"))
+                                // inline elements do not have the url
+                                .or(isEmptyString()));
             } else {
                 flowDependencyMaxIndex = i;
-                assertThat("Flow dependencies should not contain user dependencies",
+                assertThat(
+                        "Flow dependencies should not contain user dependencies",
                         jsUrl, both(not(containsString("eager")))
                                 .and(not(containsString("lazy"))));
 
@@ -120,8 +134,8 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                     jsImport.getAttribute("async"), is(nullValue()));
         }
 
-
-        assertThat("Flow dependencies should be imported before user dependencies",
+        assertThat(
+                "Flow dependencies should be imported before user dependencies",
                 flowDependencyMaxIndex, is(lessThan(userDependencyMinIndex)));
     }
 }

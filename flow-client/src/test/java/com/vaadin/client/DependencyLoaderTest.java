@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +33,12 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+/**
+ * This class is used to test {@link DependencyLoader} functionality, that does
+ * not require GWT.
+ * <p>
+ * For the rest of the tests, refer to {@link GwtDependencyLoaderTest}
+ */
 public class DependencyLoaderTest {
 
     private static class MockResourceLoader extends ResourceLoader {
@@ -73,6 +79,30 @@ public class DependencyLoaderTest {
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
         }
+
+        @Override
+        public void inlineHtml(String htmlContents,
+                ResourceLoadListener resourceLoadListener) {
+            loadingHtml.add(htmlContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, htmlContents));
+        }
+
+        @Override
+        public void inlineScript(String scriptContents,
+                ResourceLoadListener resourceLoadListener) {
+            loadingScripts.add(scriptContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, scriptContents));
+        }
+
+        @Override
+        public void inlineStyleSheet(String styleSheetContents,
+                ResourceLoadListener resourceLoadListener) {
+            loadingStyles.add(styleSheetContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, styleSheetContents));
+        }
     }
 
     private final MockResourceLoader mockResourceLoader = new MockResourceLoader();
@@ -88,8 +118,9 @@ public class DependencyLoaderTest {
     public void loadStylesheet() {
         String TEST_URL = "http://foo.bar/baz";
 
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createDependency(TEST_URL, Dependency.Type.STYLESHEET)));
+        new DependencyLoader(registry).loadDependencies(
+                createDependenciesMap(new Dependency(Dependency.Type.STYLESHEET,
+                        TEST_URL, LoadMode.EAGER).toJson()));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingStyles);
@@ -99,8 +130,9 @@ public class DependencyLoaderTest {
     public void loadScript() {
         String TEST_URL = "http://foo.bar/baz.js";
 
-        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createDependency(TEST_URL, Dependency.Type.JAVASCRIPT)));
+        new DependencyLoader(registry).loadDependencies(
+                createDependenciesMap(new Dependency(Dependency.Type.JAVASCRIPT,
+                        TEST_URL, LoadMode.EAGER).toJson()));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingScripts);
@@ -111,7 +143,8 @@ public class DependencyLoaderTest {
         String TEST_URL = "http://foo.bar/baz.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
+                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
+                        LoadMode.EAGER).toJson()));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingHtml);
@@ -124,10 +157,12 @@ public class DependencyLoaderTest {
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createDependency(TEST_JS_URL, Dependency.Type.JAVASCRIPT),
-                createDependency(TEST_JS_URL2, Dependency.Type.JAVASCRIPT),
-                createDependency(TEST_CSS_URL,
-                        Dependency.Type.STYLESHEET)));
+                new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL2,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, TEST_CSS_URL,
+                        LoadMode.EAGER).toJson()));
 
         assertEquals(Arrays.asList(TEST_JS_URL, TEST_JS_URL2),
                 mockResourceLoader.loadingScripts);
@@ -145,7 +180,8 @@ public class DependencyLoaderTest {
         config.setFrontendRootUrl("http://someplace.com/es6/");
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
+                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
+                        LoadMode.EAGER).toJson()));
 
         assertEquals(
                 Collections.singletonList(
@@ -164,7 +200,8 @@ public class DependencyLoaderTest {
         config.setContextRootUrl("http://someplace.com/");
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createDependency(TEST_URL, Dependency.Type.HTML_IMPORT)));
+                new Dependency(Dependency.Type.HTML_IMPORT, TEST_URL,
+                        LoadMode.EAGER).toJson()));
 
         assertEquals(
                 Collections.singletonList(
@@ -174,10 +211,6 @@ public class DependencyLoaderTest {
 
     @Test
     public void ensureEagerDependenciesLoadedInOrder() {
-        ensureDependenciesLoadedInOrder();
-    }
-
-    private void ensureDependenciesLoadedInOrder() {
         String jsUrl1 = "1.js";
         String jsUrl2 = "2.js";
         String cssUrl1 = "1.css";
@@ -186,12 +219,18 @@ public class DependencyLoaderTest {
         String htmlUrl2 = "2.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                createDependency(jsUrl1, Dependency.Type.JAVASCRIPT),
-                createDependency(jsUrl2, Dependency.Type.JAVASCRIPT),
-                createDependency(cssUrl1, Dependency.Type.STYLESHEET),
-                createDependency(cssUrl2, Dependency.Type.STYLESHEET),
-                createDependency(htmlUrl1, Dependency.Type.HTML_IMPORT),
-                createDependency(htmlUrl2, Dependency.Type.HTML_IMPORT)));
+                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl1,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl2,
+                        LoadMode.EAGER).toJson()));
 
         assertEquals(
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
@@ -209,19 +248,50 @@ public class DependencyLoaderTest {
                 mockResourceLoader.loadingHtml);
     }
 
-    private JsonObject createDependency(String url, Dependency.Type type) {
-        JsonObject dependency = Json.createObject();
-        dependency.put(Dependency.KEY_TYPE, type.name());
-        dependency.put(Dependency.KEY_URL, url);
-        dependency.put(Dependency.KEY_LOAD_MODE, LoadMode.EAGER.name());
-        return dependency;
+    @Test
+    public void ensureInlineDependenciesLoadedInOrder() {
+        String jsContents1 = "1.js";
+        String jsContents2 = "2.js";
+        String cssContents1 = "1.css";
+        String cssContents2 = "2.css";
+        String htmlContents1 = "1.html";
+        String htmlContents2 = "2.html";
+
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
+                createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents1),
+                createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents2),
+                createInlineDependency(Dependency.Type.STYLESHEET,
+                        cssContents1),
+                createInlineDependency(Dependency.Type.STYLESHEET,
+                        cssContents2),
+                createInlineDependency(Dependency.Type.HTML_IMPORT,
+                        htmlContents1),
+                createInlineDependency(Dependency.Type.HTML_IMPORT,
+                        htmlContents2)));
+
+        assertEquals(
+                "jsContents1 should come before jsContents2, because it was added earlier",
+                Arrays.asList(jsContents1, jsContents2),
+                mockResourceLoader.loadingScripts);
+
+        assertEquals(
+                "cssContents1 should come before cssContents2, because it was added earlier",
+                Arrays.asList(cssContents1, cssContents2),
+                mockResourceLoader.loadingStyles);
+
+        assertEquals(
+                "htmlContents1 should come before htmlContents2, because it was added earlier",
+                Arrays.asList(htmlContents1, htmlContents2),
+                mockResourceLoader.loadingHtml);
     }
 
-    private Map<LoadMode, JsonArray> createDependenciesMap(JsonObject... dependencies) {
-        Map<LoadMode, JsonArray> result = new HashMap<>();
+    private Map<LoadMode, JsonArray> createDependenciesMap(
+            JsonObject... dependencies) {
+        Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
         for (int i = 0; i < dependencies.length; i++) {
             JsonObject dependency = dependencies[i];
-            LoadMode loadMode = LoadMode.valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
+            LoadMode loadMode = LoadMode
+                    .valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
             JsonArray jsonArray = Json.createArray();
             jsonArray.set(0, dependency);
             result.merge(loadMode, jsonArray, this::mergeArrays);
@@ -234,5 +304,14 @@ public class DependencyLoaderTest {
             jsonArray1.set(jsonArray1.length(), jsonArray2.getObject(i));
         }
         return jsonArray1;
+    }
+
+    private JsonObject createInlineDependency(Dependency.Type dependencyType,
+            String contents) {
+        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE)
+                .toJson();
+        json.remove(Dependency.KEY_URL);
+        json.put(Dependency.KEY_CONTENTS, contents);
+        return json;
     }
 }

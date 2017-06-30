@@ -69,6 +69,12 @@ public class DependencyListTest {
     }
 
     @Test
+    public void addStyleSheetDependency_inline() {
+        ui.getPage().addStyleSheet(URL, LoadMode.INLINE);
+        validateDependency(URL, Type.STYLESHEET, LoadMode.INLINE);
+    }
+
+    @Test
     public void addJavaScriptDependency_eager1() {
         ui.getPage().addJavaScript(URL);
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.EAGER);
@@ -87,6 +93,12 @@ public class DependencyListTest {
     }
 
     @Test
+    public void addJavaScriptDependency_inline() {
+        ui.getPage().addJavaScript(URL, LoadMode.INLINE);
+        validateDependency(URL, Type.JAVASCRIPT, LoadMode.INLINE);
+    }
+
+    @Test
     public void addHtmlDependency_eager1() {
         ui.getPage().addHtmlImport(URL);
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.EAGER);
@@ -102,6 +114,12 @@ public class DependencyListTest {
     public void addHtmlDependency_lazy() {
         ui.getPage().addHtmlImport(URL, LoadMode.LAZY);
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.LAZY);
+    }
+
+    @Test
+    public void addHtmlDependency_inline() {
+        ui.getPage().addHtmlImport(URL, LoadMode.INLINE);
+        validateDependency(URL, Type.HTML_IMPORT, LoadMode.INLINE);
     }
 
     private void validateDependency(String url, Type dependencyType,
@@ -157,26 +175,13 @@ public class DependencyListTest {
         assertEquals(0, deps.getPendingSendToClient().size());
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void addSameDependencyInDifferentModes() {
         String url = "foo/bar.js";
         Type type = Type.JAVASCRIPT;
 
         deps.add(new Dependency(type, url, LoadMode.EAGER));
         deps.add(new Dependency(type, url, LoadMode.LAZY));
-
-        assertEquals(1, deps.getPendingSendToClient().size());
-
-        Dependency dependency = deps.getPendingSendToClient().iterator().next();
-        assertEquals("Dependency should be added with url specified", url,
-                dependency.getUrl());
-        assertEquals("Dependency should be added with its key",
-                Type.JAVASCRIPT,
-                dependency.getType());
-        assertEquals(
-                String.format("Dependency in different modes should be added with mode = %s", LoadMode.EAGER),
-                LoadMode.EAGER,
-                dependency.getLoadMode());
     }
 
     @Test

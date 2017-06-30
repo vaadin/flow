@@ -252,6 +252,17 @@ public class ResourceLoader {
         }
     }
 
+    /**
+     * Inlines a script and notify a listener when the script is loaded. Calling
+     * this method when the script is currently loading or already loaded
+     * doesn't cause the script to be loaded again, but the listener will still
+     * be notified when appropriate.
+     *
+     * @param scriptContents
+     *            the script contents to inline
+     * @param resourceLoadListener
+     *            listener to notify when script is loaded
+     */
     public void inlineScript(String scriptContents,
             final ResourceLoadListener resourceLoadListener) {
         ResourceLoadEvent event = new ResourceLoadEvent(this, scriptContents);
@@ -368,6 +379,17 @@ public class ResourceLoader {
         }
     }
 
+    /**
+     * Inlines an HTML import and notify a listener when the HTML import is
+     * loaded. Calling this method when the HTML import is currently loading or
+     * already loaded doesn't cause the HTML import to be loaded again, but the
+     * listener will still be notified when appropriate.
+     *
+     * @param htmlContents
+     *            the html contents to inline
+     * @param resourceLoadListener
+     *            listener to notify when the HTML import is loaded
+     */
     public void inlineHtml(String htmlContents,
             final ResourceLoadListener resourceLoadListener) {
         ResourceLoadEvent event = new ResourceLoadEvent(this, htmlContents);
@@ -553,6 +575,18 @@ public class ResourceLoader {
         }
     }
 
+    /**
+     * Inlines a stylesheet and notify a listener when the stylesheet is loaded.
+     * Calling this method when the stylesheet is currently loading or already
+     * loaded doesn't cause the stylesheet to be loaded again, but the listener
+     * will still be notified when appropriate.
+     *
+     * @param styleSheetContents
+     *            the contents to inline
+     * @param resourceLoadListener
+     *            the listener that will get notified when the stylesheet is
+     *            loaded
+     */
     public void inlineStyleSheet(String styleSheetContents,
             final ResourceLoadListener resourceLoadListener) {
         final ResourceLoadEvent event = new ResourceLoadEvent(this,
