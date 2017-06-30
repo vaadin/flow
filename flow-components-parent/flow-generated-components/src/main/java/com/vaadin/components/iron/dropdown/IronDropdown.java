@@ -53,8 +53,8 @@ import com.vaadin.annotations.EventData;
  * element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: iron-dropdown#2.0.0", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: iron-dropdown#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-dropdown")
 @HtmlImport("frontend://bower_components/iron-dropdown/iron-dropdown.html")
 public class IronDropdown<R extends IronDropdown<R>> extends Component {

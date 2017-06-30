@@ -70,8 +70,8 @@ import com.vaadin.shared.Registration;
  * paper-menu-button content | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
 public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {

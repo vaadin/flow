@@ -82,8 +82,8 @@ import com.vaadin.shared.Registration;
  * the height of the wrapped image | {@code auto}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: iron-image#2.1.1", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: iron-image#2.1.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-image")
 @HtmlImport("frontend://bower_components/iron-image/iron-image.html")
 public class IronImage<R extends IronImage<R>> extends Component {

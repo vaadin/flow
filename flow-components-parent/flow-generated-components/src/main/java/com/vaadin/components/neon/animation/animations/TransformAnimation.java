@@ -33,8 +33,8 @@ import elemental.json.JsonObject;
  * transformTo: <transform-to-string>, timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: transform-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: transform-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("transform-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/transform-animation.html")
 public class TransformAnimation<R extends TransformAnimation<R>>

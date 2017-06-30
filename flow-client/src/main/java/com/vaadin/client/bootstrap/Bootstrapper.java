@@ -77,24 +77,12 @@ public class Bootstrapper implements EntryPoint {
      */
     public static void startApplication(final String applicationId) {
         Scheduler.get().scheduleDeferred(() -> {
-            if (isWebComponentsReady()) {
+            if (startApplicationImmediately()) {
                 doStartApplication(applicationId);
             } else {
                 deferStartApplication(applicationId);
             }
         });
-    }
-
-    private static void doStartApplication(final String applicationId) {
-        Profiler.enter("Bootstrapper.startApplication");
-        ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
-        ApplicationConnection applicationConnection = new ApplicationConnection(
-                appConf);
-        runningApplications.push(applicationConnection);
-        Profiler.leave("Bootstrapper.startApplication");
-
-        ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();
-        applicationConnection.start(initialUidl);
     }
 
     /**
@@ -169,6 +157,18 @@ public class Bootstrapper implements EntryPoint {
         conf.setProductionMode(!jsoConfiguration.getConfigBoolean("debug"));
     }
 
+    private static void doStartApplication(final String applicationId) {
+        Profiler.enter("Bootstrapper.startApplication");
+        ApplicationConfiguration appConf = getConfigFromDOM(applicationId);
+        ApplicationConnection applicationConnection = new ApplicationConnection(
+                appConf);
+        runningApplications.push(applicationConnection);
+        Profiler.leave("Bootstrapper.startApplication");
+
+        ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();
+        applicationConnection.start(initialUidl);
+    }
+
     /**
      * Gets the configuration object for a specific application from the
      * bootstrap javascript.
@@ -189,14 +189,15 @@ public class Bootstrapper implements EntryPoint {
 
     private static native void deferStartApplication(String applicationId)
     /*-{
-        $wnd.addEventListener('WebComponentsReady', function() {
+        var callback = function() {
             @Bootstrapper::doStartApplication(*)(applicationId);
-        });
+        };
+        $wnd.addEventListener('WebComponentsReady', $entry(callback));
     }-*/;
 
-    private static native boolean isWebComponentsReady()
+    private static native boolean startApplicationImmediately()
     /*-{
-        return $wnd.WebComponents && $wnd.WebComponents.ready;
+        return !$wnd.WebComponents || $wnd.WebComponents.ready;
     }-*/;
 
     /**

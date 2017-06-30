@@ -25,8 +25,8 @@ import elemental.json.JsonObject;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: hero-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: hero-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("hero-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/hero-animation.html")
 public class HeroAnimation<R extends HeroAnimation<R>> extends Component {
