@@ -81,44 +81,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "/client.nocache.js";
     private static final Pattern SCRIPT_END_TAG_PATTERN = Pattern
             .compile("</(script)", Pattern.CASE_INSENSITIVE);
-    private static final String BOOTSTRAP_JS;
+    private static final String BOOTSTRAP_JS = readResource(
+            "BootstrapHandler.js");
+    private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
+            + readResource("es6-collections.js") + "//]]>";
 
-    static String clientEngineFile;
+    static String clientEngineFile = readClientEngine();
 
     private static Logger getLogger() {
         return Logger.getLogger(BootstrapHandler.class.getName());
-    }
-
-    static {
-        // read bootstrap javascript template
-        try (InputStream stream = BootstrapHandler.class
-                .getResourceAsStream("BootstrapHandler.js");
-                BufferedReader bf = new BufferedReader(new InputStreamReader(
-                        stream, StandardCharsets.UTF_8))) {
-            StringBuilder sb = new StringBuilder();
-            bf.lines().forEach(sb::append);
-            BOOTSTRAP_JS = sb.toString();
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-        // read client engine file name
-        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
-                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties")) {
-            // null when running SDM or tests
-            if (prop != null) {
-                Properties p = new Properties();
-                p.load(prop);
-                clientEngineFile = ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                        + p.getProperty("jsFile");
-            } else {
-                getLogger().warning(
-                        "No compile.properties available on initialization, "
-                                + "could not read client engine file name.");
-            }
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
     }
 
     protected static class BootstrapContext {
@@ -361,15 +332,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static void setupFrameworkLibraries(Element head,
             JsonObject initialUIDL, BootstrapContext context) {
-        // Collections polyfill maybe needed for googlebot
-        head.appendChild(
-                createJavaScriptElement(
-                        context.getUriResolver()
-                                .resolveVaadinUri("context://"
-                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                        + "server/es6-collections.js"),
-                        false));
-
+        inlineEs6Collections(head, context);
         appendWebComponentsElements(head, context);
 
         if (context.getPushMode().isEnabled()) {
@@ -378,6 +341,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendChild(getBootstrapScript(initialUIDL, context));
         head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
+    }
+
+    private static void inlineEs6Collections(Element head,
+            BootstrapContext context) {
+        if (!context.getSession().getBrowser().isEs6Supported()) {
+            Element collectionsScript = createJavaScriptElement(null, false);
+            collectionsScript.appendChild(
+                    new DataNode(ES6_COLLECTIONS, collectionsScript.baseUri()));
+            head.appendChild(collectionsScript);
+        }
     }
 
     private static void setupCss(Element head) {
@@ -558,7 +531,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapContext context) {
         String scriptData = "//<![CDATA[\n"
                 + getBootstrapJS(initialUIDL, context) + "//]]>";
-        // defer makes no sense without src: https://developer.mozilla.org/en/docs/Web/HTML/Element/script
+        // defer makes no sense without src:
+        // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
         Element mainScript = createJavaScriptElement(null, false);
         mainScript.appendChild(new DataNode(scriptData, mainScript.baseUri()));
         return mainScript;
@@ -909,5 +883,40 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .getViewport(request);
         }
         return Optional.ofNullable(viewportContent);
+    }
+
+    private static String readResource(String fileName) {
+        try (InputStream stream = BootstrapHandler.class
+                .getResourceAsStream(fileName);
+                BufferedReader bf = new BufferedReader(new InputStreamReader(
+                        stream, StandardCharsets.UTF_8))) {
+            StringBuilder builder = new StringBuilder();
+            bf.lines().forEach(builder::append);
+            return builder.toString();
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    private static String readClientEngine() {
+        // read client engine file name
+        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties")) {
+            // null when running SDM or tests
+            if (prop != null) {
+                Properties properties = new Properties();
+                properties.load(prop);
+                return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                        + properties.getProperty("jsFile");
+            } else {
+                getLogger().warning(
+                        "No compile.properties available on initialization, "
+                                + "could not read client engine file name.");
+            }
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+        return null;
     }
 }

@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -138,6 +139,11 @@ public class PolymerServerEventHandlersTest {
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
         VaadinService.setCurrent(service);
+    }
+
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
     }
 
     private void addAndVerifyMethod(Method method) {
