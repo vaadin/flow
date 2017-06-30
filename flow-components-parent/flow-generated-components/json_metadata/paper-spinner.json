@@ -23,6 +23,7 @@
   ],
   "methods": [],
   "events": [],
+  "slots": [],
   "behaviors": [
     "Polymer.PaperSpinnerBehavior"
   ],

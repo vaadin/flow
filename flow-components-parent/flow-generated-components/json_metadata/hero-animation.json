@@ -108,6 +108,7 @@
     }
   ],
   "events": [],
+  "slots": [],
   "behaviors": [
     "Polymer.NeonSharedElementAnimationBehavior"
   ],

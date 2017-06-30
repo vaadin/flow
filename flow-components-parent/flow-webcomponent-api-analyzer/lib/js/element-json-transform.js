@@ -74,7 +74,7 @@ const getTypes = (type) => {
 
 const getType = (type) => {
   if (typeof type === 'undefined') {
-    console.warn(`Undefined type, missing jsdoc parameter {type}`);
+    console.warn(`Undefined type, missing jsdoc parameter ${type}`);
     type = "UNDEFINED";
   } else {
     type = type.toUpperCase();
@@ -224,6 +224,26 @@ const eventsToJsonArray = (events) => {
   return eventsJson;
 };
 
+/**
+ * Converts an array of Slot objects to desired json output:
+ *
+ * "slots": ["", "named-slot", "another-named-slot"]
+ * @param slots
+ * @returns {Array}
+ */
+const slotsToJsonArray = (slots) => {
+  const slotsJson = [];
+  for (let slot of slots) {
+    const name = slot.name;
+    if (typeof name === 'undefined' || name === '') {
+      slotsJson.push("");
+    } else {
+      slotsJson.push(name);
+    }
+  }
+  return slotsJson;
+};
+
 module.exports = class ElementJsonTransform extends Transform {
   constructor(versionReader) {
     const options = {};
@@ -263,6 +283,7 @@ module.exports = class ElementJsonTransform extends Transform {
       "properties": propertiesToJsonArray(element.properties),
       "methods": methodsToJsonArray(element.methods),
       "events": eventsToJsonArray(element.events),
+      "slots": slotsToJsonArray(element.slots),
       "listeners": element.listers,
       "behaviors": element.behaviorAssignments.map(behavior => behavior.name),
       "description": element.jsdoc ? element.jsdoc.description : "Missing documentation!"

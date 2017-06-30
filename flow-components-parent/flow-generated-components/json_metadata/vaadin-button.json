@@ -43,6 +43,9 @@
     }
   ],
   "events": [],
+  "slots": [
+    ""
+  ],
   "behaviors": [],
   "description": "`<vaadin-button>` is a Polymer element providing an accessible and customizable button.\n\n```html\n<vaadin-button>\n</vaadin-button>\n```\n\n### Styling\n\nThe following shadow DOM parts are exposed for styling:\n\nPart name | Description\n----------------|----------------\n`button` | The internal `<button>` element\n\nThe following attributes are exposed for styling:\n\nAttribute | Description\n--------- | -----------\n`active` | Set when the button is pressed down, either with mouse, touch or the keyboard.\n`disabled` | Set when the button is disabled.\n`focus-ring` | Set when the button is focused using the keyboard.\n`focused` | Set when the button is focused."
 }

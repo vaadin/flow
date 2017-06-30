@@ -223,6 +223,7 @@
       "properties": []
     }
   ],
+  "slots": [],
   "behaviors": [
     "Polymer.PaperInkyFocusBehavior"
   ],
