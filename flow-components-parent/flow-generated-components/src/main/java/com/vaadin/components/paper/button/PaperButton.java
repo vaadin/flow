@@ -16,6 +16,9 @@
 package com.vaadin.components.paper.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasText;
+import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -92,7 +95,11 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-button#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
-public class PaperButton<R extends PaperButton<R>> extends Component {
+public class PaperButton<R extends PaperButton<R>> extends Component
+		implements
+			HasStyle,
+			HasText,
+			HasClickListeners {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

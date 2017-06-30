@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.meta;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -68,7 +69,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-meta#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-meta")
 @HtmlImport("frontend://bower_components/iron-meta/iron-meta.html")
-public class IronMeta<R extends IronMeta<R>> extends Component {
+public class IronMeta<R extends IronMeta<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

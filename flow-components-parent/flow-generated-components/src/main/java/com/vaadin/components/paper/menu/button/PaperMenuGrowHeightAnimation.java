@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.menu.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -29,7 +30,7 @@ import elemental.json.JsonObject;
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

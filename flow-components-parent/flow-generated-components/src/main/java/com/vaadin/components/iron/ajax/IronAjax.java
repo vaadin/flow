@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.ajax;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -53,7 +54,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-ajax#2.0.2", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-ajax")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-ajax.html")
-public class IronAjax<R extends IronAjax<R>> extends Component {
+public class IronAjax<R extends IronAjax<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

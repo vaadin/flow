@@ -42,11 +42,11 @@ public class PaperButtonView extends DemoView {
 
     private PaperButton createButton(String text) {
         PaperButton button = new PaperButton();
-        button.setRaised(true);
-        button.getElement().setText(text);
-        button.getElement().getStyle().set("backgroundColor", "white");
-        button.getElement().addEventListener("click", evt -> {
-            message.setText("Button " + evt.getSource().getText().toUpperCase()
+        button.setText(text);
+        button.getStyle().set("backgroundColor", "white");
+        button.addClickListener(evt -> {
+            message.setText("Button "
+                    + evt.getSource().getElement().getText().toUpperCase()
                     + " was clicked.");
         });
         return button;

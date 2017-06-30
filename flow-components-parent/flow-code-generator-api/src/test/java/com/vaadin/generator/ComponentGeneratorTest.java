@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.generator;
 
 import java.util.Arrays;
@@ -15,6 +30,9 @@ import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
+import com.vaadin.ui.HasClickListeners;
+import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasText;
 
 /**
  * Unit tests for the component generator
@@ -495,6 +513,52 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("The method getSelf() wasn't found",
                 generatedClass.contains("protected R getSelf()"));
+    }
+    
+    @Test
+    public void generateClass_implementsHasStyle() {
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasStyle.class);
+    }
+
+    @Test
+    public void generateClassWithClickableBehavior_classImplementsHasClickListeners() {
+        componentMetadata
+                .setBehaviors(Arrays.asList("Polymer.GestureEventListeners"));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasClickListeners.class);
+    }
+
+    @Test
+    public void generateButtonClass_classImplementsHasText() {
+        componentMetadata.setTag("vaadin-button");
+        componentMetadata.setName("VaadinButton");
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "VaadinButton",
+                HasText.class);
+    }
+
+    private void assertClassImplementsInterface(String generatedClass,
+            String className, Class<?> interfaceToBeImplemented) {
+        Pattern pattern = Pattern.compile("\\s*public\\s+class\\s+" + className
+                + ".*\\s+extends\\s+Component\\s+implements\\s+([^\\{]+)\\{");
+        Matcher matcher = pattern.matcher(generatedClass);
+        Assert.assertTrue("Wrong class declaration", matcher.find());
+
+        String interfaces = matcher.group(1);
+        Assert.assertTrue(interfaceToBeImplemented.getSimpleName()
+                + " interface not found in the class definition: " + interfaces,
+                interfaces.contains(interfaceToBeImplemented.getSimpleName()));
     }
 
     @Test

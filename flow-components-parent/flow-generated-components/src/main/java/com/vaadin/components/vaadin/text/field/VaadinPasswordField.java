@@ -16,6 +16,7 @@
 package com.vaadin.components.vaadin.text.field;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -25,9 +26,9 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: PasswordFieldElement#null", "Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
-public class PasswordFieldElement<R extends PasswordFieldElement<R>>
+public class VaadinPasswordField<R extends VaadinPasswordField<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

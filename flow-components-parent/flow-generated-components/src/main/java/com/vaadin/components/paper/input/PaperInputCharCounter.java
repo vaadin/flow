@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -46,7 +47,7 @@ import com.vaadin.annotations.HtmlImport;
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
 public class PaperInputCharCounter<R extends PaperInputCharCounter<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.dialog;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -85,7 +86,9 @@ import com.vaadin.annotations.EventData;
 		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
-public class PaperDialog<R extends PaperDialog<R>> extends Component {
+public class PaperDialog<R extends PaperDialog<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.icon;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -89,7 +90,9 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: iron-icon#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-icon")
 @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
-public class IronIcon<R extends IronIcon<R>> extends Component {
+public class IronIcon<R extends IronIcon<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

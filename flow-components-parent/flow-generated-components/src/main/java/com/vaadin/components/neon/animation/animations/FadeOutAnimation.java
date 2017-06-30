@@ -16,6 +16,7 @@
 package com.vaadin.components.neon.animation.animations;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -34,7 +35,9 @@ import elemental.json.JsonObject;
 		"WebComponent: fade-out-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("fade-out-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/fade-out-animation.html")
-public class FadeOutAnimation<R extends FadeOutAnimation<R>> extends Component {
+public class FadeOutAnimation<R extends FadeOutAnimation<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
