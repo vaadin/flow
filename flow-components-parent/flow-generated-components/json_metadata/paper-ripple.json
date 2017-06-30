@@ -283,6 +283,7 @@
       ]
     }
   ],
+  "slots": [],
   "behaviors": [
     "Polymer.IronA11yKeysBehavior"
   ],

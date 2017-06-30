@@ -419,6 +419,10 @@
       "properties": []
     }
   ],
+  "slots": [
+    "prefix",
+    "suffix"
+  ],
   "behaviors": [
     "Polymer.PaperInputBehavior",
     "Polymer.IronFormElementBehavior"

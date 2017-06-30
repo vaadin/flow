@@ -458,6 +458,9 @@
       "properties": []
     }
   ],
+  "slots": [
+    ""
+  ],
   "behaviors": [
     "Polymer.Templatizer",
     "Polymer.IronResizableBehavior",

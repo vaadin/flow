@@ -86,6 +86,9 @@
       "properties": []
     }
   ],
+  "slots": [
+    ""
+  ],
   "behaviors": [],
   "description": "`<vaadin-checkbox>` is a Polymer element for customized checkboxes.\n\n```html\n<vaadin-checkbox>\n  Make my profile visible\n</vaadin-checkbox>\n```\n\n### Styling\n\nThe following shadow DOM parts are exposed for styling:\n\nPart name         | Description\n------------------|----------------\n`wrapper`         | The `<label>` element which wrapps the checkbox and [part=\"label\"]\n`native-checkbox` | The `<input type=\"checkbox\">` element\n`checkbox`        | The `<span>` element for a custom graphical check\n`label`           | The `<span>` element for slotted text/HTML label\n\nThe following attributes are exposed for styling:\n\nAttribute    | Description\n-------------|------------\n`active`     | Set when the checkbox is pressed down, either with mouse, touch or the keyboard.\n`disabled`   | Set when the checkbox is disabled.\n`focus-ring` | Set when the checkbox is focused using the keyboard.\n`focused`    | Set when the checkbox is focused."
 }

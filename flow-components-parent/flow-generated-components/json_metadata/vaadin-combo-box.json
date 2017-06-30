@@ -464,6 +464,12 @@
       "properties": []
     }
   ],
+  "slots": [
+    "prefix",
+    "suffix",
+    "clear-button",
+    "toggle-button"
+  ],
   "behaviors": [
     "Polymer.IronValidatableBehavior",
     "vaadin.elements.combobox.ComboBoxBehavior"

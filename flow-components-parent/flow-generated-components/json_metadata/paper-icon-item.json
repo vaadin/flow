@@ -164,6 +164,10 @@
       "properties": []
     }
   ],
+  "slots": [
+    "item-icon",
+    ""
+  ],
   "behaviors": [
     "Polymer.PaperItemBehavior"
   ],

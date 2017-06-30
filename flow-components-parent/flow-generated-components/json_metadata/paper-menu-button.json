@@ -274,6 +274,10 @@
       "properties": []
     }
   ],
+  "slots": [
+    "dropdown-trigger",
+    "dropdown-content"
+  ],
   "behaviors": [
     "Polymer.IronA11yKeysBehavior",
     "Polymer.IronControlState"

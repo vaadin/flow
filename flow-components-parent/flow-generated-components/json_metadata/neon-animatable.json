@@ -98,6 +98,9 @@
     }
   ],
   "events": [],
+  "slots": [
+    ""
+  ],
   "behaviors": [
     "Polymer.NeonAnimatableBehavior",
     "Polymer.IronResizableBehavior"
