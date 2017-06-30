@@ -35,8 +35,8 @@ import com.vaadin.shared.Registration;
  * 2.0. Expect some conditional code (especially in the tests).
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: paper-input#2.0.1", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: paper-input#2.0.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class PaperInput<R extends PaperInput<R>> extends Component

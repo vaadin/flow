@@ -559,6 +559,9 @@
       "properties": []
     }
   ],
+  "slots": [
+    "dropdown-content"
+  ],
   "behaviors": [
     "Polymer.IronControlState",
     "Polymer.IronA11yKeysBehavior",

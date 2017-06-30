@@ -41,8 +41,8 @@ import com.vaadin.annotations.HtmlImport;
  * Mixin applied to {@code iron-overlay-backdrop} when it is displayed | {}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: iron-overlay-backdrop#2.0.0", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: iron-overlay-backdrop#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-overlay-backdrop")
 @HtmlImport("frontend://bower_components/iron-overlay-behavior/iron-overlay-backdrop.html")
 public class IronOverlayBackdrop<R extends IronOverlayBackdrop<R>>

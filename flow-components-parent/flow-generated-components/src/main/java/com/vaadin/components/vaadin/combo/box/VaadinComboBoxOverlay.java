@@ -24,8 +24,8 @@ import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-overlay#null", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: vaadin-combo-box-overlay#null", "Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
 public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>

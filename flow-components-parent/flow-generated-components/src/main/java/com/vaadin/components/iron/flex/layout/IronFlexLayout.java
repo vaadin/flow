@@ -70,8 +70,8 @@ import com.vaadin.annotations.HtmlImport;
  * to {@code <iron-flex-layout>} is available.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: iron-flex-layout#2.0.0", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: iron-flex-layout#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-flex-layout")
 @HtmlImport("frontend://bower_components/iron-flex-layout/iron-flex-layout.html")
 public class IronFlexLayout<R extends IronFlexLayout<R>> extends Component

@@ -33,9 +33,9 @@ import elemental.json.JsonObject;
  * transformOrigin: <transform-origin>, timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
 		"WebComponent: slide-from-top-animation#UNKNOWN",
-		"Flow#0.1.11-SNAPSHOT"})
+		"Flow#0.1.12-SNAPSHOT"})
 @Tag("slide-from-top-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/slide-from-top-animation.html")
 public class SlideFromTopAnimation<R extends SlideFromTopAnimation<R>>

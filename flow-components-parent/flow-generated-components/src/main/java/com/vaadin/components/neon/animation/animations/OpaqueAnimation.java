@@ -30,8 +30,8 @@ import elemental.json.JsonObject;
  * before an animation for elements that animate from display:none.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: opaque-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: opaque-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("opaque-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/opaque-animation.html")
 public class OpaqueAnimation<R extends OpaqueAnimation<R>> extends Component

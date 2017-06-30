@@ -62,8 +62,8 @@ import com.vaadin.annotations.EventData;
  * </vaadin-combo-box-light> {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-light#null", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: vaadin-combo-box-light#null", "Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>

@@ -23,9 +23,9 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
 		"WebComponent: paper-menu-shrink-height-animation#UNKNOWN",
-		"Flow#0.1.11-SNAPSHOT"})
+		"Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-menu-shrink-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class PaperMenuShrinkHeightAnimation<R extends PaperMenuShrinkHeightAnimation<R>>

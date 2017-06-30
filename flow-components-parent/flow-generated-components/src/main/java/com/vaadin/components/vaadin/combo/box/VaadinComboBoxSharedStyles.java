@@ -22,9 +22,9 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
 		"WebComponent: vaadin-combo-box-shared-styles#null",
-		"Flow#0.1.11-SNAPSHOT"})
+		"Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-combo-box-shared-styles")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-shared-styles.html")
 public class VaadinComboBoxSharedStyles<R extends VaadinComboBoxSharedStyles<R>>

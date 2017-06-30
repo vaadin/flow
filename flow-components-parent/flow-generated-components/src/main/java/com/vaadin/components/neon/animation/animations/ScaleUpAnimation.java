@@ -33,8 +33,8 @@ import elemental.json.JsonObject;
  * {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: scale-up-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: scale-up-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("scale-up-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/scale-up-animation.html")
 public class ScaleUpAnimation<R extends ScaleUpAnimation<R>> extends Component

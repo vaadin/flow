@@ -330,6 +330,9 @@
       "properties": []
     }
   ],
+  "slots": [
+    ""
+  ],
   "behaviors": [
     "Polymer.IronMenuBehavior"
   ],

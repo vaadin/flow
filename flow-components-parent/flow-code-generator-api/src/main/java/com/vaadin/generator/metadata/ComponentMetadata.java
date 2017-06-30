@@ -15,9 +15,9 @@
  */
 package com.vaadin.generator.metadata;
 
-import com.vaadin.ui.HasComponents;
-
 import java.util.List;
+
+import com.vaadin.ui.HasComponents;
 
 /**
  * Base class of the representation of a webcomponent for the code generator. It
@@ -36,6 +36,7 @@ public class ComponentMetadata {
     private List<ComponentFunctionData> methods;
     private List<ComponentEventData> events;
     private List<String> behaviors;
+    private List<String> slots;
 
     /**
      * Gets the name of the ES6 class of the webcomponent, which is used to
@@ -234,4 +235,29 @@ public class ComponentMetadata {
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
     }
+
+    /**
+     * Gets the slots of this web component.
+     * <p>
+     * Note that the empty string stands for the default slot that has no name. An empty list means that there are no
+     * slots.
+     *
+     * @return a list of the names of the slots
+     */
+    public List<String> getSlots() {
+        return slots;
+    }
+
+    /**
+     * Sets the slots for this web component.
+     * <p>
+     * Note that the empty string stands for the default slot that has no name.
+     *
+     * @param slots
+     *            list of the slot names
+     */
+    public void setSlots(List<String> slots) {
+        this.slots = slots;
+    }
+
 }

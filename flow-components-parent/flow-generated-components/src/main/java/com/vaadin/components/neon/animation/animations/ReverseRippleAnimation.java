@@ -26,9 +26,9 @@ import elemental.json.JsonObject;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
 		"WebComponent: reverse-ripple-animation#UNKNOWN",
-		"Flow#0.1.11-SNAPSHOT"})
+		"Flow#0.1.12-SNAPSHOT"})
 @Tag("reverse-ripple-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/reverse-ripple-animation.html")
 public class ReverseRippleAnimation<R extends ReverseRippleAnimation<R>>
