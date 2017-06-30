@@ -74,6 +74,7 @@ import elemental.json.JsonValue;
  * @since 7.1
  */
 public class UidlWriter implements Serializable {
+    private static final String COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE = "Could not read url %s contents";
 
     /**
      * Creates a JSON object containing all pending changes to the given UI.
@@ -195,7 +196,7 @@ public class UidlWriter implements Serializable {
             return bf.lines().collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
             throw new IllegalArgumentException(
-                    String.format("Could not read url %s contents", url), e);
+                    String.format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
         }
     }
 
@@ -208,14 +209,9 @@ public class UidlWriter implements Serializable {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (IOException e) {
                 throw new IllegalArgumentException(
-                        String.format("Could not read url %s contents", url),
+                        String.format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url),
                         e);
             }
-        }
-
-        if (stream == null) {
-            throw new IllegalArgumentException(
-                    String.format("Could not read url %s contents", url));
         }
         return stream;
     }

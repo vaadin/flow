@@ -604,10 +604,19 @@ public class ResourceLoader {
             styleSheetElement.setTextContent(styleSheetContents);
             styleSheetElement.setType("text/css");
 
-            if (BrowserInfo.get().isSafari()) {
-                // Safari doesn't fire any events for link elements
+            if (BrowserInfo.get().isSafari() || BrowserInfo.get().isOpera()) {
+                // Safari and Opera don't fire any events for link elements
                 // See http://www.phpied.com/when-is-a-stylesheet-really-loaded/
-                fireLoad(event);
+                new Timer() {
+                    @Override
+                    public void run() {
+                        if (loadedResources.has(styleSheetContents)) {
+                            fireLoad(event);
+                        } else {
+                            fireError(event);
+                        }
+                    }
+                }.schedule(5 * 1000);
             } else {
                 addOnloadHandler(styleSheetElement, new ResourceLoadListener() {
                     @Override
@@ -620,18 +629,6 @@ public class ResourceLoader {
                         fireError(event);
                     }
                 }, event);
-                if (BrowserInfo.get().isOpera()) {
-                    // Opera onerror never fired, assume error if no onload in x
-                    // seconds
-                    new Timer() {
-                        @Override
-                        public void run() {
-                            if (!loadedResources.has(styleSheetContents)) {
-                                fireError(event);
-                            }
-                        }
-                    }.schedule(5 * 1000);
-                }
             }
 
             getHead().appendChild(styleSheetElement);

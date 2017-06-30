@@ -70,7 +70,6 @@ import elemental.json.impl.JsonUtil;
  * @since 7.0.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
-
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -89,6 +88,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             "BootstrapHandler.js");
     private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
             + readResource("es6-collections.js") + "//]]>";
+    private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 
     static String clientEngineFile = readClientEngine();
 
@@ -365,7 +365,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void setupCss(Element head) {
-        Element styles = head.appendElement("style").attr("type", "text/css");
+        Element styles = head.appendElement("style").attr("type", CSS_TYPE_ATTRIBUTE_VALUE);
         styles.appendText("html, body {height:100%;margin:0;}");
         // Basic reconnect dialog style just to make it visible and outside of
         // normal flow
@@ -530,10 +530,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         final Element cssElement;
         if (url != null) {
             cssElement = new Element(Tag.valueOf("link"), "")
-                    .attr("rel", "stylesheet").attr("type", "text/css")
+                    .attr("rel", "stylesheet").attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
                     .attr("href", url);
         } else {
-            cssElement = new Element(Tag.valueOf("style"), "").attr("type", "text/css");
+            cssElement = new Element(Tag.valueOf("style"), "").attr("type", CSS_TYPE_ATTRIBUTE_VALUE);
         }
         return cssElement;
     }
