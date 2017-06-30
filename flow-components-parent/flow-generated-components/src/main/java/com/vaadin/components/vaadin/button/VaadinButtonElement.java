@@ -44,8 +44,8 @@ import com.vaadin.annotations.HtmlImport;
  * button is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
 public class VaadinButtonElement<R extends VaadinButtonElement<R>>

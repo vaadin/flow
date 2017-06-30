@@ -95,8 +95,8 @@ import com.vaadin.shared.Registration;
  * of an indeterminate cycle | {@code 2s}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: paper-progress#2.0.1", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: paper-progress#2.0.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
 public class PaperProgress<R extends PaperProgress<R>> extends Component {

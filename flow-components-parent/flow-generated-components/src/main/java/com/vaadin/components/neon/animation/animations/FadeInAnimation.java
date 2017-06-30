@@ -30,8 +30,8 @@ import elemental.json.JsonObject;
  * <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: fade-in-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: fade-in-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("fade-in-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/fade-in-animation.html")
 public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component {
