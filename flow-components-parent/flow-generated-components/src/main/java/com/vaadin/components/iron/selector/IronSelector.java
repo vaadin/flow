@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.selector;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -81,7 +82,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-selector#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-selector")
 @HtmlImport("frontend://bower_components/iron-selector/iron-selector.html")
-public class IronSelector<R extends IronSelector<R>> extends Component {
+public class IronSelector<R extends IronSelector<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
