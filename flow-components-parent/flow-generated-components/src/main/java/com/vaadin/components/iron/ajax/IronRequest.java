@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -47,6 +48,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * A reference to the XMLHttpRequest instance used to generate the network
 	 * request.
 	 */
+	@Synchronize(property = "xhr", value = "xhr-changed")
 	public JsonObject getXhr() {
 		return (JsonObject) getElement().getPropertyRaw("xhr");
 	}
@@ -71,6 +73,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * A reference to the parsed response body, if the {@code xhr} has
 	 * completely resolved.
 	 */
+	@Synchronize(property = "response", value = "response-changed")
 	public JsonObject getResponse() {
 		return (JsonObject) getElement().getPropertyRaw("response");
 	}
@@ -95,6 +98,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * A reference to the status code, if the {@code xhr} has completely
 	 * resolved.
 	 */
+	@Synchronize(property = "status", value = "status-changed")
 	public double getStatus() {
 		return getElement().getProperty("status", 0.0);
 	}
@@ -144,6 +148,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * A promise that resolves when the {@code xhr} response comes back, or
 	 * rejects if there is an error before the {@code xhr} completes.
 	 */
+	@Synchronize(property = "completes", value = "completes-changed")
 	public JsonObject getCompletes() {
 		return (JsonObject) getElement().getPropertyRaw("completes");
 	}
@@ -168,6 +173,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * An object that contains progress information emitted by the XHR if
 	 * available.
 	 */
+	@Synchronize(property = "progress", value = "progress-changed")
 	public JsonObject getProgress() {
 		return (JsonObject) getElement().getPropertyRaw("progress");
 	}
@@ -191,6 +197,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * Aborted will be true if an abort of the request is attempted.
 	 */
+	@Synchronize(property = "aborted", value = "aborted-changed")
 	public boolean isAborted() {
 		return getElement().getProperty("aborted", false);
 	}
@@ -214,6 +221,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * Errored will be true if the browser fired an error event from the XHR
 	 * object (mainly network errors).
 	 */
+	@Synchronize(property = "errored", value = "errored-changed")
 	public boolean isErrored() {
 		return getElement().getProperty("errored", false);
 	}

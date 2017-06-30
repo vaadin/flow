@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -155,6 +156,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * If true, the element currently has focus.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
@@ -177,6 +179,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * If true, the user cannot interact with this element.
 	 */
+	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
@@ -199,6 +202,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component {
 	 * 
 	 * True if the content is currently displayed.
 	 */
+	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}

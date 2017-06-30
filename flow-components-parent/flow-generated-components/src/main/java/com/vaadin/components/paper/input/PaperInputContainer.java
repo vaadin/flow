@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -268,6 +269,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * 
 	 * True if the input has focus.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}

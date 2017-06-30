@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
@@ -115,6 +116,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * 
 	 * True if the last call to {@code validate} is invalid.
 	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}
@@ -156,6 +158,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * Use {@code selectedItem} property to get the raw selected item from the
 	 * {@code items} array.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -206,6 +209,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * 
 	 * True if the dropdown is open, false otherwise.
 	 */
+	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}
@@ -389,6 +393,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * 
 	 * Filtering string the user has typed into the input field.
 	 */
+	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
 		return getElement().getProperty("filter");
 	}
@@ -772,6 +777,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component {
 	 * 
 	 * True when the input field has focus.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}

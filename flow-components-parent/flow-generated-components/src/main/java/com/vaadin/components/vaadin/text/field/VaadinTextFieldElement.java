@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.DomEvent;
@@ -437,6 +438,7 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * The initial value of the control. It can be used for two-way data
 	 * binding.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -460,6 +462,7 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * This property is set to true when the control value invalid.
 	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}

@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -317,6 +318,7 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * Read-only value that is true when the image is loaded.
 	 */
+	@Synchronize(property = "loaded", value = "loaded-changed")
 	public boolean isLoaded() {
 		return getElement().getProperty("loaded", false);
 	}
@@ -340,6 +342,7 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * Read-only value that tracks the loading state of the image when the
 	 * {@code preload} option is used.
 	 */
+	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
 	}
@@ -364,6 +367,7 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * Read-only value that indicates that the last set {@code src} failed to
 	 * load.
 	 */
+	@Synchronize(property = "error", value = "error-changed")
 	public boolean isError() {
 		return getElement().getProperty("error", false);
 	}

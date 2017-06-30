@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -45,6 +46,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component {
 	 * 
 	 * If true, the element currently has focus.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
@@ -70,6 +72,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component {
 	 * {@code <paper-input-container>}'s and the input's {@code disabled}
 	 * property.
 	 */
+	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
@@ -188,6 +191,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component {
 	 * 
 	 * The value for this element.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -216,6 +220,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component {
 	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
 	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}

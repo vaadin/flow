@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -129,6 +130,7 @@ public class IronInput<R extends IronInput<R>> extends Component {
 	 * 
 	 * True if the last call to {@code validate} is invalid.
 	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}

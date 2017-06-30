@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -64,6 +65,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * If true, the element currently has focus.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
@@ -86,6 +88,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * If true, the user cannot interact with this element.
 	 */
+	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
@@ -474,6 +477,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component {
 	 * 
 	 * True if the overlay is currently displayed.
 	 */
+	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}

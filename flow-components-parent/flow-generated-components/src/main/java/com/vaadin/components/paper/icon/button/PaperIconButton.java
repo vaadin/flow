@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -150,6 +151,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component {
 	 * 
 	 * If true, the button is a toggle and is currently in the active state.
 	 */
+	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
 	}
@@ -248,6 +250,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component {
 	 * 
 	 * If true, the element currently has focus.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
@@ -270,6 +273,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component {
 	 * 
 	 * If true, the user cannot interact with this element.
 	 */
+	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}

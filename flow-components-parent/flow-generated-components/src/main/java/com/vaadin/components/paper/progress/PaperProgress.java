@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -106,6 +107,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * 
 	 * The number that represents the current value.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public double getValue() {
 		return getElement().getProperty("value", 0.0);
 	}
@@ -128,6 +130,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * 
 	 * The number that indicates the minimum value of the range.
 	 */
+	@Synchronize(property = "min", value = "min-changed")
 	public double getMin() {
 		return getElement().getProperty("min", 0.0);
 	}
@@ -150,6 +153,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * 
 	 * The number that indicates the maximum value of the range.
 	 */
+	@Synchronize(property = "max", value = "max-changed")
 	public double getMax() {
 		return getElement().getProperty("max", 0.0);
 	}
@@ -172,6 +176,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * 
 	 * Specifies the value granularity of the range's value.
 	 */
+	@Synchronize(property = "step", value = "step-changed")
 	public double getStep() {
 		return getElement().getProperty("step", 0.0);
 	}
@@ -194,6 +199,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * 
 	 * Returns the ratio of the value.
 	 */
+	@Synchronize(property = "ratio", value = "ratio-changed")
 	public double getRatio() {
 		return getElement().getProperty("ratio", 0.0);
 	}

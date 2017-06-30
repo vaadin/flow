@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonArray;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -69,6 +70,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * 
 	 * The selected color, as hex (i.e. #ffffff). value.
 	 */
+	@Synchronize(property = "color", value = "color-changed")
 	public String getColor() {
 		return getElement().getProperty("color");
 	}

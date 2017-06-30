@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -130,6 +131,7 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * 
 	 * True if the checkbox is checked.
 	 */
+	@Synchronize(property = "checked", value = "checked-changed")
 	public boolean isChecked() {
 		return getElement().getProperty("checked", false);
 	}
@@ -155,6 +157,7 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	 * https://developer.mozilla.org/en-US/docs/Web/
 	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
 	 */
+	@Synchronize(property = "indeterminate", value = "indeterminate-changed")
 	public boolean isIndeterminate() {
 		return getElement().getProperty("indeterminate", false);
 	}

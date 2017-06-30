@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -176,6 +177,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Use {@code selectedItem} property to get the raw selected item from the
 	 * {@code items} array.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -236,6 +238,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * True if the dropdown is open, false otherwise.
 	 */
+	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}
@@ -428,6 +431,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * 
 	 * Filtering string the user has typed into the input field.
 	 */
+	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
 		return getElement().getProperty("filter");
 	}

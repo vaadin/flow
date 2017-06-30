@@ -366,11 +366,11 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("Couldn't find constructor with EventData.",
                 matcher.find());
 
-        Assert.assertTrue("Couldn't find variable reference",
-                generatedClass.contains("private final double detailsProperty;"));
+        Assert.assertTrue("Couldn't find variable reference", generatedClass
+                .contains("private final double detailsProperty;"));
 
-        Assert.assertTrue("Couldn't find getter for event data",
-                generatedClass.contains("public double getDetailsProperty() {"));
+        Assert.assertTrue("Couldn't find getter for event data", generatedClass
+                .contains("public double getDetailsProperty() {"));
 
         Assert.assertFalse("Found setter even though one shouldn't exist",
                 generatedClass.contains("public void setDetailsProperty("));
@@ -495,5 +495,29 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("The method getSelf() wasn't found",
                 generatedClass.contains("protected R getSelf()"));
+    }
+
+    @Test
+    public void classContainsGetterAndRelatedChangeEvent_getterContainsSynchronizeAnnotation() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("someproperty");
+        property.setType(Arrays.asList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Arrays.asList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("someproperty-changed");
+        componentMetadata.setEvents(Arrays.asList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        // remove indentation
+        generatedClass = generatedClass.replaceAll("\\s\\s+", " ");
+
+        Assert.assertTrue(
+                "Wrong getter definition. It should contains @Synchronize(property = \"somepropery\", value = \"someproperty-changed\")",
+                generatedClass.contains(
+                        "@Synchronize(property = \"someproperty\", value = \"someproperty-changed\") "
+                                + "public String getSomeproperty() {"));
     }
 }

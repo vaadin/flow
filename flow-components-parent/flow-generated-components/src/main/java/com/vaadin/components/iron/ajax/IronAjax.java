@@ -20,6 +20,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -442,6 +443,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * True while lastRequest is in flight.
 	 */
+	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
 	}

@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -84,6 +85,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * True if the last call to {@code validate} is invalid.
 	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}
@@ -106,6 +108,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * If true, the element currently has focus.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
@@ -128,6 +131,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * If true, the user cannot interact with this element.
 	 */
+	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
@@ -150,6 +154,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public String getValueString() {
 		return getElement().getProperty("value");
 	}
@@ -159,6 +164,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public double getValueNumber() {
 		return getElement().getProperty("value", 0.0);
 	}

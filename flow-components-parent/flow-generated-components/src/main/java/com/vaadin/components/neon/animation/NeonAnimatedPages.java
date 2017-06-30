@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
@@ -92,6 +93,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
 	 */
+	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
 		return getElement().getProperty("selected");
 	}
@@ -102,6 +104,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
 	 */
+	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
 		return getElement().getProperty("selected", 0.0);
 	}
@@ -271,6 +274,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * The list of items from which a selection can be made.
 	 */
+	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}

@@ -30,6 +30,7 @@ import javax.annotation.Generated;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.source.AnnotationTargetSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -41,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -280,7 +282,7 @@ public class ComponentGenerator {
 
         if (metadata.getProperties() != null) {
             metadata.getProperties().forEach(property -> {
-                generateGetterFor(javaClass, property);
+                generateGetterFor(javaClass, property, metadata.getEvents());
 
                 if (!property.isReadOnly()) {
                     generateSetterFor(javaClass, property);
@@ -422,7 +424,7 @@ public class ComponentGenerator {
     }
 
     private void generateGetterFor(JavaClassSource javaClass,
-            ComponentPropertyData property) {
+            ComponentPropertyData property, List<ComponentEventData> events) {
         boolean postfixWithVariableType = property.getType().size() > 1;
         for (ComponentBasicType basicType : property.getType()) {
             MethodSource<JavaClassSource> method = javaClass.addMethod()
@@ -477,10 +479,29 @@ public class ComponentGenerator {
                 break;
             }
 
+            // verifies whether the getter needs a @Synchronize annotation by
+            // inspecting the event list
+            if (containsChangedEventForProperty(property.getName(), events)) {
+                method.addAnnotation(Synchronize.class)
+                        .setStringValue("property", property.getName())
+                        .setStringValue(property.getName() + "-changed");
+
+            }
+
             if (StringUtils.isNotEmpty(property.getDescription())) {
                 addJavaDoc(property.getDescription(), method.getJavaDoc());
             }
         }
+    }
+
+    private boolean containsChangedEventForProperty(String property,
+            List<ComponentEventData> events) {
+        if (events == null) {
+            return false;
+        }
+        return events.stream()
+                .filter(event -> event.getName().equals(property + "-changed"))
+                .limit(1).count() > 0;
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
