@@ -16,6 +16,7 @@
 package com.vaadin.components.neon.animation.animations;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -38,7 +39,7 @@ import elemental.json.JsonObject;
 @HtmlImport("frontend://bower_components/neon-animation/animations/slide-right-animation.html")
 public class SlideRightAnimation<R extends SlideRightAnimation<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -51,7 +52,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.11-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
-public class PaperTextarea<R extends PaperTextarea<R>> extends Component {
+public class PaperTextarea<R extends PaperTextarea<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

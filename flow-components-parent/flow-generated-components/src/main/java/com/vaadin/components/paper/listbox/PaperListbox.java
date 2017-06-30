@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.listbox;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -75,7 +76,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-listbox#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("paper-listbox")
 @HtmlImport("frontend://bower_components/paper-listbox/paper-listbox.html")
-public class PaperListbox<R extends PaperListbox<R>> extends Component {
+public class PaperListbox<R extends PaperListbox<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -99,7 +100,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-input#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("iron-input")
 @HtmlImport("frontend://bower_components/iron-input/iron-input.html")
-public class IronInput<R extends IronInput<R>> extends Component {
+public class IronInput<R extends IronInput<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

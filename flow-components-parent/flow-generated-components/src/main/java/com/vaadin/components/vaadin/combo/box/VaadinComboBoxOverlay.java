@@ -16,6 +16,7 @@
 package com.vaadin.components.vaadin.combo.box;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -29,7 +30,7 @@ import com.vaadin.components.NotSupported;
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
 public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

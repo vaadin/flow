@@ -16,6 +16,7 @@
 package com.vaadin.components.vaadin.checkbox;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -55,9 +56,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.11-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
-public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
-		extends
-			Component {
+public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -232,9 +233,8 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	@DomEvent("checked-changed")
 	public static class CheckedChangedEvent
 			extends
-				ComponentEvent<VaadinCheckboxElement> {
-		public CheckedChangedEvent(VaadinCheckboxElement source,
-				boolean fromClient) {
+				ComponentEvent<VaadinCheckbox> {
+		public CheckedChangedEvent(VaadinCheckbox source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -247,8 +247,8 @@ public class VaadinCheckboxElement<R extends VaadinCheckboxElement<R>>
 	@DomEvent("indeterminate-changed")
 	public static class IndeterminateChangedEvent
 			extends
-				ComponentEvent<VaadinCheckboxElement> {
-		public IndeterminateChangedEvent(VaadinCheckboxElement source,
+				ComponentEvent<VaadinCheckbox> {
+		public IndeterminateChangedEvent(VaadinCheckbox source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}

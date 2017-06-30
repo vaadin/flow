@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.item;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -53,7 +54,9 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-item-body#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("paper-item-body")
 @HtmlImport("frontend://bower_components/paper-item/paper-item-body.html")
-public class PaperItemBody<R extends PaperItemBody<R>> extends Component {
+public class PaperItemBody<R extends PaperItemBody<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Gets the narrow typed reference to this object. Subclasses should

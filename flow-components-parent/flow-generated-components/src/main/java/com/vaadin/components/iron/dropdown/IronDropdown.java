@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.dropdown;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -57,7 +58,9 @@ import com.vaadin.annotations.EventData;
 		"WebComponent: iron-dropdown#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("iron-dropdown")
 @HtmlImport("frontend://bower_components/iron-dropdown/iron-dropdown.html")
-public class IronDropdown<R extends IronDropdown<R>> extends Component {
+public class IronDropdown<R extends IronDropdown<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

@@ -16,6 +16,7 @@
 package com.vaadin.components.neon.animation.animations;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -29,7 +30,9 @@ import elemental.json.JsonObject;
 		"WebComponent: ripple-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
 @Tag("ripple-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/ripple-animation.html")
-public class RippleAnimation<R extends RippleAnimation<R>> extends Component {
+public class RippleAnimation<R extends RippleAnimation<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

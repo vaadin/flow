@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.a11y.announcer;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -53,9 +54,9 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: Polymer.IronA11yAnnouncer#2.0.0", "Flow#0.1.11-SNAPSHOT"})
 @Tag("iron-a11y-announcer")
 @HtmlImport("frontend://bower_components/iron-a11y-announcer/iron-a11y-announcer.html")
-public class PolymerIronA11yAnnouncer<R extends PolymerIronA11yAnnouncer<R>>
+public class IronA11yAnnouncer<R extends IronA11yAnnouncer<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

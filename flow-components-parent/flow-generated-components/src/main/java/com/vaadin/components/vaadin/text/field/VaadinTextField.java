@@ -16,6 +16,7 @@
 package com.vaadin.components.vaadin.text.field;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -49,9 +50,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: Vaadin.TextFieldElement#null", "Flow#0.1.11-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
-public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
-		extends
-			Component {
+public class VaadinTextField<R extends VaadinTextField<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -569,8 +570,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("iron-form-element-register")
 	public static class IronFormElementRegisterEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public IronFormElementRegisterEvent(VaadinTextFieldElement source,
+				ComponentEvent<VaadinTextField> {
+		public IronFormElementRegisterEvent(VaadinTextField source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
@@ -584,8 +585,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("iron-form-element-unregister")
 	public static class IronFormElementUnregisterEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public IronFormElementUnregisterEvent(VaadinTextFieldElement source,
+				ComponentEvent<VaadinTextField> {
+		public IronFormElementUnregisterEvent(VaadinTextField source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
@@ -599,9 +600,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("value-changed")
 	public static class ValueChangedEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public ValueChangedEvent(VaadinTextFieldElement source,
-				boolean fromClient) {
+				ComponentEvent<VaadinTextField> {
+		public ValueChangedEvent(VaadinTextField source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -614,9 +614,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("invalid-changed")
 	public static class InvalidChangedEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public InvalidChangedEvent(VaadinTextFieldElement source,
-				boolean fromClient) {
+				ComponentEvent<VaadinTextField> {
+		public InvalidChangedEvent(VaadinTextField source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -629,9 +628,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("has-value-changed")
 	public static class HasValueChangedEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public HasValueChangedEvent(VaadinTextFieldElement source,
-				boolean fromClient) {
+				ComponentEvent<VaadinTextField> {
+		public HasValueChangedEvent(VaadinTextField source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}

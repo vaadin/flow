@@ -16,6 +16,7 @@
 package com.vaadin.components.neon.animation.animations;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -36,7 +37,9 @@ import elemental.json.JsonObject;
 		"WebComponent: scale-up-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
 @Tag("scale-up-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/scale-up-animation.html")
-public class ScaleUpAnimation<R extends ScaleUpAnimation<R>> extends Component {
+public class ScaleUpAnimation<R extends ScaleUpAnimation<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

@@ -16,6 +16,8 @@
 package com.vaadin.components.vaadin.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasText;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -48,9 +50,10 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.11-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
-public class VaadinButtonElement<R extends VaadinButtonElement<R>>
-		extends
-			Component {
+public class VaadinButton<R extends VaadinButton<R>> extends Component
+		implements
+			HasStyle,
+			HasText {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
