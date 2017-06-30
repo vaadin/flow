@@ -230,6 +230,7 @@
       "properties": []
     }
   ],
+  "slots": [],
   "behaviors": [
     "Polymer.IronMultiSelectableBehavior"
   ],

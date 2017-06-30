@@ -393,6 +393,9 @@
       ]
     }
   ],
+  "slots": [
+    ""
+  ],
   "behaviors": [
     "Polymer.IronA11yKeysBehavior",
     "vaadin.elements.combobox.ComboBoxBehavior"

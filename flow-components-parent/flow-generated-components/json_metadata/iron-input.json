@@ -87,6 +87,9 @@
       "properties": []
     }
   ],
+  "slots": [
+    ""
+  ],
   "behaviors": [
     "Polymer.IronValidatableBehavior"
   ],

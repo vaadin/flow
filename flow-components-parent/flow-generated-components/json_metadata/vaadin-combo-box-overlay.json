@@ -138,6 +138,7 @@
     }
   ],
   "events": [],
+  "slots": [],
   "behaviors": [
     "vaadin.elements.combobox.OverlayBehavior"
   ],

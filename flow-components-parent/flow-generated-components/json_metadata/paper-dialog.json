@@ -417,6 +417,9 @@
       "properties": []
     }
   ],
+  "slots": [
+    ""
+  ],
   "behaviors": [
     "Polymer.PaperDialogBehavior",
     "Polymer.NeonAnimationRunnerBehavior"

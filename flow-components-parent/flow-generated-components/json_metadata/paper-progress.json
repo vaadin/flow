@@ -105,6 +105,7 @@
       "properties": []
     }
   ],
+  "slots": [],
   "behaviors": [
     "Polymer.IronRangeBehavior"
   ],

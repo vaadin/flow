@@ -40,6 +40,9 @@
     }
   ],
   "events": [],
+  "slots": [
+    ""
+  ],
   "behaviors": [],
   "description": "`iron-overlay-backdrop` is a backdrop used by `Polymer.IronOverlayBehavior`. It should be a\nsingleton.\n\n### Styling\n\nThe following custom properties and mixins are available for styling.\n\nCustom property | Description | Default\n-------------------------------------------|------------------------|---------\n`--iron-overlay-backdrop-background-color` | Backdrop background color                                     | #000\n`--iron-overlay-backdrop-opacity`          | Backdrop opacity                                              | 0.6\n`--iron-overlay-backdrop`                  | Mixin applied to `iron-overlay-backdrop`.                      | {}\n`--iron-overlay-backdrop-opened`           | Mixin applied to `iron-overlay-backdrop` when it is displayed | {}"
 }
