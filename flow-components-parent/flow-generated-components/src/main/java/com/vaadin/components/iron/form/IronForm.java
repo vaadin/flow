@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.form;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -91,7 +92,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-form#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-form")
 @HtmlImport("frontend://bower_components/iron-form/iron-form.html")
-public class IronForm<R extends IronForm<R>> extends Component {
+public class IronForm<R extends IronForm<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

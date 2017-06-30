@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.image;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -86,7 +87,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-image#2.1.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-image")
 @HtmlImport("frontend://bower_components/iron-image/iron-image.html")
-public class IronImage<R extends IronImage<R>> extends Component {
+public class IronImage<R extends IronImage<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

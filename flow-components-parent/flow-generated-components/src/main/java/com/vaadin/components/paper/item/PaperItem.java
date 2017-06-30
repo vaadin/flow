@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.item;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -94,7 +95,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-item#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-item")
 @HtmlImport("frontend://bower_components/paper-item/paper-item.html")
-public class PaperItem<R extends PaperItem<R>> extends Component {
+public class PaperItem<R extends PaperItem<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

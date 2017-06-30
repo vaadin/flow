@@ -16,6 +16,7 @@
 package com.vaadin.components.neon.animation;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -47,7 +48,7 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/neon-animation/neon-animated-pages.html")
 public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

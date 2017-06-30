@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.spinner;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -56,7 +57,9 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-spinner-lite#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-spinner-lite")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner-lite.html")
-public class PaperSpinnerLite<R extends PaperSpinnerLite<R>> extends Component {
+public class PaperSpinnerLite<R extends PaperSpinnerLite<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

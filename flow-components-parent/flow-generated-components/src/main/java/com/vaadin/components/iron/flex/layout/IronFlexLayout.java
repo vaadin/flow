@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.flex.layout;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -73,7 +74,9 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: iron-flex-layout#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-flex-layout")
 @HtmlImport("frontend://bower_components/iron-flex-layout/iron-flex-layout.html")
-public class IronFlexLayout<R extends IronFlexLayout<R>> extends Component {
+public class IronFlexLayout<R extends IronFlexLayout<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Gets the narrow typed reference to this object. Subclasses should

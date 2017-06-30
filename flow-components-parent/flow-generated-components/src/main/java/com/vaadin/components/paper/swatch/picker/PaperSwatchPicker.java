@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.swatch.picker;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -62,7 +63,7 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

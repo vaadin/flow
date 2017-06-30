@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +57,7 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.HasStyle;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -274,7 +277,21 @@ public class ComponentGenerator {
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(targetPackage).setPublic()
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
-                        .generateValidJavaClassName(metadata.getName()));
+                        .generateValidJavaClassName(metadata.getTag()));
+
+        // all components have styles
+        javaClass.addInterface(HasStyle.class);
+
+        List<String> classBehaviorsAndMixins = new ArrayList<>();
+        classBehaviorsAndMixins.add(javaClass.getName());
+
+        if (metadata.getBehaviors() != null) {
+            classBehaviorsAndMixins.addAll(metadata.getBehaviors());
+        }
+
+        Set<Class<?>> interfaces = BehaviorRegistry
+                .getClassesForBehaviors(classBehaviorsAndMixins);
+        interfaces.forEach(javaClass::addInterface);
 
         addClassAnnotations(metadata, javaClass);
 

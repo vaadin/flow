@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.iconset.svg;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -54,7 +55,9 @@ import elemental.json.JsonObject;
 		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-iconset-svg")
 @HtmlImport("frontend://bower_components/iron-iconset-svg/iron-iconset-svg.html")
-public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
+public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
