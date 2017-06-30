@@ -5,7 +5,7 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 
 /**
- * View for {@link VaadinTextFieldElement} demo.
+ * View for {@link VaadinTextField} demo.
  */
 @ComponentDemo(name = "Vaadin Text Field", href = "vaadin-text-field")
 public class VaadinTextFieldView extends DemoView {

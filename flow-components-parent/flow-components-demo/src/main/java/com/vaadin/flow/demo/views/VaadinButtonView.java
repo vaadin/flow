@@ -5,7 +5,7 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 
 /**
- * View for {@link VaadinButtonElement} demo.
+ * View for {@link VaadinButton} demo.
  */
 @ComponentDemo(name = "Vaadin Button", href = "vaadin-button")
 public class VaadinButtonView extends DemoView {

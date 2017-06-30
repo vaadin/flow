@@ -5,7 +5,7 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 
 /**
- * View for {@link VaadinCheckboxElement} demo.
+ * View for {@link VaadinCheckbox} demo.
  */
 @ComponentDemo(name = "Vaadin Checkbox", href = "vaadin-checkbox")
 public class VaadinCheckboxView extends DemoView {
