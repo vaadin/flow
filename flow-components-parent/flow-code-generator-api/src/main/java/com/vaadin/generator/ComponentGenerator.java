@@ -30,7 +30,6 @@ import javax.annotation.Generated;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.source.AnnotationTargetSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -481,15 +480,26 @@ public class ComponentGenerator {
 
             // verifies whether the getter needs a @Synchronize annotation by
             // inspecting the event list
+            String synchronizationDescription = "";
+
             if (containsChangedEventForProperty(property.getName(), events)) {
                 method.addAnnotation(Synchronize.class)
                         .setStringValue("property", property.getName())
                         .setStringValue(property.getName() + "-changed");
 
+                synchronizationDescription = "This property is synchronized automatically from client side when a \""
+                        + property.getName() + "-changed\" event happens.";
+            } else {
+                synchronizationDescription = "This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.";
             }
 
             if (StringUtils.isNotEmpty(property.getDescription())) {
-                addJavaDoc(property.getDescription(), method.getJavaDoc());
+                addJavaDoc(
+                        property.getDescription() + "<p>"
+                                + synchronizationDescription,
+                        method.getJavaDoc());
+            } else {
+                method.getJavaDoc().setFullText(synchronizationDescription);
             }
         }
     }
