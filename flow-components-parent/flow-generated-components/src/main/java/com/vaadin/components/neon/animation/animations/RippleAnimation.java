@@ -25,8 +25,8 @@ import elemental.json.JsonObject;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: ripple-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: ripple-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("ripple-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/ripple-animation.html")
 public class RippleAnimation<R extends RippleAnimation<R>> extends Component {

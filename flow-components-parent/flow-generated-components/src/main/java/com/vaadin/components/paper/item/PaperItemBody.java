@@ -49,8 +49,8 @@ import com.vaadin.annotations.HtmlImport;
  * area | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: paper-item-body#2.0.0", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: paper-item-body#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-item-body")
 @HtmlImport("frontend://bower_components/paper-item/paper-item-body.html")
 public class PaperItemBody<R extends PaperItemBody<R>> extends Component {

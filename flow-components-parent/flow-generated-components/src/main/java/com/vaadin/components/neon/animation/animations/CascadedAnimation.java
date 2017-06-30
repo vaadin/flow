@@ -32,8 +32,8 @@ import elemental.json.JsonObject;
  * timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: cascaded-animation#UNKNOWN", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: cascaded-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("cascaded-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/cascaded-animation.html")
 public class CascadedAnimation<R extends CascadedAnimation<R>>

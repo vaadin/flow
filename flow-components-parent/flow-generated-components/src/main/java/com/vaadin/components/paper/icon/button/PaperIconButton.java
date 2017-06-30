@@ -30,8 +30,8 @@ import com.vaadin.shared.Registration;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.11-SNAPSHOT",
-		"WebComponent: paper-icon-button#2.0.0", "Flow#0.1.11-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"WebComponent: paper-icon-button#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-icon-button")
 @HtmlImport("frontend://bower_components/paper-icon-button/paper-icon-button.html")
 public class PaperIconButton<R extends PaperIconButton<R>> extends Component {
