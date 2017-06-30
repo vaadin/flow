@@ -781,12 +781,11 @@ public class ComponentGenerator {
     }
 
     private Properties getProperties(String fileName) {
-        // Get properties resource with version information.
-        InputStream resourceAsStream = this.getClass()
-                .getResourceAsStream("/" + fileName);
-
         Properties config = new Properties();
-        try {
+
+        // Get properties resource with version information.
+        try (InputStream resourceAsStream = this.getClass()
+                .getResourceAsStream("/" + fileName)) {
             config.load(resourceAsStream);
             return config;
         } catch (IOException e) {
