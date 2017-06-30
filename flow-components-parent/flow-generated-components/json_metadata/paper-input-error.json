@@ -50,6 +50,9 @@
     }
   ],
   "events": [],
+  "slots": [
+    ""
+  ],
   "behaviors": [
     "Polymer.PaperInputAddonBehavior"
   ],

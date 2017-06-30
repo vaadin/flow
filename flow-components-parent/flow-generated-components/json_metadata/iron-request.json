@@ -222,6 +222,7 @@
       "properties": []
     }
   ],
+  "slots": [],
   "behaviors": [],
   "description": "iron-request can be used to perform XMLHttpRequests.\n\n    <iron-request id=\"xhr\"></iron-request>\n    ...\n    this.$.xhr.send({url: url, body: params});"
 }

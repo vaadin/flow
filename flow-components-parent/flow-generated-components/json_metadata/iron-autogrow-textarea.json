@@ -200,6 +200,7 @@
       "properties": []
     }
   ],
+  "slots": [],
   "behaviors": [
     "Polymer.IronValidatableBehavior",
     "Polymer.IronControlState"
