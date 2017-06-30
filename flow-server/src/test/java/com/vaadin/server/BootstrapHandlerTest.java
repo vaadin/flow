@@ -4,12 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +65,7 @@ public class BootstrapHandlerTest {
     private VaadinSession session;
     private VaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration;
+    private WebBrowser browser;
 
     @Before
     public void setup() {
@@ -77,6 +81,11 @@ public class BootstrapHandlerTest {
         session.lock();
         session.setConfiguration(deploymentConfiguration);
         testUI.getInternals().setSession(session);
+
+        browser = Mockito.mock(WebBrowser.class);
+
+        Mockito.when(browser.isEs6Supported()).thenReturn(false);
+        Mockito.when(session.getBrowser()).thenReturn(browser);
     }
 
     private void initUI(UI ui) {
@@ -194,9 +203,8 @@ public class BootstrapHandlerTest {
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
 
-        assertEquals(Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
-                .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
-                        resolvedContext)
+        assertEquals(Constants.FRONTEND_URL_ES6_DEFAULT_VALUE.replace(
+                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, resolvedContext)
                 + "foo", urlES6);
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
@@ -204,9 +212,8 @@ public class BootstrapHandlerTest {
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
 
-        assertEquals(Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
-                .replace(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
-                        resolvedContext)
+        assertEquals(Constants.FRONTEND_URL_ES5_DEFAULT_VALUE.replace(
+                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX, resolvedContext)
                 + "foo", urlES5);
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
@@ -268,6 +275,18 @@ public class BootstrapHandlerTest {
         Mockito.verify(session, Mockito.times(3)).getBrowser();
     }
 
+    @Test
+    public void es6IsNotSupported_es6CollectionsAreInlined()
+            throws IOException {
+        Assert.assertTrue(hasEs6Inlined());
+    }
+
+    @Test
+    public void es6IsSupported_noEs6ScriptInlined() throws IOException {
+        Mockito.when(browser.isEs6Supported()).thenReturn(true);
+        Assert.assertFalse(hasEs6Inlined());
+    }
+
     private VaadinRequest createVaadinRequest() {
         HttpServletRequest request = createRequest();
         return new VaadinServletRequest(request, service);
@@ -279,20 +298,27 @@ public class BootstrapHandlerTest {
         return request;
     }
 
-    private static void verifyMeterElement(Element meter) {
-        assertEquals("meter", meter.tagName());
-        assertEquals("foo", meter.className());
-        assertEquals("1000", meter.attr("max"));
-        assertEquals("500", meter.attr("value"));
-    }
+    private boolean hasEs6Inlined() throws IOException {
+        TestUI anotherUI = new TestUI();
+        initUI(testUI);
+        anotherUI.getInternals().setSession(session);
+        VaadinRequest vaadinRequest = createVaadinRequest();
+        anotherUI.doInit(vaadinRequest, 0);
+        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
+                null, session, anotherUI);
 
-    private static com.vaadin.flow.dom.Element createMeterElement() {
-        com.vaadin.flow.dom.Element meter = new com.vaadin.flow.dom.Element(
-                "meter");
-        meter.getStyle().set("color", "black");
-        meter.setAttribute("max", "1000");
-        meter.setAttribute("value", "500");
-        meter.getClassList().add("foo");
-        return meter;
+        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+        Element head = page.head();
+
+        StringBuilder builder = new StringBuilder();
+        try (InputStream stream = getClass()
+                .getResourceAsStream("es6-collections.js")) {
+            IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
+                    .forEach(builder::append);
+
+        }
+        boolean hasEs6Inlined = head.getElementsByTag("script").stream()
+                .anyMatch(script -> script.data().contains(builder.toString()));
+        return hasEs6Inlined;
     }
 }
