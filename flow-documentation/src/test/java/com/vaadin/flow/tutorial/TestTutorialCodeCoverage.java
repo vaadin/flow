@@ -32,16 +32,13 @@ import org.junit.Test;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 public class TestTutorialCodeCoverage {
-    private static final Path location = new File(".").toPath();
-    private static final Path javaLocation = location
+    private static final Path DOCS_ROOT = new File(".").toPath();
+    private static final Path JAVA_LOCATION = DOCS_ROOT
             .resolve(Paths.get("src", "main", "java"));
-    private static final Path htmlLocation = location
+    private static final Path HTML_LOCATION = DOCS_ROOT
             .resolve(Paths.get("src", "main", "html"));
-    private static final Path cssLocation = location
+    private static final Path CSS_LOCATION = DOCS_ROOT
             .resolve(Paths.get("src", "main", "css"));
-
-    private static final String LINE_SEPARATOR = System
-            .getProperty("line.separator");
 
     private static final String JAVA_BLOCK_IDENTIFIER = "[source,java]";
     private static final String HTML_BLOCK_IDENTIFIER = "[source,html]";
@@ -51,40 +48,36 @@ public class TestTutorialCodeCoverage {
     private static final String HTML = "html";
     private static final String CSS = "css";
 
-    private static final StringBuilder exceptions = new StringBuilder();
-    private static int exceptionAmount = 0;
+    private static final StringBuilder DOCUMENTATION_ERRORS = new StringBuilder();
+    private static int documentationErrorsCount = 0;
 
-    private Map<String, Set<String>> codeFileMap;
+    private Map<String, Set<String>> javaFileMap;
     private Map<String, Set<String>> htmlFileMap;
     private Map<String, Set<String>> cssFileMap;
 
     @Test
     public void verifyTutorialCode() throws IOException {
-        codeFileMap = verifyJavaCode();
+        javaFileMap = verifyJavaCode();
         htmlFileMap = verifyHtml();
         cssFileMap = verifyCss();
 
         // Verify that there's at least one java and html file for each tutorial
-        Files.walk(location)
-                .filter(path -> path.toFile().getName()
-                        .matches("tutorial-.*\\.asciidoc"))
-                .forEach(tutorialPath -> {
-                    verifyRequiredFiles(tutorialPath);
-                });
+        Files.walk(DOCS_ROOT)
+                .filter(path -> path.toString().endsWith(".asciidoc"))
+                .forEach(this::verifyRequiredFiles);
 
-        if (exceptionAmount > 0) {
-            exceptions.insert(0,
-                    String.format("%sFound %s problems with documentation",
-                            LINE_SEPARATOR, exceptionAmount));
-            Assert.fail(exceptions.toString());
+        if (documentationErrorsCount > 0) {
+            DOCUMENTATION_ERRORS.insert(0,
+                    String.format("%nFound %s problems with documentation", documentationErrorsCount));
+            Assert.fail(DOCUMENTATION_ERRORS.toString());
         }
     }
 
     private void verifyRequiredFiles(Path tutorialPath) {
-        String tutorialName = location.relativize(tutorialPath).toString();
+        String tutorialName = DOCS_ROOT.relativize(tutorialPath).toString();
         // Only require java file for tutorial that contains
         // [source,java] block
-        checkTutorial(tutorialName, tutorialPath, codeFileMap,
+        checkTutorial(tutorialName, tutorialPath, javaFileMap,
                 JAVA_BLOCK_IDENTIFIER, JAVA);
         // Only require html file for tutorial that contains
         // [source,html] block
@@ -101,7 +94,7 @@ public class TestTutorialCodeCoverage {
             String fileType) {
         if (!map.containsKey(tutorialName)
                 && tutorialContainsBlock(tutorialPath, blockIdentifier)) {
-            addException("Should be at least one " + fileType + " file for "
+            addDocumentationError("Should be at least one " + fileType + " file for "
                     + tutorialName);
         }
     }
@@ -120,8 +113,8 @@ public class TestTutorialCodeCoverage {
         Map<String, Set<String>> codeFileMap = new HashMap<>();
 
         // Populate map based on @CodeFor annotations
-        Files.walk(javaLocation)
-                .filter(path -> path.toFile().getName().endsWith("." + JAVA))
+        Files.walk(JAVA_LOCATION)
+                .filter(path -> path.toString().endsWith("." + JAVA))
                 .forEach(path -> extractCodeFiles(path, codeFileMap));
 
         // Verify that tutorial code is actually found in the java files
@@ -133,8 +126,8 @@ public class TestTutorialCodeCoverage {
     private Map<String, Set<String>> verifyHtml() throws IOException {
         Map<String, Set<String>> htmlFileMap = new HashMap<>();
 
-        Files.walk(htmlLocation)
-                .filter(path -> path.toFile().getName().endsWith("." + HTML))
+        Files.walk(HTML_LOCATION)
+                .filter(path -> path.toString().endsWith("." + HTML))
                 .forEach(path -> extractHtmlFiles(path, htmlFileMap));
 
         htmlFileMap.forEach((tutorial, lines) -> verifyTutorialCode(tutorial,
@@ -145,8 +138,8 @@ public class TestTutorialCodeCoverage {
     private Map<String, Set<String>> verifyCss() throws IOException {
         Map<String, Set<String>> cssFileMap = new HashMap<>();
 
-        Files.walk(cssLocation)
-                .filter(path -> path.toFile().getName().endsWith("." + CSS))
+        Files.walk(CSS_LOCATION)
+                .filter(path -> path.toString().endsWith("." + CSS))
                 .forEach(path -> extractHtmlFiles(path, cssFileMap));
 
         cssFileMap.forEach((tutorial, lines) -> verifyTutorialCode(tutorial,
@@ -156,14 +149,9 @@ public class TestTutorialCodeCoverage {
 
     private static void verifyTutorialCode(String tutorialName,
             Set<String> codeLines, String blockIdentifier, String fileType) {
-        verifyBlockContents(tutorialName, codeLines, blockIdentifier, fileType);
-    }
-
-    private static void verifyBlockContents(String tutorialName,
-            Set<String> allowedLines, String blockIdentifier, String fileType) {
         File tutorialFile = new File(tutorialName);
         if (!tutorialFile.exists()) {
-            addException(String.format(
+            addDocumentationError(String.format(
                     "Could not find tutorial file %s that was referenced from the %s files.",
                     tutorialFile.getAbsolutePath(), fileType));
             return;
@@ -197,8 +185,8 @@ public class TestTutorialCodeCoverage {
                         inBlock = false;
                     } else {
                         String trimmedLine = trimWhitespace(line);
-                        if (!allowedLines.contains(trimmedLine)) {
-                            addException(String.format(
+                        if (!codeLines.contains(trimmedLine)) {
+                            addDocumentationError(String.format(
                                     "%s has code not in the %s file: %s",
                                     tutorialName, fileType, line));
                         }
@@ -217,7 +205,7 @@ public class TestTutorialCodeCoverage {
 
     private static void extractCodeFiles(Path javaFile,
             Map<String, Set<String>> allowedLines) {
-        String className = javaLocation.relativize(javaFile).toString()
+        String className = JAVA_LOCATION.relativize(javaFile).toString()
                 .replace(File.separatorChar, '.').replaceAll("\\.java$", "");
 
         try {
@@ -229,7 +217,7 @@ public class TestTutorialCodeCoverage {
 
             CodeFor codeFor = clazz.getAnnotation(CodeFor.class);
             if (codeFor == null) {
-                addException("Java file without @CodeFor: " + className);
+                addDocumentationError("Java file without @CodeFor: " + className);
                 return;
             }
 
@@ -262,8 +250,8 @@ public class TestTutorialCodeCoverage {
                                         n -> new HashSet<>())
                                 .add(trimWhitespace(line)));
             } else {
-                addException("Html file with faulty tutorial header: "
-                        + htmlFile.toFile().getName());
+                addDocumentationError("Html file with faulty tutorial header: "
+                        + htmlFile.toString());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -274,12 +262,12 @@ public class TestTutorialCodeCoverage {
         return codeLine.replaceAll("\\s", "");
     }
 
-    private static void addException(String exception) {
-        exceptionAmount++;
+    private static void addDocumentationError(String documentationError) {
+        documentationErrorsCount++;
 
-        exceptions.append(LINE_SEPARATOR);
-        exceptions.append(String.format("%s. ", exceptionAmount));
-        exceptions.append(exception);
+        DOCUMENTATION_ERRORS.append(System.lineSeparator());
+        DOCUMENTATION_ERRORS.append(String.format("%s. ", documentationErrorsCount));
+        DOCUMENTATION_ERRORS.append(documentationError);
     }
 
 }
