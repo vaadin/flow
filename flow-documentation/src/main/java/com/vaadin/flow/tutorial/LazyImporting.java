@@ -17,6 +17,7 @@ package com.vaadin.flow.tutorial;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
@@ -24,11 +25,12 @@ import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-lazy-importing.asciidoc")
+@CodeFor("tutorial-ways-of-importing.asciidoc")
 public class LazyImporting {
 
     @Tag("div")
-    @HtmlImport("/html/layout.html")
+    @HtmlImport("/html/layout.html") // same as @HtmlImport("/html/layout.html", loadMode = LoadMode.EAGER)
+    @StyleSheet(value = "/css/big_style_file.css", loadMode = LoadMode.INLINE)
     @JavaScript(value = "/js/animation.js", loadMode = LoadMode.LAZY)
     public class MainLayout extends Component {
         // implementation omitted
@@ -39,6 +41,7 @@ public class LazyImporting {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addHtmlImport("/html/layout.html", LoadMode.EAGER);
+            getPage().addStyleSheet("/css/big_style_file.css", LoadMode.INLINE);
             getPage().addJavaScript("/js/animation.js", LoadMode.LAZY);
         }
     }
