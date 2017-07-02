@@ -72,12 +72,11 @@ public class TestTutorialCodeCoverage {
                 new AsciiDocDocumentLinkChecker(),
                 new AsciiDocImageLinkChecker());
 
-        Set<Path> allTutorials = Files.walk(DOCS_ROOT)
+        Files.walk(DOCS_ROOT)
                 .filter(path -> path.toString().endsWith(ASCII_DOC_EXTENSION))
-                .collect(Collectors.toSet());
-
-        allTutorials.forEach(
-                tutorialPath -> verifyTutorial(tutorialPath, lineCheckers));
+                .collect(Collectors.toSet())
+                .forEach(tutorialPath -> verifyTutorial(tutorialPath,
+                        lineCheckers));
 
         if (documentationErrorsCount > 0) {
             DOCUMENTATION_ERRORS.insert(0,

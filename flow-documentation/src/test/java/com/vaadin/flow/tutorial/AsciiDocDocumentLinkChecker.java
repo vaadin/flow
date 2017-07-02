@@ -45,11 +45,11 @@ public class AsciiDocDocumentLinkChecker implements TutorialLineChecker {
             }
 
             String externalTutorialUrl = urlAndDescription[0];
-            if (!checkedTutorialPaths.add(externalTutorialUrl)) {
+            if (checkedTutorialPaths.add(externalTutorialUrl)) {
                 Path externalTutorialPath = Paths.get(
                         tutorialPath.getParent().toString(), externalTutorialUrl
                                 + TestTutorialCodeCoverage.ASCII_DOC_EXTENSION);
-                if (!Files.exists(externalTutorialPath)) {
+                if (!Files.isRegularFile(externalTutorialPath)) {
                     validationErrors.add(String.format(
                             "Could not locate file '%s' referenced in tutorial %s",
                             externalTutorialUrl, tutorialPath));
