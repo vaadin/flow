@@ -9,10 +9,10 @@ import java.util.Set;
 /**
  * @author Vaadin Ltd.
  */
-public class CodeFileChecker implements TutorialLineChecker {
+class CodeFileChecker implements TutorialLineChecker {
     private static final String CODE_DECLARATION_LINE = "----";
 
-    private final String blockIdentifier;
+    private final String codeBlockIdentifier;
     private final Map<String, Set<String>> allowedLinesMap;
 
     private boolean blockStarted;
@@ -20,14 +20,13 @@ public class CodeFileChecker implements TutorialLineChecker {
 
     CodeFileChecker(String codeBlockIdentifier,
             Map<String, Set<String>> allowedLinesMap) {
-        this.blockIdentifier = codeBlockIdentifier;
+        this.codeBlockIdentifier = codeBlockIdentifier;
         this.allowedLinesMap = allowedLinesMap;
     }
 
     @Override
-    public Collection<String> verifyTutorialLine(Path tutorialPath, String tutorialName,
-                                                 String line) {
-        Set<String> allowedLines = allowedLinesMap.get(tutorialName);
+    public Collection<String> verifyTutorialLine(Path tutorialPath,
+            String tutorialName, String line) {
         if (blockStarted) {
             if (!CODE_DECLARATION_LINE.equals(line)) {
                 return Collections.singletonList(String.format(
@@ -40,20 +39,20 @@ public class CodeFileChecker implements TutorialLineChecker {
             if (line.equals(CODE_DECLARATION_LINE)) {
                 inBlock = false;
             } else {
-                String trimmedLine = trimWhitespace(line);
-                if (!allowedLines.contains(trimmedLine)) {
+                Set<String> allowedLines = allowedLinesMap.get(tutorialName);
+                if (allowedLines == null) {
+                    return Collections.singletonList(String.format("Tutorial %s has the code block, but has no corresponding code files", tutorialPath));
+                }
+
+                if (!allowedLines.contains(TestTutorialCodeCoverage.trimWhitespace(line))) {
                     return Collections.singletonList(String.format(
                             "Tutorial %s contains the code line '%s' that is not present in any of the corresponding code files",
                             tutorialName, line));
                 }
             }
-        } else if (blockIdentifier.equals(line)) {
+        } else if (codeBlockIdentifier.equals(line)) {
             blockStarted = true;
         }
         return Collections.emptyList();
-    }
-
-    private static String trimWhitespace(String codeLine) {
-        return codeLine.replaceAll("\\s", "");
     }
 }
