@@ -1,5 +1,6 @@
 package com.vaadin.flow.tutorial;
 
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class CodeFileChecker implements TutorialLineChecker {
     }
 
     @Override
-    public Collection<String> verifyTutorialLine(String tutorialName,
+    public Collection<String> verifyTutorialLine(Path tutorialPath, String tutorialName,
                                                  String line) {
         Set<String> allowedLines = allowedLinesMap.get(tutorialName);
         if (blockStarted) {

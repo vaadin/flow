@@ -35,6 +35,7 @@ import org.junit.Test;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 public class TestTutorialCodeCoverage {
+    static final String ASCII_DOC_EXTENSION = ".asciidoc";
     private static final Path DOCS_ROOT = new File(".").toPath();
     private static final Path JAVA_LOCATION = DOCS_ROOT
             .resolve(Paths.get("src", "main", "java"));
@@ -61,7 +62,7 @@ public class TestTutorialCodeCoverage {
     @Test
     public void verifyTutorialCode() throws IOException {
         javaFileMap = gatherJavaCode();
-        cssFileMap  = gatherWebFilesCode(CSS_LOCATION, CSS);
+        cssFileMap = gatherWebFilesCode(CSS_LOCATION, CSS);
         htmlFileMap = gatherWebFilesCode(HTML_LOCATION, HTML);
 
         List<TutorialLineChecker> lineCheckers = Arrays.asList(
@@ -69,14 +70,14 @@ public class TestTutorialCodeCoverage {
                 new CodeFileChecker(CSS_BLOCK_IDENTIFIER, cssFileMap),
                 new CodeFileChecker(HTML_BLOCK_IDENTIFIER, htmlFileMap),
                 new AsciiDocDocumentLinkChecker(),
-                new AsciiDocImageLinkChecker()
-        );
+                new AsciiDocImageLinkChecker());
 
         Set<Path> allTutorials = Files.walk(DOCS_ROOT)
-                .filter(path -> path.toString().endsWith(".asciidoc"))
+                .filter(path -> path.toString().endsWith(ASCII_DOC_EXTENSION))
                 .collect(Collectors.toSet());
 
-        allTutorials.forEach(tutorialPath -> verifyTutorial(tutorialPath, lineCheckers));
+        allTutorials.forEach(
+                tutorialPath -> verifyTutorial(tutorialPath, lineCheckers));
 
         if (documentationErrorsCount > 0) {
             DOCUMENTATION_ERRORS.insert(0,
@@ -86,7 +87,8 @@ public class TestTutorialCodeCoverage {
         }
     }
 
-    private void verifyTutorial(Path tutorialPath, List<TutorialLineChecker> lineCheckers) {
+    private void verifyTutorial(Path tutorialPath,
+            List<TutorialLineChecker> lineCheckers) {
         String tutorialName = DOCS_ROOT.relativize(tutorialPath).toString();
         verifyRequiredFiles(tutorialPath);
 
@@ -99,7 +101,8 @@ public class TestTutorialCodeCoverage {
         try {
             for (String line : Files.readAllLines(tutorialPath)) {
                 lineCheckers.stream()
-                        .map(checker -> checker.verifyTutorialLine(tutorialName, line))
+                        .map(checker -> checker.verifyTutorialLine(tutorialPath,
+                                tutorialName, line))
                         .filter(errorList -> !errorList.isEmpty())
                         .flatMap(Collection::stream)
                         .forEach(this::addDocumentationError);
