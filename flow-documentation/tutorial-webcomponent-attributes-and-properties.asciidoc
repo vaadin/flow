@@ -7,7 +7,7 @@ Polymer elements and web components are mainly configured through attributes and
 
 In this tutorial the focus is on providing an API for the numeric `value` property and the boolean `pin` property. The `value` property decides what value is indicated by the slider and should be between `min` (default 0) and `max` (default 100). The `pin` property decides whether a pin with a numeric label is shown when the slider thumb is pressed.
 
-Based on the empty component class created in the <<tutorial-webcomponent-basics#,previous tutorial>>, the API for `value` and `pin` can look like the following:
+Based on the empty component class created in the <<tutorial-webcomponent-basic#,previous tutorial>>, the API for `value` and `pin` can look like the following:
 
 [source,java]
 ----

@@ -34,7 +34,7 @@ In the above example the table's rows and everything inside the row element `<tr
 The value of the `*ngFor` attribute declares the items to loop and the name of the loop variable:
 
 * `let` precedes the name of the loop variable, e.g. _employee_.
-This variable is available for <<tutorial-template-data-binding#,data binding>> inside
+This variable is available for <<../tutorial-template-bindings#,data binding>> inside
 the element tags.
 * `of` precedes the name of the list inside the template model to iterate, e.g. _employees_.
 

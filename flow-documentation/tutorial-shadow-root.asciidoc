@@ -18,7 +18,7 @@ and getting the host element which contains the shadow root.
 
 [NOTE]
 When adding a shadow root, any element added to the `ShadowRoot` parent will not be visible if the `ShadowRoot`
-doesn't contain a `<slot></slot>` element. See <<tutorial-template-components-in-slot.asciidoc#,Components in slot>>
+doesn't contain a `<slot></slot>` element. See <<tutorial-template-components-in-slot#,Components in slot>>
 for more information.
 
 All new elements should be added to the `ShadowRoot` element so that they will be
