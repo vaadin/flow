@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.spinner;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -63,12 +64,17 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-spinner#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-spinner")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner.html")
-public class PaperSpinner<R extends PaperSpinner<R>> extends Component {
+public class PaperSpinner<R extends PaperSpinner<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Displays the spinner.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
@@ -93,6 +99,9 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component {
 	 * Alternative text content for accessibility support. If alt is present, it
 	 * will add an aria-label whose content matches alt when active. If alt is
 	 * not present, it will default to 'loading' as the alt value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");

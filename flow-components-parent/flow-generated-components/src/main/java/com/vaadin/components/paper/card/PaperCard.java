@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.card;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -68,12 +69,17 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-card#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
-public class PaperCard<R extends PaperCard<R>> extends Component {
+public class PaperCard<R extends PaperCard<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The title of the card.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getHeading() {
 		return getElement().getProperty("heading");
@@ -96,6 +102,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The url of the title image of the card.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getImage() {
 		return getElement().getProperty("image");
@@ -118,6 +127,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The text alternative of the card's title image.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");
@@ -141,6 +153,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * 
 	 * When {@code true}, any change to the image url property will cause the
 	 * {@code placeholder} image to be shown until the image is fully rendered.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPreloadImage() {
 		return getElement().getProperty("preloadImage", false);
@@ -165,6 +180,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * 
 	 * When {@code preloadImage} is true, setting {@code fadeImage} to true will
 	 * cause the image to fade into place.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isFadeImage() {
 		return getElement().getProperty("fadeImage", false);
@@ -190,6 +208,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * This image will be used as a background/placeholder until the src image
 	 * has loaded. Use of a data-URI for placeholder is encouraged for instant
 	 * rendering.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPlaceholderImage() {
 		return getElement().getProperty("placeholderImage");
@@ -215,6 +236,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The z-depth of the card, from 0-5.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getElevation() {
 		return getElement().getProperty("elevation", 0.0);
@@ -238,6 +262,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * 
 	 * Set this to true to animate the card shadow when setting a new {@code z}
 	 * value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAnimatedShadow() {
 		return getElement().getProperty("animatedShadow", false);
@@ -262,6 +289,9 @@ public class PaperCard<R extends PaperCard<R>> extends Component {
 	 * 
 	 * Read-only property used to pass down the {@code animatedShadow} value to
 	 * the underlying paper-material style (since they have different names).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAnimated() {
 		return getElement().getProperty("animated", false);

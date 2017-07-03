@@ -16,6 +16,7 @@
 package com.vaadin.components.vaadin.combo.box;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -25,8 +26,14 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: vaadin-spinner#null", "Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-spinner")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
-public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component {
+public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component
+		implements
+			HasStyle {
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
 	}

@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.image;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -87,12 +88,17 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-image#2.1.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-image")
 @HtmlImport("frontend://bower_components/iron-image/iron-image.html")
-public class IronImage<R extends IronImage<R>> extends Component {
+public class IronImage<R extends IronImage<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The URL of an image.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSrc() {
 		return getElement().getProperty("src");
@@ -115,6 +121,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * A short text alternative for the image.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");
@@ -138,6 +147,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * CORS enabled images support:
 	 * https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getCrossorigin() {
 		return getElement().getProperty("crossorigin");
@@ -164,6 +176,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * When true, the image is prevented from loading and any placeholder is
 	 * shown. This may be useful when a binding to the src property is known to
 	 * be invalid, to prevent 404 requests.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPreventLoad() {
 		return getElement().getProperty("preventLoad", false);
@@ -192,6 +207,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * letterboxed) or {@code cover} (image is cropped in order to fully cover
 	 * the bounds of the element), or {@code null} (default: image takes natural
 	 * size).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSizing() {
 		return getElement().getProperty("sizing");
@@ -219,6 +237,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * When a sizing option is used ({@code cover} or {@code contain}), this
 	 * determines how the image is aligned within the element bounds.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPosition() {
 		return getElement().getProperty("position");
@@ -243,6 +264,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * When {@code true}, any change to the {@code src} property will cause the
 	 * {@code placeholder} image to be shown until the new image has loaded.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPreload() {
 		return getElement().getProperty("preload", false);
@@ -268,6 +292,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * This image will be used as a background/placeholder until the src image
 	 * has loaded. Use of a data-URI for placeholder is encouraged for instant
 	 * rendering.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -294,6 +321,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * When {@code preload} is true, setting {@code fade} to true will cause the
 	 * image to fade into place.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isFade() {
 		return getElement().getProperty("fade", false);
@@ -317,6 +347,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Read-only value that is true when the image is loaded.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "loaded-changed" event happens.
 	 */
 	@Synchronize(property = "loaded", value = "loaded-changed")
 	public boolean isLoaded() {
@@ -341,6 +374,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * Read-only value that tracks the loading state of the image when the
 	 * {@code preload} option is used.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "loading-changed" event happens.
 	 */
 	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
@@ -366,6 +402,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * Read-only value that indicates that the last set {@code src} failed to
 	 * load.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "error-changed" event happens.
 	 */
 	@Synchronize(property = "error", value = "error-changed")
 	public boolean isError() {
@@ -391,6 +430,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * Can be used to set the width of image (e.g. via binding); size may also
 	 * be set via CSS.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getWidth() {
 		return getElement().getProperty("width", 0.0);
@@ -415,6 +457,9 @@ public class IronImage<R extends IronImage<R>> extends Component {
 	 * 
 	 * Can be used to set the height of image (e.g. via binding); size may also
 	 * be set via CSS.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getHeight() {
 		return getElement().getProperty("height", 0.0);

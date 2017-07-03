@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.ripple;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -87,13 +88,18 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-ripple#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-ripple")
 @HtmlImport("frontend://bower_components/paper-ripple/paper-ripple.html")
-public class PaperRipple<R extends PaperRipple<R>> extends Component {
+public class PaperRipple<R extends PaperRipple<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -118,6 +124,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * 
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -139,6 +148,10 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
@@ -156,6 +169,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The initial opacity set on the wave.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getInitialOpacity() {
 		return getElement().getProperty("initialOpacity", 0.0);
@@ -178,6 +194,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * How fast (opacity per second) the wave fades out.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getOpacityDecayVelocity() {
 		return getElement().getProperty("opacityDecayVelocity", 0.0);
@@ -201,6 +220,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * 
 	 * If true, ripples will exhibit a gravitational pull towards the center of
 	 * their container as they fade away.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRecenters() {
 		return getElement().getProperty("recenters", false);
@@ -224,6 +246,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, ripples will center inside its container
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isCenter() {
 		return getElement().getProperty("center", false);
@@ -246,6 +271,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * A list of the visual ripples.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getRipples() {
 		return (JsonArray) getElement().getPropertyRaw("ripples");
@@ -268,6 +296,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True when there are visible ripples animating within the element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAnimating() {
 		return getElement().getProperty("animating", false);
@@ -291,6 +322,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * 
 	 * If true, the ripple will remain in the "down" state until
 	 * {@code holdDown} is set to false again.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isHoldDown() {
 		return getElement().getProperty("holdDown", false);
@@ -316,6 +350,9 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 	 * If true, the ripple will not generate a ripple effect via pointer
 	 * interaction. Calling ripple's imperative api like {@code simulatedRipple}
 	 * will still generate the ripple effect.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
@@ -336,6 +373,10 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public JsonObject getTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
 	}
@@ -349,6 +390,10 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component {
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public JsonObject getShouldKeepAnimating() {
 		return (JsonObject) getElement().getPropertyRaw("shouldKeepAnimating");
 	}

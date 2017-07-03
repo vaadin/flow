@@ -16,6 +16,8 @@
 package com.vaadin.components.vaadin.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasText;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -48,14 +50,18 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
-public class VaadinButtonElement<R extends VaadinButtonElement<R>>
-		extends
-			Component {
+public class VaadinButton<R extends VaadinButton<R>> extends Component
+		implements
+			HasStyle,
+			HasText {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Specify that this control should have input focus when the page loads.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -78,6 +84,9 @@ public class VaadinButtonElement<R extends VaadinButtonElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
@@ -100,6 +109,9 @@ public class VaadinButtonElement<R extends VaadinButtonElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);

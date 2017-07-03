@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.ajax;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -40,13 +41,18 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-request#2.0.2", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-request")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-request.html")
-public class IronRequest<R extends IronRequest<R>> extends Component {
+public class IronRequest<R extends IronRequest<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * A reference to the XMLHttpRequest instance used to generate the network
 	 * request.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "xhr-changed" event happens.
 	 */
 	@Synchronize(property = "xhr", value = "xhr-changed")
 	public JsonObject getXhr() {
@@ -72,6 +78,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * A reference to the parsed response body, if the {@code xhr} has
 	 * completely resolved.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "response-changed" event happens.
 	 */
 	@Synchronize(property = "response", value = "response-changed")
 	public JsonObject getResponse() {
@@ -97,6 +106,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * A reference to the status code, if the {@code xhr} has completely
 	 * resolved.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "status-changed" event happens.
 	 */
 	@Synchronize(property = "status", value = "status-changed")
 	public double getStatus() {
@@ -122,6 +134,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * A reference to the status text, if the {@code xhr} has completely
 	 * resolved.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getStatusText() {
 		return getElement().getProperty("statusText");
@@ -147,6 +162,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * A promise that resolves when the {@code xhr} response comes back, or
 	 * rejects if there is an error before the {@code xhr} completes.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "completes-changed" event happens.
 	 */
 	@Synchronize(property = "completes", value = "completes-changed")
 	public JsonObject getCompletes() {
@@ -172,6 +190,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * An object that contains progress information emitted by the XHR if
 	 * available.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "progress-changed" event happens.
 	 */
 	@Synchronize(property = "progress", value = "progress-changed")
 	public JsonObject getProgress() {
@@ -196,6 +217,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Aborted will be true if an abort of the request is attempted.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "aborted-changed" event happens.
 	 */
 	@Synchronize(property = "aborted", value = "aborted-changed")
 	public boolean isAborted() {
@@ -220,6 +244,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * Errored will be true if the browser fired an error event from the XHR
 	 * object (mainly network errors).
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "errored-changed" event happens.
 	 */
 	@Synchronize(property = "errored", value = "errored-changed")
 	public boolean isErrored() {
@@ -244,6 +271,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * TimedOut will be true if the XHR threw a timeout event.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isTimedOut() {
 		return getElement().getProperty("timedOut", false);
@@ -271,6 +301,9 @@ public class IronRequest<R extends IronRequest<R>> extends Component {
 	 * 
 	 * The status code 0 is accepted as a success because some schemes - e.g.
 	 * file:// - don't provide status codes.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSucceeded() {
 		return (JsonObject) getElement().getPropertyRaw("succeeded");

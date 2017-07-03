@@ -205,5 +205,6 @@
     "Polymer.IronValidatableBehavior",
     "Polymer.IronControlState"
   ],
+  "mixins": [],
   "description": "`iron-autogrow-textarea` is an element containing a textarea that grows in height as more\nlines of input are entered. Unless an explicit height or the `maxRows` property is set, it will\nnever scroll.\n\nExample:\n\n    <iron-autogrow-textarea></iron-autogrow-textarea>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--iron-autogrow-textarea` | Mixin applied to the textarea | `{}`\n`--iron-autogrow-textarea-placeholder` | Mixin applied to the textarea placeholder | `{}`"
 }

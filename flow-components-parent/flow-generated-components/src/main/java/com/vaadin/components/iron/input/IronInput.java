@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -100,12 +101,17 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-input#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-input")
 @HtmlImport("frontend://bower_components/iron-input/iron-input.html")
-public class IronInput<R extends IronInput<R>> extends Component {
+public class IronInput<R extends IronInput<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Name of the validator to use.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -129,6 +135,9 @@ public class IronInput<R extends IronInput<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the last call to {@code validate} is invalid.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "invalid-changed" event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -154,6 +163,9 @@ public class IronInput<R extends IronInput<R>> extends Component {
 	 * Use this property instead of {@code value} for two-way data binding, or
 	 * to set a default value for the input. **Do not** use the distributed
 	 * input's {@code value} property to set a default value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getBindValue() {
 		return getElement().getProperty("bindValue");
@@ -181,6 +193,9 @@ public class IronInput<R extends IronInput<R>> extends Component {
 	 * Computed property that echoes {@code bindValue} (mostly used for Polymer
 	 * 1.0 backcompatibility, if you were one-way binding to the Polymer 1.0
 	 * {@code input is="iron-input"} value attribute).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getValue() {
 		return (JsonObject) getElement().getPropertyRaw("value");
@@ -221,6 +236,10 @@ public class IronInput<R extends IronInput<R>> extends Component {
 	 * to set {@code prevent-invalid-input}. This is no longer needed as of
 	 * Polymer 2.0, and will be set automatically for you if an
 	 * {@code allowedPattern} is provided.
+	 * 
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
@@ -261,6 +280,9 @@ public class IronInput<R extends IronInput<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to auto-validate the input value as you type.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -283,6 +305,9 @@ public class IronInput<R extends IronInput<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns the distributed <input> element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");

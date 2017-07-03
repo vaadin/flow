@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.ajax;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -53,12 +54,17 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-ajax#2.0.2", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-ajax")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-ajax.html")
-public class IronAjax<R extends IronAjax<R>> extends Component {
+public class IronAjax<R extends IronAjax<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The URL target of the request.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getUrl() {
 		return getElement().getProperty("url");
@@ -84,6 +90,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * {@code url} when generating a request. If you wish to set the body
 	 * content when making a POST request, you should use the {@code body}
 	 * property instead.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getParams() {
 		return (JsonObject) getElement().getPropertyRaw("params");
@@ -110,6 +119,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * The HTTP method to use such as 'GET', 'POST', 'PUT', or 'DELETE'. Default
 	 * is 'GET'.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getMethod() {
 		return getElement().getProperty("method");
@@ -141,6 +153,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * Note: setting a {@code Content-Type} header here will override the value
 	 * specified by the {@code contentType} property of this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getHeaders() {
 		return (JsonObject) getElement().getPropertyRaw("headers");
@@ -176,6 +191,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * precedence.
 	 * 
 	 * Varies the handling of the {@code body} param.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getContentType() {
 		return getElement().getProperty("contentType");
@@ -218,6 +236,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * Otherwise the body will be passed to the browser unmodified, and it will
 	 * handle any encoding (e.g. for FormData, Blob, ArrayBuffer).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getBody() {
 		return (JsonObject) getElement().getPropertyRaw("body");
@@ -255,6 +276,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * Toggle whether XHR is synchronous or asynchronous. Don't change this to
 	 * true unless You Know What You Are Doing™.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isSync() {
 		return getElement().getProperty("sync", false);
@@ -293,6 +317,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * {@code blob}: uses {@code XHR.response}.
 	 * 
 	 * {@code document}: uses {@code XHR.response}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getHandleAs() {
 		return getElement().getProperty("handleAs");
@@ -330,6 +357,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set the withCredentials flag on the request.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isWithCredentials() {
 		return getElement().getProperty("withCredentials", false);
@@ -352,6 +382,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set the timeout flag on the request.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getTimeout() {
 		return getElement().getProperty("timeout", 0.0);
@@ -375,6 +408,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * If true, automatically performs an Ajax request when either {@code url}
 	 * or {@code params} changes.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAuto() {
 		return getElement().getProperty("auto", false);
@@ -398,6 +434,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, error messages will automatically be logged to the console.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isVerbose() {
 		return getElement().getProperty("verbose", false);
@@ -420,6 +459,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The most recent request made by this iron-ajax element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getLastRequest() {
 		return (JsonObject) getElement().getPropertyRaw("lastRequest");
@@ -442,6 +484,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True while lastRequest is in flight.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "loading-changed" event happens.
 	 */
 	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
@@ -472,6 +517,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * The type of the response is determined by the value of {@code handleAs}
 	 * at the time that the request was generated.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getLastResponse() {
 		return (JsonObject) getElement().getPropertyRaw("lastResponse");
@@ -501,6 +549,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * lastRequest's error, if any.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getLastError() {
 		return (JsonObject) getElement().getPropertyRaw("lastError");
@@ -524,6 +575,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * An Array of all in-flight requests originating from this iron-ajax
 	 * element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getActiveRequests() {
 		return (JsonArray) getElement().getPropertyRaw("activeRequests");
@@ -548,6 +602,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * Length of time in milliseconds to debounce multiple automatically
 	 * generated requests.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getDebounceDuration() {
 		return getElement().getProperty("debounceDuration", 0.0);
@@ -577,6 +634,10 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * .com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx/)
 	 * many backends will mitigate this by prefixing all JSON response bodies
 	 * with a string that would be nonsensical to a JavaScript parser.
+	 * 
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getJsonPrefix() {
 		return getElement().getProperty("jsonPrefix");
@@ -616,6 +677,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * https://www.w3.org/TR/shadow-dom/#scoped-flag
 	 * https://www.w3.org/TR/2015/WD
 	 * -shadow-dom-20151215/#events-that-are-not-leaked-into-ancestor-trees
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isBubbles() {
 		return getElement().getProperty("bubbles", false);
@@ -648,6 +712,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * Changes the completes promise chain from generateRequest to reject with
 	 * an object containing the error message as well as the request.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRejectWithRequest() {
 		return getElement().getProperty("rejectWithRequest", false);
@@ -672,6 +739,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * The query string that should be appended to the {@code url}, serialized
 	 * from the current value of {@code params}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getQueryString() {
 		return (JsonObject) getElement().getPropertyRaw("queryString");
@@ -696,6 +766,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * 
 	 * The {@code url} with query string (if {@code params} are specified),
 	 * suitable for providing to an {@code iron-request} instance.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getRequestUrl() {
 		return (JsonObject) getElement().getPropertyRaw("requestUrl");
@@ -721,6 +794,9 @@ public class IronAjax<R extends IronAjax<R>> extends Component {
 	 * An object that maps header names to header values, first applying the the
 	 * value of {@code Content-Type} and then overlaying the headers specified
 	 * in the {@code headers} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getRequestHeaders() {
 		return (JsonObject) getElement().getPropertyRaw("requestHeaders");

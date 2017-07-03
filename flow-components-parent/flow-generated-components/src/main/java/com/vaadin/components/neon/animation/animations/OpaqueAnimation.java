@@ -16,6 +16,7 @@
 package com.vaadin.components.neon.animation.animations;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -33,12 +34,17 @@ import elemental.json.JsonObject;
 		"WebComponent: opaque-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
 @Tag("opaque-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/opaque-animation.html")
-public class OpaqueAnimation<R extends OpaqueAnimation<R>> extends Component {
+public class OpaqueAnimation<R extends OpaqueAnimation<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Defines the animation timing.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
@@ -61,6 +67,9 @@ public class OpaqueAnimation<R extends OpaqueAnimation<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Can be used to determine that elements implement this behavior.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isIsNeonAnimation() {
 		return getElement().getProperty("isNeonAnimation", false);

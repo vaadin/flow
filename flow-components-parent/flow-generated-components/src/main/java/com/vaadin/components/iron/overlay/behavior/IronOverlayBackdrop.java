@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.overlay.behavior;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -46,12 +47,15 @@ import com.vaadin.annotations.HtmlImport;
 @HtmlImport("frontend://bower_components/iron-overlay-behavior/iron-overlay-backdrop.html")
 public class IronOverlayBackdrop<R extends IronOverlayBackdrop<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns true if the backdrop is opened.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);

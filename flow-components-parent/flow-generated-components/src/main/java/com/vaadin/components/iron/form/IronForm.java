@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.form;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -91,7 +92,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-form#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-form")
 @HtmlImport("frontend://bower_components/iron-form/iron-form.html")
-public class IronForm<R extends IronForm<R>> extends Component {
+public class IronForm<R extends IronForm<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -99,6 +102,9 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * Set this to true if you don't want the form to be submitted through an
 	 * ajax request, and you want the page to redirect to the action URL after
 	 * the form has been submitted.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAllowRedirect() {
 		return getElement().getProperty("allowRedirect", false);
@@ -124,6 +130,9 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * 
 	 * HTTP request headers to send. See PolymerElements/iron-ajax for more
 	 * details. Only works when {@code allowRedirect} is false.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getHeaders() {
 		return (JsonObject) getElement().getPropertyRaw("headers");
@@ -149,6 +158,9 @@ public class IronForm<R extends IronForm<R>> extends Component {
 	 * Set the {@code withCredentials} flag on the request. See
 	 * PolymerElements/iron-ajax for more details. Only works when
 	 * {@code allowRedirect} is false.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isWithCredentials() {
 		return getElement().getProperty("withCredentials", false);

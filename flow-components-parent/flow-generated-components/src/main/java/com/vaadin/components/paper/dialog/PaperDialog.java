@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.dialog;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -85,7 +86,9 @@ import com.vaadin.annotations.EventData;
 		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
-public class PaperDialog<R extends PaperDialog<R>> extends Component {
+public class PaperDialog<R extends PaperDialog<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -94,6 +97,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * default it is the same as {@code this}, but it can be set to a child
 	 * element. This is useful, for example, for implementing a scrolling region
 	 * inside the element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSizingTarget() {
 		return (JsonObject) getElement().getPropertyRaw("sizingTarget");
@@ -119,6 +125,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The element to fit {@code this} into.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getFitInto() {
 		return (JsonObject) getElement().getPropertyRaw("fitInto");
@@ -142,6 +151,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * 
 	 * Will position the element around the positionTarget without overlapping
 	 * it.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoOverlap() {
 		return getElement().getProperty("noOverlap", false);
@@ -166,6 +178,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * 
 	 * The element that should be used to position the element. If not set, it
 	 * will default to the parent node.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
@@ -191,6 +206,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * The orientation against which to align the element horizontally relative
 	 * to the {@code positionTarget}. Possible values are "left", "right",
 	 * "auto".
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
@@ -217,6 +235,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * 
 	 * The orientation against which to align the element vertically relative to
 	 * the {@code positionTarget}. Possible values are "top", "bottom", "auto".
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
@@ -243,6 +264,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * If true, it will use {@code horizontalAlign} and {@code verticalAlign}
 	 * values as preferred alignment and if there's not enough space, it will
 	 * pick the values which minimize the cropping.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDynamicAlign() {
 		return getElement().getProperty("dynamicAlign", false);
@@ -279,6 +303,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * increase or decrease the distance to the right side of the screen: a
 	 * negative offset will move the dropdown to the right; a positive one, to
 	 * the left.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getHorizontalOffset() {
 		return getElement().getProperty("horizontalOffset", 0.0);
@@ -325,6 +352,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * increase or decrease the distance to the bottom side of the screen: a
 	 * negative offset will move the dropdown downwards; a positive one,
 	 * upwards.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getVerticalOffset() {
 		return getElement().getProperty("verticalOffset", 0.0);
@@ -359,6 +389,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to auto-fit on attach.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutoFitOnAttach() {
 		return getElement().getProperty("autoFitOnAttach", false);
@@ -381,6 +414,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the overlay is currently displayed.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "opened-changed" event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -404,6 +440,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the overlay was canceled when it was last closed.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isCanceled() {
 		return getElement().getProperty("canceled", false);
@@ -427,6 +466,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * 
 	 * Set to true to display a backdrop behind the overlay. It traps the focus
 	 * within the light DOM of the overlay.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isWithBackdrop() {
 		return getElement().getProperty("withBackdrop", false);
@@ -451,6 +493,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * 
 	 * Set to true to disable auto-focusing the overlay or child nodes with the
 	 * {@code autofocus} attribute` when the overlay is opened.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoAutoFocus() {
 		return getElement().getProperty("noAutoFocus", false);
@@ -474,6 +519,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable canceling the overlay with the ESC key.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoCancelOnEscKey() {
 		return getElement().getProperty("noCancelOnEscKey", false);
@@ -496,6 +544,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable canceling the overlay by clicking outside it.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoCancelOnOutsideClick() {
 		return getElement().getProperty("noCancelOnOutsideClick", false);
@@ -522,6 +573,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * {@code iron-overlay-closed}). {@code IronOverlayBehavior} provides the
 	 * {@code canceled} reason; implementers of the behavior can provide other
 	 * reasons in addition to {@code canceled}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getClosingReason() {
 		return (JsonObject) getElement().getPropertyRaw("closingReason");
@@ -547,6 +601,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to enable restoring of focus when overlay is closed.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRestoreFocusOnClose() {
 		return getElement().getProperty("restoreFocusOnClose", false);
@@ -569,6 +626,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to keep overlay always on top.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAlwaysOnTop() {
 		return getElement().getProperty("alwaysOnTop", false);
@@ -592,6 +652,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * 
 	 * If {@code modal} is true, this implies {@code no-cancel-on-outside-click}
 	 * , {@code no-cancel-on-esc-key} and {@code with-backdrop}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isModal() {
 		return getElement().getProperty("modal", false);
@@ -615,6 +678,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Animation configuration. See README for more info.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
@@ -639,6 +705,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Convenience property for setting an 'entry' animation. Do not set
 	 * {@code animationConfig.entry} manually if using this. The animated node
 	 * is set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getEntryAnimation() {
 		return getElement().getProperty("entryAnimation");
@@ -666,6 +735,9 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component {
 	 * Convenience property for setting an 'exit' animation. Do not set
 	 * {@code animationConfig.exit} manually if using this. The animated node is
 	 * set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getExitAnimation() {
 		return getElement().getProperty("exitAnimation");

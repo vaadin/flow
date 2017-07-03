@@ -105,5 +105,6 @@
     "Polymer.NeonAnimatableBehavior",
     "Polymer.IronResizableBehavior"
   ],
+  "mixins": [],
   "description": "`<neon-animatable>` is a simple container element implementing `Polymer.NeonAnimatableBehavior`. This is a convenience element for use with `<neon-animated-pages>`.\n\n```\n<neon-animated-pages selected=\"0\"\n                     entry-animation=\"slide-from-right-animation\"\n                     exit-animation=\"slide-left-animation\">\n  <neon-animatable>1</neon-animatable>\n  <neon-animatable>2</neon-animatable>\n</neon-animated-pages>\n```"
 }

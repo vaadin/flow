@@ -16,6 +16,7 @@
 package com.vaadin.components.vaadin.text.field;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -50,14 +51,17 @@ import com.vaadin.shared.Registration;
 		"WebComponent: Vaadin.TextFieldElement#null", "Flow#0.1.12-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
-public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
-		extends
-			Component {
+public class VaadinTextField<R extends VaadinTextField<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Specify that this control should have input focus when the page loads.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -80,6 +84,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
@@ -102,6 +109,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -127,6 +137,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * browser. List of available options at:
 	 * https://developer.mozilla.org/en/docs
 	 * /Web/HTML/Element/input#attr-autocomplete
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -156,6 +169,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * autocorrection should be enabled when the user is entering/editing the
 	 * text. Possible values are: on: Enable autocorrection. off: Disable
 	 * autocorrection.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
@@ -182,6 +198,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Error to show when the input value is invalid.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -205,6 +224,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * String used for the label element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -228,6 +250,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * Identifies a list of pre-defined options to suggest to the user. The
 	 * value must be the id of a <datalist> element in the same document.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
@@ -252,6 +277,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * Maximum number of characters (in Unicode code points) that the user can
 	 * enter.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
@@ -276,6 +304,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * Minimum number of characters (in Unicode code points) that the user can
 	 * enter.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
@@ -299,6 +330,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of the control, which is submitted with the form data.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -322,6 +356,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * A regular expression that the value is checked against. The pattern must
 	 * match the entire value, not just some subset.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
@@ -345,6 +382,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * A hint to the user of what can be entered in the control.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -369,6 +409,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * This attribute indicates that the user cannot modify the value of the
 	 * control.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -392,6 +435,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Specifies that the user must fill in a value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -414,6 +460,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Message to show to the user when validation fails.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getTitle() {
 		return getElement().getProperty("title");
@@ -437,6 +486,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * The initial value of the control. It can be used for two-way data
 	 * binding.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -461,6 +513,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * This property is set to true when the control value invalid.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "invalid-changed" event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -485,6 +540,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * A read-only property indicating whether this input has a non empty value.
 	 * It can be used for example in styling of the component.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isHasValue() {
 		return getElement().getProperty("hasValue", false);
@@ -509,6 +567,9 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	 * 
 	 * When set to true, user is prevented from typing a value that conflicts
 	 * with the given {@code pattern}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPreventInvalidInput() {
 		return getElement().getProperty("preventInvalidInput", false);
@@ -572,8 +633,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("iron-form-element-register")
 	public static class IronFormElementRegisterEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public IronFormElementRegisterEvent(VaadinTextFieldElement source,
+				ComponentEvent<VaadinTextField> {
+		public IronFormElementRegisterEvent(VaadinTextField source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
@@ -587,8 +648,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("iron-form-element-unregister")
 	public static class IronFormElementUnregisterEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public IronFormElementUnregisterEvent(VaadinTextFieldElement source,
+				ComponentEvent<VaadinTextField> {
+		public IronFormElementUnregisterEvent(VaadinTextField source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
@@ -602,9 +663,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("value-changed")
 	public static class ValueChangedEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public ValueChangedEvent(VaadinTextFieldElement source,
-				boolean fromClient) {
+				ComponentEvent<VaadinTextField> {
+		public ValueChangedEvent(VaadinTextField source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -617,9 +677,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("invalid-changed")
 	public static class InvalidChangedEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public InvalidChangedEvent(VaadinTextFieldElement source,
-				boolean fromClient) {
+				ComponentEvent<VaadinTextField> {
+		public InvalidChangedEvent(VaadinTextField source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -632,9 +691,8 @@ public class VaadinTextFieldElement<R extends VaadinTextFieldElement<R>>
 	@DomEvent("has-value-changed")
 	public static class HasValueChangedEvent
 			extends
-				ComponentEvent<VaadinTextFieldElement> {
-		public HasValueChangedEvent(VaadinTextFieldElement source,
-				boolean fromClient) {
+				ComponentEvent<VaadinTextField> {
+		public HasValueChangedEvent(VaadinTextField source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}

@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.menu.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -29,12 +30,15 @@ import elemental.json.JsonObject;
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class PaperMenuGrowWidthAnimation<R extends PaperMenuGrowWidthAnimation<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Defines the animation timing.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
@@ -57,6 +61,9 @@ public class PaperMenuGrowWidthAnimation<R extends PaperMenuGrowWidthAnimation<R
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Can be used to determine that elements implement this behavior.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isIsNeonAnimation() {
 		return getElement().getProperty("isNeonAnimation", false);

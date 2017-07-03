@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.listbox;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -76,7 +77,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-listbox#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-listbox")
 @HtmlImport("frontend://bower_components/paper-listbox/paper-listbox.html")
-public class PaperListbox<R extends PaperListbox<R>> extends Component {
+public class PaperListbox<R extends PaperListbox<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -89,6 +92,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * recommended that you provide the hyphenated form of the name so that
 	 * selection works in both cases. (Use {@code attr-or-property-name} instead
 	 * of {@code attrOrPropertyName}.)
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAttrForSelected() {
 		return getElement().getProperty("attrForSelected");
@@ -120,6 +126,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "selected-changed" event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -131,6 +140,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "selected-changed" event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -169,6 +181,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns the currently selected item.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -193,6 +208,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * The event that fires from items when they are selected. Selectable will
 	 * listen for this event from items and update the selection state. Set to
 	 * empty string to listen to no events.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getActivateEvent() {
 		return getElement().getProperty("activateEvent");
@@ -219,6 +237,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * This is a CSS selector string. If this is set, only items that match the
 	 * CSS selector are selectable.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSelectable() {
 		return getElement().getProperty("selectable");
@@ -243,6 +264,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The class to set on elements when selected.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSelectedClass() {
 		return getElement().getProperty("selectedClass");
@@ -266,6 +290,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The attribute to set on elements when selected.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSelectedAttribute() {
 		return getElement().getProperty("selectedAttribute");
@@ -290,6 +317,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * Default fallback if the selection based on selected with
 	 * {@code attrForSelected} is not found.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getFallbackSelection() {
 		return getElement().getProperty("fallbackSelection");
@@ -314,6 +344,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The list of items from which a selection can be made.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "items-changed" event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -337,6 +370,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, multiple selections are allowed.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isMulti() {
 		return getElement().getProperty("multi", false);
@@ -360,6 +396,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * Gets or sets the selected elements. This is used instead of
 	 * {@code selected} when {@code multi} is true.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getSelectedValues() {
 		return (JsonArray) getElement().getPropertyRaw("selectedValues");
@@ -383,6 +422,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns an array of currently selected items.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
@@ -406,6 +448,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -430,6 +475,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * 
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -451,6 +499,10 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
@@ -468,6 +520,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns the currently focused item.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getFocusedItem() {
 		return (JsonObject) getElement().getPropertyRaw("focusedItem");
@@ -492,6 +547,9 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 	 * The attribute to use on menu items to look up the item title. Typing the
 	 * first letter of an item when the menu is open focuses that item. If
 	 * unset, {@code textContent} will be used.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAttrForItemTitle() {
 		return getElement().getProperty("attrForItemTitle");
@@ -513,6 +571,10 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component {
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}

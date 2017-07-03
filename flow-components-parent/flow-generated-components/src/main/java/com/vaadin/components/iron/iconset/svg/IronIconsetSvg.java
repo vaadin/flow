@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.iconset.svg;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -54,12 +55,17 @@ import elemental.json.JsonObject;
 		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-iconset-svg")
 @HtmlImport("frontend://bower_components/iron-iconset-svg/iron-iconset-svg.html")
-public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
+public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of the iconset.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -82,6 +88,9 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The size of an individual icon. Note that icons must be square.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
@@ -110,6 +119,9 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component {
 	 * NOTE: For performance reasons, direction will be resolved once per
 	 * document per iconset, so moving icons in and out of RTL subtrees will not
 	 * cause their mirrored state to change.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRtlMirroring() {
 		return getElement().getProperty("rtlMirroring", false);

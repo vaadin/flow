@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,7 +32,6 @@ import javax.annotation.Generated;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
-import org.jboss.forge.roaster.model.source.AnnotationTargetSource;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -57,6 +58,7 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.HasStyle;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -276,7 +278,21 @@ public class ComponentGenerator {
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(targetPackage).setPublic()
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
-                        .generateValidJavaClassName(metadata.getName()));
+                        .generateValidJavaClassName(metadata.getTag()));
+
+        // all components have styles
+        javaClass.addInterface(HasStyle.class);
+
+        List<String> classBehaviorsAndMixins = new ArrayList<>();
+        classBehaviorsAndMixins.add(javaClass.getName());
+
+        if (metadata.getBehaviors() != null) {
+            classBehaviorsAndMixins.addAll(metadata.getBehaviors());
+        }
+
+        Set<Class<?>> interfaces = BehaviorRegistry
+                .getClassesForBehaviors(classBehaviorsAndMixins);
+        interfaces.forEach(javaClass::addInterface);
 
         addClassAnnotations(metadata, javaClass);
 
@@ -481,15 +497,26 @@ public class ComponentGenerator {
 
             // verifies whether the getter needs a @Synchronize annotation by
             // inspecting the event list
+            String synchronizationDescription = "";
+
             if (containsChangedEventForProperty(property.getName(), events)) {
                 method.addAnnotation(Synchronize.class)
                         .setStringValue("property", property.getName())
                         .setStringValue(property.getName() + "-changed");
 
+                synchronizationDescription = "This property is synchronized automatically from client side when a \""
+                        + property.getName() + "-changed\" event happens.";
+            } else {
+                synchronizationDescription = "This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.";
             }
 
             if (StringUtils.isNotEmpty(property.getDescription())) {
-                addJavaDoc(property.getDescription(), method.getJavaDoc());
+                addJavaDoc(
+                        property.getDescription() + "<p>"
+                                + synchronizationDescription,
+                        method.getJavaDoc());
+            } else {
+                method.getJavaDoc().setFullText(synchronizationDescription);
             }
         }
     }
@@ -499,9 +526,9 @@ public class ComponentGenerator {
         if (events == null) {
             return false;
         }
-        return events.stream()
-                .filter(event -> event.getName().equals(property + "-changed"))
-                .limit(1).count() > 0;
+        String eventName = property + "-changed";
+        return events.stream().map(ComponentEventData::getName)
+                .anyMatch(name -> name.equals(eventName));
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
@@ -754,12 +781,11 @@ public class ComponentGenerator {
     }
 
     private Properties getProperties(String fileName) {
-        // Get properties resource with version information.
-        InputStream resourceAsStream = this.getClass()
-                .getResourceAsStream("/" + fileName);
-
         Properties config = new Properties();
-        try {
+
+        // Get properties resource with version information.
+        try (InputStream resourceAsStream = this.getClass()
+                .getResourceAsStream("/" + fileName)) {
             config.load(resourceAsStream);
             return config;
         } catch (IOException e) {

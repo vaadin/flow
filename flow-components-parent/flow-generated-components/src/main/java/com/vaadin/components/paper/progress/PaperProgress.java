@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.progress;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -100,12 +101,17 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-progress#2.0.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
-public class PaperProgress<R extends PaperProgress<R>> extends Component {
+public class PaperProgress<R extends PaperProgress<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The number that represents the current value.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public double getValue() {
@@ -129,6 +135,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The number that indicates the minimum value of the range.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "min-changed" event happens.
 	 */
 	@Synchronize(property = "min", value = "min-changed")
 	public double getMin() {
@@ -152,6 +161,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The number that indicates the maximum value of the range.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "max-changed" event happens.
 	 */
 	@Synchronize(property = "max", value = "max-changed")
 	public double getMax() {
@@ -175,6 +187,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Specifies the value granularity of the range's value.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "step-changed" event happens.
 	 */
 	@Synchronize(property = "step", value = "step-changed")
 	public double getStep() {
@@ -198,6 +213,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns the ratio of the value.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "ratio-changed" event happens.
 	 */
 	@Synchronize(property = "ratio", value = "ratio-changed")
 	public double getRatio() {
@@ -221,6 +239,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The number that represents the current secondary progress.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getSecondaryProgress() {
 		return getElement().getProperty("secondaryProgress", 0.0);
@@ -243,6 +264,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The secondary ratio
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getSecondaryRatio() {
 		return getElement().getProperty("secondaryRatio", 0.0);
@@ -265,6 +289,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Use an indeterminate progress indicator.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isIndeterminate() {
 		return getElement().getProperty("indeterminate", false);
@@ -287,6 +314,9 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the progress is disabled.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);

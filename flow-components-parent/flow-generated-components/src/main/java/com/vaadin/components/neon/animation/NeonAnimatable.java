@@ -16,6 +16,7 @@
 package com.vaadin.components.neon.animation;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -39,12 +40,17 @@ import com.vaadin.components.NotSupported;
 		"WebComponent: neon-animatable#2.0.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("neon-animatable")
 @HtmlImport("frontend://bower_components/neon-animation/neon-animatable.html")
-public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component {
+public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Animation configuration. See README for more info.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
@@ -69,6 +75,9 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component {
 	 * Convenience property for setting an 'entry' animation. Do not set
 	 * {@code animationConfig.entry} manually if using this. The animated node
 	 * is set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getEntryAnimation() {
 		return getElement().getProperty("entryAnimation");
@@ -96,6 +105,9 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component {
 	 * Convenience property for setting an 'exit' animation. Do not set
 	 * {@code animationConfig.exit} manually if using this. The animated node is
 	 * set to {@code this} if using this property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getExitAnimation() {
 		return getElement().getProperty("exitAnimation");

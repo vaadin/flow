@@ -16,6 +16,7 @@
 package com.vaadin.components.paper.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -46,12 +47,17 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.12-SNAPSHOT"})
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
-public class PaperInputError<R extends PaperInputError<R>> extends Component {
+public class PaperInputError<R extends PaperInputError<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the error is showing.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);

@@ -80,5 +80,6 @@
   "behaviors": [
     "Polymer.NeonAnimationBehavior"
   ],
+  "mixins": [],
   "description": "`<slide-from-bottom-animation>` animates the transform of an element from `none` to `translateY(100%)`.\nThe `transformOrigin` defaults to `50% 0`.\n\nConfiguration:\n```\n{\n  name: 'slide-from-bottom-animation',\n  node: <node>,\n  transformOrigin: <transform-origin>,\n  timing: <animation-timing>\n}\n```"
 }

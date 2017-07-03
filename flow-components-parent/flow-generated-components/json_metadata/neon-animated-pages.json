@@ -316,5 +316,6 @@
     "Polymer.IronSelectableBehavior",
     "Polymer.NeonAnimationRunnerBehavior"
   ],
+  "mixins": [],
   "description": "Material design: [Meaningful transitions](https://www.google.com/design/spec/animation/meaningful-transitions.html)\n\n`neon-animated-pages` manages a set of pages and runs an animation when switching between them. Its\nchildren pages should implement `Polymer.NeonAnimatableBehavior` and define `entry` and `exit`\nanimations to be run when switching to or switching out of the page."
 }

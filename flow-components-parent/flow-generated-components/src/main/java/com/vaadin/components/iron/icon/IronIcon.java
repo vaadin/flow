@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.icon;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -89,13 +90,18 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: iron-icon#2.0.0", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-icon")
 @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
-public class IronIcon<R extends IronIcon<R>> extends Component {
+public class IronIcon<R extends IronIcon<R>> extends Component
+		implements
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of the icon to use. The name should be of the form:
 	 * {@code iconset_name:icon_name}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getIcon() {
 		return getElement().getProperty("icon");
@@ -119,6 +125,9 @@ public class IronIcon<R extends IronIcon<R>> extends Component {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of the theme to used, if one is specified by the iconset.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getTheme() {
 		return getElement().getProperty("theme");
@@ -143,6 +152,9 @@ public class IronIcon<R extends IronIcon<R>> extends Component {
 	 * If using iron-icon without an iconset, you can set the src to be the URL
 	 * of an individual icon image file. Note that this will take precedence
 	 * over a given icon attribute.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSrc() {
 		return getElement().getProperty("src");

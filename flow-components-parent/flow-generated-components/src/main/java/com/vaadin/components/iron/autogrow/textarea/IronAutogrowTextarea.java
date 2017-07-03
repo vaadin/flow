@@ -16,6 +16,7 @@
 package com.vaadin.components.iron.autogrow.textarea;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -55,12 +56,15 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html")
 public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 		extends
-			Component {
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Name of the validator to use.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -84,6 +88,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the last call to {@code validate} is invalid.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "invalid-changed" event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -107,6 +114,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "focused-changed" event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -130,6 +140,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the user cannot interact with this element.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "disabled-changed" event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -153,6 +166,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Use this property instead of {@code bind-value} for two-way data binding.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValueString() {
@@ -163,6 +179,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Use this property instead of {@code bind-value} for two-way data binding.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public double getValueNumber() {
@@ -200,6 +219,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * This property is deprecated, and just mirrors {@code value}. Use
 	 * {@code value} instead.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getBindValueString() {
 		return getElement().getProperty("bindValue");
@@ -210,6 +232,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * This property is deprecated, and just mirrors {@code value}. Use
 	 * {@code value} instead.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getBindValueNumber() {
 		return getElement().getProperty("bindValue", 0.0);
@@ -248,6 +273,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The initial number of rows.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getRows() {
 		return getElement().getProperty("rows", 0.0);
@@ -271,6 +299,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * The maximum number of rows this element can grow to until it scrolls. 0
 	 * means no maximum.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMaxRows() {
 		return getElement().getProperty("maxRows", 0.0);
@@ -294,6 +325,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Bound to the textarea's {@code autocomplete} attribute.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -317,6 +351,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Bound to the textarea's {@code autofocus} attribute.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -339,6 +376,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Bound to the textarea's {@code inputmode} attribute.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
@@ -362,6 +402,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Bound to the textarea's {@code placeholder} attribute.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -385,6 +428,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Bound to the textarea's {@code readonly} attribute.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getReadonly() {
 		return getElement().getProperty("readonly");
@@ -407,6 +453,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to mark the textarea as required.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -429,6 +478,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The minimum length of the input value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
@@ -451,6 +503,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The maximum length of the input value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
@@ -473,6 +528,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns the underlying textarea.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getTextarea() {
 		return (JsonObject) getElement().getPropertyRaw("textarea");
@@ -495,6 +553,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns textarea's selection start.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectionStart() {
 		return (JsonObject) getElement().getPropertyRaw("selectionStart");
@@ -517,6 +578,9 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns textarea's selection end.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectionEnd() {
 		return (JsonObject) getElement().getPropertyRaw("selectionEnd");
