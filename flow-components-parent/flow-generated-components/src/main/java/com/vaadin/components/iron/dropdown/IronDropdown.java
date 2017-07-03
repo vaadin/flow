@@ -28,6 +28,7 @@ import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.annotations.EventData;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -61,7 +62,8 @@ import com.vaadin.annotations.EventData;
 @HtmlImport("frontend://bower_components/iron-dropdown/iron-dropdown.html")
 public class IronDropdown<R extends IronDropdown<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -1382,6 +1384,21 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	public Registration addIronOverlayOpenedListener(
 			ComponentEventListener<IronOverlayOpenedEvent> listener) {
 		return addListener(IronOverlayOpenedEvent.class, listener);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "dropdown-content"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToDropdownContent(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "dropdown-content");
+		}
+		add(components);
 	}
 
 	/**

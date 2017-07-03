@@ -29,6 +29,7 @@ import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.annotations.EventData;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -89,7 +90,8 @@ import com.vaadin.annotations.EventData;
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
 public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -1217,6 +1219,66 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	public Registration addFocusedChangedListener(
 			ComponentEventListener<FocusedChangedEvent> listener) {
 		return addListener(FocusedChangedEvent.class, listener);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "prefix"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToPrefix(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "prefix");
+		}
+		add(components);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "suffix"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToSuffix(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "suffix");
+		}
+		add(components);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "clear-button"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToClearButton(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "clear-button");
+		}
+		add(components);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "toggle-button"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToToggleButton(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "toggle-button");
+		}
+		add(components);
 	}
 
 	/**

@@ -27,6 +27,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -78,7 +79,8 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
 public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -794,6 +796,36 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	public Registration addVerticalOffsetChangedListener(
 			ComponentEventListener<VerticalOffsetChangedEvent> listener) {
 		return addListener(VerticalOffsetChangedEvent.class, listener);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "dropdown-trigger"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToDropdownTrigger(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "dropdown-trigger");
+		}
+		add(components);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "dropdown-content"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToDropdownContent(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "dropdown-content");
+		}
+		add(components);
 	}
 
 	/**

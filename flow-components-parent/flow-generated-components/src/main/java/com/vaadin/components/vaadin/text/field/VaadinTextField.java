@@ -27,6 +27,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -53,7 +54,8 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -700,6 +702,36 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	public Registration addHasValueChangedListener(
 			ComponentEventListener<HasValueChangedEvent> listener) {
 		return addListener(HasValueChangedEvent.class, listener);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "prefix"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToPrefix(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "prefix");
+		}
+		add(components);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "suffix"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToSuffix(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "suffix");
+		}
+		add(components);
 	}
 
 	/**

@@ -27,6 +27,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * 
@@ -38,7 +39,8 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/iron-list/iron-list.html")
 public class IronList<R extends IronList<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

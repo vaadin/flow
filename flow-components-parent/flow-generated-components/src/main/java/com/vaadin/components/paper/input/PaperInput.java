@@ -27,6 +27,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -42,7 +43,8 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class PaperInput<R extends PaperInput<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -1286,6 +1288,36 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	public Registration addIronFormElementUnregisterListener(
 			ComponentEventListener<IronFormElementUnregisterEvent> listener) {
 		return addListener(IronFormElementUnregisterEvent.class, listener);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "prefix"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToPrefix(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "prefix");
+		}
+		add(components);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "suffix"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToSuffix(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "suffix");
+		}
+		add(components);
 	}
 
 	/**

@@ -27,6 +27,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -67,7 +68,8 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-item/paper-icon-item.html")
 public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -435,6 +437,21 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	public Registration addDisabledChangedListener(
 			ComponentEventListener<DisabledChangedEvent> listener) {
 		return addListener(DisabledChangedEvent.class, listener);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "item-icon"
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see HasComponents#add(Component...)
+	 */
+	public void addToItemIcon(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "item-icon");
+		}
+		add(components);
 	}
 
 	/**
