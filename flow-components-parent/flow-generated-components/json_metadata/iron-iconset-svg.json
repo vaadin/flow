@@ -78,5 +78,6 @@
   "events": [],
   "slots": [],
   "behaviors": [],
+  "mixins": [],
   "description": "The `iron-iconset-svg` element allows users to define their own icon sets\nthat contain svg icons. The svg icon elements should be children of the\n`iron-iconset-svg` element. Multiple icons should be given distinct id's.\n\nUsing svg elements to create icons has a few advantages over traditional\nbitmap graphics like jpg or png. Icons that use svg are vector based so\nthey are resolution independent and should look good on any device. They\nare stylable via css. Icons can be themed, colorized, and even animated.\n\nExample:\n\n    <iron-iconset-svg name=\"my-svg-icons\" size=\"24\">\n      <svg>\n        <defs>\n          <g id=\"shape\">\n            <rect x=\"12\" y=\"0\" width=\"12\" height=\"24\" />\n            <circle cx=\"12\" cy=\"12\" r=\"12\" />\n          </g>\n        </defs>\n      </svg>\n    </iron-iconset-svg>\n\nThis will automatically register the icon set \"my-svg-icons\" to the iconset\ndatabase.  To use these icons from within another element, make a\n`iron-iconset` element and call the `byId` method\nto retrieve a given iconset. To apply a particular icon inside an\nelement use the `applyIcon` method. For example:\n\n    iconset.applyIcon(iconNode, 'car');"
 }
