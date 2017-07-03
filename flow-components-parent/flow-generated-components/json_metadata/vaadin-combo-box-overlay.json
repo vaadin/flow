@@ -142,5 +142,6 @@
   "behaviors": [
     "vaadin.elements.combobox.OverlayBehavior"
   ],
+  "mixins": [],
   "description": ""
 }

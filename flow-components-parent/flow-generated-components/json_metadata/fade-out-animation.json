@@ -80,5 +80,6 @@
   "behaviors": [
     "Polymer.NeonAnimationBehavior"
   ],
+  "mixins": [],
   "description": "`<fade-out-animation>` animates the opacity of an element from 1 to 0.\n\nConfiguration:\n```\n{\n  name: 'fade-out-animation',\n  node: <node>\n  timing: <animation-timing>\n}\n```"
 }
