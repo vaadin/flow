@@ -80,5 +80,6 @@
   "behaviors": [
     "Polymer.NeonAnimationBehavior"
   ],
+  "mixins": [],
   "description": "`<cascaded-animation>` applies an animation on an array of elements with a delay between each.\nthe delay defaults to 50ms.\n\nConfiguration:\n```\n{\n  name: 'cascaded-animation',\n  animation: <animation-name>,\n  nodes: <array-of-nodes>,\n  nodeDelay: <node-delay-in-ms>,\n  timing: <animation-timing>\n}\n```"
 }

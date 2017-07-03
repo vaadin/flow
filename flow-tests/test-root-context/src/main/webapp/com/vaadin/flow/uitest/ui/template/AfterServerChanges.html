@@ -24,7 +24,7 @@
     <script>
         class AfterServerChanges extends Polymer.Element {
             static get is() { return 'after-server-changes' }
-            
+
             static get properties(){
                 return {
                    count: {
@@ -41,11 +41,11 @@
                    }
                 }
             }
-            
+
             afterServerUpdate(){
-            	this.delta = this.old != this.text;
-            	this.count++;
-            	this.old = this.text;
+                this.delta = this.old != this.text;
+                this.count++;
+                this.old = this.text;
             }
         }
         customElements.define(AfterServerChanges.is, AfterServerChanges);

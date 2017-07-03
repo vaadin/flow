@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.components.paper.input;
+package com.vaadin.components.vaadin.text.field;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasStyle;
@@ -21,68 +21,63 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 
-/**
- * Description copied from corresponding location in WebComponent:
- * 
- * {@code <paper-input-error>} is an error message for use with
- * {@code <paper-input-container>}. The error is displayed when the
- * {@code <paper-input-container>} is {@code invalid}.
- * 
- * <paper-input-container> <input pattern="[0-9]*"> <paper-input-error
- * slot="add-on">Only numbers are allowed!</paper-input-error>
- * </paper-input-container>
- * 
- * ### Styling
- * 
- * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * {@code --paper-input-container-invalid-color} | The foreground color of the
- * error | {@code --error-color} {@code --paper-input-error} | Mixin applied to
- * the error | {@code
- */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.12-SNAPSHOT"})
-@Tag("paper-input-error")
-@HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
-public class PaperInputError<R extends PaperInputError<R>> extends Component
-		implements
-			HasStyle {
+		"WebComponent: PasswordFieldElement#null", "Flow#0.1.12-SNAPSHOT"})
+@Tag("vaadin-password-field")
+@HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
+public class VaadinPasswordField<R extends VaadinPasswordField<R>>
+		extends
+			Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the error is showing.
+	 * Set to true to hide the eye icon which toggles the password visibility.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isInvalid() {
-		return getElement().getProperty("invalid", false);
+	public boolean isHideToggleButton() {
+		return getElement().getProperty("hideToggleButton", false);
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the error is showing.
+	 * Set to true to hide the eye icon which toggles the password visibility.
 	 * 
-	 * @param invalid
+	 * @param hideToggleButton
 	 * @return This instance, for method chaining.
 	 */
-	public R setInvalid(boolean invalid) {
-		getElement().setProperty("invalid", invalid);
+	public R setHideToggleButton(boolean hideToggleButton) {
+		getElement().setProperty("hideToggleButton", hideToggleButton);
 		return getSelf();
 	}
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * This overrides the update function in PaperInputAddonBehavior.
+	 * True if the password is visible ([type=text]).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
-	public void update() {
-		getElement().callFunction("update");
+	public boolean isPasswordVisible() {
+		return getElement().getProperty("passwordVisible", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * True if the password is visible ([type=text]).
+	 * 
+	 * @param passwordVisible
+	 * @return This instance, for method chaining.
+	 */
+	public R setPasswordVisible(boolean passwordVisible) {
+		getElement().setProperty("passwordVisible", passwordVisible);
+		return getSelf();
 	}
 
 	/**

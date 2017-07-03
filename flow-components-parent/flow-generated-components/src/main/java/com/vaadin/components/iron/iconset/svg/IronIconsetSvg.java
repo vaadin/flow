@@ -63,6 +63,9 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of the iconset.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -85,6 +88,9 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The size of an individual icon. Note that icons must be square.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
@@ -113,6 +119,9 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * NOTE: For performance reasons, direction will be resolved once per
 	 * document per iconset, so moving icons in and out of RTL subtrees will not
 	 * cause their mirrored state to change.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRtlMirroring() {
 		return getElement().getProperty("rtlMirroring", false);
