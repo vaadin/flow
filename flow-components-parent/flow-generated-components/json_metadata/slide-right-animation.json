@@ -80,5 +80,6 @@
   "behaviors": [
     "Polymer.NeonAnimationBehavior"
   ],
+  "mixins": [],
   "description": "`<slide-right-animation>` animates the transform of an element from `none` to `translateX(100%)`.\nThe `transformOrigin` defaults to `0 50%`.\n\nConfiguration:\n```\n{\n  name: 'slide-right-animation',\n  node: <node>,\n  transformOrigin: <transform-origin>,\n  timing: <animation-timing>\n}\n```"
 }

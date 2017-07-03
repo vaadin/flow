@@ -286,12 +286,13 @@ module.exports = class ElementJsonTransform extends Transform {
       "slots": slotsToJsonArray(element.slots),
       "listeners": element.listers,
       "behaviors": element.behaviorAssignments.map(behavior => behavior.name),
+      "mixins": element.mixins.map(mixin => mixin.identifier),
       "description": element.jsdoc ? element.jsdoc.description : "Missing documentation!"
     };
 
     const file = new File({
       path: path.join(globalVar.targetDir, element.tagName + '.json'),
-      contents: new Buffer(JSON.stringify(json, null, 2))
+      contents: new Buffer(JSON.stringify(json, null, 2) + '\n')
     });
     callback(null, file);
   }

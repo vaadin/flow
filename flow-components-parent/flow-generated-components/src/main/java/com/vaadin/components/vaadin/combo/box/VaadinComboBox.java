@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
@@ -94,6 +95,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Name of the validator to use.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -117,7 +121,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the last call to {@code validate} is invalid.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "invalid-changed" event happens.
 	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}
@@ -135,6 +143,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public String getName() {
 		return getElement().getProperty("name");
 	}
@@ -158,7 +170,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * 
 	 * Use {@code selectedItem} property to get the raw selected item from the
 	 * {@code items} array.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -186,6 +202,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to mark the input as required.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -208,7 +227,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True if the dropdown is open, false otherwise.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "opened-changed" event happens.
 	 */
+	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}
@@ -230,6 +253,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable this input.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -248,6 +274,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
 	}
@@ -266,6 +296,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * 
 	 * A full set of items to filter the visible options from. The items can be
 	 * of either {@code String} or {@code Object} type.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
@@ -292,6 +325,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * items list. {@code value} property will be set to the input value in this
 	 * case. Also, when {@code value} is set programmatically, the input value
 	 * will be set to reflect that value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAllowCustomValue() {
 		return getElement().getProperty("allowCustomValue", false);
@@ -319,6 +355,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * A subset of items, filtered based on the user input. Filtered items can
 	 * be assigned directly to omit the internal filtering functionality. The
 	 * items can be of either {@code String} or {@code Object} type.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getFilteredItems() {
 		return (JsonArray) getElement().getPropertyRaw("filteredItems");
@@ -344,6 +383,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * 
 	 * A read-only property indicating whether this combo box has a value
 	 * selected or not. It can be used for example in styling of the component.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isHasValue() {
 		return getElement().getProperty("hasValue", false);
@@ -368,6 +410,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * 
 	 * When set to {@code true}, a loading spinner is displayed on top of the
 	 * list of options.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
@@ -391,7 +436,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Filtering string the user has typed into the input field.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "filter-changed" event happens.
 	 */
+	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
 		return getElement().getProperty("filter");
 	}
@@ -413,6 +462,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The selected item from the {@code items} array.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -444,6 +496,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * When using item templates, the property is still needed because it is
 	 * used for filtering, and for displaying the selected item value in the
 	 * input box.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getItemLabelPath() {
 		return getElement().getProperty("itemLabelPath");
@@ -481,6 +536,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * 
 	 * The item value is used in the {@code value} property of the combo box, to
 	 * provide the form value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getItemValuePath() {
 		return getElement().getProperty("itemValuePath");
@@ -509,6 +567,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Returns a reference to the native input element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
@@ -531,6 +592,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The label for this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -553,6 +617,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to disable the floating label.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -575,6 +642,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to always float the label.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -597,6 +667,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to auto-validate the input value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -619,6 +692,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to prevent the user from entering invalid input.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isPreventInvalidInput() {
 		return getElement().getProperty("preventInvalidInput", false);
@@ -641,6 +717,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
@@ -664,6 +743,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * A pattern to validate the {@code input} with.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
@@ -686,6 +768,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The error message to display when the input is invalid.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -705,6 +790,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
 	}
@@ -718,6 +807,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
 	}
@@ -737,6 +830,9 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * 
 	 * A placeholder string in addition to the label. If this is set, the label
 	 * will always float.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -757,6 +853,10 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
 	}
@@ -774,7 +874,11 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * True when the input field has focus.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "focused-changed" event happens.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}

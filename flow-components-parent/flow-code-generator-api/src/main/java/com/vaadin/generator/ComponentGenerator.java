@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -297,7 +298,7 @@ public class ComponentGenerator {
 
         if (metadata.getProperties() != null) {
             metadata.getProperties().forEach(property -> {
-                generateGetterFor(javaClass, property);
+                generateGetterFor(javaClass, property, metadata.getEvents());
 
                 if (!property.isReadOnly()) {
                     generateSetterFor(javaClass, property);
@@ -439,7 +440,7 @@ public class ComponentGenerator {
     }
 
     private void generateGetterFor(JavaClassSource javaClass,
-            ComponentPropertyData property) {
+            ComponentPropertyData property, List<ComponentEventData> events) {
         boolean postfixWithVariableType = property.getType().size() > 1;
         for (ComponentBasicType basicType : property.getType()) {
             MethodSource<JavaClassSource> method = javaClass.addMethod()
@@ -494,10 +495,40 @@ public class ComponentGenerator {
                 break;
             }
 
+            // verifies whether the getter needs a @Synchronize annotation by
+            // inspecting the event list
+            String synchronizationDescription = "";
+
+            if (containsChangedEventForProperty(property.getName(), events)) {
+                method.addAnnotation(Synchronize.class)
+                        .setStringValue("property", property.getName())
+                        .setStringValue(property.getName() + "-changed");
+
+                synchronizationDescription = "This property is synchronized automatically from client side when a \""
+                        + property.getName() + "-changed\" event happens.";
+            } else {
+                synchronizationDescription = "This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.";
+            }
+
             if (StringUtils.isNotEmpty(property.getDescription())) {
-                addJavaDoc(property.getDescription(), method.getJavaDoc());
+                addJavaDoc(
+                        property.getDescription() + "<p>"
+                                + synchronizationDescription,
+                        method.getJavaDoc());
+            } else {
+                method.getJavaDoc().setFullText(synchronizationDescription);
             }
         }
+    }
+
+    private boolean containsChangedEventForProperty(String property,
+            List<ComponentEventData> events) {
+        if (events == null) {
+            return false;
+        }
+        String eventName = property + "-changed";
+        return events.stream().map(ComponentEventData::getName)
+                .anyMatch(name -> name.equals(eventName));
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
@@ -750,12 +781,11 @@ public class ComponentGenerator {
     }
 
     private Properties getProperties(String fileName) {
-        // Get properties resource with version information.
-        InputStream resourceAsStream = this.getClass()
-                .getResourceAsStream("/" + fileName);
-
         Properties config = new Properties();
-        try {
+
+        // Get properties resource with version information.
+        try (InputStream resourceAsStream = this.getClass()
+                .getResourceAsStream("/" + fileName)) {
             config.load(resourceAsStream);
             return config;
         } catch (IOException e) {

@@ -514,7 +514,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("The method getSelf() wasn't found",
                 generatedClass.contains("protected R getSelf()"));
     }
-
+    
     @Test
     public void generateClass_implementsHasStyle() {
         String generatedClass = generator.generateClass(componentMetadata,
@@ -559,5 +559,29 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(interfaceToBeImplemented.getSimpleName()
                 + " interface not found in the class definition: " + interfaces,
                 interfaces.contains(interfaceToBeImplemented.getSimpleName()));
+    }
+
+    @Test
+    public void classContainsGetterAndRelatedChangeEvent_getterContainsSynchronizeAnnotation() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("someproperty");
+        property.setType(Arrays.asList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Arrays.asList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("someproperty-changed");
+        componentMetadata.setEvents(Arrays.asList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        // remove indentation
+        generatedClass = generatedClass.replaceAll("\\s\\s+", " ");
+
+        Assert.assertTrue(
+                "Wrong getter definition. It should contains @Synchronize(property = \"somepropery\", value = \"someproperty-changed\")",
+                generatedClass.contains(
+                        "@Synchronize(property = \"someproperty\", value = \"someproperty-changed\") "
+                                + "public String getSomeproperty() {"));
     }
 }
