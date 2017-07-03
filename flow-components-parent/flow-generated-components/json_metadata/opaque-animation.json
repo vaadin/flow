@@ -89,5 +89,6 @@
   "behaviors": [
     "Polymer.NeonAnimationBehavior"
   ],
+  "mixins": [],
   "description": "`<opaque-animation>` makes an element `opacity:1` for the duration of the animation. Used to prevent\nwebkit/safari from drawing a frame before an animation for elements that animate from display:none."
 }

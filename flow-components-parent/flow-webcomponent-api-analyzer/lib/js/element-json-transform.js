@@ -286,6 +286,7 @@ module.exports = class ElementJsonTransform extends Transform {
       "slots": slotsToJsonArray(element.slots),
       "listeners": element.listers,
       "behaviors": element.behaviorAssignments.map(behavior => behavior.name),
+      "mixins": element.mixins.map(mixin => mixin.identifier),
       "description": element.jsdoc ? element.jsdoc.description : "Missing documentation!"
     };
 

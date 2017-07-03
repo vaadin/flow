@@ -80,5 +80,6 @@
   "behaviors": [
     "Polymer.NeonAnimationBehavior"
   ],
+  "mixins": [],
   "description": "`<scale-down-animation>` animates the scale transform of an element from 1 to 0. By default it\nscales in both the x and y axes.\n\nConfiguration:\n```\n{\n  name: 'scale-down-animation',\n  node: <node>,\n  axis: 'x' | 'y' | '',\n  transformOrigin: <transform-origin>,\n  timing: <animation-timing>\n}\n```"
 }

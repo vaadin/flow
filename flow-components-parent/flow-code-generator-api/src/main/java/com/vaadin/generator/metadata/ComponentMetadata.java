@@ -37,6 +37,7 @@ public class ComponentMetadata {
     private List<ComponentEventData> events;
     private List<String> behaviors;
     private List<String> slots;
+    private List<String> mixins;
 
     /**
      * Gets the name of the ES6 class of the webcomponent, which is used to
@@ -258,6 +259,24 @@ public class ComponentMetadata {
      */
     public void setSlots(List<String> slots) {
         this.slots = slots;
+    }
+
+    /**
+     * Gets the mixins of this web component.
+     *
+     * @return a list of the mixin identifiers declared for this web component
+     */
+    public List<String> getMixins() {
+        return mixins;
+    }
+
+    /**
+     * Sets the mixins for this web component.
+     *
+     * @param mixins a list of mixin identifiers declared for this web component
+     */
+    public void setMixins(List<String> mixins) {
+        this.mixins = mixins;
     }
 
 }
