@@ -76,7 +76,10 @@ import elemental.json.JsonValue;
  */
 public class ComponentGenerator {
 
+    private static final String JAVADOC_SEE = "@see";
+    private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
+
     private static final Logger logger = Logger.getLogger("ComponentGenerator");
 
     private ObjectMapper mapper;
@@ -355,9 +358,9 @@ public class ComponentGenerator {
                     method.getJavaDoc().setText(String.format(
                             "Adds the given components as children of this component at the slot \"%s\"",
                             slot))
-                            .addTagValue("@param",
+                            .addTagValue(JAVADOC_PARAM,
                                     "components The components to add.")
-                            .addTagValue("@see",
+                            .addTagValue(JAVADOC_SEE,
                                     "HasComponents#add(Component...)");
 
                 });
@@ -614,7 +617,7 @@ public class ComponentGenerator {
                 addJavaDoc(property.getDescription(), method.getJavaDoc());
             }
 
-            method.getJavaDoc().addTagValue("@param", property.getName());
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM, property.getName());
 
             if (fluentSetters) {
                 method.setReturnType(GENERIC_TYPE);
@@ -706,7 +709,7 @@ public class ComponentGenerator {
                 method.addParameter(toJavaType(basicType), formattedName);
                 params.append(", ").append(formattedName);
 
-                method.getJavaDoc().addTagValue("@param",
+                method.getJavaDoc().addTagValue(JAVADOC_PARAM,
                         param.getName() + (useTypePostfixForVariableName
                                 ? " can be <code>null</code>"
                                 : ""));
