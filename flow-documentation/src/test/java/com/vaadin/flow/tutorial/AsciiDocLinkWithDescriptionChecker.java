@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,28 +47,9 @@ class AsciiDocLinkWithDescriptionChecker implements TutorialLineChecker {
         Matcher matcher = linkPattern.matcher(line);
         while (matcher.find()) {
             if (matcher.groupCount() == 2) {
-                String description = matcher.group(2);
-                if (description == null || description.isEmpty()) {
-                    validationErrors.add(String.format(
-                            "Asciidoc link description is empty or malformed, tutorial = %s, line = %s",
-                            tutorialName, line));
-                }
-
-                String asciiDocLink = matcher.group(1);
-                if (asciiDocLink == null || asciiDocLink.isEmpty()) {
-                    validationErrors.add(String.format(
-                            "Asciidoc link is empty or malformed, tutorial = %s, line = %s",
-                            tutorialName, line));
-                } else if (checkedTutorialPaths.add(asciiDocLink)) {
-                    Path externalTutorialPath = Paths.get(
-                            tutorialPath.getParent().toString(),
-                            asciiDocLink + fileExtension);
-                    if (!Files.isRegularFile(externalTutorialPath)) {
-                        validationErrors.add(String.format(
-                                "Could not locate file '%s' referenced in tutorial %s",
-                                asciiDocLink, tutorialPath));
-                    }
-                }
+                validateLinkAndDescription(tutorialPath, tutorialName, line,
+                        matcher.group(1), matcher.group(2))
+                                .ifPresent(validationErrors::add);
             } else {
                 validationErrors.add(String.format(
                         "Received malformed asciidoc link, tutorial = %s, line = %s",
@@ -75,5 +57,33 @@ class AsciiDocLinkWithDescriptionChecker implements TutorialLineChecker {
             }
         }
         return validationErrors;
+    }
+
+    private Optional<String> validateLinkAndDescription(Path tutorialPath,
+            String tutorialName, String line, String asciiDocLink,
+            String description) {
+        if (description == null || description.isEmpty()) {
+            return Optional.of(String.format(
+                    "Asciidoc link description is empty or malformed, tutorial = %s, line = %s",
+                    tutorialName, line));
+        }
+
+        if (asciiDocLink == null || asciiDocLink.isEmpty()) {
+            return Optional.of(String.format(
+                    "Asciidoc link is empty or malformed, tutorial = %s, line = %s",
+                    tutorialName, line));
+        }
+
+        if (checkedTutorialPaths.add(asciiDocLink)) {
+            Path externalTutorialPath = Paths.get(
+                    tutorialPath.getParent().toString(),
+                    asciiDocLink + fileExtension);
+            if (!Files.isRegularFile(externalTutorialPath)) {
+                return Optional.of(String.format(
+                        "Could not locate file '%s' referenced in tutorial %s",
+                        asciiDocLink, tutorialName));
+            }
+        }
+        return Optional.empty();
     }
 }
