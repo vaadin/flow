@@ -46,10 +46,9 @@ class AsciiDocLinkWithDescriptionChecker implements TutorialLineChecker {
 
         Matcher matcher = linkPattern.matcher(line);
         while (matcher.find()) {
-            if (matcher.groupCount() == 2) {
-                validateLinkAndDescription(tutorialPath, tutorialName, line,
-                        matcher.group(1), matcher.group(2))
-                                .ifPresent(validationErrors::add);
+            if (matchedCorrectValue(matcher)) {
+                validateAsciiDocLink(tutorialPath, tutorialName,
+                        matcher.group(1)).ifPresent(validationErrors::add);
             } else {
                 validationErrors.add(String.format(
                         "Received malformed asciidoc link, tutorial = %s, line = %s",
@@ -59,21 +58,8 @@ class AsciiDocLinkWithDescriptionChecker implements TutorialLineChecker {
         return validationErrors;
     }
 
-    private Optional<String> validateLinkAndDescription(Path tutorialPath,
-            String tutorialName, String line, String asciiDocLink,
-            String description) {
-        if (description == null || description.isEmpty()) {
-            return Optional.of(String.format(
-                    "Asciidoc link description is empty or malformed, tutorial = %s, line = %s",
-                    tutorialName, line));
-        }
-
-        if (asciiDocLink == null || asciiDocLink.isEmpty()) {
-            return Optional.of(String.format(
-                    "Asciidoc link is empty or malformed, tutorial = %s, line = %s",
-                    tutorialName, line));
-        }
-
+    private Optional<String> validateAsciiDocLink(Path tutorialPath,
+            String tutorialName, String asciiDocLink) {
         if (checkedTutorialPaths.add(asciiDocLink)) {
             Path externalTutorialPath = Paths.get(
                     tutorialPath.getParent().toString(),
@@ -85,5 +71,14 @@ class AsciiDocLinkWithDescriptionChecker implements TutorialLineChecker {
             }
         }
         return Optional.empty();
+    }
+
+    private boolean matchedCorrectValue(Matcher matcher) {
+        return matcher.groupCount() == 2 && stringIsNotEmpty(matcher.group(1))
+                && stringIsNotEmpty(matcher.group(2));
+    }
+
+    private boolean stringIsNotEmpty(String string) {
+        return string != null && !string.isEmpty();
     }
 }
