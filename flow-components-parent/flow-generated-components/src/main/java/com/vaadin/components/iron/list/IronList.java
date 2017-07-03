@@ -65,6 +65,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * {@code }`js appHeader.scrollTarget =
 	 * document.querySelector('#scrollable-element'); {@code }`
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getScrollTarget() {
 		return (JsonObject) getElement().getPropertyRaw("scrollTarget");
@@ -110,6 +113,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * Instance-level flag for configuring the dirty-checking strategy for this
 	 * element. When true, Objects and Arrays will skip dirty checking,
 	 * otherwise strict equality checking will be used.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isMutableData() {
 		return getElement().getProperty("mutableData", false);
@@ -135,6 +141,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * An array containing items determining how many instances of the template
 	 * to stamp and that that each template instance should bind to.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
@@ -158,6 +167,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The max count of physical items the pool can extend to.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMaxPhysicalCount() {
 		return getElement().getProperty("maxPhysicalCount", 0.0);
@@ -181,6 +193,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * The name of the variable to add to the binding scope for the array
 	 * element associated with a given template instance.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAs() {
 		return getElement().getProperty("as");
@@ -205,6 +220,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * The name of the variable to add to the binding scope with the index for
 	 * the row.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getIndexAs() {
 		return getElement().getProperty("indexAs");
@@ -229,6 +247,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * The name of the variable to add to the binding scope to indicate if the
 	 * row is selected.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getSelectedAs() {
 		return getElement().getProperty("selectedAs");
@@ -258,6 +279,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * {@code }`html <iron-list grid> <template> <div
 	 * style="width: 100px; height: 100px;"> 100x100 </div> </template>
 	 * </iron-list> {@code }`
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isGrid() {
 		return getElement().getProperty("grid", false);
@@ -289,6 +313,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * Note that tapping focusable elements within the list item will not result
 	 * in selection, since they are presumed to have their * own action.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isSelectionEnabled() {
 		return getElement().getProperty("selectionEnabled", false);
@@ -316,6 +343,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * When {@code multiSelection} is false, this is the currently selected
 	 * item, or {@code null} if no item is selected.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -340,6 +370,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * When {@code multiSelection} is true, this is an array that contains the
 	 * selected items.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getSelectedItems() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItems");
@@ -365,6 +398,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * When {@code true}, multiple items may be selected at once (in this case,
 	 * {@code selected} is an array of currently selected items). When
 	 * {@code false}, only one item may be selected at a time.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isMultiSelection() {
 		return getElement().getProperty("multiSelection", false);
@@ -396,6 +432,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * This property is useful when an external scrolling element is used and
 	 * there's some offset between the scrolling element and the list. For
 	 * example: a header is placed above the list.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getScrollOffset() {
 		return getElement().getProperty("scrollOffset", 0.0);
@@ -425,6 +464,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Gets the index of the first visible item in the viewport.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getFirstVisibleIndex() {
 		return getElement().getProperty("firstVisibleIndex", 0.0);
@@ -447,6 +489,9 @@ public class IronList<R extends IronList<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Gets the index of the last visible item in the viewport.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getLastVisibleIndex() {
 		return getElement().getProperty("lastVisibleIndex", 0.0);
