@@ -568,5 +568,6 @@
     "Polymer.IronOverlayBehavior",
     "Polymer.NeonAnimationRunnerBehavior"
   ],
+  "mixins": [],
   "description": "`<iron-dropdown>` is a generalized element that is useful when you have\nhidden content (`dropdown-content`) that is revealed due to some change in\nstate that should cause it to do so.\n\nNote that this is a low-level element intended to be used as part of other\ncomposite elements that cause dropdowns to be revealed.\n\nExamples of elements that might be implemented using an `iron-dropdown`\ninclude comboboxes, menubuttons, selects. The list goes on.\n\nThe `<iron-dropdown>` element exposes attributes that allow the position\nof the `dropdown-content` relative to the `dropdown-trigger` to be\nconfigured.\n\n    <iron-dropdown horizontal-align=\"right\" vertical-align=\"top\">\n      <div slot=\"dropdown-content\">Hello!</div>\n    </iron-dropdown>\n\nIn the above example, the `<div>` assigned to the `dropdown-content` slot will be\nhidden until the dropdown element has `opened` set to true, or when the `open`\nmethod is called on the element."
 }

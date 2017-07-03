@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -47,7 +48,11 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * If true, the element currently has focus.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "focused-changed" event happens.
 	 */
+	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
@@ -72,7 +77,11 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * implement your own paper-input-like element, bind this to both the
 	 * {@code <paper-input-container>}'s and the input's {@code disabled}
 	 * property.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "disabled-changed" event happens.
 	 */
+	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
@@ -98,6 +107,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * 
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -122,6 +134,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * 
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -143,6 +158,10 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 		return getSelf();
 	}
 
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
 	public JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
@@ -164,6 +183,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * and {@code hidden} property, e.g.
 	 * {@code <label hidden$="[[!label]]">[[label]]</label>} in your
 	 * {@code template}
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -190,7 +212,11 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The value for this element.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "value-changed" event happens.
 	 */
+	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -218,7 +244,11 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * 
 	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * "invalid-changed" event happens.
 	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}
@@ -249,6 +279,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code allowedPattern} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
@@ -278,6 +311,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code number} and {@code password}. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getType() {
 		return getElement().getProperty("type");
@@ -306,6 +342,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * existing {@code <datalist>}. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code list} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
@@ -333,6 +372,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * A pattern to validate the {@code input} with. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
@@ -362,6 +404,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Otherwise, a {@code required} element will always be considered valid.
 	 * It's also strongly recommended to provide a visual style for the element
 	 * when its value is invalid.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -391,6 +436,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * The error message to display when the input is invalid. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-error>}'s content, if using.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -416,6 +464,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Set to true to show a character counter.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isCharCounter() {
 		return getElement().getProperty("charCounter", false);
@@ -441,6 +492,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
 	 * property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -468,6 +522,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Set to true to always float the label. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -495,6 +552,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-container>}'s {@code autoValidate}
 	 * property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -522,6 +582,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Name of the validator to use. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code validator} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -549,6 +612,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocomplete} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -576,6 +642,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autofocus} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -602,6 +671,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code inputmode} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
@@ -629,6 +701,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * The minimum length of the input value. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code minlength} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
@@ -655,6 +730,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * The maximum length of the input value. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code maxlength} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
@@ -681,6 +759,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * The minimum (numeric or date-time) input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code min} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getMin() {
 		return getElement().getProperty("min");
@@ -708,6 +789,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code "2000-01-01"}) or a Number (e.g. {@code 2}). If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code max} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getMax() {
 		return getElement().getProperty("max");
@@ -735,6 +819,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Limits the numeric or date-time increments. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code step} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getStep() {
 		return getElement().getProperty("step");
@@ -759,6 +846,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * The name of this element.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -782,6 +872,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * 
 	 * A placeholder string in addition to the label. If this is set, the label
 	 * will always float.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -808,6 +901,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code readonly} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -834,6 +930,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s {@code size}
 	 * property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
@@ -860,6 +959,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocapitalize} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAutocapitalize() {
 		return getElement().getProperty("autocapitalize");
@@ -887,6 +989,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocorrect} property.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
@@ -914,6 +1019,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autosave} property, used with type=search.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAutosave() {
 		return getElement().getProperty("autosave");
@@ -940,6 +1048,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code results} property, used with type=search.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public double getResults() {
 		return getElement().getProperty("results", 0.0);
@@ -966,6 +1077,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code accept} property, used with type=file.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAccept() {
 		return getElement().getProperty("accept");
@@ -992,6 +1106,9 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the{@code <input is="iron-input">}'s
 	 * {@code multiple} property, used with type=file.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isMultiple() {
 		return getElement().getProperty("multiple", false);
