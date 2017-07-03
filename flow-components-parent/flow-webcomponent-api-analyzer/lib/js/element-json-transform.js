@@ -291,7 +291,7 @@ module.exports = class ElementJsonTransform extends Transform {
 
     const file = new File({
       path: path.join(globalVar.targetDir, element.tagName + '.json'),
-      contents: new Buffer(JSON.stringify(json, null, 2))
+      contents: new Buffer(JSON.stringify(json, null, 2) + '\n')
     });
     callback(null, file);
   }

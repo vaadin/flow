@@ -33,9 +33,6 @@ public class PaperSwatchPickerView extends DemoView {
         picker.setColor("#f4511e");
         final Label color = new Label("Picker color: " + picker.getColor());
 
-        // TODO: generator should somehow add the synchronization
-        picker.getElement().synchronizeProperty("color", "color-changed");
-
         picker.addColorChangedListener(
                 event -> color.setText("Picker color: " + picker.getColor()));
 

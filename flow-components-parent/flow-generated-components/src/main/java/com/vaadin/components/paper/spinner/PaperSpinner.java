@@ -72,6 +72,9 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * Displays the spinner.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
@@ -96,6 +99,9 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component
 	 * Alternative text content for accessibility support. If alt is present, it
 	 * will add an aria-label whose content matches alt when active. If alt is
 	 * not present, it will default to 'loading' as the alt value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");
