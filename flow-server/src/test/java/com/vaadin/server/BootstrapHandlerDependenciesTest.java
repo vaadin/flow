@@ -262,20 +262,23 @@ public class BootstrapHandlerDependenciesTest {
                 new UIAnnotated_BothInlineAndEagerTest(),
                 new UIWithMethods_BothBothInlineAndEagerTest(),
                 new UIAnnotated_BothLazyAndInlineTest(),
-                new UIWithMethods_BothBothLazyAndInlineTest()).forEach(ui -> {
-                    boolean exceptionCaught = false;
-                    try {
-                        testUis(doc -> {
-                        }, ui);
-                    } catch (IllegalStateException expected) {
-                        exceptionCaught = true;
-                    } finally {
-                        assertThat(
-                                "The exception was expected, but not thrown for ui "
-                                        + ui.getClass().getCanonicalName(),
-                                exceptionCaught, is(true));
-                    }
-                });
+                new UIWithMethods_BothBothLazyAndInlineTest())
+                .forEach(this::checkUiWithException);
+    }
+
+    private void checkUiWithException(UI ui) {
+        boolean exceptionCaught = false;
+        try {
+            testUis(doc -> {
+            }, ui);
+        } catch (IllegalStateException expected) {
+            exceptionCaught = true;
+        } finally {
+            assertThat(
+                    "The exception was expected, but not thrown for ui "
+                            + ui.getClass().getCanonicalName(),
+                    exceptionCaught, is(true));
+        }
     }
 
     @Test

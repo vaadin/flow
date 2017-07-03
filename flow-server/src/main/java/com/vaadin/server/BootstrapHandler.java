@@ -267,7 +267,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         List<Element> dependenciesToInlineInBody = setupDocumentHead(head,
                 context);
-        dependenciesToInlineInBody.forEach(dependency -> document.body().appendChild(dependency));
+        dependenciesToInlineInBody
+                .forEach(dependency -> document.body().appendChild(dependency));
         setupDocumentBody(document);
 
         document.outputSettings().prettyPrint(false);
@@ -299,31 +300,40 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
                 initialUIDL);
         setupFrameworkLibraries(head, initialUIDL, context);
-        return applyUserDependencies(head, context, dependenciesToProcessOnServer);
+        return applyUserDependencies(head, context,
+                dependenciesToProcessOnServer);
     }
 
-    private static List<Element> applyUserDependencies(Element head, BootstrapContext context,
-                                                       Map<LoadMode, JsonArray> dependenciesToProcessOnServer) {
+    private static List<Element> applyUserDependencies(Element head,
+            BootstrapContext context,
+            Map<LoadMode, JsonArray> dependenciesToProcessOnServer) {
         List<Element> dependenciesToInlineInBody = new ArrayList<>();
         for (Map.Entry<LoadMode, JsonArray> entry : dependenciesToProcessOnServer
                 .entrySet()) {
-            LoadMode loadMode = entry.getKey();
-            JsonArray dependencies = entry.getValue();
+            dependenciesToInlineInBody.addAll(
+                    inlineDependenciesInHead(head, context.getUriResolver(),
+                            entry.getKey(), entry.getValue()));
+        }
+        return dependenciesToInlineInBody;
+    }
 
-            for (int i = 0; i < dependencies.length(); i++) {
-                JsonObject dependencyJson = dependencies.getObject(i);
-                Dependency.Type dependencyType = Dependency.Type
-                        .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
-                Element dependencyElement = createDependencyElement(
-                        context.getUriResolver(), loadMode, dependencyJson,
-                        dependencyType);
+    private static List<Element> inlineDependenciesInHead(Element head,
+            VaadinUriResolver uriResolver, LoadMode loadMode,
+            JsonArray dependencies) {
+        List<Element> dependenciesToInlineInBody = new ArrayList<>();
 
-                if (loadMode == LoadMode.INLINE
-                        && dependencyType == Dependency.Type.HTML_IMPORT) {
-                    dependenciesToInlineInBody.add(dependencyElement);
-                } else {
-                    head.appendChild(dependencyElement);
-                }
+        for (int i = 0; i < dependencies.length(); i++) {
+            JsonObject dependencyJson = dependencies.getObject(i);
+            Dependency.Type dependencyType = Dependency.Type
+                    .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+            Element dependencyElement = createDependencyElement(uriResolver,
+                    loadMode, dependencyJson, dependencyType);
+
+            if (loadMode == LoadMode.INLINE
+                    && dependencyType == Dependency.Type.HTML_IMPORT) {
+                dependenciesToInlineInBody.add(dependencyElement);
+            } else {
+                head.appendChild(dependencyElement);
             }
         }
         return dependenciesToInlineInBody;
@@ -365,7 +375,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void setupCss(Element head) {
-        Element styles = head.appendElement("style").attr("type", CSS_TYPE_ATTRIBUTE_VALUE);
+        Element styles = head.appendElement("style").attr("type",
+                CSS_TYPE_ATTRIBUTE_VALUE);
         styles.appendText("html, body {height:100%;margin:0;}");
         // Basic reconnect dialog style just to make it visible and outside of
         // normal flow
@@ -530,10 +541,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         final Element cssElement;
         if (url != null) {
             cssElement = new Element(Tag.valueOf("link"), "")
-                    .attr("rel", "stylesheet").attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
-                    .attr("href", url);
+                    .attr("rel", "stylesheet")
+                    .attr("type", CSS_TYPE_ATTRIBUTE_VALUE).attr("href", url);
         } else {
-            cssElement = new Element(Tag.valueOf("style"), "").attr("type", CSS_TYPE_ATTRIBUTE_VALUE);
+            cssElement = new Element(Tag.valueOf("style"), "").attr("type",
+                    CSS_TYPE_ATTRIBUTE_VALUE);
         }
         return cssElement;
     }

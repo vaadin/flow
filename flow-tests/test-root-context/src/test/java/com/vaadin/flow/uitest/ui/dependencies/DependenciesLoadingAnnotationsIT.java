@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -51,6 +52,7 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 .isEmpty());
 
         flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes();
+        checkInlinedCss();
 
         WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
         Assert.assertEquals(
@@ -93,6 +95,16 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
                 "Lazy dependencies should be loaded after eager and inline, but got "
                         + lazyMessages.get(1),
                 lazyMessages.get(1).startsWith(LAZY_PREFIX));
+    }
+
+    private void checkInlinedCss() {
+        Optional<String> inlinedCss = findElements(By.tagName("style")).stream()
+                .map(webElement -> webElement.getAttribute("innerHTML"))
+                .filter(cssContents -> cssContents.contains("inline.css"))
+                .findAny();
+        assertThat(
+                "One of the inlined css should be our dependency containing `inline.css` string inside",
+                inlinedCss.isPresent(), is(true));
     }
 
     private void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {

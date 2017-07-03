@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
@@ -186,17 +187,21 @@ public class UidlWriter implements Serializable {
     private static String getDependencyContents(String url) {
         HttpServletRequest currentRequest = ((VaadinServletRequest) VaadinService
                 .getCurrentRequest()).getHttpServletRequest();
-        Charset requestCharset = Charset.forName(
-                Optional.ofNullable(currentRequest.getCharacterEncoding())
-                        .filter(s -> !s.isEmpty()).orElse("utf-8"));
+        Charset requestCharset = Optional
+                .ofNullable(currentRequest.getCharacterEncoding())
+                .filter(s -> !s.isEmpty()).map(Charset::forName)
+                .orElse(StandardCharsets.UTF_8);
 
-        try (InputStream inlineResourceStream = getInlineResourceStream(url, currentRequest);
-             BufferedReader bf = new BufferedReader(new InputStreamReader(
-                     inlineResourceStream, requestCharset))) {
-            return bf.lines().collect(Collectors.joining(System.lineSeparator()));
+        try (InputStream inlineResourceStream = getInlineResourceStream(url,
+                currentRequest);
+                BufferedReader bufferedReader = new BufferedReader(
+                        new InputStreamReader(inlineResourceStream,
+                                requestCharset))) {
+            return bufferedReader.lines()
+                    .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
-            throw new IllegalArgumentException(
-                    String.format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
+            throw new IllegalStateException(String
+                    .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
         }
     }
 
@@ -208,9 +213,8 @@ public class UidlWriter implements Serializable {
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (IOException e) {
-                throw new IllegalArgumentException(
-                        String.format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url),
-                        e);
+                throw new IllegalStateException(String.format(
+                        COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         }
         return stream;
