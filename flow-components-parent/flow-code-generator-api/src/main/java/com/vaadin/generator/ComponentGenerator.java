@@ -58,6 +58,7 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 
 import elemental.json.JsonArray;
@@ -316,6 +317,10 @@ public class ComponentGenerator {
                     event -> generateEventListenerFor(javaClass, event));
         }
 
+        if (metadata.getSlots() != null && !metadata.getSlots().isEmpty()) {
+            generateAdders(metadata, javaClass);
+        }
+
         if (StringUtils.isNotEmpty(metadata.getDescription())) {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
@@ -329,13 +334,41 @@ public class ComponentGenerator {
         return javaClass;
     }
 
+    private void generateAdders(ComponentMetadata metadata,
+            JavaClassSource javaClass) {
+
+        javaClass.addInterface(HasComponents.class);
+
+        metadata.getSlots().stream().filter(StringUtils::isNotEmpty)
+                .forEach(slot -> {
+                    String methodName = ComponentGeneratorUtils
+                            .generateMethodNameForProperty("addTo", slot);
+                    MethodSource<JavaClassSource> method = javaClass.addMethod()
+                            .setPublic().setReturnTypeVoid()
+                            .setName(methodName);
+                    method.addParameter(Component.class, "components")
+                            .setVarArgs(true);
+                    method.setBody(String.format(
+                            "for (Component component : components) {\n component.getElement().setAttribute(\"slot\", \"%s\");\n }\n add(components);",
+                            slot));
+
+                    method.getJavaDoc().setText(String.format(
+                            "Adds the given components as children of this component at the slot \"%s\"",
+                            slot))
+                            .addTagValue("@param",
+                                    "components The components to add.")
+                            .addTagValue("@see",
+                                    "HasComponents#add(Component...)");
+
+                });
+    }
+
     private void generateGetSelf(JavaClassSource javaClass) {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
 
-        method.getJavaDoc()
-                .setText(
-                        "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
+        method.getJavaDoc().setText(
+                "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
                 .addTagValue("@return", "This object casted to its type.");
 
         method.setBody("return (" + GENERIC_TYPE + ") this;");
@@ -451,11 +484,13 @@ public class ComponentGenerator {
                         ComponentGeneratorUtils.generateMethodNameForProperty(
                                 "is", property.getName()));
             } else {
-                method.setName(ComponentGeneratorUtils
-                        .generateMethodNameForProperty("get",
-                                property.getName())
-                        + (postfixWithVariableType ? StringUtils.capitalize(
-                                basicType.name().toLowerCase()) : ""));
+                method.setName(
+                        ComponentGeneratorUtils.generateMethodNameForProperty(
+                                "get", property.getName())
+                                + (postfixWithVariableType
+                                        ? StringUtils.capitalize(
+                                                basicType.name().toLowerCase())
+                                        : ""));
             }
             switch (basicType) {
             case STRING:
@@ -673,7 +708,8 @@ public class ComponentGenerator {
 
                 method.getJavaDoc().addTagValue("@param",
                         param.getName() + (useTypePostfixForVariableName
-                                ? " can be <code>null</code>" : ""));
+                                ? " can be <code>null</code>"
+                                : ""));
             }
         }
         return params.toString();
