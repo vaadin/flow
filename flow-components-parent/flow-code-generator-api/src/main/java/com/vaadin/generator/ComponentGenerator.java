@@ -526,9 +526,9 @@ public class ComponentGenerator {
         if (events == null) {
             return false;
         }
-        return events.stream()
-                .filter(event -> event.getName().equals(property + "-changed"))
-                .limit(1).count() > 0;
+        String eventName = property + "-changed";
+        return events.stream().map(ComponentEventData::getName)
+                .anyMatch(name -> name.equals(eventName));
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
