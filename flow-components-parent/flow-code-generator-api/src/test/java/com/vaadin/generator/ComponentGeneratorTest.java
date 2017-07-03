@@ -31,6 +31,7 @@ import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.ui.HasClickListeners;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasText;
 
@@ -583,5 +584,38 @@ public class ComponentGeneratorTest {
                 generatedClass.contains(
                         "@Synchronize(property = \"someproperty\", value = \"someproperty-changed\") "
                                 + "public String getSomeproperty() {"));
+    }
+
+    @Test
+    public void classContainsDefaultSlot_generatedClassImplementsHasComponents() {
+        componentMetadata.setSlots(Arrays.asList(""));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasComponents.class);
+    }
+
+    @Test
+    public void classContainsNamedSlots_generatedClassContainsAdders() {
+        componentMetadata
+                .setSlots(Arrays.asList("named1", "named-2", "named-three"));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasComponents.class);
+
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed1\" method",
+                generatedClass.contains("public void addToNamed1("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed2\" method",
+                generatedClass.contains("public void addToNamed2("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamedThree\" method",
+                generatedClass.contains("public void addToNamedThree("));
     }
 }
