@@ -189,7 +189,8 @@ public class UidlWriter implements Serializable {
                 .getCurrentRequest()).getHttpServletRequest();
         Charset requestCharset = Optional
                 .ofNullable(currentRequest.getCharacterEncoding())
-                .filter(s -> !s.isEmpty()).map(Charset::forName)
+                .filter(string -> !string.isEmpty())
+                .map(Charset::forName)
                 .orElse(StandardCharsets.UTF_8);
 
         try (InputStream inlineResourceStream = getInlineResourceStream(url,

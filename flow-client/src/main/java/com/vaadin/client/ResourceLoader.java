@@ -48,6 +48,82 @@ import elemental.html.StyleElement;
  * @since 7.0.0
  */
 public class ResourceLoader {
+    private class StyleSheetLoadListener implements ResourceLoadListener {
+        private final String url;
+
+        private StyleSheetLoadListener(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            // Chrome, IE, Edge all fire load for errors, must check
+            // stylesheet data
+            if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE()
+                    || BrowserInfo.get().isEdge()) {
+                int styleSheetLength = getStyleSheetLength(url);
+                // Error if there's an empty stylesheet
+                if (styleSheetLength == 0) {
+                    fireError(event);
+                    return;
+                }
+            }
+
+            fireLoad(event);
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            fireError(event);
+        }
+    }
+
+    private class HtmlLoadListener
+            implements ResourceLoadListener, Runnable {
+        private final ResourceLoadEvent event;
+
+        private boolean errorFired;
+
+        private HtmlLoadListener(ResourceLoadEvent event) {
+            this.event = event;
+        }
+
+        @Override
+        public void run() {
+            // Invoked through HTMLImports.whenReady
+            if (!errorFired) {
+                fireLoad(event);
+            }
+        }
+
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            if (!supportsHtmlWhenReady) {
+                assert !errorFired;
+                fireLoad(event);
+            }
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            assert !errorFired;
+            errorFired = true;
+            fireError(event);
+        }
+    }
+
+    private class SimpleLoadListener implements ResourceLoadListener {
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            fireLoad(event);
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            fireError(event);
+        }
+    }
+
     /**
      * Event fired when a resource has been loaded.
      */
@@ -237,17 +313,7 @@ public class ResourceLoader {
             scriptTag.setAsync(async);
             scriptTag.setDefer(defer);
 
-            addOnloadHandler(scriptTag, new ResourceLoadListener() {
-                @Override
-                public void onLoad(ResourceLoadEvent event) {
-                    fireLoad(event);
-                }
-
-                @Override
-                public void onError(ResourceLoadEvent event) {
-                    fireError(event);
-                }
-            }, event);
+            addOnloadHandler(scriptTag, new SimpleLoadListener(), event);
             getHead().appendChild(scriptTag);
         }
     }
@@ -278,17 +344,7 @@ public class ResourceLoader {
             scriptElement.setTextContent(scriptContents);
             scriptElement.setType("text/javascript");
 
-            addOnloadHandler(scriptElement, new ResourceLoadListener() {
-                @Override
-                public void onLoad(ResourceLoadEvent event) {
-                    fireLoad(event);
-                }
-
-                @Override
-                public void onError(ResourceLoadEvent event) {
-                    fireError(event);
-                }
-            }, event);
+            addOnloadHandler(scriptElement, new SimpleLoadListener(), event);
             getHead().appendChild(scriptElement);
         }
     }
@@ -334,7 +390,7 @@ public class ResourceLoader {
                 linkTag.setAttribute("async", "true");
             }
 
-            LoadAndReadyListener listener = new LoadAndReadyListener(event);
+            HtmlLoadListener listener = new HtmlLoadListener(event);
 
             addOnloadHandler(linkTag, listener, event);
             getHead().appendChild(linkTag);
@@ -371,7 +427,7 @@ public class ResourceLoader {
             spanElement.setInnerHTML(htmlContents);
             spanElement.setAttribute("hidden", "true");
 
-            LoadAndReadyListener listener = new LoadAndReadyListener(event);
+            HtmlLoadListener listener = new HtmlLoadListener(event);
             getDocument().appendChild(spanElement);
             addOnloadHandler(spanElement, listener, event);
 
@@ -444,36 +500,6 @@ public class ResourceLoader {
             }
         };
     }-*/;
-
-    private class StyleSheetLoadListener implements ResourceLoadListener {
-        private final String url;
-
-        private StyleSheetLoadListener(String url) {
-            this.url = url;
-        }
-
-        @Override
-        public void onLoad(ResourceLoadEvent event) {
-            // Chrome, IE, Edge all fire load for errors, must check
-            // stylesheet data
-            if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE()
-                    || BrowserInfo.get().isEdge()) {
-                int styleSheetLength = getStyleSheetLength(url);
-                // Error if there's an empty stylesheet
-                if (styleSheetLength == 0) {
-                    fireError(event);
-                    return;
-                }
-            }
-
-            fireLoad(event);
-        }
-
-        @Override
-        public void onError(ResourceLoadEvent event) {
-            fireError(event);
-        }
-    }
 
     /**
      * Load a stylesheet and notify a listener when the stylesheet is loaded.
@@ -684,40 +710,6 @@ public class ResourceLoader {
                     listener.onLoad(event);
                 }
             }
-        }
-    }
-
-    private class LoadAndReadyListener
-            implements ResourceLoadListener, Runnable {
-        private final ResourceLoadEvent event;
-
-        private boolean errorFired;
-
-        private LoadAndReadyListener(ResourceLoadEvent event) {
-            this.event = event;
-        }
-
-        @Override
-        public void run() {
-            // Invoked through HTMLImports.whenReady
-            if (!errorFired) {
-                fireLoad(event);
-            }
-        }
-
-        @Override
-        public void onLoad(ResourceLoadEvent event) {
-            if (!supportsHtmlWhenReady) {
-                assert !errorFired;
-                fireLoad(event);
-            }
-        }
-
-        @Override
-        public void onError(ResourceLoadEvent event) {
-            assert !errorFired;
-            errorFired = true;
-            fireError(event);
         }
     }
 }

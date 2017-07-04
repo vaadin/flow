@@ -105,6 +105,11 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         assertThat(
                 "One of the inlined css should be our dependency containing `inline.css` string inside",
                 inlinedCss.isPresent(), is(true));
+
+        WebElement inlineCssTestDiv = findElement(By.id(DependenciesLoadingBaseUI.INLINE_CSS_TEST_DIV_ID));
+        Assert.assertEquals(
+                "Incorrect color for the div that should be styled with inline.css",
+                "rgba(255, 255, 0, 1)", inlineCssTestDiv.getCssValue("color"));
     }
 
     private void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {
