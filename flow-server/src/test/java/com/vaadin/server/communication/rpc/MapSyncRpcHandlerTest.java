@@ -25,6 +25,7 @@ import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
@@ -89,6 +90,80 @@ public class MapSyncRpcHandlerTest {
         Assert.assertEquals("value1", element.getPropertyRaw(TEST_PROPERTY));
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value2");
         Assert.assertEquals("value2", element.getPropertyRaw(TEST_PROPERTY));
+    }
+
+    @Test
+    public void syncJSON_jsonIsForStateNodeInList_propertySetToStateNodeCopy()
+            throws Exception {
+        // Let's use element's ElementPropertyMap for testing.
+        TestComponent component = new TestComponent();
+        Element element = component.getElement();
+        UI ui = new UI();
+        ui.add(component);
+
+        StateNode node = element.getNode();
+
+        // Set model value directly via ElementPropertyMap
+        ElementPropertyMap propertyMap = node
+                .getFeature(ElementPropertyMap.class);
+        ModelList modelList = propertyMap.resolveModelList("foo");
+        // fake StateNode has been created for the model
+        StateNode item = new StateNode(ElementPropertyMap.class);
+        modelList.add(item);
+        item.getFeature(ElementPropertyMap.class).setProperty("bar", "baz");
+
+        // Use the model node id for JSON object which represents a value to
+        // update
+        JsonObject json = Json.createObject();
+        json.put("nodeId", item.getId());
+
+        // send sync request
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, json);
+
+        // Now the model node should be copied and available as the
+        // TEST_PROPERTY value
+        Serializable testPropertyValue = propertyMap.getProperty(TEST_PROPERTY);
+
+        Assert.assertTrue(testPropertyValue instanceof StateNode);
+
+        StateNode newNode = (StateNode) testPropertyValue;
+        Assert.assertNotEquals(item.getId(), newNode.getId());
+
+        Assert.assertEquals("baz", newNode.getFeature(ElementPropertyMap.class)
+                .getProperty("bar"));
+    }
+
+    @Test
+    public void syncJSON_jsonIsForNonListStateNode_propertySetToJSON()
+            throws Exception {
+        // Let's use element's ElementPropertyMap for testing.
+        TestComponent component = new TestComponent();
+        Element element = component.getElement();
+        UI ui = new UI();
+        ui.add(component);
+
+        StateNode node = element.getNode();
+
+        // Set model value directly via ElementPropertyMap
+        ElementPropertyMap propertyMap = node
+                .getFeature(ElementPropertyMap.class);
+        ElementPropertyMap modelMap = propertyMap.resolveModelMap("foo");
+        // fake StateNode has been created for the model
+        StateNode model = modelMap.getNode();
+        modelMap.setProperty("bar", "baz");
+
+        // Use the model node id for JSON object which represents a value to
+        // update
+        JsonObject json = Json.createObject();
+        json.put("nodeId", model.getId());
+
+        // send sync request
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, json);
+
+        Serializable testPropertyValue = propertyMap.getProperty(TEST_PROPERTY);
+
+        Assert.assertFalse(testPropertyValue instanceof StateNode);
+        Assert.assertTrue(testPropertyValue instanceof JsonObject);
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,

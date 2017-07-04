@@ -19,6 +19,9 @@ import java.io.Serializable;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.StateTree;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.nodefeature.NodeMap;
@@ -57,7 +60,53 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
 
+        value = tryConvert(value, node);
+
         ((NodeMap) node.getFeature(feature)).updateFromClient(property, value);
+    }
+
+    private Serializable tryConvert(Serializable value, StateNode context) {
+        if (value instanceof JsonObject) {
+            JsonObject json = (JsonObject) value;
+            if (json.hasKey("nodeId")) {
+                StateTree tree = (StateTree) context.getOwner();
+                double id = json.getNumber("nodeId");
+                StateNode stateNode = tree.getNodeById((int) id);
+                return tryCopyStateNode(stateNode, json);
+            }
+        }
+        return value;
+    }
+
+    private Serializable tryCopyStateNode(StateNode node,
+            JsonObject properties) {
+        if (node == null) {
+            return properties;
+        }
+        StateNode parent = node.getParent();
+        assert parent != null;
+        // Copy only if the request is for a node inside a list
+        if (parent.hasFeature(ModelList.class)) {
+            ModelList list = parent.getFeature(ModelList.class);
+            boolean isInList = false;
+            for (int i = 0; i < list.size(); i++) {
+                if (node.equals(list.get(i))) {
+                    isInList = true;
+                    break;
+                }
+            }
+            if (isInList) {
+                StateNode copy = new StateNode(node);
+                ElementPropertyMap originalProperties = node
+                        .getFeature(ElementPropertyMap.class);
+                originalProperties.getPropertyNames().forEach(property -> copy
+                        .getFeature(ElementPropertyMap.class)
+                        .setProperty(property,
+                                originalProperties.getProperty(property)));
+                return copy;
+            }
+        }
+        return properties;
     }
 
 }
