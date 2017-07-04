@@ -74,7 +74,7 @@ public class ApplicationConstants implements Serializable {
      * The name of the javascript containing push support.
      */
     public static final String VAADIN_PUSH_JS = VAADIN_STATIC_FILES_PATH
-            + "push/vaadinPush.min.js";
+            + "push/vaadinPush-min.js";
 
     /**
      * The name of the debug version of the javascript containing push support.
