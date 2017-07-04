@@ -458,7 +458,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendChild(createJavaScriptElement(
                 context.getUriResolver().resolveVaadinUri(
-                        webComponentsPolyfillBase + "webcomponents-lite.js"),
+                        webComponentsPolyfillBase + "webcomponents-loader.js"),
                 false).attr("shadydom", forceShadyDom));
     }
 
