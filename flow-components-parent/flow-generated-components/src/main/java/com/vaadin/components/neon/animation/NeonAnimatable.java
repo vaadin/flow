@@ -22,6 +22,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -42,7 +43,8 @@ import com.vaadin.components.NotSupported;
 @HtmlImport("frontend://bower_components/neon-animation/neon-animatable.html")
 public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
