@@ -111,19 +111,27 @@ The distribution package is built and installed into the local Maven repository 
 
 Running SuperDevMode
 =====
+Some flow internals use GWT in the client code. superDevMode allows to reload GWT changes on the fly, but it requires some setup first.
 
-To start superDevMode do to the flow-client package and run the maven command:
+To start superDevMode do the following:
 
-1. mvn -Psdm clean install gwt:compile gwt:run-codeserver
+1. Get flow source code
+1. If you are planning to launch the mode for the external application based on flow, first make sure that flow source code is of the same version as the application uses.
+If it's not true, either update the application dependencies or check out the corresponding flow tag and rebuild both flow and the application.
+1. Navigate to flow-client package in flow project
+1. Run `mvn -Psdm clean install gwt:compile gwt:run-codeserver -DskipTests`
+1. Start the application server
+1. Open the application page and use the bookmarks to control dev mode
+If you have no bookmarks, navigate to http://localhost:9876 to setup them.
 
 In eclipse run .launch files from flow-client/eclipse in the order:
 
 1. Compile ClientEngine.launch
 2. Super Dev Mode.launch
 
-Navigate to [localhost:9876](localhost:9876) and use the bookmarks to control
-dev mode.
-
-> NOTE! SuperDevMode should be compiled before the application server is launched
+> NOTE! SuperDevMode should be compiled before the application server is launched,
+> also, flow version should match with the application one
 > as else the application won't be able to run SDM and you will receive the
 > exception `Can't find any GWT Modules on this page.`
+
+More info about SuperDevMode: http://www.gwtproject.org/articles/superdevmode.html
