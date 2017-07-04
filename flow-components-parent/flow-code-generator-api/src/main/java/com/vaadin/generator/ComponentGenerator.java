@@ -340,30 +340,32 @@ public class ComponentGenerator {
     private void generateAdders(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
-        javaClass.addInterface(HasComponents.class);
+        if (metadata.getSlots().stream().anyMatch(StringUtils::isEmpty)) {
+            javaClass.addInterface(HasComponents.class);
+        }
 
         metadata.getSlots().stream().filter(StringUtils::isNotEmpty)
-                .forEach(slot -> {
-                    String methodName = ComponentGeneratorUtils
-                            .generateMethodNameForProperty("addTo", slot);
-                    MethodSource<JavaClassSource> method = javaClass.addMethod()
-                            .setPublic().setReturnTypeVoid()
-                            .setName(methodName);
-                    method.addParameter(Component.class, "components")
-                            .setVarArgs(true);
-                    method.setBody(String.format(
-                            "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n }%n add(components);",
-                            slot));
+                .forEach(slot -> generateAdder(slot, javaClass));
+    }
 
-                    method.getJavaDoc().setText(String.format(
-                            "Adds the given components as children of this component at the slot \"%s\"",
-                            slot))
-                            .addTagValue(JAVADOC_PARAM,
-                                    "components The components to add.")
-                            .addTagValue(JAVADOC_SEE,
-                                    "HasComponents#add(Component...)");
+    private void generateAdder(String slot, JavaClassSource javaClass) {
+        String methodName = ComponentGeneratorUtils
+                .generateMethodNameForProperty("addTo", slot);
+        MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
+                .setReturnTypeVoid().setName(methodName);
+        method.addParameter(Component.class, "components").setVarArgs(true);
+        method.setBody(String.format(
+                "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n getElement().appendChild(component.getElement());%n }",
+                slot));
 
-                });
+        method.getJavaDoc().setText(String.format(
+                "Adds the given components as children of this component at the slot \"%s\".",
+                slot))
+                .addTagValue(JAVADOC_PARAM, "components The components to add.")
+                .addTagValue(JAVADOC_SEE,
+                        "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
+                .addTagValue(JAVADOC_SEE,
+                        "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
     }
 
     private void generateGetSelf(JavaClassSource javaClass) {

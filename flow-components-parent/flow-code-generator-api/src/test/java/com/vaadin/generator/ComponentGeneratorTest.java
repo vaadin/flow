@@ -605,6 +605,29 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
+        Assert.assertFalse(
+                "The generated class shouldn't implement HasComponents",
+                generatedClass.contains("HasComponents"));
+
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed1\" method",
+                generatedClass.contains("public void addToNamed1("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed2\" method",
+                generatedClass.contains("public void addToNamed2("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamedThree\" method",
+                generatedClass.contains("public void addToNamedThree("));
+    }
+
+    @Test
+    public void classContainsDefaultSlotAndNamedSlots_generatedClassImplementsHasComponentsAndContainsAdders() {
+        componentMetadata.setSlots(
+                Arrays.asList("", "named1", "named-2", "named-three"));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
         assertClassImplementsInterface(generatedClass, "MyComponent",
                 HasComponents.class);
 
