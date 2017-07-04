@@ -2,7 +2,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 == Using a AngularTemplate as a Parent View
 
-For general info about parent views, see <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>. For general information about templates, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
+For general info about parent views, see <<../tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>. For general information about templates, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
 
 A `AngularTemplate` class can be used as a parent view by using `@child@` in the position where the child view should be displayed.
 
