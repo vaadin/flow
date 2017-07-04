@@ -31,6 +31,7 @@ import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.ui.HasClickListeners;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasText;
 
@@ -514,7 +515,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("The method getSelf() wasn't found",
                 generatedClass.contains("protected R getSelf()"));
     }
-    
+
     @Test
     public void generateClass_implementsHasStyle() {
         String generatedClass = generator.generateClass(componentMetadata,
@@ -583,5 +584,79 @@ public class ComponentGeneratorTest {
                 generatedClass.contains(
                         "@Synchronize(property = \"someproperty\", value = \"someproperty-changed\") "
                                 + "public String getSomeproperty() {"));
+    }
+
+    @Test
+    public void classContainsDefaultSlot_generatedClassImplementsHasComponents() {
+        componentMetadata.setSlots(Arrays.asList(""));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasComponents.class);
+        Assert.assertFalse(
+                "The generated class shouldn't contain the \"remove\" method",
+                generatedClass.contains("public void remove("));
+        Assert.assertFalse(
+                "The generated class shouldn't contain the \"removeAll\" method",
+                generatedClass.contains("public void removeAll("));
+    }
+
+    @Test
+    public void classContainsOnlyNamedSlots_generatedClassContainsAdders() {
+        componentMetadata
+                .setSlots(Arrays.asList("named1", "named-2", "named-three"));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertFalse(
+                "The generated class shouldn't implement HasComponents",
+                generatedClass.contains("HasComponents"));
+
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed1\" method",
+                generatedClass.contains("public void addToNamed1("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed2\" method",
+                generatedClass.contains("public void addToNamed2("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamedThree\" method",
+                generatedClass.contains("public void addToNamedThree("));
+        Assert.assertTrue(
+                "The generated class should contain the \"remove\" method",
+                generatedClass.contains("public void remove("));
+        Assert.assertTrue(
+                "The generated class should contain the \"removeAll\" method",
+                generatedClass.contains("public void removeAll("));
+    }
+
+    @Test
+    public void classContainsDefaultSlotAndNamedSlots_generatedClassImplementsHasComponentsAndContainsAdders() {
+        componentMetadata.setSlots(
+                Arrays.asList("", "named1", "named-2", "named-three"));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasComponents.class);
+
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed1\" method",
+                generatedClass.contains("public void addToNamed1("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamed2\" method",
+                generatedClass.contains("public void addToNamed2("));
+        Assert.assertTrue(
+                "The generated class should contain the \"addToNamedThree\" method",
+                generatedClass.contains("public void addToNamedThree("));
+        Assert.assertTrue(
+                "The generated class should contain the \"remove\" method",
+                generatedClass.contains("public void remove("));
+        Assert.assertTrue(
+                "The generated class should contain the \"removeAll\" method",
+                generatedClass.contains("public void removeAll("));
     }
 }
