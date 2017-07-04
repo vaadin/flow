@@ -21,7 +21,6 @@ import java.util.Map;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -32,6 +31,7 @@ import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
+import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.TreeChangeProcessor;
 import com.vaadin.client.flow.collection.JsArray;
@@ -44,6 +44,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.LoadMode;
 
+import elemental.dom.Node;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -374,22 +375,7 @@ public class MessageHandler {
             }
 
             if (json.hasKey("changes")) {
-                StateTree tree = registry.getStateTree();
-                TreeChangeProcessor.processChanges(tree,
-                        json.getArray("changes"));
-
-                if (!registry.getApplicationConfiguration()
-                        .isProductionMode()) {
-                    try {
-                        JsonObject debugJson = tree.getRootNode()
-                                .getDebugJson();
-                        Console.log("StateTree after applying changes:");
-                        Console.log(debugJson);
-                    } catch (Exception e) {
-                        Console.error("Failed to log state tree");
-                        Console.error(e);
-                    }
-                }
+                processChanges(json);
             }
 
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
@@ -459,16 +445,47 @@ public class MessageHandler {
             resumeResponseHandling(lock);
 
             if (Profiler.isEnabled()) {
-                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-                    @Override
-                    public void execute() {
-                        Profiler.logTimings();
-                        Profiler.reset();
-                    }
+                Scheduler.get().scheduleDeferred(() -> {
+                    Profiler.logTimings();
+                    Profiler.reset();
                 });
             }
         }
+
     }
+
+    private void processChanges(JsonObject json) {
+        StateTree tree = registry.getStateTree();
+        JsSet<StateNode> updatedNodes = TreeChangeProcessor.processChanges(tree,
+                json.getArray("changes"));
+
+        if (!registry.getApplicationConfiguration().isProductionMode()) {
+            try {
+                JsonObject debugJson = tree.getRootNode().getDebugJson();
+                Console.log("StateTree after applying changes:");
+                Console.log(debugJson);
+            } catch (Exception e) {
+                Console.error("Failed to log state tree");
+                Console.error(e);
+            }
+        }
+
+        Reactive.addPostFlushListener(() -> Scheduler.get().scheduleDeferred(
+                () -> updatedNodes.forEach(this::afterServerUpdates)));
+    }
+
+    private void afterServerUpdates(StateNode node) {
+        if (!node.isUnregistered()) {
+            callAfterServerUpdates(node.getDomNode());
+        }
+    }
+
+    private native void callAfterServerUpdates(Node node)
+    /*-{
+        if ( node && node.afterServerUpdate ) {
+            node.afterServerUpdate();
+        }
+    }-*/;
 
     private void endRequestIfResponse(ValueMap json) {
         if (isResponse(json)) {
