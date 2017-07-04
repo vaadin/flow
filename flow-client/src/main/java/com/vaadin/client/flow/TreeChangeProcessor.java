@@ -17,6 +17,7 @@ package com.vaadin.client.flow;
 
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
@@ -44,13 +45,17 @@ public class TreeChangeProcessor {
      *            the tree to update
      * @param changes
      *            the JSON array of changes
+     * @return a set of updated nodes addressed by the {@code changes}
      */
-    public static void processChanges(StateTree tree, JsonArray changes) {
+    public static JsSet<StateNode> processChanges(StateTree tree,
+            JsonArray changes) {
         assert !tree
                 .isUpdateInProgress() : "Previous tree change processing has not completed";
         try {
             tree.setUpdateInProgress(true);
             int length = changes.length();
+
+            JsSet<StateNode> nodes = JsCollections.set();
 
             // Attach all nodes before doing anything else
             for (int i = 0; i < length; i++) {
@@ -61,6 +66,7 @@ public class TreeChangeProcessor {
 
                     StateNode node = new StateNode(nodeId, tree);
                     tree.registerNode(node);
+                    nodes.add(node);
                 }
             }
 
@@ -68,9 +74,10 @@ public class TreeChangeProcessor {
             for (int i = 0; i < length; i++) {
                 JsonObject change = changes.getObject(i);
                 if (!isAttach(change)) {
-                    processChange(tree, change);
+                    nodes.add(processChange(tree, change));
                 }
             }
+            return nodes;
         } finally {
             tree.setUpdateInProgress(false);
         }
@@ -90,8 +97,9 @@ public class TreeChangeProcessor {
      *            the tree to update
      * @param change
      *            the JSON change
+     * @return the updated node addressed by the provided {@code change}
      */
-    public static void processChange(StateTree tree, JsonObject change) {
+    public static StateNode processChange(StateTree tree, JsonObject change) {
         String type = change.getString(JsonConstants.CHANGE_TYPE);
         int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
 
@@ -117,6 +125,7 @@ public class TreeChangeProcessor {
         default:
             assert false : "Unsupported change type: " + type;
         }
+        return node;
     }
 
     private static void processDetachChange(StateNode node) {
