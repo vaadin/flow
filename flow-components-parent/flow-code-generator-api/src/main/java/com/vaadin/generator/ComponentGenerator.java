@@ -352,7 +352,7 @@ public class ComponentGenerator {
                     method.addParameter(Component.class, "components")
                             .setVarArgs(true);
                     method.setBody(String.format(
-                            "for (Component component : components) {\n component.getElement().setAttribute(\"slot\", \"%s\");\n }\n add(components);",
+                            "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n }%n add(components);",
                             slot));
 
                     method.getJavaDoc().setText(String.format(
@@ -621,7 +621,8 @@ public class ComponentGenerator {
 
             if (fluentSetters) {
                 method.setReturnType(GENERIC_TYPE);
-                method.setBody(method.getBody() + "\n" + "return getSelf();");
+                method.setBody(String
+                        .format(method.getBody() + "%n" + "return getSelf();"));
                 method.getJavaDoc().addTagValue("@return",
                         "This instance, for method chaining.");
             }
