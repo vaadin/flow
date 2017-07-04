@@ -16,6 +16,8 @@
 package com.vaadin.client.communication;
 
 import java.util.Date;
+import java.util.EnumMap;
+import java.util.Map;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
@@ -40,7 +42,7 @@ import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.DependencyList;
+import com.vaadin.shared.ui.LoadMode;
 
 import elemental.dom.Node;
 import elemental.json.JsonArray;
@@ -105,7 +107,7 @@ public class MessageHandler {
      *
      * Note: also used for tracking whether the first UIDL has been handled
      */
-    private int bootstrapTime = 0;
+    private int bootstrapTime;
 
     /**
      * Holds the timing information from the server-side. How much time was
@@ -131,7 +133,7 @@ public class MessageHandler {
     private int lastSeenServerSyncId = UNDEFINED_SYNC_ID;
     private final Registry registry;
 
-    private boolean initialMessageHandled = false;
+    private boolean initialMessageHandled;
 
     /**
      * Timer used to make sure that no misbehaving components can delay response
@@ -143,7 +145,7 @@ public class MessageHandler {
             forceMessageHandling();
         }
     };
-    private Command nextResponseSessionExpiredHandler = null;
+    private Command nextResponseSessionExpiredHandler;
 
     /**
      * Data structure holding information about pending UIDL messages.
@@ -299,12 +301,7 @@ public class MessageHandler {
                     .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
 
-        Console.log("Handling dependencies");
-        if (valueMap.containsKey(DependencyList.DEPENDENCY_KEY)) {
-            JsonArray deps = ((JsonObject) valueMap.cast())
-                    .getArray(DependencyList.DEPENDENCY_KEY);
-            registry.getDependencyLoader().loadDependencies(deps);
-        }
+        handleDependencies(valueMap.cast());
 
         if (!initialMessageHandled) {
             /*
@@ -329,6 +326,20 @@ public class MessageHandler {
                 DomApi::updateApiImplementation);
         DependencyLoader.runWhenEagerDependenciesLoaded(
                 () -> processMessage(valueMap, lock, start));
+    }
+
+    private void handleDependencies(JsonObject inputJson) {
+        Console.log("Handling dependencies");
+        Map<LoadMode, JsonArray> dependencies = new EnumMap<>(LoadMode.class);
+        for (LoadMode loadMode : LoadMode.values()) {
+            if (inputJson.hasKey(loadMode.name())) {
+                dependencies.put(loadMode, inputJson.getArray(loadMode.name()));
+            }
+        }
+
+        if (!dependencies.isEmpty()) {
+            registry.getDependencyLoader().loadDependencies(dependencies);
+        }
     }
 
     /**
