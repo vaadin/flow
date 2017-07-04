@@ -28,7 +28,6 @@ import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.annotations.EventData;
-import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -62,8 +61,7 @@ import com.vaadin.ui.HasComponents;
 @HtmlImport("frontend://bower_components/iron-dropdown/iron-dropdown.html")
 public class IronDropdown<R extends IronDropdown<R>> extends Component
 		implements
-			HasStyle,
-			HasComponents {
+			HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -1388,17 +1386,53 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "dropdown-content"
+	 * "dropdown-content".
 	 * 
 	 * @param components
 	 *            The components to add.
-	 * @see HasComponents#add(Component...)
+	 * @see <a
+	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+	 *      page about slots</a>
+	 * @see <a
+	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+	 *      website about slots</a>
 	 */
 	public void addToDropdownContent(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "dropdown-content");
+			getElement().appendChild(component.getElement());
 		}
-		add(components);
+	}
+
+	/**
+	 * Removes the given child components from this component.
+	 * 
+	 * @param components
+	 *            The components to remove.
+	 * @throws IllegalArgumentException
+	 *             if any of the components is not a child of this component.
+	 */
+	public void remove(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			if (getElement().equals(component.getElement().getParent())) {
+				component.getElement().removeAttribute("slot");
+				getElement().removeChild(component.getElement());
+			} else {
+				throw new IllegalArgumentException("The given component ("
+						+ component + ") is not a child of this component");
+			}
+		}
+	}
+
+	/**
+	 * Removes all contents from this component, this includes child components,
+	 * text content as well as child elements that have been added directly to
+	 * this component using the {@link Element} API.
+	 */
+	public void removeAll() {
+		getElement().getChildren().forEach(
+				child -> child.removeAttribute("slot"));
+		getElement().removeAllChildren();
 	}
 
 	/**

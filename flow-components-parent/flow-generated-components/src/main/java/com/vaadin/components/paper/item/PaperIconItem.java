@@ -441,17 +441,42 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "item-icon"
+	 * "item-icon".
 	 * 
 	 * @param components
 	 *            The components to add.
-	 * @see HasComponents#add(Component...)
+	 * @see <a
+	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+	 *      page about slots</a>
+	 * @see <a
+	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+	 *      website about slots</a>
 	 */
 	public void addToItemIcon(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "item-icon");
+			getElement().appendChild(component.getElement());
 		}
-		add(components);
+	}
+
+	@Override
+	public void remove(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			if (getElement().equals(component.getElement().getParent())) {
+				component.getElement().removeAttribute("slot");
+				getElement().removeChild(component.getElement());
+			} else {
+				throw new IllegalArgumentException("The given component ("
+						+ component + ") is not a child of this component");
+			}
+		}
+	}
+
+	@Override
+	public void removeAll() {
+		getElement().getChildren().forEach(
+				child -> child.removeAttribute("slot"));
+		getElement().removeAllChildren();
 	}
 
 	/**

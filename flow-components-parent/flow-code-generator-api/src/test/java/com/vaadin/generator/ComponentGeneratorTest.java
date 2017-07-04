@@ -595,10 +595,16 @@ public class ComponentGeneratorTest {
 
         assertClassImplementsInterface(generatedClass, "MyComponent",
                 HasComponents.class);
+        Assert.assertFalse(
+                "The generated class shouldn't contain the \"remove\" method",
+                generatedClass.contains("public void remove("));
+        Assert.assertFalse(
+                "The generated class shouldn't contain the \"removeAll\" method",
+                generatedClass.contains("public void removeAll("));
     }
 
     @Test
-    public void classContainsNamedSlots_generatedClassContainsAdders() {
+    public void classContainsOnlyNamedSlots_generatedClassContainsAdders() {
         componentMetadata
                 .setSlots(Arrays.asList("named1", "named-2", "named-three"));
 
@@ -618,6 +624,12 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamedThree\" method",
                 generatedClass.contains("public void addToNamedThree("));
+        Assert.assertTrue(
+                "The generated class should contain the \"remove\" method",
+                generatedClass.contains("public void remove("));
+        Assert.assertTrue(
+                "The generated class should contain the \"removeAll\" method",
+                generatedClass.contains("public void removeAll("));
     }
 
     @Test
@@ -640,5 +652,11 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamedThree\" method",
                 generatedClass.contains("public void addToNamedThree("));
+        Assert.assertTrue(
+                "The generated class should contain the \"remove\" method",
+                generatedClass.contains("public void remove("));
+        Assert.assertTrue(
+                "The generated class should contain the \"removeAll\" method",
+                generatedClass.contains("public void removeAll("));
     }
 }

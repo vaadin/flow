@@ -76,6 +76,7 @@ import elemental.json.JsonValue;
  */
 public class ComponentGenerator {
 
+    private static final String JAVADOC_THROWS = "@throws";
     private static final String JAVADOC_SEE = "@see";
     private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
@@ -340,12 +341,25 @@ public class ComponentGenerator {
     private void generateAdders(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
-        if (metadata.getSlots().stream().anyMatch(StringUtils::isEmpty)) {
+        boolean hasDefaultSlot = false;
+        boolean hasNamedSlot = false;
+
+        for (String slot : metadata.getSlots()) {
+            if (StringUtils.isEmpty(slot)) {
+                hasDefaultSlot = true;
+            } else {
+                hasNamedSlot = true;
+                generateAdder(slot, javaClass);
+            }
+        }
+
+        if (hasDefaultSlot) {
             javaClass.addInterface(HasComponents.class);
         }
 
-        metadata.getSlots().stream().filter(StringUtils::isNotEmpty)
-                .forEach(slot -> generateAdder(slot, javaClass));
+        if (hasNamedSlot) {
+            generateRemovers(javaClass, hasDefaultSlot);
+        }
     }
 
     private void generateAdder(String slot, JavaClassSource javaClass) {
@@ -366,6 +380,48 @@ public class ComponentGenerator {
                         "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
                 .addTagValue(JAVADOC_SEE,
                         "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
+    }
+
+    private void generateRemovers(JavaClassSource javaClass,
+            boolean useOverrideAnnotation) {
+
+        MethodSource<JavaClassSource> removeMethod = javaClass.addMethod()
+                .setPublic().setReturnTypeVoid().setName("remove");
+        removeMethod.addParameter(Component.class, "components")
+                .setVarArgs(true);
+        removeMethod.setBody(
+                String.format("for (Component component : components) {%n"
+                        + "if (getElement().equals(component.getElement().getParent())) {%n"
+                        + "component.getElement().removeAttribute(\"slot\");%n"
+                        + "getElement().removeChild(component.getElement());%n "
+                        + "}%n" + "else {%n"
+                        + "throw new IllegalArgumentException(\"The given component (\" + component + \") is not a child of this component\");%n"
+                        + "}%n }"));
+
+        if (useOverrideAnnotation) {
+            removeMethod.addAnnotation(Override.class);
+        } else {
+            removeMethod.getJavaDoc().setText(String.format(
+                    "Removes the given child components from this component."))
+                    .addTagValue(JAVADOC_PARAM,
+                            "components The components to remove.")
+                    .addTagValue(JAVADOC_THROWS,
+                            "IllegalArgumentException if any of the components is not a child of this component.");
+        }
+
+        MethodSource<JavaClassSource> removeAllMethod = javaClass.addMethod()
+                .setPublic().setReturnTypeVoid().setName("removeAll");
+        removeAllMethod.setBody(String.format(
+                "getElement().getChildren().forEach(child -> child.removeAttribute(\"slot\"));%n"
+                        + "getElement().removeAllChildren();"));
+        if (useOverrideAnnotation) {
+            removeAllMethod.addAnnotation(Override.class);
+        } else {
+            removeAllMethod.getJavaDoc().setText(String.format(
+                    "Removes all contents from this component, this includes child components, "
+                            + "text content as well as child elements that have been added directly to "
+                            + "this component using the {@link Element} API."));
+        }
     }
 
     private void generateGetSelf(JavaClassSource javaClass) {
