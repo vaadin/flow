@@ -11,15 +11,21 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -36,10 +42,15 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.UI;
 
 public class BootstrapHandlerDependenciesTest {
+    private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
+
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "inline.js", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE)
+    @HtmlImport(value = "inline.html", loadMode = LoadMode.INLINE)
     @JavaScript("eager.js")
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
@@ -53,6 +64,9 @@ public class BootstrapHandlerDependenciesTest {
             getPage().addJavaScript("lazy.js", LoadMode.LAZY);
             getPage().addStyleSheet("lazy.css", LoadMode.LAZY);
             getPage().addHtmlImport("lazy.html", LoadMode.LAZY);
+            getPage().addJavaScript("inline.js", LoadMode.INLINE);
+            getPage().addStyleSheet("inline.css", LoadMode.INLINE);
+            getPage().addHtmlImport("inline.html", LoadMode.INLINE);
             getPage().addJavaScript("eager.js");
             getPage().addStyleSheet("context://eager-relative.css");
             getPage().addStyleSheet("eager.css");
@@ -73,6 +87,32 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
+    @JavaScript(value = "new.js", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "new.js", loadMode = LoadMode.INLINE)
+    private static class UIAnnotated_BothLazyAndInlineTest extends UI {
+    }
+
+    private static class UIWithMethods_BothBothLazyAndInlineTest extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+            getPage().addJavaScript("new.js", LoadMode.LAZY);
+            getPage().addJavaScript("new.js", LoadMode.INLINE);
+        }
+    }
+
+    @JavaScript(value = "new.js", loadMode = LoadMode.INLINE)
+    @JavaScript(value = "new.js")
+    private static class UIAnnotated_BothInlineAndEagerTest extends UI {
+    }
+
+    private static class UIWithMethods_BothBothInlineAndEagerTest extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+            getPage().addJavaScript("new.js", LoadMode.INLINE);
+            getPage().addJavaScript("new.js");
+        }
+    }
+
     @JavaScript("1.js")
     @JavaScript("2.js")
     @StyleSheet("1.css")
@@ -89,6 +129,15 @@ public class BootstrapHandlerDependenciesTest {
     @HtmlImport(value = "1.html", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "2.html", loadMode = LoadMode.LAZY)
     private static class UIAnnotated_ImportOrderTest_Lazy extends UI {
+    }
+
+    @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
+    @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = "1.css", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = "2.css", loadMode = LoadMode.INLINE)
+    @HtmlImport(value = "1.html", loadMode = LoadMode.INLINE)
+    @HtmlImport(value = "2.html", loadMode = LoadMode.INLINE)
+    private static class UIAnnotated_ImportOrderTest_Inline extends UI {
     }
 
     private static class UIWithMethods_ImportOrderTest_Eager extends UI {
@@ -115,6 +164,18 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
+    private static class UIWithMethods_ImportOrderTest_Inline extends UI {
+        @Override
+        public void init(VaadinRequest request) {
+            getPage().addJavaScript("1.js", LoadMode.INLINE);
+            getPage().addJavaScript("2.js", LoadMode.INLINE);
+            getPage().addStyleSheet("1.css", LoadMode.INLINE);
+            getPage().addStyleSheet("2.css", LoadMode.INLINE);
+            getPage().addHtmlImport("1.html", LoadMode.INLINE);
+            getPage().addHtmlImport("2.html", LoadMode.INLINE);
+        }
+    }
+
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
@@ -127,6 +188,21 @@ public class BootstrapHandlerDependenciesTest {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
             getPage().addJavaScript("2.js", LoadMode.LAZY);
             getPage().addJavaScript("1.js", LoadMode.LAZY);
+        }
+    }
+
+    @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
+    @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
+    @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
+    private static class UIAnnotated_DuplicateDependencies_Inline extends UI {
+    }
+
+    private static class UIWithMethods_DuplicateDependencies_Inline extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+            getPage().addJavaScript("1.js", LoadMode.INLINE);
+            getPage().addJavaScript("2.js", LoadMode.INLINE);
+            getPage().addJavaScript("1.js", LoadMode.INLINE);
         }
     }
 
@@ -157,32 +233,56 @@ public class BootstrapHandlerDependenciesTest {
         service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
                 deploymentConfiguration));
 
+        ServletContext servletContextMock = mock(ServletContext.class);
+        when(servletContextMock.getResourceAsStream(anyString())).thenAnswer(invocation ->
+                new ByteArrayInputStream(((String) invocation.getArguments()[0]).getBytes()));
+
+        HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
+        when(servletRequestMock.getServletContext()).thenReturn(servletContextMock);
+
+        VaadinServletRequest vaadinRequestMock = mock(VaadinServletRequest.class);
+        when(vaadinRequestMock.getHttpServletRequest()).thenReturn(servletRequestMock);
+
+        service.setCurrentInstances(vaadinRequestMock, mock(VaadinResponse.class));
+
         session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(deploymentConfiguration);
     }
 
-    @Test
-    public void testUiWithSameDependencyInDifferentModes() {
-        Consumer<Document> uiPageTestingMethod = page -> {
-            String newDependencyUrl = "new.js";
-
-            Elements jsElements = page.getElementsByAttributeValue("src",
-                    newDependencyUrl);
-            assertEquals(
-                    "Should be only one new dependency in the dependencies list",
-                    1, jsElements.size());
-
-            String uidlData = extractUidlData(page);
-            assertFalse("New dependency should not be loaded via uidl",
-                    uidlData.contains(newDependencyUrl));
-        };
-        testUis(uiPageTestingMethod, new UIAnnotated_BothLazyAndEagerTest(),
-                new UIWithMethods_BothBothLazyAndEagerTest());
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
     }
 
     @Test
-    public void checkEagerDependencies() {
+    public void testUiWithSameDependencyInDifferentModes() {
+        Stream.of(new UIAnnotated_BothLazyAndEagerTest(),
+                new UIWithMethods_BothBothLazyAndEagerTest(),
+                new UIAnnotated_BothInlineAndEagerTest(),
+                new UIWithMethods_BothBothInlineAndEagerTest(),
+                new UIAnnotated_BothLazyAndInlineTest(),
+                new UIWithMethods_BothBothLazyAndInlineTest())
+                .forEach(this::checkUiWithException);
+    }
+
+    private void checkUiWithException(UI ui) {
+        boolean exceptionCaught = false;
+        try {
+            testUis(doc -> {
+            }, ui);
+        } catch (IllegalStateException expected) {
+            exceptionCaught = true;
+        } finally {
+            assertThat(
+                    "The exception was expected, but not thrown for ui "
+                            + ui.getClass().getCanonicalName(),
+                    exceptionCaught, is(true));
+        }
+    }
+
+    @Test
+    public void checkDependenciesPresence() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
@@ -190,6 +290,10 @@ public class BootstrapHandlerDependenciesTest {
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
             assertJavaScriptElementLoadedEagerly(head, "eager.js");
             assertHtmlElementLoadedEagerly(head, "eager.html");
+
+            assertCssElementInlined(head, "inline.css");
+            assertJavaScriptElementInlined(head, "inline.js");
+            assertHtmlElementInlined(page.body(), "inline.html");
 
             assertElementLazyLoaded(head, "lazy.js");
             assertElementLazyLoaded(head, "lazy.css");
@@ -207,6 +311,10 @@ public class BootstrapHandlerDependenciesTest {
             assertFalse(uidlData.contains("./eager-relative.css"));
             assertFalse(uidlData.contains("eager.js"));
 
+            assertFalse(uidlData.contains("inline.js"));
+            assertFalse(uidlData.contains("inline.css"));
+            assertFalse(uidlData.contains("inline.html"));
+
             assertTrue(uidlData.contains("lazy.js"));
             assertTrue(uidlData.contains("lazy.css"));
             assertTrue(uidlData.contains("lazy.html"));
@@ -221,7 +329,8 @@ public class BootstrapHandlerDependenciesTest {
             Elements jsElements = page.getElementsByTag("script");
             Elements deferElements = page.getElementsByAttribute("defer");
 
-            // Ignore polyfills that should be loaded immediately and scripts without src (separate test)
+            // Ignore polyfills that should be loaded immediately and scripts
+            // without src (separate test)
             jsElements.removeIf(element -> {
                 String jsUrl = element.attr("src");
                 return jsUrl.isEmpty() || jsUrl.contains("es6-collections.js")
@@ -246,19 +355,19 @@ public class BootstrapHandlerDependenciesTest {
             List<String> jsImportUrls = head.getElementsByTag("script").stream()
                     .map(element -> element.attr("src"))
                     .collect(Collectors.toList());
-            assertUrlOrder(jsImportUrls, "1.js", "2.js");
+            assertImportOrder(jsImportUrls, "1.js", "2.js");
 
             List<String> cssImportUrls = head.getElementsByTag("link").stream()
                     .filter(element -> "stylesheet".equals(element.attr("rel")))
                     .map(element -> element.attr("href"))
                     .collect(Collectors.toList());
-            assertUrlOrder(cssImportUrls, "1.css", "2.css");
+            assertImportOrder(cssImportUrls, "1.css", "2.css");
 
             List<String> htmlImportUrls = head.getElementsByTag("link").stream()
                     .filter(element -> "import".equals(element.attr("rel")))
                     .map(element -> element.attr("href"))
                     .collect(Collectors.toList());
-            assertUrlOrder(htmlImportUrls, "1.html", "2.html");
+            assertImportOrder(htmlImportUrls, "1.html", "2.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Eager(),
                 new UIWithMethods_ImportOrderTest_Eager());
@@ -277,6 +386,33 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     @Test
+    public void inlineDependenciesAreImportedInConsequentOrder() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            Element head = page.head();
+
+            List<String> jsImportContents = head.getElementsByTag("script").stream()
+                    .filter(element -> !element.hasAttr("src"))
+                    .filter(element -> !element.toString().contains(BOOTSTRAP_SCRIPT_CONTENTS))
+                    .map(Element::toString)
+                    .collect(Collectors.toList());
+            assertImportOrder(jsImportContents, "1.js", "2.js");
+
+            List<String> cssImportContents = head.getElementsByTag("style").stream()
+                    .map(Element::toString)
+                    .collect(Collectors.toList());
+            assertImportOrder(cssImportContents, "1.css", "2.css");
+
+            List<String> htmlImportContents = page.body().getElementsByTag("span").stream()
+                    .filter(element -> element.hasAttr("hidden"))
+                    .map(Element::toString)
+                    .collect(Collectors.toList());
+            assertImportOrder(htmlImportContents, "1.html", "2.html");
+        };
+        testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Inline(),
+                new UIWithMethods_ImportOrderTest_Inline());
+    }
+
+    @Test
     public void duplicateDependenciesAreDiscarded_Eager() {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
@@ -284,7 +420,7 @@ public class BootstrapHandlerDependenciesTest {
             List<String> jsImportUrls = head.getElementsByTag("script").stream()
                     .map(element -> element.attr("src"))
                     .collect(Collectors.toList());
-            assertUrlOrder(jsImportUrls, "1.js", "2.js");
+            assertImportOrder(jsImportUrls, "1.js", "2.js");
         };
         testUis(uiPageTestingMethod,
                 new UIAnnotated_DuplicateDependencies_Eager(),
@@ -303,6 +439,23 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     @Test
+    public void duplicateDependenciesAreDiscarded_Inline() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            Element head = page.head();
+
+            List<String> jsImportContents = head.getElementsByTag("script").stream()
+                    .filter(element -> !element.hasAttr("src"))
+                    .filter(element -> !element.toString().contains(BOOTSTRAP_SCRIPT_CONTENTS))
+                    .map(Element::toString)
+                    .collect(Collectors.toList());
+            assertImportOrder(jsImportContents, "1.js", "2.js");
+        };
+        testUis(uiPageTestingMethod,
+                new UIAnnotated_DuplicateDependencies_Inline(),
+                new UIWithMethods_DuplicateDependencies_Inline());
+    }
+
+    @Test
     public void flowDependenciesShouldBeImportedBeforeUserDependenciesWithCorrectAttributes() {
         Consumer<Document> uiPageTestingMethod = page -> {
             boolean foundClientEngine = false;
@@ -317,23 +470,29 @@ public class BootstrapHandlerDependenciesTest {
                     if (userDependencyMinIndex > i) {
                         userDependencyMinIndex = i;
                     }
-                    assertThat("Expected to have here dependencies added with Flow public api",
+                    assertThat(
+                            "Expected to have here dependencies added with Flow public api",
                             elementString, either(containsString("eager"))
-                                    .or(containsString("lazy")));
+                                    .or(containsString("lazy"))
+                                    .or(containsString("inline")));
                 } else {
                     flowDependencyMaxIndex = i;
                     // skip element with uidl that contains lazy dependencies
-                    if (!elementString.contains("//<![CDATA[\n")) {
-                        assertThat("Flow dependencies should not contain user dependencies",
-                                elementString, both(not(containsString("eager")))
-                                        .and(not(containsString("lazy"))));
+                    if (!elementString.contains(BOOTSTRAP_SCRIPT_CONTENTS)) {
+                        assertThat(
+                                "Flow dependencies should not contain user dependencies",
+                                elementString,
+                                both(not(containsString("eager")))
+                                        .and(not(containsString("lazy")))
+                                        .and(not(containsString("inline"))));
                         if (elementString
                                 .contains(BootstrapHandler.clientEngineFile)) {
                             foundClientEngine = true;
                         }
                     } else {
-                        assertThat("uidl should not contain eager dependencies",
-                                elementString, not(containsString("eager")));
+                        assertThat("uidl should not contain eager and inline dependencies",
+                                elementString, both(not(containsString("eager")))
+                                        .and(not(containsString("inline"))));
                     }
                 }
 
@@ -344,9 +503,10 @@ public class BootstrapHandlerDependenciesTest {
                         element.attr("async"), is(""));
             }
 
-
-            assertThat("Flow dependencies should be imported before user dependencies",
-                    flowDependencyMaxIndex, is(lessThan(userDependencyMinIndex)));
+            assertThat(
+                    "Flow dependencies should be imported before user dependencies",
+                    flowDependencyMaxIndex,
+                    is(lessThan(userDependencyMinIndex)));
 
         };
 
@@ -357,8 +517,8 @@ public class BootstrapHandlerDependenciesTest {
     @Test
     public void checkThatJsImportsWithoutSrcHaveNoDeferAttribute() {
         Consumer<Document> uiPageTestingMethod = page -> {
-            List<Element> scriptsWithNoSrc = page.getElementsByTag("script").stream()
-                    .filter(jsElement -> !jsElement.hasAttr("src"))
+            List<Element> scriptsWithNoSrc = page.getElementsByTag("script")
+                    .stream().filter(jsElement -> !jsElement.hasAttr("src"))
                     .collect(Collectors.toList());
 
             for (Element element : scriptsWithNoSrc) {
@@ -369,10 +529,10 @@ public class BootstrapHandlerDependenciesTest {
             }
         };
 
-        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
-                new UIWithMethods_LoadingOrderTest(),
-                new UIAnnotated_ImportOrderTest_Lazy(),
-                new UIWithMethods_ImportOrderTest_Lazy());
+        testUis(uiPageTestingMethod,
+                new UIAnnotated_LoadingOrderTest(), new UIWithMethods_LoadingOrderTest(),
+                new UIAnnotated_ImportOrderTest_Lazy(), new UIWithMethods_ImportOrderTest_Lazy(),
+                new UIAnnotated_ImportOrderTest_Inline(), new UIWithMethods_ImportOrderTest_Inline());
     }
 
     private void testUis(Consumer<Document> uiPageTestingMethod,
@@ -398,7 +558,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private HttpServletRequest createRequest() {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         return request;
     }
@@ -441,6 +601,43 @@ public class BootstrapHandlerDependenciesTest {
         });
     }
 
+    private void assertJavaScriptElementInlined(Element head, String expectedContents) {
+        List<Element> scriptsWithoutExpectedContents = head.getElementsByTag("script").stream()
+                .filter(element -> element.toString().contains(expectedContents))
+                .collect(Collectors.toList());
+        assertThat("Expected to have only one inlined js element with contents = " + expectedContents,
+                scriptsWithoutExpectedContents.size(), is(1));
+        Element inlinedElement = scriptsWithoutExpectedContents.get(0);
+        assertThat("The element should have correct js type attribute",
+                inlinedElement.attr("type"), is("text/javascript"));
+        assertThat("Inlined js element should not have defer attribute",
+                inlinedElement.attr("defer"), is(""));
+        assertThat("Inlined js element should not have src attribute",
+                inlinedElement.attr("src"), is(""));
+    }
+
+    private void assertCssElementInlined(Element head, String expectedContents) {
+        List<Element> stylesWithExpectedContents = head.getElementsByTag("style").stream()
+                .filter(element -> element.toString().contains(expectedContents))
+                .collect(Collectors.toList());
+        assertThat("Expected to have only one inlined css element with contents = " + expectedContents,
+                stylesWithExpectedContents.size(), is(1));
+        Element inlinedElement = stylesWithExpectedContents.get(0);
+        assertThat("The element should have correct css type attribute",
+                inlinedElement.attr("type"), is("text/css"));
+    }
+
+    private void assertHtmlElementInlined(Element body, String expectedContents) {
+        List<Element> inlinedHtmlElements = body.getElementsByTag("span").stream()
+                .filter(element -> element.toString().contains(expectedContents))
+                .collect(Collectors.toList());
+        assertThat("Expected to have only one inlined html element with contents = " + expectedContents,
+                inlinedHtmlElements.size(), is(1));
+        Element inlinedElement = inlinedHtmlElements.get(0);
+        assertThat("The element should be hidden",
+                inlinedElement.hasAttr("hidden"), is(true));
+    }
+
     private String extractUidlData(Document page) {
         Optional<String> dataOptional = page.head().getElementsByTag("script")
                 .stream().filter(scriptTag -> !scriptTag.hasAttr("src"))
@@ -452,15 +649,15 @@ public class BootstrapHandlerDependenciesTest {
         return dataOptional.get();
     }
 
-    private void assertUrlOrder(List<String> allUrls, String firstUrl,
-            String secondUrl) {
+    private void assertImportOrder(List<String> allContents, String firstContents,
+                                   String secondContents) {
         int firstPosition = -1;
         int secondPosition = -1;
-        for (int i = 0; i < allUrls.size(); i++) {
-            String url = allUrls.get(i);
-            if (firstUrl.equals(url)) {
+        for (int i = 0; i < allContents.size(); i++) {
+            String currentContents = allContents.get(i);
+            if (currentContents.contains(firstContents)) {
                 firstPosition = i;
-            } else if (secondUrl.equals(url)) {
+            } else if (currentContents.contains(secondContents)) {
                 secondPosition = i;
             }
 
@@ -469,7 +666,7 @@ public class BootstrapHandlerDependenciesTest {
             }
         }
 
-        assertCorrectDependencyPositions(firstUrl, secondUrl, firstPosition,
+        assertCorrectDependencyPositions(firstContents, secondContents, firstPosition,
                 secondPosition);
     }
 

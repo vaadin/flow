@@ -23,13 +23,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
@@ -40,15 +45,14 @@ import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.parser.Tag;
-import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
@@ -66,7 +70,6 @@ import elemental.json.impl.JsonUtil;
  * @since 7.0.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
-
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -85,6 +88,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             "BootstrapHandler.js");
     private static final String ES6_COLLECTIONS = "//<![CDATA[\n"
             + readResource("es6-collections.js") + "//]]>";
+    private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 
     static String clientEngineFile = readClientEngine();
 
@@ -261,7 +265,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Element head = html.appendElement("head");
         html.appendElement("body");
 
-        setupDocumentHead(head, context);
+        List<Element> dependenciesToInlineInBody = setupDocumentHead(head,
+                context);
+        dependenciesToInlineInBody
+                .forEach(dependency -> document.body().appendChild(dependency));
         setupDocumentBody(document);
 
         document.outputSettings().prettyPrint(false);
@@ -284,50 +291,64 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static void setupDocumentHead(Element head,
+    private static List<Element> setupDocumentHead(Element head,
             BootstrapContext context) {
         setupMetaAndTitle(head, context);
         setupCss(head);
 
         JsonObject initialUIDL = getInitialUidl(context.getUI());
-        JsonArray eagerDependencies = popEagerDependencies(initialUIDL);
+        Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
+                initialUIDL);
         setupFrameworkLibraries(head, initialUIDL, context);
-        JsonUtils.<JsonObject> stream(eagerDependencies)
-                .forEach(dependency -> head.appendChild(createDependencyElement(
-                        context.getUriResolver(), dependency)));
+        return applyUserDependencies(head, context,
+                dependenciesToProcessOnServer);
     }
 
-    private static JsonArray popEagerDependencies(JsonObject initialUIDL) {
-        JsonArray dependencies = Optional
-                .ofNullable(initialUIDL.getArray(DependencyList.DEPENDENCY_KEY))
-                .orElseGet(JsonUtils::createArray);
-        JsonArray lazyDependencies = Json.createArray();
-        JsonArray eagerDependencies = Json.createArray();
-        int eagerDependenciesIndex = 0;
-        int lazyDependenciesIndex = 0;
+    private static List<Element> applyUserDependencies(Element head,
+            BootstrapContext context,
+            Map<LoadMode, JsonArray> dependenciesToProcessOnServer) {
+        List<Element> dependenciesToInlineInBody = new ArrayList<>();
+        for (Map.Entry<LoadMode, JsonArray> entry : dependenciesToProcessOnServer
+                .entrySet()) {
+            dependenciesToInlineInBody.addAll(
+                    inlineDependenciesInHead(head, context.getUriResolver(),
+                            entry.getKey(), entry.getValue()));
+        }
+        return dependenciesToInlineInBody;
+    }
+
+    private static List<Element> inlineDependenciesInHead(Element head,
+            VaadinUriResolver uriResolver, LoadMode loadMode,
+            JsonArray dependencies) {
+        List<Element> dependenciesToInlineInBody = new ArrayList<>();
 
         for (int i = 0; i < dependencies.length(); i++) {
-            JsonObject dependency = dependencies.getObject(i);
-            LoadMode loadMode = LoadMode.valueOf(
-                    dependency.getString(DependencyList.KEY_LOAD_MODE));
-            switch (loadMode) {
-            case EAGER:
-                eagerDependencies.set(eagerDependenciesIndex, dependency);
-                eagerDependenciesIndex += 1;
-                break;
-            case LAZY:
-                lazyDependencies.set(lazyDependenciesIndex, dependency);
-                lazyDependenciesIndex += 1;
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Unknown load mode = " + loadMode);
+            JsonObject dependencyJson = dependencies.getObject(i);
+            Dependency.Type dependencyType = Dependency.Type
+                    .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+            Element dependencyElement = createDependencyElement(uriResolver,
+                    loadMode, dependencyJson, dependencyType);
+
+            if (loadMode == LoadMode.INLINE
+                    && dependencyType == Dependency.Type.HTML_IMPORT) {
+                dependenciesToInlineInBody.add(dependencyElement);
+            } else {
+                head.appendChild(dependencyElement);
             }
         }
+        return dependenciesToInlineInBody;
+    }
 
-        // Initial UIDL should contain lazy dependencies only
-        initialUIDL.put(DependencyList.DEPENDENCY_KEY, lazyDependencies);
-        return eagerDependencies;
+    private static Map<LoadMode, JsonArray> popDependenciesToProcessOnServer(
+            JsonObject initialUIDL) {
+        Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
+        Stream.of(LoadMode.EAGER, LoadMode.INLINE).forEach(mode -> {
+            if (initialUIDL.hasKey(mode.name())) {
+                result.put(mode, initialUIDL.getArray(mode.name()));
+                initialUIDL.remove(mode.name());
+            }
+        });
+        return result;
     }
 
     private static void setupFrameworkLibraries(Element head,
@@ -354,7 +375,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void setupCss(Element head) {
-        Element styles = head.appendElement("style").attr("type", "text/css");
+        Element styles = head.appendElement("style").attr("type",
+                CSS_TYPE_ATTRIBUTE_VALUE);
         styles.appendText("html, body {height:100%;margin:0;}");
         // Basic reconnect dialog style just to make it visible and outside of
         // normal flow
@@ -436,7 +458,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         head.appendChild(createJavaScriptElement(
                 context.getUriResolver().resolveVaadinUri(
-                        webComponentsPolyfillBase + "webcomponents-lite.js"),
+                        webComponentsPolyfillBase + "webcomponents-loader.js"),
                 false).attr("shadydom", forceShadyDom));
     }
 
@@ -472,33 +494,60 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Element createDependencyElement(VaadinUriResolver resolver,
-            JsonObject dependency) {
-        String type = dependency.getString(DependencyList.KEY_TYPE);
-        String url = dependency.getString(DependencyList.KEY_URL);
+            LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
+        boolean inlineElement = loadMode == LoadMode.INLINE;
+        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
+                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
+                : null;
 
-        String resolvedUrl = resolver.resolveVaadinUri(url);
-
+        final Element dependencyElement;
         switch (type) {
-        case DependencyList.TYPE_STYLESHEET:
-            return createStylesheetElement(resolvedUrl);
-        case DependencyList.TYPE_JAVASCRIPT:
-            return createJavaScriptElement(resolvedUrl, true);
-        case DependencyList.TYPE_HTML_IMPORT:
-            return createHtmlImportElement(resolvedUrl);
+        case STYLESHEET:
+            dependencyElement = createStylesheetElement(url);
+            break;
+        case JAVASCRIPT:
+            dependencyElement = createJavaScriptElement(url, !inlineElement);
+            break;
+        case HTML_IMPORT:
+            dependencyElement = createHtmlImportElement(url);
+            break;
         default:
             throw new IllegalStateException(
                     "Unsupported dependency type: " + type);
         }
+
+        if (inlineElement) {
+            dependencyElement.appendChild(
+                    new DataNode(dependency.getString(Dependency.KEY_CONTENTS),
+                            dependencyElement.baseUri()));
+        }
+
+        return dependencyElement;
     }
 
     private static Element createHtmlImportElement(String url) {
-        return new Element(Tag.valueOf("link"), "").attr("rel", "import")
-                .attr("href", url);
+        final Element htmlImportElement;
+        if (url != null) {
+            htmlImportElement = new Element(Tag.valueOf("link"), "")
+                    .attr("rel", "import").attr("href", url);
+        } else {
+            htmlImportElement = new Element(Tag.valueOf("span"), "")
+                    .attr("hidden", true);
+        }
+        return htmlImportElement;
     }
 
     private static Element createStylesheetElement(String url) {
-        return new Element(Tag.valueOf("link"), "").attr("rel", "stylesheet")
-                .attr("type", "text/css").attr("href", url);
+        final Element cssElement;
+        if (url != null) {
+            cssElement = new Element(Tag.valueOf("link"), "")
+                    .attr("rel", "stylesheet")
+                    .attr("type", CSS_TYPE_ATTRIBUTE_VALUE).attr("href", url);
+        } else {
+            cssElement = new Element(Tag.valueOf("style"), "").attr("type",
+                    CSS_TYPE_ATTRIBUTE_VALUE);
+        }
+        return cssElement;
     }
 
     private static void setupDocumentBody(Document document) {

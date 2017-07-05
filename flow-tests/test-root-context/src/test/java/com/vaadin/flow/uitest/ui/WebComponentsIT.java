@@ -35,7 +35,7 @@ public class WebComponentsIT extends ChromeBrowserTest {
         open();
 
         assertScriptLoadedWithoutErrors(driver,
-                "/bower_components/webcomponentsjs/webcomponents-lite.js");
+                "/bower_components/webcomponentsjs/webcomponents-loader.js");
     }
 
     public static void assertScriptLoadedWithoutErrors(WebDriver driver,

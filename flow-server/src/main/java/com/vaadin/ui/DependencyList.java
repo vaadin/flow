@@ -16,6 +16,7 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,11 +25,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 /**
  * List for storing dependencies/files (JavaScript, Stylesheets) to be loaded
@@ -39,14 +37,6 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public class DependencyList implements Serializable {
-
-    public static final String KEY_URL = "url";
-    public static final String KEY_TYPE = "type";
-    public static final String KEY_LOAD_MODE = "mode";
-    public static final String TYPE_STYLESHEET = "css";
-    public static final String TYPE_JAVASCRIPT = "js";
-    public static final String TYPE_HTML_IMPORT = "html";
-    public static final String DEPENDENCY_KEY = "deps";
 
     /**
      * Contains all added URLs to be able to do fast enough duplication
@@ -100,10 +90,9 @@ public class DependencyList implements Serializable {
                                     + "The loading strategy is changed to %s to avoid conflicts. This may impact performance.",
                             newDependency.getUrl(), newDependency.getLoadMode(),
                             currentDependency.getLoadMode(), LoadMode.EAGER));
-            if (currentDependency.getLoadMode() != LoadMode.EAGER) {
-                urlToLoadedDependency.put(currentDependency.getUrl(),
-                        new Dependency(currentDependency.getType(),
-                                currentDependency.getUrl(), LoadMode.EAGER));
+            if (currentDependency.getLoadMode() != newDependency.getLoadMode()) {
+                throw new IllegalStateException(String.format("Dependency with url %s is loaded both with %s and %s modes",
+                        currentDependency.getUrl(), currentDependency.getLoadMode(), newDependency.getLoadMode()));
             }
         }
     }
@@ -113,22 +102,8 @@ public class DependencyList implements Serializable {
      *
      * @return a list containing the dependencies which should be sent
      */
-    public JsonArray getPendingSendToClient() {
-        JsonArray jsonArray = Json.createArray();
-        int i = 0;
-        for (Dependency dependency : urlToLoadedDependency.values()) {
-            jsonArray.set(i, convertDependency(dependency));
-            i++;
-        }
-        return jsonArray;
-    }
-
-    private JsonObject convertDependency(Dependency dependency) {
-        JsonObject jsonObject = Json.createObject();
-        jsonObject.put(KEY_URL, dependency.getUrl());
-        jsonObject.put(KEY_TYPE, getType(dependency));
-        jsonObject.put(KEY_LOAD_MODE, dependency.getLoadMode().name());
-        return jsonObject;
+    public Collection<Dependency> getPendingSendToClient() {
+        return urlToLoadedDependency.values();
     }
 
     /**
@@ -136,26 +111,5 @@ public class DependencyList implements Serializable {
      */
     public void clearPendingSendToClient() {
         urlToLoadedDependency.clear();
-    }
-
-    /**
-     * Gets the type string to be sent to the client.
-     *
-     * @param dependency
-     *            the dependency
-     * @return the type for the JSON
-     */
-    private static String getType(Dependency dependency) {
-        if (dependency.getType() == Dependency.Type.JAVASCRIPT) {
-            return TYPE_JAVASCRIPT;
-        } else if (dependency.getType() == Dependency.Type.STYLESHEET) {
-            return TYPE_STYLESHEET;
-        } else if (dependency.getType() == Dependency.Type.HTML_IMPORT) {
-            return TYPE_HTML_IMPORT;
-        } else {
-            throw new IllegalArgumentException(
-                    "Unknown dependency type: " + dependency.getType());
-        }
-
     }
 }

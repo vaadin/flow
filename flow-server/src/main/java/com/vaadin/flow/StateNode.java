@@ -79,9 +79,11 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * TODO
-     * 
+     * Create a new instance using the same features as provided {@code node}
+     * declares.
+     *
      * @param node
+     *            the node whose features set will be copied
      */
     @SuppressWarnings("unchecked")
     public StateNode(StateNode node) {
@@ -591,9 +593,8 @@ public class StateNode implements Serializable {
             Set<Class<? extends NodeFeature>> set = node.features.keySet();
             return set.toArray(new Class[set.size()]);
         }
-        Set<Class<? extends NodeFeature>> features = new HashSet<>(
-                node.features.keySet());
-        features.removeAll(node.reportedFeatures);
-        return features.toArray(new Class[features.size()]);
+        return node.features.keySet().stream()
+                .filter(clazz -> !node.reportedFeatures.contains(clazz))
+                .toArray(Class[]::new);
     }
 }
