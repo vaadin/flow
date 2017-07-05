@@ -168,7 +168,43 @@ by the `helloButton` button.
 Another way to call a server side method is `@ClientDelegate` annotation which marks a template method as the
 method which should be called from the client side code using notation `this.$server.serverMethodName(args)`.
 It can be used somewhere in your client side Polymer class implementation. You can pass your own arguments in this method.
-Just make sure that their types matches to method declaration on the server side.    
+Just make sure that their types matches to method declaration on the server side.
+
+====== Receiving "after server update" event
+
+In some cases you may want to execute some client-side logic after the component
+is updated from the server during a roundtrip.
+E.g. the component constructor is called to create a component on the client side but
+this component is not yet initialized by data from the server side. So it's too early 
+to do anything with the component which is not yet ready.
+In this case you can use the method `afterServerUpdate`. If this method is defined 
+for the component it will be called each time after the component is updated 
+from the server side.
+
+[source,html]
+----
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="my-component">
+    <template>
+        <div>
+            <div>[[text]]</div>
+        </div>
+    </template>
+    <script>
+        class MyComponent extends Polymer.Element {
+            static get is() {
+                return 'my-component'
+            }
+            
+            afterServerUpdate(){
+                console.log("The new 'text' value is: "+this.text);                
+            }
+        }
+        customElements.define(MyComponent.is, MyComponent);
+    </script>
+</dom-module>
+----
 
 === Usage in code
 
