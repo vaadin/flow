@@ -17,16 +17,27 @@ package com.vaadin.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+/**
+ * This class is used to test {@link DependencyLoader} GWT functionality, that
+ * is required to process dependencies with load mode {@link LoadMode#LAZY}.
+ * <p>
+ * For the rest of the tests, refer to {@link DependencyLoaderTest}
+ */
 public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
     private static class MockResourceLoader extends ResourceLoader {
@@ -67,6 +78,30 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
         }
+
+        @Override
+        public void inlineHtml(String htmlContents,
+                ResourceLoadListener resourceLoadListener) {
+            loadingHtml.add(htmlContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, htmlContents));
+        }
+
+        @Override
+        public void inlineScript(String scriptContents,
+                ResourceLoadListener resourceLoadListener) {
+            loadingScripts.add(scriptContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, scriptContents));
+        }
+
+        @Override
+        public void inlineStyleSheet(String styleSheetContents,
+                ResourceLoadListener resourceLoadListener) {
+            loadingStyles.add(styleSheetContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, styleSheetContents));
+        }
     }
 
     public static class CustomScheduler extends SchedulerImpl {
@@ -103,20 +138,20 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String lazyHtmlUrl = "https://foo.bar/page.html";
         String lazyCssUrl = "https://foo.bar/style.css";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(lazyJsUrl, DependencyList.TYPE_JAVASCRIPT,
-                        LoadMode.LAZY),
-                createDependency(lazyHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, LoadMode.LAZY),
-                createDependency(lazyCssUrl, DependencyList.TYPE_STYLESHEET,
-                        LoadMode.LAZY),
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
+                new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
+                        LoadMode.LAZY).toJson(),
 
-                createDependency(eagerJsUrl, DependencyList.TYPE_JAVASCRIPT,
-                        LoadMode.EAGER),
-                createDependency(eagerHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, LoadMode.EAGER),
-                createDependency(eagerCssUrl, DependencyList.TYPE_STYLESHEET,
-                        LoadMode.EAGER)));
+                new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.HTML_IMPORT, eagerHtmlUrl,
+                        LoadMode.EAGER).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
+                        LoadMode.EAGER).toJson()));
 
         assertEquals(Arrays.asList(eagerJsUrl, lazyJsUrl),
                 mockResourceLoader.loadingScripts);
@@ -138,17 +173,19 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String htmlUrl1 = "1.html";
         String htmlUrl2 = "2.html";
 
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT, LoadMode.LAZY),
-                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT, LoadMode.LAZY),
-                createDependency(cssUrl1, DependencyList.TYPE_STYLESHEET,
-                        LoadMode.LAZY),
-                createDependency(cssUrl2, DependencyList.TYPE_STYLESHEET,
-                        LoadMode.LAZY),
-                createDependency(htmlUrl1, DependencyList.TYPE_HTML_IMPORT,
-                        LoadMode.LAZY),
-                createDependency(htmlUrl2, DependencyList.TYPE_HTML_IMPORT,
-                        LoadMode.LAZY)));
+        new DependencyLoader(registry).loadDependencies(createDependenciesMap(
+                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl1,
+                        LoadMode.LAZY).toJson(),
+                new Dependency(Dependency.Type.HTML_IMPORT, htmlUrl2,
+                        LoadMode.LAZY).toJson()));
 
         assertEquals(
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
@@ -166,21 +203,83 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 mockResourceLoader.loadingHtml);
     }
 
-    private JsonArray createJsonArray(JsonObject... contents) {
-        JsonArray result = Json.createArray();
-        for (int i = 0; i < contents.length; i++) {
-            result.set(i, contents[i]);
+    public void testDependenciesWithAllLoadModesAreProcessed() {
+        String eagerJsUrl = "eager.js";
+        String lazyJsUrl = "lazy.js";
+        String inlineJsContents = "inline.js";
+
+        String eagerCssUrl = "eager.css";
+        String lazyCssUrl = "lazy.css";
+        String inlineCssContents = "inline.css";
+
+        String eagerHtmlUrl = "eager.html";
+        String lazyHtmlUrl = "lazy.html";
+        String inlineHtmlContents = "inline.html";
+
+        new DependencyLoader(registry)
+                .loadDependencies(createDependenciesMap(
+                        createInlineDependency(Dependency.Type.JAVASCRIPT, inlineJsContents),
+                        new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
+                                LoadMode.LAZY).toJson(),
+                        new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
+                                LoadMode.EAGER).toJson(),
+
+                        createInlineDependency(Dependency.Type.STYLESHEET, inlineCssContents),
+                        new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
+                                LoadMode.LAZY).toJson(),
+                        new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
+                                LoadMode.EAGER).toJson(),
+
+                        createInlineDependency(Dependency.Type.HTML_IMPORT, inlineHtmlContents),
+                        new Dependency(Dependency.Type.HTML_IMPORT, lazyHtmlUrl,
+                                LoadMode.LAZY).toJson(),
+                        new Dependency(Dependency.Type.HTML_IMPORT,
+                                eagerHtmlUrl, LoadMode.EAGER).toJson()));
+
+        // When multiple LoadModes are used, no guarantees on the order can be made except
+        // for the fact that the last dependencies to be loaded are the lazy ones
+        assertEquals("All type of dependencies should be added",
+                Stream.of(eagerJsUrl, inlineJsContents, lazyJsUrl)
+                        .collect(Collectors.toSet()),
+                new HashSet<>(mockResourceLoader.loadingScripts));
+
+        assertEquals("All type of dependencies should be added",
+                Stream.of(eagerCssUrl, inlineCssContents, lazyCssUrl)
+                        .collect(Collectors.toSet()),
+                new HashSet<>(mockResourceLoader.loadingStyles));
+
+        assertEquals("All type of dependencies should be added",
+                Stream.of(eagerHtmlUrl, inlineHtmlContents, lazyHtmlUrl)
+                        .collect(Collectors.toSet()),
+                new HashSet<>(mockResourceLoader.loadingHtml));
+    }
+
+    private Map<LoadMode, JsonArray> createDependenciesMap(
+            JsonObject... dependencies) {
+        Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
+        for (int i = 0; i < dependencies.length; i++) {
+            JsonObject dependency = dependencies[i];
+            LoadMode loadMode = LoadMode
+                    .valueOf(dependency.getString(Dependency.KEY_LOAD_MODE));
+            JsonArray jsonArray = Json.createArray();
+            jsonArray.set(0, dependency);
+            result.merge(loadMode, jsonArray, this::mergeArrays);
         }
         return result;
     }
 
-    private JsonObject createDependency(String url, String type,
-                                        LoadMode loadMode) {
-        JsonObject dependency = Json.createObject();
-        dependency.put(DependencyList.KEY_TYPE, type);
-        dependency.put(DependencyList.KEY_URL, url);
-        dependency.put(DependencyList.KEY_LOAD_MODE, loadMode.name());
-        return dependency;
+    private JsonArray mergeArrays(JsonArray jsonArray1, JsonArray jsonArray2) {
+        for (int i = 0; i < jsonArray2.length(); i++) {
+            jsonArray1.set(jsonArray1.length(), jsonArray2.getObject(i));
+        }
+        return jsonArray1;
+    }
+
+    private JsonObject createInlineDependency(Dependency.Type dependencyType, String contents) {
+        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE).toJson();
+        json.remove(Dependency.KEY_URL);
+        json.put(Dependency.KEY_CONTENTS, contents);
+        return json;
     }
 
     private native void initScheduler(SchedulerImpl scheduler)

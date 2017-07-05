@@ -58,6 +58,7 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 
 import elemental.json.JsonArray;
@@ -75,7 +76,11 @@ import elemental.json.JsonValue;
  */
 public class ComponentGenerator {
 
+    private static final String JAVADOC_THROWS = "@throws";
+    private static final String JAVADOC_SEE = "@see";
+    private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
+
     private static final Logger logger = Logger.getLogger("ComponentGenerator");
 
     private ObjectMapper mapper;
@@ -316,6 +321,10 @@ public class ComponentGenerator {
                     event -> generateEventListenerFor(javaClass, event));
         }
 
+        if (metadata.getSlots() != null && !metadata.getSlots().isEmpty()) {
+            generateAdders(metadata, javaClass);
+        }
+
         if (StringUtils.isNotEmpty(metadata.getDescription())) {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
@@ -329,13 +338,98 @@ public class ComponentGenerator {
         return javaClass;
     }
 
+    private void generateAdders(ComponentMetadata metadata,
+            JavaClassSource javaClass) {
+
+        boolean hasDefaultSlot = false;
+        boolean hasNamedSlot = false;
+
+        for (String slot : metadata.getSlots()) {
+            if (StringUtils.isEmpty(slot)) {
+                hasDefaultSlot = true;
+            } else {
+                hasNamedSlot = true;
+                generateAdder(slot, javaClass);
+            }
+        }
+
+        if (hasDefaultSlot) {
+            javaClass.addInterface(HasComponents.class);
+        }
+
+        if (hasNamedSlot) {
+            generateRemovers(javaClass, hasDefaultSlot);
+        }
+    }
+
+    private void generateAdder(String slot, JavaClassSource javaClass) {
+        String methodName = ComponentGeneratorUtils
+                .generateMethodNameForProperty("addTo", slot);
+        MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
+                .setReturnTypeVoid().setName(methodName);
+        method.addParameter(Component.class, "components").setVarArgs(true);
+        method.setBody(String.format(
+                "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n getElement().appendChild(component.getElement());%n }",
+                slot));
+
+        method.getJavaDoc().setText(String.format(
+                "Adds the given components as children of this component at the slot \"%s\".",
+                slot))
+                .addTagValue(JAVADOC_PARAM, "components The components to add.")
+                .addTagValue(JAVADOC_SEE,
+                        "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
+                .addTagValue(JAVADOC_SEE,
+                        "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
+    }
+
+    private void generateRemovers(JavaClassSource javaClass,
+            boolean useOverrideAnnotation) {
+
+        MethodSource<JavaClassSource> removeMethod = javaClass.addMethod()
+                .setPublic().setReturnTypeVoid().setName("remove");
+        removeMethod.addParameter(Component.class, "components")
+                .setVarArgs(true);
+        removeMethod.setBody(
+                String.format("for (Component component : components) {%n"
+                        + "if (getElement().equals(component.getElement().getParent())) {%n"
+                        + "component.getElement().removeAttribute(\"slot\");%n"
+                        + "getElement().removeChild(component.getElement());%n "
+                        + "}%n" + "else {%n"
+                        + "throw new IllegalArgumentException(\"The given component (\" + component + \") is not a child of this component\");%n"
+                        + "}%n }"));
+
+        if (useOverrideAnnotation) {
+            removeMethod.addAnnotation(Override.class);
+        } else {
+            removeMethod.getJavaDoc().setText(String.format(
+                    "Removes the given child components from this component."))
+                    .addTagValue(JAVADOC_PARAM,
+                            "components The components to remove.")
+                    .addTagValue(JAVADOC_THROWS,
+                            "IllegalArgumentException if any of the components is not a child of this component.");
+        }
+
+        MethodSource<JavaClassSource> removeAllMethod = javaClass.addMethod()
+                .setPublic().setReturnTypeVoid().setName("removeAll");
+        removeAllMethod.setBody(String.format(
+                "getElement().getChildren().forEach(child -> child.removeAttribute(\"slot\"));%n"
+                        + "getElement().removeAllChildren();"));
+        if (useOverrideAnnotation) {
+            removeAllMethod.addAnnotation(Override.class);
+        } else {
+            removeAllMethod.getJavaDoc().setText(String.format(
+                    "Removes all contents from this component, this includes child components, "
+                            + "text content as well as child elements that have been added directly to "
+                            + "this component using the {@link Element} API."));
+        }
+    }
+
     private void generateGetSelf(JavaClassSource javaClass) {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
 
-        method.getJavaDoc()
-                .setText(
-                        "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
+        method.getJavaDoc().setText(
+                "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
                 .addTagValue("@return", "This object casted to its type.");
 
         method.setBody("return (" + GENERIC_TYPE + ") this;");
@@ -451,11 +545,13 @@ public class ComponentGenerator {
                         ComponentGeneratorUtils.generateMethodNameForProperty(
                                 "is", property.getName()));
             } else {
-                method.setName(ComponentGeneratorUtils
-                        .generateMethodNameForProperty("get",
-                                property.getName())
-                        + (postfixWithVariableType ? StringUtils.capitalize(
-                                basicType.name().toLowerCase()) : ""));
+                method.setName(
+                        ComponentGeneratorUtils.generateMethodNameForProperty(
+                                "get", property.getName())
+                                + (postfixWithVariableType
+                                        ? StringUtils.capitalize(
+                                                basicType.name().toLowerCase())
+                                        : ""));
             }
             switch (basicType) {
             case STRING:
@@ -579,11 +675,12 @@ public class ComponentGenerator {
                 addJavaDoc(property.getDescription(), method.getJavaDoc());
             }
 
-            method.getJavaDoc().addTagValue("@param", property.getName());
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM, property.getName());
 
             if (fluentSetters) {
                 method.setReturnType(GENERIC_TYPE);
-                method.setBody(method.getBody() + "\n" + "return getSelf();");
+                method.setBody(String
+                        .format(method.getBody() + "%n" + "return getSelf();"));
                 method.getJavaDoc().addTagValue("@return",
                         "This instance, for method chaining.");
             }
@@ -671,9 +768,10 @@ public class ComponentGenerator {
                 method.addParameter(toJavaType(basicType), formattedName);
                 params.append(", ").append(formattedName);
 
-                method.getJavaDoc().addTagValue("@param",
+                method.getJavaDoc().addTagValue(JAVADOC_PARAM,
                         param.getName() + (useTypePostfixForVariableName
-                                ? " can be <code>null</code>" : ""));
+                                ? " can be <code>null</code>"
+                                : ""));
             }
         }
         return params.toString();

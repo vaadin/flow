@@ -29,6 +29,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -99,7 +100,8 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 		implements
 			HasStyle,
 			HasText,
-			HasClickListeners {
+			HasClickListeners,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

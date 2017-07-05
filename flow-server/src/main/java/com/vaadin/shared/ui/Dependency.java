@@ -13,11 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.shared.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.ui.LoadMode;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -25,6 +26,10 @@ import com.vaadin.shared.ui.LoadMode;
  * @author Vaadin Ltd
  */
 public class Dependency implements Serializable {
+    public static final String KEY_URL = "url";
+    public static final String KEY_TYPE = "type";
+    public static final String KEY_LOAD_MODE = "mode";
+    public static final String KEY_CONTENTS = "contents";
 
     /**
      * The type of a dependency.
@@ -85,10 +90,23 @@ public class Dependency implements Serializable {
     /**
      * Gets load mode that will be used for dependency loading. Refer to
      * {@link LoadMode} for details.
-     * 
+     *
      * @return the load mode that will be used during dependency loading
      */
     public LoadMode getLoadMode() {
         return loadMode;
+    }
+
+    /**
+     * Converts the object into json representation.
+     *
+     * @return json representation of the object
+     */
+    public JsonObject toJson() {
+        JsonObject jsonObject = Json.createObject();
+        jsonObject.put(KEY_URL, url);
+        jsonObject.put(KEY_TYPE, type.name());
+        jsonObject.put(KEY_LOAD_MODE, loadMode.name());
+        return jsonObject;
     }
 }

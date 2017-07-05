@@ -79,9 +79,11 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * TODO
-     * 
+     * Create a new instance using the same features as provided {@code node}
+     * declare.
+     *
      * @param node
+     *            the node whose features set will be copied
      */
     @SuppressWarnings("unchecked")
     public StateNode(StateNode node) {

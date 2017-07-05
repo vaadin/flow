@@ -397,7 +397,7 @@ public class DefaultDeploymentConfiguration
 
         List<String> foundPolyfills = new ArrayList<>();
         resourceScanner.accept(scanBase, name -> {
-            if (name.endsWith("webcomponents-lite.js")) {
+            if (name.endsWith("webcomponents-loader.js")) {
                 foundPolyfills.add(name);
             }
 

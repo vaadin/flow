@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -47,7 +48,7 @@ import com.vaadin.annotations.HtmlImport;
 @HtmlImport("frontend://bower_components/iron-overlay-behavior/iron-overlay-backdrop.html")
 public class IronOverlayBackdrop<R extends IronOverlayBackdrop<R>>
 		extends
-			Component implements HasStyle {
+			Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
