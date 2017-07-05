@@ -44,7 +44,7 @@ public class PolymerTemplateEvents {
     public class EventDataHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
 
         @EventHandler
-        private void sendData(@EventData("event.altKey") boolean altPressed,
+        private void handleClick(@EventData("event.altKey") boolean altPressed,
                 @EventData("event.srcElement.tagName") String tag,
                 @EventData("event.offsetX") int offsetX,
                 @EventData("event.offsetY") int offsetY) {
