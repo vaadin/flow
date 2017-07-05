@@ -21,8 +21,9 @@ import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.shared.ui.Dependency.Type;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
 /**

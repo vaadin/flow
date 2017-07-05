@@ -25,6 +25,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -59,7 +60,8 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

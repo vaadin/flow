@@ -27,6 +27,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -67,7 +68,8 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-item/paper-icon-item.html")
 public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 		implements
-			HasStyle {
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -435,6 +437,46 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	public Registration addDisabledChangedListener(
 			ComponentEventListener<DisabledChangedEvent> listener) {
 		return addListener(DisabledChangedEvent.class, listener);
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * "item-icon".
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see <a
+	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+	 *      page about slots</a>
+	 * @see <a
+	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+	 *      website about slots</a>
+	 */
+	public void addToItemIcon(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "item-icon");
+			getElement().appendChild(component.getElement());
+		}
+	}
+
+	@Override
+	public void remove(com.vaadin.ui.Component... components) {
+		for (Component component : components) {
+			if (getElement().equals(component.getElement().getParent())) {
+				component.getElement().removeAttribute("slot");
+				getElement().removeChild(component.getElement());
+			} else {
+				throw new IllegalArgumentException("The given component ("
+						+ component + ") is not a child of this component");
+			}
+		}
+	}
+
+	@Override
+	public void removeAll() {
+		getElement().getChildren().forEach(
+				child -> child.removeAttribute("slot"));
+		getElement().removeAllChildren();
 	}
 
 	/**

@@ -16,6 +16,7 @@
 package com.vaadin.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +25,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -45,11 +45,9 @@ import com.vaadin.flow.event.ComponentEventBus;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Registration;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.AngularTemplateTest.TestSpan;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 public class ComponentTest {
 
@@ -1031,17 +1029,17 @@ public class ComponentTest {
         UI ui = new UI();
         ui.getInternals().addComponentDependencies(s.getClass());
 
-        Map<String, JsonObject> pendingDependencies = getDependenciesMap(
+        Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
         Assert.assertEquals(4, pendingDependencies.size());
 
-        assertDependency(DependencyList.TYPE_HTML_IMPORT, "html.html",
+        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "uses.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "js.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
 
@@ -1050,19 +1048,19 @@ public class ComponentTest {
         UIInternals internals = new UI().getInternals();
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
-        Map<String, JsonObject> pendingDependencies = getDependenciesMap(
+        Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
         Assert.assertEquals(5, pendingDependencies.size());
 
-        assertDependency(DependencyList.TYPE_HTML_IMPORT, "usesuses.html",
+        assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_HTML_IMPORT, "html.html",
+        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "uses.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "js.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_STYLESHEET, "css.css",
+        assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
 
@@ -1072,13 +1070,13 @@ public class ComponentTest {
         DependencyList dependencyList = internals.getDependencyList();
 
         internals.addComponentDependencies(CircularDependencies1.class);
-        Map<String, JsonObject> pendingDependencies = getDependenciesMap(
+        Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
 
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
                 pendingDependencies);
 
         internals = new UI().getInternals();
@@ -1087,28 +1085,24 @@ public class ComponentTest {
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
                 pendingDependencies);
-        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
                 pendingDependencies);
 
     }
 
-    private void assertDependency(String type, String url,
-            Map<String, JsonObject> pendingDependencies) {
-        JsonObject object = pendingDependencies.get(url);
+    private void assertDependency(Dependency.Type type, String url,
+            Map<String, Dependency> pendingDependencies) {
+        Dependency dependency = pendingDependencies.get(url);
         Assert.assertNotNull(
-                "Could not locate a dependency object for url=" + url, object);
-        Assert.assertEquals(type, object.getString(DependencyList.KEY_TYPE));
-        Assert.assertEquals(url, object.getString(DependencyList.KEY_URL));
+                "Could not locate a dependency object for url=" + url, dependency);
+        Assert.assertEquals(type, dependency.getType());
+        Assert.assertEquals(url, dependency.getUrl());
     }
 
-    private Map<String, JsonObject> getDependenciesMap(JsonArray dependencies) {
-        return IntStream.range(0, dependencies.length())
-                .mapToObj(dependencies::getObject)
-                .collect(Collectors.toMap(
-                        jsonObject -> jsonObject
-                                .getString(DependencyList.KEY_URL),
-                        Function.identity()));
+    private Map<String, Dependency> getDependenciesMap(Collection<Dependency> dependencies) {
+        return dependencies.stream()
+                .collect(Collectors.toMap(Dependency::getUrl, Function.identity()));
     }
 }

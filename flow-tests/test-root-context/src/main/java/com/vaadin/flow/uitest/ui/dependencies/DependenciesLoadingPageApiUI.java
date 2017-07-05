@@ -15,6 +15,9 @@ public class DependenciesLoadingPageApiUI extends DependenciesLoadingBaseUI {
         super.init(request);
 
         Page page = getUI().get().getPage();
+        page.addJavaScript("/com/vaadin/flow/uitest/ui/dependencies/inline.js", LoadMode.INLINE);
+        page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/inline.css", LoadMode.INLINE);
+        page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/inline.html", LoadMode.INLINE);
         page.addJavaScript("/com/vaadin/flow/uitest/ui/dependencies/lazy.js", LoadMode.LAZY);
         page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/lazy.css", LoadMode.LAZY);
         page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/lazy.html", LoadMode.LAZY);

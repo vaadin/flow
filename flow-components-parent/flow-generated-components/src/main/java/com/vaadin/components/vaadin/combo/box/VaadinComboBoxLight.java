@@ -29,6 +29,7 @@ import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.annotations.EventData;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -69,7 +70,7 @@ import com.vaadin.annotations.EventData;
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 		extends
-			Component implements HasStyle {
+			Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

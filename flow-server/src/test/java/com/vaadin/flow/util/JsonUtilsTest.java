@@ -120,19 +120,16 @@ public class JsonUtilsTest {
         Assert.assertEquals(0, a.length());
     }
 
-    @Test(expected = AssertionError.class)
     public void createObjectStreamForNull() {
-        JsonUtils.objectStream(null);
+        Assert.assertEquals(Stream.empty(), JsonUtils.objectStream(null));
     }
 
-    @Test(expected = AssertionError.class)
     public void createNumberStreamForNull() {
-        JsonUtils.numberStream(null);
+        Assert.assertEquals(Stream.empty(), JsonUtils.numberStream(null));
     }
 
-    @Test(expected = AssertionError.class)
     public void createStreamForNull() {
-        JsonUtils.stream(null);
+        Assert.assertEquals(Stream.empty(), JsonUtils.stream(null));
     }
 
     @Test
