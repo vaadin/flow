@@ -13,6 +13,6 @@ if (window.messages) {
 // Swap out implementation with one that directly attaches to the DOM
 window.messages = {
     push: attachTestDiv
-}
+};
 
 attachTestDiv("eager.js");

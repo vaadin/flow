@@ -57,12 +57,12 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void testWebComponentsBase_defaultSetting_fileFound() {
+    public void webComponentsBase_defaultSetting_fileFound() {
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 DefaultDeploymentConfigurationTest.class, new Properties(),
                 (base, consumer) -> {
                     consumer.test(
-                            "bower_components/webcomponentsjs/webcomponents-lite.js");
+                            "bower_components/webcomponentsjs/webcomponents-loader.js");
                 });
 
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()

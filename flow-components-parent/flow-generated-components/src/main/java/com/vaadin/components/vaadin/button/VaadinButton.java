@@ -21,6 +21,7 @@ import com.vaadin.ui.HasText;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.HasComponents;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -53,7 +54,8 @@ import com.vaadin.annotations.HtmlImport;
 public class VaadinButton<R extends VaadinButton<R>> extends Component
 		implements
 			HasStyle,
-			HasText {
+			HasText,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

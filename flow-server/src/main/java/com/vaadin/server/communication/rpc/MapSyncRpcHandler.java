@@ -86,25 +86,17 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         StateNode parent = node.getParent();
         assert parent != null;
         // Copy only if the request is for a node inside a list
-        if (parent.hasFeature(ModelList.class)) {
-            ModelList list = parent.getFeature(ModelList.class);
-            boolean isInList = false;
-            for (int i = 0; i < list.size(); i++) {
-                if (node.equals(list.get(i))) {
-                    isInList = true;
-                    break;
-                }
-            }
-            if (isInList) {
-                StateNode copy = new StateNode(node);
-                ElementPropertyMap originalProperties = node
-                        .getFeature(ElementPropertyMap.class);
-                originalProperties.getPropertyNames().forEach(property -> copy
-                        .getFeature(ElementPropertyMap.class)
-                        .setProperty(property,
-                                originalProperties.getProperty(property)));
-                return copy;
-            }
+        if (parent.hasFeature(ModelList.class)
+                && parent.getFeature(ModelList.class).contains(node)) {
+            StateNode copy = new StateNode(node);
+            ElementPropertyMap originalProperties = node
+                    .getFeature(ElementPropertyMap.class);
+            ElementPropertyMap copyProperties = copy
+                    .getFeature(ElementPropertyMap.class);
+            originalProperties.getPropertyNames()
+                    .forEach(property -> copyProperties.setProperty(property,
+                            originalProperties.getProperty(property)));
+            return copy;
         }
         return properties;
     }

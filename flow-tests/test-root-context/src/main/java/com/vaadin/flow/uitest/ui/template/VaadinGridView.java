@@ -31,9 +31,9 @@ public class VaadinGridView extends PolymerTemplate<GridModel> implements View {
 
     public interface GridModel extends TemplateModel {
 
-        void setPatients(List<Patient> patients);
+        void setUsers(List<User> users);
 
-        Patient getActivePatient();
+        User getActiveUser();
 
         void setSelected(String name);
 
@@ -42,7 +42,7 @@ public class VaadinGridView extends PolymerTemplate<GridModel> implements View {
         String getActiveMessage();
     }
 
-    public static class Patient {
+    public static class User {
         private String name;
 
         public String getName() {
@@ -56,27 +56,28 @@ public class VaadinGridView extends PolymerTemplate<GridModel> implements View {
     }
 
     public VaadinGridView() {
-        getModel().setPatients(
-                Arrays.asList(createPatient("foo"), createPatient("bar")));
+        setId("template");
+        getModel()
+                .setUsers(Arrays.asList(createUser("foo"), createUser("bar")));
 
         getModel().setMessages(Arrays.asList("baz", "msg"));
 
-        getElement().addPropertyChangeListener("activePatient",
+        getElement().addPropertyChangeListener("activeUser",
                 event -> patientSelected());
 
         getElement().addPropertyChangeListener("activeMessage",
                 event -> messageSelected());
     }
 
-    private Patient createPatient(String name) {
-        Patient patient = new Patient();
+    private User createUser(String name) {
+        User patient = new User();
         patient.setName(name);
         return patient;
     }
 
     private void patientSelected() {
-        Patient patient = getModel().getActivePatient();
-        getModel().setSelected(patient.getName());
+        User user = getModel().getActiveUser();
+        getModel().setSelected(user.getName());
     }
 
     private void messageSelected() {
