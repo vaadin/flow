@@ -24,6 +24,7 @@ import java.util.function.Predicate;
  */
 public class PropertyFilter implements Predicate<String> {
     private final String prefix;
+
     private final Predicate<String> predicate;
 
     /**
@@ -100,5 +101,13 @@ public class PropertyFilter implements Predicate<String> {
     @Override
     public boolean test(String propertyName) {
         return predicate.test(propertyName);
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public String getPrefix() {
+        return prefix;
     }
 }

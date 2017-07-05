@@ -57,7 +57,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         }
 
         private void addProperty(Method method,
-                Function<Method, Predicate<String>> filterProvider) {
+                Function<Method, Predicate<String>> filterProvider,
+                ModelConverterProvider converterProvider) {
             String propertyName = ReflectTools.getPropertyName(method);
             if (properties.containsKey(propertyName)) {
                 return;
@@ -70,15 +71,30 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
                     propertyName, filterProvider.apply(method));
 
-            ModelType propertyType = getModelType(
-                    ReflectTools.getPropertyType(method), innerFilter,
-                    propertyName, method.getDeclaringClass());
+            converterProvider = new ModelConverterProvider(converterProvider,
+                    TemplateModelUtil.getModelConverters(method), innerFilter);
+
+            ModelType propertyType;
+            Optional<ModelConverter<?, ?>> optionalConverter = converterProvider
+                    .apply(innerFilter);
+            if (optionalConverter.isPresent()) {
+                propertyType = getConvertedModelType(
+                        ReflectTools.getPropertyType(method), innerFilter,
+                        propertyName, method.getDeclaringClass(),
+                        optionalConverter.get(), converterProvider);
+            } else {
+                propertyType = getModelType(
+                        ReflectTools.getPropertyType(method), innerFilter,
+                        propertyName, method.getDeclaringClass(),
+                        converterProvider);
+            }
 
             properties.put(propertyName, propertyType);
         }
 
         private void addProperty(Method method) {
-            addProperty(method, emptyFilterProvider);
+            addProperty(method, emptyFilterProvider,
+                    ModelConverterProvider.EMPTY_PROVIDER);
         }
 
         private Map<String, ModelType> getProperties() {
@@ -123,11 +139,18 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      *            this model type
      */
     public BeanModelType(Class<T> javaType, PropertyFilter propertyFilter) {
-        this(javaType, findProperties(javaType, propertyFilter));
+        this(javaType, propertyFilter, ModelConverterProvider.EMPTY_PROVIDER);
     }
 
-    private static Map<String, ModelType> findProperties(Class<?> javaType,
-            PropertyFilter propertyFilter) {
+    public BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
+            ModelConverterProvider converterProvider) {
+        this(javaType,
+                findProperties(javaType, propertyFilter, converterProvider));
+    }
+
+    protected static Map<String, ModelType> findProperties(Class<?> javaType,
+            PropertyFilter propertyFilter,
+            ModelConverterProvider converterProvider) {
         assert javaType != null;
         assert propertyFilter != null;
 
@@ -136,7 +159,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         // Check setters first because they might have additional filters
         ReflectTools.getSetterMethods(javaType)
                 .forEach(setter -> builder.addProperty(setter,
-                        TemplateModelUtil::getFilterFromIncludeExclude));
+                        TemplateModelUtil::getFilterFromIncludeExclude,
+                        converterProvider));
 
         // Then go through the getters in case there are readonly-ish properties
         ReflectTools.getGetterMethods(javaType).forEach(builder::addProperty);
@@ -146,11 +170,12 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     private static ModelType getModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass) {
+            Class<?> declaringClass, ModelConverterProvider converterProvider) {
         if (propertyType instanceof Class<?>) {
             Class<?> propertyTypeClass = (Class<?>) propertyType;
             if (isBean(propertyTypeClass)) {
-                return new BeanModelType<>(propertyTypeClass, propertyFilter);
+                return new BeanModelType<>(propertyTypeClass, propertyFilter,
+                        converterProvider);
             } else {
                 Optional<ModelType> maybeBasicModelType = BasicModelType
                         .get(propertyTypeClass);
@@ -160,7 +185,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             }
         } else if (ListModelType.isList(propertyType)) {
             return getListModelType(propertyType, propertyFilter, propertyName,
-                    declaringClass);
+                    declaringClass, converterProvider);
         }
 
         throw new InvalidTemplateModelException("Type "
@@ -169,16 +194,54 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 + propertyName + ". " + ModelType.getSupportedTypesString());
     }
 
+    private static <A, M extends Serializable> ModelType getConvertedModelType(
+            Type propertyType, PropertyFilter propertyFilter,
+            String propertyName, Class<?> declaringClass,
+            ModelConverter<A, M> converter,
+            ModelConverterProvider converterProvider) {
+
+        if (!(propertyType instanceof Class<?>)) {
+            throw new UnsupportedOperationException(
+                    "Using converters with parameterized types is not currently supported. "
+                            + "Usage found in class "
+                            + declaringClass.getSimpleName());
+        }
+
+        if (!converter.getApplicationType().equals((Class<?>) propertyType)) {
+            throw new InvalidTemplateModelException(
+                    "Converter " + converter.getClass().getName()
+                            + " is incompatible with the type "
+                            + propertyType.getTypeName() + ".");
+        }
+
+        if (isBean(converter.getModelType())) {
+            return new ConvertedModelType<>(
+                    new BeanModelType<>(converter.getModelType(),
+                            propertyFilter, converterProvider),
+                    converter);
+        } else {
+            Optional<ModelType> maybeBasicModelType = BasicModelType
+                    .get(converter.getModelType());
+            if (maybeBasicModelType.isPresent()) {
+                return new ConvertedModelType<>(maybeBasicModelType.get(),
+                        converter);
+            } else {
+                return new ConvertedBasicModelType<>(converter);
+            }
+        }
+    }
+
     private static ModelType getListModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass) {
+            Class<?> declaringClass, ModelConverterProvider converterProvider) {
         assert ListModelType.isList(propertyType);
         ParameterizedType pt = (ParameterizedType) propertyType;
 
         Type itemType = pt.getActualTypeArguments()[0];
         if (itemType instanceof ParameterizedType) {
             return new ListModelType<>((ComplexModelType<?>) getModelType(
-                    itemType, propertyFilter, propertyName, declaringClass));
+                    itemType, propertyFilter, propertyName, declaringClass,
+                    converterProvider));
         } else if (BasicComplexModelType.isBasicType(itemType)) {
             return new ListModelType<>(
                     BasicComplexModelType.get((Class<?>) itemType).get());

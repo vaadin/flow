@@ -16,11 +16,14 @@
 package com.vaadin.flow.template.model;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
+import com.vaadin.annotations.Convert;
 import com.vaadin.annotations.Exclude;
 import com.vaadin.annotations.Include;
 import com.vaadin.flow.StateNode;
@@ -163,5 +166,32 @@ public class TemplateModelUtil {
 
             return true;
         };
+    }
+
+    /**
+     * 
+     * @param method
+     * @return
+     */
+    public static Map<String, Class<? extends ModelConverter<?, ?>>> getModelConverters(
+            Method method) {
+        Convert[] convertAnnotations = method
+                .getAnnotationsByType(Convert.class);
+        Map<String, Class<? extends ModelConverter<?, ?>>> converters = new HashMap<>();
+
+        if (convertAnnotations == null) {
+            return converters;
+        }
+
+        for (Convert convert : convertAnnotations) {
+            if (converters.containsKey(convert.path())) {
+                throw new RuntimeException(
+                        "A template model method cannot have multiple "
+                                + "converters with the same path. Affected method: "
+                                + method.getName() + ".");
+            }
+            converters.put(convert.path(), convert.value());
+        }
+        return converters;
     }
 }
