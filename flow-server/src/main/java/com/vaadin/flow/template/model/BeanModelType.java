@@ -260,7 +260,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                             + "JSON from the client side and try to use it as a model. "
                             + "Check your model definition. Client side objects cannot be "
                             + "converted automatically to model bean instances. "
-                            + "Most likley you should use JsonValue type for your model property",
+                            + "Most likely you should use JsonValue type for your model property",
                     modelValue));
         } else {
             throw new IllegalStateException(String.format(

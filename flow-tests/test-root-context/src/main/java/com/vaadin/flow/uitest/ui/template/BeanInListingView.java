@@ -23,13 +23,14 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.flow.uitest.ui.template.VaadinGridView.GridModel;
+import com.vaadin.flow.uitest.ui.template.BeanInListingView.ListModel;
 
-@Tag("vaadin-grid-view")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/VaadinGrid.html")
-public class VaadinGridView extends PolymerTemplate<GridModel> implements View {
+@Tag("listing-bean-view")
+@HtmlImport("/com/vaadin/flow/uitest/ui/template/BeanInListing.html")
+public class BeanInListingView extends PolymerTemplate<ListModel>
+        implements View {
 
-    public interface GridModel extends TemplateModel {
+    public interface ListModel extends TemplateModel {
 
         void setUsers(List<User> users);
 
@@ -55,7 +56,7 @@ public class VaadinGridView extends PolymerTemplate<GridModel> implements View {
 
     }
 
-    public VaadinGridView() {
+    public BeanInListingView() {
         setId("template");
         getModel()
                 .setUsers(Arrays.asList(createUser("foo"), createUser("bar")));

@@ -16,28 +16,44 @@
 <link rel="import" href="/bower_components/polymer/polymer.html">
 <link rel="import" href="/bower_components/vaadin-grid/vaadin-grid.html">
 
-<dom-module id="vaadin-grid-view">
+<dom-module id="listing-bean-view">
     <template>
-        <vaadin-grid id="users" items="[[users]]" active-item="{{activeUser}}" style="width:100px;display:inline-block;">
-            <vaadin-grid-column>
-              <template class="header">Name</template>
-              <template>[[item.name]]</template>
-            </vaadin-grid-column>
-        </vaadin-grid>
+         <template is="dom-repeat" items="[[users]]">
+            <div on-click="handleUserClick" class="user-item">[[item.name]]</div>
+        </template>
         
-        <vaadin-grid id="messages" items="[[messages]]" active-item="{{activeMessage}}" style="width:100px;display:inline-block;">
-            <vaadin-grid-column>
-              <template class="header">Message</template>
-              <template>[[item]]</template>    
-            </vaadin-grid-column>
-        </vaadin-grid>
+        <template is="dom-repeat" items="[[messages]]">
+            <div on-click="handleMsgClick" class="msg-item">[[item]]</div>
+        </template>
         
         <label id="selected" style="display:block;">[[selected]]</label>
     </template>
     <script>
         class VaadinGridView extends Polymer.Element {
-            static get is() { return 'vaadin-grid-view' }
+            static get is() { return 'listing-bean-view' }
             
+            static get properties(){
+                return {
+                	activeUser: {
+                       type: Object,
+                       value: null,
+                       notify: true
+                   },
+                   activeMessage: {
+                       type: String,
+                       value: null,
+                       notify: true
+                   }
+                };
+           }
+            
+            handleUserClick(event){
+            	this.activeUser = event.model.item;
+            }
+            
+            handleMsgClick(event){
+                this.activeMessage = event.model.item;
+            }
         }
         customElements.define(VaadinGridView.is, VaadinGridView);
     </script>
