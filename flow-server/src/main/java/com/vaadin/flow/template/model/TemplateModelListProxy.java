@@ -102,15 +102,7 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
 
         StateNode node = TemplateModelProxyHandler.getStateNodeForProxy(object);
 
-        ModelList modelList = getModelList();
-        int size = modelList.size();
-
-        for (int i = 0; i < size; i++) {
-            if (modelList.get(i).equals(node)) {
-                return i;
-            }
-        }
-        return -1;
+        return getModelList().indexOf(node);
     }
 
     @Override
