@@ -18,9 +18,17 @@ package com.vaadin.generator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+
+import com.vaadin.generator.exception.ComponentGenerationException;
+import com.vaadin.generator.metadata.ComponentBasicType;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Class with utility methods for the code generation process.
@@ -82,9 +90,9 @@ public final class ComponentGeneratorUtils {
         boolean toTitleCase = false;
 
         for (char c : trimmed.toCharArray()) {
-            if (!Character.isJavaIdentifierPart(c) || Character
-                    .getType(c) == Character.CONNECTOR_PUNCTUATION|| Character
-                    .getType(c) == Character.END_PUNCTUATION) {
+            if (!Character.isJavaIdentifierPart(c)
+                    || Character.getType(c) == Character.CONNECTOR_PUNCTUATION
+                    || Character.getType(c) == Character.END_PUNCTUATION) {
                 toTitleCase = true;
             } else if (toTitleCase) {
                 sb.append(Character.toTitleCase(c));
@@ -175,6 +183,82 @@ public final class ComponentGeneratorUtils {
         builder.append(input.replace("\n", "\n * "));
         builder.append("\n */\n");
         return builder.toString();
+    }
+
+    public static String generateElementApiGetterForType(
+            ComponentBasicType basicType, String propertyName) {
+        switch (basicType) {
+        case STRING:
+            return String.format("return getElement().getProperty(\"%s\");",
+                    propertyName);
+        case BOOLEAN:
+            return String.format(
+                    "return getElement().getProperty(\"%s\", false);",
+                    propertyName);
+        case NUMBER:
+            return String.format(
+                    "return getElement().getProperty(\"%s\", 0.0);",
+                    propertyName);
+        case DATE:
+            return String.format("return getElement().getProperty(\"%s\");",
+                    propertyName);
+        case ARRAY:
+            return String.format(
+                    "return (JsonArray) getElement().getPropertyRaw(\"%s\");",
+                    propertyName);
+        case OBJECT:
+            return String.format(
+                    "return (JsonObject) getElement().getPropertyRaw(\"%s\");",
+                    propertyName);
+        case UNDEFINED:
+            return String.format(
+                    "return (JsonValue) getElement().getPropertyRaw(\"%s\");",
+                    propertyName);
+        default:
+            throw new IllegalArgumentException(
+                    "Not a supported type: " + basicType);
+        }
+    }
+
+    public static String generateElementApiSetterForType(
+            ComponentBasicType basicType, String propertyName) {
+        switch (basicType) {
+        case ARRAY:
+        case UNDEFINED:
+        case OBJECT:
+            return String.format("getElement().setPropertyJson(\"%s\", %s);",
+                    propertyName, propertyName);
+        case STRING:
+            // Don't insert null as property value. Insert empty String instead.
+            return String.format(
+                    "getElement().setProperty(\"%s\", %s == null ? \"\" : %s);",
+                    propertyName, propertyName, propertyName);
+        default:
+            return String.format("getElement().setProperty(\"%s\", %s);",
+                    propertyName, propertyName);
+        }
+    }
+
+    public static Class<?> toJavaType(ComponentBasicType type) {
+        switch (type) {
+        case STRING:
+            return String.class;
+        case NUMBER:
+            return double.class;
+        case BOOLEAN:
+            return boolean.class;
+        case ARRAY:
+            return JsonArray.class;
+        case DATE:
+            return Date.class;
+        case OBJECT:
+            return JsonObject.class;
+        case UNDEFINED:
+            return JsonValue.class;
+        default:
+            throw new ComponentGenerationException(
+                    "Not a supported type: " + type);
+        }
     }
 
 }
