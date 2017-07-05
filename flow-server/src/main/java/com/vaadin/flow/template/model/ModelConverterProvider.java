@@ -21,12 +21,17 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
+ * Class for providing instances of {@link ModelConverter}s for given property
+ * filters.
  * 
  * @author Vaadin Ltd
  */
 public class ModelConverterProvider implements
         Function<PropertyFilter, Optional<ModelConverter<?, ?>>> {
 
+    /**
+     * A ModelConverterProvider that always provides an empty Optional.
+     */
     public static final ModelConverterProvider EMPTY_PROVIDER = new ModelConverterProvider();
 
     private final Map<String, Class<? extends ModelConverter<?, ?>>> converters;
@@ -35,6 +40,17 @@ public class ModelConverterProvider implements
         converters = new HashMap<>();
     }
 
+    /**
+     * Composes a new ModelConverterProvider from the given
+     * ModelConverterProvider, map of converters and PropertyFilter.
+     * 
+     * @param converterProvider
+     *            the model converter provider to compose this with
+     * @param converters
+     *            map of converter paths to their corresponding class
+     * @param propertyFilter
+     *            the property filter to use
+     */
     public ModelConverterProvider(ModelConverterProvider converterProvider,
             Map<String, Class<? extends ModelConverter<?, ?>>> converters,
             PropertyFilter propertyFilter) {

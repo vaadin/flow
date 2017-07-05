@@ -142,7 +142,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         this(javaType, propertyFilter, ModelConverterProvider.EMPTY_PROVIDER);
     }
 
-    public BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
+    private BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
             ModelConverterProvider converterProvider) {
         this(javaType,
                 findProperties(javaType, propertyFilter, converterProvider));
@@ -204,7 +204,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             throw new UnsupportedOperationException(
                     "Using converters with parameterized types is not currently supported. "
                             + "Usage found in class "
-                            + declaringClass.getSimpleName());
+                            + declaringClass.getSimpleName() + " on property "
+                            + propertyName + ".");
         }
 
         if (!converter.getApplicationType().equals((Class<?>) propertyType)) {

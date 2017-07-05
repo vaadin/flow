@@ -6,25 +6,32 @@ import java.lang.reflect.Type;
 import elemental.json.JsonValue;
 
 /**
+ * A {@link ModelType} implementation that wraps a model type for performing
+ * type conversions on together with a {@link ModelConverter}.
  * 
  * @author Vaadin Ltd
  *
- * @param <T>
- * @param <C>
+ * @param <A>
+ *            application type of the converter used by this class
+ * @param <M>
+ *            model type of the converter used by this class
  */
-public class ConvertedModelType<T, C extends Serializable>
+public class ConvertedModelType<A, M extends Serializable>
         implements ModelType {
 
     private final ModelType wrappedModelType;
-    private final ModelConverter<T, C> converter;
+    private final ModelConverter<A, M> converter;
 
     /**
+     * Creates a new ConvertedModelType from the given model type and converter.
      * 
      * @param modelType
+     *            the model type to wrap
      * @param converter
+     *            the converter to use
      */
     ConvertedModelType(ModelType modelType,
-            ModelConverter<T, C> converter) {
+            ModelConverter<A, M> converter) {
         wrappedModelType = modelType;
         this.converter = converter;
     }
@@ -32,7 +39,7 @@ public class ConvertedModelType<T, C extends Serializable>
     @Override
     public Object modelToApplication(Serializable modelValue) {
         @SuppressWarnings("unchecked")
-        C wrappedApplicationValue = (C) wrappedModelType
+        M wrappedApplicationValue = (M) wrappedModelType
                 .modelToApplication(modelValue);
         return converter.toApplication(wrappedApplicationValue);
     }
@@ -47,7 +54,7 @@ public class ConvertedModelType<T, C extends Serializable>
     public Serializable applicationToModel(Object applicationValue,
             PropertyFilter filter) {
         @SuppressWarnings("unchecked")
-        C convertedValue = converter.toModel((T) applicationValue);
+        M convertedValue = converter.toModel((A) applicationValue);
         return wrappedModelType.applicationToModel(convertedValue,
                 filter);
     }

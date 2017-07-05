@@ -104,8 +104,9 @@ public class PropertyFilter implements Predicate<String> {
     }
 
     /**
+     * Get the path prefix of this property filter.
      * 
-     * @return
+     * @return the prefix string of this filter
      */
     public String getPrefix() {
         return prefix;

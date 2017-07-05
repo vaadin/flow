@@ -33,17 +33,20 @@ import com.vaadin.annotations.Convert;
  * @param <M>
  *            the type after conversion
  */
-public interface ModelConverter<A, M extends Serializable> {
+public interface ModelConverter<A, M extends Serializable>
+        extends Serializable {
 
     /**
+     * Get the application type of this converter.
      * 
-     * @return
+     * @return the application type
      */
     Class<A> getApplicationType();
 
     /**
+     * Get the model type of this converter.
      * 
-     * @return
+     * @return the model type
      */
     Class<M> getModelType();
 

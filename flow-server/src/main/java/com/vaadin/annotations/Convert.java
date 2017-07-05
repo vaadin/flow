@@ -21,9 +21,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.template.model.ModelConverter;
 
 /**
+ * Defines a ModelConverter on a template model property found through
+ * {@link #path()}.
+ * <p>
+ * Use this annotation on bean setters in your {@link TemplateModel} class to
+ * perform type conversions on bean properties.
+ * 
+ * @see ModelConverter
  * 
  * @author Vaadin Ltd
  */
@@ -33,14 +41,19 @@ import com.vaadin.flow.template.model.ModelConverter;
 public @interface Convert {
 
     /**
+     * The ModelConverter class to use for conversion of the property found
+     * through {{@link #path()}.
      * 
-     * @return
+     * @return the ModelConverter class
      */
     Class<? extends ModelConverter<?, ?>> value();
 
     /**
+     * The dot separated path to the bean property to apply conversion to, empty
+     * string by default.
      * 
-     * @return
+     * @return the dot separated path to the bean property to convert, empty
+     *         string by default
      */
     String path() default "";
 }

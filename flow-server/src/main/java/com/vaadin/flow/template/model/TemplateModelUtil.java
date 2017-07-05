@@ -169,9 +169,16 @@ public class TemplateModelUtil {
     }
 
     /**
+     * Inspects a given method for the presence of {@link Convert} annotations
+     * and returns a map containing the converter's path as a key and its class
+     * as a value.
+     * 
+     * @see Convert
+     * @see ModelConverter
      * 
      * @param method
-     * @return
+     *            the method to inspect for annotations
+     * @return a mapping from paths to ModelConverters
      */
     public static Map<String, Class<? extends ModelConverter<?, ?>>> getModelConverters(
             Method method) {
