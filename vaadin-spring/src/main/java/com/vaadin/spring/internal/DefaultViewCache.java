@@ -193,11 +193,14 @@ public class DefaultViewCache implements ViewCache {
                 beanStores.values())) {
             beanStore.destroy();
         }
-        Navigator navigator = getCurrentUI().getNavigator();
-        if (navigator instanceof SpringNavigator) {
-            // not in legacy mode
-            ((SpringNavigator) navigator)
-                    .removeViewActivationListener(listener);
+        UI currentUi = getCurrentUI();
+        if (currentUi != null) {
+            Navigator navigator = currentUi.getNavigator();
+            if (navigator instanceof SpringNavigator) {
+                // not in legacy mode
+                ((SpringNavigator) navigator)
+                        .removeViewActivationListener(listener);
+            }
         }
         Assert.isTrue(beanStores.isEmpty(),
                 "beanStores should have been emptied by the destruction callbacks");
