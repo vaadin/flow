@@ -25,7 +25,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class VaadinGridIT extends ChromeBrowserTest {
+public class BeanInListingIT extends ChromeBrowserTest {
 
     private static final class SelectedCondition
             implements ExpectedCondition<Boolean> {
@@ -55,34 +55,27 @@ public class VaadinGridIT extends ChromeBrowserTest {
     public void beanInTwoWayBinding() throws InterruptedException {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement usersTable = getInShadowRoot(template, By.id("users"));
-        clickCell(usersTable, "foo");
+        WebElement selected = getInShadowRoot(findElement(By.id("template")),
+                By.id("selected"));
 
-        WebElement selected = getInShadowRoot(template, By.id("selected"));
+        assertSelectionValue("user-item", selected, "foo");
 
-        assertSelectionValue(usersTable, selected, "foo");
+        assertSelectionValue("user-item", selected, "bar");
 
-        assertSelectionValue(usersTable, selected, "bar");
+        assertSelectionValue("msg-item", selected, "baz");
 
-        WebElement msgsTable = getInShadowRoot(template, By.id("messages"));
-
-        assertSelectionValue(msgsTable, selected, "baz");
-
-        assertSelectionValue(msgsTable, selected, "msg");
+        assertSelectionValue("msg-item", selected, "msg");
     }
 
-    private void assertSelectionValue(WebElement table, WebElement selected,
+    private void assertSelectionValue(String className, WebElement selected,
             String item) {
-        clickCell(table, item);
-        waitUntil(driver -> new SelectedCondition(selected, item));
-    }
-
-    private void clickCell(WebElement table, String cellValue) {
-        List<WebElement> cells = table
-                .findElements(By.cssSelector("vaadin-grid-cell-content"));
-
-        cells.stream().filter(element -> element.getText().equals(cellValue))
+        WebElement template = findElement(By.id("template"));
+        List<WebElement> items = findInShadowRoot(template,
+                By.className(className));
+        items.stream().filter(itemElement -> itemElement.getText().equals(item))
                 .findFirst().get().click();
+
+        waitUntil(new SelectedCondition(selected, item));
     }
+
 }
