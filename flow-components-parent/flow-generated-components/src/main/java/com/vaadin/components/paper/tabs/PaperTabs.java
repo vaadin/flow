@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.components.paper.listbox;
+package com.vaadin.components.paper.tabs;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasStyle;
@@ -34,25 +34,58 @@ import com.vaadin.ui.HasComponents;
  * Description copied from corresponding location in WebComponent:
  * 
  * Material design:
- * [Menus](https://www.google.com/design/spec/components/menus.html)
+ * [Tabs](https://www.google.com/design/spec/components/tabs.html)
  * 
- * {@code <paper-listbox>} implements an accessible listbox control with
- * Material Design styling. The focused item is highlighted, and the selected
- * item has bolded text.
+ * {@code paper-tabs} makes it easy to explore and switch between different
+ * views or functional aspects of an app, or to browse categorized data sets.
  * 
- * <paper-listbox> <paper-item>Item 1</paper-item> <paper-item>Item
- * 2</paper-item> </paper-listbox>
+ * Use {@code selected} property to get or set the selected tab.
  * 
- * An initial selection can be specified with the {@code selected} attribute.
+ * Example:
  * 
- * <paper-listbox selected="0"> <paper-item>Item 1</paper-item> <paper-item>Item
- * 2</paper-item> </paper-listbox>
+ * <paper-tabs selected="0"> <paper-tab>TAB 1</paper-tab> <paper-tab>TAB
+ * 2</paper-tab> <paper-tab>TAB 3</paper-tab> </paper-tabs>
  * 
- * Make a multi-select listbox with the {@code multi} attribute. Items in a
- * multi-select listbox can be deselected, and multiple item can be selected.
+ * See <a href="?active=paper-tab">paper-tab</a> for more information about
+ * {@code paper-tab}.
  * 
- * <paper-listbox multi> <paper-item>Item 1</paper-item> <paper-item>Item
- * 2</paper-item> </paper-listbox>
+ * A common usage for {@code paper-tabs} is to use it along with
+ * {@code iron-pages} to switch between different views.
+ * 
+ * <paper-tabs selected="{{selected}}"> <paper-tab>Tab 1</paper-tab>
+ * <paper-tab>Tab 2</paper-tab> <paper-tab>Tab 3</paper-tab> </paper-tabs>
+ * 
+ * <iron-pages selected="{{selected}}"> <div>Page 1</div> <div>Page 2</div>
+ * <div>Page 3</div> </iron-pages>
+ * 
+ * 
+ * To use links in tabs, add {@code link} attribute to {@code paper-tab} and put
+ * an {@code <a>} element in {@code paper-tab} with a {@code tabindex} of -1.
+ * 
+ * Example:
+ * 
+ * <pre>
+ * <code>
+ * &lt;style is="custom-style">
+ *   .link {
+ *     &#64;apply --layout-horizontal;
+ *     &#64;apply --layout-center-center;
+ *   }
+ * &lt;/style>
+ * 
+ * &lt;paper-tabs selected="0">
+ *   &lt;paper-tab link>
+ *     &lt;a href="#link1" class="link" tabindex="-1">TAB ONE&lt;/a>
+ *   &lt;/paper-tab>
+ *   &lt;paper-tab link>
+ *     &lt;a href="#link2" class="link" tabindex="-1">TAB TWO&lt;/a>
+ *   &lt;/paper-tab>
+ *   &lt;paper-tab link>
+ *     &lt;a href="#link3" class="link" tabindex="-1">TAB THREE&lt;/a>
+ *   &lt;/paper-tab>
+ * &lt;/paper-tabs>
+ * </code>
+ * </pre>
  * 
  * ### Styling
  * 
@@ -60,25 +93,19 @@ import com.vaadin.ui.HasComponents;
  * 
  * Custom property | Description | Default
  * ----------------|-------------|----------
- * {@code --paper-listbox-background-color} | Menu background color |
- * {@code --primary-background-color} {@code --paper-listbox-color} | Menu
- * foreground color | {@code --primary-text-color} {@code --paper-listbox} |
- * Mixin applied to the listbox | {@code
- * 
- * ### Accessibility
- * 
- * {@code <paper-listbox>} has {@code role="listbox"} by default. A multi-select
- * listbox will also have {@code aria-multiselectable} set. It implements key
- * bindings to navigate through the listbox with the up and down arrow keys, esc
- * to exit the listbox, and enter to activate a listbox item. Typing the first
- * letter of a listbox item will also focus it.
+ * {@code --paper-tabs-selection-bar-color} | Color for the selection bar |
+ * {@code --paper-yellow-a100} {@code --paper-tabs-selection-bar} | Mixin
+ * applied to the selection bar | {@code {@code --paper-tabs} | Mixin applied
+ * to the tabs | {@code {@code --paper-tabs-content} | Mixin applied to the
+ * content container of tabs | {@code {@code --paper-tabs-container} | Mixin
+ * applied to the layout container of tabs | {@code
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-listbox#2.0.0", "Flow#0.1.12-SNAPSHOT"})
-@Tag("paper-listbox")
-@HtmlImport("frontend://bower_components/paper-listbox/paper-listbox.html")
-public class PaperListbox<R extends PaperListbox<R>> extends Component
+		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+@Tag("paper-tabs")
+@HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
+public class PaperTabs<R extends PaperTabs<R>> extends Component
 		implements
 			HasStyle,
 			HasComponents {
@@ -235,11 +262,6 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * This is a CSS selector string. If this is set, only items that match the
-	 * CSS selector are selectable.
-	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
@@ -248,11 +270,6 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * This is a CSS selector string. If this is set, only items that match the
-	 * CSS selector are selectable.
-	 * 
 	 * @param selectable
 	 * @return This instance, for method chaining.
 	 */
@@ -593,6 +610,320 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
+	 * If true, ink ripple effect is disabled. When this property is changed,
+	 * all descendant {@code <paper-tab>} elements have their {@code noink}
+	 * property changed to the new value as well.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isNoink() {
+		return getElement().getProperty("noink", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, ink ripple effect is disabled. When this property is changed,
+	 * all descendant {@code <paper-tab>} elements have their {@code noink}
+	 * property changed to the new value as well.
+	 * 
+	 * @param noink
+	 * @return This instance, for method chaining.
+	 */
+	public R setNoink(boolean noink) {
+		getElement().setProperty("noink", noink);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, the bottom bar to indicate the selected tab will not be shown.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isNoBar() {
+		return getElement().getProperty("noBar", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, the bottom bar to indicate the selected tab will not be shown.
+	 * 
+	 * @param noBar
+	 * @return This instance, for method chaining.
+	 */
+	public R setNoBar(boolean noBar) {
+		getElement().setProperty("noBar", noBar);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, the slide effect for the bottom bar is disabled.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isNoSlide() {
+		return getElement().getProperty("noSlide", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, the slide effect for the bottom bar is disabled.
+	 * 
+	 * @param noSlide
+	 * @return This instance, for method chaining.
+	 */
+	public R setNoSlide(boolean noSlide) {
+		getElement().setProperty("noSlide", noSlide);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, tabs are scrollable and the tab width is based on the label
+	 * width.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isScrollable() {
+		return getElement().getProperty("scrollable", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, tabs are scrollable and the tab width is based on the label
+	 * width.
+	 * 
+	 * @param scrollable
+	 * @return This instance, for method chaining.
+	 */
+	public R setScrollable(boolean scrollable) {
+		getElement().setProperty("scrollable", scrollable);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, tabs expand to fit their container. This currently only applies
+	 * when scrollable is true.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isFitContainer() {
+		return getElement().getProperty("fitContainer", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, tabs expand to fit their container. This currently only applies
+	 * when scrollable is true.
+	 * 
+	 * @param fitContainer
+	 * @return This instance, for method chaining.
+	 */
+	public R setFitContainer(boolean fitContainer) {
+		getElement().setProperty("fitContainer", fitContainer);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, dragging on the tabs to scroll is disabled.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isDisableDrag() {
+		return getElement().getProperty("disableDrag", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, dragging on the tabs to scroll is disabled.
+	 * 
+	 * @param disableDrag
+	 * @return This instance, for method chaining.
+	 */
+	public R setDisableDrag(boolean disableDrag) {
+		getElement().setProperty("disableDrag", disableDrag);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, scroll buttons (left/right arrow) will be hidden for scrollable
+	 * tabs.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isHideScrollButtons() {
+		return getElement().getProperty("hideScrollButtons", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, scroll buttons (left/right arrow) will be hidden for scrollable
+	 * tabs.
+	 * 
+	 * @param hideScrollButtons
+	 * @return This instance, for method chaining.
+	 */
+	public R setHideScrollButtons(boolean hideScrollButtons) {
+		getElement().setProperty("hideScrollButtons", hideScrollButtons);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, the tabs are aligned to bottom (the selection bar appears at the
+	 * top).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isAlignBottom() {
+		return getElement().getProperty("alignBottom", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, the tabs are aligned to bottom (the selection bar appears at the
+	 * top).
+	 * 
+	 * @param alignBottom
+	 * @return This instance, for method chaining.
+	 */
+	public R setAlignBottom(boolean alignBottom) {
+		getElement().setProperty("alignBottom", alignBottom);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, tabs are automatically selected when focused using the keyboard.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isAutoselect() {
+		return getElement().getProperty("autoselect", false);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * If true, tabs are automatically selected when focused using the keyboard.
+	 * 
+	 * @param autoselect
+	 * @return This instance, for method chaining.
+	 */
+	public R setAutoselect(boolean autoselect) {
+		getElement().setProperty("autoselect", autoselect);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * The delay (in milliseconds) between when the user stops interacting with
+	 * the tabs through the keyboard and when the focused item is automatically
+	 * selected (if {@code autoselect} is true).
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public double getAutoselectDelay() {
+		return getElement().getProperty("autoselectDelay", 0.0);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * The delay (in milliseconds) between when the user stops interacting with
+	 * the tabs through the keyboard and when the focused item is automatically
+	 * selected (if {@code autoselect} is true).
+	 * 
+	 * @param autoselectDelay
+	 * @return This instance, for method chaining.
+	 */
+	public R setAutoselectDelay(double autoselectDelay) {
+		getElement().setProperty("autoselectDelay", autoselectDelay);
+		return getSelf();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Can be called to manually notify a resizable and its descendant
+	 * resizables of a resize change.
+	 */
+	public void notifyResize() {
+		getElement().callFunction("notifyResize");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Used to assign the closest resizable ancestor to this resizable if the
+	 * ancestor detects a request for notifications.
+	 * 
+	 * @param parentResizable
+	 */
+	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
+		getElement().callFunction("assignParentResizable", parentResizable);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Used to remove a resizable descendant from the list of descendants that
+	 * should be notified of a resize change.
+	 * 
+	 * @param target
+	 */
+	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
+		getElement().callFunction("stopResizeNotificationsFor", target);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * This method can be overridden to filter nested elements that should or
+	 * should not be notified by the current element. Return true if an element
+	 * should be notified, or false if it should not be notified.
+	 * 
+	 * @param element
+	 * @return It would return a boolean
+	 */
+	@NotSupported
+	protected void resizerShouldNotify(elemental.json.JsonObject element) {
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
 	 * Returns the index of the given item.
 	 * 
 	 * @param item
@@ -711,8 +1042,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	@DomEvent("iron-activate")
-	public static class IronActivateEvent extends ComponentEvent<PaperListbox> {
-		public IronActivateEvent(PaperListbox source, boolean fromClient) {
+	public static class IronActivateEvent extends ComponentEvent<PaperTabs> {
+		public IronActivateEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -723,8 +1054,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	@DomEvent("iron-deselect")
-	public static class IronDeselectEvent extends ComponentEvent<PaperListbox> {
-		public IronDeselectEvent(PaperListbox source, boolean fromClient) {
+	public static class IronDeselectEvent extends ComponentEvent<PaperTabs> {
+		public IronDeselectEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -735,10 +1066,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	@DomEvent("iron-items-changed")
-	public static class IronItemsChangedEvent
-			extends
-				ComponentEvent<PaperListbox> {
-		public IronItemsChangedEvent(PaperListbox source, boolean fromClient) {
+	public static class IronItemsChangedEvent extends ComponentEvent<PaperTabs> {
+		public IronItemsChangedEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -749,8 +1078,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	@DomEvent("iron-select")
-	public static class IronSelectEvent extends ComponentEvent<PaperListbox> {
-		public IronSelectEvent(PaperListbox source, boolean fromClient) {
+	public static class IronSelectEvent extends ComponentEvent<PaperTabs> {
+		public IronSelectEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -761,10 +1090,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	@DomEvent("selected-changed")
-	public static class SelectedChangedEvent
-			extends
-				ComponentEvent<PaperListbox> {
-		public SelectedChangedEvent(PaperListbox source, boolean fromClient) {
+	public static class SelectedChangedEvent extends ComponentEvent<PaperTabs> {
+		public SelectedChangedEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -777,8 +1104,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	@DomEvent("selected-item-changed")
 	public static class SelectedItemChangedEvent
 			extends
-				ComponentEvent<PaperListbox> {
-		public SelectedItemChangedEvent(PaperListbox source, boolean fromClient) {
+				ComponentEvent<PaperTabs> {
+		public SelectedItemChangedEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -789,8 +1116,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	}
 
 	@DomEvent("items-changed")
-	public static class ItemsChangedEvent extends ComponentEvent<PaperListbox> {
-		public ItemsChangedEvent(PaperListbox source, boolean fromClient) {
+	public static class ItemsChangedEvent extends ComponentEvent<PaperTabs> {
+		public ItemsChangedEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -803,9 +1130,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	@DomEvent("selected-values-changed")
 	public static class SelectedValuesChangedEvent
 			extends
-				ComponentEvent<PaperListbox> {
-		public SelectedValuesChangedEvent(PaperListbox source,
-				boolean fromClient) {
+				ComponentEvent<PaperTabs> {
+		public SelectedValuesChangedEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
@@ -818,8 +1144,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	@DomEvent("selected-items-changed")
 	public static class SelectedItemsChangedEvent
 			extends
-				ComponentEvent<PaperListbox> {
-		public SelectedItemsChangedEvent(PaperListbox source, boolean fromClient) {
+				ComponentEvent<PaperTabs> {
+		public SelectedItemsChangedEvent(PaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}

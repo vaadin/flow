@@ -23,6 +23,7 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -524,18 +525,47 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 		getElement().callFunction("animate");
 	}
 
+	/**
+	 * Class that encapsulates the data received on the "detail" property of
+	 * @{link TransitionendEvent} events, from the @{link PaperRipple}
+	 * component.
+	 */
+	public static class TransitionendDetail implements JsonSerializable {
+		private JsonObject internalObject;
+
+		public JsonObject getNode() {
+			return internalObject.getObject("node");
+		}
+
+		public TransitionendDetail setNode(elemental.json.JsonObject node) {
+			this.internalObject.put("node", node);
+			return this;
+		}
+
+		@Override
+		public JsonObject toJson() {
+			return internalObject;
+		}
+
+		@Override
+		public TransitionendDetail fromJson(elemental.json.JsonObject value) {
+			internalObject = value;
+			return this;
+		}
+	}
+
 	@DomEvent("transitionend")
 	public static class TransitionendEvent extends ComponentEvent<PaperRipple> {
 		private final JsonObject detail;
 
 		public TransitionendEvent(PaperRipple source, boolean fromClient,
-				@EventData("event.detail") JsonObject detail) {
+				@EventData("event.detail") elemental.json.JsonObject detail) {
 			super(source, fromClient);
 			this.detail = detail;
 		}
 
-		public JsonObject getDetail() {
-			return detail;
+		public TransitionendDetail getDetail() {
+			return new TransitionendDetail().fromJson(detail);
 		}
 	}
 

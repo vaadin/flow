@@ -1061,7 +1061,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		private final String detailValue;
 
 		public ValueChangedEvent(VaadinComboBox source, boolean fromClient,
-				@EventData("event.detail") JsonObject detail,
+				@EventData("event.detail") elemental.json.JsonObject detail,
 				@EventData("event.detail.value") java.lang.String detailValue) {
 			super(source, fromClient);
 			this.detail = detail;
@@ -1150,7 +1150,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 		public SelectedItemChangedEvent(
 				VaadinComboBox source,
 				boolean fromClient,
-				@EventData("event.detail") JsonObject detail,
+				@EventData("event.detail") elemental.json.JsonObject detail,
 				@EventData("event.detail.value") elemental.json.JsonObject detailValue) {
 			super(source, fromClient);
 			this.detail = detail;

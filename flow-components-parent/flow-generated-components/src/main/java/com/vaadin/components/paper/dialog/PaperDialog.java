@@ -1013,7 +1013,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 		private final JsonObject event;
 
 		public IronOverlayCanceledEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") JsonObject event) {
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}
@@ -1035,7 +1035,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 		private final JsonObject event;
 
 		public IronOverlayClosedEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") JsonObject event) {
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}

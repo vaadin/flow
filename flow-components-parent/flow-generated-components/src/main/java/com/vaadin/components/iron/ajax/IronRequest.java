@@ -23,6 +23,7 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -339,7 +340,98 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void send() {
+	protected void send(SendOptions options) {
+	}
+
+	/**
+	 * Class that encapsulates the data to be sent to the
+	 * {@link IronRequest#send(SendOptions)} method.
+	 */
+	public static class SendOptions implements JsonSerializable {
+		private JsonObject internalObject;
+
+		public String getUrl() {
+			return internalObject.getString("url");
+		}
+
+		public SendOptions setUrl(java.lang.String url) {
+			this.internalObject.put("url", url);
+			return this;
+		}
+
+		public String getMethod() {
+			return internalObject.getString("method");
+		}
+
+		public SendOptions setMethod(java.lang.String method) {
+			this.internalObject.put("method", method);
+			return this;
+		}
+
+		public boolean isAsync() {
+			return internalObject.getBoolean("async");
+		}
+
+		public SendOptions setAsync(boolean async) {
+			this.internalObject.put("async", async);
+			return this;
+		}
+
+		public JsonObject getBody() {
+			return internalObject.getObject("body");
+		}
+
+		public SendOptions setBody(elemental.json.JsonObject body) {
+			this.internalObject.put("body", body);
+			return this;
+		}
+
+		public JsonObject getHeaders() {
+			return internalObject.getObject("headers");
+		}
+
+		public SendOptions setHeaders(elemental.json.JsonObject headers) {
+			this.internalObject.put("headers", headers);
+			return this;
+		}
+
+		public String getHandleAs() {
+			return internalObject.getString("handleAs");
+		}
+
+		public SendOptions setHandleAs(java.lang.String handleAs) {
+			this.internalObject.put("handleAs", handleAs);
+			return this;
+		}
+
+		public String getJsonPrefix() {
+			return internalObject.getString("jsonPrefix");
+		}
+
+		public SendOptions setJsonPrefix(java.lang.String jsonPrefix) {
+			this.internalObject.put("jsonPrefix", jsonPrefix);
+			return this;
+		}
+
+		public boolean isWithCredentials() {
+			return internalObject.getBoolean("withCredentials");
+		}
+
+		public SendOptions setWithCredentials(boolean withCredentials) {
+			this.internalObject.put("withCredentials", withCredentials);
+			return this;
+		}
+
+		@Override
+		public JsonObject toJson() {
+			return internalObject;
+		}
+
+		@Override
+		public SendOptions fromJson(elemental.json.JsonObject value) {
+			internalObject = value;
+			return this;
+		}
 	}
 
 	/**

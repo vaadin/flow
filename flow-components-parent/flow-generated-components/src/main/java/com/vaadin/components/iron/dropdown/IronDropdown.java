@@ -1333,7 +1333,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 		private final JsonObject event;
 
 		public IronOverlayCanceledEvent(IronDropdown source,
-				boolean fromClient, @EventData("event.event") JsonObject event) {
+				boolean fromClient,
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}
@@ -1355,7 +1356,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 		private final JsonObject event;
 
 		public IronOverlayClosedEvent(IronDropdown source, boolean fromClient,
-				@EventData("event.event") JsonObject event) {
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}
