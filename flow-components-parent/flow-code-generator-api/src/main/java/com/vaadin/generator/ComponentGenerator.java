@@ -532,8 +532,7 @@ public class ComponentGenerator {
                 && !property.getObjectType().isEmpty()) {
 
             JavaClassSource nestedClass = generateNestedPojo(javaClass,
-                    property.getObjectType(),
-                    property.getName() + "-" + "property",
+                    property.getObjectType(), property.getName() + "-property",
                     String.format(
                             "Class that encapsulates the data of the \"%s\" property in the {@link %s} component.",
                             property.getName(), javaClass.getName()));
@@ -641,7 +640,7 @@ public class ComponentGenerator {
             // to get the name
             String nestedClassName = ComponentGeneratorUtils
                     .generateValidJavaClassName(
-                            property.getName() + "-" + "property");
+                            property.getName() + "-property");
 
             MethodSource<JavaClassSource> method = javaClass.addMethod()
                     .setPublic();
@@ -768,45 +767,65 @@ public class ComponentGenerator {
 
             List<ComponentObjectType> objectTypes = param.getObjectType();
             if (objectTypes != null && !objectTypes.isEmpty()) {
-                String nameHint = function.getName() + "-" + param.getName();
-                JavaClassSource nestedClass = generateNestedPojo(javaClass,
-                        objectTypes, nameHint,
-                        String.format(
-                                "Class that encapsulates the data to be sent to the {@link %s#%s(%s)} method.",
-                                javaClass.getName(), method.getName(),
-                                ComponentGeneratorUtils
-                                        .generateValidJavaClassName(nameHint)));
-
-                method.addParameter(nestedClass, formattedName);
+                generateFunctionParameterForComplexType(javaClass, function,
+                        method, formattedName, param);
                 params.append(", ").append(formattedName).append(".toJson()");
             } else {
-                List<ComponentBasicType> typeVariants = param.getType();
-                boolean useTypePostfixForVariableName = typeVariants.size() > 1;
-
-                // there might be multiple types accepted for same parameter,
-                // for now different types are allowed and parameter name is
-                // postfixed with type
-                for (ComponentBasicType basicType : typeVariants) {
-
-                    if (useTypePostfixForVariableName) {
-                        formattedName = formattedName + StringUtils
-                                .capitalize(basicType.name().toLowerCase());
-                    }
-
-                    method.addParameter(
-                            ComponentGeneratorUtils.toJavaType(basicType),
-                            formattedName);
-                    params.append(", ").append(formattedName);
-
-                    method.getJavaDoc().addTagValue(JAVADOC_PARAM,
-                            param.getName() + (useTypePostfixForVariableName
-                                    ? " can be <code>null</code>"
-                                    : ""));
-                }
+                generateFunctionParameterForBasicTypes(javaClass, method,
+                        formattedName, param).forEach(
+                                name -> params.append(", ").append(name));
             }
-
         }
         return params.toString();
+    }
+
+    private void generateFunctionParameterForComplexType(
+            JavaClassSource javaClass, ComponentFunctionData function,
+            MethodSource<JavaClassSource> method, String formattedName,
+            ComponentFunctionParameterData param) {
+
+        String nameHint = function.getName() + "-" + param.getName();
+        JavaClassSource nestedClass = generateNestedPojo(javaClass,
+                param.getObjectType(), nameHint,
+                String.format(
+                        "Class that encapsulates the data to be sent to the {@link %s#%s(%s)} method.",
+                        javaClass.getName(), method.getName(),
+                        ComponentGeneratorUtils
+                                .generateValidJavaClassName(nameHint)));
+
+        method.addParameter(nestedClass, formattedName);
+    }
+
+    private List<String> generateFunctionParameterForBasicTypes(
+            JavaClassSource javaClass, MethodSource<JavaClassSource> method,
+            String formattedName, ComponentFunctionParameterData param) {
+
+        List<ComponentBasicType> typeVariants = param.getType();
+        boolean useTypePostfixForVariableName = typeVariants.size() > 1;
+        List<String> finalNames = new ArrayList<>(typeVariants.size());
+
+        // there might be multiple types accepted for same parameter,
+        // for now different types are allowed and parameter name is
+        // postfixed with type
+        for (ComponentBasicType basicType : typeVariants) {
+
+            String finalName = formattedName;
+
+            if (useTypePostfixForVariableName) {
+                finalName = formattedName + StringUtils
+                        .capitalize(basicType.name().toLowerCase());
+            }
+
+            method.addParameter(ComponentGeneratorUtils.toJavaType(basicType),
+                    finalName);
+
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                    param.getName() + (useTypePostfixForVariableName
+                            ? " can be <code>null</code>"
+                            : ""));
+            finalNames.add(finalName);
+        }
+        return finalNames;
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,

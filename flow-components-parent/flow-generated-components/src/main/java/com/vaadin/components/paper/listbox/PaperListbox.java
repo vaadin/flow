@@ -614,8 +614,8 @@ public class PaperListbox<R extends PaperListbox<R>> extends Component
 	 * @param value
 	 *            can be <code>null</code>
 	 */
-	public void select(java.lang.String valueString, double valueStringNumber) {
-		getElement().callFunction("select", valueString, valueStringNumber);
+	public void select(java.lang.String valueString, double valueNumber) {
+		getElement().callFunction("select", valueString, valueNumber);
 	}
 
 	/**

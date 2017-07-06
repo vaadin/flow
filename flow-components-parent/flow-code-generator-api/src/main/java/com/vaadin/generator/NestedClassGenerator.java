@@ -207,7 +207,7 @@ public class NestedClassGenerator {
                 return ComponentBasicType.OBJECT;
             }
             return ComponentBasicType.UNDEFINED;
-        }).get();
+        }).orElse(ComponentBasicType.UNDEFINED);
     }
 
 }
