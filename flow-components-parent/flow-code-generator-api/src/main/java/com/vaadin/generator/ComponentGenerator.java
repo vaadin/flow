@@ -771,8 +771,8 @@ public class ComponentGenerator {
                         method, formattedName, param);
                 params.append(", ").append(formattedName).append(".toJson()");
             } else {
-                generateFunctionParameterForBasicTypes(javaClass, method,
-                        formattedName, param).forEach(
+                generateFunctionParameterForBasicTypes(method, formattedName,
+                        param).forEach(
                                 name -> params.append(", ").append(name));
             }
         }
@@ -797,8 +797,8 @@ public class ComponentGenerator {
     }
 
     private List<String> generateFunctionParameterForBasicTypes(
-            JavaClassSource javaClass, MethodSource<JavaClassSource> method,
-            String formattedName, ComponentFunctionParameterData param) {
+            MethodSource<JavaClassSource> method, String formattedName,
+            ComponentFunctionParameterData param) {
 
         List<ComponentBasicType> typeVariants = param.getType();
         boolean useTypePostfixForVariableName = typeVariants.size() > 1;
