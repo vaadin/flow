@@ -65,12 +65,12 @@ public class ModelConverterProvider implements
 
     private void putConverter(String path,
             Class<? extends ModelConverter<?, ?>> converterClass) {
-        StringBuilder sb = new StringBuilder(pathPrefix);
+        StringBuilder pathStringBuilder = new StringBuilder(pathPrefix);
         if (!path.isEmpty()) {
-            sb.append(path);
-            sb.append('.');
+            pathStringBuilder.append(path);
+            pathStringBuilder.append('.');
         }
-        converters.put(sb.toString(), converterClass);
+        converters.put(pathStringBuilder.toString(), converterClass);
     }
 
     @Override
@@ -82,10 +82,11 @@ public class ModelConverterProvider implements
                 .get(propertyFilter.getPrefix());
         try {
             return Optional.of(converterClass.newInstance());
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException exception) {
             throw new RuntimeException(
                     "ModelConverter '" + converterClass.getSimpleName()
-                            + "' does not implement an accessible default constructor.");
+                            + "' does not implement an accessible default constructor.",
+                    exception);
         }
     }
 }
