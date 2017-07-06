@@ -28,6 +28,7 @@ import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
+import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.ui.HasClickListeners;
@@ -576,8 +577,7 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        // remove indentation
-        generatedClass = generatedClass.replaceAll("\\s\\s+", " ");
+        generatedClass = removeIndentation(generatedClass);
 
         Assert.assertTrue(
                 "Wrong getter definition. It should contains @Synchronize(property = \"somepropery\", value = \"someproperty-changed\")",
@@ -658,5 +658,125 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "The generated class should contain the \"removeAll\" method",
                 generatedClass.contains("public void removeAll("));
+    }
+
+    @Test
+    public void classContainsObjectProperty_generatedClassContainsInnerClass() {
+        // note: the tests for the inner class are covered by the
+        // NestedClassGeneratorTest
+        ComponentObjectType stringObjectType = new ComponentObjectType();
+        stringObjectType.setName("internalString");
+        stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
+
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("something");
+        property.setObjectType(Arrays.asList(stringObjectType));
+
+        componentMetadata.setProperties(Arrays.asList(property));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        Assert.assertTrue(
+                "Generated class should contain the SomethingProperty inner class",
+                generatedClass.contains(
+                        "public static class SomethingProperty implements JsonSerializable"));
+
+        Assert.assertTrue(
+                "Generated class should contain the getSomething method",
+                generatedClass
+                        .contains("public SomethingProperty getSomething()"));
+
+        Assert.assertTrue(
+                "Generated class should contain the setSomething method",
+                generatedClass.contains(
+                        "public R setSomething(SomethingProperty property)"));
+    }
+
+    @Test
+    public void classContainsMethodWithObjectParameter_generatedClassContainsInnerClass() {
+        // note: the tests for the inner class are covered by the
+        // NestedClassGeneratorTest
+        ComponentObjectType stringObjectType = new ComponentObjectType();
+        stringObjectType.setName("internalString");
+        stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
+
+        ComponentFunctionParameterData parameter = new ComponentFunctionParameterData();
+        parameter.setName("somethingParam");
+        parameter.setObjectType(Arrays.asList(stringObjectType));
+
+        ComponentFunctionData function = new ComponentFunctionData();
+        function.setName("callSomething");
+        function.setParameters(Arrays.asList(parameter));
+
+        componentMetadata.setMethods(Arrays.asList(function));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        Assert.assertTrue(
+                "Generated class should contain the CallSomethingSomethingParam inner class",
+                generatedClass.contains(
+                        "public static class CallSomethingSomethingParam implements JsonSerializable"));
+
+        Assert.assertTrue(
+                "Generated class should contain the callSomething method",
+                generatedClass.contains(
+                        "public void callSomething(CallSomethingSomethingParam somethingParam)"));
+    }
+
+    @Test
+    public void classContainsEventWithObjectParameter_generatedClassContainsInnerClass() {
+        // note: the tests for the inner class are covered by the
+        // NestedClassGeneratorTest
+        ComponentObjectType stringObjectType = new ComponentObjectType();
+        stringObjectType.setName("internalString");
+        stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
+
+        ComponentPropertyBaseData eventData = new ComponentPropertyBaseData();
+        eventData.setName("details");
+        eventData.setObjectType(Arrays.asList(stringObjectType));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("something-changed");
+        event.setProperties(Arrays.asList(eventData));
+
+        componentMetadata.setEvents(Arrays.asList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        Assert.assertTrue(
+                "Generated class should contain the SomethingChangedDetails inner class",
+                generatedClass.contains(
+                        "public static class SomethingChangedDetails implements JsonSerializable"));
+
+        Assert.assertTrue(
+                "Generated class should contain the addSomethingChangedListener method",
+                generatedClass.contains(
+                        "public Registration addSomethingChangedListener( ComponentEventListener<SomethingChangedEvent> listener)"));
+
+        int indexOfEventDeclaration = generatedClass.indexOf(
+                "public static class SomethingChangedEvent extends ComponentEvent<MyComponent> {");
+        int endIndexOfEventDeclaration = generatedClass.indexOf("} }",
+                indexOfEventDeclaration);
+        String eventDeclaration = generatedClass.substring(
+                indexOfEventDeclaration, endIndexOfEventDeclaration + 3);
+
+        Assert.assertTrue(
+                "Generated event should contain the getDetails method",
+                eventDeclaration.contains(
+                        "public SomethingChangedDetails getDetails() { return new SomethingChangedDetails().fromJson(details); } }"));
+
+    }
+
+    private String removeIndentation(String sourceCode) {
+        return sourceCode.replaceAll("\\s\\s+", " ");
     }
 }

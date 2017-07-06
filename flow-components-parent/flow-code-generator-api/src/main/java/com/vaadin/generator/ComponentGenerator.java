@@ -676,18 +676,20 @@ public class ComponentGenerator {
 
                 Class<?> setterType = ComponentGeneratorUtils
                         .toJavaType(basicType);
-                method.addParameter(setterType, property.getName());
+
+                String parameterName = ComponentGeneratorUtils
+                        .formatStringToValidJavaIdentifier(property.getName());
+                method.addParameter(setterType, parameterName);
 
                 method.setBody(
                         ComponentGeneratorUtils.generateElementApiSetterForType(
-                                basicType, property.getName()));
+                                basicType, property.getName(), parameterName));
 
                 if (StringUtils.isNotEmpty(property.getDescription())) {
                     addJavaDoc(property.getDescription(), method.getJavaDoc());
                 }
 
-                method.getJavaDoc().addTagValue(JAVADOC_PARAM,
-                        property.getName());
+                method.getJavaDoc().addTagValue(JAVADOC_PARAM, parameterName);
 
                 if (fluentSetters) {
                     addFluentReturnToSetter(method);

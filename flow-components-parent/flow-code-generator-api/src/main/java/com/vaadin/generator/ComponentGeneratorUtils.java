@@ -19,10 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 
@@ -34,6 +37,18 @@ import elemental.json.JsonValue;
  * Class with utility methods for the code generation process.
  */
 public final class ComponentGeneratorUtils {
+
+    private static final Set<String> JAVA_RESERVED_WORDS = new HashSet<>(
+            Arrays.asList("abstract", "assert", "boolean", "break", "byte",
+                    "case", "catch", "char", "class", "const", "default", "do",
+                    "double", "else", "enum", "extends", "false", "final",
+                    "finally", "float", "for", "goto", "if", "implements",
+                    "import", "instanceof", "int", "interface", "long",
+                    "native", "new", "null", "package", "private", "protected",
+                    "public", "return", "short", "static", "strictfp", "super",
+                    "switch", "synchronized", "this", "throw", "throws",
+                    "transient", "true", "try", "void", "volatile", "while",
+                    "continue"));
 
     private ComponentGeneratorUtils() {
     }
@@ -65,22 +80,43 @@ public final class ComponentGeneratorUtils {
     public static String generateMethodNameForProperty(String prefix,
             String propertyName) {
         assert prefix != null : "prefix should not be null";
-        return prefix + StringUtils
-                .capitalize(formatStringToValidJavaIdentifier(propertyName));
+        return prefix + StringUtils.capitalize(
+                formatStringToValidJavaIdentifier(propertyName, true));
+    }
+
+    /**
+     * Same as calling
+     * {@link #formatStringToValidJavaIdentifier(String, boolean)} with
+     * <code>false</code> - not ignoring Java reserved words.
+     * 
+     * @param name
+     *            The name of the property that would be exposed to Java code.
+     * @return A valid Java identifier based on the input name.
+     */
+    public static String formatStringToValidJavaIdentifier(String name) {
+        return formatStringToValidJavaIdentifier(name, false);
     }
 
     /**
      * Formats a given name (which can be a property name, function name or
      * event name) to a valid Java identifier.
+     * <p>
+     * If the end result is a Java reserved word, and the flag
+     * <code>ignoreReservedWords</code> is <code>false</code>, the identifier is
+     * suffixed with the <code>_</code> character.
      * 
      * @param name
      *            The name of the property that would be exposed to Java code.
+     * @param ignoreReservedWords
+     *            <code>true</code> to ignore Java reserved words, such as "if"
+     *            and "for", <code>false</code> otherwise.
      * @return A valid Java identifier based on the input name.
      * 
      * @see Character#isJavaIdentifierStart(char)
      * @see Character#isJavaIdentifierPart(char)
      */
-    public static String formatStringToValidJavaIdentifier(String name) {
+    public static String formatStringToValidJavaIdentifier(String name,
+            boolean ignoreReservedWords) {
         String trimmed = name.trim();
         StringBuilder sb = new StringBuilder();
         if (!Character.isJavaIdentifierStart(trimmed.charAt(0))) {
@@ -101,7 +137,14 @@ public final class ComponentGeneratorUtils {
                 sb.append(c);
             }
         }
-        return sb.toString();
+
+        String identifier = sb.toString();
+
+        if (!ignoreReservedWords && JAVA_RESERVED_WORDS.contains(identifier)) {
+            return identifier + "_";
+        }
+
+        return identifier;
     }
 
     /**
@@ -185,6 +228,16 @@ public final class ComponentGeneratorUtils {
         return builder.toString();
     }
 
+    /**
+     * Generates a code snippet that uses the {@link Element} API to retrieve
+     * properties from the client model.
+     * 
+     * @param basicType
+     *            The javascript basic type of the property.
+     * @param propertyName
+     *            The name of the property in the javascript model.
+     * @return the code snippet ready to be added in a Java source code.
+     */
     public static String generateElementApiGetterForType(
             ComponentBasicType basicType, String propertyName) {
         switch (basicType) {
@@ -215,30 +268,50 @@ public final class ComponentGeneratorUtils {
                     "return (JsonValue) getElement().getPropertyRaw(\"%s\");",
                     propertyName);
         default:
-            throw new IllegalArgumentException(
-                    "Not a supported type: " + basicType);
+            throw new ComponentGenerationException(
+                    "Not a supported type for getters: " + basicType);
         }
     }
 
+    /**
+     * Generates a code snippet that uses the {@link Element} API to set
+     * properties to the client model.
+     * 
+     * @param basicType
+     *            The javascript basic type of the property.
+     * @param propertyName
+     *            The name of the property in the javascript model.
+     * @param parameterName
+     *            The name of the parameter in the Java source code.
+     * @return the code snippet ready to be added in a Java source code.
+     */
     public static String generateElementApiSetterForType(
-            ComponentBasicType basicType, String propertyName) {
+            ComponentBasicType basicType, String propertyName,
+            String parameterName) {
         switch (basicType) {
         case ARRAY:
         case UNDEFINED:
         case OBJECT:
             return String.format("getElement().setPropertyJson(\"%s\", %s);",
-                    propertyName, propertyName);
+                    propertyName, parameterName);
         case STRING:
             // Don't insert null as property value. Insert empty String instead.
             return String.format(
                     "getElement().setProperty(\"%s\", %s == null ? \"\" : %s);",
-                    propertyName, propertyName, propertyName);
+                    propertyName, parameterName, parameterName);
         default:
             return String.format("getElement().setProperty(\"%s\", %s);",
-                    propertyName, propertyName);
+                    propertyName, parameterName);
         }
     }
 
+    /**
+     * Converts a javascript basic type to a Java type.
+     * 
+     * @param type
+     *            The javascript basic type.
+     * @return the corresponding Java type.
+     */
     public static Class<?> toJavaType(ComponentBasicType type) {
         switch (type) {
         case STRING:
