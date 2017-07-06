@@ -28,8 +28,8 @@ import com.vaadin.flow.template.model.ModelConverter;
  * Defines a ModelConverter on a template model property found through
  * {@link #path()}.
  * <p>
- * Use this annotation on bean setters in your {@link TemplateModel} class to
- * perform type conversions on bean properties.
+ * Use this annotation on setters in your {@link TemplateModel} class to perform
+ * type conversions on properties.
  * 
  * @see ModelConverter
  * 
@@ -49,8 +49,9 @@ public @interface Convert {
     Class<? extends ModelConverter<?, ?>> value();
 
     /**
-     * The dot separated path to the bean property to apply conversion to, empty
-     * string by default.
+     * The dot separated path from the TemplateModel property to the value to
+     * apply conversion to. Empty string by default, which will apply conversion
+     * directly to the property.
      * 
      * @return the dot separated path to the bean property to convert, empty
      *         string by default

@@ -36,8 +36,11 @@ public class ModelConverterProvider implements
 
     private final Map<String, Class<? extends ModelConverter<?, ?>>> converters;
 
+    private final String pathPrefix;
+
     private ModelConverterProvider() {
         converters = new HashMap<>();
+        pathPrefix = "";
     }
 
     /**
@@ -56,11 +59,18 @@ public class ModelConverterProvider implements
             PropertyFilter propertyFilter) {
         this.converters = new HashMap<>();
         this.converters.putAll(converterProvider.converters);
-        converters.entrySet()
-                .forEach(entry -> this.converters.put(
-                        propertyFilter.getPrefix() + entry.getKey()
-                                + (entry.getKey().isEmpty() ? "" : "."),
-                        entry.getValue()));
+        pathPrefix = propertyFilter.getPrefix();
+        converters.forEach(this::putConverter);
+    }
+
+    private void putConverter(String path,
+            Class<? extends ModelConverter<?, ?>> converterClass) {
+        StringBuilder sb = new StringBuilder(pathPrefix);
+        if (!path.isEmpty()) {
+            sb.append(path);
+            sb.append('.');
+        }
+        converters.put(sb.toString(), converterClass);
     }
 
     @Override
@@ -74,8 +84,8 @@ public class ModelConverterProvider implements
             return Optional.of(converterClass.newInstance());
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(
-                    "ModelConverter " + converterClass.getSimpleName()
-                            + " does not implement an accessible default constructor.");
+                    "ModelConverter '" + converterClass.getSimpleName()
+                            + "' does not implement an accessible default constructor.");
         }
     }
 }

@@ -71,22 +71,21 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
                     propertyName, filterProvider.apply(method));
 
-            converterProvider = new ModelConverterProvider(converterProvider,
+            ModelConverterProvider newConverterProvider = new ModelConverterProvider(
+                    converterProvider,
                     TemplateModelUtil.getModelConverters(method), innerFilter);
 
             ModelType propertyType;
-            Optional<ModelConverter<?, ?>> optionalConverter = converterProvider
-                    .apply(innerFilter);
-            if (optionalConverter.isPresent()) {
+            if (newConverterProvider.apply(innerFilter).isPresent()) {
                 propertyType = getConvertedModelType(
                         ReflectTools.getPropertyType(method), innerFilter,
                         propertyName, method.getDeclaringClass(),
-                        optionalConverter.get(), converterProvider);
+                        newConverterProvider);
             } else {
                 propertyType = getModelType(
                         ReflectTools.getPropertyType(method), innerFilter,
                         propertyName, method.getDeclaringClass(),
-                        converterProvider);
+                        newConverterProvider);
             }
 
             properties.put(propertyName, propertyType);
@@ -148,7 +147,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 findProperties(javaType, propertyFilter, converterProvider));
     }
 
-    protected static Map<String, ModelType> findProperties(Class<?> javaType,
+    private static Map<String, ModelType> findProperties(Class<?> javaType,
             PropertyFilter propertyFilter,
             ModelConverterProvider converterProvider) {
         assert javaType != null;
@@ -194,25 +193,25 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 + propertyName + ". " + ModelType.getSupportedTypesString());
     }
 
-    private static <A, M extends Serializable> ModelType getConvertedModelType(
+    private static ModelType getConvertedModelType(
             Type propertyType, PropertyFilter propertyFilter,
             String propertyName, Class<?> declaringClass,
-            ModelConverter<A, M> converter,
             ModelConverterProvider converterProvider) {
 
         if (!(propertyType instanceof Class<?>)) {
             throw new UnsupportedOperationException(
                     "Using converters with parameterized types is not currently supported. "
-                            + "Usage found in class "
-                            + declaringClass.getSimpleName() + " on property "
-                            + propertyName + ".");
+                            + "Usage found in class '"
+                            + declaringClass.getSimpleName() + "' on property '"
+                            + propertyName + "'.");
         }
 
+        ModelConverter<?, ?> converter = converterProvider.apply(propertyFilter).get();
         if (!converter.getApplicationType().equals((Class<?>) propertyType)) {
             throw new InvalidTemplateModelException(
-                    "Converter " + converter.getClass().getName()
-                            + " is incompatible with the type "
-                            + propertyType.getTypeName() + ".");
+                    "Converter '" + converter.getClass().getName()
+                            + "' is incompatible with the type '"
+                            + propertyType.getTypeName() + "'.");
         }
 
         if (isBean(converter.getModelType())) {
@@ -226,10 +225,14 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             if (maybeBasicModelType.isPresent()) {
                 return new ConvertedModelType<>(maybeBasicModelType.get(),
                         converter);
-            } else {
-                return new ConvertedBasicModelType<>(converter);
             }
         }
+
+        throw new InvalidTemplateModelException("Converter '"
+                + converter.getClass().getName()
+                + "' implements an unsupported model type. Used in class "
+                + declaringClass.getSimpleName() + " with property named "
+                + propertyName + ". " + ModelType.getSupportedTypesString());
     }
 
     private static ModelType getListModelType(Type propertyType,

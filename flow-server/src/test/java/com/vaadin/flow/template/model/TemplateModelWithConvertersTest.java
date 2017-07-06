@@ -99,76 +99,34 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
-    @Before
-    public void setUp() {
-        Assert.assertNull(VaadinService.getCurrent());
-        VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        VaadinService.setCurrent(service);
-    }
+    public static class TemplateWithConverterOnConvertedType extends
+            EmptyDivTemplate<TemplateWithConverterOnConvertedType.TemplateModelWithConverterOnConvertedType> {
+        public interface TemplateModelWithConverterOnConvertedType extends TemplateModel {
 
-    @After
-    public void tearDown() {
-        VaadinService.setCurrent(null);
-    }
+            @Convert(value = LongToBeanWithLongConverter.class)
+            @Convert(value = LongToStringConverter.class, path = "longValue")
+            public void setLongValue(long longValue);
+            public long getLongValue();
+        }
 
-    @Test
-    public void unsupported_primitive_type_to_basic_type_converter() {
-        TemplateWithConverters template = new TemplateWithConverters();
-        template.getModel().setLongValue(10L);
-        Assert.assertEquals(10L, template.getModel().getLongValue());
+        @Override
+        protected TemplateModelWithConverterOnConvertedType getModel() {
+            return super.getModel();
+        }
     }
-
-    @Test
-    public void bean_to_basic_type_converter() {
-        TemplateWithConverters template = new TemplateWithConverters();
-        Date date = new Date();
-        template.getModel().setDate(date);
-        Assert.assertEquals(date, template.getModel().getDate());
-    }
-
-    @Test
-    public void bean_to_bean_converter() {
-        TemplateWithConverters template = new TemplateWithConverters();
-        Date date = new Date();
-        template.getModel().setDateString(date);
-        Assert.assertEquals(date, template.getModel().getDateString());
-    }
-
-    @Test
-    public void basic_type_to_bean_converter() {
-        TemplateWithConverters template = new TemplateWithConverters();
-        template.getModel().setString("string to bean");
-        Assert.assertEquals("string to bean", template.getModel().getString());
-    }
-
-    @Test
-    public void bean_with_multiple_converters() {
-        TemplateWithConverters template = new TemplateWithConverters();
-        Date date = new Date();
-        TestBean bean = new TestBean(10L, date);
-        template.getModel().setTestBean(bean);
-        Assert.assertEquals(10L, template.getModel().getTestBean().getLongValue());
-        Assert.assertEquals(date, template.getModel().getTestBean().getDate());
-    }
-
-    @Test(expected = InvalidTemplateModelException.class)
-    public void incompatible_converter_throws() {
-        new TemplateWithIncompatibleConverter();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void parameterized_type_conversion_throws() {
-        new TemplateWithConverterOnParameterizedType();
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void multiple_converters_for_same_path_throws() {
-        new TemplateWithSamePathInConverters();
+    
+    public static class TemplateWithUnsupportedConverterModel extends
+            EmptyDivTemplate<TemplateWithUnsupportedConverterModel.TemplateModelWithUnsupportedConverterModel> {
+        public interface TemplateModelWithUnsupportedConverterModel extends TemplateModel {
+            
+            @Convert(value = UnsupportedModelConverter.class)
+            public void setString(String string);
+        }
+        
+        @Override
+        protected TemplateModelWithUnsupportedConverterModel getModel() {
+            return super.getModel();
+        }
     }
 
     public static class LongToStringConverter
@@ -245,6 +203,30 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
+    public static class LongToBeanWithLongConverter
+            implements ModelConverter<Long, BeanWithLong> {
+
+        @Override
+        public Class<Long> getApplicationType() {
+            return long.class;
+        }
+
+        @Override
+        public Class<BeanWithLong> getModelType() {
+            return BeanWithLong.class;
+        }
+
+        @Override
+        public BeanWithLong toModel(Long applicationValue) {
+            return new BeanWithLong(applicationValue);
+        }
+
+        @Override
+        public Long toApplication(BeanWithLong modelValue) {
+            return modelValue.getLongValue();
+        }
+    }
+
     public static class DateToBeanWithStringConverter
             implements ModelConverter<Date, BeanWithString> {
 
@@ -267,6 +249,30 @@ public class TemplateModelWithConvertersTest {
         @Override
         public Date toApplication(BeanWithString modelValue) {
             return new Date(Long.valueOf(modelValue.getStringValue()));
+        }
+    }
+
+    public static class UnsupportedModelConverter
+            implements ModelConverter<String, Long> {
+
+        @Override
+        public Class<String> getApplicationType() {
+            return String.class;
+        }
+
+        @Override
+        public Class<Long> getModelType() {
+            return long.class;
+        }
+
+        @Override
+        public Long toModel(String applicationValue) {
+            return Long.valueOf(applicationValue);
+        }
+
+        @Override
+        public String toApplication(Long modelValue) {
+            return modelValue.toString();
         }
     }
 
@@ -318,5 +324,109 @@ public class TemplateModelWithConvertersTest {
         public void setDate(Date date) {
             this.date = date;
         }
+    }
+
+    public static class BeanWithLong implements Serializable {
+        private long longValue;
+
+        public BeanWithLong() {
+
+        }
+
+        public BeanWithLong(long longValue) {
+            this.longValue = longValue;
+        }
+
+        public long getLongValue() {
+            return longValue;
+        }
+
+        public void setLongValue(long longValue) {
+            this.longValue = longValue;
+        }
+    }
+
+    @Before
+    public void setUp() {
+        Assert.assertNull(VaadinService.getCurrent());
+        VaadinService service = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        VaadinService.setCurrent(service);
+    }
+
+    @After
+    public void tearDown() {
+        VaadinService.setCurrent(null);
+    }
+
+    @Test
+    public void unsupported_primitive_type_to_basic_type_converter() {
+        TemplateWithConverters template = new TemplateWithConverters();
+        template.getModel().setLongValue(10L);
+        Assert.assertEquals(10L, template.getModel().getLongValue());
+    }
+
+    @Test
+    public void bean_to_basic_type_converter() {
+        TemplateWithConverters template = new TemplateWithConverters();
+        Date date = new Date();
+        template.getModel().setDate(date);
+        Assert.assertEquals(date, template.getModel().getDate());
+    }
+
+    @Test
+    public void bean_to_bean_converter() {
+        TemplateWithConverters template = new TemplateWithConverters();
+        Date date = new Date();
+        template.getModel().setDateString(date);
+        Assert.assertEquals(date, template.getModel().getDateString());
+    }
+
+    @Test
+    public void basic_type_to_bean_converter() {
+        TemplateWithConverters template = new TemplateWithConverters();
+        template.getModel().setString("string to bean");
+        Assert.assertEquals("string to bean", template.getModel().getString());
+    }
+
+    @Test
+    public void bean_with_multiple_converters() {
+        TemplateWithConverters template = new TemplateWithConverters();
+        Date date = new Date();
+        TestBean bean = new TestBean(10L, date);
+        template.getModel().setTestBean(bean);
+        Assert.assertEquals(10L, template.getModel().getTestBean().getLongValue());
+        Assert.assertEquals(date, template.getModel().getTestBean().getDate());
+    }
+
+    @Test
+    public void converter_on_converted_type() {
+        TemplateWithConverterOnConvertedType template = new TemplateWithConverterOnConvertedType();
+        template.getModel().setLongValue(10L);
+        Assert.assertEquals(10L, template.getModel().getLongValue());
+    }
+
+    @Test(expected = InvalidTemplateModelException.class)
+    public void incompatible_converter_throws() {
+        new TemplateWithIncompatibleConverter();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void parameterized_type_conversion_throws() {
+        new TemplateWithConverterOnParameterizedType();
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void multiple_converters_for_same_path_throws() {
+        new TemplateWithSamePathInConverters();
+    }
+
+    @Test(expected = InvalidTemplateModelException.class)
+    public void unsupported_model_type_in_converter() {
+        new TemplateWithUnsupportedConverterModel();
     }
 }
