@@ -33,6 +33,8 @@ import elemental.dom.NodeList;
 import elemental.html.HeadElement;
 import elemental.html.LinkElement;
 import elemental.html.ScriptElement;
+import elemental.html.SpanElement;
+import elemental.html.StyleElement;
 
 /**
  * ResourceLoader lets you dynamically include external scripts and styles on
@@ -46,6 +48,82 @@ import elemental.html.ScriptElement;
  * @since 7.0.0
  */
 public class ResourceLoader {
+    private class StyleSheetLoadListener implements ResourceLoadListener {
+        private final String url;
+
+        private StyleSheetLoadListener(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            // Chrome, IE, Edge all fire load for errors, must check
+            // stylesheet data
+            if (BrowserInfo.get().isChrome() || BrowserInfo.get().isIE()
+                    || BrowserInfo.get().isEdge()) {
+                int styleSheetLength = getStyleSheetLength(url);
+                // Error if there's an empty stylesheet
+                if (styleSheetLength == 0) {
+                    fireError(event);
+                    return;
+                }
+            }
+
+            fireLoad(event);
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            fireError(event);
+        }
+    }
+
+    private class HtmlLoadListener
+            implements ResourceLoadListener, Runnable {
+        private final ResourceLoadEvent event;
+
+        private boolean errorFired;
+
+        private HtmlLoadListener(ResourceLoadEvent event) {
+            this.event = event;
+        }
+
+        @Override
+        public void run() {
+            // Invoked through HTMLImports.whenReady
+            if (!errorFired) {
+                fireLoad(event);
+            }
+        }
+
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            if (!supportsHtmlWhenReady) {
+                assert !errorFired;
+                fireLoad(event);
+            }
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            assert !errorFired;
+            errorFired = true;
+            fireError(event);
+        }
+    }
+
+    private class SimpleLoadListener implements ResourceLoadListener {
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            fireLoad(event);
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            fireError(event);
+        }
+    }
+
     /**
      * Event fired when a resource has been loaded.
      */
@@ -235,18 +313,39 @@ public class ResourceLoader {
             scriptTag.setAsync(async);
             scriptTag.setDefer(defer);
 
-            addOnloadHandler(scriptTag, new ResourceLoadListener() {
-                @Override
-                public void onLoad(ResourceLoadEvent event) {
-                    fireLoad(event);
-                }
-
-                @Override
-                public void onError(ResourceLoadEvent event) {
-                    fireError(event);
-                }
-            }, event);
+            addOnloadHandler(scriptTag, new SimpleLoadListener(), event);
             getHead().appendChild(scriptTag);
+        }
+    }
+
+    /**
+     * Inlines a script and notify a listener when the script is loaded. Calling
+     * this method when the script is currently loading or already loaded
+     * doesn't cause the script to be loaded again, but the listener will still
+     * be notified when appropriate.
+     *
+     * @param scriptContents
+     *            the script contents to inline
+     * @param resourceLoadListener
+     *            listener to notify when script is loaded
+     */
+    public void inlineScript(String scriptContents,
+            final ResourceLoadListener resourceLoadListener) {
+        ResourceLoadEvent event = new ResourceLoadEvent(this, scriptContents);
+        if (loadedResources.has(scriptContents)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (addListener(scriptContents, resourceLoadListener, loadListeners)) {
+            ScriptElement scriptElement = getDocument().createScriptElement();
+            scriptElement.setTextContent(scriptContents);
+            scriptElement.setType("text/javascript");
+
+            addOnloadHandler(scriptElement, new SimpleLoadListener(), event);
+            getHead().appendChild(scriptElement);
         }
     }
 
@@ -291,37 +390,46 @@ public class ResourceLoader {
                 linkTag.setAttribute("async", "true");
             }
 
-            class LoadAndReadyListener
-                    implements ResourceLoadListener, Runnable {
-                private boolean errorFired = false;
-
-                @Override
-                public void run() {
-                    // Invoked through HTMLImports.whenReady
-                    if (!errorFired) {
-                        fireLoad(event);
-                    }
-                }
-
-                @Override
-                public void onLoad(ResourceLoadEvent event) {
-                    if (!supportsHtmlWhenReady) {
-                        assert !errorFired;
-                        fireLoad(event);
-                    }
-                }
-
-                @Override
-                public void onError(ResourceLoadEvent event) {
-                    assert !errorFired;
-                    errorFired = true;
-                    fireError(event);
-                }
-            }
-            LoadAndReadyListener listener = new LoadAndReadyListener();
+            HtmlLoadListener listener = new HtmlLoadListener(event);
 
             addOnloadHandler(linkTag, listener, event);
             getHead().appendChild(linkTag);
+
+            if (supportsHtmlWhenReady) {
+                addHtmlImportsReadyHandler(listener);
+            }
+        }
+    }
+
+    /**
+     * Inlines an HTML import and notify a listener when the HTML import is
+     * loaded. Calling this method when the HTML import is currently loading or
+     * already loaded doesn't cause the HTML import to be loaded again, but the
+     * listener will still be notified when appropriate.
+     *
+     * @param htmlContents
+     *            the html contents to inline
+     * @param resourceLoadListener
+     *            listener to notify when the HTML import is loaded
+     */
+    public void inlineHtml(String htmlContents,
+            final ResourceLoadListener resourceLoadListener) {
+        ResourceLoadEvent event = new ResourceLoadEvent(this, htmlContents);
+        if (loadedResources.has(htmlContents)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (addListener(htmlContents, resourceLoadListener, loadListeners)) {
+            SpanElement spanElement = getDocument().createSpanElement();
+            spanElement.setInnerHTML(htmlContents);
+            spanElement.setAttribute("hidden", "true");
+
+            HtmlLoadListener listener = new HtmlLoadListener(event);
+            getDocument().appendChild(spanElement);
+            addOnloadHandler(spanElement, listener, event);
 
             if (supportsHtmlWhenReady) {
                 addHtmlImportsReadyHandler(listener);
@@ -447,30 +555,8 @@ public class ResourceLoader {
                     }
                 }, 10);
             } else {
-                addOnloadHandler(linkElement, new ResourceLoadListener() {
-                    @Override
-                    public void onLoad(ResourceLoadEvent event) {
-                        // Chrome, IE, Edge all fire load for errors, must check
-                        // stylesheet data
-                        if (BrowserInfo.get().isChrome()
-                                || BrowserInfo.get().isIE()
-                                || BrowserInfo.get().isEdge()) {
-                            int styleSheetLength = getStyleSheetLength(url);
-                            // Error if there's an empty stylesheet
-                            if (styleSheetLength == 0) {
-                                fireError(event);
-                                return;
-                            }
-                        }
-
-                        fireLoad(event);
-                    }
-
-                    @Override
-                    public void onError(ResourceLoadEvent event) {
-                        fireError(event);
-                    }
-                }, event);
+                addOnloadHandler(linkElement, new StyleSheetLoadListener(url),
+                        event);
                 if (BrowserInfo.get().isOpera()) {
                     // Opera onerror never fired, assume error if no onload in x
                     // seconds
@@ -486,6 +572,71 @@ public class ResourceLoader {
             }
 
             getHead().appendChild(linkElement);
+        }
+    }
+
+    /**
+     * Inlines a stylesheet and notify a listener when the stylesheet is loaded.
+     * Calling this method when the stylesheet is currently loading or already
+     * loaded doesn't cause the stylesheet to be loaded again, but the listener
+     * will still be notified when appropriate.
+     *
+     * @param styleSheetContents
+     *            the contents to inline
+     * @param resourceLoadListener
+     *            the listener that will get notified when the stylesheet is
+     *            loaded
+     */
+    public void inlineStyleSheet(String styleSheetContents,
+            final ResourceLoadListener resourceLoadListener) {
+        final ResourceLoadEvent event = new ResourceLoadEvent(this,
+                styleSheetContents);
+        if (loadedResources.has(styleSheetContents)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (addListener(styleSheetContents, resourceLoadListener,
+                loadListeners)) {
+            StyleElement styleSheetElement = getDocument().createStyleElement();
+            styleSheetElement.setTextContent(styleSheetContents);
+            styleSheetElement.setType("text/css");
+
+            addCssLoadHandler(styleSheetContents, event, styleSheetElement);
+
+            getHead().appendChild(styleSheetElement);
+        }
+    }
+
+    private void addCssLoadHandler(String styleSheetContents,
+            ResourceLoadEvent event, StyleElement styleSheetElement) {
+        if (BrowserInfo.get().isSafari() || BrowserInfo.get().isOpera()) {
+            // Safari and Opera don't fire any events for link elements
+            // See http://www.phpied.com/when-is-a-stylesheet-really-loaded/
+            new Timer() {
+                @Override
+                public void run() {
+                    if (loadedResources.has(styleSheetContents)) {
+                        fireLoad(event);
+                    } else {
+                        fireError(event);
+                    }
+                }
+            }.schedule(5 * 1000);
+        } else {
+            addOnloadHandler(styleSheetElement, new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    fireLoad(event);
+                }
+
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    fireError(event);
+                }
+            }, event);
         }
     }
 
@@ -514,14 +665,14 @@ public class ResourceLoader {
         return -1;
     }-*/;
 
-    private static boolean addListener(String url,
+    private static boolean addListener(String resourceId,
             ResourceLoadListener listener,
             JsMap<String, JsArray<ResourceLoadListener>> listenerMap) {
-        JsArray<ResourceLoadListener> listeners = listenerMap.get(url);
+        JsArray<ResourceLoadListener> listeners = listenerMap.get(resourceId);
         if (listeners == null) {
             listeners = JsCollections.array();
             listeners.push(listener);
-            listenerMap.set(url, listeners);
+            listenerMap.set(resourceId, listeners);
             return true;
         } else {
             listeners.push(listener);
@@ -561,5 +712,4 @@ public class ResourceLoader {
             }
         }
     }
-
 }

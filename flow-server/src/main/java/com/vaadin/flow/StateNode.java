@@ -79,6 +79,19 @@ public class StateNode implements Serializable {
     }
 
     /**
+     * Create a new instance using the same features as provided {@code node}
+     * declares.
+     *
+     * @param node
+     *            the node whose features set will be copied
+     */
+    @SuppressWarnings("unchecked")
+    public StateNode(StateNode node) {
+        this(new ArrayList<>(node.reportedFeatures),
+                getNonRepeatebleFeatures(node));
+    }
+
+    /**
      * Creates a state node with the given feature types and required features
      * that are always sent to the client side.
      *
@@ -542,7 +555,7 @@ public class StateNode implements Serializable {
     /**
      * Returns whether the {@code featureType} should be reported to the client
      * even if it doesn't contain any data.
-     * 
+     *
      * @param featureType
      *            feature type which needs to be populated on the client
      * @return whether the feature required by the client side
@@ -572,5 +585,16 @@ public class StateNode implements Serializable {
 
     private Map<Class<? extends NodeFeature>, NodeFeature> getFeatures() {
         return features;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static Class[] getNonRepeatebleFeatures(StateNode node) {
+        if (node.reportedFeatures.isEmpty()) {
+            Set<Class<? extends NodeFeature>> set = node.features.keySet();
+            return set.toArray(new Class[set.size()]);
+        }
+        return node.features.keySet().stream()
+                .filter(clazz -> !node.reportedFeatures.contains(clazz))
+                .toArray(Class[]::new);
     }
 }
