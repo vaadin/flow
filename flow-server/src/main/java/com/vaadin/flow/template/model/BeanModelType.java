@@ -187,10 +187,11 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     declaringClass, converterProvider);
         }
 
-        throw new InvalidTemplateModelException("Type "
-                + propertyType.toString() + " is not supported. Used in class "
-                + declaringClass.getSimpleName() + " with property named "
-                + propertyName + ". " + ModelType.getSupportedTypesString());
+        throw new InvalidTemplateModelException(String.format(
+                "Type '%s' is not supported."
+                        + " Used in class '%s' with property named '%s'. %s",
+                propertyType.toString(), declaringClass.getSimpleName(),
+                propertyName, ModelType.getSupportedTypesString()));
     }
 
     private static ModelType getConvertedModelType(
@@ -199,19 +200,18 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             ModelConverterProvider converterProvider) {
 
         if (!(propertyType instanceof Class<?>)) {
-            throw new UnsupportedOperationException(
-                    "Using converters with parameterized types is not currently supported. "
-                            + "Usage found in class '"
-                            + declaringClass.getSimpleName() + "' on property '"
-                            + propertyName + "'.");
+            throw new UnsupportedOperationException(String.format(
+                    "Using converters with parameterized types is not currently supported."
+                            + "Used in class '%s' with property named '%s'",
+                    declaringClass.getSimpleName(), propertyName));
         }
 
         ModelConverter<?, ?> converter = converterProvider.apply(propertyFilter).get();
         if (!converter.getApplicationType().equals((Class<?>) propertyType)) {
-            throw new InvalidTemplateModelException(
-                    "Converter '" + converter.getClass().getName()
-                            + "' is incompatible with the type '"
-                            + propertyType.getTypeName() + "'.");
+            throw new InvalidTemplateModelException(String.format(
+                    "Converter '%s' is incompatible with the type '%s'.",
+                    converter.getClass().getName(),
+                    propertyType.getTypeName()));
         }
 
         if (isBean(converter.getModelType())) {
@@ -228,11 +228,11 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             }
         }
 
-        throw new InvalidTemplateModelException("Converter '"
-                + converter.getClass().getName()
-                + "' implements an unsupported model type. Used in class "
-                + declaringClass.getSimpleName() + " with property named "
-                + propertyName + ". " + ModelType.getSupportedTypesString());
+        throw new InvalidTemplateModelException(String.format(
+                "Converter '%s' implements an unsupported model type. "
+                        + "Used in class '%s' with property named '%s'. '%s'",
+                converter.getClass().getName(), declaringClass.getSimpleName(),
+                propertyName, ModelType.getSupportedTypesString()));
     }
 
     private static ModelType getListModelType(Type propertyType,
@@ -254,12 +254,11 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return new ListModelType<>(
                     new BeanModelType<>(beansListItemType, propertyFilter));
         } else {
-            throw new InvalidTemplateModelException(
-                    "Element type " + itemType.getTypeName()
-                            + " is not a valid Bean type. Used in class "
-                            + declaringClass.getSimpleName()
-                            + " with property named " + propertyName
-                            + " with list type " + propertyType.getTypeName());
+            throw new InvalidTemplateModelException(String.format(
+                    "Element type '%s' is not a valid Bean type. "
+                            + "Used in class '%s' with property named '%s' with list type '%s'.",
+                    itemType.getTypeName(), declaringClass.getSimpleName(),
+                    propertyName, propertyType.getTypeName()));
         }
     }
 
