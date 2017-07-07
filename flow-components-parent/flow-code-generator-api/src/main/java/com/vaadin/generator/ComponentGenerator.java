@@ -937,6 +937,13 @@ public class ComponentGenerator {
         JavaClassSource nestedClass = new NestedClassGenerator().withType(type)
                 .withFluentSetters(fluentSetters).withNameHint(nameHint)
                 .build();
+
+        if (javaClass.getNestedType(nestedClass.getName()) != null) {
+            throw new ComponentGenerationException("Duplicated nested class: \""
+                    + nestedClass.getName()
+                    + "\". Please make sure your webcomponent definition contains unique properties, events and method names.");
+        }
+
         nestedClass.getJavaDoc().setText(description);
         javaClass.addNestedType(nestedClass);
         javaClass.addImport(JsonObject.class);
