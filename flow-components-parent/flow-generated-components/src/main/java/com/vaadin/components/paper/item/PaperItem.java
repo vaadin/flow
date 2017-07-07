@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.item.PaperItem;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -93,14 +94,11 @@ import com.vaadin.ui.HasComponents;
  * </paper-item-body> <paper-checkbox></paper-checkbox> </paper-item>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-item#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-item#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-item")
 @HtmlImport("frontend://bower_components/paper-item/paper-item.html")
-public class PaperItem<R extends PaperItem<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class PaperItem extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -124,7 +122,8 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param keyEventTarget
 	 * @return This instance, for method chaining.
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperItem> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -151,7 +150,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return This instance, for method chaining.
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperItem> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -170,7 +169,8 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param keyBindings
 	 * @return This instance, for method chaining.
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperItem> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -195,7 +195,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param pressed
 	 * @return This instance, for method chaining.
 	 */
-	public R setPressed(boolean pressed) {
+	public <R extends PaperItem> R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
 		return getSelf();
 	}
@@ -222,7 +222,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param toggles
 	 * @return This instance, for method chaining.
 	 */
-	public R setToggles(boolean toggles) {
+	public <R extends PaperItem> R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
 		return getSelf();
 	}
@@ -248,7 +248,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param active
 	 * @return This instance, for method chaining.
 	 */
-	public R setActive(boolean active) {
+	public <R extends PaperItem> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -277,7 +277,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param pointerDown
 	 * @return This instance, for method chaining.
 	 */
-	public R setPointerDown(boolean pointerDown) {
+	public <R extends PaperItem> R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
 		return getSelf();
 	}
@@ -304,7 +304,8 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param receivedFocusFromKeyboard
 	 * @return This instance, for method chaining.
 	 */
-	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
+	public <R extends PaperItem> R setReceivedFocusFromKeyboard(
+			boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
 				receivedFocusFromKeyboard);
 		return getSelf();
@@ -332,7 +333,8 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param ariaActiveAttribute
 	 * @return This instance, for method chaining.
 	 */
-	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public <R extends PaperItem> R setAriaActiveAttribute(
+			java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
 		return getSelf();
@@ -359,7 +361,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param focused
 	 * @return This instance, for method chaining.
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends PaperItem> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -385,7 +387,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * @param disabled
 	 * @return This instance, for method chaining.
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperItem> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -470,7 +472,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperItem> R getSelf() {
 		return (R) this;
 	}
 }

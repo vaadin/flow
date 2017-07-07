@@ -21,6 +21,7 @@ import com.vaadin.ui.HasText;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.vaadin.button.VaadinButton;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -47,11 +48,11 @@ import com.vaadin.ui.HasComponents;
  * button is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
-public class VaadinButton<R extends VaadinButton<R>> extends Component
+public class VaadinButton extends Component
 		implements
 			HasStyle,
 			HasText,
@@ -77,7 +78,7 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 * @param autofocus
 	 * @return This instance, for method chaining.
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public <R extends VaadinButton> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
 		return getSelf();
 	}
@@ -102,7 +103,7 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 * @param focused
 	 * @return This instance, for method chaining.
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends VaadinButton> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -127,7 +128,7 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 * @param disabled
 	 * @return This instance, for method chaining.
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends VaadinButton> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -146,7 +147,7 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends VaadinButton> R getSelf() {
 		return (R) this;
 	}
 }

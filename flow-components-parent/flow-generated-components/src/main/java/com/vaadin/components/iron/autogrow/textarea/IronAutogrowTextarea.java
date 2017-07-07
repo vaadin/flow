@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.autogrow.textarea.IronAutogrowTextarea;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
@@ -50,13 +51,11 @@ import com.vaadin.shared.Registration;
  * placeholder | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-autogrow-textarea")
 @HtmlImport("frontend://bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html")
-public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
-		extends
-			Component implements HasStyle {
+public class IronAutogrowTextarea extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -78,7 +77,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param validator
 	 * @return This instance, for method chaining.
 	 */
-	public R setValidator(java.lang.String validator) {
+	public <R extends IronAutogrowTextarea> R setValidator(
+			java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
 		return getSelf();
@@ -105,7 +105,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param invalid
 	 * @return This instance, for method chaining.
 	 */
-	public R setInvalid(boolean invalid) {
+	public <R extends IronAutogrowTextarea> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
 		return getSelf();
 	}
@@ -131,7 +131,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param focused
 	 * @return This instance, for method chaining.
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends IronAutogrowTextarea> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -157,7 +157,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param disabled
 	 * @return This instance, for method chaining.
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends IronAutogrowTextarea> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -196,7 +196,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param value
 	 * @return This instance, for method chaining.
 	 */
-	public R setValue(java.lang.String value) {
+	public <R extends IronAutogrowTextarea> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return getSelf();
 	}
@@ -209,7 +209,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param value
 	 * @return This instance, for method chaining.
 	 */
-	public R setValue(double value) {
+	public <R extends IronAutogrowTextarea> R setValue(double value) {
 		getElement().setProperty("value", value);
 		return getSelf();
 	}
@@ -249,7 +249,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param bindValue
 	 * @return This instance, for method chaining.
 	 */
-	public R setBindValue(java.lang.String bindValue) {
+	public <R extends IronAutogrowTextarea> R setBindValue(
+			java.lang.String bindValue) {
 		getElement().setProperty("bindValue",
 				bindValue == null ? "" : bindValue);
 		return getSelf();
@@ -264,7 +265,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param bindValue
 	 * @return This instance, for method chaining.
 	 */
-	public R setBindValue(double bindValue) {
+	public <R extends IronAutogrowTextarea> R setBindValue(double bindValue) {
 		getElement().setProperty("bindValue", bindValue);
 		return getSelf();
 	}
@@ -289,7 +290,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param rows
 	 * @return This instance, for method chaining.
 	 */
-	public R setRows(double rows) {
+	public <R extends IronAutogrowTextarea> R setRows(double rows) {
 		getElement().setProperty("rows", rows);
 		return getSelf();
 	}
@@ -316,7 +317,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param maxRows
 	 * @return This instance, for method chaining.
 	 */
-	public R setMaxRows(double maxRows) {
+	public <R extends IronAutogrowTextarea> R setMaxRows(double maxRows) {
 		getElement().setProperty("maxRows", maxRows);
 		return getSelf();
 	}
@@ -341,7 +342,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param autocomplete
 	 * @return This instance, for method chaining.
 	 */
-	public R setAutocomplete(java.lang.String autocomplete) {
+	public <R extends IronAutogrowTextarea> R setAutocomplete(
+			java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
 				autocomplete == null ? "" : autocomplete);
 		return getSelf();
@@ -367,7 +369,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param autofocus
 	 * @return This instance, for method chaining.
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public <R extends IronAutogrowTextarea> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
 		return getSelf();
 	}
@@ -392,7 +394,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param inputmode
 	 * @return This instance, for method chaining.
 	 */
-	public R setInputmode(java.lang.String inputmode) {
+	public <R extends IronAutogrowTextarea> R setInputmode(
+			java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
 				inputmode == null ? "" : inputmode);
 		return getSelf();
@@ -418,7 +421,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param placeholder
 	 * @return This instance, for method chaining.
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public <R extends IronAutogrowTextarea> R setPlaceholder(
+			java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
 		return getSelf();
@@ -444,7 +448,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param readonly
 	 * @return This instance, for method chaining.
 	 */
-	public R setReadonly(java.lang.String readonly) {
+	public <R extends IronAutogrowTextarea> R setReadonly(
+			java.lang.String readonly) {
 		getElement().setProperty("readonly", readonly == null ? "" : readonly);
 		return getSelf();
 	}
@@ -469,7 +474,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param required
 	 * @return This instance, for method chaining.
 	 */
-	public R setRequired(boolean required) {
+	public <R extends IronAutogrowTextarea> R setRequired(boolean required) {
 		getElement().setProperty("required", required);
 		return getSelf();
 	}
@@ -494,7 +499,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param minlength
 	 * @return This instance, for method chaining.
 	 */
-	public R setMinlength(double minlength) {
+	public <R extends IronAutogrowTextarea> R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
 		return getSelf();
 	}
@@ -519,7 +524,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param maxlength
 	 * @return This instance, for method chaining.
 	 */
-	public R setMaxlength(double maxlength) {
+	public <R extends IronAutogrowTextarea> R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
 		return getSelf();
 	}
@@ -544,7 +549,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param textarea
 	 * @return This instance, for method chaining.
 	 */
-	public R setTextarea(elemental.json.JsonObject textarea) {
+	public <R extends IronAutogrowTextarea> R setTextarea(
+			elemental.json.JsonObject textarea) {
 		getElement().setPropertyJson("textarea", textarea);
 		return getSelf();
 	}
@@ -569,7 +575,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param selectionStart
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelectionStart(elemental.json.JsonObject selectionStart) {
+	public <R extends IronAutogrowTextarea> R setSelectionStart(
+			elemental.json.JsonObject selectionStart) {
 		getElement().setPropertyJson("selectionStart", selectionStart);
 		return getSelf();
 	}
@@ -594,7 +601,8 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * @param selectionEnd
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelectionEnd(elemental.json.JsonObject selectionEnd) {
+	public <R extends IronAutogrowTextarea> R setSelectionEnd(
+			elemental.json.JsonObject selectionEnd) {
 		getElement().setPropertyJson("selectionEnd", selectionEnd);
 		return getSelf();
 	}
@@ -699,7 +707,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronAutogrowTextarea> R getSelf() {
 		return (R) this;
 	}
 }

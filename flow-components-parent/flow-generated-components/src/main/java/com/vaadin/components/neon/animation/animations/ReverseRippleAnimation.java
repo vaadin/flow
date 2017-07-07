@@ -21,19 +21,18 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.ReverseRippleAnimation;
 
 /**
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
 		"WebComponent: reverse-ripple-animation#UNKNOWN",
-		"Flow#0.1.12-SNAPSHOT"})
+		"Flow#0.1.13-SNAPSHOT"})
 @Tag("reverse-ripple-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/reverse-ripple-animation.html")
-public class ReverseRippleAnimation<R extends ReverseRippleAnimation<R>>
-		extends
-			Component implements HasStyle {
+public class ReverseRippleAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -55,7 +54,8 @@ public class ReverseRippleAnimation<R extends ReverseRippleAnimation<R>>
 	 * @param animationTiming
 	 * @return This instance, for method chaining.
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends ReverseRippleAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -80,7 +80,8 @@ public class ReverseRippleAnimation<R extends ReverseRippleAnimation<R>>
 	 * @param isNeonAnimation
 	 * @return This instance, for method chaining.
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends ReverseRippleAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -105,7 +106,8 @@ public class ReverseRippleAnimation<R extends ReverseRippleAnimation<R>>
 	 * @param sharedElements
 	 * @return This instance, for method chaining.
 	 */
-	public R setSharedElements(elemental.json.JsonObject sharedElements) {
+	public <R extends ReverseRippleAnimation> R setSharedElements(
+			elemental.json.JsonObject sharedElements) {
 		getElement().setPropertyJson("sharedElements", sharedElements);
 		return getSelf();
 	}
@@ -158,7 +160,7 @@ public class ReverseRippleAnimation<R extends ReverseRippleAnimation<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends ReverseRippleAnimation> R getSelf() {
 		return (R) this;
 	}
 }

@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.TransformAnimation;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -34,13 +35,11 @@ import elemental.json.JsonObject;
  * transformTo: <transform-to-string>, timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: transform-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: transform-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("transform-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/transform-animation.html")
-public class TransformAnimation<R extends TransformAnimation<R>>
-		extends
-			Component implements HasStyle {
+public class TransformAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -62,7 +61,8 @@ public class TransformAnimation<R extends TransformAnimation<R>>
 	 * @param animationTiming
 	 * @return This instance, for method chaining.
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends TransformAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -87,7 +87,8 @@ public class TransformAnimation<R extends TransformAnimation<R>>
 	 * @param isNeonAnimation
 	 * @return This instance, for method chaining.
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends TransformAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -134,7 +135,7 @@ public class TransformAnimation<R extends TransformAnimation<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends TransformAnimation> R getSelf() {
 		return (R) this;
 	}
 }

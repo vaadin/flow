@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.vaadin.combo.box.VaadinComboBox;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -83,13 +84,11 @@ import com.vaadin.annotations.EventData;
  * max height of overlay | {@code 65vh}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: vaadin-combo-box#null", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: vaadin-combo-box#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
-public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
-		implements
-			HasStyle {
+public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -111,7 +110,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param validator
 	 * @return This instance, for method chaining.
 	 */
-	public R setValidator(java.lang.String validator) {
+	public <R extends VaadinComboBox> R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
 		return getSelf();
@@ -138,7 +137,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param invalid
 	 * @return This instance, for method chaining.
 	 */
-	public R setInvalid(boolean invalid) {
+	public <R extends VaadinComboBox> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
 		return getSelf();
 	}
@@ -155,7 +154,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param name
 	 * @return This instance, for method chaining.
 	 */
-	public R setName(java.lang.String name) {
+	public <R extends VaadinComboBox> R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
 		return getSelf();
 	}
@@ -193,7 +192,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param value
 	 * @return This instance, for method chaining.
 	 */
-	public R setValue(java.lang.String value) {
+	public <R extends VaadinComboBox> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return getSelf();
 	}
@@ -218,7 +217,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param required
 	 * @return This instance, for method chaining.
 	 */
-	public R setRequired(boolean required) {
+	public <R extends VaadinComboBox> R setRequired(boolean required) {
 		getElement().setProperty("required", required);
 		return getSelf();
 	}
@@ -244,7 +243,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param opened
 	 * @return This instance, for method chaining.
 	 */
-	public R setOpened(boolean opened) {
+	public <R extends VaadinComboBox> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
 		return getSelf();
 	}
@@ -269,7 +268,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param disabled
 	 * @return This instance, for method chaining.
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends VaadinComboBox> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -286,7 +285,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param readonly
 	 * @return This instance, for method chaining.
 	 */
-	public R setReadonly(boolean readonly) {
+	public <R extends VaadinComboBox> R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
 		return getSelf();
 	}
@@ -313,7 +312,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param items
 	 * @return This instance, for method chaining.
 	 */
-	public R setItems(elemental.json.JsonArray items) {
+	public <R extends VaadinComboBox> R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
 		return getSelf();
 	}
@@ -344,7 +343,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param allowCustomValue
 	 * @return This instance, for method chaining.
 	 */
-	public R setAllowCustomValue(boolean allowCustomValue) {
+	public <R extends VaadinComboBox> R setAllowCustomValue(
+			boolean allowCustomValue) {
 		getElement().setProperty("allowCustomValue", allowCustomValue);
 		return getSelf();
 	}
@@ -373,7 +373,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param filteredItems
 	 * @return This instance, for method chaining.
 	 */
-	public R setFilteredItems(elemental.json.JsonArray filteredItems) {
+	public <R extends VaadinComboBox> R setFilteredItems(
+			elemental.json.JsonArray filteredItems) {
 		getElement().setPropertyJson("filteredItems", filteredItems);
 		return getSelf();
 	}
@@ -400,7 +401,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param hasValue
 	 * @return This instance, for method chaining.
 	 */
-	public R setHasValue(boolean hasValue) {
+	public <R extends VaadinComboBox> R setHasValue(boolean hasValue) {
 		getElement().setProperty("hasValue", hasValue);
 		return getSelf();
 	}
@@ -427,7 +428,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param loading
 	 * @return This instance, for method chaining.
 	 */
-	public R setLoading(boolean loading) {
+	public <R extends VaadinComboBox> R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
 		return getSelf();
 	}
@@ -453,7 +454,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param filter
 	 * @return This instance, for method chaining.
 	 */
-	public R setFilter(java.lang.String filter) {
+	public <R extends VaadinComboBox> R setFilter(java.lang.String filter) {
 		getElement().setProperty("filter", filter == null ? "" : filter);
 		return getSelf();
 	}
@@ -478,7 +479,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param selectedItem
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
+	public <R extends VaadinComboBox> R setSelectedItem(
+			elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
 		return getSelf();
 	}
@@ -521,7 +523,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param itemLabelPath
 	 * @return This instance, for method chaining.
 	 */
-	public R setItemLabelPath(java.lang.String itemLabelPath) {
+	public <R extends VaadinComboBox> R setItemLabelPath(
+			java.lang.String itemLabelPath) {
 		getElement().setProperty("itemLabelPath",
 				itemLabelPath == null ? "" : itemLabelPath);
 		return getSelf();
@@ -557,7 +560,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param itemValuePath
 	 * @return This instance, for method chaining.
 	 */
-	public R setItemValuePath(java.lang.String itemValuePath) {
+	public <R extends VaadinComboBox> R setItemValuePath(
+			java.lang.String itemValuePath) {
 		getElement().setProperty("itemValuePath",
 				itemValuePath == null ? "" : itemValuePath);
 		return getSelf();
@@ -583,7 +587,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param inputElement
 	 * @return This instance, for method chaining.
 	 */
-	public R setInputElement(elemental.json.JsonObject inputElement) {
+	public <R extends VaadinComboBox> R setInputElement(
+			elemental.json.JsonObject inputElement) {
 		getElement().setPropertyJson("inputElement", inputElement);
 		return getSelf();
 	}
@@ -608,7 +613,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param label
 	 * @return This instance, for method chaining.
 	 */
-	public R setLabel(java.lang.String label) {
+	public <R extends VaadinComboBox> R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
 		return getSelf();
 	}
@@ -633,7 +638,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param noLabelFloat
 	 * @return This instance, for method chaining.
 	 */
-	public R setNoLabelFloat(boolean noLabelFloat) {
+	public <R extends VaadinComboBox> R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
 		return getSelf();
 	}
@@ -658,7 +663,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param alwaysFloatLabel
 	 * @return This instance, for method chaining.
 	 */
-	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public <R extends VaadinComboBox> R setAlwaysFloatLabel(
+			boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
 		return getSelf();
 	}
@@ -683,7 +689,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param autoValidate
 	 * @return This instance, for method chaining.
 	 */
-	public R setAutoValidate(boolean autoValidate) {
+	public <R extends VaadinComboBox> R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
 		return getSelf();
 	}
@@ -708,7 +714,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param preventInvalidInput
 	 * @return This instance, for method chaining.
 	 */
-	public R setPreventInvalidInput(boolean preventInvalidInput) {
+	public <R extends VaadinComboBox> R setPreventInvalidInput(
+			boolean preventInvalidInput) {
 		getElement().setProperty("preventInvalidInput", preventInvalidInput);
 		return getSelf();
 	}
@@ -733,7 +740,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param allowedPattern
 	 * @return This instance, for method chaining.
 	 */
-	public R setAllowedPattern(java.lang.String allowedPattern) {
+	public <R extends VaadinComboBox> R setAllowedPattern(
+			java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
 				allowedPattern == null ? "" : allowedPattern);
 		return getSelf();
@@ -759,7 +767,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param pattern
 	 * @return This instance, for method chaining.
 	 */
-	public R setPattern(java.lang.String pattern) {
+	public <R extends VaadinComboBox> R setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
 		return getSelf();
 	}
@@ -784,7 +792,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param errorMessage
 	 * @return This instance, for method chaining.
 	 */
-	public R setErrorMessage(java.lang.String errorMessage) {
+	public <R extends VaadinComboBox> R setErrorMessage(
+			java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
 		return getSelf();
@@ -802,7 +811,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param autofocus
 	 * @return This instance, for method chaining.
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public <R extends VaadinComboBox> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
 		return getSelf();
 	}
@@ -819,7 +828,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param inputmode
 	 * @return This instance, for method chaining.
 	 */
-	public R setInputmode(java.lang.String inputmode) {
+	public <R extends VaadinComboBox> R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
 				inputmode == null ? "" : inputmode);
 		return getSelf();
@@ -847,7 +856,8 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param placeholder
 	 * @return This instance, for method chaining.
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public <R extends VaadinComboBox> R setPlaceholder(
+			java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
 		return getSelf();
@@ -865,7 +875,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param size
 	 * @return This instance, for method chaining.
 	 */
-	public R setSize(double size) {
+	public <R extends VaadinComboBox> R setSize(double size) {
 		getElement().setProperty("size", size);
 		return getSelf();
 	}
@@ -891,7 +901,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * @param focused
 	 * @return This instance, for method chaining.
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends VaadinComboBox> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -1336,7 +1346,7 @@ public class VaadinComboBox<R extends VaadinComboBox<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends VaadinComboBox> R getSelf() {
 		return (R) this;
 	}
 }

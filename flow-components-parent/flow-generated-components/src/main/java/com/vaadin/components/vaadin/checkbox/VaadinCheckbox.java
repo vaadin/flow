@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.vaadin.checkbox.VaadinCheckbox;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -54,11 +55,11 @@ import com.vaadin.ui.HasComponents;
  * when the checkbox is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
-public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
+public class VaadinCheckbox extends Component
 		implements
 			HasStyle,
 			HasComponents {
@@ -83,7 +84,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * @param autofocus
 	 * @return This instance, for method chaining.
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public <R extends VaadinCheckbox> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
 		return getSelf();
 	}
@@ -108,7 +109,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * @param focused
 	 * @return This instance, for method chaining.
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends VaadinCheckbox> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -133,7 +134,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * @param disabled
 	 * @return This instance, for method chaining.
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends VaadinCheckbox> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -159,7 +160,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * @param checked
 	 * @return This instance, for method chaining.
 	 */
-	public R setChecked(boolean checked) {
+	public <R extends VaadinCheckbox> R setChecked(boolean checked) {
 		getElement().setProperty("checked", checked);
 		return getSelf();
 	}
@@ -191,7 +192,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * @param indeterminate
 	 * @return This instance, for method chaining.
 	 */
-	public R setIndeterminate(boolean indeterminate) {
+	public <R extends VaadinCheckbox> R setIndeterminate(boolean indeterminate) {
 		getElement().setProperty("indeterminate", indeterminate);
 		return getSelf();
 	}
@@ -216,7 +217,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * @param name
 	 * @return This instance, for method chaining.
 	 */
-	public R setName(java.lang.String name) {
+	public <R extends VaadinCheckbox> R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
 		return getSelf();
 	}
@@ -243,7 +244,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * @param value
 	 * @return This instance, for method chaining.
 	 */
-	public R setValue(java.lang.String value) {
+	public <R extends VaadinCheckbox> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return getSelf();
 	}
@@ -291,7 +292,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends VaadinCheckbox> R getSelf() {
 		return (R) this;
 	}
 }

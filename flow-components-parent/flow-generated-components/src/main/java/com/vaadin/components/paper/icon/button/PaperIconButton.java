@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.icon.button.PaperIconButton;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -32,13 +33,11 @@ import com.vaadin.shared.Registration;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-icon-button#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-icon-button#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-icon-button")
 @HtmlImport("frontend://bower_components/paper-icon-button/paper-icon-button.html")
-public class PaperIconButton<R extends PaperIconButton<R>> extends Component
-		implements
-			HasStyle {
+public class PaperIconButton extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -62,7 +61,8 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param keyEventTarget
 	 * @return This instance, for method chaining.
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperIconButton> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -89,7 +89,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return This instance, for method chaining.
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperIconButton> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -108,7 +108,8 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param keyBindings
 	 * @return This instance, for method chaining.
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperIconButton> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -133,7 +134,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param pressed
 	 * @return This instance, for method chaining.
 	 */
-	public R setPressed(boolean pressed) {
+	public <R extends PaperIconButton> R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
 		return getSelf();
 	}
@@ -160,7 +161,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param toggles
 	 * @return This instance, for method chaining.
 	 */
-	public R setToggles(boolean toggles) {
+	public <R extends PaperIconButton> R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
 		return getSelf();
 	}
@@ -186,7 +187,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param active
 	 * @return This instance, for method chaining.
 	 */
-	public R setActive(boolean active) {
+	public <R extends PaperIconButton> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -215,7 +216,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param pointerDown
 	 * @return This instance, for method chaining.
 	 */
-	public R setPointerDown(boolean pointerDown) {
+	public <R extends PaperIconButton> R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
 		return getSelf();
 	}
@@ -242,7 +243,8 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param receivedFocusFromKeyboard
 	 * @return This instance, for method chaining.
 	 */
-	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
+	public <R extends PaperIconButton> R setReceivedFocusFromKeyboard(
+			boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
 				receivedFocusFromKeyboard);
 		return getSelf();
@@ -270,7 +272,8 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param ariaActiveAttribute
 	 * @return This instance, for method chaining.
 	 */
-	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public <R extends PaperIconButton> R setAriaActiveAttribute(
+			java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
 		return getSelf();
@@ -297,7 +300,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param focused
 	 * @return This instance, for method chaining.
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends PaperIconButton> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -323,7 +326,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param disabled
 	 * @return This instance, for method chaining.
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperIconButton> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -350,7 +353,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param noink
 	 * @return This instance, for method chaining.
 	 */
-	public R setNoink(boolean noink) {
+	public <R extends PaperIconButton> R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
 		return getSelf();
 	}
@@ -377,7 +380,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param src
 	 * @return This instance, for method chaining.
 	 */
-	public R setSrc(java.lang.String src) {
+	public <R extends PaperIconButton> R setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);
 		return getSelf();
 	}
@@ -406,7 +409,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param icon
 	 * @return This instance, for method chaining.
 	 */
-	public R setIcon(java.lang.String icon) {
+	public <R extends PaperIconButton> R setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
 		return getSelf();
 	}
@@ -431,7 +434,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * @param alt
 	 * @return This instance, for method chaining.
 	 */
-	public R setAlt(java.lang.String alt) {
+	public <R extends PaperIconButton> R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
 		return getSelf();
 	}
@@ -556,7 +559,7 @@ public class PaperIconButton<R extends PaperIconButton<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperIconButton> R getSelf() {
 		return (R) this;
 	}
 }

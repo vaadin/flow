@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.flex.layout.IronFlexLayout;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -70,13 +71,11 @@ import com.vaadin.annotations.HtmlImport;
  * to {@code <iron-flex-layout>} is available.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-flex-layout#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-flex-layout#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-flex-layout")
 @HtmlImport("frontend://bower_components/iron-flex-layout/iron-flex-layout.html")
-public class IronFlexLayout<R extends IronFlexLayout<R>> extends Component
-		implements
-			HasStyle {
+public class IronFlexLayout extends Component implements HasStyle {
 
 	/**
 	 * Gets the narrow typed reference to this object. Subclasses should
@@ -84,7 +83,7 @@ public class IronFlexLayout<R extends IronFlexLayout<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronFlexLayout> R getSelf() {
 		return (R) this;
 	}
 }

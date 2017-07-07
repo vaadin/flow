@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.CascadedAnimation;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -33,13 +34,11 @@ import elemental.json.JsonObject;
  * timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: cascaded-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: cascaded-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("cascaded-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/cascaded-animation.html")
-public class CascadedAnimation<R extends CascadedAnimation<R>>
-		extends
-			Component implements HasStyle {
+public class CascadedAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -61,7 +60,8 @@ public class CascadedAnimation<R extends CascadedAnimation<R>>
 	 * @param animationTiming
 	 * @return This instance, for method chaining.
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends CascadedAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -86,7 +86,8 @@ public class CascadedAnimation<R extends CascadedAnimation<R>>
 	 * @param isNeonAnimation
 	 * @return This instance, for method chaining.
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends CascadedAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -128,7 +129,7 @@ public class CascadedAnimation<R extends CascadedAnimation<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends CascadedAnimation> R getSelf() {
 		return (R) this;
 	}
 }

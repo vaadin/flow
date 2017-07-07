@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.FadeInAnimation;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -31,13 +32,11 @@ import elemental.json.JsonObject;
  * <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: fade-in-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: fade-in-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("fade-in-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/fade-in-animation.html")
-public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component
-		implements
-			HasStyle {
+public class FadeInAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -59,7 +58,8 @@ public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component
 	 * @param animationTiming
 	 * @return This instance, for method chaining.
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends FadeInAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -84,7 +84,8 @@ public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component
 	 * @param isNeonAnimation
 	 * @return This instance, for method chaining.
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends FadeInAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -131,7 +132,7 @@ public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends FadeInAnimation> R getSelf() {
 		return (R) this;
 	}
 }

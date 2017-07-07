@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.paper.card.PaperCard;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -66,14 +67,11 @@ import com.vaadin.ui.HasComponents;
  * {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-card#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-card#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
-public class PaperCard<R extends PaperCard<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class PaperCard extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -95,7 +93,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param heading
 	 * @return This instance, for method chaining.
 	 */
-	public R setHeading(java.lang.String heading) {
+	public <R extends PaperCard> R setHeading(java.lang.String heading) {
 		getElement().setProperty("heading", heading == null ? "" : heading);
 		return getSelf();
 	}
@@ -120,7 +118,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param image
 	 * @return This instance, for method chaining.
 	 */
-	public R setImage(java.lang.String image) {
+	public <R extends PaperCard> R setImage(java.lang.String image) {
 		getElement().setProperty("image", image == null ? "" : image);
 		return getSelf();
 	}
@@ -145,7 +143,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param alt
 	 * @return This instance, for method chaining.
 	 */
-	public R setAlt(java.lang.String alt) {
+	public <R extends PaperCard> R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
 		return getSelf();
 	}
@@ -172,7 +170,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param preloadImage
 	 * @return This instance, for method chaining.
 	 */
-	public R setPreloadImage(boolean preloadImage) {
+	public <R extends PaperCard> R setPreloadImage(boolean preloadImage) {
 		getElement().setProperty("preloadImage", preloadImage);
 		return getSelf();
 	}
@@ -199,7 +197,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param fadeImage
 	 * @return This instance, for method chaining.
 	 */
-	public R setFadeImage(boolean fadeImage) {
+	public <R extends PaperCard> R setFadeImage(boolean fadeImage) {
 		getElement().setProperty("fadeImage", fadeImage);
 		return getSelf();
 	}
@@ -228,7 +226,8 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param placeholderImage
 	 * @return This instance, for method chaining.
 	 */
-	public R setPlaceholderImage(java.lang.String placeholderImage) {
+	public <R extends PaperCard> R setPlaceholderImage(
+			java.lang.String placeholderImage) {
 		getElement().setProperty("placeholderImage",
 				placeholderImage == null ? "" : placeholderImage);
 		return getSelf();
@@ -254,7 +253,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param elevation
 	 * @return This instance, for method chaining.
 	 */
-	public R setElevation(double elevation) {
+	public <R extends PaperCard> R setElevation(double elevation) {
 		getElement().setProperty("elevation", elevation);
 		return getSelf();
 	}
@@ -281,7 +280,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param animatedShadow
 	 * @return This instance, for method chaining.
 	 */
-	public R setAnimatedShadow(boolean animatedShadow) {
+	public <R extends PaperCard> R setAnimatedShadow(boolean animatedShadow) {
 		getElement().setProperty("animatedShadow", animatedShadow);
 		return getSelf();
 	}
@@ -308,7 +307,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * @param animated
 	 * @return This instance, for method chaining.
 	 */
-	public R setAnimated(boolean animated) {
+	public <R extends PaperCard> R setAnimated(boolean animated) {
 		getElement().setProperty("animated", animated);
 		return getSelf();
 	}
@@ -319,7 +318,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperCard> R getSelf() {
 		return (R) this;
 	}
 }

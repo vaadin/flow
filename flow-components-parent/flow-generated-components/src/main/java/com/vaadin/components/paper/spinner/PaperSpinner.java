@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.paper.spinner.PaperSpinner;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -60,13 +61,11 @@ import com.vaadin.annotations.HtmlImport;
  * {@code --paper-spinner-stroke-width} | The width of the spinner stroke | 3px
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-spinner#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-spinner#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-spinner")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner.html")
-public class PaperSpinner<R extends PaperSpinner<R>> extends Component
-		implements
-			HasStyle {
+public class PaperSpinner extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -88,7 +87,7 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component
 	 * @param active
 	 * @return This instance, for method chaining.
 	 */
-	public R setActive(boolean active) {
+	public <R extends PaperSpinner> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -117,7 +116,7 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component
 	 * @param alt
 	 * @return This instance, for method chaining.
 	 */
-	public R setAlt(java.lang.String alt) {
+	public <R extends PaperSpinner> R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
 		return getSelf();
 	}
@@ -128,7 +127,7 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperSpinner> R getSelf() {
 		return (R) this;
 	}
 }

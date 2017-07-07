@@ -297,7 +297,14 @@ public class ComponentGenerator {
 
         Set<Class<?>> interfaces = BehaviorRegistry
                 .getClassesForBehaviors(classBehaviorsAndMixins);
-        interfaces.forEach(javaClass::addInterface);
+        interfaces.forEach(clazz -> {
+            if (clazz.getTypeParameters().length > 0) {
+                javaClass.addInterface(
+                        clazz.getName() + "<" + javaClass.getName() + ">");
+            } else {
+                javaClass.addInterface(clazz);
+            }
+        });
 
         addClassAnnotations(metadata, javaClass);
 
@@ -330,8 +337,6 @@ public class ComponentGenerator {
         }
 
         if (fluentSetters) {
-            javaClass.addTypeVariable().setName(GENERIC_TYPE)
-                    .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
             generateGetSelf(javaClass);
         }
 
@@ -427,6 +432,7 @@ public class ComponentGenerator {
     private void generateGetSelf(JavaClassSource javaClass) {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
+        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
 
         method.getJavaDoc().setText(
                 "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
@@ -678,6 +684,7 @@ public class ComponentGenerator {
             method.getJavaDoc().addTagValue(JAVADOC_PARAM, property.getName());
 
             if (fluentSetters) {
+                method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
                 method.setReturnType(GENERIC_TYPE);
                 method.setBody(String
                         .format(method.getBody() + "%n" + "return getSelf();"));

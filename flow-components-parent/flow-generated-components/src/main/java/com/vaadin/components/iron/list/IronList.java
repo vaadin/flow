@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.iron.list.IronList;
 import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -33,14 +34,11 @@ import com.vaadin.ui.HasComponents;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-list#2.0.3", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-list#2.0.3", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-list")
 @HtmlImport("frontend://bower_components/iron-list/iron-list.html")
-public class IronList<R extends IronList<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class IronList extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -104,7 +102,8 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param scrollTarget
 	 * @return This instance, for method chaining.
 	 */
-	public R setScrollTarget(elemental.json.JsonObject scrollTarget) {
+	public <R extends IronList> R setScrollTarget(
+			elemental.json.JsonObject scrollTarget) {
 		getElement().setPropertyJson("scrollTarget", scrollTarget);
 		return getSelf();
 	}
@@ -133,7 +132,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param mutableData
 	 * @return This instance, for method chaining.
 	 */
-	public R setMutableData(boolean mutableData) {
+	public <R extends IronList> R setMutableData(boolean mutableData) {
 		getElement().setProperty("mutableData", mutableData);
 		return getSelf();
 	}
@@ -160,7 +159,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param items
 	 * @return This instance, for method chaining.
 	 */
-	public R setItems(elemental.json.JsonArray items) {
+	public <R extends IronList> R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
 		return getSelf();
 	}
@@ -185,7 +184,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param maxPhysicalCount
 	 * @return This instance, for method chaining.
 	 */
-	public R setMaxPhysicalCount(double maxPhysicalCount) {
+	public <R extends IronList> R setMaxPhysicalCount(double maxPhysicalCount) {
 		getElement().setProperty("maxPhysicalCount", maxPhysicalCount);
 		return getSelf();
 	}
@@ -212,7 +211,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param as
 	 * @return This instance, for method chaining.
 	 */
-	public R setAs(java.lang.String as) {
+	public <R extends IronList> R setAs(java.lang.String as) {
 		getElement().setProperty("as", as == null ? "" : as);
 		return getSelf();
 	}
@@ -239,7 +238,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param indexAs
 	 * @return This instance, for method chaining.
 	 */
-	public R setIndexAs(java.lang.String indexAs) {
+	public <R extends IronList> R setIndexAs(java.lang.String indexAs) {
 		getElement().setProperty("indexAs", indexAs == null ? "" : indexAs);
 		return getSelf();
 	}
@@ -266,7 +265,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param selectedAs
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelectedAs(java.lang.String selectedAs) {
+	public <R extends IronList> R setSelectedAs(java.lang.String selectedAs) {
 		getElement().setProperty("selectedAs",
 				selectedAs == null ? "" : selectedAs);
 		return getSelf();
@@ -302,7 +301,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param grid
 	 * @return This instance, for method chaining.
 	 */
-	public R setGrid(boolean grid) {
+	public <R extends IronList> R setGrid(boolean grid) {
 		getElement().setProperty("grid", grid);
 		return getSelf();
 	}
@@ -335,7 +334,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param selectionEnabled
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelectionEnabled(boolean selectionEnabled) {
+	public <R extends IronList> R setSelectionEnabled(boolean selectionEnabled) {
 		getElement().setProperty("selectionEnabled", selectionEnabled);
 		return getSelf();
 	}
@@ -362,7 +361,8 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param selectedItem
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
+	public <R extends IronList> R setSelectedItem(
+			elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
 		return getSelf();
 	}
@@ -389,7 +389,8 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param selectedItems
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelectedItems(elemental.json.JsonObject selectedItems) {
+	public <R extends IronList> R setSelectedItems(
+			elemental.json.JsonObject selectedItems) {
 		getElement().setPropertyJson("selectedItems", selectedItems);
 		return getSelf();
 	}
@@ -418,7 +419,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param multiSelection
 	 * @return This instance, for method chaining.
 	 */
-	public R setMultiSelection(boolean multiSelection) {
+	public <R extends IronList> R setMultiSelection(boolean multiSelection) {
 		getElement().setProperty("multiSelection", multiSelection);
 		return getSelf();
 	}
@@ -457,7 +458,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param scrollOffset
 	 * @return This instance, for method chaining.
 	 */
-	public R setScrollOffset(double scrollOffset) {
+	public <R extends IronList> R setScrollOffset(double scrollOffset) {
 		getElement().setProperty("scrollOffset", scrollOffset);
 		return getSelf();
 	}
@@ -482,7 +483,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param firstVisibleIndex
 	 * @return This instance, for method chaining.
 	 */
-	public R setFirstVisibleIndex(double firstVisibleIndex) {
+	public <R extends IronList> R setFirstVisibleIndex(double firstVisibleIndex) {
 		getElement().setProperty("firstVisibleIndex", firstVisibleIndex);
 		return getSelf();
 	}
@@ -507,7 +508,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * @param lastVisibleIndex
 	 * @return This instance, for method chaining.
 	 */
-	public R setLastVisibleIndex(double lastVisibleIndex) {
+	public <R extends IronList> R setLastVisibleIndex(double lastVisibleIndex) {
 		getElement().setProperty("lastVisibleIndex", lastVisibleIndex);
 		return getSelf();
 	}
@@ -804,7 +805,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronList> R getSelf() {
 		return (R) this;
 	}
 }

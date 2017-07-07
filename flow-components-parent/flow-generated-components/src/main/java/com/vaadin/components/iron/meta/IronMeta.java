@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.meta.IronMeta;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
@@ -65,13 +66,11 @@ import com.vaadin.shared.Registration;
  * <iron-meta id="meta"></iron-meta> ... this.$.meta.byKey('info');
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-meta#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-meta#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-meta")
 @HtmlImport("frontend://bower_components/iron-meta/iron-meta.html")
-public class IronMeta<R extends IronMeta<R>> extends Component
-		implements
-			HasStyle {
+public class IronMeta extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -93,7 +92,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * @param type
 	 * @return This instance, for method chaining.
 	 */
-	public R setType(java.lang.String type) {
+	public <R extends IronMeta> R setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
 		return getSelf();
 	}
@@ -118,7 +117,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * @param key
 	 * @return This instance, for method chaining.
 	 */
-	public R setKey(java.lang.String key) {
+	public <R extends IronMeta> R setKey(java.lang.String key) {
 		getElement().setProperty("key", key == null ? "" : key);
 		return getSelf();
 	}
@@ -144,7 +143,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * @param value
 	 * @return This instance, for method chaining.
 	 */
-	public R setValue(java.lang.String value) {
+	public <R extends IronMeta> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return getSelf();
 	}
@@ -169,7 +168,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * @param self
 	 * @return This instance, for method chaining.
 	 */
-	public R setSelf(boolean self) {
+	public <R extends IronMeta> R setSelf(boolean self) {
 		getElement().setProperty("self", self);
 		return getSelf();
 	}
@@ -186,7 +185,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * @param list
 	 * @return This instance, for method chaining.
 	 */
-	public R setList(elemental.json.JsonObject list) {
+	public <R extends IronMeta> R setList(elemental.json.JsonObject list) {
 		getElement().setPropertyJson("list", list);
 		return getSelf();
 	}
@@ -221,7 +220,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronMeta> R getSelf() {
 		return (R) this;
 	}
 }

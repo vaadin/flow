@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.SlideUpAnimation;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -33,13 +34,11 @@ import elemental.json.JsonObject;
  * transformOrigin: <transform-origin>, timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: slide-up-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: slide-up-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("slide-up-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/slide-up-animation.html")
-public class SlideUpAnimation<R extends SlideUpAnimation<R>> extends Component
-		implements
-			HasStyle {
+public class SlideUpAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -61,7 +60,8 @@ public class SlideUpAnimation<R extends SlideUpAnimation<R>> extends Component
 	 * @param animationTiming
 	 * @return This instance, for method chaining.
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends SlideUpAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -86,7 +86,8 @@ public class SlideUpAnimation<R extends SlideUpAnimation<R>> extends Component
 	 * @param isNeonAnimation
 	 * @return This instance, for method chaining.
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends SlideUpAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -133,7 +134,7 @@ public class SlideUpAnimation<R extends SlideUpAnimation<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends SlideUpAnimation> R getSelf() {
 		return (R) this;
 	}
 }

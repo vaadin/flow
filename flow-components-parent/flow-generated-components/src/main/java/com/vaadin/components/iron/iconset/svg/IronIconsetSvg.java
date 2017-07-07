@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.iconset.svg.IronIconsetSvg;
 import com.vaadin.components.NotSupported;
 import elemental.json.JsonObject;
 
@@ -51,13 +52,11 @@ import elemental.json.JsonObject;
  * iconset.applyIcon(iconNode, 'car');
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-iconset-svg")
 @HtmlImport("frontend://bower_components/iron-iconset-svg/iron-iconset-svg.html")
-public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
-		implements
-			HasStyle {
+public class IronIconsetSvg extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -79,7 +78,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * @param name
 	 * @return This instance, for method chaining.
 	 */
-	public R setName(java.lang.String name) {
+	public <R extends IronIconsetSvg> R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
 		return getSelf();
 	}
@@ -104,7 +103,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * @param size
 	 * @return This instance, for method chaining.
 	 */
-	public R setSize(double size) {
+	public <R extends IronIconsetSvg> R setSize(double size) {
 		getElement().setProperty("size", size);
 		return getSelf();
 	}
@@ -141,7 +140,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * @param rtlMirroring
 	 * @return This instance, for method chaining.
 	 */
-	public R setRtlMirroring(boolean rtlMirroring) {
+	public <R extends IronIconsetSvg> R setRtlMirroring(boolean rtlMirroring) {
 		getElement().setProperty("rtlMirroring", rtlMirroring);
 		return getSelf();
 	}
@@ -197,7 +196,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronIconsetSvg> R getSelf() {
 		return (R) this;
 	}
 }

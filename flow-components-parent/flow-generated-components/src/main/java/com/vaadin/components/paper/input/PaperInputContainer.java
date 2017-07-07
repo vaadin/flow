@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.paper.input.PaperInputContainer;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.DomEvent;
@@ -140,13 +141,11 @@ import com.vaadin.shared.Registration;
  * {@code inline} attribute to make it {@code display:inline-block}.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-input-container#2.0.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-input-container#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
-public class PaperInputContainer<R extends PaperInputContainer<R>>
-		extends
-			Component implements HasStyle {
+public class PaperInputContainer extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -170,7 +169,8 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * @param noLabelFloat
 	 * @return This instance, for method chaining.
 	 */
-	public R setNoLabelFloat(boolean noLabelFloat) {
+	public <R extends PaperInputContainer> R setNoLabelFloat(
+			boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
 		return getSelf();
 	}
@@ -195,7 +195,8 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * @param alwaysFloatLabel
 	 * @return This instance, for method chaining.
 	 */
-	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public <R extends PaperInputContainer> R setAlwaysFloatLabel(
+			boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
 		return getSelf();
 	}
@@ -220,7 +221,8 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * @param attrForValue
 	 * @return This instance, for method chaining.
 	 */
-	public R setAttrForValue(java.lang.String attrForValue) {
+	public <R extends PaperInputContainer> R setAttrForValue(
+			java.lang.String attrForValue) {
 		getElement().setProperty("attrForValue",
 				attrForValue == null ? "" : attrForValue);
 		return getSelf();
@@ -246,7 +248,8 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * @param autoValidate
 	 * @return This instance, for method chaining.
 	 */
-	public R setAutoValidate(boolean autoValidate) {
+	public <R extends PaperInputContainer> R setAutoValidate(
+			boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
 		return getSelf();
 	}
@@ -275,7 +278,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * @param invalid
 	 * @return This instance, for method chaining.
 	 */
-	public R setInvalid(boolean invalid) {
+	public <R extends PaperInputContainer> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
 		return getSelf();
 	}
@@ -301,7 +304,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * @param focused
 	 * @return This instance, for method chaining.
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends PaperInputContainer> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -469,7 +472,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperInputContainer> R getSelf() {
 		return (R) this;
 	}
 }
