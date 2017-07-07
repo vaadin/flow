@@ -207,9 +207,8 @@ public final class ExecuteJavaScriptElementUtils {
     private static Element getCustomElement(Node root, JsonArray path) {
         Node current = root;
         for (int i = 0; i < path.length(); i++) {
-            HTMLCollection children = DomApi.wrap(current).getChildren();
             JsonValue value = path.get(i);
-            current = children.item((int) value.asNumber());
+            current = getChildIgnoringStyles(current, (int) value.asNumber());
         }
         if (current instanceof Element) {
             return (Element) current;
@@ -219,6 +218,24 @@ public final class ExecuteJavaScriptElementUtils {
         } else {
             Console.warn("The node addressed by path " + path
                     + " is not an Element");
+        }
+        return null;
+    }
+
+    private static Node getChildIgnoringStyles(Node parent, int index) {
+        HTMLCollection children = DomApi.wrap(parent).getChildren();
+        int filteredIndex = -1;
+        for (int i = 0; i < children.getLength(); i++) {
+            Node next = children.item(i);
+            assert next instanceof Element : "Unexpected element type in the collection of children. "
+                    + "DomElement::getChildren is supposed to retutrn children Elements only";
+            Element element = (Element) next;
+            if (!"style".equalsIgnoreCase(element.getTagName())) {
+                filteredIndex++;
+            }
+            if (filteredIndex == index) {
+                return next;
+            }
         }
         return null;
     }
