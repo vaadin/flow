@@ -796,7 +796,7 @@ public class ComponentGenerator {
 
         List<ComponentBasicType> typeVariants = param.getType();
         boolean useTypePostfixForVariableName = typeVariants.size() > 1;
-        List<String> finalNames = new ArrayList<>(typeVariants.size());
+        List<String> names = new ArrayList<>(typeVariants.size());
 
         // there might be multiple types accepted for same parameter,
         // for now different types are allowed and parameter name is
@@ -817,9 +817,9 @@ public class ComponentGenerator {
                     param.getName() + (useTypePostfixForVariableName
                             ? " can be <code>null</code>"
                             : ""));
-            finalNames.add(name);
+            names.add(name);
         }
-        return finalNames;
+        return names;
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
