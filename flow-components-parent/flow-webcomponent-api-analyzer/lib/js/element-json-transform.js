@@ -119,7 +119,9 @@ const propertiesToJsonArray = (properties) => {
         "type": getTypes(property.type),
         "objectType": getObjectType(property.type),
         "description": property.jsdoc ? property.jsdoc.description : 'Missing documentation!',
-// TODO #1768 "readonly": true
+      }
+      if (property.readOnly) {
+        propertyJson.readOnly = true;
       }
       propertiesJson.push(propertyJson);
     }
