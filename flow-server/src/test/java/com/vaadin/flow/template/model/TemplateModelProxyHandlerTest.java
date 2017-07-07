@@ -27,6 +27,14 @@ public class TemplateModelProxyHandlerTest {
         }
     }
 
+    public static class TestModelType extends BeanModelType<Model> {
+
+        public TestModelType() {
+            super(Model.class, PropertyFilter.ACCEPT_ALL, true);
+        }
+
+    }
+
     @Before
     public void setUp() {
         Assert.assertNull(VaadinService.getCurrent());
@@ -63,8 +71,15 @@ public class TemplateModelProxyHandlerTest {
         Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
                 emptyModelTemplate1.getElement().getNode(), realModelType)));
 
-        BeanModelType<TemplateModel> wrongModelType = new BeanModelType<>(
-                TemplateModel.class, PropertyFilter.ACCEPT_ALL);
+        class TestTemplateModelType extends BeanModelType<TemplateModel> {
+
+            public TestTemplateModelType() {
+                super(TemplateModel.class, PropertyFilter.ACCEPT_ALL, true);
+            }
+
+        }
+
+        BeanModelType<TemplateModel> wrongModelType = new TestTemplateModelType();
         Assert.assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
                 emptyModelTemplate1.getElement().getNode(), wrongModelType)));
 
@@ -101,8 +116,7 @@ public class TemplateModelProxyHandlerTest {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
         Model proxy = TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(),
-                new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL));
+                template.getElement().getNode(), new TestModelType());
         Assert.assertEquals(System.identityHashCode(proxy), proxy.hashCode());
     }
 
@@ -111,8 +125,7 @@ public class TemplateModelProxyHandlerTest {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
         Model proxy = TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(),
-                new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL));
+                template.getElement().getNode(), new TestModelType());
         Assert.assertEquals("foo", proxy.toString());
     }
 
@@ -145,5 +158,10 @@ public class TemplateModelProxyHandlerTest {
 
         Assert.assertTrue(model.getClass().getCanonicalName().startsWith(
                 TemplateModelTest.EmptyModel.class.getCanonicalName()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void beanHasNoProperties_throwsException() {
+        new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL);
     }
 }
