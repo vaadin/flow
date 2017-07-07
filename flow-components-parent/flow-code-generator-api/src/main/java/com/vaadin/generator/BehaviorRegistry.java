@@ -38,7 +38,7 @@ public final class BehaviorRegistry {
 
     static {
         put(HasClickListeners.class, "Polymer.PaperButtonBehavior",
-                "Polymer.GestureEventListeners");
+                "Polymer.GestureEventListeners", "VaadinButton");
         put(HasText.class, "VaadinButton", "PaperButton");
     }
 

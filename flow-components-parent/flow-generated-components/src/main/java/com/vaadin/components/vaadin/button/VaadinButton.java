@@ -17,6 +17,7 @@ package com.vaadin.components.vaadin.button;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasText;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
@@ -55,6 +56,7 @@ import com.vaadin.ui.HasComponents;
 public class VaadinButton extends Component
 		implements
 			HasStyle,
+			HasClickListeners<VaadinButton>,
 			HasText,
 			HasComponents {
 
