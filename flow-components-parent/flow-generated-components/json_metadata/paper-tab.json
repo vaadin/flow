@@ -1,9 +1,26 @@
 {
-  "name": "paper-icon-button",
-  "tag": "paper-icon-button",
-  "baseUrl": "paper-icon-button/paper-icon-button.html",
+  "name": "paper-tab",
+  "tag": "paper-tab",
+  "baseUrl": "paper-tabs/paper-tab.html",
   "version": "2.0.0",
   "properties": [
+    {
+      "name": "focused",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the element currently has focus.\n       ",
+      "readOnly": true
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the user cannot interact with this element.\n       "
+    },
     {
       "name": "keyEventTarget",
       "type": [
@@ -80,23 +97,6 @@
       "description": "The aria attribute to be set if the button is a toggle and in the\nactive state.\n       "
     },
     {
-      "name": "focused",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "If true, the element currently has focus.\n       ",
-      "readOnly": true
-    },
-    {
-      "name": "disabled",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "If true, the user cannot interact with this element.\n       "
-    },
-    {
       "name": "noink",
       "type": [
         "BOOLEAN"
@@ -105,28 +105,12 @@
       "description": "If true, the element will not produce a ripple effect when interacted\nwith via the pointer.\n       "
     },
     {
-      "name": "src",
+      "name": "link",
       "type": [
-        "STRING"
+        "BOOLEAN"
       ],
       "objectType": [],
-      "description": "The URL of an image for the icon. If the src property is specified,\nthe icon property should not be.\n         "
-    },
-    {
-      "name": "icon",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "Specifies the icon name or index in the set of icons available in\nthe icon's icon set. If the icon property is specified,\nthe src property should not be.\n         "
-    },
-    {
-      "name": "alt",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "Specifies the alternate text for the button, for accessibility.\n         "
+      "description": "If true, the tab will forward keyboard clicks (enter/space) to\nthe first anchor element found in its descendants\n         "
     }
   ],
   "methods": [
@@ -212,11 +196,6 @@
   ],
   "events": [
     {
-      "name": "active-changed",
-      "description": "Fired when the `active` property changes.",
-      "properties": []
-    },
-    {
       "name": "focused-changed",
       "description": "Fired when the `focused` property changes.",
       "properties": []
@@ -225,12 +204,21 @@
       "name": "disabled-changed",
       "description": "Fired when the `disabled` property changes.",
       "properties": []
+    },
+    {
+      "name": "active-changed",
+      "description": "Fired when the `active` property changes.",
+      "properties": []
     }
   ],
-  "slots": [],
+  "slots": [
+    ""
+  ],
   "behaviors": [
-    "Polymer.PaperInkyFocusBehavior"
+    "Polymer.IronControlState",
+    "Polymer.IronButtonState",
+    "Polymer.PaperRippleBehavior"
   ],
   "mixins": [],
-  "description": "Material design: [Icon toggles](https://www.google.com/design/spec/components/buttons.html#buttons-toggle-buttons)\n\n`paper-icon-button` is a button with an image placed at the center. When the user touches\nthe button, a ripple effect emanates from the center of the button.\n\n`paper-icon-button` includes a default icon set.  Use `icon` to specify which icon\nfrom the icon set to use.\n\n    <paper-icon-button icon=\"menu\"></paper-icon-button>\n\nSee [`iron-iconset`](iron-iconset) for more information about\nhow to use a custom icon set.\n\nExample:\n\n    <link href=\"path/to/iron-icons/iron-icons.html\" rel=\"import\">\n\n    <paper-icon-button icon=\"favorite\"></paper-icon-button>\n    <paper-icon-button src=\"star.png\"></paper-icon-button>\n\nTo use `paper-icon-button` as a link, wrap it in an anchor tag. Since `paper-icon-button`\nwill already receive focus, you may want to prevent the anchor tag from receiving focus\nas well by setting its tabindex to -1.\n\n    <a href=\"https://www.polymer-project.org\" tabindex=\"-1\">\n      <paper-icon-button icon=\"polymer\"></paper-icon-button>\n    </a>\n\n### Styling\n\nStyle the button with CSS as you would a normal DOM element. If you are using the icons\nprovided by `iron-icons`, they will inherit the foreground color of the button.\n\n    /* make a red \"favorite\" button */\n    <paper-icon-button icon=\"favorite\" style=\"color: red;\"></paper-icon-button>\n\nBy default, the ripple is the same color as the foreground at 25% opacity. You may\ncustomize the color using the `--paper-icon-button-ink-color` custom property.\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-icon-button-disabled-text` | The color of the disabled button | `--disabled-text-color`\n`--paper-icon-button-ink-color` | Selected/focus ripple color | `--primary-text-color`\n`--paper-icon-button` | Mixin for a button | `{}`\n`--paper-icon-button-disabled` | Mixin for a disabled button | `{}`\n`--paper-icon-button-hover` | Mixin for button on hover | `{}`"
+  "description": "`paper-tab` is styled to look like a tab.  It should be used in conjunction with\n`paper-tabs`.\n\nExample:\n\n    <paper-tabs selected=\"0\">\n      <paper-tab>TAB 1</paper-tab>\n      <paper-tab>TAB 2</paper-tab>\n      <paper-tab>TAB 3</paper-tab>\n    </paper-tabs>\n\n### Styling\n\nThe following custom properties and mixins are available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-tab-ink` | Ink color | `--paper-yellow-a100`\n`--paper-tab` | Mixin applied to the tab | `{}`\n`--paper-tab-content` | Mixin applied to the tab content | `{}`\n`--paper-tab-content-unselected` | Mixin applied to the tab content when the tab is not selected | `{}`\n\nThis element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.\nIn order to apply the `Roboto` font to this element, make sure you've imported `paper-styles/typography.html`."
 }

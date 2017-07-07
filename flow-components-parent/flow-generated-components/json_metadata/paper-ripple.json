@@ -74,7 +74,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True when there are visible ripples animating within the\nelement.\n         "
+      "description": "True when there are visible ripples animating within the\nelement.\n         ",
+      "readOnly": true
     },
     {
       "name": "holdDown",

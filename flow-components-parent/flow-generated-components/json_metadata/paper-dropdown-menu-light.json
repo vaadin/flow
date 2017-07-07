@@ -1,0 +1,434 @@
+{
+  "name": "paper-dropdown-menu-light",
+  "tag": "paper-dropdown-menu-light",
+  "baseUrl": "paper-dropdown-menu/paper-dropdown-menu-light.html",
+  "version": "2.0.0",
+  "properties": [
+    {
+      "name": "keyEventTarget",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The EventTarget that will be firing relevant KeyboardEvents. Set it to\n`null` to disable the listeners."
+    },
+    {
+      "name": "stopKeyboardEventPropagation",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, this property will cause the implementing element to\nautomatically stop propagation on any handled KeyboardEvents.\n         "
+    },
+    {
+      "name": "keyBindings",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "pressed",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the user is currently holding down the button.\n       ",
+      "readOnly": true
+    },
+    {
+      "name": "toggles",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the button toggles the active state with each tap or press\nof the spacebar.\n       "
+    },
+    {
+      "name": "active",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the button is a toggle and is currently in the active state.\n       "
+    },
+    {
+      "name": "pointerDown",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the element is currently being pressed by a \"pointer,\" which\nis loosely defined as mouse or touch input (but specifically excluding\nkeyboard input).\n       ",
+      "readOnly": true
+    },
+    {
+      "name": "receivedFocusFromKeyboard",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the input device that caused the element to receive focus\nwas a keyboard.\n       ",
+      "readOnly": true
+    },
+    {
+      "name": "ariaActiveAttribute",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The aria attribute to be set if the button is a toggle and in the\nactive state.\n       "
+    },
+    {
+      "name": "focused",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the element currently has focus.\n       ",
+      "readOnly": true
+    },
+    {
+      "name": "disabled",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the user cannot interact with this element.\n       "
+    },
+    {
+      "name": "noink",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If true, the element will not produce a ripple effect when interacted\nwith via the pointer.\n       "
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of this element.\n       "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The value for this element that will be used when submitting in\na form. It is read only, and will always have the same value\nas `selectedItemLabel`.\n           ",
+      "readOnly": true
+    },
+    {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to mark the input as required. If used in a form, a\ncustom element that uses this behavior should also use\nPolymer.IronValidatableBehavior and define a custom validation method.\nOtherwise, a `required` element will always be considered valid.\nIt's also strongly recommended to provide a visual style for the element\nwhen its value is invalid.\n       "
+    },
+    {
+      "name": "validator",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "Name of the validator to use.\n       "
+    },
+    {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the last call to `validate` is invalid.\n       "
+    },
+    {
+      "name": "selectedItemLabel",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The derived \"label\" of the currently selected item. This value\nis the `label` property on the selected item if set, or else the\ntrimmed text content of the selected item.\n           ",
+      "readOnly": true
+    },
+    {
+      "name": "selectedItem",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The last selected item. An item is selected if the dropdown menu has\na child with class `dropdown-content`, and that child triggers an\n`iron-select` event with the selected `item` in the `detail`.",
+      "readOnly": true
+    },
+    {
+      "name": "label",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The label for the dropdown.\n           "
+    },
+    {
+      "name": "placeholder",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The placeholder for the dropdown.\n           "
+    },
+    {
+      "name": "opened",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the dropdown is open. Otherwise, false.\n           "
+    },
+    {
+      "name": "allowOutsideScroll",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "By default, the dropdown will constrain scrolling on the page\nto itself when opened.\nSet to true in order to prevent scroll from being constrained\nto the dropdown when it opens.\n           "
+    },
+    {
+      "name": "noLabelFloat",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to disable the floating label. Bind this to the\n`<paper-input-container>`'s `noLabelFloat` property.\n           "
+    },
+    {
+      "name": "alwaysFloatLabel",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to always float the label. Bind this to the\n`<paper-input-container>`'s `alwaysFloatLabel` property.\n           "
+    },
+    {
+      "name": "noAnimations",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to disable animations when opening and closing the\ndropdown.\n           "
+    },
+    {
+      "name": "horizontalAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The orientation against which to align the menu dropdown\nhorizontally relative to the dropdown trigger.\n           "
+    },
+    {
+      "name": "verticalAlign",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The orientation against which to align the menu dropdown\nvertically relative to the dropdown trigger.\n           "
+    },
+    {
+      "name": "hasContent",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "",
+      "readOnly": true
+    },
+    {
+      "name": "contentElement",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The content element that is contained by the dropdown menu, if any.\n         "
+    }
+  ],
+  "methods": [
+    {
+      "name": "addOwnKeyBinding",
+      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.",
+      "parameters": [
+        {
+          "name": "eventString",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        },
+        {
+          "name": "handlerName",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "removeOwnKeyBindings",
+      "description": "When called, will remove all imperatively-added key bindings.\n       ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "keyboardEventMatchesKeys",
+      "description": "Returns true if a keyboard event matches `eventString`.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        },
+        {
+          "name": "eventString",
+          "type": [
+            "STRING"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "ensureRipple",
+      "description": "Ensures this element contains a ripple effect. For startup efficiency\nthe ripple effect is dynamically on demand when needed.",
+      "parameters": [
+        {
+          "name": "optTriggeringEvent",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "(optional) event that triggered the\nripple."
+        }
+      ],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "getRipple",
+      "description": "Returns the `<paper-ripple>` element used by this element to create\nripple effects. The element's ripple is created on demand, when\nnecessary, and calling this method will force the\nripple to be created.\n     ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "hasRipple",
+      "description": "Returns true if this element currently contains a ripple effect.",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "hasValidator",
+      "description": "",
+      "parameters": [],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "validate",
+      "description": "Returns true if the `value` is valid, and updates `invalid`. If you want\nyour element to have custom validation logic, do not override this method;\noverride `_getValidity(value)` instead.",
+      "parameters": [
+        {
+          "name": "value",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Deprecated: The value to be validated. By default,\nit is passed to the validator's `validate()` function, if a validator is set.\nIf this argument is not specified, then the element's `value` property\nis used, if it exists."
+        }
+      ],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "open",
+      "description": "Show the dropdown content.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "close",
+      "description": "Hide the dropdown content.\n         ",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "active-changed",
+      "description": "Fired when the `active` property changes.",
+      "properties": []
+    },
+    {
+      "name": "focused-changed",
+      "description": "Fired when the `focused` property changes.",
+      "properties": []
+    },
+    {
+      "name": "disabled-changed",
+      "description": "Fired when the `disabled` property changes.",
+      "properties": []
+    },
+    {
+      "name": "iron-form-element-register",
+      "description": "iron-form-element-register",
+      "properties": []
+    },
+    {
+      "name": "iron-form-element-unregister",
+      "description": "iron-form-element-unregister",
+      "properties": []
+    },
+    {
+      "name": "value-changed",
+      "description": "Fired when the `value` property changes.",
+      "properties": []
+    },
+    {
+      "name": "invalid-changed",
+      "description": "Fired when the `invalid` property changes.",
+      "properties": []
+    },
+    {
+      "name": "selected-item-label-changed",
+      "description": "Fired when the `selectedItemLabel` property changes.",
+      "properties": []
+    },
+    {
+      "name": "selected-item-changed",
+      "description": "Fired when the `selectedItem` property changes.",
+      "properties": []
+    },
+    {
+      "name": "opened-changed",
+      "description": "Fired when the `opened` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    "dropdown-content"
+  ],
+  "behaviors": [
+    "Polymer.IronButtonState",
+    "Polymer.IronControlState",
+    "Polymer.PaperRippleBehavior",
+    "Polymer.IronFormElementBehavior",
+    "Polymer.IronValidatableBehavior"
+  ],
+  "mixins": [],
+  "description": "Material design: [Dropdown menus](https://www.google.com/design/spec/components/buttons.html#buttons-dropdown-buttons)\n\nThis is a faster, lighter version of `paper-dropdown-menu`, that does not\nuse a `<paper-input>` internally. Use this element if you're concerned about\nthe performance of this element, i.e., if you plan on using many dropdowns on\nthe same page. Note that this element has a slightly different styling API\nthan `paper-dropdown-menu`.\n\n`paper-dropdown-menu-light` is similar to a native browser select element.\n`paper-dropdown-menu-light` works with selectable content. The currently selected\nitem is displayed in the control. If no item is selected, the `label` is\ndisplayed instead.\n\nExample:\n\n    <paper-dropdown-menu-light label=\"Your favourite pastry\">\n      <paper-listbox slot=\"dropdown-content\">\n        <paper-item>Croissant</paper-item>\n        <paper-item>Donut</paper-item>\n        <paper-item>Financier</paper-item>\n        <paper-item>Madeleine</paper-item>\n      </paper-listbox>\n    </paper-dropdown-menu-light>\n\nThis example renders a dropdown menu with 4 options.\n\nThe child element with the slot `dropdown-content` is used as the dropdown\nmenu. This can be a [`paper-listbox`](paper-listbox), or any other or\nelement that acts like an [`iron-selector`](iron-selector).\n\nSpecifically, the menu child must fire an\n[`iron-select`](iron-selector#event-iron-select) event when one of its\nchildren is selected, and an [`iron-deselect`](iron-selector#event-iron-deselect)\nevent when a child is deselected. The selected or deselected item must\nbe passed as the event's `detail.item` property.\n\nApplications can listen for the `iron-select` and `iron-deselect` events\nto react when options are selected and deselected.\n\n### Styling\n\nThe following custom properties and mixins are also available for styling:\n\nCustom property | Description | Default\n----------------|-------------|----------\n`--paper-dropdown-menu` | A mixin that is applied to the element host | `{}`\n`--paper-dropdown-menu-disabled` | A mixin that is applied to the element host when disabled | `{}`\n`--paper-dropdown-menu-ripple` | A mixin that is applied to the internal ripple | `{}`\n`--paper-dropdown-menu-button` | A mixin that is applied to the internal menu button | `{}`\n`--paper-dropdown-menu-icon` | A mixin that is applied to the internal icon | `{}`\n`--paper-dropdown-menu-disabled-opacity` | The opacity of the dropdown when disabled  | `0.33`\n`--paper-dropdown-menu-color` | The color of the input/label/underline when the dropdown is unfocused | `--primary-text-color`\n`--paper-dropdown-menu-focus-color` | The color of the label/underline when the dropdown is focused  | `--primary-color`\n`--paper-dropdown-error-color` | The color of the label/underline when the dropdown is invalid  | `--error-color`\n`--paper-dropdown-menu-label` | Mixin applied to the label | `{}`\n`--paper-dropdown-menu-input` | Mixin appled to the input | `{}`\n\nNote that in this element, the underline is just the bottom border of the \"input\".\nTo style it:\n\n    <style is=custom-style>\n      paper-dropdown-menu-light.custom {\n        --paper-dropdown-menu-input: {\n          border-bottom: 2px dashed lavender;\n        };\n    </style>"
+}

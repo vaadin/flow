@@ -10,7 +10,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the error is showing.\n       "
+      "description": "True if the error is showing.\n       ",
+      "readOnly": true
     }
   ],
   "methods": [

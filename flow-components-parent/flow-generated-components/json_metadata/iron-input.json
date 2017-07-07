@@ -34,7 +34,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Computed property that echoes `bindValue` (mostly used for Polymer 1.0\nbackcompatibility, if you were one-way binding to the Polymer 1.0\n`input is=\"iron-input\"` value attribute).\n         "
+      "description": "Computed property that echoes `bindValue` (mostly used for Polymer 1.0\nbackcompatibility, if you were one-way binding to the Polymer 1.0\n`input is=\"iron-input\"` value attribute).\n         ",
+      "readOnly": true
     },
     {
       "name": "allowedPattern",
