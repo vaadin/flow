@@ -101,7 +101,7 @@ public class PaperInputCharCounter<R extends PaperInputCharCounter<R>>
 		}
 
 		@Override
-		public UpdateState fromJson(elemental.json.JsonObject value) {
+		public UpdateState readJson(elemental.json.JsonObject value) {
 			internalObject = value;
 			return this;
 		}

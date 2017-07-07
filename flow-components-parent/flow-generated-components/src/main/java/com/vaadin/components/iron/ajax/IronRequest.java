@@ -428,7 +428,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 		}
 
 		@Override
-		public SendOptions fromJson(elemental.json.JsonObject value) {
+		public SendOptions readJson(elemental.json.JsonObject value) {
 			internalObject = value;
 			return this;
 		}

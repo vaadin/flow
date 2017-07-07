@@ -540,7 +540,7 @@ public class ComponentGenerator {
             method.setName(ComponentGeneratorUtils
                     .generateMethodNameForProperty("get", property.getName()));
             method.setBody(String.format(
-                    "return new %s().fromJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
+                    "return new %s().readJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
                     nestedClass.getName(), property.getName()));
 
             addSynchronizeAnnotationAndJavadocToGetter(method, property,
@@ -884,7 +884,7 @@ public class ComponentGenerator {
                 eventListener.addMethod().setName(ComponentGeneratorUtils
                         .generateMethodNameForProperty("get", propertyName))
                         .setPublic().setReturnType(nestedClass)
-                        .setBody(String.format("return new %s().fromJson(%s);",
+                        .setBody(String.format("return new %s().readJson(%s);",
                                 nestedClass.getName(), normalizedProperty));
             } else {
                 if (!property.getType().isEmpty()) {

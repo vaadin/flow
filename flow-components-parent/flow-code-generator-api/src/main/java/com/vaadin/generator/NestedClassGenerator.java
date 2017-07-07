@@ -107,7 +107,7 @@ public class NestedClassGenerator {
         }
 
         generateToJson(javaClass);
-        generateFromJson(javaClass);
+        generateReadJson(javaClass);
 
         return javaClass;
     }
@@ -183,9 +183,9 @@ public class NestedClassGenerator {
         method.setBody("return internalObject;");
     }
 
-    private void generateFromJson(JavaClassSource javaClass) {
+    private void generateReadJson(JavaClassSource javaClass) {
         MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
-                .setReturnType(javaClass).setName("fromJson");
+                .setReturnType(javaClass).setName("readJson");
 
         method.addAnnotation(Override.class);
         method.addParameter(JsonObject.class, "value");

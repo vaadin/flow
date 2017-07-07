@@ -130,7 +130,7 @@ public class PaperInputError<R extends PaperInputError<R>> extends Component
 		}
 
 		@Override
-		public UpdateState fromJson(elemental.json.JsonObject value) {
+		public UpdateState readJson(elemental.json.JsonObject value) {
 			internalObject = value;
 			return this;
 		}

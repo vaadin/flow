@@ -548,7 +548,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 		}
 
 		@Override
-		public TransitionendDetail fromJson(elemental.json.JsonObject value) {
+		public TransitionendDetail readJson(elemental.json.JsonObject value) {
 			internalObject = value;
 			return this;
 		}
@@ -565,7 +565,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 		}
 
 		public TransitionendDetail getDetail() {
-			return new TransitionendDetail().fromJson(detail);
+			return new TransitionendDetail().readJson(detail);
 		}
 	}
 

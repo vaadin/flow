@@ -129,8 +129,8 @@ public class NestedClassGeneratorTest {
                 javaClass.hasMethodSignature("toJson"));
 
         Assert.assertTrue(
-                "The generated class should have the \"fromJson\" method.",
-                javaClass.hasMethodSignature("fromJson", JsonObject.class));
+                "The generated class should have the \"readJson\" method.",
+                javaClass.hasMethodSignature("readJson", JsonObject.class));
     }
 
     private void assertGetterAndSetterArePresent(JavaClassSource javaClass,

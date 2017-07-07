@@ -772,7 +772,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated event should contain the getDetails method",
                 eventDeclaration.contains(
-                        "public SomethingChangedDetails getDetails() { return new SomethingChangedDetails().fromJson(details); } }"));
+                        "public SomethingChangedDetails getDetails() { return new SomethingChangedDetails().readJson(details); } }"));
 
     }
 
