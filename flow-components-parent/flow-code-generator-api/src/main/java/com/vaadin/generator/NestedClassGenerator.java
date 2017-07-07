@@ -23,15 +23,16 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.components.NotSupported;
+import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentObjectType;
 
 import elemental.json.JsonObject;
 
 /**
- * Class responsible for generating inner POJOs that represent complex data
- * structures. Those POJOs are meant to be static inner classes of the main
- * component class. The inner POJOs can be used in method calls, property
+ * Class responsible for generating nested POJOs that represent complex data
+ * structures. Those POJOs are meant to be static nested classes of the main
+ * component class. The nested POJOs can be used in method calls, property
  * getters/setters and inside events.
  */
 public class NestedClassGenerator {
@@ -120,41 +121,36 @@ public class NestedClassGenerator {
                         simpleType == ComponentBasicType.BOOLEAN ? "is" : "get",
                         object.getName()));
 
+        String body;
         switch (simpleType) {
         case STRING:
-            method.setBody(
-                    String.format("return internalObject.getString(\"%s\");",
-                            object.getName()));
+            body = "return internalObject.getString(\"%s\");";
             break;
         case BOOLEAN:
-            method.setBody(
-                    String.format("return internalObject.getBoolean(\"%s\");",
-                            object.getName()));
+            body = "return internalObject.getBoolean(\"%s\");";
             break;
         case NUMBER:
-            method.setBody(
-                    String.format("return internalObject.getNumber(\"%s\");",
-                            object.getName()));
+            body = "return internalObject.getNumber(\"%s\");";
             break;
         case OBJECT:
-            method.setBody(
-                    String.format("return internalObject.getObject(\"%s\");",
-                            object.getName()));
+            body = "return internalObject.getObject(\"%s\");";
             break;
         case ARRAY:
-            method.setBody(
-                    String.format("return internalObject.getArray(\"%s\");",
-                            object.getName()));
+            body = "return internalObject.getArray(\"%s\");";
             break;
         case UNDEFINED:
-            method.setBody(String.format("return internalObject.get(\"%s\");",
-                    object.getName()));
+            body = "return internalObject.get(\"%s\");";
             break;
         case DATE:
             method.addAnnotation(NotSupported.class);
             method.setBody("return null;");
-            break;
+            return;
+        default:
+            throw new ComponentGenerationException(
+                    "Unrecognized type: " + simpleType);
         }
+
+        method.setBody(String.format(body, object.getName()));
     }
 
     private void generateSetter(JavaClassSource javaClass,

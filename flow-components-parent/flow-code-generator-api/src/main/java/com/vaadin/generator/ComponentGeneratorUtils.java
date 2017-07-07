@@ -125,23 +125,25 @@ public final class ComponentGeneratorUtils {
 
         boolean toTitleCase = false;
 
-        for (char c : trimmed.toCharArray()) {
-            if (!Character.isJavaIdentifierPart(c)
-                    || Character.getType(c) == Character.CONNECTOR_PUNCTUATION
-                    || Character.getType(c) == Character.END_PUNCTUATION) {
+        for (char character : trimmed.toCharArray()) {
+            if (!Character.isJavaIdentifierPart(character)
+                    || Character.getType(
+                            character) == Character.CONNECTOR_PUNCTUATION
+                    || Character
+                            .getType(character) == Character.END_PUNCTUATION) {
                 toTitleCase = true;
             } else if (toTitleCase) {
-                sb.append(Character.toTitleCase(c));
+                sb.append(Character.toTitleCase(character));
                 toTitleCase = false;
             } else {
-                sb.append(c);
+                sb.append(character);
             }
         }
 
         String identifier = sb.toString();
 
         if (!ignoreReservedWords && JAVA_RESERVED_WORDS.contains(identifier)) {
-            return identifier + "_";
+            return '_' + identifier;
         }
 
         return identifier;

@@ -50,7 +50,7 @@ public class PaperMenuShrinkWidthAnimation<R extends PaperMenuShrinkWidthAnimati
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
@@ -75,7 +75,7 @@ public class PaperMenuShrinkWidthAnimation<R extends PaperMenuShrinkWidthAnimati
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);

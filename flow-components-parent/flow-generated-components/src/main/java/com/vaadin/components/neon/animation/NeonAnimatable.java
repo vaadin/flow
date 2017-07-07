@@ -64,7 +64,7 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
@@ -93,7 +93,7 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setEntryAnimation(java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
@@ -123,7 +123,7 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setExitAnimation(java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",

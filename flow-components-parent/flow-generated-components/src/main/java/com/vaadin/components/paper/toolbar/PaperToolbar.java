@@ -142,7 +142,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 	 * {@code justified} and {@code around}.
 	 * 
 	 * @param bottomJustify
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setBottomJustify(java.lang.String bottomJustify) {
 		getElement().setProperty("bottomJustify",
@@ -172,7 +172,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 	 * {@code around}.
 	 * 
 	 * @param justify
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setJustify(java.lang.String justify) {
 		getElement().setProperty("justify", justify == null ? "" : justify);
@@ -201,7 +201,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 	 * {@code justified} and {@code around}.
 	 * 
 	 * @param middleJustify
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMiddleJustify(java.lang.String middleJustify) {
 		getElement().setProperty("middleJustify",
@@ -211,7 +211,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "top".
+	 * 'top'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -231,7 +231,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "middle".
+	 * 'middle'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -251,7 +251,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "bottom".
+	 * 'bottom'.
 	 * 
 	 * @param components
 	 *            The components to add.

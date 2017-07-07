@@ -34,7 +34,7 @@ import com.vaadin.ui.HasComponents;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-list#2.0.3", "Flow#0.1.12-SNAPSHOT"})
+		"WebComponent: iron-list#2.0.4", "Flow#0.1.12-SNAPSHOT"})
 @Tag("iron-list")
 @HtmlImport("frontend://bower_components/iron-list/iron-list.html")
 public class IronList<R extends IronList<R>> extends Component
@@ -102,7 +102,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * document.querySelector('#scrollable-element'); {@code }`
 	 * 
 	 * @param scrollTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setScrollTarget(elemental.json.JsonObject scrollTarget) {
 		getElement().setPropertyJson("scrollTarget", scrollTarget);
@@ -131,7 +131,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * otherwise strict equality checking will be used.
 	 * 
 	 * @param mutableData
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMutableData(boolean mutableData) {
 		getElement().setProperty("mutableData", mutableData);
@@ -158,7 +158,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * to stamp and that that each template instance should bind to.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -183,7 +183,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * The max count of physical items the pool can extend to.
 	 * 
 	 * @param maxPhysicalCount
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMaxPhysicalCount(double maxPhysicalCount) {
 		getElement().setProperty("maxPhysicalCount", maxPhysicalCount);
@@ -210,7 +210,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * element associated with a given template instance.
 	 * 
 	 * @param as
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAs(java.lang.String as) {
 		getElement().setProperty("as", as == null ? "" : as);
@@ -237,7 +237,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * the row.
 	 * 
 	 * @param indexAs
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIndexAs(java.lang.String indexAs) {
 		getElement().setProperty("indexAs", indexAs == null ? "" : indexAs);
@@ -264,7 +264,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * row is selected.
 	 * 
 	 * @param selectedAs
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedAs(java.lang.String selectedAs) {
 		getElement().setProperty("selectedAs",
@@ -300,7 +300,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * </iron-list> {@code }`
 	 * 
 	 * @param grid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setGrid(boolean grid) {
 		getElement().setProperty("grid", grid);
@@ -333,7 +333,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * in selection, since they are presumed to have their * own action.
 	 * 
 	 * @param selectionEnabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectionEnabled(boolean selectionEnabled) {
 		getElement().setProperty("selectionEnabled", selectionEnabled);
@@ -360,7 +360,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * item, or {@code null} if no item is selected.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
@@ -387,7 +387,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * selected items.
 	 * 
 	 * @param selectedItems
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItems(elemental.json.JsonObject selectedItems) {
 		getElement().setPropertyJson("selectedItems", selectedItems);
@@ -416,7 +416,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * {@code false}, only one item may be selected at a time.
 	 * 
 	 * @param multiSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMultiSelection(boolean multiSelection) {
 		getElement().setProperty("multiSelection", multiSelection);
@@ -455,7 +455,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * example: a header is placed above the list.
 	 * 
 	 * @param scrollOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setScrollOffset(double scrollOffset) {
 		getElement().setProperty("scrollOffset", scrollOffset);
@@ -480,7 +480,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * Gets the index of the first visible item in the viewport.
 	 * 
 	 * @param firstVisibleIndex
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFirstVisibleIndex(double firstVisibleIndex) {
 		getElement().setProperty("firstVisibleIndex", firstVisibleIndex);
@@ -505,7 +505,7 @@ public class IronList<R extends IronList<R>> extends Component
 	 * Gets the index of the last visible item in the viewport.
 	 * 
 	 * @param lastVisibleIndex
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLastVisibleIndex(double lastVisibleIndex) {
 		getElement().setProperty("lastVisibleIndex", lastVisibleIndex);

@@ -142,7 +142,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAttrForSelected(java.lang.String attrForSelected) {
 		getElement().setProperty("attrForSelected",
@@ -157,7 +157,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -171,7 +171,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -185,7 +185,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelected(java.lang.String selected) {
 		getElement().setProperty("selected", selected == null ? "" : selected);
@@ -199,7 +199,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelected(double selected) {
 		getElement().setProperty("selected", selected);
@@ -224,7 +224,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * Returns the currently selected item.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
@@ -253,7 +253,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * empty string to listen to no events.
 	 * 
 	 * @param activateEvent
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActivateEvent(java.lang.String activateEvent) {
 		getElement().setProperty("activateEvent",
@@ -271,7 +271,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 
 	/**
 	 * @param selectable
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectable(java.lang.String selectable) {
 		getElement().setProperty("selectable",
@@ -297,7 +297,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedClass(java.lang.String selectedClass) {
 		getElement().setProperty("selectedClass",
@@ -323,7 +323,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedAttribute(java.lang.String selectedAttribute) {
 		getElement().setProperty("selectedAttribute",
@@ -351,7 +351,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFallbackSelection(java.lang.String fallbackSelection) {
 		getElement().setProperty("fallbackSelection",
@@ -365,7 +365,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * The list of items from which a selection can be made.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "items-changed" event happens.
+	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -378,7 +378,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * The list of items from which a selection can be made.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -403,7 +403,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * If true, multiple selections are allowed.
 	 * 
 	 * @param multi
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMulti(boolean multi) {
 		getElement().setProperty("multi", multi);
@@ -430,7 +430,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * {@code selected} when {@code multi} is true.
 	 * 
 	 * @param selectedValues
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedValues(elemental.json.JsonArray selectedValues) {
 		getElement().setPropertyJson("selectedValues", selectedValues);
@@ -455,7 +455,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * Returns an array of currently selected items.
 	 * 
 	 * @param selectedItems
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItems(elemental.json.JsonArray selectedItems) {
 		getElement().setPropertyJson("selectedItems", selectedItems);
@@ -482,7 +482,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
@@ -509,7 +509,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -528,7 +528,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 
 	/**
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
@@ -553,7 +553,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * Returns the currently focused item.
 	 * 
 	 * @param focusedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocusedItem(elemental.json.JsonObject focusedItem) {
 		getElement().setPropertyJson("focusedItem", focusedItem);
@@ -582,7 +582,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * unset, {@code textContent} will be used.
 	 * 
 	 * @param attrForItemTitle
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAttrForItemTitle(java.lang.String attrForItemTitle) {
 		getElement().setProperty("attrForItemTitle",
@@ -600,7 +600,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 
 	/**
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -629,7 +629,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * property changed to the new value as well.
 	 * 
 	 * @param noink
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
@@ -654,7 +654,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * If true, the bottom bar to indicate the selected tab will not be shown.
 	 * 
 	 * @param noBar
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoBar(boolean noBar) {
 		getElement().setProperty("noBar", noBar);
@@ -679,7 +679,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * If true, the slide effect for the bottom bar is disabled.
 	 * 
 	 * @param noSlide
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoSlide(boolean noSlide) {
 		getElement().setProperty("noSlide", noSlide);
@@ -706,7 +706,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * width.
 	 * 
 	 * @param scrollable
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setScrollable(boolean scrollable) {
 		getElement().setProperty("scrollable", scrollable);
@@ -733,7 +733,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * when scrollable is true.
 	 * 
 	 * @param fitContainer
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFitContainer(boolean fitContainer) {
 		getElement().setProperty("fitContainer", fitContainer);
@@ -758,7 +758,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * If true, dragging on the tabs to scroll is disabled.
 	 * 
 	 * @param disableDrag
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisableDrag(boolean disableDrag) {
 		getElement().setProperty("disableDrag", disableDrag);
@@ -785,7 +785,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * tabs.
 	 * 
 	 * @param hideScrollButtons
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHideScrollButtons(boolean hideScrollButtons) {
 		getElement().setProperty("hideScrollButtons", hideScrollButtons);
@@ -812,7 +812,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * top).
 	 * 
 	 * @param alignBottom
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlignBottom(boolean alignBottom) {
 		getElement().setProperty("alignBottom", alignBottom);
@@ -837,7 +837,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * If true, tabs are automatically selected when focused using the keyboard.
 	 * 
 	 * @param autoselect
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutoselect(boolean autoselect) {
 		getElement().setProperty("autoselect", autoselect);
@@ -866,7 +866,7 @@ public class PaperTabs<R extends PaperTabs<R>> extends Component
 	 * selected (if {@code autoselect} is true).
 	 * 
 	 * @param autoselectDelay
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutoselectDelay(double autoselectDelay) {
 		getElement().setProperty("autoselectDelay", autoselectDelay);

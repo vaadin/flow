@@ -93,7 +93,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * The title of the card.
 	 * 
 	 * @param heading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHeading(java.lang.String heading) {
 		getElement().setProperty("heading", heading == null ? "" : heading);
@@ -118,7 +118,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * The url of the title image of the card.
 	 * 
 	 * @param image
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setImage(java.lang.String image) {
 		getElement().setProperty("image", image == null ? "" : image);
@@ -143,7 +143,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * The text alternative of the card's title image.
 	 * 
 	 * @param alt
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
@@ -170,7 +170,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * {@code placeholder} image to be shown until the image is fully rendered.
 	 * 
 	 * @param preloadImage
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPreloadImage(boolean preloadImage) {
 		getElement().setProperty("preloadImage", preloadImage);
@@ -197,7 +197,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * cause the image to fade into place.
 	 * 
 	 * @param fadeImage
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFadeImage(boolean fadeImage) {
 		getElement().setProperty("fadeImage", fadeImage);
@@ -226,7 +226,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * rendering.
 	 * 
 	 * @param placeholderImage
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPlaceholderImage(java.lang.String placeholderImage) {
 		getElement().setProperty("placeholderImage",
@@ -252,7 +252,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * The z-depth of the card, from 0-5.
 	 * 
 	 * @param elevation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setElevation(double elevation) {
 		getElement().setProperty("elevation", elevation);
@@ -279,7 +279,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * value.
 	 * 
 	 * @param animatedShadow
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimatedShadow(boolean animatedShadow) {
 		getElement().setProperty("animatedShadow", animatedShadow);
@@ -306,7 +306,7 @@ public class PaperCard<R extends PaperCard<R>> extends Component
 	 * the underlying paper-material style (since they have different names).
 	 * 
 	 * @param animated
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimated(boolean animated) {
 		getElement().setProperty("animated", animated);

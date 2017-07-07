@@ -96,7 +96,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * animationConfig has the exact format below.
 	 * 
 	 * @param animationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
@@ -125,7 +125,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setEntryAnimation(java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
@@ -155,7 +155,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setExitAnimation(java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
@@ -182,11 +182,11 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * The id of the element that the tooltip is anchored to. This element must
 	 * be a sibling of the tooltip.
 	 * 
-	 * @param for_
-	 * @return This instance, for method chaining.
+	 * @param _for
+	 * @return this instance, for method chaining
 	 */
-	public R setFor(java.lang.String for_) {
-		getElement().setProperty("for", for_ == null ? "" : for_);
+	public R setFor(java.lang.String _for) {
+		getElement().setProperty("for", _for == null ? "" : _for);
 		return getSelf();
 	}
 
@@ -210,7 +210,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * shown or hidden.
 	 * 
 	 * @param manualMode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setManualMode(boolean manualMode) {
 		getElement().setProperty("manualMode", manualMode);
@@ -235,7 +235,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * Positions the tooltip to the top, right, bottom, left of its content.
 	 * 
 	 * @param position
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPosition(java.lang.String position) {
 		getElement().setProperty("position", position == null ? "" : position);
@@ -260,7 +260,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * If true, no parts of the tooltip will ever be shown offscreen.
 	 * 
 	 * @param fitToVisibleBounds
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFitToVisibleBounds(boolean fitToVisibleBounds) {
 		getElement().setProperty("fitToVisibleBounds", fitToVisibleBounds);
@@ -287,7 +287,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * to.
 	 * 
 	 * @param offset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setOffset(double offset) {
 		getElement().setProperty("offset", offset);
@@ -316,7 +316,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * and {@code marginTop} are provided, {@code marginTop} will be ignored.
 	 * 
 	 * @param marginTop
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMarginTop(double marginTop) {
 		getElement().setProperty("marginTop", marginTop);
@@ -343,7 +343,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * played when showing the tooltip.
 	 * 
 	 * @param animationDelay
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationDelay(double animationDelay) {
 		getElement().setProperty("animationDelay", animationDelay);
@@ -372,7 +372,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * of the tooltip.
 	 * 
 	 * @param target
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);

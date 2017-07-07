@@ -77,7 +77,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * The name of the iconset.
 	 * 
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -102,7 +102,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * The size of an individual icon. Note that icons must be square.
 	 * 
 	 * @param size
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSize(double size) {
 		getElement().setProperty("size", size);
@@ -139,7 +139,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * cause their mirrored state to change.
 	 * 
 	 * @param rtlMirroring
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRtlMirroring(boolean rtlMirroring) {
 		getElement().setProperty("rtlMirroring", rtlMirroring);

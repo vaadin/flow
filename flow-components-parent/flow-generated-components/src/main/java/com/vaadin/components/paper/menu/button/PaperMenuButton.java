@@ -100,7 +100,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
@@ -127,7 +127,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -156,7 +156,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
 	 * 
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
@@ -169,7 +169,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -182,7 +182,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -195,7 +195,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -208,7 +208,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -221,7 +221,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * True if the content is currently displayed.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "opened-changed" event happens.
+	 * 'opened-changed' event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -234,7 +234,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * True if the content is currently displayed.
 	 * 
 	 * @param opened
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
@@ -261,7 +261,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param horizontalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
@@ -289,7 +289,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param verticalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
@@ -321,7 +321,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * of the dropdown falling outside of {@code fitInto}.
 	 * 
 	 * @param dynamicAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
@@ -350,7 +350,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * positive value to offset to the right.
 	 * 
 	 * @param horizontalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHorizontalOffset(double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
@@ -379,7 +379,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * a positive value to offset towards the bottom.
 	 * 
 	 * @param verticalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
@@ -406,7 +406,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * button.
 	 * 
 	 * @param noOverlap
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
@@ -431,7 +431,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * Set to true to disable animations when opening and closing the dropdown.
 	 * 
 	 * @param noAnimations
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
@@ -458,7 +458,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * selection has been made.
 	 * 
 	 * @param ignoreSelect
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIgnoreSelect(boolean ignoreSelect) {
 		getElement().setProperty("ignoreSelect", ignoreSelect);
@@ -485,7 +485,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * has been activated, even if the selection did not change.
 	 * 
 	 * @param closeOnActivate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setCloseOnActivate(boolean closeOnActivate) {
 		getElement().setProperty("closeOnActivate", closeOnActivate);
@@ -512,7 +512,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * opening of the dropdown.
 	 * 
 	 * @param openAnimationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setOpenAnimationConfig(
 			elemental.json.JsonObject openAnimationConfig) {
@@ -541,7 +541,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * closing of the dropdown.
 	 * 
 	 * @param closeAnimationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setCloseAnimationConfig(
 			elemental.json.JsonObject closeAnimationConfig) {
@@ -572,7 +572,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * constrained to the dropdown when it opens.
 	 * 
 	 * @param allowOutsideScroll
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
@@ -597,7 +597,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * Whether focus should be restored to the button when the menu closes.
 	 * 
 	 * @param restoreFocusOnClose
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
@@ -622,7 +622,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * The content element that is contained by the menu button, if any.
 	 * 
 	 * @param contentElement
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
@@ -798,7 +798,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "dropdown-trigger".
+	 * 'dropdown-trigger'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -818,7 +818,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "dropdown-content".
+	 * 'dropdown-content'.
 	 * 
 	 * @param components
 	 *            The components to add.

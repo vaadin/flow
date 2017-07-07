@@ -53,7 +53,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * request.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "xhr-changed" event happens.
+	 * 'xhr-changed' event happens.
 	 */
 	@Synchronize(property = "xhr", value = "xhr-changed")
 	public JsonObject getXhr() {
@@ -67,7 +67,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * request.
 	 * 
 	 * @param xhr
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setXhr(elemental.json.JsonObject xhr) {
 		getElement().setPropertyJson("xhr", xhr);
@@ -81,7 +81,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * completely resolved.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "response-changed" event happens.
+	 * 'response-changed' event happens.
 	 */
 	@Synchronize(property = "response", value = "response-changed")
 	public JsonObject getResponse() {
@@ -95,7 +95,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * completely resolved.
 	 * 
 	 * @param response
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setResponse(elemental.json.JsonObject response) {
 		getElement().setPropertyJson("response", response);
@@ -109,7 +109,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * resolved.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "status-changed" event happens.
+	 * 'status-changed' event happens.
 	 */
 	@Synchronize(property = "status", value = "status-changed")
 	public double getStatus() {
@@ -123,7 +123,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * resolved.
 	 * 
 	 * @param status
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStatus(double status) {
 		getElement().setProperty("status", status);
@@ -150,7 +150,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * resolved.
 	 * 
 	 * @param statusText
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStatusText(java.lang.String statusText) {
 		getElement().setProperty("statusText",
@@ -165,7 +165,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * rejects if there is an error before the {@code xhr} completes.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "completes-changed" event happens.
+	 * 'completes-changed' event happens.
 	 */
 	@Synchronize(property = "completes", value = "completes-changed")
 	public JsonObject getCompletes() {
@@ -179,7 +179,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * rejects if there is an error before the {@code xhr} completes.
 	 * 
 	 * @param completes
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setCompletes(elemental.json.JsonObject completes) {
 		getElement().setPropertyJson("completes", completes);
@@ -193,7 +193,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * available.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "progress-changed" event happens.
+	 * 'progress-changed' event happens.
 	 */
 	@Synchronize(property = "progress", value = "progress-changed")
 	public JsonObject getProgress() {
@@ -207,7 +207,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * available.
 	 * 
 	 * @param progress
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setProgress(elemental.json.JsonObject progress) {
 		getElement().setPropertyJson("progress", progress);
@@ -220,7 +220,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * Aborted will be true if an abort of the request is attempted.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "aborted-changed" event happens.
+	 * 'aborted-changed' event happens.
 	 */
 	@Synchronize(property = "aborted", value = "aborted-changed")
 	public boolean isAborted() {
@@ -233,7 +233,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * Aborted will be true if an abort of the request is attempted.
 	 * 
 	 * @param aborted
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAborted(boolean aborted) {
 		getElement().setProperty("aborted", aborted);
@@ -247,7 +247,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * object (mainly network errors).
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "errored-changed" event happens.
+	 * 'errored-changed' event happens.
 	 */
 	@Synchronize(property = "errored", value = "errored-changed")
 	public boolean isErrored() {
@@ -261,7 +261,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * object (mainly network errors).
 	 * 
 	 * @param errored
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setErrored(boolean errored) {
 		getElement().setProperty("errored", errored);
@@ -286,7 +286,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * TimedOut will be true if the XHR threw a timeout event.
 	 * 
 	 * @param timedOut
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTimedOut(boolean timedOut) {
 		getElement().setProperty("timedOut", timedOut);
@@ -321,7 +321,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * file:// - don't provide status codes.
 	 * 
 	 * @param succeeded
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSucceeded(elemental.json.JsonObject succeeded) {
 		getElement().setPropertyJson("succeeded", succeeded);

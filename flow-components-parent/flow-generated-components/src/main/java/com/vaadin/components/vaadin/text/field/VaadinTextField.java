@@ -73,7 +73,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * Specify that this control should have input focus when the page loads.
 	 * 
 	 * @param autofocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
@@ -98,7 +98,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -123,7 +123,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -154,7 +154,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * /Web/HTML/Element/input#attr-autocomplete
 	 * 
 	 * @param autocomplete
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
@@ -186,7 +186,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * autocorrection.
 	 * 
 	 * @param autocorrect
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutocorrect(java.lang.String autocorrect) {
 		getElement().setProperty("autocorrect",
@@ -212,7 +212,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * Error to show when the input value is invalid.
 	 * 
 	 * @param errorMessage
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setErrorMessage(java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
@@ -238,7 +238,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * String used for the label element.
 	 * 
 	 * @param label
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
@@ -265,7 +265,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * value must be the id of a <datalist> element in the same document.
 	 * 
 	 * @param list
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setList(java.lang.String list) {
 		getElement().setProperty("list", list == null ? "" : list);
@@ -292,7 +292,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * enter.
 	 * 
 	 * @param maxlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
@@ -319,7 +319,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * enter.
 	 * 
 	 * @param minlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
@@ -344,7 +344,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * The name of the control, which is submitted with the form data.
 	 * 
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -371,7 +371,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * match the entire value, not just some subset.
 	 * 
 	 * @param pattern
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
@@ -396,7 +396,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * A hint to the user of what can be entered in the control.
 	 * 
 	 * @param placeholder
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
@@ -424,7 +424,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * control.
 	 * 
 	 * @param readonly
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
@@ -449,7 +449,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * Specifies that the user must fill in a value.
 	 * 
 	 * @param required
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
@@ -474,7 +474,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * Message to show to the user when validation fails.
 	 * 
 	 * @param title
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTitle(java.lang.String title) {
 		getElement().setProperty("title", title == null ? "" : title);
@@ -488,7 +488,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * binding.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -502,7 +502,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * binding.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
@@ -515,7 +515,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * This property is set to true when the control value invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "invalid-changed" event happens.
+	 * 'invalid-changed' event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -528,7 +528,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * This property is set to true when the control value invalid.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -555,7 +555,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * It can be used for example in styling of the component.
 	 * 
 	 * @param hasValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHasValue(boolean hasValue) {
 		getElement().setProperty("hasValue", hasValue);
@@ -582,7 +582,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 	 * with the given {@code pattern}.
 	 * 
 	 * @param preventInvalidInput
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPreventInvalidInput(boolean preventInvalidInput) {
 		getElement().setProperty("preventInvalidInput", preventInvalidInput);
@@ -704,7 +704,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "prefix".
+	 * 'prefix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -724,7 +724,7 @@ public class VaadinTextField<R extends VaadinTextField<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "suffix".
+	 * 'suffix'.
 	 * 
 	 * @param components
 	 *            The components to add.

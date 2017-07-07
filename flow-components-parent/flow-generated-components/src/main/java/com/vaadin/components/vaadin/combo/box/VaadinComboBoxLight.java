@@ -92,7 +92,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
@@ -119,7 +119,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -148,7 +148,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
 	 * 
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
@@ -173,7 +173,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * The name of this element.
 	 * 
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -192,7 +192,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * {@code items} array.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -211,7 +211,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * {@code items} array.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
@@ -246,7 +246,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * when its value is invalid.
 	 * 
 	 * @param required
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
@@ -259,7 +259,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * True if the dropdown is open, false otherwise.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "opened-changed" event happens.
+	 * 'opened-changed' event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -272,7 +272,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * True if the dropdown is open, false otherwise.
 	 * 
 	 * @param opened
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
@@ -297,7 +297,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Set to true to disable this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -322,7 +322,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * When present, it specifies that the element field is read-only.
 	 * 
 	 * @param readonly
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
@@ -349,7 +349,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * of either {@code String} or {@code Object} type.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -380,7 +380,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * will be set to reflect that value.
 	 * 
 	 * @param allowCustomValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAllowCustomValue(boolean allowCustomValue) {
 		getElement().setProperty("allowCustomValue", allowCustomValue);
@@ -409,7 +409,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * items can be of either {@code String} or {@code Object} type.
 	 * 
 	 * @param filteredItems
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFilteredItems(elemental.json.JsonArray filteredItems) {
 		getElement().setPropertyJson("filteredItems", filteredItems);
@@ -436,7 +436,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * selected or not. It can be used for example in styling of the component.
 	 * 
 	 * @param hasValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHasValue(boolean hasValue) {
 		getElement().setProperty("hasValue", hasValue);
@@ -463,7 +463,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * list of options.
 	 * 
 	 * @param loading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
@@ -476,7 +476,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Filtering string the user has typed into the input field.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "filter-changed" event happens.
+	 * 'filter-changed' event happens.
 	 */
 	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
@@ -489,7 +489,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Filtering string the user has typed into the input field.
 	 * 
 	 * @param filter
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFilter(java.lang.String filter) {
 		getElement().setProperty("filter", filter == null ? "" : filter);
@@ -514,7 +514,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * The selected item from the {@code items} array.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
@@ -557,7 +557,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * input box.
 	 * 
 	 * @param itemLabelPath
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setItemLabelPath(java.lang.String itemLabelPath) {
 		getElement().setProperty("itemLabelPath",
@@ -593,7 +593,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * provide the form value.
 	 * 
 	 * @param itemValuePath
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setItemValuePath(java.lang.String itemValuePath) {
 		getElement().setProperty("itemValuePath",
@@ -619,7 +619,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * Returns a reference to the native input element.
 	 * 
 	 * @param inputElement
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInputElement(elemental.json.JsonObject inputElement) {
 		getElement().setPropertyJson("inputElement", inputElement);
@@ -646,7 +646,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * custom input field.
 	 * 
 	 * @param attrForValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAttrForValue(java.lang.String attrForValue) {
 		getElement().setProperty("attrForValue",
@@ -674,7 +674,7 @@ public class VaadinComboBoxLight<R extends VaadinComboBoxLight<R>>
 	 * dropdown.
 	 * 
 	 * @param overlayVerticalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setOverlayVerticalOffset(double overlayVerticalOffset) {
 		getElement()

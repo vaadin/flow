@@ -40,7 +40,7 @@ public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component
 
 	/**
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActive(boolean active) {
 		getElement().setProperty("active", active);

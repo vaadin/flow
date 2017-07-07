@@ -128,7 +128,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
@@ -155,7 +155,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -174,7 +174,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 
 	/**
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
@@ -199,7 +199,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * If true, the user is currently holding down the button.
 	 * 
 	 * @param pressed
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
@@ -226,7 +226,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * the spacebar.
 	 * 
 	 * @param toggles
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
@@ -239,7 +239,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * If true, the button is a toggle and is currently in the active state.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "active-changed" event happens.
+	 * 'active-changed' event happens.
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -252,7 +252,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
@@ -281,7 +281,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * keyboard input).
 	 * 
 	 * @param pointerDown
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
@@ -308,7 +308,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * keyboard.
 	 * 
 	 * @param receivedFocusFromKeyboard
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
@@ -336,7 +336,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
@@ -350,7 +350,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -363,7 +363,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -376,7 +376,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -389,7 +389,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -416,7 +416,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * with via the pointer.
 	 * 
 	 * @param noink
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
@@ -441,7 +441,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * The name of this element.
 	 * 
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -456,7 +456,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * {@code selectedItemLabel}.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -471,7 +471,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * {@code selectedItemLabel}.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
@@ -506,7 +506,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * when its value is invalid.
 	 * 
 	 * @param required
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
@@ -531,7 +531,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
@@ -545,7 +545,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * True if the last call to {@code validate} is invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "invalid-changed" event happens.
+	 * 'invalid-changed' event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -558,7 +558,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -587,7 +587,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * text content of the selected item.
 	 * 
 	 * @param selectedItemLabel
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItemLabel(java.lang.String selectedItemLabel) {
 		getElement().setProperty("selectedItemLabel",
@@ -619,7 +619,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * {@code detail}.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
@@ -644,7 +644,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * The label for the dropdown.
 	 * 
 	 * @param label
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
@@ -669,7 +669,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * The placeholder for the dropdown.
 	 * 
 	 * @param placeholder
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
@@ -683,7 +683,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * True if the dropdown is open. Otherwise, false.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "opened-changed" event happens.
+	 * 'opened-changed' event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -696,7 +696,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * True if the dropdown is open. Otherwise, false.
 	 * 
 	 * @param opened
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
@@ -725,7 +725,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * constrained to the dropdown when it opens.
 	 * 
 	 * @param allowOutsideScroll
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
@@ -752,7 +752,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * {@code <paper-input-container>}'s {@code noLabelFloat} property.
 	 * 
 	 * @param noLabelFloat
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
@@ -779,7 +779,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * 
 	 * @param alwaysFloatLabel
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
@@ -804,7 +804,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * Set to true to disable animations when opening and closing the dropdown.
 	 * 
 	 * @param noAnimations
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
@@ -831,7 +831,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param horizontalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
@@ -859,7 +859,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param verticalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
@@ -877,7 +877,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 
 	/**
 	 * @param hasContent
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHasContent(boolean hasContent) {
 		getElement().setProperty("hasContent", hasContent);
@@ -902,7 +902,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * The content element that is contained by the dropdown menu, if any.
 	 * 
 	 * @param contentElement
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
@@ -1172,7 +1172,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "dropdown-content".
+	 * 'dropdown-content'.
 	 * 
 	 * @param components
 	 *            The components to add.

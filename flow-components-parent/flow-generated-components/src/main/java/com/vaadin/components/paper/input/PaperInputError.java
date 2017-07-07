@@ -73,7 +73,7 @@ public class PaperInputError<R extends PaperInputError<R>> extends Component
 	 * True if the error is showing.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);

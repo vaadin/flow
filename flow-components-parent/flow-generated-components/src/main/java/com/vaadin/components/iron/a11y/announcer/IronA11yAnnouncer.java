@@ -80,7 +80,7 @@ public class IronA11yAnnouncer<R extends IronA11yAnnouncer<R>>
 	 * {@code polite} and {@code assertive}.
 	 * 
 	 * @param mode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMode(java.lang.String mode) {
 		getElement().setProperty("mode", mode == null ? "" : mode);

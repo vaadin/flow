@@ -86,7 +86,7 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component
 	 * Displays the spinner.
 	 * 
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
@@ -115,7 +115,7 @@ public class PaperSpinner<R extends PaperSpinner<R>> extends Component
 	 * not present, it will default to 'loading' as the alt value.
 	 * 
 	 * @param alt
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);

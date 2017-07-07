@@ -215,7 +215,7 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("JavaDoc return for fluent setter was not found",
                 generatedClass.contains(
-                        "* @return This instance, for method chaining."));
+                        "* @return this instance, for method chaining"));
     }
 
     @Test
@@ -662,7 +662,7 @@ public class ComponentGeneratorTest {
 
     @Test
     public void classContainsObjectProperty_generatedClassContainsInnerClass() {
-        // note: the tests for the inner class are covered by the
+        // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
         ComponentObjectType stringObjectType = new ComponentObjectType();
         stringObjectType.setName("internalString");
@@ -680,7 +680,7 @@ public class ComponentGeneratorTest {
         generatedClass = removeIndentation(generatedClass);
 
         Assert.assertTrue(
-                "Generated class should contain the SomethingProperty inner class",
+                "Generated class should contain the SomethingProperty nested class",
                 generatedClass.contains(
                         "public static class SomethingProperty implements JsonSerializable"));
 
@@ -697,7 +697,7 @@ public class ComponentGeneratorTest {
 
     @Test
     public void classContainsMethodWithObjectParameter_generatedClassContainsInnerClass() {
-        // note: the tests for the inner class are covered by the
+        // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
         ComponentObjectType stringObjectType = new ComponentObjectType();
         stringObjectType.setName("internalString");
@@ -719,7 +719,7 @@ public class ComponentGeneratorTest {
         generatedClass = removeIndentation(generatedClass);
 
         Assert.assertTrue(
-                "Generated class should contain the CallSomethingSomethingParam inner class",
+                "Generated class should contain the CallSomethingSomethingParam nested class",
                 generatedClass.contains(
                         "public static class CallSomethingSomethingParam implements JsonSerializable"));
 
@@ -731,7 +731,7 @@ public class ComponentGeneratorTest {
 
     @Test
     public void classContainsEventWithObjectParameter_generatedClassContainsInnerClass() {
-        // note: the tests for the inner class are covered by the
+        // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
         ComponentObjectType stringObjectType = new ComponentObjectType();
         stringObjectType.setName("internalString");
@@ -753,7 +753,7 @@ public class ComponentGeneratorTest {
         generatedClass = removeIndentation(generatedClass);
 
         Assert.assertTrue(
-                "Generated class should contain the SomethingChangedDetails inner class",
+                "Generated class should contain the SomethingChangedDetails nested class",
                 generatedClass.contains(
                         "public static class SomethingChangedDetails implements JsonSerializable"));
 

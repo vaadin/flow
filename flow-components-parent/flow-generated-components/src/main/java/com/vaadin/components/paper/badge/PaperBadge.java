@@ -94,11 +94,11 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * The id of the element that the badge is anchored to. This element must be
 	 * a sibling of the badge.
 	 * 
-	 * @param for_
-	 * @return This instance, for method chaining.
+	 * @param _for
+	 * @return this instance, for method chaining
 	 */
-	public R setFor(java.lang.String for_) {
-		getElement().setProperty("for", for_ == null ? "" : for_);
+	public R setFor(java.lang.String _for) {
+		getElement().setProperty("for", _for == null ? "" : _for);
 		return getSelf();
 	}
 
@@ -122,7 +122,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * should have very few characters.
 	 * 
 	 * @param label
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
@@ -153,7 +153,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * purposes.
 	 * 
 	 * @param icon
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
@@ -182,7 +182,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * of the badge.
 	 * 
 	 * @param target
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);

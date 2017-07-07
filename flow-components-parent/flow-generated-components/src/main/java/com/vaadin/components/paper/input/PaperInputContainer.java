@@ -168,7 +168,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * input value is not null.
 	 * 
 	 * @param noLabelFloat
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
@@ -193,7 +193,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * Set to true to always float the floating label.
 	 * 
 	 * @param alwaysFloatLabel
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
@@ -218,7 +218,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * The attribute to listen for value changes on.
 	 * 
 	 * @param attrForValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAttrForValue(java.lang.String attrForValue) {
 		getElement().setProperty("attrForValue",
@@ -244,7 +244,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * Set to true to auto-validate the input value when it changes.
 	 * 
 	 * @param autoValidate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
@@ -273,7 +273,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * {@code iron-input-validate} event is heard from a child.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -286,7 +286,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * True if the input has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -299,7 +299,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 	 * True if the input has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -334,7 +334,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "prefix".
+	 * 'prefix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -354,7 +354,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "label".
+	 * 'label'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -374,7 +374,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "input".
+	 * 'input'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -394,7 +394,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "suffix".
+	 * 'suffix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -414,7 +414,7 @@ public class PaperInputContainer<R extends PaperInputContainer<R>>
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "add-on".
+	 * 'add-on'.
 	 * 
 	 * @param components
 	 *            The components to add.

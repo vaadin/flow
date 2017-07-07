@@ -125,7 +125,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
@@ -139,7 +139,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * True if the last call to {@code validate} is invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "invalid-changed" event happens.
+	 * 'invalid-changed' event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -152,7 +152,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -181,7 +181,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * input's {@code value} property to set a default value.
 	 * 
 	 * @param bindValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setBindValue(java.lang.String bindValue) {
 		getElement().setProperty("bindValue",
@@ -211,7 +211,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * {@code input is="iron-input"} value attribute).
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(elemental.json.JsonObject value) {
 		getElement().setPropertyJson("value", value);
@@ -270,7 +270,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * 
 	 * 
 	 * @param allowedPattern
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAllowedPattern(java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
@@ -296,7 +296,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * Set to true to auto-validate the input value as you type.
 	 * 
 	 * @param autoValidate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
@@ -321,7 +321,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * Returns the distributed <input> element.
 	 * 
 	 * @param inputElement
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInputElement(elemental.json.JsonObject inputElement) {
 		getElement().setPropertyJson("inputElement", inputElement);

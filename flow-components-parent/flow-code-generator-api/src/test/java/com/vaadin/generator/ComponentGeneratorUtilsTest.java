@@ -35,12 +35,12 @@ public class ComponentGeneratorUtilsTest {
     }
 
     @Test
-    public void formatReservedWordToValidJavaIdentifier_returnsSuffixed() {
+    public void formatReservedWordToValidJavaIdentifier_returnsPreffixed() {
         String name = "for";
         String convertedName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(name);
 
-        Assert.assertEquals("for_", convertedName);
+        Assert.assertEquals("_for", convertedName);
     }
 
     @Test

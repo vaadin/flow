@@ -371,7 +371,7 @@ public class ComponentGenerator {
                 slot));
 
         method.getJavaDoc().setText(String.format(
-                "Adds the given components as children of this component at the slot \"%s\".",
+                "Adds the given components as children of this component at the slot '%s'.",
                 slot))
                 .addTagValue(JAVADOC_PARAM, "components The components to add.")
                 .addTagValue(JAVADOC_SEE,
@@ -528,13 +528,11 @@ public class ComponentGenerator {
     private void generateGetterFor(JavaClassSource javaClass,
             ComponentPropertyData property, List<ComponentEventData> events) {
 
-        if (property.getObjectType() != null
-                && !property.getObjectType().isEmpty()) {
-
+        if (containsObjectType(property)) {
             JavaClassSource nestedClass = generateNestedPojo(javaClass,
                     property.getObjectType(), property.getName() + "-property",
                     String.format(
-                            "Class that encapsulates the data of the \"%s\" property in the {@link %s} component.",
+                            "Class that encapsulates the data of the '%s' property in the {@link %s} component.",
                             property.getName(), javaClass.getName()));
 
             MethodSource<JavaClassSource> method = javaClass.addMethod()
@@ -591,8 +589,8 @@ public class ComponentGenerator {
                     .setStringValue("property", property.getName())
                     .setStringValue(property.getName() + "-changed");
 
-            synchronizationDescription = "This property is synchronized automatically from client side when a \""
-                    + property.getName() + "-changed\" event happens.";
+            synchronizationDescription = "This property is synchronized automatically from client side when a '"
+                    + property.getName() + "-changed' event happens.";
         } else {
             synchronizationDescription = "This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.";
         }
@@ -633,9 +631,7 @@ public class ComponentGenerator {
     private void generateSetterFor(JavaClassSource javaClass,
             ComponentPropertyData property) {
 
-        if (property.getObjectType() != null
-                && !property.getObjectType().isEmpty()) {
-
+        if (containsObjectType(property)) {
             // the getter already created the nested pojo, so here we just need
             // to get the name
             String nestedClassName = ComponentGeneratorUtils
@@ -658,7 +654,7 @@ public class ComponentGenerator {
             }
 
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
-                    "property The property to set.");
+                    "property the property to set");
 
             if (fluentSetters) {
                 addFluentReturnToSetter(method);
@@ -699,10 +695,9 @@ public class ComponentGenerator {
 
     private void addFluentReturnToSetter(MethodSource<JavaClassSource> method) {
         method.setReturnType(GENERIC_TYPE);
-        method.setBody(
-                String.format(method.getBody() + "%n" + "return getSelf();"));
+        method.setBody(method.getBody() + "return getSelf();");
         method.getJavaDoc().addTagValue("@return",
-                "This instance, for method chaining.");
+                "this instance, for method chaining");
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
@@ -765,8 +760,7 @@ public class ComponentGenerator {
                     ComponentGeneratorUtils.formatStringToValidJavaIdentifier(
                             param.getName()));
 
-            List<ComponentObjectType> objectTypes = param.getObjectType();
-            if (objectTypes != null && !objectTypes.isEmpty()) {
+            if (containsObjectType(param)) {
                 generateFunctionParameterForComplexType(javaClass, function,
                         method, formattedName, param);
                 params.append(", ").append(formattedName).append(".toJson()");
@@ -809,21 +803,21 @@ public class ComponentGenerator {
         // postfixed with type
         for (ComponentBasicType basicType : typeVariants) {
 
-            String finalName = formattedName;
+            String name = formattedName;
 
             if (useTypePostfixForVariableName) {
-                finalName = formattedName + StringUtils
+                name = formattedName + StringUtils
                         .capitalize(basicType.name().toLowerCase());
             }
 
             method.addParameter(ComponentGeneratorUtils.toJavaType(basicType),
-                    finalName);
+                    name);
 
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
                     param.getName() + (useTypePostfixForVariableName
                             ? " can be <code>null</code>"
                             : ""));
-            finalNames.add(finalName);
+            finalNames.add(name);
         }
         return finalNames;
     }
@@ -873,13 +867,12 @@ public class ComponentGenerator {
                     .formatStringToValidJavaIdentifier(propertyName);
             Class<?> propertyJavaType;
 
-            if (property.getObjectType() != null
-                    && !property.getObjectType().isEmpty()) {
+            if (containsObjectType(property)) {
                 JavaClassSource nestedClass = generateNestedPojo(javaClass,
                         property.getObjectType(),
                         eventClassName + "-" + propertyName,
                         String.format(
-                                "Class that encapsulates the data received on the \"%s\" property of @{link %s} events, from the @{link %s} component.",
+                                "Class that encapsulates the data received on the '%s' property of @{link %s} events, from the @{link %s} component.",
                                 propertyName, eventListener.getName(),
                                 javaClass.getName()));
 
@@ -931,6 +924,11 @@ public class ComponentGenerator {
         javaClass.addImport(ComponentEventListener.class);
 
         return eventListener;
+    }
+
+    private boolean containsObjectType(ComponentPropertyBaseData property) {
+        return property.getObjectType() != null
+                && !property.getObjectType().isEmpty();
     }
 
     private JavaClassSource generateNestedPojo(JavaClassSource javaClass,

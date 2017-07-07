@@ -84,7 +84,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAttrForSelected(java.lang.String attrForSelected) {
 		getElement().setProperty("attrForSelected",
@@ -99,7 +99,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -113,7 +113,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -127,7 +127,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelected(java.lang.String selected) {
 		getElement().setProperty("selected", selected == null ? "" : selected);
@@ -141,7 +141,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelected(double selected) {
 		getElement().setProperty("selected", selected);
@@ -166,7 +166,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Returns the currently selected item.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
@@ -183,7 +183,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 
 	/**
 	 * @param activateEvent
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActivateEvent(java.lang.String activateEvent) {
 		getElement().setProperty("activateEvent",
@@ -211,7 +211,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectable(java.lang.String selectable) {
 		getElement().setProperty("selectable",
@@ -237,7 +237,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedClass(java.lang.String selectedClass) {
 		getElement().setProperty("selectedClass",
@@ -263,7 +263,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedAttribute(java.lang.String selectedAttribute) {
 		getElement().setProperty("selectedAttribute",
@@ -291,7 +291,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFallbackSelection(java.lang.String fallbackSelection) {
 		getElement().setProperty("fallbackSelection",
@@ -305,7 +305,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * The list of items from which a selection can be made.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "items-changed" event happens.
+	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -318,7 +318,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * The list of items from which a selection can be made.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -343,7 +343,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
@@ -372,7 +372,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setEntryAnimation(java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
@@ -402,7 +402,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setExitAnimation(java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
@@ -430,7 +430,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * its animation config.
 	 * 
 	 * @param animateInitialSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimateInitialSelection(boolean animateInitialSelection) {
 		getElement().setProperty("animateInitialSelection",
