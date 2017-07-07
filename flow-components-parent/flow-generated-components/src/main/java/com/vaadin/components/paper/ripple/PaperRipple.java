@@ -85,8 +85,8 @@ import com.vaadin.shared.Registration;
  * <paper-ripple class="circle"></paper-ripple>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-ripple#2.0.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-ripple#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-ripple")
 @HtmlImport("frontend://bower_components/paper-ripple/paper-ripple.html")
 public class PaperRipple<R extends PaperRipple<R>> extends Component

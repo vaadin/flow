@@ -54,8 +54,8 @@ import com.vaadin.ui.HasComponents;
  * when the checkbox is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component

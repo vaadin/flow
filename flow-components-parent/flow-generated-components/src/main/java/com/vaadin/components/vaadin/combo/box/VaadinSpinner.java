@@ -22,8 +22,8 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: vaadin-spinner#null", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: vaadin-spinner#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-spinner")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
 public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component

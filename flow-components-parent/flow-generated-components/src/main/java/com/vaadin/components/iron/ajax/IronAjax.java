@@ -50,8 +50,8 @@ import com.vaadin.shared.Registration;
  * the element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-ajax#2.0.2", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-ajax#2.0.2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-ajax")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-ajax.html")
 public class IronAjax<R extends IronAjax<R>> extends Component

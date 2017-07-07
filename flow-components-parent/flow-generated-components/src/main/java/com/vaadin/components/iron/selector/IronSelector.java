@@ -79,8 +79,8 @@ import com.vaadin.shared.Registration;
  * 3</div> </iron-selector>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-selector#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-selector#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-selector")
 @HtmlImport("frontend://bower_components/iron-selector/iron-selector.html")
 public class IronSelector<R extends IronSelector<R>> extends Component

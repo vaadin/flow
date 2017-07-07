@@ -33,8 +33,8 @@ import elemental.json.JsonObject;
  * transformOrigin: <transform-origin>, timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: slide-down-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: slide-down-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("slide-down-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/slide-down-animation.html")
 public class SlideDownAnimation<R extends SlideDownAnimation<R>>

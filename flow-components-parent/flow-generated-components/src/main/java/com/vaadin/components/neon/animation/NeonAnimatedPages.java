@@ -44,8 +44,8 @@ import com.vaadin.ui.HasComponents;
  * page.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: neon-animated-pages#2.0.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: neon-animated-pages#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("neon-animated-pages")
 @HtmlImport("frontend://bower_components/neon-animation/neon-animated-pages.html")
 public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>

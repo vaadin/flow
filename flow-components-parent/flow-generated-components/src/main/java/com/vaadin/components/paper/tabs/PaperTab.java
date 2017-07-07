@@ -57,8 +57,8 @@ import com.vaadin.ui.HasComponents;
  * {@code paper-styles/typography.html}.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-tab#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-tab#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-tab")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tab.html")
 public class PaperTab<R extends PaperTab<R>> extends Component

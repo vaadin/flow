@@ -62,8 +62,8 @@ import com.vaadin.ui.HasComponents;
  * focused paper-items | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-icon-item#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-icon-item#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-icon-item")
 @HtmlImport("frontend://bower_components/paper-item/paper-icon-item.html")
 public class PaperIconItem<R extends PaperIconItem<R>> extends Component

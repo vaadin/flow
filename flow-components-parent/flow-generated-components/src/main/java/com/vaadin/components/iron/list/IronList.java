@@ -33,8 +33,8 @@ import com.vaadin.ui.HasComponents;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-list#2.0.4", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-list#2.0.4", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-list")
 @HtmlImport("frontend://bower_components/iron-list/iron-list.html")
 public class IronList<R extends IronList<R>> extends Component

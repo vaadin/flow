@@ -33,8 +33,8 @@ import elemental.json.JsonObject;
  * transformOrigin: <transform-origin>, timing: <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: slide-left-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: slide-left-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("slide-left-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/slide-left-animation.html")
 public class SlideLeftAnimation<R extends SlideLeftAnimation<R>>

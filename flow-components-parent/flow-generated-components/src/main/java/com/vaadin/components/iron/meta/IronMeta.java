@@ -65,8 +65,8 @@ import com.vaadin.shared.Registration;
  * <iron-meta id="meta"></iron-meta> ... this.$.meta.byKey('info');
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-meta#2.0.2", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-meta#2.0.2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-meta")
 @HtmlImport("frontend://bower_components/iron-meta/iron-meta.html")
 public class IronMeta<R extends IronMeta<R>> extends Component

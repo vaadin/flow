@@ -86,8 +86,8 @@ import com.vaadin.annotations.HtmlImport;
  * svg icon | none
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-icon#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-icon#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-icon")
 @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
 public class IronIcon<R extends IronIcon<R>> extends Component

@@ -93,8 +93,8 @@ import com.vaadin.ui.HasComponents;
  * </paper-item-body> <paper-checkbox></paper-checkbox> </paper-item>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-item#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-item#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-item")
 @HtmlImport("frontend://bower_components/paper-item/paper-item.html")
 public class PaperItem<R extends PaperItem<R>> extends Component

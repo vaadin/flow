@@ -74,8 +74,8 @@ import com.vaadin.ui.HasComponents;
  * letter of a listbox item will also focus it.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-listbox#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-listbox#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-listbox")
 @HtmlImport("frontend://bower_components/paper-listbox/paper-listbox.html")
 public class PaperListbox<R extends PaperListbox<R>> extends Component

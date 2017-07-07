@@ -46,8 +46,8 @@ import com.vaadin.ui.HasComponents;
  * the error | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class PaperInputError<R extends PaperInputError<R>> extends Component
