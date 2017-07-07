@@ -428,6 +428,18 @@ public class PolymerTemplateTest {
     }
 
     @Test
+    public void parseTemplate_hasChildTemplateAndTemplateHtmlStyle_elementsAreCreatedAndRequestIsSent() {
+        // Make a new HTML template which contains style on the top
+        TemplateInTemplate template = new TemplateInTemplate(
+                new TestTemplateParser(tag -> "<dom-module id='" + tag
+                        + "'><template><style> a { width:100%; } </style><div><ffs></div><span></span>"
+                        + "<child-template></template></dom-module>"));
+        // Nothing should be changed in the logic
+        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+                template);
+    }
+
+    @Test
     public void parseCachedTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
