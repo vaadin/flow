@@ -114,7 +114,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * inside the element.
 	 * 
 	 * @param sizingTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setSizingTarget(
 			elemental.json.JsonObject sizingTarget) {
@@ -140,7 +140,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * The element to fit {@code this} into.
 	 * 
 	 * @param fitInto
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setFitInto(
 			elemental.json.JsonObject fitInto) {
@@ -168,7 +168,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * it.
 	 * 
 	 * @param noOverlap
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
@@ -195,7 +195,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * will default to the parent node.
 	 * 
 	 * @param positionTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setPositionTarget(
 			elemental.json.JsonObject positionTarget) {
@@ -225,7 +225,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * "auto".
 	 * 
 	 * @param horizontalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setHorizontalAlign(
 			java.lang.String horizontalAlign) {
@@ -254,7 +254,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * the {@code positionTarget}. Possible values are "top", "bottom", "auto".
 	 * 
 	 * @param verticalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setVerticalAlign(
 			java.lang.String verticalAlign) {
@@ -285,7 +285,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * pick the values which minimize the cropping.
 	 * 
 	 * @param dynamicAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
@@ -334,7 +334,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * the left.
 	 * 
 	 * @param horizontalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setHorizontalOffset(double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
@@ -383,7 +383,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * upwards.
 	 * 
 	 * @param verticalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
@@ -408,7 +408,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * Set to true to auto-fit on attach.
 	 * 
 	 * @param autoFitOnAttach
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setAutoFitOnAttach(boolean autoFitOnAttach) {
 		getElement().setProperty("autoFitOnAttach", autoFitOnAttach);
@@ -421,7 +421,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * True if the overlay is currently displayed.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "opened-changed" event happens.
+	 * 'opened-changed' event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -434,7 +434,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * True if the overlay is currently displayed.
 	 * 
 	 * @param opened
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
@@ -459,7 +459,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * True if the overlay was canceled when it was last closed.
 	 * 
 	 * @param canceled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setCanceled(boolean canceled) {
 		getElement().setProperty("canceled", canceled);
@@ -486,7 +486,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * within the light DOM of the overlay.
 	 * 
 	 * @param withBackdrop
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setWithBackdrop(boolean withBackdrop) {
 		getElement().setProperty("withBackdrop", withBackdrop);
@@ -513,7 +513,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * {@code autofocus} attribute` when the overlay is opened.
 	 * 
 	 * @param noAutoFocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setNoAutoFocus(boolean noAutoFocus) {
 		getElement().setProperty("noAutoFocus", noAutoFocus);
@@ -538,7 +538,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * Set to true to disable canceling the overlay with the ESC key.
 	 * 
 	 * @param noCancelOnEscKey
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setNoCancelOnEscKey(
 			boolean noCancelOnEscKey) {
@@ -564,7 +564,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * Set to true to disable canceling the overlay by clicking outside it.
 	 * 
 	 * @param noCancelOnOutsideClick
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setNoCancelOnOutsideClick(
 			boolean noCancelOnOutsideClick) {
@@ -597,7 +597,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * reasons in addition to {@code canceled}.
 	 * 
 	 * @param closingReason
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setClosingReason(
 			elemental.json.JsonObject closingReason) {
@@ -623,7 +623,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * Set to true to enable restoring of focus when overlay is closed.
 	 * 
 	 * @param restoreFocusOnClose
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setRestoreFocusOnClose(
 			boolean restoreFocusOnClose) {
@@ -649,7 +649,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * Set to true to keep overlay always on top.
 	 * 
 	 * @param alwaysOnTop
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setAlwaysOnTop(boolean alwaysOnTop) {
 		getElement().setProperty("alwaysOnTop", alwaysOnTop);
@@ -676,7 +676,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * , {@code no-cancel-on-esc-key} and {@code with-backdrop}.
 	 * 
 	 * @param modal
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setModal(boolean modal) {
 		getElement().setProperty("modal", modal);
@@ -701,7 +701,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setAnimationConfig(
 			elemental.json.JsonObject animationConfig) {
@@ -731,7 +731,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setEntryAnimation(
 			java.lang.String entryAnimation) {
@@ -762,7 +762,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDialog> R setExitAnimation(
 			java.lang.String exitAnimation) {
@@ -1023,7 +1023,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 		private final JsonObject event;
 
 		public IronOverlayCanceledEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") JsonObject event) {
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}
@@ -1045,7 +1045,7 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 		private final JsonObject event;
 
 		public IronOverlayClosedEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") JsonObject event) {
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}

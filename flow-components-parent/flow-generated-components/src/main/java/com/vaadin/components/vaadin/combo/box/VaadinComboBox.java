@@ -108,7 +108,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
@@ -122,7 +122,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * True if the last call to {@code validate} is invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "invalid-changed" event happens.
+	 * 'invalid-changed' event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -135,7 +135,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -152,7 +152,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -171,7 +171,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * {@code items} array.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -190,7 +190,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * {@code items} array.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
@@ -215,7 +215,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Set to true to mark the input as required.
 	 * 
 	 * @param required
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setRequired(boolean required) {
 		getElement().setProperty("required", required);
@@ -228,7 +228,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * True if the dropdown is open, false otherwise.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "opened-changed" event happens.
+	 * 'opened-changed' event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -241,7 +241,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * True if the dropdown is open, false otherwise.
 	 * 
 	 * @param opened
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
@@ -266,7 +266,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Set to true to disable this input.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -283,7 +283,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * @param readonly
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
@@ -310,7 +310,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * of either {@code String} or {@code Object} type.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -341,7 +341,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * will be set to reflect that value.
 	 * 
 	 * @param allowCustomValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setAllowCustomValue(
 			boolean allowCustomValue) {
@@ -371,7 +371,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * items can be of either {@code String} or {@code Object} type.
 	 * 
 	 * @param filteredItems
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setFilteredItems(
 			elemental.json.JsonArray filteredItems) {
@@ -399,7 +399,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * selected or not. It can be used for example in styling of the component.
 	 * 
 	 * @param hasValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setHasValue(boolean hasValue) {
 		getElement().setProperty("hasValue", hasValue);
@@ -426,7 +426,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * list of options.
 	 * 
 	 * @param loading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
@@ -439,7 +439,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Filtering string the user has typed into the input field.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "filter-changed" event happens.
+	 * 'filter-changed' event happens.
 	 */
 	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
@@ -452,7 +452,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Filtering string the user has typed into the input field.
 	 * 
 	 * @param filter
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setFilter(java.lang.String filter) {
 		getElement().setProperty("filter", filter == null ? "" : filter);
@@ -477,7 +477,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * The selected item from the {@code items} array.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setSelectedItem(
 			elemental.json.JsonObject selectedItem) {
@@ -521,7 +521,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * input box.
 	 * 
 	 * @param itemLabelPath
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setItemLabelPath(
 			java.lang.String itemLabelPath) {
@@ -558,7 +558,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * provide the form value.
 	 * 
 	 * @param itemValuePath
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setItemValuePath(
 			java.lang.String itemValuePath) {
@@ -585,7 +585,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Returns a reference to the native input element.
 	 * 
 	 * @param inputElement
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setInputElement(
 			elemental.json.JsonObject inputElement) {
@@ -611,7 +611,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * The label for this element.
 	 * 
 	 * @param label
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
@@ -636,7 +636,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Set to true to disable the floating label.
 	 * 
 	 * @param noLabelFloat
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
@@ -661,7 +661,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Set to true to always float the label.
 	 * 
 	 * @param alwaysFloatLabel
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setAlwaysFloatLabel(
 			boolean alwaysFloatLabel) {
@@ -687,7 +687,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Set to true to auto-validate the input value.
 	 * 
 	 * @param autoValidate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
@@ -712,7 +712,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Set to true to prevent the user from entering invalid input.
 	 * 
 	 * @param preventInvalidInput
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setPreventInvalidInput(
 			boolean preventInvalidInput) {
@@ -738,7 +738,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
 	 * 
 	 * @param allowedPattern
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setAllowedPattern(
 			java.lang.String allowedPattern) {
@@ -765,7 +765,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * A pattern to validate the {@code input} with.
 	 * 
 	 * @param pattern
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
@@ -790,7 +790,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * The error message to display when the input is invalid.
 	 * 
 	 * @param errorMessage
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setErrorMessage(
 			java.lang.String errorMessage) {
@@ -809,7 +809,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * @param autofocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
@@ -826,7 +826,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * @param inputmode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
@@ -854,7 +854,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * will always float.
 	 * 
 	 * @param placeholder
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setPlaceholder(
 			java.lang.String placeholder) {
@@ -873,7 +873,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * @param size
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setSize(double size) {
 		getElement().setProperty("size", size);
@@ -886,7 +886,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * True when the input field has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -899,7 +899,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 * True when the input field has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBox> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -1071,7 +1071,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 		private final String detailValue;
 
 		public ValueChangedEvent(VaadinComboBox source, boolean fromClient,
-				@EventData("event.detail") JsonObject detail,
+				@EventData("event.detail") elemental.json.JsonObject detail,
 				@EventData("event.detail.value") java.lang.String detailValue) {
 			super(source, fromClient);
 			this.detail = detail;
@@ -1160,7 +1160,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 		public SelectedItemChangedEvent(
 				VaadinComboBox source,
 				boolean fromClient,
-				@EventData("event.detail") JsonObject detail,
+				@EventData("event.detail") elemental.json.JsonObject detail,
 				@EventData("event.detail.value") elemental.json.JsonObject detailValue) {
 			super(source, fromClient);
 			this.detail = detail;
@@ -1231,7 +1231,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "prefix".
+	 * 'prefix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -1251,7 +1251,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "suffix".
+	 * 'suffix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -1271,7 +1271,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "clear-button".
+	 * 'clear-button'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -1291,7 +1291,7 @@ public class VaadinComboBox extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "toggle-button".
+	 * 'toggle-button'.
 	 * 
 	 * @param components
 	 *            The components to add.

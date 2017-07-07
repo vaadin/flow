@@ -78,7 +78,7 @@ public class PaperSpinnerLite extends Component implements HasStyle {
 	 * Displays the spinner.
 	 * 
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSpinnerLite> R setActive(boolean active) {
 		getElement().setProperty("active", active);
@@ -107,7 +107,7 @@ public class PaperSpinnerLite extends Component implements HasStyle {
 	 * not present, it will default to 'loading' as the alt value.
 	 * 
 	 * @param alt
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSpinnerLite> R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);

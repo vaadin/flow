@@ -71,7 +71,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * The selected color, as hex (i.e. #ffffff). value.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "color-changed" event happens.
+	 * 'color-changed' event happens.
 	 */
 	@Synchronize(property = "color", value = "color-changed")
 	public String getColor() {
@@ -84,7 +84,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * The selected color, as hex (i.e. #ffffff). value.
 	 * 
 	 * @param color
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setColor(java.lang.String color) {
 		getElement().setProperty("color", color == null ? "" : color);
@@ -117,7 +117,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * the {@code columnCount} property.
 	 * 
 	 * @param colorList
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setColorList(
 			elemental.json.JsonArray colorList) {
@@ -149,7 +149,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * Material Design palette has 18 colors
 	 * 
 	 * @param columnCount
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setColumnCount(double columnCount) {
 		getElement().setProperty("columnCount", columnCount);
@@ -176,7 +176,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param horizontalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setHorizontalAlign(
 			java.lang.String horizontalAlign) {
@@ -205,7 +205,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param verticalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setVerticalAlign(
 			java.lang.String verticalAlign) {
@@ -234,7 +234,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * interacted with via the pointer.
 	 * 
 	 * @param noink
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);

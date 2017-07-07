@@ -24,6 +24,7 @@ import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.iron.ajax.IronRequest;
 import com.vaadin.components.NotSupported;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -51,7 +52,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * request.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "xhr-changed" event happens.
+	 * 'xhr-changed' event happens.
 	 */
 	@Synchronize(property = "xhr", value = "xhr-changed")
 	public JsonObject getXhr() {
@@ -65,7 +66,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * request.
 	 * 
 	 * @param xhr
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setXhr(elemental.json.JsonObject xhr) {
 		getElement().setPropertyJson("xhr", xhr);
@@ -79,7 +80,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * completely resolved.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "response-changed" event happens.
+	 * 'response-changed' event happens.
 	 */
 	@Synchronize(property = "response", value = "response-changed")
 	public JsonObject getResponse() {
@@ -93,7 +94,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * completely resolved.
 	 * 
 	 * @param response
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setResponse(
 			elemental.json.JsonObject response) {
@@ -108,7 +109,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * resolved.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "status-changed" event happens.
+	 * 'status-changed' event happens.
 	 */
 	@Synchronize(property = "status", value = "status-changed")
 	public double getStatus() {
@@ -122,7 +123,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * resolved.
 	 * 
 	 * @param status
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setStatus(double status) {
 		getElement().setProperty("status", status);
@@ -149,7 +150,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * resolved.
 	 * 
 	 * @param statusText
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setStatusText(java.lang.String statusText) {
 		getElement().setProperty("statusText",
@@ -164,7 +165,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * rejects if there is an error before the {@code xhr} completes.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "completes-changed" event happens.
+	 * 'completes-changed' event happens.
 	 */
 	@Synchronize(property = "completes", value = "completes-changed")
 	public JsonObject getCompletes() {
@@ -178,7 +179,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * rejects if there is an error before the {@code xhr} completes.
 	 * 
 	 * @param completes
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setCompletes(
 			elemental.json.JsonObject completes) {
@@ -193,7 +194,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * available.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "progress-changed" event happens.
+	 * 'progress-changed' event happens.
 	 */
 	@Synchronize(property = "progress", value = "progress-changed")
 	public JsonObject getProgress() {
@@ -207,7 +208,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * available.
 	 * 
 	 * @param progress
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setProgress(
 			elemental.json.JsonObject progress) {
@@ -221,7 +222,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * Aborted will be true if an abort of the request is attempted.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "aborted-changed" event happens.
+	 * 'aborted-changed' event happens.
 	 */
 	@Synchronize(property = "aborted", value = "aborted-changed")
 	public boolean isAborted() {
@@ -234,7 +235,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * Aborted will be true if an abort of the request is attempted.
 	 * 
 	 * @param aborted
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setAborted(boolean aborted) {
 		getElement().setProperty("aborted", aborted);
@@ -248,7 +249,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * object (mainly network errors).
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "errored-changed" event happens.
+	 * 'errored-changed' event happens.
 	 */
 	@Synchronize(property = "errored", value = "errored-changed")
 	public boolean isErrored() {
@@ -262,7 +263,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * object (mainly network errors).
 	 * 
 	 * @param errored
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setErrored(boolean errored) {
 		getElement().setProperty("errored", errored);
@@ -287,7 +288,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * TimedOut will be true if the XHR threw a timeout event.
 	 * 
 	 * @param timedOut
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setTimedOut(boolean timedOut) {
 		getElement().setProperty("timedOut", timedOut);
@@ -322,7 +323,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * file:// - don't provide status codes.
 	 * 
 	 * @param succeeded
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setSucceeded(
 			elemental.json.JsonObject succeeded) {
@@ -342,7 +343,98 @@ public class IronRequest extends Component implements HasStyle {
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void send() {
+	protected void send(SendOptions options) {
+	}
+
+	/**
+	 * Class that encapsulates the data to be sent to the
+	 * {@link IronRequest#send(SendOptions)} method.
+	 */
+	public static class SendOptions implements JsonSerializable {
+		private JsonObject internalObject;
+
+		public String getUrl() {
+			return internalObject.getString("url");
+		}
+
+		public SendOptions setUrl(java.lang.String url) {
+			this.internalObject.put("url", url);
+			return this;
+		}
+
+		public String getMethod() {
+			return internalObject.getString("method");
+		}
+
+		public SendOptions setMethod(java.lang.String method) {
+			this.internalObject.put("method", method);
+			return this;
+		}
+
+		public boolean isAsync() {
+			return internalObject.getBoolean("async");
+		}
+
+		public SendOptions setAsync(boolean async) {
+			this.internalObject.put("async", async);
+			return this;
+		}
+
+		public JsonObject getBody() {
+			return internalObject.getObject("body");
+		}
+
+		public SendOptions setBody(elemental.json.JsonObject body) {
+			this.internalObject.put("body", body);
+			return this;
+		}
+
+		public JsonObject getHeaders() {
+			return internalObject.getObject("headers");
+		}
+
+		public SendOptions setHeaders(elemental.json.JsonObject headers) {
+			this.internalObject.put("headers", headers);
+			return this;
+		}
+
+		public String getHandleAs() {
+			return internalObject.getString("handleAs");
+		}
+
+		public SendOptions setHandleAs(java.lang.String handleAs) {
+			this.internalObject.put("handleAs", handleAs);
+			return this;
+		}
+
+		public String getJsonPrefix() {
+			return internalObject.getString("jsonPrefix");
+		}
+
+		public SendOptions setJsonPrefix(java.lang.String jsonPrefix) {
+			this.internalObject.put("jsonPrefix", jsonPrefix);
+			return this;
+		}
+
+		public boolean isWithCredentials() {
+			return internalObject.getBoolean("withCredentials");
+		}
+
+		public SendOptions setWithCredentials(boolean withCredentials) {
+			this.internalObject.put("withCredentials", withCredentials);
+			return this;
+		}
+
+		@Override
+		public JsonObject toJson() {
+			return internalObject;
+		}
+
+		@Override
+		public SendOptions readJson(elemental.json.JsonObject value) {
+			internalObject = value;
+			return this;
+		}
 	}
 
 	/**

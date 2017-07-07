@@ -51,7 +51,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends RippleAnimation> R setAnimationTiming(
 			elemental.json.JsonObject animationTiming) {
@@ -77,7 +77,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends RippleAnimation> R setIsNeonAnimation(
 			boolean isNeonAnimation) {
@@ -103,7 +103,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * Cached copy of shared elements.
 	 * 
 	 * @param sharedElements
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends RippleAnimation> R setSharedElements(
 			elemental.json.JsonObject sharedElements) {

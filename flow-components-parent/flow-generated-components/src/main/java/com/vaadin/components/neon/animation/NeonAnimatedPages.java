@@ -86,7 +86,7 @@ public class NeonAnimatedPages extends Component
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setAttrForSelected(
 			java.lang.String attrForSelected) {
@@ -102,7 +102,7 @@ public class NeonAnimatedPages extends Component
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -116,7 +116,7 @@ public class NeonAnimatedPages extends Component
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -130,7 +130,7 @@ public class NeonAnimatedPages extends Component
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelected(java.lang.String selected) {
 		getElement().setProperty("selected", selected == null ? "" : selected);
@@ -144,7 +144,7 @@ public class NeonAnimatedPages extends Component
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelected(double selected) {
 		getElement().setProperty("selected", selected);
@@ -169,7 +169,7 @@ public class NeonAnimatedPages extends Component
 	 * Returns the currently selected item.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectedItem(
 			elemental.json.JsonObject selectedItem) {
@@ -187,7 +187,7 @@ public class NeonAnimatedPages extends Component
 
 	/**
 	 * @param activateEvent
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setActivateEvent(
 			java.lang.String activateEvent) {
@@ -216,7 +216,7 @@ public class NeonAnimatedPages extends Component
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectable(
 			java.lang.String selectable) {
@@ -243,7 +243,7 @@ public class NeonAnimatedPages extends Component
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectedClass(
 			java.lang.String selectedClass) {
@@ -270,7 +270,7 @@ public class NeonAnimatedPages extends Component
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectedAttribute(
 			java.lang.String selectedAttribute) {
@@ -299,7 +299,7 @@ public class NeonAnimatedPages extends Component
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setFallbackSelection(
 			java.lang.String fallbackSelection) {
@@ -314,7 +314,7 @@ public class NeonAnimatedPages extends Component
 	 * The list of items from which a selection can be made.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "items-changed" event happens.
+	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -327,7 +327,7 @@ public class NeonAnimatedPages extends Component
 	 * The list of items from which a selection can be made.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setItems(
 			elemental.json.JsonArray items) {
@@ -353,7 +353,7 @@ public class NeonAnimatedPages extends Component
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setAnimationConfig(
 			elemental.json.JsonObject animationConfig) {
@@ -383,7 +383,7 @@ public class NeonAnimatedPages extends Component
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setEntryAnimation(
 			java.lang.String entryAnimation) {
@@ -414,7 +414,7 @@ public class NeonAnimatedPages extends Component
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setExitAnimation(
 			java.lang.String exitAnimation) {
@@ -443,7 +443,7 @@ public class NeonAnimatedPages extends Component
 	 * its animation config.
 	 * 
 	 * @param animateInitialSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setAnimateInitialSelection(
 			boolean animateInitialSelection) {

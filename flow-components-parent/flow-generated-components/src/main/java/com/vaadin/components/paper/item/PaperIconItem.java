@@ -89,7 +89,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setKeyEventTarget(
 			elemental.json.JsonObject keyEventTarget) {
@@ -117,7 +117,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -136,7 +136,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 
 	/**
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setKeyBindings(
 			elemental.json.JsonObject keyBindings) {
@@ -162,7 +162,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the user is currently holding down the button.
 	 * 
 	 * @param pressed
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
@@ -189,7 +189,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * the spacebar.
 	 * 
 	 * @param toggles
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
@@ -202,7 +202,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the button is a toggle and is currently in the active state.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "active-changed" event happens.
+	 * 'active-changed' event happens.
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -215,7 +215,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setActive(boolean active) {
 		getElement().setProperty("active", active);
@@ -244,7 +244,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * keyboard input).
 	 * 
 	 * @param pointerDown
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
@@ -271,7 +271,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * keyboard.
 	 * 
 	 * @param receivedFocusFromKeyboard
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setReceivedFocusFromKeyboard(
 			boolean receivedFocusFromKeyboard) {
@@ -300,7 +300,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setAriaActiveAttribute(
 			java.lang.String ariaActiveAttribute) {
@@ -315,7 +315,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -328,7 +328,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -341,7 +341,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -354,7 +354,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -443,7 +443,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "item-icon".
+	 * 'item-icon'.
 	 * 
 	 * @param components
 	 *            The components to add.

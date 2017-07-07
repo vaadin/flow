@@ -113,7 +113,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setAttrForSelected(
 			java.lang.String attrForSelected) {
@@ -129,7 +129,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -143,7 +143,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -157,7 +157,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelected(java.lang.String selected) {
 		getElement().setProperty("selected", selected == null ? "" : selected);
@@ -171,7 +171,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelected(double selected) {
 		getElement().setProperty("selected", selected);
@@ -196,7 +196,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * Returns the currently selected item.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedItem(
 			elemental.json.JsonObject selectedItem) {
@@ -226,7 +226,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * empty string to listen to no events.
 	 * 
 	 * @param activateEvent
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setActivateEvent(
 			java.lang.String activateEvent) {
@@ -255,7 +255,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectable(java.lang.String selectable) {
 		getElement().setProperty("selectable",
@@ -281,7 +281,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedClass(
 			java.lang.String selectedClass) {
@@ -308,7 +308,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedAttribute(
 			java.lang.String selectedAttribute) {
@@ -337,7 +337,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setFallbackSelection(
 			java.lang.String fallbackSelection) {
@@ -352,7 +352,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * The list of items from which a selection can be made.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "items-changed" event happens.
+	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -365,7 +365,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * The list of items from which a selection can be made.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -390,7 +390,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * If true, multiple selections are allowed.
 	 * 
 	 * @param multi
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setMulti(boolean multi) {
 		getElement().setProperty("multi", multi);
@@ -417,7 +417,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * {@code selected} when {@code multi} is true.
 	 * 
 	 * @param selectedValues
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedValues(
 			elemental.json.JsonArray selectedValues) {
@@ -443,7 +443,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * Returns an array of currently selected items.
 	 * 
 	 * @param selectedItems
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedItems(
 			elemental.json.JsonArray selectedItems) {
@@ -471,7 +471,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setKeyEventTarget(
 			elemental.json.JsonObject keyEventTarget) {
@@ -499,7 +499,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -518,7 +518,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setKeyBindings(
 			elemental.json.JsonObject keyBindings) {
@@ -544,7 +544,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * Returns the currently focused item.
 	 * 
 	 * @param focusedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setFocusedItem(
 			elemental.json.JsonObject focusedItem) {
@@ -574,7 +574,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * unset, {@code textContent} will be used.
 	 * 
 	 * @param attrForItemTitle
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setAttrForItemTitle(
 			java.lang.String attrForItemTitle) {
@@ -593,7 +593,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);

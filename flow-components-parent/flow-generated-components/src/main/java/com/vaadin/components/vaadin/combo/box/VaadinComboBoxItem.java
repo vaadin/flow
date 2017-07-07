@@ -48,7 +48,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The index of the item
 	 * 
 	 * @param index
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setIndex(double index) {
 		getElement().setProperty("index", index);
@@ -85,7 +85,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The item to render
 	 * 
 	 * @param item
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setItem(java.lang.String item) {
 		getElement().setProperty("item", item == null ? "" : item);
@@ -98,7 +98,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The item to render
 	 * 
 	 * @param item
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setItem(
 			elemental.json.JsonObject item) {
@@ -124,7 +124,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The text label corresponding to the item
 	 * 
 	 * @param label
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
@@ -149,7 +149,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * True when item is selected
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setSelected(boolean selected) {
 		getElement().setProperty("selected", selected);
@@ -174,7 +174,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * True when item is focused
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);

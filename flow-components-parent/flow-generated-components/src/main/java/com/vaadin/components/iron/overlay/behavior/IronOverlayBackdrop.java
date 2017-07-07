@@ -70,7 +70,7 @@ public class IronOverlayBackdrop extends Component
 	 * Returns true if the backdrop is opened.
 	 * 
 	 * @param opened
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronOverlayBackdrop> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);

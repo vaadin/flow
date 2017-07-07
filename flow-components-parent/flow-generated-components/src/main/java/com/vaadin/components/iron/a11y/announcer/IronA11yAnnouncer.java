@@ -79,7 +79,7 @@ public class IronA11yAnnouncer extends Component implements HasStyle {
 	 * {@code polite} and {@code assertive}.
 	 * 
 	 * @param mode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronA11yAnnouncer> R setMode(java.lang.String mode) {
 		getElement().setProperty("mode", mode == null ? "" : mode);

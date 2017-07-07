@@ -118,7 +118,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * the form has been submitted.
 	 * 
 	 * @param allowRedirect
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronForm> R setAllowRedirect(boolean allowRedirect) {
 		getElement().setProperty("allowRedirect", allowRedirect);
@@ -145,7 +145,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * details. Only works when {@code allowRedirect} is false.
 	 * 
 	 * @param headers
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronForm> R setHeaders(elemental.json.JsonObject headers) {
 		getElement().setPropertyJson("headers", headers);
@@ -174,7 +174,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * {@code allowRedirect} is false.
 	 * 
 	 * @param withCredentials
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronForm> R setWithCredentials(boolean withCredentials) {
 		getElement().setProperty("withCredentials", withCredentials);

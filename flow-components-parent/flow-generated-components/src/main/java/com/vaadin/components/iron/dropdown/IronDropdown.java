@@ -68,7 +68,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -81,7 +81,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -94,7 +94,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -107,7 +107,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -134,7 +134,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setKeyEventTarget(
 			elemental.json.JsonObject keyEventTarget) {
@@ -162,7 +162,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -191,7 +191,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
 	 * 
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setKeyBindings(
 			elemental.json.JsonObject keyBindings) {
@@ -223,7 +223,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * inside the element.
 	 * 
 	 * @param sizingTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setSizingTarget(
 			elemental.json.JsonObject sizingTarget) {
@@ -249,7 +249,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * The element to fit {@code this} into.
 	 * 
 	 * @param fitInto
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setFitInto(
 			elemental.json.JsonObject fitInto) {
@@ -277,7 +277,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * it.
 	 * 
 	 * @param noOverlap
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
@@ -304,7 +304,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * will default to the parent node.
 	 * 
 	 * @param positionTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setPositionTarget(
 			elemental.json.JsonObject positionTarget) {
@@ -334,7 +334,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code Polymer.IronFitBehavior}.
 	 * 
 	 * @param horizontalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setHorizontalAlign(
 			java.lang.String horizontalAlign) {
@@ -365,7 +365,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code Polymer.IronFitBehavior}.
 	 * 
 	 * @param verticalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setVerticalAlign(
 			java.lang.String verticalAlign) {
@@ -396,7 +396,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * pick the values which minimize the cropping.
 	 * 
 	 * @param dynamicAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
@@ -445,7 +445,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * the left.
 	 * 
 	 * @param horizontalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setHorizontalOffset(
 			double horizontalOffset) {
@@ -495,7 +495,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * upwards.
 	 * 
 	 * @param verticalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
@@ -520,7 +520,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to auto-fit on attach.
 	 * 
 	 * @param autoFitOnAttach
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAutoFitOnAttach(boolean autoFitOnAttach) {
 		getElement().setProperty("autoFitOnAttach", autoFitOnAttach);
@@ -533,7 +533,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * True if the overlay is currently displayed.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "opened-changed" event happens.
+	 * 'opened-changed' event happens.
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -546,7 +546,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * True if the overlay is currently displayed.
 	 * 
 	 * @param opened
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
@@ -571,7 +571,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * True if the overlay was canceled when it was last closed.
 	 * 
 	 * @param canceled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setCanceled(boolean canceled) {
 		getElement().setProperty("canceled", canceled);
@@ -598,7 +598,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * within the light DOM of the overlay.
 	 * 
 	 * @param withBackdrop
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setWithBackdrop(boolean withBackdrop) {
 		getElement().setProperty("withBackdrop", withBackdrop);
@@ -625,7 +625,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code autofocus} attribute` when the overlay is opened.
 	 * 
 	 * @param noAutoFocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoAutoFocus(boolean noAutoFocus) {
 		getElement().setProperty("noAutoFocus", noAutoFocus);
@@ -650,7 +650,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to disable canceling the overlay with the ESC key.
 	 * 
 	 * @param noCancelOnEscKey
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoCancelOnEscKey(
 			boolean noCancelOnEscKey) {
@@ -676,7 +676,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to disable canceling the overlay by clicking outside it.
 	 * 
 	 * @param noCancelOnOutsideClick
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoCancelOnOutsideClick(
 			boolean noCancelOnOutsideClick) {
@@ -709,7 +709,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * reasons in addition to {@code canceled}.
 	 * 
 	 * @param closingReason
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setClosingReason(
 			elemental.json.JsonObject closingReason) {
@@ -735,7 +735,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to enable restoring of focus when overlay is closed.
 	 * 
 	 * @param restoreFocusOnClose
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setRestoreFocusOnClose(
 			boolean restoreFocusOnClose) {
@@ -761,7 +761,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to keep overlay always on top.
 	 * 
 	 * @param alwaysOnTop
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAlwaysOnTop(boolean alwaysOnTop) {
 		getElement().setProperty("alwaysOnTop", alwaysOnTop);
@@ -786,7 +786,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAnimationConfig(
 			elemental.json.JsonObject animationConfig) {
@@ -816,7 +816,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setEntryAnimation(
 			java.lang.String entryAnimation) {
@@ -847,7 +847,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setExitAnimation(
 			java.lang.String exitAnimation) {
@@ -880,7 +880,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * details.
 	 * 
 	 * @param openAnimationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setOpenAnimationConfig(
 			elemental.json.JsonObject openAnimationConfig) {
@@ -913,7 +913,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * details.
 	 * 
 	 * @param closeAnimationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setCloseAnimationConfig(
 			elemental.json.JsonObject closeAnimationConfig) {
@@ -942,7 +942,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * dropdown opens.
 	 * 
 	 * @param focusTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setFocusTarget(
 			elemental.json.JsonObject focusTarget) {
@@ -968,7 +968,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to disable animations when opening and closing the dropdown.
 	 * 
 	 * @param noAnimations
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
@@ -997,7 +997,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * constrained to the dropdown when it opens.
 	 * 
 	 * @param allowOutsideScroll
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAllowOutsideScroll(
 			boolean allowOutsideScroll) {
@@ -1023,7 +1023,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * The element that is contained by the dropdown, if any.
 	 * 
 	 * @param containedElement
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setContainedElement(
 			elemental.json.JsonObject containedElement) {
@@ -1350,7 +1350,8 @@ public class IronDropdown extends Component implements HasStyle {
 		private final JsonObject event;
 
 		public IronOverlayCanceledEvent(IronDropdown source,
-				boolean fromClient, @EventData("event.event") JsonObject event) {
+				boolean fromClient,
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}
@@ -1372,7 +1373,7 @@ public class IronDropdown extends Component implements HasStyle {
 		private final JsonObject event;
 
 		public IronOverlayClosedEvent(IronDropdown source, boolean fromClient,
-				@EventData("event.event") JsonObject event) {
+				@EventData("event.event") elemental.json.JsonObject event) {
 			super(source, fromClient);
 			this.event = event;
 		}
@@ -1403,7 +1404,7 @@ public class IronDropdown extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "dropdown-content".
+	 * 'dropdown-content'.
 	 * 
 	 * @param components
 	 *            The components to add.

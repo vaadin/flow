@@ -76,7 +76,7 @@ public class VaadinButton extends Component
 	 * Specify that this control should have input focus when the page loads.
 	 * 
 	 * @param autofocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinButton> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
@@ -101,7 +101,7 @@ public class VaadinButton extends Component
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinButton> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -126,7 +126,7 @@ public class VaadinButton extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinButton> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);

@@ -75,7 +75,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * The URL target of the request.
 	 * 
 	 * @param url
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setUrl(java.lang.String url) {
 		getElement().setProperty("url", url == null ? "" : url);
@@ -106,7 +106,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * property instead.
 	 * 
 	 * @param params
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setParams(elemental.json.JsonObject params) {
 		getElement().setPropertyJson("params", params);
@@ -133,7 +133,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * is 'GET'.
 	 * 
 	 * @param method
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setMethod(java.lang.String method) {
 		getElement().setProperty("method", method == null ? "" : method);
@@ -174,7 +174,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * specified by the {@code contentType} property of this element.
 	 * 
 	 * @param headers
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setHeaders(elemental.json.JsonObject headers) {
 		getElement().setPropertyJson("headers", headers);
@@ -209,7 +209,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * Varies the handling of the {@code body} param.
 	 * 
 	 * @param contentType
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setContentType(java.lang.String contentType) {
 		getElement().setProperty("contentType",
@@ -263,7 +263,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * handle any encoding (e.g. for FormData, Blob, ArrayBuffer).
 	 * 
 	 * @param body
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setBody(elemental.json.JsonObject body) {
 		getElement().setPropertyJson("body", body);
@@ -290,7 +290,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * true unless You Know What You Are Doing™.
 	 * 
 	 * @param sync
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setSync(boolean sync) {
 		getElement().setProperty("sync", sync);
@@ -345,7 +345,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * {@code document}: uses {@code XHR.response}.
 	 * 
 	 * @param handleAs
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setHandleAs(java.lang.String handleAs) {
 		getElement().setProperty("handleAs", handleAs == null ? "" : handleAs);
@@ -370,7 +370,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * Set the withCredentials flag on the request.
 	 * 
 	 * @param withCredentials
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setWithCredentials(boolean withCredentials) {
 		getElement().setProperty("withCredentials", withCredentials);
@@ -395,7 +395,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * Set the timeout flag on the request.
 	 * 
 	 * @param timeout
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setTimeout(double timeout) {
 		getElement().setProperty("timeout", timeout);
@@ -422,7 +422,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * or {@code params} changes.
 	 * 
 	 * @param auto
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setAuto(boolean auto) {
 		getElement().setProperty("auto", auto);
@@ -447,7 +447,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * If true, error messages will automatically be logged to the console.
 	 * 
 	 * @param verbose
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setVerbose(boolean verbose) {
 		getElement().setProperty("verbose", verbose);
@@ -472,7 +472,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * The most recent request made by this iron-ajax element.
 	 * 
 	 * @param lastRequest
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setLastRequest(
 			elemental.json.JsonObject lastRequest) {
@@ -486,7 +486,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * True while lastRequest is in flight.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "loading-changed" event happens.
+	 * 'loading-changed' event happens.
 	 */
 	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
@@ -499,7 +499,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * True while lastRequest is in flight.
 	 * 
 	 * @param loading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
@@ -538,7 +538,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * at the time that the request was generated.
 	 * 
 	 * @param lastResponse
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setLastResponse(
 			elemental.json.JsonObject lastResponse) {
@@ -564,7 +564,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * lastRequest's error, if any.
 	 * 
 	 * @param lastError
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setLastError(
 			elemental.json.JsonObject lastError) {
@@ -592,7 +592,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * element.
 	 * 
 	 * @param activeRequests
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setActiveRequests(
 			elemental.json.JsonArray activeRequests) {
@@ -620,7 +620,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * generated requests.
 	 * 
 	 * @param debounceDuration
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setDebounceDuration(double debounceDuration) {
 		getElement().setProperty("debounceDuration", debounceDuration);
@@ -659,7 +659,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * 
 	 * 
 	 * @param jsonPrefix
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setJsonPrefix(java.lang.String jsonPrefix) {
 		getElement().setProperty("jsonPrefix",
@@ -703,7 +703,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * -shadow-dom-20151215/#events-that-are-not-leaked-into-ancestor-trees
 	 * 
 	 * @param bubbles
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setBubbles(boolean bubbles) {
 		getElement().setProperty("bubbles", bubbles);
@@ -730,7 +730,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * an object containing the error message as well as the request.
 	 * 
 	 * @param rejectWithRequest
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setRejectWithRequest(boolean rejectWithRequest) {
 		getElement().setProperty("rejectWithRequest", rejectWithRequest);
@@ -757,7 +757,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * from the current value of {@code params}.
 	 * 
 	 * @param queryString
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setQueryString(
 			elemental.json.JsonObject queryString) {
@@ -785,7 +785,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * suitable for providing to an {@code iron-request} instance.
 	 * 
 	 * @param requestUrl
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setRequestUrl(
 			elemental.json.JsonObject requestUrl) {
@@ -815,7 +815,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * in the {@code headers} property.
 	 * 
 	 * @param requestHeaders
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setRequestHeaders(
 			elemental.json.JsonObject requestHeaders) {

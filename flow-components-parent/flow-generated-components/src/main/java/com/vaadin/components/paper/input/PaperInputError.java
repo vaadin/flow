@@ -21,6 +21,8 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.components.paper.input.PaperInputError;
+import elemental.json.JsonObject;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -72,7 +74,7 @@ public class PaperInputError extends Component
 	 * True if the error is showing.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputError> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -84,8 +86,55 @@ public class PaperInputError extends Component
 	 * 
 	 * This overrides the update function in PaperInputAddonBehavior.
 	 */
-	public void update() {
-		getElement().callFunction("update");
+	public void update(UpdateState state) {
+		getElement().callFunction("update", state.toJson());
+	}
+
+	/**
+	 * Class that encapsulates the data to be sent to the
+	 * {@link PaperInputError#update(UpdateState)} method.
+	 */
+	public static class UpdateState implements JsonSerializable {
+		private JsonObject internalObject;
+
+		public JsonObject getInputElement() {
+			return internalObject.getObject("inputElement");
+		}
+
+		public UpdateState setInputElement(
+				elemental.json.JsonObject inputElement) {
+			this.internalObject.put("inputElement", inputElement);
+			return this;
+		}
+
+		public String getValue() {
+			return internalObject.getString("value");
+		}
+
+		public UpdateState setValue(java.lang.String value) {
+			this.internalObject.put("value", value);
+			return this;
+		}
+
+		public boolean isInvalid() {
+			return internalObject.getBoolean("invalid");
+		}
+
+		public UpdateState setInvalid(boolean invalid) {
+			this.internalObject.put("invalid", invalid);
+			return this;
+		}
+
+		@Override
+		public JsonObject toJson() {
+			return internalObject;
+		}
+
+		@Override
+		public UpdateState readJson(elemental.json.JsonObject value) {
+			internalObject = value;
+			return this;
+		}
 	}
 
 	/**

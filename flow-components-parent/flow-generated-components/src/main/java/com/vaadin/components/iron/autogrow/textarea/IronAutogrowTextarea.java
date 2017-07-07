@@ -75,7 +75,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setValidator(
 			java.lang.String validator) {
@@ -90,7 +90,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * True if the last call to {@code validate} is invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "invalid-changed" event happens.
+	 * 'invalid-changed' event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -103,7 +103,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -116,7 +116,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -129,7 +129,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -142,7 +142,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -155,7 +155,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -168,7 +168,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValueString() {
@@ -181,7 +181,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public double getValueNumber() {
@@ -194,7 +194,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
@@ -207,7 +207,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setValue(double value) {
 		getElement().setProperty("value", value);
@@ -247,7 +247,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * {@code value} instead.
 	 * 
 	 * @param bindValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setBindValue(
 			java.lang.String bindValue) {
@@ -263,7 +263,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * {@code value} instead.
 	 * 
 	 * @param bindValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setBindValue(double bindValue) {
 		getElement().setProperty("bindValue", bindValue);
@@ -288,7 +288,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * The initial number of rows.
 	 * 
 	 * @param rows
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setRows(double rows) {
 		getElement().setProperty("rows", rows);
@@ -315,7 +315,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * means no maximum.
 	 * 
 	 * @param maxRows
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setMaxRows(double maxRows) {
 		getElement().setProperty("maxRows", maxRows);
@@ -340,7 +340,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Bound to the textarea's {@code autocomplete} attribute.
 	 * 
 	 * @param autocomplete
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setAutocomplete(
 			java.lang.String autocomplete) {
@@ -367,7 +367,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Bound to the textarea's {@code autofocus} attribute.
 	 * 
 	 * @param autofocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
@@ -392,7 +392,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Bound to the textarea's {@code inputmode} attribute.
 	 * 
 	 * @param inputmode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setInputmode(
 			java.lang.String inputmode) {
@@ -419,7 +419,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Bound to the textarea's {@code placeholder} attribute.
 	 * 
 	 * @param placeholder
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setPlaceholder(
 			java.lang.String placeholder) {
@@ -446,7 +446,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Bound to the textarea's {@code readonly} attribute.
 	 * 
 	 * @param readonly
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setReadonly(
 			java.lang.String readonly) {
@@ -472,7 +472,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Set to true to mark the textarea as required.
 	 * 
 	 * @param required
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setRequired(boolean required) {
 		getElement().setProperty("required", required);
@@ -497,7 +497,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * The minimum length of the input value.
 	 * 
 	 * @param minlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
@@ -522,7 +522,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * The maximum length of the input value.
 	 * 
 	 * @param maxlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
@@ -547,7 +547,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Returns the underlying textarea.
 	 * 
 	 * @param textarea
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setTextarea(
 			elemental.json.JsonObject textarea) {
@@ -573,7 +573,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Returns textarea's selection start.
 	 * 
 	 * @param selectionStart
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setSelectionStart(
 			elemental.json.JsonObject selectionStart) {
@@ -599,7 +599,7 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 * Returns textarea's selection end.
 	 * 
 	 * @param selectionEnd
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAutogrowTextarea> R setSelectionEnd(
 			elemental.json.JsonObject selectionEnd) {

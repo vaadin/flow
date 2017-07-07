@@ -39,7 +39,7 @@ public class VaadinSpinner extends Component implements HasStyle {
 
 	/**
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinSpinner> R setActive(boolean active) {
 		getElement().setProperty("active", active);

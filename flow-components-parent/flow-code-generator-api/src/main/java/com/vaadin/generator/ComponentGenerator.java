@@ -18,10 +18,8 @@ package com.vaadin.generator;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -45,6 +43,7 @@ import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -53,6 +52,7 @@ import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
+import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
@@ -61,9 +61,7 @@ import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Base class of the component generation process. It takes a
@@ -378,7 +376,7 @@ public class ComponentGenerator {
                 slot));
 
         method.getJavaDoc().setText(String.format(
-                "Adds the given components as children of this component at the slot \"%s\".",
+                "Adds the given components as children of this component at the slot '%s'.",
                 slot))
                 .addTagValue(JAVADOC_PARAM, "components The components to add.")
                 .addTagValue(JAVADOC_SEE,
@@ -475,7 +473,7 @@ public class ComponentGenerator {
         javaClass.addAnnotation(Generated.class)
                 .setStringArrayValue(generatedValue);
 
-        addAnnotation(javaClass, Tag.class, metadata.getTag());
+        javaClass.addAnnotation(Tag.class).setStringValue(metadata.getTag());
 
         String importPath = metadata.getBaseUrl().replace("\\", "/");
         if (importPath.startsWith("/")) {
@@ -483,7 +481,7 @@ public class ComponentGenerator {
         }
         String htmlImport = String.format("frontend://%s%s", frontendDirectory,
                 importPath);
-        addAnnotation(javaClass, HtmlImport.class, htmlImport);
+        javaClass.addAnnotation(HtmlImport.class).setStringValue(htmlImport);
     }
 
     /**
@@ -533,93 +531,81 @@ public class ComponentGenerator {
         }
     }
 
-    private void addAnnotation(JavaClassSource javaClass,
-            Class<? extends Annotation> annotation, String literalValue) {
-        javaClass.addAnnotation(annotation)
-                .setLiteralValue("\"" + literalValue + "\"");
-    }
-
     private void generateGetterFor(JavaClassSource javaClass,
             ComponentPropertyData property, List<ComponentEventData> events) {
-        boolean postfixWithVariableType = property.getType().size() > 1;
-        for (ComponentBasicType basicType : property.getType()) {
+
+        if (containsObjectType(property)) {
+            JavaClassSource nestedClass = generateNestedPojo(javaClass,
+                    property.getObjectType(), property.getName() + "-property",
+                    String.format(
+                            "Class that encapsulates the data of the '%s' property in the {@link %s} component.",
+                            property.getName(), javaClass.getName()));
+
             MethodSource<JavaClassSource> method = javaClass.addMethod()
-                    .setPublic().setReturnType(toJavaType(basicType));
+                    .setPublic().setReturnType(nestedClass);
+            method.setName(ComponentGeneratorUtils
+                    .generateMethodNameForProperty("get", property.getName()));
+            method.setBody(String.format(
+                    "return new %s().readJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
+                    nestedClass.getName(), property.getName()));
 
-            if (basicType == ComponentBasicType.BOOLEAN) {
-                method.setName(
-                        ComponentGeneratorUtils.generateMethodNameForProperty(
-                                "is", property.getName()));
-            } else {
-                method.setName(
-                        ComponentGeneratorUtils.generateMethodNameForProperty(
-                                "get", property.getName())
-                                + (postfixWithVariableType
-                                        ? StringUtils.capitalize(
-                                                basicType.name().toLowerCase())
-                                        : ""));
+            addSynchronizeAnnotationAndJavadocToGetter(method, property,
+                    events);
+
+        } else {
+            boolean postfixWithVariableType = property.getType().size() > 1;
+            for (ComponentBasicType basicType : property.getType()) {
+                MethodSource<JavaClassSource> method = javaClass.addMethod()
+                        .setPublic().setReturnType(
+                                ComponentGeneratorUtils.toJavaType(basicType));
+
+                if (basicType == ComponentBasicType.BOOLEAN) {
+                    method.setName(ComponentGeneratorUtils
+                            .generateMethodNameForProperty("is",
+                                    property.getName()));
+                } else {
+                    method.setName(ComponentGeneratorUtils
+                            .generateMethodNameForProperty("get",
+                                    property.getName())
+                            + (postfixWithVariableType
+                                    ? StringUtils.capitalize(
+                                            basicType.name().toLowerCase())
+                                    : ""));
+                }
+
+                method.setBody(
+                        ComponentGeneratorUtils.generateElementApiGetterForType(
+                                basicType, property.getName()));
+
+                addSynchronizeAnnotationAndJavadocToGetter(method, property,
+                        events);
             }
-            switch (basicType) {
-            case STRING:
-                method.setBody(String.format(
-                        "return getElement().getProperty(\"%s\");",
-                        property.getName()));
-                break;
-            case BOOLEAN:
-                method.setBody(String.format(
-                        "return getElement().getProperty(\"%s\", false);",
-                        property.getName()));
-                break;
-            case NUMBER:
-                method.setBody(String.format(
-                        "return getElement().getProperty(\"%s\", 0.0);",
-                        property.getName()));
-                break;
-            case DATE:
-                method.setBody(String.format(
-                        "return getElement().getProperty(\"%s\");",
-                        property.getName()));
-                break;
-            case ARRAY:
-                method.setBody(String.format(
-                        "return (JsonArray) getElement().getPropertyRaw(\"%s\");",
-                        property.getName()));
-                break;
-            case OBJECT:
-                method.setBody(String.format(
-                        "return (JsonObject) getElement().getPropertyRaw(\"%s\");",
-                        property.getName()));
-                break;
-            case UNDEFINED:
-                method.setBody(String.format(
-                        "return (JsonValue) getElement().getPropertyRaw(\"%s\");",
-                        property.getName()));
-                break;
-            }
+        }
+    }
 
-            // verifies whether the getter needs a @Synchronize annotation by
-            // inspecting the event list
-            String synchronizationDescription = "";
+    private void addSynchronizeAnnotationAndJavadocToGetter(
+            MethodSource<JavaClassSource> method,
+            ComponentPropertyData property, List<ComponentEventData> events) {
+        // verifies whether the getter needs a @Synchronize annotation by
+        // inspecting the event list
+        String synchronizationDescription = "";
 
-            if (containsChangedEventForProperty(property.getName(), events)) {
-                method.addAnnotation(Synchronize.class)
-                        .setStringValue("property", property.getName())
-                        .setStringValue(property.getName() + "-changed");
+        if (containsChangedEventForProperty(property.getName(), events)) {
+            method.addAnnotation(Synchronize.class)
+                    .setStringValue("property", property.getName())
+                    .setStringValue(property.getName() + "-changed");
 
-                synchronizationDescription = "This property is synchronized automatically from client side when a \""
-                        + property.getName() + "-changed\" event happens.";
-            } else {
-                synchronizationDescription = "This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.";
-            }
+            synchronizationDescription = "This property is synchronized automatically from client side when a '"
+                    + property.getName() + "-changed' event happens.";
+        } else {
+            synchronizationDescription = "This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.";
+        }
 
-            if (StringUtils.isNotEmpty(property.getDescription())) {
-                addJavaDoc(
-                        property.getDescription() + "<p>"
-                                + synchronizationDescription,
-                        method.getJavaDoc());
-            } else {
-                method.getJavaDoc().setFullText(synchronizationDescription);
-            }
+        if (StringUtils.isNotEmpty(property.getDescription())) {
+            addJavaDoc(property.getDescription() + "<p>"
+                    + synchronizationDescription, method.getJavaDoc());
+        } else {
+            method.getJavaDoc().setFullText(synchronizationDescription);
         }
     }
 
@@ -651,57 +637,78 @@ public class ComponentGenerator {
     private void generateSetterFor(JavaClassSource javaClass,
             ComponentPropertyData property) {
 
-        for (ComponentBasicType basicType : property.getType()) {
+        if (containsObjectType(property)) {
+            // the getter already created the nested pojo, so here we just need
+            // to get the name
+            String nestedClassName = ComponentGeneratorUtils
+                    .generateValidJavaClassName(
+                            property.getName() + "-property");
+
             MethodSource<JavaClassSource> method = javaClass.addMethod()
                     .setName(ComponentGeneratorUtils
                             .generateMethodNameForProperty("set",
                                     property.getName()))
                     .setPublic();
+            method.setName(ComponentGeneratorUtils
+                    .generateMethodNameForProperty("set", property.getName()));
 
-            Class<?> setterType = toJavaType(basicType);
-            method.addParameter(setterType, property.getName());
+            method.addParameter(nestedClassName, "property");
 
-            switch (basicType) {
-            case ARRAY:
-            case UNDEFINED:
-            case OBJECT:
-                method.setBody(String.format(
-                        "getElement().setPropertyJson(\"%s\", %s);",
-                        property.getName(), property.getName()));
-                break;
-            default:
-                method.setBody(String.format(
-                        "getElement().setProperty(\"%s\", %s);",
-                        property.getName(),
-                        getSetterValue(property.getName(), setterType)));
-                break;
-            }
+            method.setBody(String.format(
+                    "getElement().setPropertyJson(\"%s\", property.toJson());",
+                    property.getName()));
 
             if (StringUtils.isNotEmpty(property.getDescription())) {
                 addJavaDoc(property.getDescription(), method.getJavaDoc());
             }
 
-            method.getJavaDoc().addTagValue(JAVADOC_PARAM, property.getName());
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                    "property the property to set");
 
             if (fluentSetters) {
-                method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
-                method.setReturnType(GENERIC_TYPE);
-                method.setBody(String
-                        .format(method.getBody() + "%n" + "return getSelf();"));
-                method.getJavaDoc().addTagValue("@return",
-                        "This instance, for method chaining.");
+                addFluentReturnToSetter(javaClass, method);
+            }
+
+        } else {
+
+            for (ComponentBasicType basicType : property.getType()) {
+                MethodSource<JavaClassSource> method = javaClass.addMethod()
+                        .setName(ComponentGeneratorUtils
+                                .generateMethodNameForProperty("set",
+                                        property.getName()))
+                        .setPublic();
+
+                Class<?> setterType = ComponentGeneratorUtils
+                        .toJavaType(basicType);
+
+                String parameterName = ComponentGeneratorUtils
+                        .formatStringToValidJavaIdentifier(property.getName());
+                method.addParameter(setterType, parameterName);
+
+                method.setBody(
+                        ComponentGeneratorUtils.generateElementApiSetterForType(
+                                basicType, property.getName(), parameterName));
+
+                if (StringUtils.isNotEmpty(property.getDescription())) {
+                    addJavaDoc(property.getDescription(), method.getJavaDoc());
+                }
+
+                method.getJavaDoc().addTagValue(JAVADOC_PARAM, parameterName);
+
+                if (fluentSetters) {
+                    addFluentReturnToSetter(javaClass, method);
+                }
             }
         }
     }
 
-    private String getSetterValue(String propertyName, Class<?> setterType) {
-        String value = propertyName;
-        // Don't insert null as property value. Insert empty String instead.
-        if (String.class.equals(setterType)) {
-            value = String.format("%s == null ? \"\" : %s", propertyName,
-                    propertyName);
-        }
-        return value;
+    private void addFluentReturnToSetter(JavaClassSource javaClass,
+            MethodSource<JavaClassSource> method) {
+        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
+        method.setReturnType(GENERIC_TYPE);
+        method.setBody(method.getBody() + "return getSelf();");
+        method.getJavaDoc().addTagValue("@return",
+                "this instance, for method chaining");
     }
 
     private void generateFunctionFor(JavaClassSource javaClass,
@@ -721,15 +728,16 @@ public class ComponentGenerator {
                 && function.getReturns() != ComponentBasicType.UNDEFINED) {
             method.setProtected();
             method.addAnnotation(NotSupported.class);
-            generateFunctionParameters(function, method);
+            generateFunctionParameters(javaClass, function, method);
             method.getJavaDoc().addTagValue("@return",
-                    "It would return a " + toJavaType(function.getReturns()));
+                    "It would return a " + ComponentGeneratorUtils
+                            .toJavaType(function.getReturns()));
             method.setBody("");
         } else {
             method.setPublic();
             method.setBody(String.format("getElement().callFunction(\"%s\"%s);",
                     function.getName(),
-                    generateFunctionParameters(function, method)));
+                    generateFunctionParameters(javaClass, function, method)));
         }
 
     }
@@ -737,8 +745,11 @@ public class ComponentGenerator {
     /**
      * Adds the function parameters in a string separated with commas.
      * <p>
-     * Also adds the parameters to the to the javadocs for the given method.
+     * Also adds the parameters to the to the javadocs for the given method, and
+     * generate nested classes for complex object parameters if needed.
      *
+     * @param javaClass
+     *            the main class file
      * @param function
      *            the function data
      * @param method
@@ -746,7 +757,8 @@ public class ComponentGenerator {
      * @return a string of the parameters of the function, or an empty string if
      *         no parameters
      */
-    private String generateFunctionParameters(ComponentFunctionData function,
+    private String generateFunctionParameters(JavaClassSource javaClass,
+            ComponentFunctionData function,
             MethodSource<JavaClassSource> method) {
         if (function.getParameters() == null
                 || function.getParameters().isEmpty()) {
@@ -755,33 +767,70 @@ public class ComponentGenerator {
 
         StringBuilder params = new StringBuilder();
         for (ComponentFunctionParameterData param : function.getParameters()) {
-            List<ComponentBasicType> typeVariants = param.getType();
-            boolean useTypePostfixForVariableName = typeVariants.size() > 1;
+            String formattedName = StringUtils.uncapitalize(
+                    ComponentGeneratorUtils.formatStringToValidJavaIdentifier(
+                            param.getName()));
 
-            // there might be multiple types accepted for same parameter,
-            // for now different types are allowed and parameter name is
-            // postfixed with type
-            for (ComponentBasicType basicType : typeVariants) {
-
-                String formattedName = StringUtils
-                        .uncapitalize(ComponentGeneratorUtils
-                                .formatStringToValidJavaIdentifier(
-                                        param.getName()));
-                if (useTypePostfixForVariableName) {
-                    formattedName = formattedName + StringUtils
-                            .capitalize(basicType.name().toLowerCase());
-                }
-
-                method.addParameter(toJavaType(basicType), formattedName);
-                params.append(", ").append(formattedName);
-
-                method.getJavaDoc().addTagValue(JAVADOC_PARAM,
-                        param.getName() + (useTypePostfixForVariableName
-                                ? " can be <code>null</code>"
-                                : ""));
+            if (containsObjectType(param)) {
+                generateFunctionParameterForComplexType(javaClass, function,
+                        method, formattedName, param);
+                params.append(", ").append(formattedName).append(".toJson()");
+            } else {
+                generateFunctionParameterForBasicTypes(method, formattedName,
+                        param).forEach(
+                                name -> params.append(", ").append(name));
             }
         }
         return params.toString();
+    }
+
+    private void generateFunctionParameterForComplexType(
+            JavaClassSource javaClass, ComponentFunctionData function,
+            MethodSource<JavaClassSource> method, String formattedName,
+            ComponentFunctionParameterData param) {
+
+        String nameHint = function.getName() + "-" + param.getName();
+        JavaClassSource nestedClass = generateNestedPojo(javaClass,
+                param.getObjectType(), nameHint,
+                String.format(
+                        "Class that encapsulates the data to be sent to the {@link %s#%s(%s)} method.",
+                        javaClass.getName(), method.getName(),
+                        ComponentGeneratorUtils
+                                .generateValidJavaClassName(nameHint)));
+
+        method.addParameter(nestedClass, formattedName);
+    }
+
+    private List<String> generateFunctionParameterForBasicTypes(
+            MethodSource<JavaClassSource> method, String formattedName,
+            ComponentFunctionParameterData param) {
+
+        List<ComponentBasicType> typeVariants = param.getType();
+        boolean useTypePostfixForVariableName = typeVariants.size() > 1;
+        List<String> names = new ArrayList<>(typeVariants.size());
+
+        // there might be multiple types accepted for same parameter,
+        // for now different types are allowed and parameter name is
+        // postfixed with type
+        for (ComponentBasicType basicType : typeVariants) {
+
+            String name = formattedName;
+
+            if (useTypePostfixForVariableName) {
+                name = formattedName + StringUtils
+                        .capitalize(basicType.name().toLowerCase());
+            }
+
+            method.addParameter(ComponentGeneratorUtils.toJavaType(basicType),
+                    name);
+
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                    param.getName() + (useTypePostfixForVariableName
+                            ? " can be <code>null</code>"
+                            : ""));
+            names.add(name);
+        }
+        return names;
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
@@ -825,24 +874,49 @@ public class ComponentGenerator {
         for (ComponentPropertyBaseData property : event.getProperties()) {
             // Add new parameter to constructor
             final String propertyName = property.getName();
-            Class<?> propertyJavaType;
-
-            if (!property.getType().isEmpty()) {
-                // for varying types, using the first type declared in the JSDoc
-                // it is anyway very rare to have varying property type
-                propertyJavaType = toJavaType(property.getType().get(0));
-            } else { // object property
-                propertyJavaType = JsonObject.class;
-            }
             String normalizedProperty = ComponentGeneratorUtils
                     .formatStringToValidJavaIdentifier(propertyName);
+            Class<?> propertyJavaType;
+
+            if (containsObjectType(property)) {
+                JavaClassSource nestedClass = generateNestedPojo(javaClass,
+                        property.getObjectType(),
+                        eventClassName + "-" + propertyName,
+                        String.format(
+                                "Class that encapsulates the data received on the '%s' property of @{link %s} events, from the @{link %s} component.",
+                                propertyName, eventListener.getName(),
+                                javaClass.getName()));
+
+                propertyJavaType = JsonObject.class;
+
+                eventListener.addField().setType(propertyJavaType).setPrivate()
+                        .setFinal(true).setName(normalizedProperty);
+
+                eventListener.addMethod().setName(ComponentGeneratorUtils
+                        .generateMethodNameForProperty("get", propertyName))
+                        .setPublic().setReturnType(nestedClass)
+                        .setBody(String.format("return new %s().readJson(%s);",
+                                nestedClass.getName(), normalizedProperty));
+            } else {
+                if (!property.getType().isEmpty()) {
+                    // for varying types, using the first type declared in the
+                    // JSDoc
+                    // it is anyway very rare to have varying property type
+                    propertyJavaType = ComponentGeneratorUtils
+                            .toJavaType(property.getType().get(0));
+                } else { // object property
+                    propertyJavaType = JsonObject.class;
+                }
+
+                // Create private field
+                eventListener.addProperty(propertyJavaType, normalizedProperty)
+                        .setAccessible(true).setMutable(false);
+            }
+
             ParameterSource<JavaClassSource> parameter = eventConstructor
                     .addParameter(propertyJavaType, normalizedProperty);
-            parameter.addAnnotation(EventData.class).setLiteralValue(
-                    String.format("\"event.%s\"", propertyName));
-            // Create private field
-            eventListener.addProperty(propertyJavaType, normalizedProperty)
-                    .setAccessible(true).setMutable(false);
+            parameter.addAnnotation(EventData.class)
+                    .setStringValue(String.format("event.%s", propertyName));
 
             // Set value to private field
             eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
@@ -853,7 +927,7 @@ public class ComponentGenerator {
         }
 
         eventListener.addAnnotation(DomEvent.class)
-                .setLiteralValue("\"" + event.getName() + "\"");
+                .setStringValue(event.getName());
 
         // Add event imports.
         javaClass.addImport(DomEvent.class);
@@ -863,26 +937,29 @@ public class ComponentGenerator {
         return eventListener;
     }
 
-    private Class<?> toJavaType(ComponentBasicType type) {
-        switch (type) {
-        case STRING:
-            return String.class;
-        case NUMBER:
-            return double.class;
-        case BOOLEAN:
-            return boolean.class;
-        case ARRAY:
-            return JsonArray.class;
-        case DATE:
-            return Date.class;
-        case OBJECT:
-            return JsonObject.class;
-        case UNDEFINED:
-            return JsonValue.class;
-        default:
-            throw new ComponentGenerationException(
-                    "Not a supported type: " + type);
+    private boolean containsObjectType(ComponentPropertyBaseData property) {
+        return property.getObjectType() != null
+                && !property.getObjectType().isEmpty();
+    }
+
+    private JavaClassSource generateNestedPojo(JavaClassSource javaClass,
+            List<ComponentObjectType> type, String nameHint,
+            String description) {
+        JavaClassSource nestedClass = new NestedClassGenerator().withType(type)
+                .withFluentSetters(fluentSetters).withNameHint(nameHint)
+                .build();
+
+        if (javaClass.getNestedType(nestedClass.getName()) != null) {
+            throw new ComponentGenerationException("Duplicated nested class: \""
+                    + nestedClass.getName()
+                    + "\". Please make sure your webcomponent definition contains unique properties, events and method names.");
         }
+
+        nestedClass.getJavaDoc().setText(description);
+        javaClass.addNestedType(nestedClass);
+        javaClass.addImport(JsonObject.class);
+        javaClass.addImport(JsonSerializable.class);
+        return nestedClass;
     }
 
     private Properties getProperties(String fileName) {

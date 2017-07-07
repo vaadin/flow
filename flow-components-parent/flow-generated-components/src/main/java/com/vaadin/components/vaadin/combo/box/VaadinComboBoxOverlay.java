@@ -49,7 +49,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * The element to position/align the dropdown by.
 	 * 
 	 * @param positionTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setPositionTarget(
 			elemental.json.JsonObject positionTarget) {
@@ -75,7 +75,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * Vertical offset for the overlay position.
 	 * 
 	 * @param verticalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setVerticalOffset(
 			double verticalOffset) {
@@ -101,7 +101,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * True if the device supports touch events.
 	 * 
 	 * @param touchDevice
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setTouchDevice(
 			boolean touchDevice) {
@@ -127,7 +127,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * {@code true} when new items are being loaded.
 	 * 
 	 * @param loading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);

@@ -51,7 +51,7 @@ public class PaperMenuShrinkWidthAnimation extends Component
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperMenuShrinkWidthAnimation> R setAnimationTiming(
 			elemental.json.JsonObject animationTiming) {
@@ -77,7 +77,7 @@ public class PaperMenuShrinkWidthAnimation extends Component
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperMenuShrinkWidthAnimation> R setIsNeonAnimation(
 			boolean isNeonAnimation) {

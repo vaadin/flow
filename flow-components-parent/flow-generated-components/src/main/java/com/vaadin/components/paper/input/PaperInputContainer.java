@@ -167,7 +167,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * input value is not null.
 	 * 
 	 * @param noLabelFloat
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setNoLabelFloat(
 			boolean noLabelFloat) {
@@ -193,7 +193,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * Set to true to always float the floating label.
 	 * 
 	 * @param alwaysFloatLabel
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setAlwaysFloatLabel(
 			boolean alwaysFloatLabel) {
@@ -219,7 +219,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * The attribute to listen for value changes on.
 	 * 
 	 * @param attrForValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setAttrForValue(
 			java.lang.String attrForValue) {
@@ -246,7 +246,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * Set to true to auto-validate the input value when it changes.
 	 * 
 	 * @param autoValidate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setAutoValidate(
 			boolean autoValidate) {
@@ -276,7 +276,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * {@code iron-input-validate} event is heard from a child.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -289,7 +289,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * True if the input has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -302,7 +302,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * True if the input has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -337,7 +337,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "prefix".
+	 * 'prefix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -357,7 +357,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "label".
+	 * 'label'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -377,7 +377,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "input".
+	 * 'input'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -397,7 +397,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "suffix".
+	 * 'suffix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -417,7 +417,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "add-on".
+	 * 'add-on'.
 	 * 
 	 * @param components
 	 *            The components to add.

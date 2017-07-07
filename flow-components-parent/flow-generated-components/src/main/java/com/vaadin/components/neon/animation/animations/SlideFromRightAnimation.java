@@ -59,7 +59,7 @@ public class SlideFromRightAnimation extends Component implements HasStyle {
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends SlideFromRightAnimation> R setAnimationTiming(
 			elemental.json.JsonObject animationTiming) {
@@ -85,7 +85,7 @@ public class SlideFromRightAnimation extends Component implements HasStyle {
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends SlideFromRightAnimation> R setIsNeonAnimation(
 			boolean isNeonAnimation) {

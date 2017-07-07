@@ -118,7 +118,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setAttrForSelected(
 			java.lang.String attrForSelected) {
@@ -134,7 +134,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -148,7 +148,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -162,7 +162,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelected(java.lang.String selected) {
 		getElement().setProperty("selected", selected == null ? "" : selected);
@@ -176,7 +176,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelected(double selected) {
 		getElement().setProperty("selected", selected);
@@ -201,7 +201,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * Returns the currently selected item.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedItem(
 			elemental.json.JsonObject selectedItem) {
@@ -231,7 +231,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * empty string to listen to no events.
 	 * 
 	 * @param activateEvent
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setActivateEvent(
 			java.lang.String activateEvent) {
@@ -260,7 +260,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectable(java.lang.String selectable) {
 		getElement().setProperty("selectable",
@@ -286,7 +286,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedClass(
 			java.lang.String selectedClass) {
@@ -313,7 +313,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedAttribute(
 			java.lang.String selectedAttribute) {
@@ -342,7 +342,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setFallbackSelection(
 			java.lang.String fallbackSelection) {
@@ -357,7 +357,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * The list of items from which a selection can be made.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "items-changed" event happens.
+	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -370,7 +370,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * The list of items from which a selection can be made.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -395,7 +395,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * If true, multiple selections are allowed.
 	 * 
 	 * @param multi
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setMulti(boolean multi) {
 		getElement().setProperty("multi", multi);
@@ -422,7 +422,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * {@code selected} when {@code multi} is true.
 	 * 
 	 * @param selectedValues
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedValues(
 			elemental.json.JsonArray selectedValues) {
@@ -448,7 +448,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * Returns an array of currently selected items.
 	 * 
 	 * @param selectedItems
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedItems(
 			elemental.json.JsonArray selectedItems) {
