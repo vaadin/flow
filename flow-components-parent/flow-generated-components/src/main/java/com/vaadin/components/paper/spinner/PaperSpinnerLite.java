@@ -53,8 +53,8 @@ import com.vaadin.annotations.HtmlImport;
  * {@code --paper-spinner-stroke-width} | The width of the spinner stroke | 3px
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-spinner-lite#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-spinner-lite#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-spinner-lite")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner-lite.html")
 public class PaperSpinnerLite<R extends PaperSpinnerLite<R>> extends Component
@@ -79,7 +79,7 @@ public class PaperSpinnerLite<R extends PaperSpinnerLite<R>> extends Component
 	 * Displays the spinner.
 	 * 
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
@@ -108,7 +108,7 @@ public class PaperSpinnerLite<R extends PaperSpinnerLite<R>> extends Component
 	 * not present, it will default to 'loading' as the alt value.
 	 * 
 	 * @param alt
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);

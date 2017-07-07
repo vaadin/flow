@@ -30,8 +30,8 @@ import elemental.json.JsonObject;
  * before an animation for elements that animate from display:none.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: opaque-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: opaque-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("opaque-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/opaque-animation.html")
 public class OpaqueAnimation<R extends OpaqueAnimation<R>> extends Component
@@ -56,7 +56,7 @@ public class OpaqueAnimation<R extends OpaqueAnimation<R>> extends Component
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
@@ -81,7 +81,7 @@ public class OpaqueAnimation<R extends OpaqueAnimation<R>> extends Component
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);

@@ -24,8 +24,8 @@ import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-overlay#null", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: vaadin-combo-box-overlay#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
 public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
@@ -50,7 +50,7 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * The element to position/align the dropdown by.
 	 * 
 	 * @param positionTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPositionTarget(elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
@@ -75,7 +75,7 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * Vertical offset for the overlay position.
 	 * 
 	 * @param verticalOffset
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
@@ -100,7 +100,7 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * True if the device supports touch events.
 	 * 
 	 * @param touchDevice
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTouchDevice(boolean touchDevice) {
 		getElement().setProperty("touchDevice", touchDevice);
@@ -125,7 +125,7 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * {@code true} when new items are being loaded.
 	 * 
 	 * @param loading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);

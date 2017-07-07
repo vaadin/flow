@@ -79,8 +79,8 @@ import com.vaadin.shared.Registration;
  * 3</div> </iron-selector>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-selector#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-selector#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-selector")
 @HtmlImport("frontend://bower_components/iron-selector/iron-selector.html")
 public class IronSelector<R extends IronSelector<R>> extends Component
@@ -119,7 +119,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAttrForSelected(java.lang.String attrForSelected) {
 		getElement().setProperty("attrForSelected",
@@ -134,7 +134,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -148,7 +148,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "selected-changed" event happens.
+	 * 'selected-changed' event happens.
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -162,7 +162,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelected(java.lang.String selected) {
 		getElement().setProperty("selected", selected == null ? "" : selected);
@@ -176,7 +176,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * item.
 	 * 
 	 * @param selected
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelected(double selected) {
 		getElement().setProperty("selected", selected);
@@ -201,7 +201,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * Returns the currently selected item.
 	 * 
 	 * @param selectedItem
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
@@ -230,7 +230,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * empty string to listen to no events.
 	 * 
 	 * @param activateEvent
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActivateEvent(java.lang.String activateEvent) {
 		getElement().setProperty("activateEvent",
@@ -258,7 +258,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectable(java.lang.String selectable) {
 		getElement().setProperty("selectable",
@@ -284,7 +284,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedClass(java.lang.String selectedClass) {
 		getElement().setProperty("selectedClass",
@@ -310,7 +310,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedAttribute(java.lang.String selectedAttribute) {
 		getElement().setProperty("selectedAttribute",
@@ -338,7 +338,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFallbackSelection(java.lang.String fallbackSelection) {
 		getElement().setProperty("fallbackSelection",
@@ -352,7 +352,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * The list of items from which a selection can be made.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "items-changed" event happens.
+	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
@@ -365,7 +365,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * The list of items from which a selection can be made.
 	 * 
 	 * @param items
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
@@ -390,7 +390,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * If true, multiple selections are allowed.
 	 * 
 	 * @param multi
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMulti(boolean multi) {
 		getElement().setProperty("multi", multi);
@@ -417,7 +417,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * {@code selected} when {@code multi} is true.
 	 * 
 	 * @param selectedValues
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedValues(elemental.json.JsonArray selectedValues) {
 		getElement().setPropertyJson("selectedValues", selectedValues);
@@ -442,7 +442,7 @@ public class IronSelector<R extends IronSelector<R>> extends Component
 	 * Returns an array of currently selected items.
 	 * 
 	 * @param selectedItems
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectedItems(elemental.json.JsonArray selectedItems) {
 		getElement().setPropertyJson("selectedItems", selectedItems);
