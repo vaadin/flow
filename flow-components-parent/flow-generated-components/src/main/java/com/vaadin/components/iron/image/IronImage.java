@@ -84,8 +84,8 @@ import com.vaadin.shared.Registration;
  * the height of the wrapped image | {@code auto}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-image#2.1.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-image#2.1.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-image")
 @HtmlImport("frontend://bower_components/iron-image/iron-image.html")
 public class IronImage<R extends IronImage<R>> extends Component
@@ -110,7 +110,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * The URL of an image.
 	 * 
 	 * @param src
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);
@@ -135,7 +135,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * A short text alternative for the image.
 	 * 
 	 * @param alt
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
@@ -162,7 +162,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
 	 * 
 	 * @param crossorigin
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setCrossorigin(java.lang.String crossorigin) {
 		getElement().setProperty("crossorigin",
@@ -192,7 +192,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * be invalid, to prevent 404 requests.
 	 * 
 	 * @param preventLoad
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPreventLoad(boolean preventLoad) {
 		getElement().setProperty("preventLoad", preventLoad);
@@ -225,7 +225,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * size).
 	 * 
 	 * @param sizing
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSizing(java.lang.String sizing) {
 		getElement().setProperty("sizing", sizing == null ? "" : sizing);
@@ -252,7 +252,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * determines how the image is aligned within the element bounds.
 	 * 
 	 * @param position
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPosition(java.lang.String position) {
 		getElement().setProperty("position", position == null ? "" : position);
@@ -279,7 +279,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * {@code placeholder} image to be shown until the new image has loaded.
 	 * 
 	 * @param preload
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPreload(boolean preload) {
 		getElement().setProperty("preload", preload);
@@ -308,7 +308,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * rendering.
 	 * 
 	 * @param placeholder
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
@@ -336,7 +336,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * image to fade into place.
 	 * 
 	 * @param fade
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFade(boolean fade) {
 		getElement().setProperty("fade", fade);
@@ -349,7 +349,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * Read-only value that is true when the image is loaded.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "loaded-changed" event happens.
+	 * 'loaded-changed' event happens.
 	 */
 	@Synchronize(property = "loaded", value = "loaded-changed")
 	public boolean isLoaded() {
@@ -362,7 +362,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * Read-only value that is true when the image is loaded.
 	 * 
 	 * @param loaded
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLoaded(boolean loaded) {
 		getElement().setProperty("loaded", loaded);
@@ -376,7 +376,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * {@code preload} option is used.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "loading-changed" event happens.
+	 * 'loading-changed' event happens.
 	 */
 	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
@@ -390,7 +390,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * {@code preload} option is used.
 	 * 
 	 * @param loading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
@@ -404,7 +404,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * load.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "error-changed" event happens.
+	 * 'error-changed' event happens.
 	 */
 	@Synchronize(property = "error", value = "error-changed")
 	public boolean isError() {
@@ -418,7 +418,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * load.
 	 * 
 	 * @param error
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setError(boolean error) {
 		getElement().setProperty("error", error);
@@ -445,7 +445,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * be set via CSS.
 	 * 
 	 * @param width
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setWidth(double width) {
 		getElement().setProperty("width", width);
@@ -472,7 +472,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * be set via CSS.
 	 * 
 	 * @param height
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHeight(double height) {
 		getElement().setProperty("height", height);

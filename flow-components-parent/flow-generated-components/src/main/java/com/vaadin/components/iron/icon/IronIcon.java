@@ -86,8 +86,8 @@ import com.vaadin.annotations.HtmlImport;
  * svg icon | none
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-icon#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-icon#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-icon")
 @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
 public class IronIcon<R extends IronIcon<R>> extends Component
@@ -114,7 +114,7 @@ public class IronIcon<R extends IronIcon<R>> extends Component
 	 * {@code iconset_name:icon_name}.
 	 * 
 	 * @param icon
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
@@ -139,7 +139,7 @@ public class IronIcon<R extends IronIcon<R>> extends Component
 	 * The name of the theme to used, if one is specified by the iconset.
 	 * 
 	 * @param theme
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTheme(java.lang.String theme) {
 		getElement().setProperty("theme", theme == null ? "" : theme);
@@ -168,7 +168,7 @@ public class IronIcon<R extends IronIcon<R>> extends Component
 	 * over a given icon attribute.
 	 * 
 	 * @param src
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);

@@ -50,8 +50,8 @@ import com.vaadin.shared.Registration;
  * placeholder | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-autogrow-textarea#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-autogrow-textarea")
 @HtmlImport("frontend://bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html")
 public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
@@ -76,7 +76,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
@@ -90,7 +90,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * True if the last call to {@code validate} is invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "invalid-changed" event happens.
+	 * 'invalid-changed' event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -103,7 +103,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -116,7 +116,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -129,7 +129,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -142,7 +142,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -155,7 +155,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -168,7 +168,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValueString() {
@@ -181,7 +181,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public double getValueNumber() {
@@ -194,7 +194,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
@@ -207,7 +207,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Use this property instead of {@code bind-value} for two-way data binding.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(double value) {
 		getElement().setProperty("value", value);
@@ -247,7 +247,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * {@code value} instead.
 	 * 
 	 * @param bindValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setBindValue(java.lang.String bindValue) {
 		getElement().setProperty("bindValue",
@@ -262,7 +262,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * {@code value} instead.
 	 * 
 	 * @param bindValue
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setBindValue(double bindValue) {
 		getElement().setProperty("bindValue", bindValue);
@@ -287,7 +287,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * The initial number of rows.
 	 * 
 	 * @param rows
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRows(double rows) {
 		getElement().setProperty("rows", rows);
@@ -314,7 +314,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * means no maximum.
 	 * 
 	 * @param maxRows
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMaxRows(double maxRows) {
 		getElement().setProperty("maxRows", maxRows);
@@ -339,7 +339,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Bound to the textarea's {@code autocomplete} attribute.
 	 * 
 	 * @param autocomplete
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
@@ -365,7 +365,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Bound to the textarea's {@code autofocus} attribute.
 	 * 
 	 * @param autofocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
@@ -390,7 +390,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Bound to the textarea's {@code inputmode} attribute.
 	 * 
 	 * @param inputmode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
@@ -416,7 +416,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Bound to the textarea's {@code placeholder} attribute.
 	 * 
 	 * @param placeholder
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
@@ -442,7 +442,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Bound to the textarea's {@code readonly} attribute.
 	 * 
 	 * @param readonly
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setReadonly(java.lang.String readonly) {
 		getElement().setProperty("readonly", readonly == null ? "" : readonly);
@@ -467,7 +467,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Set to true to mark the textarea as required.
 	 * 
 	 * @param required
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
@@ -492,7 +492,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * The minimum length of the input value.
 	 * 
 	 * @param minlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
@@ -517,7 +517,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * The maximum length of the input value.
 	 * 
 	 * @param maxlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
@@ -542,7 +542,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Returns the underlying textarea.
 	 * 
 	 * @param textarea
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTextarea(elemental.json.JsonObject textarea) {
 		getElement().setPropertyJson("textarea", textarea);
@@ -567,7 +567,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Returns textarea's selection start.
 	 * 
 	 * @param selectionStart
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectionStart(elemental.json.JsonObject selectionStart) {
 		getElement().setPropertyJson("selectionStart", selectionStart);
@@ -592,7 +592,7 @@ public class IronAutogrowTextarea<R extends IronAutogrowTextarea<R>>
 	 * Returns textarea's selection end.
 	 * 
 	 * @param selectionEnd
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelectionEnd(elemental.json.JsonObject selectionEnd) {
 		getElement().setPropertyJson("selectionEnd", selectionEnd);

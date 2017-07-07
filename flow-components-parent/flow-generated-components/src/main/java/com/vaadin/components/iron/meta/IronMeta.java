@@ -20,8 +20,8 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -65,8 +65,8 @@ import com.vaadin.shared.Registration;
  * <iron-meta id="meta"></iron-meta> ... this.$.meta.byKey('info');
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-meta#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-meta#2.0.2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-meta")
 @HtmlImport("frontend://bower_components/iron-meta/iron-meta.html")
 public class IronMeta<R extends IronMeta<R>> extends Component
@@ -91,7 +91,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * The type of meta-data. All meta-data of the same type is stored together.
 	 * 
 	 * @param type
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
@@ -106,8 +106,8 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public String getKey() {
-		return getElement().getProperty("key");
+	public JsonObject getKey() {
+		return (JsonObject) getElement().getPropertyRaw("key");
 	}
 
 	/**
@@ -116,10 +116,10 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * The key used to store {@code value} under the {@code type} namespace.
 	 * 
 	 * @param key
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
-	public R setKey(java.lang.String key) {
-		getElement().setProperty("key", key == null ? "" : key);
+	public R setKey(elemental.json.JsonObject key) {
+		getElement().setPropertyJson("key", key);
 		return getSelf();
 	}
 
@@ -129,11 +129,11 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * The meta-data to store or retrieve.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
-	public String getValue() {
-		return getElement().getProperty("value");
+	public JsonObject getValue() {
+		return (JsonObject) getElement().getPropertyRaw("value");
 	}
 
 	/**
@@ -142,10 +142,10 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * The meta-data to store or retrieve.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
-	public R setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+	public R setValue(elemental.json.JsonObject value) {
+		getElement().setPropertyJson("value", value);
 		return getSelf();
 	}
 
@@ -167,7 +167,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 	 * If true, {@code value} is set to the iron-meta instance itself.
 	 * 
 	 * @param self
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSelf(boolean self) {
 		getElement().setProperty("self", self);
@@ -184,7 +184,7 @@ public class IronMeta<R extends IronMeta<R>> extends Component
 
 	/**
 	 * @param list
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setList(elemental.json.JsonObject list) {
 		getElement().setPropertyJson("list", list);

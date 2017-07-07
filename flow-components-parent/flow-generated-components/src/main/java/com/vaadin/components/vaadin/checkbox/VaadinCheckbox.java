@@ -54,8 +54,8 @@ import com.vaadin.ui.HasComponents;
  * when the checkbox is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
@@ -81,7 +81,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * Specify that this control should have input focus when the page loads.
 	 * 
 	 * @param autofocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
@@ -106,7 +106,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -131,7 +131,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -144,7 +144,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * True if the checkbox is checked.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "checked-changed" event happens.
+	 * 'checked-changed' event happens.
 	 */
 	@Synchronize(property = "checked", value = "checked-changed")
 	public boolean isChecked() {
@@ -157,7 +157,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * True if the checkbox is checked.
 	 * 
 	 * @param checked
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setChecked(boolean checked) {
 		getElement().setProperty("checked", checked);
@@ -173,7 +173,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "indeterminate-changed" event happens.
+	 * 'indeterminate-changed' event happens.
 	 */
 	@Synchronize(property = "indeterminate", value = "indeterminate-changed")
 	public boolean isIndeterminate() {
@@ -189,7 +189,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
 	 * 
 	 * @param indeterminate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIndeterminate(boolean indeterminate) {
 		getElement().setProperty("indeterminate", indeterminate);
@@ -214,7 +214,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * The name of the control, which is submitted with the form data.
 	 * 
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -241,7 +241,7 @@ public class VaadinCheckbox<R extends VaadinCheckbox<R>> extends Component
 	 * server when the control is inside a form.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
