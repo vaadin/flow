@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +52,7 @@ import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.server.VaadinUriResolverFactory;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.Dependency;
@@ -189,8 +191,7 @@ public class UidlWriter implements Serializable {
                 .getCurrentRequest()).getHttpServletRequest();
         Charset requestCharset = Optional
                 .ofNullable(currentRequest.getCharacterEncoding())
-                .filter(string -> !string.isEmpty())
-                .map(Charset::forName)
+                .filter(string -> !string.isEmpty()).map(Charset::forName)
                 .orElse(StandardCharsets.UTF_8);
 
         try (InputStream inlineResourceStream = getInlineResourceStream(url,
@@ -208,15 +209,41 @@ public class UidlWriter implements Serializable {
 
     private static InputStream getInlineResourceStream(String url,
             HttpServletRequest currentRequest) {
+        VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
+                .getAttribute(VaadinUriResolverFactory.class);
+
+        assert uriResolverFactory != null;
+
+        String resolvedPath = uriResolverFactory
+                .toServletContextPath(VaadinService.getCurrentRequest(), url);
         InputStream stream = currentRequest.getServletContext()
-                .getResourceAsStream(url);
+                .getResourceAsStream(resolvedPath);
+
         if (stream == null) {
+            Logger.getLogger(UidlWriter.class.getName())
+                    .info(String.format(
+                            "The path '%s' for inline resource "
+                                    + "has been resolved to '%s'. "
+                                    + "But resource is not available via the servlet context. "
+                                    + "Trying to load '%s' as a URL",
+                            url, resolvedPath, url));
             try {
                 stream = new URL(url).openConnection().getInputStream();
+            } catch (MalformedURLException exception) {
+                throw new IllegalStateException(String.format(
+                        "The path '%s' is not a valid URL. "
+                                + "Unable to fetch a resource addressed by it.",
+                        url), exception);
             } catch (IOException e) {
                 throw new IllegalStateException(String.format(
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
+        } else {
+            Logger.getLogger(UidlWriter.class.getName())
+                    .info(String.format(
+                            "The path '%s' for inline resource "
+                                    + "has been sucessfully resolved to resource URL '%s'",
+                            url, resolvedPath));
         }
         return stream;
     }
