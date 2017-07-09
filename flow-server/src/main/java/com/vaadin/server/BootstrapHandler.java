@@ -407,7 +407,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
                 .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
-        head.appendElement("base").attr("href", getServiceUrl(context));
+        // head.appendElement("base").attr("href", getServiceUrl(context));
 
         getViewportContent(context.getUI().getClass(), context.getRequest())
                 .ifPresent(content -> head.appendElement(META_TAG)

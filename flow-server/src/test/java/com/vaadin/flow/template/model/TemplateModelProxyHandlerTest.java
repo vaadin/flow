@@ -146,4 +146,5 @@ public class TemplateModelProxyHandlerTest {
         Assert.assertTrue(model.getClass().getCanonicalName().startsWith(
                 TemplateModelTest.EmptyModel.class.getCanonicalName()));
     }
+
 }

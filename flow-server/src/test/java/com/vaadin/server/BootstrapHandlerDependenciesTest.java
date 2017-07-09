@@ -234,20 +234,35 @@ public class BootstrapHandlerDependenciesTest {
                 deploymentConfiguration));
 
         ServletContext servletContextMock = mock(ServletContext.class);
-        when(servletContextMock.getResourceAsStream(anyString())).thenAnswer(invocation ->
-                new ByteArrayInputStream(((String) invocation.getArguments()[0]).getBytes()));
+        when(servletContextMock.getResourceAsStream(anyString()))
+                .thenAnswer(invocation -> new ByteArrayInputStream(
+                        ((String) invocation.getArguments()[0]).getBytes()));
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
-        when(servletRequestMock.getServletContext()).thenReturn(servletContextMock);
+        when(servletRequestMock.getServletContext())
+                .thenReturn(servletContextMock);
 
-        VaadinServletRequest vaadinRequestMock = mock(VaadinServletRequest.class);
-        when(vaadinRequestMock.getHttpServletRequest()).thenReturn(servletRequestMock);
+        VaadinServletRequest vaadinRequestMock = mock(
+                VaadinServletRequest.class);
+        when(vaadinRequestMock.getHttpServletRequest())
+                .thenReturn(servletRequestMock);
 
-        service.setCurrentInstances(vaadinRequestMock, mock(VaadinResponse.class));
+        service.setCurrentInstances(vaadinRequestMock,
+                mock(VaadinResponse.class));
 
         session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(deploymentConfiguration);
+
+        VaadinUriResolverFactory factory = Mockito
+                .mock(VaadinUriResolverFactory.class);
+        Mockito.doAnswer(invocation -> invocation.getArguments()[1])
+                .when(factory)
+                .toServletContextPath(Mockito.any(), Mockito.anyString());
+
+        session.setAttribute(VaadinUriResolverFactory.class, factory);
+
+        VaadinSession.setCurrent(session);
     }
 
     @After
@@ -390,22 +405,22 @@ public class BootstrapHandlerDependenciesTest {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            List<String> jsImportContents = head.getElementsByTag("script").stream()
-                    .filter(element -> !element.hasAttr("src"))
-                    .filter(element -> !element.toString().contains(BOOTSTRAP_SCRIPT_CONTENTS))
-                    .map(Element::toString)
-                    .collect(Collectors.toList());
+            List<String> jsImportContents = head.getElementsByTag("script")
+                    .stream().filter(element -> !element.hasAttr("src"))
+                    .filter(element -> !element.toString()
+                            .contains(BOOTSTRAP_SCRIPT_CONTENTS))
+                    .map(Element::toString).collect(Collectors.toList());
             assertImportOrder(jsImportContents, "1.js", "2.js");
 
-            List<String> cssImportContents = head.getElementsByTag("style").stream()
-                    .map(Element::toString)
+            List<String> cssImportContents = head.getElementsByTag("style")
+                    .stream().map(Element::toString)
                     .collect(Collectors.toList());
             assertImportOrder(cssImportContents, "1.css", "2.css");
 
-            List<String> htmlImportContents = page.body().getElementsByTag("span").stream()
+            List<String> htmlImportContents = page.body()
+                    .getElementsByTag("span").stream()
                     .filter(element -> element.hasAttr("hidden"))
-                    .map(Element::toString)
-                    .collect(Collectors.toList());
+                    .map(Element::toString).collect(Collectors.toList());
             assertImportOrder(htmlImportContents, "1.html", "2.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_ImportOrderTest_Inline(),
@@ -443,11 +458,11 @@ public class BootstrapHandlerDependenciesTest {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            List<String> jsImportContents = head.getElementsByTag("script").stream()
-                    .filter(element -> !element.hasAttr("src"))
-                    .filter(element -> !element.toString().contains(BOOTSTRAP_SCRIPT_CONTENTS))
-                    .map(Element::toString)
-                    .collect(Collectors.toList());
+            List<String> jsImportContents = head.getElementsByTag("script")
+                    .stream().filter(element -> !element.hasAttr("src"))
+                    .filter(element -> !element.toString()
+                            .contains(BOOTSTRAP_SCRIPT_CONTENTS))
+                    .map(Element::toString).collect(Collectors.toList());
             assertImportOrder(jsImportContents, "1.js", "2.js");
         };
         testUis(uiPageTestingMethod,
@@ -472,7 +487,8 @@ public class BootstrapHandlerDependenciesTest {
                     }
                     assertThat(
                             "Expected to have here dependencies added with Flow public api",
-                            elementString, either(containsString("eager"))
+                            elementString,
+                            either(containsString("eager"))
                                     .or(containsString("lazy"))
                                     .or(containsString("inline")));
                 } else {
@@ -490,8 +506,10 @@ public class BootstrapHandlerDependenciesTest {
                             foundClientEngine = true;
                         }
                     } else {
-                        assertThat("uidl should not contain eager and inline dependencies",
-                                elementString, both(not(containsString("eager")))
+                        assertThat(
+                                "uidl should not contain eager and inline dependencies",
+                                elementString,
+                                both(not(containsString("eager")))
                                         .and(not(containsString("inline"))));
                     }
                 }
@@ -529,10 +547,12 @@ public class BootstrapHandlerDependenciesTest {
             }
         };
 
-        testUis(uiPageTestingMethod,
-                new UIAnnotated_LoadingOrderTest(), new UIWithMethods_LoadingOrderTest(),
-                new UIAnnotated_ImportOrderTest_Lazy(), new UIWithMethods_ImportOrderTest_Lazy(),
-                new UIAnnotated_ImportOrderTest_Inline(), new UIWithMethods_ImportOrderTest_Inline());
+        testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
+                new UIWithMethods_LoadingOrderTest(),
+                new UIAnnotated_ImportOrderTest_Lazy(),
+                new UIWithMethods_ImportOrderTest_Lazy(),
+                new UIAnnotated_ImportOrderTest_Inline(),
+                new UIWithMethods_ImportOrderTest_Inline());
     }
 
     private void testUis(Consumer<Document> uiPageTestingMethod,
@@ -601,11 +621,16 @@ public class BootstrapHandlerDependenciesTest {
         });
     }
 
-    private void assertJavaScriptElementInlined(Element head, String expectedContents) {
-        List<Element> scriptsWithoutExpectedContents = head.getElementsByTag("script").stream()
-                .filter(element -> element.toString().contains(expectedContents))
+    private void assertJavaScriptElementInlined(Element head,
+            String expectedContents) {
+        List<Element> scriptsWithoutExpectedContents = head
+                .getElementsByTag("script").stream()
+                .filter(element -> element.toString()
+                        .contains(expectedContents))
                 .collect(Collectors.toList());
-        assertThat("Expected to have only one inlined js element with contents = " + expectedContents,
+        assertThat(
+                "Expected to have only one inlined js element with contents = "
+                        + expectedContents,
                 scriptsWithoutExpectedContents.size(), is(1));
         Element inlinedElement = scriptsWithoutExpectedContents.get(0);
         assertThat("The element should have correct js type attribute",
@@ -616,22 +641,32 @@ public class BootstrapHandlerDependenciesTest {
                 inlinedElement.attr("src"), is(""));
     }
 
-    private void assertCssElementInlined(Element head, String expectedContents) {
-        List<Element> stylesWithExpectedContents = head.getElementsByTag("style").stream()
-                .filter(element -> element.toString().contains(expectedContents))
+    private void assertCssElementInlined(Element head,
+            String expectedContents) {
+        List<Element> stylesWithExpectedContents = head
+                .getElementsByTag("style").stream()
+                .filter(element -> element.toString()
+                        .contains(expectedContents))
                 .collect(Collectors.toList());
-        assertThat("Expected to have only one inlined css element with contents = " + expectedContents,
+        assertThat(
+                "Expected to have only one inlined css element with contents = "
+                        + expectedContents,
                 stylesWithExpectedContents.size(), is(1));
         Element inlinedElement = stylesWithExpectedContents.get(0);
         assertThat("The element should have correct css type attribute",
                 inlinedElement.attr("type"), is("text/css"));
     }
 
-    private void assertHtmlElementInlined(Element body, String expectedContents) {
-        List<Element> inlinedHtmlElements = body.getElementsByTag("span").stream()
-                .filter(element -> element.toString().contains(expectedContents))
+    private void assertHtmlElementInlined(Element body,
+            String expectedContents) {
+        List<Element> inlinedHtmlElements = body.getElementsByTag("span")
+                .stream()
+                .filter(element -> element.toString()
+                        .contains(expectedContents))
                 .collect(Collectors.toList());
-        assertThat("Expected to have only one inlined html element with contents = " + expectedContents,
+        assertThat(
+                "Expected to have only one inlined html element with contents = "
+                        + expectedContents,
                 inlinedHtmlElements.size(), is(1));
         Element inlinedElement = inlinedHtmlElements.get(0);
         assertThat("The element should be hidden",
@@ -649,8 +684,8 @@ public class BootstrapHandlerDependenciesTest {
         return dataOptional.get();
     }
 
-    private void assertImportOrder(List<String> allContents, String firstContents,
-                                   String secondContents) {
+    private void assertImportOrder(List<String> allContents,
+            String firstContents, String secondContents) {
         int firstPosition = -1;
         int secondPosition = -1;
         for (int i = 0; i < allContents.size(); i++) {
@@ -666,8 +701,8 @@ public class BootstrapHandlerDependenciesTest {
             }
         }
 
-        assertCorrectDependencyPositions(firstContents, secondContents, firstPosition,
-                secondPosition);
+        assertCorrectDependencyPositions(firstContents, secondContents,
+                firstPosition, secondPosition);
     }
 
     private void assertDependenciesOrderInUidl(String uidlData,
