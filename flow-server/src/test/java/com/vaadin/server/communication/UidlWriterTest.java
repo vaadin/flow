@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
@@ -53,6 +54,8 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.server.VaadinUriResolverFactory;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -65,6 +68,9 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class UidlWriterTest {
+
+    private static final String FRONTEND = "frontend://";
+
     @JavaScript("UI-parent-JAVASCRIPT")
     private static class ParentUI extends UI {
     }
@@ -137,6 +143,15 @@ public class UidlWriterTest {
     @HtmlImport("eager.html")
     public static class ComponentWithAllDependencyTypes extends Component {
     }
+
+    @Tag("test")
+    @JavaScript(value = FRONTEND + "inline.js", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = FRONTEND + "inline.css", loadMode = LoadMode.INLINE)
+    @HtmlImport(value = FRONTEND + "inline.html", loadMode = LoadMode.INLINE)
+    public static class ComponentWithFrontendProtocol extends Component {
+    }
+
+    private VaadinUriResolverFactory factory;
 
     @After
     public void tearDown() {
@@ -289,6 +304,34 @@ public class UidlWriterTest {
 
         List<JsonObject> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
+        assertInlineDependencies(inlineDependencies);
+    }
+
+    @Test
+    public void checkAllTypesOfDependencies_uriResolverResolvesFrontentProtocol() {
+        UI ui = initializeUIForDependenciesTest();
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        Mockito.doAnswer(invocation -> {
+            String path = (String) invocation.getArguments()[1];
+            if (path.startsWith(FRONTEND)) {
+                return path.substring(FRONTEND.length());
+            }
+            return path;
+        }).when(factory).toServletContextPath(Mockito.any(),
+                Mockito.anyString());
+
+        ui.add(new ComponentWithFrontendProtocol());
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        List<JsonObject> inlineDependencies = JsonUtils
+                .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
+                .collect(Collectors.toList());
+
+        assertInlineDependencies(inlineDependencies);
+    }
+
+    private void assertInlineDependencies(List<JsonObject> inlineDependencies) {
         assertThat("Should have 3 inline dependencies", inlineDependencies,
                 hasSize(3));
         assertThat("Eager dependencies should not have urls",
@@ -334,6 +377,15 @@ public class UidlWriterTest {
         service.setCurrentInstances(vaadinRequestMock,
                 mock(VaadinResponse.class));
         ui.doInit(vaadinRequestMock, 1);
+
+        factory = Mockito.mock(VaadinUriResolverFactory.class);
+        Mockito.doAnswer(invocation -> invocation.getArguments()[1])
+                .when(factory)
+                .toServletContextPath(Mockito.any(), Mockito.anyString());
+
+        session.setAttribute(VaadinUriResolverFactory.class, factory);
+
+        VaadinSession.setCurrent(session);
 
         return ui;
     }

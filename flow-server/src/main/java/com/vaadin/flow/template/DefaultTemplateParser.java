@@ -31,11 +31,9 @@ import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinUriResolverFactory;
 import com.vaadin.server.WrappedHttpSession;
-import com.vaadin.shared.VaadinUriResolver;
 
 /**
  * Default template parser implementation.
@@ -113,33 +111,7 @@ public class DefaultTemplateParser implements TemplateParser {
                 .getAttribute(VaadinUriResolverFactory.class);
         assert uriResolverFactory != null;
 
-        VaadinUriResolver uriResolver = uriResolverFactory
-                .getUriResolver(request);
-        assert uriResolver != null;
-
-        String uri = uriResolver.resolveVaadinUri(path);
-        if (request instanceof VaadinServletRequest) {
-            VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-
-            String servletPath = servletRequest.getServletPath();
-            assert servletPath != null;
-            if (!servletPath.endsWith("/") && !uri.startsWith("/")) {
-                servletPath += "/";
-            } else if (servletPath.endsWith("/") && uri.startsWith("/")) {
-                servletPath = servletPath.substring(0,
-                        servletPath.length() - 1);
-            }
-            // "Revert" the `../` from uri resolver so that we point to the
-            // context root.
-            //
-            // We won't take pathinfo into account because we are on the server
-            // and the pathinfo doesn't matter for the resolved path
-            if (uri.contains("../")) {
-                return servletPath + uri;
-            }
-        }
-
-        return uri.startsWith("/") ? uri : "/" + uri;
+        return uriResolverFactory.toServletContextPath(request, path);
     }
 
     private boolean isTemplateImport(Element contentElement, String tag) {
