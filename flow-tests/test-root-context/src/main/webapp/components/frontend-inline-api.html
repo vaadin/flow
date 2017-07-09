@@ -1,0 +1,13 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<dom-module id="frontend-inline-api">
+  <template>
+    <div id="frontend-inline">Inline HTML loaded via frontent protocol</div>
+  </template>
+  <script>
+    class FrontendInlineApi extends Polymer.Element {
+      static get is() { return 'frontend-inline-api' }
+    }
+    customElements.define(FrontendInlineApi.is, FrontendInlineApi);
+  </script>
+</dom-module>
