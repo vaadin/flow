@@ -106,9 +106,10 @@ public class SourceContentResolver {
                     .matcher(sourceLines.get(i)).matches()) {
                 endIndex = i;
             }
-            if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            if (startIndex != -1 && endIndex != -1
+                    && startIndex + 1 < endIndex) {
                 examples.add(parseSourceCodeExampleFromSourceLines(
-                        sourceLines.subList(startIndex, endIndex)));
+                        sourceLines.subList(startIndex + 1, endIndex)));
                 startIndex = -1;
                 endIndex = -1;
             }
