@@ -37,8 +37,8 @@ import com.vaadin.ui.HasComponents;
  * <neon-animatable>2</neon-animatable> </neon-animated-pages> {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: neon-animatable#2.0.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: neon-animatable#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("neon-animatable")
 @HtmlImport("frontend://bower_components/neon-animation/neon-animatable.html")
 public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
@@ -64,7 +64,7 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
@@ -93,7 +93,7 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setEntryAnimation(java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
@@ -123,7 +123,7 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setExitAnimation(java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",

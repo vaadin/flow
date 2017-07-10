@@ -93,8 +93,8 @@ import com.vaadin.ui.HasComponents;
  * </paper-item-body> <paper-checkbox></paper-checkbox> </paper-item>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-item#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-item#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-item")
 @HtmlImport("frontend://bower_components/paper-item/paper-item.html")
 public class PaperItem<R extends PaperItem<R>> extends Component
@@ -122,7 +122,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
@@ -149,7 +149,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -168,7 +168,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 
 	/**
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
@@ -193,7 +193,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * If true, the user is currently holding down the button.
 	 * 
 	 * @param pressed
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
@@ -220,7 +220,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * the spacebar.
 	 * 
 	 * @param toggles
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
@@ -233,7 +233,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * If true, the button is a toggle and is currently in the active state.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "active-changed" event happens.
+	 * 'active-changed' event happens.
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -246,7 +246,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
@@ -275,7 +275,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * keyboard input).
 	 * 
 	 * @param pointerDown
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
@@ -302,7 +302,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * keyboard.
 	 * 
 	 * @param receivedFocusFromKeyboard
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
@@ -330,7 +330,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
@@ -344,7 +344,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -357,7 +357,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -370,7 +370,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -383,7 +383,7 @@ public class PaperItem<R extends PaperItem<R>> extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);

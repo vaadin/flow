@@ -50,8 +50,8 @@ import com.vaadin.shared.Registration;
  * the element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-ajax#2.0.2", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-ajax#2.0.2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-ajax")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-ajax.html")
 public class IronAjax<R extends IronAjax<R>> extends Component
@@ -76,7 +76,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * The URL target of the request.
 	 * 
 	 * @param url
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setUrl(java.lang.String url) {
 		getElement().setProperty("url", url == null ? "" : url);
@@ -107,7 +107,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * property instead.
 	 * 
 	 * @param params
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setParams(elemental.json.JsonObject params) {
 		getElement().setPropertyJson("params", params);
@@ -134,7 +134,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * is 'GET'.
 	 * 
 	 * @param method
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMethod(java.lang.String method) {
 		getElement().setProperty("method", method == null ? "" : method);
@@ -175,7 +175,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * specified by the {@code contentType} property of this element.
 	 * 
 	 * @param headers
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHeaders(elemental.json.JsonObject headers) {
 		getElement().setPropertyJson("headers", headers);
@@ -210,7 +210,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * Varies the handling of the {@code body} param.
 	 * 
 	 * @param contentType
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setContentType(java.lang.String contentType) {
 		getElement().setProperty("contentType",
@@ -264,7 +264,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * handle any encoding (e.g. for FormData, Blob, ArrayBuffer).
 	 * 
 	 * @param body
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setBody(elemental.json.JsonObject body) {
 		getElement().setPropertyJson("body", body);
@@ -291,7 +291,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * true unless You Know What You Are Doing™.
 	 * 
 	 * @param sync
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSync(boolean sync) {
 		getElement().setProperty("sync", sync);
@@ -346,7 +346,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * {@code document}: uses {@code XHR.response}.
 	 * 
 	 * @param handleAs
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHandleAs(java.lang.String handleAs) {
 		getElement().setProperty("handleAs", handleAs == null ? "" : handleAs);
@@ -371,7 +371,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * Set the withCredentials flag on the request.
 	 * 
 	 * @param withCredentials
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setWithCredentials(boolean withCredentials) {
 		getElement().setProperty("withCredentials", withCredentials);
@@ -396,7 +396,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * Set the timeout flag on the request.
 	 * 
 	 * @param timeout
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setTimeout(double timeout) {
 		getElement().setProperty("timeout", timeout);
@@ -423,7 +423,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * or {@code params} changes.
 	 * 
 	 * @param auto
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAuto(boolean auto) {
 		getElement().setProperty("auto", auto);
@@ -448,7 +448,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * If true, error messages will automatically be logged to the console.
 	 * 
 	 * @param verbose
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setVerbose(boolean verbose) {
 		getElement().setProperty("verbose", verbose);
@@ -473,7 +473,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * The most recent request made by this iron-ajax element.
 	 * 
 	 * @param lastRequest
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLastRequest(elemental.json.JsonObject lastRequest) {
 		getElement().setPropertyJson("lastRequest", lastRequest);
@@ -486,7 +486,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * True while lastRequest is in flight.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "loading-changed" event happens.
+	 * 'loading-changed' event happens.
 	 */
 	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
@@ -499,7 +499,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * True while lastRequest is in flight.
 	 * 
 	 * @param loading
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
@@ -538,7 +538,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * at the time that the request was generated.
 	 * 
 	 * @param lastResponse
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLastResponse(elemental.json.JsonObject lastResponse) {
 		getElement().setPropertyJson("lastResponse", lastResponse);
@@ -563,7 +563,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * lastRequest's error, if any.
 	 * 
 	 * @param lastError
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLastError(elemental.json.JsonObject lastError) {
 		getElement().setPropertyJson("lastError", lastError);
@@ -590,7 +590,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * element.
 	 * 
 	 * @param activeRequests
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setActiveRequests(elemental.json.JsonArray activeRequests) {
 		getElement().setPropertyJson("activeRequests", activeRequests);
@@ -617,7 +617,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * generated requests.
 	 * 
 	 * @param debounceDuration
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDebounceDuration(double debounceDuration) {
 		getElement().setProperty("debounceDuration", debounceDuration);
@@ -656,7 +656,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * 
 	 * 
 	 * @param jsonPrefix
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setJsonPrefix(java.lang.String jsonPrefix) {
 		getElement().setProperty("jsonPrefix",
@@ -700,7 +700,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * -shadow-dom-20151215/#events-that-are-not-leaked-into-ancestor-trees
 	 * 
 	 * @param bubbles
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setBubbles(boolean bubbles) {
 		getElement().setProperty("bubbles", bubbles);
@@ -727,7 +727,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * an object containing the error message as well as the request.
 	 * 
 	 * @param rejectWithRequest
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRejectWithRequest(boolean rejectWithRequest) {
 		getElement().setProperty("rejectWithRequest", rejectWithRequest);
@@ -754,7 +754,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * from the current value of {@code params}.
 	 * 
 	 * @param queryString
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setQueryString(elemental.json.JsonObject queryString) {
 		getElement().setPropertyJson("queryString", queryString);
@@ -781,7 +781,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * suitable for providing to an {@code iron-request} instance.
 	 * 
 	 * @param requestUrl
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRequestUrl(elemental.json.JsonObject requestUrl) {
 		getElement().setPropertyJson("requestUrl", requestUrl);
@@ -810,7 +810,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * in the {@code headers} property.
 	 * 
 	 * @param requestHeaders
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRequestHeaders(elemental.json.JsonObject requestHeaders) {
 		getElement().setPropertyJson("requestHeaders", requestHeaders);

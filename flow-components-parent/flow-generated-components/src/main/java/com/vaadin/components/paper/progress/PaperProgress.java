@@ -97,8 +97,8 @@ import com.vaadin.shared.Registration;
  * of an indeterminate cycle | {@code 2s}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-progress#2.0.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-progress#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
 public class PaperProgress<R extends PaperProgress<R>> extends Component
@@ -111,7 +111,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The number that represents the current value.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public double getValue() {
@@ -124,7 +124,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The number that represents the current value.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(double value) {
 		getElement().setProperty("value", value);
@@ -137,7 +137,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The number that indicates the minimum value of the range.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "min-changed" event happens.
+	 * 'min-changed' event happens.
 	 */
 	@Synchronize(property = "min", value = "min-changed")
 	public double getMin() {
@@ -150,7 +150,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The number that indicates the minimum value of the range.
 	 * 
 	 * @param min
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMin(double min) {
 		getElement().setProperty("min", min);
@@ -163,7 +163,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The number that indicates the maximum value of the range.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "max-changed" event happens.
+	 * 'max-changed' event happens.
 	 */
 	@Synchronize(property = "max", value = "max-changed")
 	public double getMax() {
@@ -176,7 +176,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The number that indicates the maximum value of the range.
 	 * 
 	 * @param max
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMax(double max) {
 		getElement().setProperty("max", max);
@@ -189,7 +189,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * Specifies the value granularity of the range's value.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "step-changed" event happens.
+	 * 'step-changed' event happens.
 	 */
 	@Synchronize(property = "step", value = "step-changed")
 	public double getStep() {
@@ -202,7 +202,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * Specifies the value granularity of the range's value.
 	 * 
 	 * @param step
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStep(double step) {
 		getElement().setProperty("step", step);
@@ -215,7 +215,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * Returns the ratio of the value.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "ratio-changed" event happens.
+	 * 'ratio-changed' event happens.
 	 */
 	@Synchronize(property = "ratio", value = "ratio-changed")
 	public double getRatio() {
@@ -228,7 +228,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * Returns the ratio of the value.
 	 * 
 	 * @param ratio
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRatio(double ratio) {
 		getElement().setProperty("ratio", ratio);
@@ -253,7 +253,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The number that represents the current secondary progress.
 	 * 
 	 * @param secondaryProgress
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSecondaryProgress(double secondaryProgress) {
 		getElement().setProperty("secondaryProgress", secondaryProgress);
@@ -278,7 +278,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * The secondary ratio
 	 * 
 	 * @param secondaryRatio
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSecondaryRatio(double secondaryRatio) {
 		getElement().setProperty("secondaryRatio", secondaryRatio);
@@ -303,7 +303,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * Use an indeterminate progress indicator.
 	 * 
 	 * @param indeterminate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIndeterminate(boolean indeterminate) {
 		getElement().setProperty("indeterminate", indeterminate);
@@ -328,7 +328,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * True if the progress is disabled.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
