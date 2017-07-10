@@ -92,6 +92,15 @@ const getType = (type) => {
   }
 };
 
+const isOptional = (type) => {
+  if (typeof type !== 'string') {
+    console.warn(`isOptional called with non-string parameter ${type}`)
+    return false;
+  }
+  const possibleTypes = type.match(/[A-Za-z]+/g)
+  return possibleTypes ? possibleTypes.includes('undefined') : false;
+}
+
 /**
  * Converts properties Map to desired JSON output:
  *
@@ -152,9 +161,11 @@ const parametersToJsonArray = (parameters) => {
       "type": getTypes(parameter.type),
       "objectType": getObjectType(parameter.type),
       "description": parameter.description ? parameter.description :
-        (parameter.desc ? parameter.desc : "Missing documentation!"),
-// TODO #1767 "optional": false
+        (parameter.desc ? parameter.desc : "Missing documentation!")
     };
+    if (isOptional(parameter.type)) {
+      parameterJson.optional = true;
+    }
     parametersJson.push(parameterJson);
   }
   return parametersJson;

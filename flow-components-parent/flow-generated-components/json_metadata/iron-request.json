@@ -166,7 +166,8 @@
               "optional": true
             }
           ],
-          "description": "    url The url to which the request is sent.\n    method The HTTP method to use, default is GET.\n    async By default, all requests are sent asynchronously. To send synchronous requests,\n        set to false.\n    body The content for the request body for POST method.\n    headers HTTP request headers.\n    handleAs The response type. Default is 'text'.\n    withCredentials Whether or not to send credentials on the request. Default is false.\n  timeout: (Number|undefined)"
+          "description": "    url The url to which the request is sent.\n    method The HTTP method to use, default is GET.\n    async By default, all requests are sent asynchronously. To send synchronous requests,\n        set to false.\n    body The content for the request body for POST method.\n    headers HTTP request headers.\n    handleAs The response type. Default is 'text'.\n    withCredentials Whether or not to send credentials on the request. Default is false.\n  timeout: (Number|undefined)",
+          "optional": true
         }
       ],
       "returns": "OBJECT"
