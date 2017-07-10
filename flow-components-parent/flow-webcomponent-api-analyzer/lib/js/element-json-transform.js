@@ -93,12 +93,12 @@ const getType = (type) => {
 };
 
 const isOptional = (type) => {
-	if (typeof type !== 'string') {
-		console.warn(`isOptional called with non-string parameter ${type}`)
-		return false;
-	}
-	const possibleTypes = type.match(/[A-Za-z]+/g)
-	return possibleTypes ? possibleTypes.includes('undefined') : false;
+  if (typeof type !== 'string') {
+    console.warn(`isOptional called with non-string parameter ${type}`)
+    return false;
+  }
+  const possibleTypes = type.match(/[A-Za-z]+/g)
+  return possibleTypes ? possibleTypes.includes('undefined') : false;
 }
 
 /**
