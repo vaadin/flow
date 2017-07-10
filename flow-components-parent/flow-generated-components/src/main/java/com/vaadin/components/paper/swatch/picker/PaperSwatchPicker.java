@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.paper.swatch.picker.PaperSwatchPicker;
 import elemental.json.JsonArray;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -62,9 +63,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
-public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
-		extends
-			Component implements HasStyle {
+public class PaperSwatchPicker extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -87,7 +86,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * @param color
 	 * @return this instance, for method chaining
 	 */
-	public R setColor(java.lang.String color) {
+	public <R extends PaperSwatchPicker> R setColor(java.lang.String color) {
 		getElement().setProperty("color", color == null ? "" : color);
 		return getSelf();
 	}
@@ -120,7 +119,8 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * @param colorList
 	 * @return this instance, for method chaining
 	 */
-	public R setColorList(elemental.json.JsonArray colorList) {
+	public <R extends PaperSwatchPicker> R setColorList(
+			elemental.json.JsonArray colorList) {
 		getElement().setPropertyJson("colorList", colorList);
 		return getSelf();
 	}
@@ -151,7 +151,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * @param columnCount
 	 * @return this instance, for method chaining
 	 */
-	public R setColumnCount(double columnCount) {
+	public <R extends PaperSwatchPicker> R setColumnCount(double columnCount) {
 		getElement().setProperty("columnCount", columnCount);
 		return getSelf();
 	}
@@ -178,7 +178,8 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * @param horizontalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public <R extends PaperSwatchPicker> R setHorizontalAlign(
+			java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
 		return getSelf();
@@ -206,7 +207,8 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * @param verticalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public <R extends PaperSwatchPicker> R setVerticalAlign(
+			java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
 		return getSelf();
@@ -234,7 +236,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * @param noink
 	 * @return this instance, for method chaining
 	 */
-	public R setNoink(boolean noink) {
+	public <R extends PaperSwatchPicker> R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
 		return getSelf();
 	}
@@ -274,7 +276,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperSwatchPicker> R getSelf() {
 		return (R) this;
 	}
 }

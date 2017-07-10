@@ -20,15 +20,14 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.vaadin.combo.box.VaadinSpinner;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
 		"WebComponent: vaadin-spinner#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-spinner")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
-public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component
-		implements
-			HasStyle {
+public class VaadinSpinner extends Component implements HasStyle {
 
 	/**
 	 * This property is not synchronized automatically from the client side, so
@@ -42,7 +41,7 @@ public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component
 	 * @param active
 	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public <R extends VaadinSpinner> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -53,7 +52,7 @@ public class VaadinSpinner<R extends VaadinSpinner<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends VaadinSpinner> R getSelf() {
 		return (R) this;
 	}
 }
