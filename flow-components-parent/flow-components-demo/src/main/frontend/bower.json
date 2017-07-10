@@ -20,6 +20,8 @@
     "paper-card": "PolymerElements/paper-card#^2.0.0",
     "paper-progress": "PolymerElements/paper-progress#^2.0.1",
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
+    "neon-animation": "PolymerElements/neon-animation#^2.0.1",
+    "web-animations-js": "web-animations/web-animations-js#^2.2.5",
     "paper-swatch-picker": "PolymerElements/paper-swatch-picker#^2.0.0",
     "app-layout": "PolymerElements/app-layout#2.0.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#2.0.0",
