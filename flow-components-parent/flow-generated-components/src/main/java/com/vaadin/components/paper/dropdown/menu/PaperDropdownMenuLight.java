@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.dropdown.menu.PaperDropdownMenuLight;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -104,9 +105,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-dropdown-menu-light")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html")
-public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
-		extends
-			Component implements HasStyle {
+public class PaperDropdownMenuLight extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -130,7 +129,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperDropdownMenuLight> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -157,7 +157,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperDropdownMenuLight> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -176,7 +176,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperDropdownMenuLight> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -201,7 +202,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param pressed
 	 * @return this instance, for method chaining
 	 */
-	public R setPressed(boolean pressed) {
+	public <R extends PaperDropdownMenuLight> R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
 		return getSelf();
 	}
@@ -228,7 +229,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param toggles
 	 * @return this instance, for method chaining
 	 */
-	public R setToggles(boolean toggles) {
+	public <R extends PaperDropdownMenuLight> R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
 		return getSelf();
 	}
@@ -254,7 +255,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param active
 	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public <R extends PaperDropdownMenuLight> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -283,7 +284,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param pointerDown
 	 * @return this instance, for method chaining
 	 */
-	public R setPointerDown(boolean pointerDown) {
+	public <R extends PaperDropdownMenuLight> R setPointerDown(
+			boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
 		return getSelf();
 	}
@@ -310,7 +312,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param receivedFocusFromKeyboard
 	 * @return this instance, for method chaining
 	 */
-	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
+	public <R extends PaperDropdownMenuLight> R setReceivedFocusFromKeyboard(
+			boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
 				receivedFocusFromKeyboard);
 		return getSelf();
@@ -338,7 +341,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param ariaActiveAttribute
 	 * @return this instance, for method chaining
 	 */
-	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public <R extends PaperDropdownMenuLight> R setAriaActiveAttribute(
+			java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
 		return getSelf();
@@ -365,7 +369,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param focused
 	 * @return this instance, for method chaining
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends PaperDropdownMenuLight> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -391,7 +395,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperDropdownMenuLight> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -418,7 +422,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param noink
 	 * @return this instance, for method chaining
 	 */
-	public R setNoink(boolean noink) {
+	public <R extends PaperDropdownMenuLight> R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
 		return getSelf();
 	}
@@ -443,7 +447,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param name
 	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public <R extends PaperDropdownMenuLight> R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
 		return getSelf();
 	}
@@ -473,7 +477,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param value
 	 * @return this instance, for method chaining
 	 */
-	public R setValue(java.lang.String value) {
+	public <R extends PaperDropdownMenuLight> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return getSelf();
 	}
@@ -508,7 +512,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param required
 	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public <R extends PaperDropdownMenuLight> R setRequired(boolean required) {
 		getElement().setProperty("required", required);
 		return getSelf();
 	}
@@ -533,7 +537,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param validator
 	 * @return this instance, for method chaining
 	 */
-	public R setValidator(java.lang.String validator) {
+	public <R extends PaperDropdownMenuLight> R setValidator(
+			java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
 		return getSelf();
@@ -560,7 +565,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param invalid
 	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public <R extends PaperDropdownMenuLight> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
 		return getSelf();
 	}
@@ -589,7 +594,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param selectedItemLabel
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedItemLabel(java.lang.String selectedItemLabel) {
+	public <R extends PaperDropdownMenuLight> R setSelectedItemLabel(
+			java.lang.String selectedItemLabel) {
 		getElement().setProperty("selectedItemLabel",
 				selectedItemLabel == null ? "" : selectedItemLabel);
 		return getSelf();
@@ -621,7 +627,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param selectedItem
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
+	public <R extends PaperDropdownMenuLight> R setSelectedItem(
+			elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
 		return getSelf();
 	}
@@ -646,7 +653,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param label
 	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public <R extends PaperDropdownMenuLight> R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
 		return getSelf();
 	}
@@ -671,7 +678,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param placeholder
 	 * @return this instance, for method chaining
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public <R extends PaperDropdownMenuLight> R setPlaceholder(
+			java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
 		return getSelf();
@@ -698,7 +706,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param opened
 	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public <R extends PaperDropdownMenuLight> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
 		return getSelf();
 	}
@@ -727,7 +735,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param allowOutsideScroll
 	 * @return this instance, for method chaining
 	 */
-	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
+	public <R extends PaperDropdownMenuLight> R setAllowOutsideScroll(
+			boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
 		return getSelf();
 	}
@@ -754,7 +763,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param noLabelFloat
 	 * @return this instance, for method chaining
 	 */
-	public R setNoLabelFloat(boolean noLabelFloat) {
+	public <R extends PaperDropdownMenuLight> R setNoLabelFloat(
+			boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
 		return getSelf();
 	}
@@ -781,7 +791,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param alwaysFloatLabel
 	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public <R extends PaperDropdownMenuLight> R setAlwaysFloatLabel(
+			boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
 		return getSelf();
 	}
@@ -806,7 +817,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param noAnimations
 	 * @return this instance, for method chaining
 	 */
-	public R setNoAnimations(boolean noAnimations) {
+	public <R extends PaperDropdownMenuLight> R setNoAnimations(
+			boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
 		return getSelf();
 	}
@@ -833,7 +845,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param horizontalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public <R extends PaperDropdownMenuLight> R setHorizontalAlign(
+			java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
 		return getSelf();
@@ -861,7 +874,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param verticalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public <R extends PaperDropdownMenuLight> R setVerticalAlign(
+			java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
 		return getSelf();
@@ -879,7 +893,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param hasContent
 	 * @return this instance, for method chaining
 	 */
-	public R setHasContent(boolean hasContent) {
+	public <R extends PaperDropdownMenuLight> R setHasContent(boolean hasContent) {
 		getElement().setProperty("hasContent", hasContent);
 		return getSelf();
 	}
@@ -904,7 +918,8 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * @param contentElement
 	 * @return this instance, for method chaining
 	 */
-	public R setContentElement(elemental.json.JsonObject contentElement) {
+	public <R extends PaperDropdownMenuLight> R setContentElement(
+			elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
 		return getSelf();
 	}
@@ -1227,7 +1242,7 @@ public class PaperDropdownMenuLight<R extends PaperDropdownMenuLight<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperDropdownMenuLight> R getSelf() {
 		return (R) this;
 	}
 }

@@ -45,8 +45,7 @@ public class PaperButtonView extends DemoView {
         button.setText(text);
         button.getStyle().set("backgroundColor", "white");
         button.addClickListener(evt -> {
-            message.setText("Button "
-                    + evt.getSource().getElement().getText().toUpperCase()
+            message.setText("Button " + evt.getSource().getText().toUpperCase()
                     + " was clicked.");
         });
         return button;
@@ -55,8 +54,7 @@ public class PaperButtonView extends DemoView {
     @Override
     public void populateSources(SourceContent container) {
         container.addCode("PaperButton button = new PaperButton();\n"
-                + "button.setRaised(true);\n"
-                + "button.getElement().setText(\"Button\");\n"
+                + "button.setRaised(true);\n" + "button.setText(\"Button\");\n"
                 + "layoutComponent.add(button);");
     }
 }

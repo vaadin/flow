@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.menu.button.PaperMenuButton;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -76,9 +77,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
-public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
-		implements
-			HasStyle {
+public class PaperMenuButton extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -102,7 +101,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperMenuButton> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -129,7 +129,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperMenuButton> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -158,7 +158,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperMenuButton> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -184,7 +185,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param focused
 	 * @return this instance, for method chaining
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends PaperMenuButton> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -210,7 +211,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperMenuButton> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -236,7 +237,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param opened
 	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public <R extends PaperMenuButton> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
 		return getSelf();
 	}
@@ -263,7 +264,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param horizontalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public <R extends PaperMenuButton> R setHorizontalAlign(
+			java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
 		return getSelf();
@@ -291,7 +293,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param verticalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public <R extends PaperMenuButton> R setVerticalAlign(
+			java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
 		return getSelf();
@@ -323,7 +326,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param dynamicAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setDynamicAlign(boolean dynamicAlign) {
+	public <R extends PaperMenuButton> R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
 		return getSelf();
 	}
@@ -352,7 +355,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param horizontalOffset
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalOffset(double horizontalOffset) {
+	public <R extends PaperMenuButton> R setHorizontalOffset(
+			double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
 		return getSelf();
 	}
@@ -381,7 +385,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param verticalOffset
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalOffset(double verticalOffset) {
+	public <R extends PaperMenuButton> R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
 		return getSelf();
 	}
@@ -408,7 +412,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param noOverlap
 	 * @return this instance, for method chaining
 	 */
-	public R setNoOverlap(boolean noOverlap) {
+	public <R extends PaperMenuButton> R setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
 		return getSelf();
 	}
@@ -433,7 +437,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param noAnimations
 	 * @return this instance, for method chaining
 	 */
-	public R setNoAnimations(boolean noAnimations) {
+	public <R extends PaperMenuButton> R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
 		return getSelf();
 	}
@@ -460,7 +464,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param ignoreSelect
 	 * @return this instance, for method chaining
 	 */
-	public R setIgnoreSelect(boolean ignoreSelect) {
+	public <R extends PaperMenuButton> R setIgnoreSelect(boolean ignoreSelect) {
 		getElement().setProperty("ignoreSelect", ignoreSelect);
 		return getSelf();
 	}
@@ -487,7 +491,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param closeOnActivate
 	 * @return this instance, for method chaining
 	 */
-	public R setCloseOnActivate(boolean closeOnActivate) {
+	public <R extends PaperMenuButton> R setCloseOnActivate(
+			boolean closeOnActivate) {
 		getElement().setProperty("closeOnActivate", closeOnActivate);
 		return getSelf();
 	}
@@ -514,7 +519,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param openAnimationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setOpenAnimationConfig(
+	public <R extends PaperMenuButton> R setOpenAnimationConfig(
 			elemental.json.JsonObject openAnimationConfig) {
 		getElement()
 				.setPropertyJson("openAnimationConfig", openAnimationConfig);
@@ -543,7 +548,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param closeAnimationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setCloseAnimationConfig(
+	public <R extends PaperMenuButton> R setCloseAnimationConfig(
 			elemental.json.JsonObject closeAnimationConfig) {
 		getElement().setPropertyJson("closeAnimationConfig",
 				closeAnimationConfig);
@@ -574,7 +579,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param allowOutsideScroll
 	 * @return this instance, for method chaining
 	 */
-	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
+	public <R extends PaperMenuButton> R setAllowOutsideScroll(
+			boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
 		return getSelf();
 	}
@@ -599,7 +605,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param restoreFocusOnClose
 	 * @return this instance, for method chaining
 	 */
-	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+	public <R extends PaperMenuButton> R setRestoreFocusOnClose(
+			boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
 		return getSelf();
 	}
@@ -624,7 +631,8 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * @param contentElement
 	 * @return this instance, for method chaining
 	 */
-	public R setContentElement(elemental.json.JsonObject contentElement) {
+	public <R extends PaperMenuButton> R setContentElement(
+			elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
 		return getSelf();
 	}
@@ -873,7 +881,7 @@ public class PaperMenuButton<R extends PaperMenuButton<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperMenuButton> R getSelf() {
 		return (R) this;
 	}
 }
