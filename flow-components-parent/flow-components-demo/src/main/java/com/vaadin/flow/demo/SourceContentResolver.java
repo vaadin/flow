@@ -51,6 +51,9 @@ public class SourceContentResolver {
     private static final Pattern SOURCE_CODE_EXAMPLE_TYPE_PATTERN = Pattern
             .compile("\\s*// source-example-type: ([A-Z]+)");
     
+    private SourceContentResolver() {
+    }
+
     /**
      * Get all {@link SourceCodeExample}s from a given class.
      * 
@@ -98,7 +101,7 @@ public class SourceContentResolver {
         while (lineIterator.hasNext()) {
             String line = lineIterator.next();
             if (SOURCE_CODE_EXAMPLE_BEGIN_PATTERN.matcher(line).matches()) {
-                List<String> exampleLines = new ArrayList<String>();
+                List<String> exampleLines = new ArrayList<>();
                 while (lineIterator.hasNext()) {
                     line = lineIterator.next();
                     if (SOURCE_CODE_EXAMPLE_END_PATTERN.matcher(line)
@@ -143,12 +146,7 @@ public class SourceContentResolver {
                     .matcher(sourceLines.get(i));
             if (typeMatcher.matches()) {
                 sourceLines.remove(i);
-                SourceType sourceType = SourceType
-                        .valueOf(typeMatcher.group(1));
-                if (sourceType == null) {
-                    return SourceType.UNDEFINED;
-                }
-                return sourceType;
+                return SourceType.valueOf(typeMatcher.group(1));
             }
         }
         return SourceType.UNDEFINED;
