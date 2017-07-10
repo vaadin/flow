@@ -23,9 +23,9 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
 		"WebComponent: paper-menu-grow-height-animation#UNKNOWN",
-		"Flow#0.1.12-SNAPSHOT"})
+		"Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-menu-grow-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation<R>>
@@ -50,7 +50,7 @@ public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
@@ -75,7 +75,7 @@ public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);

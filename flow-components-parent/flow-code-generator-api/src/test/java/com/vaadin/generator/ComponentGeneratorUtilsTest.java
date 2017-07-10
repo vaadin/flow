@@ -35,6 +35,29 @@ public class ComponentGeneratorUtilsTest {
     }
 
     @Test
+    public void formatReservedWordToValidJavaIdentifier_returnsPreffixed() {
+        String name = "for";
+        String convertedName = ComponentGeneratorUtils
+                .formatStringToValidJavaIdentifier(name);
+
+        Assert.assertEquals("_for", convertedName);
+    }
+
+    @Test
+    public void formatIgnoredReservedWordToValidJavaIdentifier_returnsCamelCase() {
+        String name = "for";
+        String convertedName = ComponentGeneratorUtils
+                .formatStringToValidJavaIdentifier(name, true);
+
+        Assert.assertEquals("for", convertedName);
+
+        convertedName = ComponentGeneratorUtils
+                .generateMethodNameForProperty("get", name);
+
+        Assert.assertEquals("getFor", convertedName);
+    }
+
+    @Test
     public void formatStringWithNoConnectorPunctuation_returnsSameString() {
         String name = "testMethod$name";
         String convertedName = ComponentGeneratorUtils

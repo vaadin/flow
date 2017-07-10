@@ -50,8 +50,8 @@ import com.vaadin.annotations.HtmlImport;
  * Note: announcements are only audible if you have a screen reader enabled.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: Polymer.IronA11yAnnouncer#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: Polymer.IronA11yAnnouncer#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-a11y-announcer")
 @HtmlImport("frontend://bower_components/iron-a11y-announcer/iron-a11y-announcer.html")
 public class IronA11yAnnouncer<R extends IronA11yAnnouncer<R>>
@@ -80,7 +80,7 @@ public class IronA11yAnnouncer<R extends IronA11yAnnouncer<R>>
 	 * {@code polite} and {@code assertive}.
 	 * 
 	 * @param mode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMode(java.lang.String mode) {
 		getElement().setProperty("mode", mode == null ? "" : mode);

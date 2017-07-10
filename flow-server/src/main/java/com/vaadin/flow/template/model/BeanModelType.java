@@ -316,8 +316,24 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     @Override
     public T modelToApplication(Serializable modelValue) {
-        return com.vaadin.flow.template.model.TemplateModelProxyHandler
-                .createModelProxy((StateNode) modelValue, this);
+        if (modelValue instanceof StateNode) {
+            return com.vaadin.flow.template.model.TemplateModelProxyHandler
+                    .createModelProxy((StateNode) modelValue, this);
+        } else if (modelValue instanceof JsonObject) {
+            throw new IllegalStateException(String.format(
+                    "The stored model value '%s' "
+                            + "is a JSON object. It looks like you have receieved a plain "
+                            + "JSON from the client side and try to use it as a model. "
+                            + "Check your model definition. Client side objects cannot be "
+                            + "converted automatically to model bean instances. "
+                            + "Most likely you should use JsonValue type for your model property",
+                    modelValue));
+        } else {
+            throw new IllegalStateException(String.format(
+                    "The stored model value '%s' "
+                            + "cannot be used as a type for a model property",
+                    modelValue));
+        }
     }
 
     @Override

@@ -51,8 +51,8 @@ import elemental.json.JsonObject;
  * iconset.applyIcon(iconNode, 'car');
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-iconset-svg")
 @HtmlImport("frontend://bower_components/iron-iconset-svg/iron-iconset-svg.html")
 public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
@@ -77,7 +77,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * The name of the iconset.
 	 * 
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -102,7 +102,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * The size of an individual icon. Note that icons must be square.
 	 * 
 	 * @param size
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSize(double size) {
 		getElement().setProperty("size", size);
@@ -139,7 +139,7 @@ public class IronIconsetSvg<R extends IronIconsetSvg<R>> extends Component
 	 * cause their mirrored state to change.
 	 * 
 	 * @param rtlMirroring
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRtlMirroring(boolean rtlMirroring) {
 		getElement().setProperty("rtlMirroring", rtlMirroring);

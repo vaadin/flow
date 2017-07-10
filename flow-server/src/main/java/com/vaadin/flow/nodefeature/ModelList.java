@@ -71,4 +71,20 @@ public class ModelList extends StateNodeNodeList {
     public void addAll(Collection<? extends StateNode> items) {
         super.addAll(items);
     }
+
+    /**
+     * Returns <tt>true</tt> if this list contains the specified node. More
+     *
+     * @param node
+     *            node whose presence in this list is to be tested
+     * @return <tt>true</tt> if this list contains the specified node
+     */
+    public boolean contains(StateNode node) {
+        return indexOf(node) != -1;
+    }
+
+    @Override
+    public int indexOf(StateNode item) {
+        return super.indexOf(item);
+    }
 }

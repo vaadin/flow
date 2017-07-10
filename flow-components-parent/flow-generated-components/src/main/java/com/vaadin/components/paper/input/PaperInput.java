@@ -36,8 +36,8 @@ import com.vaadin.shared.Registration;
  * 2.0. Expect some conditional code (especially in the tests).
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-input#2.0.1", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-input#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class PaperInput<R extends PaperInput<R>> extends Component
@@ -50,7 +50,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "focused-changed" event happens.
+	 * 'focused-changed' event happens.
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -63,7 +63,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
@@ -79,7 +79,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * property.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "disabled-changed" event happens.
+	 * 'disabled-changed' event happens.
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -95,7 +95,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * property.
 	 * 
 	 * @param disabled
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
@@ -122,7 +122,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
@@ -149,7 +149,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
@@ -168,7 +168,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 
 	/**
 	 * @param keyBindings
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
@@ -201,7 +201,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code template}
 	 * 
 	 * @param label
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
@@ -214,7 +214,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * The value for this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "value-changed" event happens.
+	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -227,7 +227,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * The value for this element.
 	 * 
 	 * @param value
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
@@ -246,7 +246,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * automatically, which can clobber attempts to manage it manually.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "invalid-changed" event happens.
+	 * 'invalid-changed' event happens.
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -265,7 +265,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * automatically, which can clobber attempts to manage it manually.
 	 * 
 	 * @param invalid
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
@@ -296,7 +296,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code allowedPattern} property.
 	 * 
 	 * @param allowedPattern
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAllowedPattern(java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
@@ -328,7 +328,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code <input is="iron-input">}'s {@code type} property.
 	 * 
 	 * @param type
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
@@ -359,7 +359,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code <input is="iron-input">}'s {@code list} property.
 	 * 
 	 * @param list
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setList(java.lang.String list) {
 		getElement().setProperty("list", list == null ? "" : list);
@@ -388,7 +388,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 * 
 	 * @param pattern
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
@@ -423,7 +423,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * when its value is invalid.
 	 * 
 	 * @param required
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
@@ -452,7 +452,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * this to the {@code <paper-input-error>}'s content, if using.
 	 * 
 	 * @param errorMessage
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setErrorMessage(java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
@@ -478,7 +478,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * Set to true to show a character counter.
 	 * 
 	 * @param charCounter
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setCharCounter(boolean charCounter) {
 		getElement().setProperty("charCounter", charCounter);
@@ -509,7 +509,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * property.
 	 * 
 	 * @param noLabelFloat
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
@@ -538,7 +538,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * 
 	 * @param alwaysFloatLabel
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
@@ -569,7 +569,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * property.
 	 * 
 	 * @param autoValidate
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
@@ -598,7 +598,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 * 
 	 * @param validator
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
@@ -628,7 +628,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code autocomplete} property.
 	 * 
 	 * @param autocomplete
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
@@ -658,7 +658,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code autofocus} property.
 	 * 
 	 * @param autofocus
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
@@ -687,7 +687,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code inputmode} property.
 	 * 
 	 * @param inputmode
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
@@ -717,7 +717,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 * 
 	 * @param minlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
@@ -746,7 +746,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 * 
 	 * @param maxlength
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
@@ -775,7 +775,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 * 
 	 * @param min
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMin(java.lang.String min) {
 		getElement().setProperty("min", min == null ? "" : min);
@@ -806,7 +806,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * this to the {@code <input is="iron-input">}'s {@code max} property.
 	 * 
 	 * @param max
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMax(java.lang.String max) {
 		getElement().setProperty("max", max == null ? "" : max);
@@ -835,7 +835,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 * 
 	 * @param step
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setStep(java.lang.String step) {
 		getElement().setProperty("step", step == null ? "" : step);
@@ -860,7 +860,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * The name of this element.
 	 * 
 	 * @param name
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
@@ -887,7 +887,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * will always float.
 	 * 
 	 * @param placeholder
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
@@ -917,7 +917,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code readonly} property.
 	 * 
 	 * @param readonly
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
@@ -946,7 +946,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * property.
 	 * 
 	 * @param size
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSize(double size) {
 		getElement().setProperty("size", size);
@@ -975,7 +975,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code autocapitalize} property.
 	 * 
 	 * @param autocapitalize
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutocapitalize(java.lang.String autocapitalize) {
 		getElement().setProperty("autocapitalize",
@@ -1005,7 +1005,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code autocorrect} property.
 	 * 
 	 * @param autocorrect
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutocorrect(java.lang.String autocorrect) {
 		getElement().setProperty("autocorrect",
@@ -1035,7 +1035,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code autosave} property, used with type=search.
 	 * 
 	 * @param autosave
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAutosave(java.lang.String autosave) {
 		getElement().setProperty("autosave", autosave == null ? "" : autosave);
@@ -1064,7 +1064,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code results} property, used with type=search.
 	 * 
 	 * @param results
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setResults(double results) {
 		getElement().setProperty("results", results);
@@ -1093,7 +1093,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code accept} property, used with type=file.
 	 * 
 	 * @param accept
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAccept(java.lang.String accept) {
 		getElement().setProperty("accept", accept == null ? "" : accept);
@@ -1122,7 +1122,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 	 * {@code multiple} property, used with type=file.
 	 * 
 	 * @param multiple
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setMultiple(boolean multiple) {
 		getElement().setProperty("multiple", multiple);
@@ -1290,7 +1290,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "prefix".
+	 * 'prefix'.
 	 * 
 	 * @param components
 	 *            The components to add.
@@ -1310,7 +1310,7 @@ public class PaperInput<R extends PaperInput<R>> extends Component
 
 	/**
 	 * Adds the given components as children of this component at the slot
-	 * "suffix".
+	 * 'suffix'.
 	 * 
 	 * @param components
 	 *            The components to add.
