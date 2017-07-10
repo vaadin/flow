@@ -53,19 +53,25 @@ public class BehaviorRegistryTest {
 
     @Test
     public void clickableBehaviors() {
-        Set<Class<?>> set = BehaviorRegistry.getClassesForBehaviors(
-                Arrays.asList("Polymer.PaperButtonBehavior",
-                        "Polymer.GestureEventListeners"));
-        Assert.assertEquals(1, set.size());
-        Assert.assertEquals(HasClickListeners.class, set.iterator().next());
+        assertClassIsPresent(HasClickListeners.class, "VaadinButton");
+        assertClassIsPresent(HasClickListeners.class,
+                "Polymer.PaperButtonBehavior");
+        assertClassIsPresent(HasClickListeners.class,
+                "Polymer.GestureEventListeners");
     }
 
     @Test
     public void hasTextBehaviors() {
-        Set<Class<?>> set = BehaviorRegistry.getClassesForBehaviors(
-                Arrays.asList("VaadinButton", "PaperButton"));
-        Assert.assertEquals(1, set.size());
-        Assert.assertEquals(HasText.class, set.iterator().next());
+        assertClassIsPresent(HasText.class, "VaadinButton");
+        assertClassIsPresent(HasText.class, "PaperButton");
+    }
+
+    private void assertClassIsPresent(Class<?> clazz, String selector) {
+        Set<Class<?>> set = BehaviorRegistry
+                .getClassesForBehaviors(Arrays.asList(selector));
+        Assert.assertTrue(clazz.getSimpleName()
+                + " should be in the set of inherited classes for selector "
+                + selector, set.contains(clazz));
     }
 
 }

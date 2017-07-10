@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.paper.toolbar.PaperToolbar;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -116,9 +117,7 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: paper-toolbar#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-toolbar")
 @HtmlImport("frontend://bower_components/paper-toolbar/paper-toolbar.html")
-public class PaperToolbar<R extends PaperToolbar<R>> extends Component
-		implements
-			HasStyle {
+public class PaperToolbar extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -144,7 +143,8 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 	 * @param bottomJustify
 	 * @return this instance, for method chaining
 	 */
-	public R setBottomJustify(java.lang.String bottomJustify) {
+	public <R extends PaperToolbar> R setBottomJustify(
+			java.lang.String bottomJustify) {
 		getElement().setProperty("bottomJustify",
 				bottomJustify == null ? "" : bottomJustify);
 		return getSelf();
@@ -174,7 +174,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 	 * @param justify
 	 * @return this instance, for method chaining
 	 */
-	public R setJustify(java.lang.String justify) {
+	public <R extends PaperToolbar> R setJustify(java.lang.String justify) {
 		getElement().setProperty("justify", justify == null ? "" : justify);
 		return getSelf();
 	}
@@ -203,7 +203,8 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 	 * @param middleJustify
 	 * @return this instance, for method chaining
 	 */
-	public R setMiddleJustify(java.lang.String middleJustify) {
+	public <R extends PaperToolbar> R setMiddleJustify(
+			java.lang.String middleJustify) {
 		getElement().setProperty("middleJustify",
 				middleJustify == null ? "" : middleJustify);
 		return getSelf();
@@ -306,7 +307,7 @@ public class PaperToolbar<R extends PaperToolbar<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperToolbar> R getSelf() {
 		return (R) this;
 	}
 }

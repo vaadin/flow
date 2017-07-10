@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.ripple.PaperRipple;
 import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
 import com.vaadin.components.JsonSerializable;
@@ -89,9 +90,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-ripple#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-ripple")
 @HtmlImport("frontend://bower_components/paper-ripple/paper-ripple.html")
-public class PaperRipple<R extends PaperRipple<R>> extends Component
-		implements
-			HasStyle {
+public class PaperRipple extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -115,7 +114,8 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperRipple> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -142,7 +142,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperRipple> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -161,7 +161,8 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperRipple> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -186,7 +187,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param initialOpacity
 	 * @return this instance, for method chaining
 	 */
-	public R setInitialOpacity(double initialOpacity) {
+	public <R extends PaperRipple> R setInitialOpacity(double initialOpacity) {
 		getElement().setProperty("initialOpacity", initialOpacity);
 		return getSelf();
 	}
@@ -211,7 +212,8 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param opacityDecayVelocity
 	 * @return this instance, for method chaining
 	 */
-	public R setOpacityDecayVelocity(double opacityDecayVelocity) {
+	public <R extends PaperRipple> R setOpacityDecayVelocity(
+			double opacityDecayVelocity) {
 		getElement().setProperty("opacityDecayVelocity", opacityDecayVelocity);
 		return getSelf();
 	}
@@ -238,7 +240,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param recenters
 	 * @return this instance, for method chaining
 	 */
-	public R setRecenters(boolean recenters) {
+	public <R extends PaperRipple> R setRecenters(boolean recenters) {
 		getElement().setProperty("recenters", recenters);
 		return getSelf();
 	}
@@ -263,7 +265,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param center
 	 * @return this instance, for method chaining
 	 */
-	public R setCenter(boolean center) {
+	public <R extends PaperRipple> R setCenter(boolean center) {
 		getElement().setProperty("center", center);
 		return getSelf();
 	}
@@ -288,7 +290,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param ripples
 	 * @return this instance, for method chaining
 	 */
-	public R setRipples(elemental.json.JsonArray ripples) {
+	public <R extends PaperRipple> R setRipples(elemental.json.JsonArray ripples) {
 		getElement().setPropertyJson("ripples", ripples);
 		return getSelf();
 	}
@@ -313,7 +315,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param animating
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimating(boolean animating) {
+	public <R extends PaperRipple> R setAnimating(boolean animating) {
 		getElement().setProperty("animating", animating);
 		return getSelf();
 	}
@@ -340,7 +342,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param holdDown
 	 * @return this instance, for method chaining
 	 */
-	public R setHoldDown(boolean holdDown) {
+	public <R extends PaperRipple> R setHoldDown(boolean holdDown) {
 		getElement().setProperty("holdDown", holdDown);
 		return getSelf();
 	}
@@ -369,7 +371,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param noink
 	 * @return this instance, for method chaining
 	 */
-	public R setNoink(boolean noink) {
+	public <R extends PaperRipple> R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
 		return getSelf();
 	}
@@ -386,7 +388,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param target
 	 * @return this instance, for method chaining
 	 */
-	public R setTarget(elemental.json.JsonObject target) {
+	public <R extends PaperRipple> R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
 		return getSelf();
 	}
@@ -403,7 +405,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * @param shouldKeepAnimating
 	 * @return this instance, for method chaining
 	 */
-	public R setShouldKeepAnimating(
+	public <R extends PaperRipple> R setShouldKeepAnimating(
 			elemental.json.JsonObject shouldKeepAnimating) {
 		getElement()
 				.setPropertyJson("shouldKeepAnimating", shouldKeepAnimating);
@@ -580,7 +582,7 @@ public class PaperRipple<R extends PaperRipple<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperRipple> R getSelf() {
 		return (R) this;
 	}
 }
