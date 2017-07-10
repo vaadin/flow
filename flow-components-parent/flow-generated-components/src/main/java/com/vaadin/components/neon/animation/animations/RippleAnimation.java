@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.RippleAnimation;
 
 /**
  * 
@@ -30,9 +31,7 @@ import elemental.json.JsonObject;
 		"WebComponent: ripple-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("ripple-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/ripple-animation.html")
-public class RippleAnimation<R extends RippleAnimation<R>> extends Component
-		implements
-			HasStyle {
+public class RippleAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -54,7 +53,8 @@ public class RippleAnimation<R extends RippleAnimation<R>> extends Component
 	 * @param animationTiming
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends RippleAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -79,7 +79,8 @@ public class RippleAnimation<R extends RippleAnimation<R>> extends Component
 	 * @param isNeonAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends RippleAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -104,7 +105,8 @@ public class RippleAnimation<R extends RippleAnimation<R>> extends Component
 	 * @param sharedElements
 	 * @return this instance, for method chaining
 	 */
-	public R setSharedElements(elemental.json.JsonObject sharedElements) {
+	public <R extends RippleAnimation> R setSharedElements(
+			elemental.json.JsonObject sharedElements) {
 		getElement().setPropertyJson("sharedElements", sharedElements);
 		return getSelf();
 	}
@@ -157,7 +159,7 @@ public class RippleAnimation<R extends RippleAnimation<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends RippleAnimation> R getSelf() {
 		return (R) this;
 	}
 }

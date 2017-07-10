@@ -214,6 +214,16 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         assertEquals(anotherGrandChild, storedElement);
     }
 
+    public void testAttachCustomElement_templateHasStyle_styleIsIgnored() {
+        /*
+         * Append style element at the beginning of the {@code element}. The
+         * previous test should work in the same way.
+         */
+        element.appendChild(Browser.getDocument().createElement("style"));
+
+        testAttachCustomElement_elementExistsInDom();
+    }
+
     public void testAttachExistingElementById_elementMissingInDom() {
         setupShadowRoot();
 

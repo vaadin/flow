@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.image.IronImage;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -88,9 +89,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-image#2.1.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-image")
 @HtmlImport("frontend://bower_components/iron-image/iron-image.html")
-public class IronImage<R extends IronImage<R>> extends Component
-		implements
-			HasStyle {
+public class IronImage extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -112,7 +111,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param src
 	 * @return this instance, for method chaining
 	 */
-	public R setSrc(java.lang.String src) {
+	public <R extends IronImage> R setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);
 		return getSelf();
 	}
@@ -137,7 +136,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param alt
 	 * @return this instance, for method chaining
 	 */
-	public R setAlt(java.lang.String alt) {
+	public <R extends IronImage> R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
 		return getSelf();
 	}
@@ -164,7 +163,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param crossorigin
 	 * @return this instance, for method chaining
 	 */
-	public R setCrossorigin(java.lang.String crossorigin) {
+	public <R extends IronImage> R setCrossorigin(java.lang.String crossorigin) {
 		getElement().setProperty("crossorigin",
 				crossorigin == null ? "" : crossorigin);
 		return getSelf();
@@ -194,7 +193,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param preventLoad
 	 * @return this instance, for method chaining
 	 */
-	public R setPreventLoad(boolean preventLoad) {
+	public <R extends IronImage> R setPreventLoad(boolean preventLoad) {
 		getElement().setProperty("preventLoad", preventLoad);
 		return getSelf();
 	}
@@ -227,7 +226,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param sizing
 	 * @return this instance, for method chaining
 	 */
-	public R setSizing(java.lang.String sizing) {
+	public <R extends IronImage> R setSizing(java.lang.String sizing) {
 		getElement().setProperty("sizing", sizing == null ? "" : sizing);
 		return getSelf();
 	}
@@ -254,7 +253,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param position
 	 * @return this instance, for method chaining
 	 */
-	public R setPosition(java.lang.String position) {
+	public <R extends IronImage> R setPosition(java.lang.String position) {
 		getElement().setProperty("position", position == null ? "" : position);
 		return getSelf();
 	}
@@ -281,7 +280,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param preload
 	 * @return this instance, for method chaining
 	 */
-	public R setPreload(boolean preload) {
+	public <R extends IronImage> R setPreload(boolean preload) {
 		getElement().setProperty("preload", preload);
 		return getSelf();
 	}
@@ -310,7 +309,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param placeholder
 	 * @return this instance, for method chaining
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public <R extends IronImage> R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
 		return getSelf();
@@ -338,7 +337,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param fade
 	 * @return this instance, for method chaining
 	 */
-	public R setFade(boolean fade) {
+	public <R extends IronImage> R setFade(boolean fade) {
 		getElement().setProperty("fade", fade);
 		return getSelf();
 	}
@@ -364,7 +363,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param loaded
 	 * @return this instance, for method chaining
 	 */
-	public R setLoaded(boolean loaded) {
+	public <R extends IronImage> R setLoaded(boolean loaded) {
 		getElement().setProperty("loaded", loaded);
 		return getSelf();
 	}
@@ -392,7 +391,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param loading
 	 * @return this instance, for method chaining
 	 */
-	public R setLoading(boolean loading) {
+	public <R extends IronImage> R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
 		return getSelf();
 	}
@@ -420,7 +419,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param error
 	 * @return this instance, for method chaining
 	 */
-	public R setError(boolean error) {
+	public <R extends IronImage> R setError(boolean error) {
 		getElement().setProperty("error", error);
 		return getSelf();
 	}
@@ -447,7 +446,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param width
 	 * @return this instance, for method chaining
 	 */
-	public R setWidth(double width) {
+	public <R extends IronImage> R setWidth(double width) {
 		getElement().setProperty("width", width);
 		return getSelf();
 	}
@@ -474,7 +473,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * @param height
 	 * @return this instance, for method chaining
 	 */
-	public R setHeight(double height) {
+	public <R extends IronImage> R setHeight(double height) {
 		getElement().setProperty("height", height);
 		return getSelf();
 	}
@@ -521,7 +520,7 @@ public class IronImage<R extends IronImage<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronImage> R getSelf() {
 		return (R) this;
 	}
 }

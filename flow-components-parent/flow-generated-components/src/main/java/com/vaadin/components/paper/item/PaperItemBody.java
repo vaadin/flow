@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.components.paper.item.PaperItemBody;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -55,10 +56,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-item-body#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-item-body")
 @HtmlImport("frontend://bower_components/paper-item/paper-item-body.html")
-public class PaperItemBody<R extends PaperItemBody<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class PaperItemBody extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Gets the narrow typed reference to this object. Subclasses should
@@ -66,7 +64,7 @@ public class PaperItemBody<R extends PaperItemBody<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperItemBody> R getSelf() {
 		return (R) this;
 	}
 }

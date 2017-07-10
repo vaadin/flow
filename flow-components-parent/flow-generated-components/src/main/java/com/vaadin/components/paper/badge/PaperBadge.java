@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.paper.badge.PaperBadge;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 
@@ -71,9 +72,7 @@ import com.vaadin.components.NotSupported;
 		"WebComponent: paper-badge#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-badge")
 @HtmlImport("frontend://bower_components/paper-badge/paper-badge.html")
-public class PaperBadge<R extends PaperBadge<R>> extends Component
-		implements
-			HasStyle {
+public class PaperBadge extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -97,7 +96,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * @param _for
 	 * @return this instance, for method chaining
 	 */
-	public R setFor(java.lang.String _for) {
+	public <R extends PaperBadge> R setFor(java.lang.String _for) {
 		getElement().setProperty("for", _for == null ? "" : _for);
 		return getSelf();
 	}
@@ -124,7 +123,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * @param label
 	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public <R extends PaperBadge> R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
 		return getSelf();
 	}
@@ -155,7 +154,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * @param icon
 	 * @return this instance, for method chaining
 	 */
-	public R setIcon(java.lang.String icon) {
+	public <R extends PaperBadge> R setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
 		return getSelf();
 	}
@@ -184,7 +183,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * @param target
 	 * @return this instance, for method chaining
 	 */
-	public R setTarget(elemental.json.JsonObject target) {
+	public <R extends PaperBadge> R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
 		return getSelf();
 	}
@@ -259,7 +258,7 @@ public class PaperBadge<R extends PaperBadge<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperBadge> R getSelf() {
 		return (R) this;
 	}
 }

@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.menu.button.PaperMenuGrowHeightAnimation;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
@@ -28,9 +29,7 @@ import elemental.json.JsonObject;
 		"Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-menu-grow-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
-public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation<R>>
-		extends
-			Component implements HasStyle {
+public class PaperMenuGrowHeightAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -52,7 +51,8 @@ public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation
 	 * @param animationTiming
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends PaperMenuGrowHeightAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -77,7 +77,8 @@ public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation
 	 * @param isNeonAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends PaperMenuGrowHeightAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -124,7 +125,7 @@ public class PaperMenuGrowHeightAnimation<R extends PaperMenuGrowHeightAnimation
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperMenuGrowHeightAnimation> R getSelf() {
 		return (R) this;
 	}
 }

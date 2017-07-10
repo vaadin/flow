@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.dropdown.menu.PaperDropdownMenu;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -87,9 +88,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-dropdown-menu#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-dropdown-menu")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu.html")
-public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
-		extends
-			Component implements HasStyle {
+public class PaperDropdownMenu extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -113,7 +112,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperDropdownMenu> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -140,7 +140,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperDropdownMenu> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -159,7 +159,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperDropdownMenu> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -184,7 +185,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param pressed
 	 * @return this instance, for method chaining
 	 */
-	public R setPressed(boolean pressed) {
+	public <R extends PaperDropdownMenu> R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
 		return getSelf();
 	}
@@ -211,7 +212,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param toggles
 	 * @return this instance, for method chaining
 	 */
-	public R setToggles(boolean toggles) {
+	public <R extends PaperDropdownMenu> R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
 		return getSelf();
 	}
@@ -237,7 +238,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param active
 	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public <R extends PaperDropdownMenu> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -266,7 +267,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param pointerDown
 	 * @return this instance, for method chaining
 	 */
-	public R setPointerDown(boolean pointerDown) {
+	public <R extends PaperDropdownMenu> R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
 		return getSelf();
 	}
@@ -293,7 +294,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param receivedFocusFromKeyboard
 	 * @return this instance, for method chaining
 	 */
-	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
+	public <R extends PaperDropdownMenu> R setReceivedFocusFromKeyboard(
+			boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
 				receivedFocusFromKeyboard);
 		return getSelf();
@@ -321,7 +323,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param ariaActiveAttribute
 	 * @return this instance, for method chaining
 	 */
-	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public <R extends PaperDropdownMenu> R setAriaActiveAttribute(
+			java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
 		return getSelf();
@@ -348,7 +351,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param focused
 	 * @return this instance, for method chaining
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends PaperDropdownMenu> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -374,7 +377,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperDropdownMenu> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -399,7 +402,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param name
 	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public <R extends PaperDropdownMenu> R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
 		return getSelf();
 	}
@@ -429,7 +432,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param value
 	 * @return this instance, for method chaining
 	 */
-	public R setValue(java.lang.String value) {
+	public <R extends PaperDropdownMenu> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return getSelf();
 	}
@@ -464,7 +467,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param required
 	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public <R extends PaperDropdownMenu> R setRequired(boolean required) {
 		getElement().setProperty("required", required);
 		return getSelf();
 	}
@@ -489,7 +492,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param validator
 	 * @return this instance, for method chaining
 	 */
-	public R setValidator(java.lang.String validator) {
+	public <R extends PaperDropdownMenu> R setValidator(
+			java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
 		return getSelf();
@@ -516,7 +520,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param invalid
 	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public <R extends PaperDropdownMenu> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
 		return getSelf();
 	}
@@ -545,7 +549,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param selectedItemLabel
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedItemLabel(java.lang.String selectedItemLabel) {
+	public <R extends PaperDropdownMenu> R setSelectedItemLabel(
+			java.lang.String selectedItemLabel) {
 		getElement().setProperty("selectedItemLabel",
 				selectedItemLabel == null ? "" : selectedItemLabel);
 		return getSelf();
@@ -577,7 +582,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param selectedItem
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
+	public <R extends PaperDropdownMenu> R setSelectedItem(
+			elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
 		return getSelf();
 	}
@@ -602,7 +608,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param label
 	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public <R extends PaperDropdownMenu> R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
 		return getSelf();
 	}
@@ -627,7 +633,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param placeholder
 	 * @return this instance, for method chaining
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public <R extends PaperDropdownMenu> R setPlaceholder(
+			java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
 		return getSelf();
@@ -653,7 +660,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param errorMessage
 	 * @return this instance, for method chaining
 	 */
-	public R setErrorMessage(java.lang.String errorMessage) {
+	public <R extends PaperDropdownMenu> R setErrorMessage(
+			java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
 		return getSelf();
@@ -680,7 +688,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param opened
 	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public <R extends PaperDropdownMenu> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
 		return getSelf();
 	}
@@ -709,7 +717,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param allowOutsideScroll
 	 * @return this instance, for method chaining
 	 */
-	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
+	public <R extends PaperDropdownMenu> R setAllowOutsideScroll(
+			boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
 		return getSelf();
 	}
@@ -736,7 +745,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param noLabelFloat
 	 * @return this instance, for method chaining
 	 */
-	public R setNoLabelFloat(boolean noLabelFloat) {
+	public <R extends PaperDropdownMenu> R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
 		return getSelf();
 	}
@@ -763,7 +772,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param alwaysFloatLabel
 	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public <R extends PaperDropdownMenu> R setAlwaysFloatLabel(
+			boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
 		return getSelf();
 	}
@@ -788,7 +798,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param noAnimations
 	 * @return this instance, for method chaining
 	 */
-	public R setNoAnimations(boolean noAnimations) {
+	public <R extends PaperDropdownMenu> R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
 		return getSelf();
 	}
@@ -815,7 +825,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param horizontalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public <R extends PaperDropdownMenu> R setHorizontalAlign(
+			java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
 		return getSelf();
@@ -843,7 +854,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param verticalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public <R extends PaperDropdownMenu> R setVerticalAlign(
+			java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
 		return getSelf();
@@ -875,7 +887,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param dynamicAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setDynamicAlign(boolean dynamicAlign) {
+	public <R extends PaperDropdownMenu> R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
 		return getSelf();
 	}
@@ -900,7 +912,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param restoreFocusOnClose
 	 * @return this instance, for method chaining
 	 */
-	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+	public <R extends PaperDropdownMenu> R setRestoreFocusOnClose(
+			boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
 		return getSelf();
 	}
@@ -925,7 +938,8 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * @param contentElement
 	 * @return this instance, for method chaining
 	 */
-	public R setContentElement(elemental.json.JsonObject contentElement) {
+	public <R extends PaperDropdownMenu> R setContentElement(
+			elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
 		return getSelf();
 	}
@@ -1208,7 +1222,7 @@ public class PaperDropdownMenu<R extends PaperDropdownMenu<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperDropdownMenu> R getSelf() {
 		return (R) this;
 	}
 }
