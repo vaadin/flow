@@ -33,6 +33,9 @@ public class SourceCodeExample {
     private String sourceCode;
     private SourceType sourceType;
 
+    /**
+     * Constructs a new source code example.
+     */
     public SourceCodeExample() {
         sourceType = SourceType.UNDEFINED;
     }
@@ -43,10 +46,6 @@ public class SourceCodeExample {
 
     public void setHeading(String heading) {
         this.heading = heading;
-    }
-
-    public boolean hasHeading() {
-        return heading != null;
     }
 
     public String getSourceCode() {

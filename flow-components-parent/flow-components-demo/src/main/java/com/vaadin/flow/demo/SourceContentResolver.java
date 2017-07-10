@@ -20,7 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -51,6 +50,9 @@ public class SourceContentResolver {
     private static final Pattern SOURCE_CODE_EXAMPLE_TYPE_PATTERN = Pattern
             .compile("\\s*// source-example-type: ([A-Z]+)");
     
+    private SourceContentResolver() {
+    }
+
     /**
      * Get all {@link SourceCodeExample}s from a given class.
      * 
@@ -94,21 +96,21 @@ public class SourceContentResolver {
     private static List<SourceCodeExample> parseSourceCodeExamplesFromSourceLines(
             List<String> sourceLines) {
         List<SourceCodeExample> examples = new ArrayList<>();
-        Iterator<String> lineIterator = sourceLines.iterator();
-        while (lineIterator.hasNext()) {
-            String line = lineIterator.next();
-            if (SOURCE_CODE_EXAMPLE_BEGIN_PATTERN.matcher(line).matches()) {
-                List<String> exampleLines = new ArrayList<String>();
-                while (lineIterator.hasNext()) {
-                    line = lineIterator.next();
-                    if (SOURCE_CODE_EXAMPLE_END_PATTERN.matcher(line)
-                            .matches()) {
-                        examples.add(parseSourceCodeExampleFromSourceLines(
-                                exampleLines));
-                        break;
-                    }
-                    exampleLines.add(line);
-                }
+        int startIndex = -1;
+        int endIndex = -1;
+        for (int i = 0; i < sourceLines.size(); i++) {
+            if (SOURCE_CODE_EXAMPLE_BEGIN_PATTERN.matcher(sourceLines.get(i))
+                    .matches()) {
+                startIndex = i;
+            } else if (SOURCE_CODE_EXAMPLE_END_PATTERN
+                    .matcher(sourceLines.get(i)).matches()) {
+                endIndex = i;
+            }
+            if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+                examples.add(parseSourceCodeExampleFromSourceLines(
+                        sourceLines.subList(startIndex, endIndex)));
+                startIndex = -1;
+                endIndex = -1;
             }
         }
         return examples;
@@ -143,12 +145,7 @@ public class SourceContentResolver {
                     .matcher(sourceLines.get(i));
             if (typeMatcher.matches()) {
                 sourceLines.remove(i);
-                SourceType sourceType = SourceType
-                        .valueOf(typeMatcher.group(1));
-                if (sourceType == null) {
-                    return SourceType.UNDEFINED;
-                }
-                return sourceType;
+                return SourceType.valueOf(typeMatcher.group(1));
             }
         }
         return SourceType.UNDEFINED;
