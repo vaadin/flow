@@ -58,8 +58,8 @@ import com.vaadin.shared.Registration;
  * Mixin applied to the color picker icon | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
@@ -72,7 +72,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * The selected color, as hex (i.e. #ffffff). value.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
-	 * "color-changed" event happens.
+	 * 'color-changed' event happens.
 	 */
 	@Synchronize(property = "color", value = "color-changed")
 	public String getColor() {
@@ -85,7 +85,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * The selected color, as hex (i.e. #ffffff). value.
 	 * 
 	 * @param color
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setColor(java.lang.String color) {
 		getElement().setProperty("color", color == null ? "" : color);
@@ -118,7 +118,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * the {@code columnCount} property.
 	 * 
 	 * @param colorList
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setColorList(elemental.json.JsonArray colorList) {
 		getElement().setPropertyJson("colorList", colorList);
@@ -149,7 +149,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * Material Design palette has 18 colors
 	 * 
 	 * @param columnCount
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setColumnCount(double columnCount) {
 		getElement().setProperty("columnCount", columnCount);
@@ -176,7 +176,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param horizontalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
@@ -204,7 +204,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param verticalAlign
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
@@ -232,7 +232,7 @@ public class PaperSwatchPicker<R extends PaperSwatchPicker<R>>
 	 * interacted with via the pointer.
 	 * 
 	 * @param noink
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);

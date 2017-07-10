@@ -31,8 +31,8 @@ import elemental.json.JsonObject;
  * <animation-timing> } {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: fade-in-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: fade-in-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("fade-in-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/fade-in-animation.html")
 public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component
@@ -57,7 +57,7 @@ public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
@@ -82,7 +82,7 @@ public class FadeInAnimation<R extends FadeInAnimation<R>> extends Component
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);

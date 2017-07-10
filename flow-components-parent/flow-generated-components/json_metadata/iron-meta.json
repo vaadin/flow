@@ -2,7 +2,7 @@
   "name": "iron-meta",
   "tag": "iron-meta",
   "baseUrl": "iron-meta/iron-meta.html",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "properties": [
     {
       "name": "type",
@@ -10,23 +10,23 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The type of meta-data.  All meta-data of the same type is stored\ntogether.\n         "
+      "description": "The type of meta-data.  All meta-data of the same type is stored\ntogether."
     },
     {
       "name": "key",
       "type": [
-        "STRING"
+        "OBJECT"
       ],
       "objectType": [],
-      "description": "The key used to store `value` under the `type` namespace.\n         "
+      "description": "The key used to store `value` under the `type` namespace."
     },
     {
       "name": "value",
       "type": [
-        "STRING"
+        "OBJECT"
       ],
       "objectType": [],
-      "description": "The meta-data to store or retrieve.\n         "
+      "description": "The meta-data to store or retrieve."
     },
     {
       "name": "self",

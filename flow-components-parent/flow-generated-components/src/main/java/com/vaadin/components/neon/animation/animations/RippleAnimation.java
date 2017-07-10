@@ -26,8 +26,8 @@ import elemental.json.JsonObject;
  * 
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: ripple-animation#UNKNOWN", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: ripple-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("ripple-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/ripple-animation.html")
 public class RippleAnimation<R extends RippleAnimation<R>> extends Component
@@ -52,7 +52,7 @@ public class RippleAnimation<R extends RippleAnimation<R>> extends Component
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
@@ -77,7 +77,7 @@ public class RippleAnimation<R extends RippleAnimation<R>> extends Component
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
@@ -102,7 +102,7 @@ public class RippleAnimation<R extends RippleAnimation<R>> extends Component
 	 * Cached copy of shared elements.
 	 * 
 	 * @param sharedElements
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setSharedElements(elemental.json.JsonObject sharedElements) {
 		getElement().setPropertyJson("sharedElements", sharedElements);

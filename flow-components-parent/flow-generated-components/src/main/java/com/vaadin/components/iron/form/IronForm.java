@@ -89,8 +89,8 @@ import com.vaadin.ui.HasComponents;
  * wrapper.appendChild(form);
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.12-SNAPSHOT",
-		"WebComponent: iron-form#2.0.0", "Flow#0.1.12-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"WebComponent: iron-form#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-form")
 @HtmlImport("frontend://bower_components/iron-form/iron-form.html")
 public class IronForm<R extends IronForm<R>> extends Component
@@ -120,7 +120,7 @@ public class IronForm<R extends IronForm<R>> extends Component
 	 * the form has been submitted.
 	 * 
 	 * @param allowRedirect
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setAllowRedirect(boolean allowRedirect) {
 		getElement().setProperty("allowRedirect", allowRedirect);
@@ -147,7 +147,7 @@ public class IronForm<R extends IronForm<R>> extends Component
 	 * details. Only works when {@code allowRedirect} is false.
 	 * 
 	 * @param headers
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setHeaders(elemental.json.JsonObject headers) {
 		getElement().setPropertyJson("headers", headers);
@@ -176,7 +176,7 @@ public class IronForm<R extends IronForm<R>> extends Component
 	 * {@code allowRedirect} is false.
 	 * 
 	 * @param withCredentials
-	 * @return This instance, for method chaining.
+	 * @return this instance, for method chaining
 	 */
 	public R setWithCredentials(boolean withCredentials) {
 		getElement().setProperty("withCredentials", withCredentials);
