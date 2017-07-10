@@ -232,7 +232,7 @@ public class TemplateInitializer {
         com.vaadin.external.jsoup.nodes.Element current = element;
         while (!current.equals(templateRoot)) {
             com.vaadin.external.jsoup.nodes.Element parent = current.parent();
-            path.add(parent.children().indexOf(current));
+            path.add(indexOf(parent, current));
             current = parent;
         }
         JsonArray array = Json.createArray();
@@ -240,6 +240,37 @@ public class TemplateInitializer {
             array.set(i, path.get(path.size() - i - 1));
         }
         return array;
+    }
+
+    /**
+     * Returns the index of the {@code child} in the collection of
+     * {@link com.vaadin.external.jsoup.nodes.Element} children of the
+     * {@code parent} ignoring "style" elements.
+     * <p>
+     * "style" elements are handled differently depending on ES5/ES6. Also
+     * "style" tag can be moved on the top in the resulting client side DOM
+     * regardless of its initial position (e.g. Chrome does this).
+     *
+     * @param parent
+     *            the parent of the {@code child}
+     * @param child
+     *            the child element whose index is calculated
+     * @return the index of the {@code child} in the {@code parent}
+     */
+    private int indexOf(com.vaadin.external.jsoup.nodes.Element parent,
+            com.vaadin.external.jsoup.nodes.Element child) {
+        Elements children = parent.children();
+        int index = -1;
+        for (int i = 0; i < children.size(); i++) {
+            com.vaadin.external.jsoup.nodes.Element nextChild = children.get(i);
+            if (!"style".equals(nextChild.tagName())) {
+                index++;
+            }
+            if (nextChild.equals(child)) {
+                break;
+            }
+        }
+        return index;
     }
 
     private ShadowRoot getShadowRoot() {

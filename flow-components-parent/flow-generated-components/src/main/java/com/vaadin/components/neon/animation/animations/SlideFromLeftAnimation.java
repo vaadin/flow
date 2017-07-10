@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.SlideFromLeftAnimation;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -38,9 +39,7 @@ import elemental.json.JsonObject;
 		"Flow#0.1.13-SNAPSHOT"})
 @Tag("slide-from-left-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/slide-from-left-animation.html")
-public class SlideFromLeftAnimation<R extends SlideFromLeftAnimation<R>>
-		extends
-			Component implements HasStyle {
+public class SlideFromLeftAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -62,7 +61,8 @@ public class SlideFromLeftAnimation<R extends SlideFromLeftAnimation<R>>
 	 * @param animationTiming
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends SlideFromLeftAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -87,7 +87,8 @@ public class SlideFromLeftAnimation<R extends SlideFromLeftAnimation<R>>
 	 * @param isNeonAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends SlideFromLeftAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -134,7 +135,7 @@ public class SlideFromLeftAnimation<R extends SlideFromLeftAnimation<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends SlideFromLeftAnimation> R getSelf() {
 		return (R) this;
 	}
 }

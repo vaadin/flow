@@ -22,6 +22,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.iron.ajax.IronRequest;
 import com.vaadin.components.NotSupported;
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.annotations.DomEvent;
@@ -42,9 +43,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-request#2.0.2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-request")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-request.html")
-public class IronRequest<R extends IronRequest<R>> extends Component
-		implements
-			HasStyle {
+public class IronRequest extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -69,7 +68,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param xhr
 	 * @return this instance, for method chaining
 	 */
-	public R setXhr(elemental.json.JsonObject xhr) {
+	public <R extends IronRequest> R setXhr(elemental.json.JsonObject xhr) {
 		getElement().setPropertyJson("xhr", xhr);
 		return getSelf();
 	}
@@ -97,7 +96,8 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param response
 	 * @return this instance, for method chaining
 	 */
-	public R setResponse(elemental.json.JsonObject response) {
+	public <R extends IronRequest> R setResponse(
+			elemental.json.JsonObject response) {
 		getElement().setPropertyJson("response", response);
 		return getSelf();
 	}
@@ -125,7 +125,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param status
 	 * @return this instance, for method chaining
 	 */
-	public R setStatus(double status) {
+	public <R extends IronRequest> R setStatus(double status) {
 		getElement().setProperty("status", status);
 		return getSelf();
 	}
@@ -152,7 +152,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param statusText
 	 * @return this instance, for method chaining
 	 */
-	public R setStatusText(java.lang.String statusText) {
+	public <R extends IronRequest> R setStatusText(java.lang.String statusText) {
 		getElement().setProperty("statusText",
 				statusText == null ? "" : statusText);
 		return getSelf();
@@ -181,7 +181,8 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param completes
 	 * @return this instance, for method chaining
 	 */
-	public R setCompletes(elemental.json.JsonObject completes) {
+	public <R extends IronRequest> R setCompletes(
+			elemental.json.JsonObject completes) {
 		getElement().setPropertyJson("completes", completes);
 		return getSelf();
 	}
@@ -209,7 +210,8 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param progress
 	 * @return this instance, for method chaining
 	 */
-	public R setProgress(elemental.json.JsonObject progress) {
+	public <R extends IronRequest> R setProgress(
+			elemental.json.JsonObject progress) {
 		getElement().setPropertyJson("progress", progress);
 		return getSelf();
 	}
@@ -235,7 +237,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param aborted
 	 * @return this instance, for method chaining
 	 */
-	public R setAborted(boolean aborted) {
+	public <R extends IronRequest> R setAborted(boolean aborted) {
 		getElement().setProperty("aborted", aborted);
 		return getSelf();
 	}
@@ -263,7 +265,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param errored
 	 * @return this instance, for method chaining
 	 */
-	public R setErrored(boolean errored) {
+	public <R extends IronRequest> R setErrored(boolean errored) {
 		getElement().setProperty("errored", errored);
 		return getSelf();
 	}
@@ -288,7 +290,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param timedOut
 	 * @return this instance, for method chaining
 	 */
-	public R setTimedOut(boolean timedOut) {
+	public <R extends IronRequest> R setTimedOut(boolean timedOut) {
 		getElement().setProperty("timedOut", timedOut);
 		return getSelf();
 	}
@@ -323,7 +325,8 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param succeeded
 	 * @return this instance, for method chaining
 	 */
-	public R setSucceeded(elemental.json.JsonObject succeeded) {
+	public <R extends IronRequest> R setSucceeded(
+			elemental.json.JsonObject succeeded) {
 		getElement().setPropertyJson("succeeded", succeeded);
 		return getSelf();
 	}
@@ -580,7 +583,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronRequest> R getSelf() {
 		return (R) this;
 	}
 }

@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.tooltip.PaperTooltip;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -69,10 +70,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-tooltip#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-tooltip")
 @HtmlImport("frontend://bower_components/paper-tooltip/paper-tooltip.html")
-public class PaperTooltip<R extends PaperTooltip<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class PaperTooltip extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -98,7 +96,8 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param animationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	public <R extends PaperTooltip> R setAnimationConfig(
+			elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
 		return getSelf();
 	}
@@ -127,7 +126,8 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param entryAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setEntryAnimation(java.lang.String entryAnimation) {
+	public <R extends PaperTooltip> R setEntryAnimation(
+			java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
 				entryAnimation == null ? "" : entryAnimation);
 		return getSelf();
@@ -157,7 +157,8 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param exitAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setExitAnimation(java.lang.String exitAnimation) {
+	public <R extends PaperTooltip> R setExitAnimation(
+			java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
 				exitAnimation == null ? "" : exitAnimation);
 		return getSelf();
@@ -185,7 +186,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param _for
 	 * @return this instance, for method chaining
 	 */
-	public R setFor(java.lang.String _for) {
+	public <R extends PaperTooltip> R setFor(java.lang.String _for) {
 		getElement().setProperty("for", _for == null ? "" : _for);
 		return getSelf();
 	}
@@ -212,7 +213,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param manualMode
 	 * @return this instance, for method chaining
 	 */
-	public R setManualMode(boolean manualMode) {
+	public <R extends PaperTooltip> R setManualMode(boolean manualMode) {
 		getElement().setProperty("manualMode", manualMode);
 		return getSelf();
 	}
@@ -237,7 +238,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param position
 	 * @return this instance, for method chaining
 	 */
-	public R setPosition(java.lang.String position) {
+	public <R extends PaperTooltip> R setPosition(java.lang.String position) {
 		getElement().setProperty("position", position == null ? "" : position);
 		return getSelf();
 	}
@@ -262,7 +263,8 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param fitToVisibleBounds
 	 * @return this instance, for method chaining
 	 */
-	public R setFitToVisibleBounds(boolean fitToVisibleBounds) {
+	public <R extends PaperTooltip> R setFitToVisibleBounds(
+			boolean fitToVisibleBounds) {
 		getElement().setProperty("fitToVisibleBounds", fitToVisibleBounds);
 		return getSelf();
 	}
@@ -289,7 +291,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param offset
 	 * @return this instance, for method chaining
 	 */
-	public R setOffset(double offset) {
+	public <R extends PaperTooltip> R setOffset(double offset) {
 		getElement().setProperty("offset", offset);
 		return getSelf();
 	}
@@ -318,7 +320,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param marginTop
 	 * @return this instance, for method chaining
 	 */
-	public R setMarginTop(double marginTop) {
+	public <R extends PaperTooltip> R setMarginTop(double marginTop) {
 		getElement().setProperty("marginTop", marginTop);
 		return getSelf();
 	}
@@ -345,7 +347,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param animationDelay
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationDelay(double animationDelay) {
+	public <R extends PaperTooltip> R setAnimationDelay(double animationDelay) {
 		getElement().setProperty("animationDelay", animationDelay);
 		return getSelf();
 	}
@@ -374,7 +376,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * @param target
 	 * @return this instance, for method chaining
 	 */
-	public R setTarget(elemental.json.JsonObject target) {
+	public <R extends PaperTooltip> R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
 		return getSelf();
 	}
@@ -434,7 +436,7 @@ public class PaperTooltip<R extends PaperTooltip<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperTooltip> R getSelf() {
 		return (R) this;
 	}
 }

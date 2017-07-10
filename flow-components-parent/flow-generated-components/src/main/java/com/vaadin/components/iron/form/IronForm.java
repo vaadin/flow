@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.form.IronForm;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -93,10 +94,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: iron-form#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-form")
 @HtmlImport("frontend://bower_components/iron-form/iron-form.html")
-public class IronForm<R extends IronForm<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class IronForm extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -122,7 +120,7 @@ public class IronForm<R extends IronForm<R>> extends Component
 	 * @param allowRedirect
 	 * @return this instance, for method chaining
 	 */
-	public R setAllowRedirect(boolean allowRedirect) {
+	public <R extends IronForm> R setAllowRedirect(boolean allowRedirect) {
 		getElement().setProperty("allowRedirect", allowRedirect);
 		return getSelf();
 	}
@@ -149,7 +147,7 @@ public class IronForm<R extends IronForm<R>> extends Component
 	 * @param headers
 	 * @return this instance, for method chaining
 	 */
-	public R setHeaders(elemental.json.JsonObject headers) {
+	public <R extends IronForm> R setHeaders(elemental.json.JsonObject headers) {
 		getElement().setPropertyJson("headers", headers);
 		return getSelf();
 	}
@@ -178,7 +176,7 @@ public class IronForm<R extends IronForm<R>> extends Component
 	 * @param withCredentials
 	 * @return this instance, for method chaining
 	 */
-	public R setWithCredentials(boolean withCredentials) {
+	public <R extends IronForm> R setWithCredentials(boolean withCredentials) {
 		getElement().setProperty("withCredentials", withCredentials);
 		return getSelf();
 	}
@@ -295,7 +293,7 @@ public class IronForm<R extends IronForm<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronForm> R getSelf() {
 		return (R) this;
 	}
 }
