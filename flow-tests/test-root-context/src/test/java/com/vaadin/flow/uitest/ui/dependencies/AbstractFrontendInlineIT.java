@@ -29,7 +29,6 @@ public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
         open();
 
         WebElement body = findElement(By.tagName("body"));
-        waitUntil(driver -> isElementPresent(By.id("template")));
         WebElement template = findElement(By.id("template"));
         WebElement templateElement = getInShadowRoot(template,
                 By.id("frontend-inline"));

@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.animations.HeroAnimation;
 
 /**
  * 
@@ -30,9 +31,7 @@ import elemental.json.JsonObject;
 		"WebComponent: hero-animation#UNKNOWN", "Flow#0.1.13-SNAPSHOT"})
 @Tag("hero-animation")
 @HtmlImport("frontend://bower_components/neon-animation/animations/hero-animation.html")
-public class HeroAnimation<R extends HeroAnimation<R>> extends Component
-		implements
-			HasStyle {
+public class HeroAnimation extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -54,7 +53,8 @@ public class HeroAnimation<R extends HeroAnimation<R>> extends Component
 	 * @param animationTiming
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	public <R extends HeroAnimation> R setAnimationTiming(
+			elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return getSelf();
 	}
@@ -79,7 +79,8 @@ public class HeroAnimation<R extends HeroAnimation<R>> extends Component
 	 * @param isNeonAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public <R extends HeroAnimation> R setIsNeonAnimation(
+			boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
 		return getSelf();
 	}
@@ -104,7 +105,8 @@ public class HeroAnimation<R extends HeroAnimation<R>> extends Component
 	 * @param sharedElements
 	 * @return this instance, for method chaining
 	 */
-	public R setSharedElements(elemental.json.JsonObject sharedElements) {
+	public <R extends HeroAnimation> R setSharedElements(
+			elemental.json.JsonObject sharedElements) {
 		getElement().setPropertyJson("sharedElements", sharedElements);
 		return getSelf();
 	}
@@ -160,7 +162,7 @@ public class HeroAnimation<R extends HeroAnimation<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends HeroAnimation> R getSelf() {
 		return (R) this;
 	}
 }

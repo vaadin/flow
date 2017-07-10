@@ -232,9 +232,10 @@ public class PolymerTemplateTest {
         private static String HTML_TEMPLATE = "<template>\n"+
         "      <style>\n"+
         "      </style>\n"+
+        "      <label></label>\n"+
         "      <child-template></child-template>\n"+
         "      \n"+
-        "      <div class='content-wrap'>";
+        "      <div class='content-wrap'></div>";
         // @formatter:on
 
         public TextNodesInHtmlTemplate() {
@@ -428,6 +429,18 @@ public class PolymerTemplateTest {
     }
 
     @Test
+    public void parseTemplate_hasChildTemplateAndTemplateHtmlStyle_elementsAreCreatedAndRequestIsSent() {
+        // Make a new HTML template which contains style on the top
+        TemplateInTemplate template = new TemplateInTemplate(
+                new TestTemplateParser(tag -> "<dom-module id='" + tag
+                        + "'><template><style> a { width:100%; } </style><div><ffs></div><span></span>"
+                        + "<child-template></template></dom-module>"));
+        // Nothing should be changed in the logic
+        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+                template);
+    }
+
+    @Test
     public void parseCachedTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
@@ -450,8 +463,8 @@ public class PolymerTemplateTest {
     }
 
     @Test
-    public void parseTemplate_hasTextNodesInTemmplate_correctRequestIsSent() {
-        doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(
+    public void parseTemplate_hasTextNodesInTemplate_correctRequestIsSent() {
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(
                 new TextNodesInHtmlTemplate());
     }
 
@@ -462,14 +475,14 @@ public class PolymerTemplateTest {
         // run in the production mode (with caching enabled) for the first time
         TextNodesInHtmlTemplate template = new TextNodesInHtmlTemplate();
         TestTemplateParser parser = template.parser;
-        doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(template);
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(template);
 
         // run in the production mode (with caching enabled) for the second time
         template = new TextNodesInHtmlTemplate(parser);
         // parser shouldn't be called
         Assert.assertEquals(1, parser.callCount);
         // the result should be the same
-        doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(template);
+        doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(template);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -653,7 +666,7 @@ public class PolymerTemplateTest {
         Assert.assertTrue(paths.contains(Arrays.asList(2)));
     }
 
-    private void doParseTemplate_hasTextNodesInTemmplate_correctRequestIsSent(
+    private void doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(
             TextNodesInHtmlTemplate template) {
         TestPage page = setupUI(template);
 

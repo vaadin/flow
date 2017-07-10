@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.iron.dropdown.IronDropdown;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -59,9 +60,7 @@ import com.vaadin.annotations.EventData;
 		"WebComponent: iron-dropdown#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-dropdown")
 @HtmlImport("frontend://bower_components/iron-dropdown/iron-dropdown.html")
-public class IronDropdown<R extends IronDropdown<R>> extends Component
-		implements
-			HasStyle {
+public class IronDropdown extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -84,7 +83,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param focused
 	 * @return this instance, for method chaining
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends IronDropdown> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -110,7 +109,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends IronDropdown> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -137,7 +136,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends IronDropdown> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -164,7 +164,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends IronDropdown> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -193,7 +193,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends IronDropdown> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -224,7 +225,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param sizingTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setSizingTarget(elemental.json.JsonObject sizingTarget) {
+	public <R extends IronDropdown> R setSizingTarget(
+			elemental.json.JsonObject sizingTarget) {
 		getElement().setPropertyJson("sizingTarget", sizingTarget);
 		return getSelf();
 	}
@@ -249,7 +251,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param fitInto
 	 * @return this instance, for method chaining
 	 */
-	public R setFitInto(elemental.json.JsonObject fitInto) {
+	public <R extends IronDropdown> R setFitInto(
+			elemental.json.JsonObject fitInto) {
 		getElement().setPropertyJson("fitInto", fitInto);
 		return getSelf();
 	}
@@ -276,7 +279,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param noOverlap
 	 * @return this instance, for method chaining
 	 */
-	public R setNoOverlap(boolean noOverlap) {
+	public <R extends IronDropdown> R setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
 		return getSelf();
 	}
@@ -303,7 +306,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param positionTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setPositionTarget(elemental.json.JsonObject positionTarget) {
+	public <R extends IronDropdown> R setPositionTarget(
+			elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
 		return getSelf();
 	}
@@ -332,7 +336,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param horizontalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public <R extends IronDropdown> R setHorizontalAlign(
+			java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
 		return getSelf();
@@ -362,7 +367,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param verticalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public <R extends IronDropdown> R setVerticalAlign(
+			java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
 		return getSelf();
@@ -392,7 +398,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param dynamicAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setDynamicAlign(boolean dynamicAlign) {
+	public <R extends IronDropdown> R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
 		return getSelf();
 	}
@@ -441,7 +447,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param horizontalOffset
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalOffset(double horizontalOffset) {
+	public <R extends IronDropdown> R setHorizontalOffset(
+			double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
 		return getSelf();
 	}
@@ -490,7 +497,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param verticalOffset
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalOffset(double verticalOffset) {
+	public <R extends IronDropdown> R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
 		return getSelf();
 	}
@@ -515,7 +522,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param autoFitOnAttach
 	 * @return this instance, for method chaining
 	 */
-	public R setAutoFitOnAttach(boolean autoFitOnAttach) {
+	public <R extends IronDropdown> R setAutoFitOnAttach(boolean autoFitOnAttach) {
 		getElement().setProperty("autoFitOnAttach", autoFitOnAttach);
 		return getSelf();
 	}
@@ -541,7 +548,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param opened
 	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public <R extends IronDropdown> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
 		return getSelf();
 	}
@@ -566,7 +573,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param canceled
 	 * @return this instance, for method chaining
 	 */
-	public R setCanceled(boolean canceled) {
+	public <R extends IronDropdown> R setCanceled(boolean canceled) {
 		getElement().setProperty("canceled", canceled);
 		return getSelf();
 	}
@@ -593,7 +600,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param withBackdrop
 	 * @return this instance, for method chaining
 	 */
-	public R setWithBackdrop(boolean withBackdrop) {
+	public <R extends IronDropdown> R setWithBackdrop(boolean withBackdrop) {
 		getElement().setProperty("withBackdrop", withBackdrop);
 		return getSelf();
 	}
@@ -620,7 +627,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param noAutoFocus
 	 * @return this instance, for method chaining
 	 */
-	public R setNoAutoFocus(boolean noAutoFocus) {
+	public <R extends IronDropdown> R setNoAutoFocus(boolean noAutoFocus) {
 		getElement().setProperty("noAutoFocus", noAutoFocus);
 		return getSelf();
 	}
@@ -645,7 +652,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param noCancelOnEscKey
 	 * @return this instance, for method chaining
 	 */
-	public R setNoCancelOnEscKey(boolean noCancelOnEscKey) {
+	public <R extends IronDropdown> R setNoCancelOnEscKey(
+			boolean noCancelOnEscKey) {
 		getElement().setProperty("noCancelOnEscKey", noCancelOnEscKey);
 		return getSelf();
 	}
@@ -670,7 +678,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param noCancelOnOutsideClick
 	 * @return this instance, for method chaining
 	 */
-	public R setNoCancelOnOutsideClick(boolean noCancelOnOutsideClick) {
+	public <R extends IronDropdown> R setNoCancelOnOutsideClick(
+			boolean noCancelOnOutsideClick) {
 		getElement().setProperty("noCancelOnOutsideClick",
 				noCancelOnOutsideClick);
 		return getSelf();
@@ -702,7 +711,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param closingReason
 	 * @return this instance, for method chaining
 	 */
-	public R setClosingReason(elemental.json.JsonObject closingReason) {
+	public <R extends IronDropdown> R setClosingReason(
+			elemental.json.JsonObject closingReason) {
 		getElement().setPropertyJson("closingReason", closingReason);
 		return getSelf();
 	}
@@ -727,7 +737,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param restoreFocusOnClose
 	 * @return this instance, for method chaining
 	 */
-	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+	public <R extends IronDropdown> R setRestoreFocusOnClose(
+			boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
 		return getSelf();
 	}
@@ -752,7 +763,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param alwaysOnTop
 	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysOnTop(boolean alwaysOnTop) {
+	public <R extends IronDropdown> R setAlwaysOnTop(boolean alwaysOnTop) {
 		getElement().setProperty("alwaysOnTop", alwaysOnTop);
 		return getSelf();
 	}
@@ -777,7 +788,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param animationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	public <R extends IronDropdown> R setAnimationConfig(
+			elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
 		return getSelf();
 	}
@@ -806,7 +818,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param entryAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setEntryAnimation(java.lang.String entryAnimation) {
+	public <R extends IronDropdown> R setEntryAnimation(
+			java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
 				entryAnimation == null ? "" : entryAnimation);
 		return getSelf();
@@ -836,7 +849,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param exitAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setExitAnimation(java.lang.String exitAnimation) {
+	public <R extends IronDropdown> R setExitAnimation(
+			java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
 				exitAnimation == null ? "" : exitAnimation);
 		return getSelf();
@@ -868,7 +882,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param openAnimationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setOpenAnimationConfig(
+	public <R extends IronDropdown> R setOpenAnimationConfig(
 			elemental.json.JsonObject openAnimationConfig) {
 		getElement()
 				.setPropertyJson("openAnimationConfig", openAnimationConfig);
@@ -901,7 +915,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param closeAnimationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setCloseAnimationConfig(
+	public <R extends IronDropdown> R setCloseAnimationConfig(
 			elemental.json.JsonObject closeAnimationConfig) {
 		getElement().setPropertyJson("closeAnimationConfig",
 				closeAnimationConfig);
@@ -930,7 +944,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param focusTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setFocusTarget(elemental.json.JsonObject focusTarget) {
+	public <R extends IronDropdown> R setFocusTarget(
+			elemental.json.JsonObject focusTarget) {
 		getElement().setPropertyJson("focusTarget", focusTarget);
 		return getSelf();
 	}
@@ -955,7 +970,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param noAnimations
 	 * @return this instance, for method chaining
 	 */
-	public R setNoAnimations(boolean noAnimations) {
+	public <R extends IronDropdown> R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
 		return getSelf();
 	}
@@ -984,7 +999,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param allowOutsideScroll
 	 * @return this instance, for method chaining
 	 */
-	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
+	public <R extends IronDropdown> R setAllowOutsideScroll(
+			boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
 		return getSelf();
 	}
@@ -1009,7 +1025,8 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * @param containedElement
 	 * @return this instance, for method chaining
 	 */
-	public R setContainedElement(elemental.json.JsonObject containedElement) {
+	public <R extends IronDropdown> R setContainedElement(
+			elemental.json.JsonObject containedElement) {
 		getElement().setPropertyJson("containedElement", containedElement);
 		return getSelf();
 	}
@@ -1442,7 +1459,7 @@ public class IronDropdown<R extends IronDropdown<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronDropdown> R getSelf() {
 		return (R) this;
 	}
 }

@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.vaadin.combo.box.VaadinComboBoxOverlay;
 import com.vaadin.components.NotSupported;
 
 @Generated({
@@ -28,9 +29,7 @@ import com.vaadin.components.NotSupported;
 		"WebComponent: vaadin-combo-box-overlay#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
-public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
-		extends
-			Component implements HasStyle {
+public class VaadinComboBoxOverlay extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -52,7 +51,8 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * @param positionTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setPositionTarget(elemental.json.JsonObject positionTarget) {
+	public <R extends VaadinComboBoxOverlay> R setPositionTarget(
+			elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
 		return getSelf();
 	}
@@ -77,7 +77,8 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * @param verticalOffset
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalOffset(double verticalOffset) {
+	public <R extends VaadinComboBoxOverlay> R setVerticalOffset(
+			double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
 		return getSelf();
 	}
@@ -102,7 +103,8 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * @param touchDevice
 	 * @return this instance, for method chaining
 	 */
-	public R setTouchDevice(boolean touchDevice) {
+	public <R extends VaadinComboBoxOverlay> R setTouchDevice(
+			boolean touchDevice) {
 		getElement().setProperty("touchDevice", touchDevice);
 		return getSelf();
 	}
@@ -127,7 +129,7 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * @param loading
 	 * @return this instance, for method chaining
 	 */
-	public R setLoading(boolean loading) {
+	public <R extends VaadinComboBoxOverlay> R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
 		return getSelf();
 	}
@@ -222,7 +224,7 @@ public class VaadinComboBoxOverlay<R extends VaadinComboBoxOverlay<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends VaadinComboBoxOverlay> R getSelf() {
 		return (R) this;
 	}
 }

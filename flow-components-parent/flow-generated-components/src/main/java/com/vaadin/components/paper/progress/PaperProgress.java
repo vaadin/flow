@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.paper.progress.PaperProgress;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -101,9 +102,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-progress#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
-public class PaperProgress<R extends PaperProgress<R>> extends Component
-		implements
-			HasStyle {
+public class PaperProgress extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -126,7 +125,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param value
 	 * @return this instance, for method chaining
 	 */
-	public R setValue(double value) {
+	public <R extends PaperProgress> R setValue(double value) {
 		getElement().setProperty("value", value);
 		return getSelf();
 	}
@@ -152,7 +151,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param min
 	 * @return this instance, for method chaining
 	 */
-	public R setMin(double min) {
+	public <R extends PaperProgress> R setMin(double min) {
 		getElement().setProperty("min", min);
 		return getSelf();
 	}
@@ -178,7 +177,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param max
 	 * @return this instance, for method chaining
 	 */
-	public R setMax(double max) {
+	public <R extends PaperProgress> R setMax(double max) {
 		getElement().setProperty("max", max);
 		return getSelf();
 	}
@@ -204,7 +203,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param step
 	 * @return this instance, for method chaining
 	 */
-	public R setStep(double step) {
+	public <R extends PaperProgress> R setStep(double step) {
 		getElement().setProperty("step", step);
 		return getSelf();
 	}
@@ -230,7 +229,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param ratio
 	 * @return this instance, for method chaining
 	 */
-	public R setRatio(double ratio) {
+	public <R extends PaperProgress> R setRatio(double ratio) {
 		getElement().setProperty("ratio", ratio);
 		return getSelf();
 	}
@@ -255,7 +254,8 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param secondaryProgress
 	 * @return this instance, for method chaining
 	 */
-	public R setSecondaryProgress(double secondaryProgress) {
+	public <R extends PaperProgress> R setSecondaryProgress(
+			double secondaryProgress) {
 		getElement().setProperty("secondaryProgress", secondaryProgress);
 		return getSelf();
 	}
@@ -280,7 +280,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param secondaryRatio
 	 * @return this instance, for method chaining
 	 */
-	public R setSecondaryRatio(double secondaryRatio) {
+	public <R extends PaperProgress> R setSecondaryRatio(double secondaryRatio) {
 		getElement().setProperty("secondaryRatio", secondaryRatio);
 		return getSelf();
 	}
@@ -305,7 +305,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param indeterminate
 	 * @return this instance, for method chaining
 	 */
-	public R setIndeterminate(boolean indeterminate) {
+	public <R extends PaperProgress> R setIndeterminate(boolean indeterminate) {
 		getElement().setProperty("indeterminate", indeterminate);
 		return getSelf();
 	}
@@ -330,7 +330,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperProgress> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -401,7 +401,7 @@ public class PaperProgress<R extends PaperProgress<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperProgress> R getSelf() {
 		return (R) this;
 	}
 }
