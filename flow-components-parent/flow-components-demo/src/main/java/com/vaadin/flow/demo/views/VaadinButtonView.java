@@ -32,10 +32,8 @@ public class VaadinButtonView extends DemoView {
     void initView() {
         VaadinButton button = new VaadinButton();
         button.setText("Vaadin button");
-        button.addClickListener(evt -> {
-            message.setText(
-                    "Button " + evt.getSource().getText() + " was clicked.");
-        });
+        button.addClickListener(evt -> message.setText(
+                "Button " + evt.getSource().getText() + " was clicked."));
         add(button);
 
         message = new Div();

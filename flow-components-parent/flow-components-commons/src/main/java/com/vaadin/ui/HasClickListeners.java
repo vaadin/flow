@@ -21,6 +21,10 @@ import com.vaadin.shared.Registration;
 
 /**
  * Mixin interface to handle click events on components.
+ *
+ * @param <T>
+ *            the type of the component returned at the
+ *            {@link ClickEvent#getSource()}
  */
 public interface HasClickListeners<T extends Component>
         extends ComponentEventNotifier {

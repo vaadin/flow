@@ -283,37 +283,11 @@ public class ComponentGenerator {
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
                         .generateValidJavaClassName(metadata.getTag()));
 
-        // all components have styles
-        javaClass.addInterface(HasStyle.class);
-
-        List<String> classBehaviorsAndMixins = new ArrayList<>();
-        classBehaviorsAndMixins.add(javaClass.getName());
-
-        if (metadata.getBehaviors() != null) {
-            classBehaviorsAndMixins.addAll(metadata.getBehaviors());
-        }
-
-        Set<Class<?>> interfaces = BehaviorRegistry
-                .getClassesForBehaviors(classBehaviorsAndMixins);
-        interfaces.forEach(clazz -> {
-            if (clazz.getTypeParameters().length > 0) {
-                javaClass.addInterface(
-                        clazz.getName() + "<" + javaClass.getName() + ">");
-            } else {
-                javaClass.addInterface(clazz);
-            }
-        });
-
+        addInterfaces(metadata, javaClass);
         addClassAnnotations(metadata, javaClass);
 
         if (metadata.getProperties() != null) {
-            metadata.getProperties().forEach(property -> {
-                generateGetterFor(javaClass, property, metadata.getEvents());
-
-                if (!property.isReadOnly()) {
-                    generateSetterFor(javaClass, property);
-                }
-            });
+            generateGettersAndSetters(metadata, javaClass);
         }
 
         if (metadata.getMethods() != null) {
@@ -339,6 +313,42 @@ public class ComponentGenerator {
         }
 
         return javaClass;
+    }
+
+    private void addInterfaces(ComponentMetadata metadata,
+            JavaClassSource javaClass) {
+
+        // all components have styles
+        javaClass.addInterface(HasStyle.class);
+
+        List<String> classBehaviorsAndMixins = new ArrayList<>();
+        classBehaviorsAndMixins.add(javaClass.getName());
+
+        if (metadata.getBehaviors() != null) {
+            classBehaviorsAndMixins.addAll(metadata.getBehaviors());
+        }
+
+        Set<Class<?>> interfaces = BehaviorRegistry
+                .getClassesForBehaviors(classBehaviorsAndMixins);
+        interfaces.forEach(clazz -> {
+            if (clazz.getTypeParameters().length > 0) {
+                javaClass.addInterface(
+                        clazz.getName() + "<" + javaClass.getName() + ">");
+            } else {
+                javaClass.addInterface(clazz);
+            }
+        });
+    }
+
+    private void generateGettersAndSetters(ComponentMetadata metadata,
+            JavaClassSource javaClass) {
+        metadata.getProperties().forEach(property -> {
+            generateGetterFor(javaClass, property, metadata.getEvents());
+
+            if (!property.isReadOnly()) {
+                generateSetterFor(javaClass, property);
+            }
+        });
     }
 
     private void generateAdders(ComponentMetadata metadata,
