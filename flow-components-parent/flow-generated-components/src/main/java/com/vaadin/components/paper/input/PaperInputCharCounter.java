@@ -22,6 +22,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.components.JsonSerializable;
+import com.vaadin.components.paper.input.PaperInputCharCounter;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -47,9 +48,7 @@ import com.vaadin.components.JsonSerializable;
 		"WebComponent: paper-input-char-counter#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
-public class PaperInputCharCounter<R extends PaperInputCharCounter<R>>
-		extends
-			Component implements HasStyle {
+public class PaperInputCharCounter extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -113,7 +112,7 @@ public class PaperInputCharCounter<R extends PaperInputCharCounter<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperInputCharCounter> R getSelf() {
 		return (R) this;
 	}
 }

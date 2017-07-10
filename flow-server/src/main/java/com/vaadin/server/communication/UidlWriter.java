@@ -221,7 +221,7 @@ public class UidlWriter implements Serializable {
 
         if (stream == null) {
             Logger.getLogger(UidlWriter.class.getName())
-                    .info(String.format(
+                    .info(() -> String.format(
                             "The path '%s' for inline resource "
                                     + "has been resolved to '%s'. "
                                     + "But resource is not available via the servlet context. "
@@ -240,7 +240,7 @@ public class UidlWriter implements Serializable {
             }
         } else {
             Logger.getLogger(UidlWriter.class.getName())
-                    .info(String.format(
+                    .info(() -> String.format(
                             "The path '%s' for inline resource "
                                     + "has been sucessfully resolved to resource URL '%s'",
                             url, resolvedPath));

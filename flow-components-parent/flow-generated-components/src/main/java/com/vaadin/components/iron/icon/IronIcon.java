@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.icon.IronIcon;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -90,9 +91,7 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: iron-icon#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-icon")
 @HtmlImport("frontend://bower_components/iron-icon/iron-icon.html")
-public class IronIcon<R extends IronIcon<R>> extends Component
-		implements
-			HasStyle {
+public class IronIcon extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -116,7 +115,7 @@ public class IronIcon<R extends IronIcon<R>> extends Component
 	 * @param icon
 	 * @return this instance, for method chaining
 	 */
-	public R setIcon(java.lang.String icon) {
+	public <R extends IronIcon> R setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
 		return getSelf();
 	}
@@ -141,7 +140,7 @@ public class IronIcon<R extends IronIcon<R>> extends Component
 	 * @param theme
 	 * @return this instance, for method chaining
 	 */
-	public R setTheme(java.lang.String theme) {
+	public <R extends IronIcon> R setTheme(java.lang.String theme) {
 		getElement().setProperty("theme", theme == null ? "" : theme);
 		return getSelf();
 	}
@@ -170,7 +169,7 @@ public class IronIcon<R extends IronIcon<R>> extends Component
 	 * @param src
 	 * @return this instance, for method chaining
 	 */
-	public R setSrc(java.lang.String src) {
+	public <R extends IronIcon> R setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);
 		return getSelf();
 	}
@@ -181,7 +180,7 @@ public class IronIcon<R extends IronIcon<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronIcon> R getSelf() {
 		return (R) this;
 	}
 }
