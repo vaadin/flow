@@ -288,8 +288,8 @@ public class TemplateModelProxyHandler implements Serializable {
 
     private static String getUnsupportedMethodMessage(Method unsupportedMethod,
             Object[] args) {
-        return "AngularTemplate Model does not support: "
-                + unsupportedMethod.getName() + " with return type: "
+        return "Template Model does not support: " + unsupportedMethod.getName()
+                + " with return type: "
                 + unsupportedMethod.getReturnType().getName()
                 + (args == null ? " and no parameters"
                         : " with parameters: " + Stream.of(args)
