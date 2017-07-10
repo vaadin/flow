@@ -32,7 +32,7 @@ public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {
             ModelDescriptor::new);
 
     private ModelDescriptor(Class<T> beanType) {
-        super(beanType, PropertyFilter.ACCEPT_ALL);
+        super(beanType, PropertyFilter.ACCEPT_ALL, true);
     }
 
     /**
@@ -52,7 +52,7 @@ public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {
     @Deprecated()
     protected ModelDescriptor(Class<T> proxyType,
             Map<String, ModelType> properties) {
-        super(proxyType, properties);
+        super(proxyType, properties, true);
     }
 
     /**

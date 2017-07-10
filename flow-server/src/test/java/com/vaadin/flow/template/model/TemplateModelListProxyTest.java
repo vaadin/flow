@@ -8,19 +8,16 @@ import org.junit.Test;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
 
-/**
- * @author Vaadin Ltd.
- */
 public class TemplateModelListProxyTest {
 
     private static class ClassWithDefaultConstructor {
         private String field;
 
-        private String getField() {
+        public String getField() {
             return field;
         }
 
-        private void setField(String field) {
+        public void setField(String field) {
             this.field = field;
         }
     }
@@ -32,11 +29,11 @@ public class TemplateModelListProxyTest {
             this.field = field;
         }
 
-        private String getField() {
+        public String getField() {
             return field;
         }
 
-        private void setField(String field) {
+        public void setField(String field) {
             this.field = field;
         }
     }
