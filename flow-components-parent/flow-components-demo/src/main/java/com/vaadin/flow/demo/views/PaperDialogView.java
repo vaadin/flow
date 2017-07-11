@@ -24,6 +24,9 @@ import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H2;
 import com.vaadin.flow.html.HtmlComponent;
 
+/**
+ * View for {@link PaperDialog} demo.
+ */
 @ComponentDemo(name = "Paper Dialog", href = "paper-dialog")
 @HtmlImport("frontend://bower_components/neon-animation/neon-animations.html")
 @HtmlImport("frontend://bower_components/neon-animation/web-animations.html")
@@ -147,7 +150,7 @@ public class PaperDialogView extends DemoView {
 
     private void addAndOpen(PaperDialog dialog) {
         if (dialog.getElement().getParent() == null) {
-            getUI().get().add(dialog);
+            getUI().ifPresent(ui -> ui.add(dialog));
         }
         dialog.open();
     }
