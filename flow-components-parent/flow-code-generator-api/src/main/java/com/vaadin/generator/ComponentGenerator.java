@@ -60,6 +60,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasText;
 
 import elemental.json.JsonObject;
 
@@ -312,7 +313,42 @@ public class ComponentGenerator {
             generateGetSelf(javaClass);
         }
 
+        generateConstructors(javaClass);
+
         return javaClass;
+    }
+
+    private void generateConstructors(JavaClassSource javaClass) {
+        boolean generateDefaultConstructor = false;
+        if (javaClass.hasInterface(HasText.class)) {
+            generateDefaultConstructor = true;
+            MethodSource<JavaClassSource> constructor = javaClass.addMethod()
+                    .setConstructor(true).setPublic().setBody("setText(text);");
+            constructor.addParameter(String.class, "text");
+            constructor.getJavaDoc().setText(
+                    "Sets the given string as the content of this component.")
+                    .addTagValue(JAVADOC_PARAM, "the text content to set")
+                    .addTagValue(JAVADOC_SEE, "HasText#setText(String)");
+
+        } else if (javaClass.hasInterface(HasComponents.class)) {
+            generateDefaultConstructor = true;
+            MethodSource<JavaClassSource> constructor = javaClass.addMethod()
+                    .setConstructor(true).setPublic()
+                    .setBody("add(components);");
+            constructor.addParameter(Component.class, "components")
+                    .setVarArgs(true);
+            constructor.getJavaDoc().setText(
+                    "Adds the given components as children of this component.")
+                    .addTagValue(JAVADOC_PARAM,
+                            "components the components to add")
+                    .addTagValue(JAVADOC_SEE,
+                            "HasComponents#add(Component...)");
+        }
+
+        if (generateDefaultConstructor) {
+            javaClass.addMethod().setConstructor(true).setPublic().setBody("")
+                    .getJavaDoc().setText("Default constructor.");
+        }
     }
 
     private void addInterfaces(ComponentMetadata metadata,
