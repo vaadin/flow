@@ -15,13 +15,17 @@
  */
 package com.vaadin.flow.demo;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,7 +44,7 @@ public class SourceContentResolver {
     private static final ConcurrentHashMap<Class<? extends DemoView>, List<SourceCodeExample>>
         CACHED_SOURCE_EXAMPLES = new ConcurrentHashMap<>();
     // @formatter::on
-    
+
     private static final Pattern SOURCE_CODE_EXAMPLE_BEGIN_PATTERN = Pattern
             .compile("\\s*// begin-source-example");
     private static final Pattern SOURCE_CODE_EXAMPLE_END_PATTERN = Pattern
@@ -49,7 +53,7 @@ public class SourceContentResolver {
             .compile("\\s*// source-example-heading: (.*)");
     private static final Pattern SOURCE_CODE_EXAMPLE_TYPE_PATTERN = Pattern
             .compile("\\s*// source-example-type: ([A-Z]+)");
-    
+
     private SourceContentResolver() {
     }
 
@@ -71,29 +75,26 @@ public class SourceContentResolver {
 
         String classFilePath = demoViewClass.getProtectionDomain()
                 .getCodeSource().getLocation().getPath()
-                + demoViewClass.getPackage().getName().replaceAll("\\.", "/");
+                + demoViewClass.getPackage().getName().replaceAll("\\.",
+                        File.separator);
         Path sourceFilePath = Paths.get(classFilePath,
                 demoViewClass.getSimpleName() + ".java");
 
         try {
-            return parseSourceCodeExamplesFromSourceLines(
-                    Files.readAllLines(sourceFilePath));
+            return Collections.synchronizedList(parseSourceCodeExamples(
+                    Files.readAllLines(sourceFilePath)));
         } catch (IOException ioe) {
-            throw new RuntimeException(
-                    String.format(
-                            "IO exception when trying to read sources for class '%s' from path '%s'.",
-                            demoViewClass.getName(), sourceFilePath),
-                    ioe);
+            throw new RuntimeException(String.format(
+                    "IO exception when trying to read sources for class '%s' from path '%s'.",
+                    demoViewClass.getName(), sourceFilePath), ioe);
         } catch (SecurityException se) {
-            throw new RuntimeException(
-                    String.format(
-                            "Security exception when reading source file for class '%s' from path '%s', check read permissions",
-                            demoViewClass.getName(), sourceFilePath),
-                    se);
+            throw new RuntimeException(String.format(
+                    "Security exception when reading source file for class '%s' from path '%s', check read permissions",
+                    demoViewClass.getName(), sourceFilePath), se);
         }
     }
 
-    private static List<SourceCodeExample> parseSourceCodeExamplesFromSourceLines(
+    private static List<SourceCodeExample> parseSourceCodeExamples(
             List<String> sourceLines) {
         List<SourceCodeExample> examples = new ArrayList<>();
         int startIndex = -1;
@@ -108,7 +109,7 @@ public class SourceContentResolver {
             }
             if (startIndex != -1 && endIndex != -1
                     && startIndex + 1 < endIndex) {
-                examples.add(parseSourceCodeExampleFromSourceLines(
+                examples.add(parseSourceCodeExample(
                         sourceLines.subList(startIndex + 1, endIndex)));
                 startIndex = -1;
                 endIndex = -1;
@@ -117,55 +118,43 @@ public class SourceContentResolver {
         return examples;
     }
 
-    private static SourceCodeExample parseSourceCodeExampleFromSourceLines(
+    private static SourceCodeExample parseSourceCodeExample(
             List<String> sourceLines) {
+        String heading = parseValueFromPattern(sourceLines,
+                SOURCE_CODE_EXAMPLE_HEADING_PATTERN, Function.identity(),
+                () -> null);
+        SourceType sourceType = parseValueFromPattern(sourceLines,
+                SOURCE_CODE_EXAMPLE_TYPE_PATTERN, SourceType::valueOf,
+                () -> SourceType.UNDEFINED);
+
         SourceCodeExample example = new SourceCodeExample();
-        example.setHeading(parseHeadingFromSourceLines(sourceLines));
-        example.setSourceType(parseSourceTypeFromSourceLines(sourceLines));
-        example.setSourceCode(String.join("\n", trimWhiteSpaceAtStart(sourceLines)));
+        example.setHeading(heading);
+        example.setSourceType(sourceType);
+        example.setSourceCode(
+                String.join("\n", trimWhitespaceAtStart(sourceLines)));
         return example;
     }
 
-    private static String parseHeadingFromSourceLines(
-            List<String> sourceLines) {
+    private static <T> T parseValueFromPattern(List<String> sourceLines, Pattern pattern,
+            Function<String, T> valueProvider, Supplier<T> nullValueProvider) {
         for (int i = 0; i < sourceLines.size(); i++) {
-            Matcher headingMatcher = SOURCE_CODE_EXAMPLE_HEADING_PATTERN
-                    .matcher(sourceLines.get(i));
-            if (headingMatcher.matches()) {
+            Matcher matcher = pattern.matcher(sourceLines.get(i));
+            if (matcher.matches()) {
                 sourceLines.remove(i);
-                return headingMatcher.group(1);
+                return valueProvider.apply(matcher.group(1));
             }
         }
-        return null;
+        return nullValueProvider.get();
     }
 
-    private static SourceType parseSourceTypeFromSourceLines(
-            List<String> sourceLines) {
-        for (int i = 0; i < sourceLines.size(); i++) {
-            Matcher typeMatcher = SOURCE_CODE_EXAMPLE_TYPE_PATTERN
-                    .matcher(sourceLines.get(i));
-            if (typeMatcher.matches()) {
-                sourceLines.remove(i);
-                return SourceType.valueOf(typeMatcher.group(1));
-            }
-        }
-        return SourceType.UNDEFINED;
-    }
-
-    private static List<String> trimWhiteSpaceAtStart(
+    private static List<String> trimWhitespaceAtStart(
             List<String> sourceLines) {
         int minIndent = Integer.MAX_VALUE;
         for (String line : sourceLines) {
             if (line == null || line.isEmpty()) {
                 continue;
             }
-            int indent = 0;
-            for (int i = 0; i < line.length(); i++) {
-                if (!Character.isWhitespace(line.charAt(i))) {
-                    break;
-                }
-                indent++;
-            }
+            int indent = getWhitespaceCountAtStart(line);
             if (indent < minIndent) {
                 minIndent = indent;
             }
@@ -179,5 +168,16 @@ public class SourceContentResolver {
             }
         }
         return trimmed;
+    }
+    
+    private static int getWhitespaceCountAtStart(String line) {
+        int indent = 0;
+        for (int i = 0; i < line.length(); i++) {
+            if (!Character.isWhitespace(line.charAt(i))) {
+                return indent;
+            }
+            indent++;
+        }
+        return indent;
     }
 }
