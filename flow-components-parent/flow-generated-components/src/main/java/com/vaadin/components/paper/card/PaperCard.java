@@ -299,20 +299,6 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	}
 
 	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Read-only property used to pass down the {@code animatedShadow} value to
-	 * the underlying paper-material style (since they have different names).
-	 * 
-	 * @param animated
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperCard> R setAnimated(boolean animated) {
-		getElement().setProperty("animated", animated);
-		return getSelf();
-	}
-
-	/**
 	 * Gets the narrow typed reference to this object. Subclasses should
 	 * override this method to support method chaining using the inherited type.
 	 * 

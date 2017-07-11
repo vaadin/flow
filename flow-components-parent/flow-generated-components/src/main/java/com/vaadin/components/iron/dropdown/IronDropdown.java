@@ -28,7 +28,6 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.annotations.EventData;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -73,19 +72,6 @@ public class IronDropdown extends Component implements HasStyle {
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronDropdown> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**
@@ -563,19 +549,6 @@ public class IronDropdown extends Component implements HasStyle {
 	 */
 	public boolean isCanceled() {
 		return getElement().getProperty("canceled", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the overlay was canceled when it was last closed.
-	 * 
-	 * @param canceled
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronDropdown> R setCanceled(boolean canceled) {
-		getElement().setProperty("canceled", canceled);
-		return getSelf();
 	}
 
 	/**
@@ -1347,17 +1320,8 @@ public class IronDropdown extends Component implements HasStyle {
 	public static class IronOverlayCanceledEvent
 			extends
 				ComponentEvent<IronDropdown> {
-		private final JsonObject event;
-
-		public IronOverlayCanceledEvent(IronDropdown source,
-				boolean fromClient,
-				@EventData("event.event") elemental.json.JsonObject event) {
+		public IronOverlayCanceledEvent(IronDropdown source, boolean fromClient) {
 			super(source, fromClient);
-			this.event = event;
-		}
-
-		public JsonObject getEvent() {
-			return event;
 		}
 	}
 
@@ -1370,16 +1334,8 @@ public class IronDropdown extends Component implements HasStyle {
 	public static class IronOverlayClosedEvent
 			extends
 				ComponentEvent<IronDropdown> {
-		private final JsonObject event;
-
-		public IronOverlayClosedEvent(IronDropdown source, boolean fromClient,
-				@EventData("event.event") elemental.json.JsonObject event) {
+		public IronOverlayClosedEvent(IronDropdown source, boolean fromClient) {
 			super(source, fromClient);
-			this.event = event;
-		}
-
-		public JsonObject getEvent() {
-			return event;
 		}
 	}
 
