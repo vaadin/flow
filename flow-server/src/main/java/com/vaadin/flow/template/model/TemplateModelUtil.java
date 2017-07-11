@@ -193,7 +193,7 @@ public class TemplateModelUtil {
 
         return Stream.of(convertAnnotations).collect(
                 Collectors.toMap(Convert::path, Convert::value, (u, v) -> {
-                    throw new RuntimeException(
+                    throw new InvalidTemplateModelException(
                             "A template model method cannot have multiple "
                                     + "converters with the same path. Affected method: "
                                     + method.getName() + ".");

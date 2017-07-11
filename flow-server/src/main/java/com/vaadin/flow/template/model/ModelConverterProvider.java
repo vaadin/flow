@@ -83,7 +83,7 @@ public class ModelConverterProvider implements
         try {
             return Optional.of(converterClass.newInstance());
         } catch (InstantiationException | IllegalAccessException exception) {
-            throw new RuntimeException(
+            throw new InvalidTemplateModelException(
                     "ModelConverter '" + converterClass.getSimpleName()
                             + "' does not implement an accessible default constructor.",
                     exception);

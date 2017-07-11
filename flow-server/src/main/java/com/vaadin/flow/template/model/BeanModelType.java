@@ -266,7 +266,16 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                     declaringClass.getSimpleName(), propertyName));
         }
 
-        ModelConverter<?, ?> converter = converterProvider.apply(propertyFilter).get();
+        Optional<ModelConverter<?, ?>> converterOptional = converterProvider
+                .apply(propertyFilter);
+        if (!converterOptional.isPresent()) {
+            throw new IllegalStateException(
+                    "The ModelConverterProvider passed to "
+                            + "getConvertedModelType is unable to provide a converter "
+                            + "for the given PropertyFilter.");
+        }
+
+        ModelConverter<?, ?> converter = converterOptional.get();
         if (!converter.getApplicationType().equals((Class<?>) propertyType)) {
             throw new InvalidTemplateModelException(String.format(
                     "Converter '%s' is incompatible with the type '%s'.",
