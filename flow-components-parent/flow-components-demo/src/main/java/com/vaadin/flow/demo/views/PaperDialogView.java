@@ -29,6 +29,8 @@ import com.vaadin.flow.html.HtmlComponent;
 @HtmlImport("frontend://bower_components/neon-animation/web-animations.html")
 public class PaperDialogView extends DemoView {
 
+    private Div message;
+
     @Override
     void initView() {
         createPlainDialog();
@@ -36,6 +38,10 @@ public class PaperDialogView extends DemoView {
         createNestedDialogs();
         createDialogWithActions();
         createAnimatedDialog();
+
+        message = new Div();
+        message.setId("dialogsMessage");
+        add(message);
     }
 
     private void createPlainDialog() {
@@ -127,6 +133,9 @@ public class PaperDialogView extends DemoView {
         HtmlComponent p = new HtmlComponent("p");
         p.getElement().setText(text);
         dialog.add(p);
+        dialog.addOpenedChangedListener(evt -> message
+                .setText(dialog.isOpened() ? (title + " was opened")
+                        : (title + " was closed")));
         return dialog;
     }
 

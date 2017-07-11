@@ -40,6 +40,7 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the button to open the dialog
         getButtonWithText("Plain dialog").click();
         waitForElementPresent(By.tagName("paper-dialog"));
+        assertMessageIsEqualsTo("Plain dialog was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
         Assert.assertTrue(dialog.getText().contains("Plain dialog"));
@@ -47,6 +48,7 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the page, should close the dialog
         clickOutsideTheDialog(dialog);
         waitUntil(driver -> dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Plain dialog was closed");
     }
 
     @Test
@@ -54,6 +56,7 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the button to open the dialog
         getButtonWithText("Modal dialog").click();
         waitForElementPresent(By.tagName("paper-dialog"));
+        assertMessageIsEqualsTo("Modal dialog was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
         Assert.assertTrue(dialog.getText().contains("Modal dialog"));
@@ -61,11 +64,13 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the page, should not close the dialog
         clickOutsideTheDialog(dialog);
         Assert.assertFalse(dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Modal dialog was opened");
 
         // click on the close button, should close the dialog
         WebElement close = dialog.findElement(By.tagName("paper-button"));
         close.click();
         waitUntil(driver -> dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Modal dialog was closed");
     }
 
     @Test
@@ -73,6 +78,7 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the button to open the dialog
         getButtonWithText("Nested dialogs").click();
         waitForElementPresent(By.tagName("paper-dialog"));
+        assertMessageIsEqualsTo("Nested dialogs was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
         Assert.assertTrue(dialog.getText().contains("Nested dialogs"));
@@ -81,6 +87,8 @@ public class PaperDialogIT extends AbstractChromeTest {
         dialog.findElement(By.tagName("paper-button")).click();
 
         waitForElementPresent(By.id("second-dialog"));
+        assertMessageIsEqualsTo("Second dialog was opened");
+
         WebElement secondDialog = findElement(By.id("second-dialog"));
         Assert.assertTrue(secondDialog.getText().contains("Second dialog"));
 
@@ -88,10 +96,12 @@ public class PaperDialogIT extends AbstractChromeTest {
         clickOutsideTheDialog(secondDialog);
         waitUntil(driver -> secondDialog.getCssValue("display").equals("none"));
         Assert.assertFalse(dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Second dialog was closed");
 
         // click on the page again, should close the first dialog
         clickOutsideTheDialog(dialog);
         waitUntil(driver -> dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Nested dialogs was closed");
     }
 
     @Test
@@ -100,6 +110,7 @@ public class PaperDialogIT extends AbstractChromeTest {
         WebElement openButton = getButtonWithText("Dialog with actions");
         openButton.click();
         waitForElementPresent(By.tagName("paper-dialog"));
+        assertMessageIsEqualsTo("Dialog with actions was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
         Assert.assertTrue(dialog.getText().contains("Dialog with actions"));
@@ -110,18 +121,22 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the Do nothing button, should not close the dialog
         getButtonWithText(dialog, "Do nothing").click();
         Assert.assertFalse(dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Dialog with actions was opened");
 
         // click on the Decline button, should close the dialog
         getButtonWithText(dialog, "Decline").click();
         waitUntil(driver -> dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Dialog with actions was closed");
 
         // reopen the dialog
         openButton.click();
         waitUntilNot(driver -> dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Dialog with actions was opened");
 
         // click on the Accept button, should close the dialog
         getButtonWithText(dialog, "Accept").click();
         waitUntil(driver -> dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Dialog with actions was closed");
     }
 
     @Test
@@ -129,6 +144,7 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the button to open the dialog
         getButtonWithText("Animated dialog").click();
         waitForElementPresent(By.tagName("paper-dialog"));
+        assertMessageIsEqualsTo("Animated dialog was opened");
 
         WebElement dialog = findElement(By.tagName("paper-dialog"));
         Assert.assertTrue(dialog.getText().contains("Animated dialog"));
@@ -136,6 +152,12 @@ public class PaperDialogIT extends AbstractChromeTest {
         // click on the page, should close the dialog
         clickOutsideTheDialog(dialog);
         waitUntil(driver -> dialog.getCssValue("display").equals("none"));
+        assertMessageIsEqualsTo("Animated dialog was closed");
+    }
+
+    private void assertMessageIsEqualsTo(String message) {
+        WebElement messageDiv = findElement(By.id("dialogsMessage"));
+        Assert.assertTrue(messageDiv.getText().equalsIgnoreCase(message));
     }
 
     private void clickOutsideTheDialog(WebElement dialog) {
