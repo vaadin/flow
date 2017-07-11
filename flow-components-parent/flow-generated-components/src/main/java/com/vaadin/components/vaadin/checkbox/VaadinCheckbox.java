@@ -295,4 +295,21 @@ public class VaadinCheckbox extends Component
 	protected <R extends VaadinCheckbox> R getSelf() {
 		return (R) this;
 	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public VaadinCheckbox(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public VaadinCheckbox() {
+	}
 }

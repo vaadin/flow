@@ -152,4 +152,21 @@ public class VaadinButton extends Component
 	protected <R extends VaadinButton> R getSelf() {
 		return (R) this;
 	}
+
+	/**
+	 * Sets the given string as the content of this component.
+	 * 
+	 * @param the
+	 *            text content to set
+	 * @see HasText#setText(String)
+	 */
+	public VaadinButton(java.lang.String text) {
+		setText(text);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public VaadinButton() {
+	}
 }
