@@ -228,7 +228,6 @@ const eventsToJsonArray = (events) => {
   const eventsJson = [];
   for (let event of events.values()) {
     if (typeof event !== 'undefined' && !skipInherited(event.inheritedFrom)) {
-      console.log(event);
       const eventJson = {
         "name": event.name,
         "description": event.jsondoc ? event.jsondoc.description :
