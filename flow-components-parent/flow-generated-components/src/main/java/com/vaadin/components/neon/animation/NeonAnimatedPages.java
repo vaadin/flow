@@ -719,4 +719,21 @@ public class NeonAnimatedPages extends Component
 	protected <R extends NeonAnimatedPages> R getSelf() {
 		return (R) this;
 	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public NeonAnimatedPages(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public NeonAnimatedPages() {
+	}
 }

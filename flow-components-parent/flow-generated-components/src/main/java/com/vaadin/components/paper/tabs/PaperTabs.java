@@ -1175,4 +1175,21 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	protected <R extends PaperTabs> R getSelf() {
 		return (R) this;
 	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperTabs(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperTabs() {
+	}
 }
