@@ -20,6 +20,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
@@ -115,9 +116,6 @@ public class PaperDialogIT extends AbstractChromeTest {
         WebElement dialog = findElement(By.tagName("paper-dialog"));
         Assert.assertTrue(dialog.getText().contains("Dialog with actions"));
 
-        List<WebElement> buttons = dialog
-                .findElements(By.tagName("paper-button"));
-
         // click on the Do nothing button, should not close the dialog
         getButtonWithText(dialog, "Do nothing").click();
         Assert.assertFalse(dialog.getCssValue("display").equals("none"));
@@ -162,8 +160,9 @@ public class PaperDialogIT extends AbstractChromeTest {
     }
 
     private void clickOutsideTheDialog(WebElement dialog) {
-        new Actions(getDriver()).moveToElement(dialog, -10, -10).click().build()
-                .perform();
+        Dimension size = dialog.getSize();
+        new Actions(getDriver()).moveToElement(dialog, size.getWidth() + 50,
+                size.getHeight() + 50).click().build().perform();
     }
 
     private WebElement getButtonWithText(String text) {
