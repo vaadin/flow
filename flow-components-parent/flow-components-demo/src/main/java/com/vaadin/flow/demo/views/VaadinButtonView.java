@@ -18,23 +18,33 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.components.vaadin.button.VaadinButton;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
+import com.vaadin.flow.html.Div;
 
 /**
  * View for {@link VaadinButton} demo.
  */
 @ComponentDemo(name = "Vaadin Button", href = "vaadin-button")
 public class VaadinButtonView extends DemoView {
+
+    private Div message;
+
     @Override
     void initView() {
         VaadinButton button = new VaadinButton();
-        button.getElement().setText("Vaadin button");
+        button.setText("Vaadin button");
+        button.addClickListener(evt -> message.setText(
+                "Button " + evt.getSource().getText() + " was clicked."));
         add(button);
+
+        message = new Div();
+        message.setId("buttonMessage");
+        add(message);
     }
 
     @Override
     public void populateSources(SourceContent container) {
         container.addCode("VaadinButton button = new VaadinButton();\n"
-                + "button.getElement().setText(\"Vaadin button\");\n"
+                + "button.setText(\"Vaadin button\");\n"
                 + "layoutContainer.add(button);");
     }
 }
