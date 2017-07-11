@@ -156,6 +156,7 @@ public class PaperDialogIT extends AbstractChromeTest {
     }
 
     private void assertMessageIsEqualsTo(String message) {
+        waitForElementPresent(By.id("dialogsMessage"));
         WebElement messageDiv = findElement(By.id("dialogsMessage"));
         Assert.assertTrue(messageDiv.getText().equalsIgnoreCase(message));
     }
