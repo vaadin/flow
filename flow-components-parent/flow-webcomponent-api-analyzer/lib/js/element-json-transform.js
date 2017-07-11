@@ -156,6 +156,10 @@ const parametersToJsonArray = (parameters) => {
     return parametersJson;
   }
   for (let parameter of parameters) {
+    // ignore parameters of the type 'Event' - they don't have meaningful data
+    if (parameter.type === 'Event') {
+      continue;
+    }
     const parameterJson = {
       "name": parameter.name,
       "type": getTypes(parameter.type),
@@ -224,6 +228,7 @@ const eventsToJsonArray = (events) => {
   const eventsJson = [];
   for (let event of events.values()) {
     if (typeof event !== 'undefined' && !skipInherited(event.inheritedFrom)) {
+      console.log(event);
       const eventJson = {
         "name": event.name,
         "description": event.jsondoc ? event.jsondoc.description :
