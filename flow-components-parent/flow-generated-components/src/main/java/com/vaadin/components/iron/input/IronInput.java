@@ -204,21 +204,6 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Computed property that echoes {@code bindValue} (mostly used for Polymer
-	 * 1.0 backcompatibility, if you were one-way binding to the Polymer 1.0
-	 * {@code input is="iron-input"} value attribute).
-	 * 
-	 * @param value
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronInput> R setValue(elemental.json.JsonObject value) {
-		getElement().setPropertyJson("value", value);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Regex-like list of characters allowed as input; all characters not in the
 	 * list will be rejected. The recommended format should be a list of allowed
 	 * characters, for example, {@code [a-zA-Z0-9.+-!;:]}.

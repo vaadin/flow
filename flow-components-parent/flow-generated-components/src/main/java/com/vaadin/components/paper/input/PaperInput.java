@@ -59,19 +59,6 @@ public class PaperInput extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperInput> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Set to true to disable this input. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to both the
 	 * {@code <paper-input-container>}'s and the input's {@code disabled}

@@ -156,6 +156,10 @@ const parametersToJsonArray = (parameters) => {
     return parametersJson;
   }
   for (let parameter of parameters) {
+    // ignore parameters of the type 'Event' - they don't have meaningful data
+    if (parameter.type === 'Event') {
+      continue;
+    }
     const parameterJson = {
       "name": parameter.name,
       "type": getTypes(parameter.type),
