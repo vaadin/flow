@@ -1720,10 +1720,9 @@ public class ElementTest extends AbstractNodeTest {
         AtomicInteger childTriggered = new AtomicInteger();
         AtomicInteger grandChildTriggered = new AtomicInteger();
 
-        Registration registrationHandle = child
-                .addAttachListener(event -> {
-                    childTriggered.addAndGet(1);
-                });
+        Registration registrationHandle = child.addAttachListener(event -> {
+            childTriggered.addAndGet(1);
+        });
         child.addAttachListener(event -> {
             Assert.assertEquals(child, event.getSource());
         });
@@ -1772,11 +1771,10 @@ public class ElementTest extends AbstractNodeTest {
 
         AtomicInteger triggered = new AtomicInteger();
 
-        Registration registrationHandle = child
-                .addDetachListener(event -> {
-                    triggered.addAndGet(1);
-                    Assert.assertEquals(child, event.getSource());
-                });
+        Registration registrationHandle = child.addDetachListener(event -> {
+            triggered.addAndGet(1);
+            Assert.assertEquals(child, event.getSource());
+        });
 
         grandChild.addDetachListener(event -> {
             triggered.addAndGet(1);
@@ -2121,6 +2119,29 @@ public class ElementTest extends AbstractNodeTest {
 
         Assert.assertNull(child.getParent());
         Assert.assertEquals(element, child.getParentNode());
+    }
+
+    @Test
+    public void addComponentInsideEventListener() {
+        Element div = ElementFactory.createDiv();
+
+        Element child = ElementFactory.createDiv();
+        AtomicInteger count = new AtomicInteger();
+        child.addEventListener("click", event -> {
+            count.incrementAndGet();
+            div.appendChild(child);
+            System.out.println("xxxxxx " + count.get());
+        });
+        div.appendChild(child);
+
+        child.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(child, "click", Json.createObject()));
+
+        child.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(child, "click", Json.createObject()));
+
+        child.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(child, "click", Json.createObject()));
     }
 
     @Override

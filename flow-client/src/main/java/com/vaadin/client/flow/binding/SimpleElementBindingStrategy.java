@@ -93,6 +93,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
             .map();
 
+    private static JsMap<Double, Runnable> UNBOUND = JsCollections.map();
+
     /**
      * Just a context class whose instance is passed as a parameter between the
      * operations of various kind to be able to access the data like listeners,
@@ -149,6 +151,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BinderContext nodeFactory) {
         assert hasSameTag(stateNode, htmlNode);
 
+        Double id = Double.valueOf(stateNode.getId());
+        Runnable runnable = UNBOUND.get(id);
+        if (runnable != null) {
+            runnable.run();
+        }
+
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
 
@@ -156,6 +164,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .array();
 
         JsArray<EventRemover> listeners = JsCollections.array();
+
+        Runnable unbound = () -> remove(listeners, context,
+                computationsCollection);
+        UNBOUND.set(id, unbound);
 
         listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
                 property -> updateProperty(property, htmlNode),
@@ -171,8 +183,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindChildren(context));
 
-        listeners.push(stateNode.addUnregisterListener(
-                e -> remove(listeners, context, computationsCollection)));
+        listeners.push(stateNode.addUnregisterListener(e -> unbound.run()));
 
         listeners.push(bindDomEventListeners(context));
 
@@ -212,7 +223,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-        
+    
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -696,6 +707,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.forEach(EventRemover::remove);
         context.synchronizedPropertyEventListeners
                 .forEach(EventRemover::remove);
+
+        UNBOUND.delete((double) context.node.getId());
     }
 
     private EventRemover bindDomEventListeners(BindingContext context) {
