@@ -32,6 +32,7 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
 import com.vaadin.client.flow.collection.JsSet;
+import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
@@ -93,7 +94,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
             .map();
 
-    private static JsMap<Double, Runnable> UNBOUND = JsCollections.map();
+    private static JsWeakMap<StateNode, StateNode> BOUND = JsCollections
+            .weakMap();
 
     /**
      * Just a context class whose instance is passed as a parameter between the
@@ -151,11 +153,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BinderContext nodeFactory) {
         assert hasSameTag(stateNode, htmlNode);
 
-        Double id = Double.valueOf(stateNode.getId());
-        Runnable runnable = UNBOUND.get(id);
-        if (runnable != null) {
-            runnable.run();
+        if (BOUND.has(stateNode)) {
+            return;
         }
+        BOUND.set(stateNode, stateNode);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
@@ -167,7 +168,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         Runnable unbound = () -> remove(listeners, context,
                 computationsCollection);
-        UNBOUND.set(id, unbound);
 
         listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
                 property -> updateProperty(property, htmlNode),
@@ -223,7 +223,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -708,7 +708,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         context.synchronizedPropertyEventListeners
                 .forEach(EventRemover::remove);
 
-        UNBOUND.delete((double) context.node.getId());
+        BOUND.delete(context.node);
     }
 
     private EventRemover bindDomEventListeners(BindingContext context) {

@@ -26,7 +26,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n       "
+      "description": "If true, the element currently has focus.\n       ",
+      "readOnly": true
     },
     {
       "name": "disabled",
@@ -148,7 +149,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Returns textarea's selection start."
+      "description": "Returns textarea's selection start.",
+      "readOnly": true
     },
     {
       "name": "selectionEnd",
@@ -156,7 +158,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Returns textarea's selection end."
+      "description": "Returns textarea's selection end.",
+      "readOnly": true
     }
   ],
   "methods": [

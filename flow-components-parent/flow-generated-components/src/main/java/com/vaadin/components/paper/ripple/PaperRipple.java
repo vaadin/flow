@@ -310,19 +310,6 @@ public class PaperRipple extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True when there are visible ripples animating within the element.
-	 * 
-	 * @param animating
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperRipple> R setAnimating(boolean animating) {
-		getElement().setProperty("animating", animating);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the ripple will remain in the "down" state until
 	 * {@code holdDown} is set to false again.
 	 * <p>

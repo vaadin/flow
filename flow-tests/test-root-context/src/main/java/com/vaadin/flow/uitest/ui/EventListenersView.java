@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.flow.html.Button;
 import com.vaadin.flow.html.Label;
 
-public class ElementListenersView extends AbstractDivView {
+public class EventListenersView extends AbstractDivView {
 
     private Label tmp = new Label("a");
 
@@ -28,6 +28,7 @@ public class ElementListenersView extends AbstractDivView {
     protected void onShow() {
         AtomicInteger count = new AtomicInteger();
         Button button = new Button("Click me");
+        button.setId("click");
         button.addClickListener(evt -> {
             int value = count.incrementAndGet();
             Label label = new Label(String.valueOf(value));
