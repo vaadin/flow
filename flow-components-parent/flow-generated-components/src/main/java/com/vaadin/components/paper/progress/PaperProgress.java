@@ -224,19 +224,6 @@ public class PaperProgress extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns the ratio of the value.
-	 * 
-	 * @param ratio
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperProgress> R setRatio(double ratio) {
-		getElement().setProperty("ratio", ratio);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * The number that represents the current secondary progress.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -270,19 +257,6 @@ public class PaperProgress extends Component implements HasStyle {
 	 */
 	public double getSecondaryRatio() {
 		return getElement().getProperty("secondaryRatio", 0.0);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * The secondary ratio
-	 * 
-	 * @param secondaryRatio
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperProgress> R setSecondaryRatio(double secondaryRatio) {
-		getElement().setProperty("secondaryRatio", secondaryRatio);
-		return getSelf();
 	}
 
 	/**

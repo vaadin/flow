@@ -53,7 +53,7 @@ import elemental.json.JsonObject;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.13-SNAPSHOT"})
+		"WebComponent: iron-iconset-svg#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-iconset-svg")
 @HtmlImport("frontend://bower_components/iron-iconset-svg/iron-iconset-svg.html")
 public class IronIconsetSvg extends Component implements HasStyle {
