@@ -98,7 +98,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the overlay was canceled when it was last closed.\n       "
+      "description": "True if the overlay was canceled when it was last closed.\n       ",
+      "readOnly": true
     },
     {
       "name": "withBackdrop",

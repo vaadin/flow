@@ -10,7 +10,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "A reference to the XMLHttpRequest instance used to generate the\nnetwork request."
+      "description": "A reference to the XMLHttpRequest instance used to generate the\nnetwork request.",
+      "readOnly": true
     },
     {
       "name": "response",
@@ -18,7 +19,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "A reference to the parsed response body, if the `xhr` has completely\nresolved."
+      "description": "A reference to the parsed response body, if the `xhr` has completely\nresolved.",
+      "readOnly": true
     },
     {
       "name": "status",
@@ -26,7 +28,8 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "A reference to the status code, if the `xhr` has completely resolved.\n       "
+      "description": "A reference to the status code, if the `xhr` has completely resolved.\n       ",
+      "readOnly": true
     },
     {
       "name": "statusText",
@@ -34,7 +37,8 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "A reference to the status text, if the `xhr` has completely resolved.\n       "
+      "description": "A reference to the status text, if the `xhr` has completely resolved.\n       ",
+      "readOnly": true
     },
     {
       "name": "completes",
@@ -42,7 +46,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "A promise that resolves when the `xhr` response comes back, or rejects\nif there is an error before the `xhr` completes."
+      "description": "A promise that resolves when the `xhr` response comes back, or rejects\nif there is an error before the `xhr` completes.",
+      "readOnly": true
     },
     {
       "name": "progress",
@@ -50,7 +55,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "An object that contains progress information emitted by the XHR if\navailable."
+      "description": "An object that contains progress information emitted by the XHR if\navailable.",
+      "readOnly": true
     },
     {
       "name": "aborted",
@@ -58,7 +64,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Aborted will be true if an abort of the request is attempted.\n       "
+      "description": "Aborted will be true if an abort of the request is attempted.\n       ",
+      "readOnly": true
     },
     {
       "name": "errored",
@@ -66,7 +73,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Errored will be true if the browser fired an error event from the\nXHR object (mainly network errors).\n       "
+      "description": "Errored will be true if the browser fired an error event from the\nXHR object (mainly network errors).\n       ",
+      "readOnly": true
     },
     {
       "name": "timedOut",
@@ -74,7 +82,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "TimedOut will be true if the XHR threw a timeout event.\n       "
+      "description": "TimedOut will be true if the XHR threw a timeout event.\n       ",
+      "readOnly": true
     },
     {
       "name": "succeeded",

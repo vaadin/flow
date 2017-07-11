@@ -27,7 +27,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Returns the currently selected item."
+      "description": "Returns the currently selected item.",
+      "readOnly": true
     },
     {
       "name": "activateEvent",
@@ -75,7 +76,8 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "The list of items from which a selection can be made.\n       "
+      "description": "The list of items from which a selection can be made.\n       ",
+      "readOnly": true
     },
     {
       "name": "animationConfig",
