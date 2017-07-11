@@ -23,6 +23,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -96,11 +97,11 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-button#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
-public class PaperButton<R extends PaperButton<R>> extends Component
+public class PaperButton extends Component
 		implements
 			HasStyle,
 			HasText,
-			HasClickListeners,
+			HasClickListeners<PaperButton>,
 			HasComponents {
 
 	/**
@@ -125,7 +126,8 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperButton> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -152,7 +154,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperButton> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -171,7 +173,8 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperButton> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -196,7 +199,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param pressed
 	 * @return this instance, for method chaining
 	 */
-	public R setPressed(boolean pressed) {
+	public <R extends PaperButton> R setPressed(boolean pressed) {
 		getElement().setProperty("pressed", pressed);
 		return getSelf();
 	}
@@ -223,7 +226,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param toggles
 	 * @return this instance, for method chaining
 	 */
-	public R setToggles(boolean toggles) {
+	public <R extends PaperButton> R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
 		return getSelf();
 	}
@@ -249,7 +252,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param active
 	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public <R extends PaperButton> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -278,7 +281,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param pointerDown
 	 * @return this instance, for method chaining
 	 */
-	public R setPointerDown(boolean pointerDown) {
+	public <R extends PaperButton> R setPointerDown(boolean pointerDown) {
 		getElement().setProperty("pointerDown", pointerDown);
 		return getSelf();
 	}
@@ -305,7 +308,8 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param receivedFocusFromKeyboard
 	 * @return this instance, for method chaining
 	 */
-	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
+	public <R extends PaperButton> R setReceivedFocusFromKeyboard(
+			boolean receivedFocusFromKeyboard) {
 		getElement().setProperty("receivedFocusFromKeyboard",
 				receivedFocusFromKeyboard);
 		return getSelf();
@@ -333,7 +337,8 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param ariaActiveAttribute
 	 * @return this instance, for method chaining
 	 */
-	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public <R extends PaperButton> R setAriaActiveAttribute(
+			java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
 		return getSelf();
@@ -360,7 +365,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param focused
 	 * @return this instance, for method chaining
 	 */
-	public R setFocused(boolean focused) {
+	public <R extends PaperButton> R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
 		return getSelf();
 	}
@@ -386,7 +391,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperButton> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -413,7 +418,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param noink
 	 * @return this instance, for method chaining
 	 */
-	public R setNoink(boolean noink) {
+	public <R extends PaperButton> R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
 		return getSelf();
 	}
@@ -442,7 +447,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param elevation
 	 * @return this instance, for method chaining
 	 */
-	public R setElevation(double elevation) {
+	public <R extends PaperButton> R setElevation(double elevation) {
 		getElement().setProperty("elevation", elevation);
 		return getSelf();
 	}
@@ -467,7 +472,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * @param raised
 	 * @return this instance, for method chaining
 	 */
-	public R setRaised(boolean raised) {
+	public <R extends PaperButton> R setRaised(boolean raised) {
 		getElement().setProperty("raised", raised);
 		return getSelf();
 	}
@@ -600,7 +605,7 @@ public class PaperButton<R extends PaperButton<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperButton> R getSelf() {
 		return (R) this;
 	}
 }

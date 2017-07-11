@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.a11y.announcer.IronA11yAnnouncer;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -54,9 +55,7 @@ import com.vaadin.annotations.HtmlImport;
 		"WebComponent: Polymer.IronA11yAnnouncer#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-a11y-announcer")
 @HtmlImport("frontend://bower_components/iron-a11y-announcer/iron-a11y-announcer.html")
-public class IronA11yAnnouncer<R extends IronA11yAnnouncer<R>>
-		extends
-			Component implements HasStyle {
+public class IronA11yAnnouncer extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -82,7 +81,7 @@ public class IronA11yAnnouncer<R extends IronA11yAnnouncer<R>>
 	 * @param mode
 	 * @return this instance, for method chaining
 	 */
-	public R setMode(java.lang.String mode) {
+	public <R extends IronA11yAnnouncer> R setMode(java.lang.String mode) {
 		getElement().setProperty("mode", mode == null ? "" : mode);
 		return getSelf();
 	}
@@ -104,7 +103,7 @@ public class IronA11yAnnouncer<R extends IronA11yAnnouncer<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronA11yAnnouncer> R getSelf() {
 		return (R) this;
 	}
 }
