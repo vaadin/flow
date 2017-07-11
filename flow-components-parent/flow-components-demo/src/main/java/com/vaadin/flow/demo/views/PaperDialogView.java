@@ -154,7 +154,8 @@ public class PaperDialogView extends DemoView {
 
     @Override
     public void populateSources(SourceContent container) {
-
+        // waiting for #1925 - please review the code but don't merge it before
+        // this is fixed
     }
 
 }
