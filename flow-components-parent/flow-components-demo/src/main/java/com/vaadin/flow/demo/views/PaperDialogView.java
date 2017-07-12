@@ -19,7 +19,6 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.components.paper.dialog.PaperDialog;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H2;
 import com.vaadin.flow.html.HtmlComponent;
@@ -48,32 +47,39 @@ public class PaperDialogView extends DemoView {
     }
 
     private void createPlainDialog() {
+        // begin-source-example
+        // source-example-heading: Plain dialog
         PaperDialog dialog = createDialog("Plain dialog",
                 "Plain dialog with plain text. Click anywhere on the page to close.");
 
-        PaperButton open = new PaperButton();
-        open.setRaised(true).setText("Plain dialog");
+        PaperButton open = new PaperButton("Plain dialog");
+        open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
+        // end-source-example
         add(open);
     }
 
     private void createModalDialog() {
+        // begin-source-example
+        // source-example-heading: Modal dialog
         PaperDialog dialog = createDialog("Modal dialog",
                 "Modal dialog with plain text.");
         dialog.setModal(true);
 
-        PaperButton close = new PaperButton();
-        close.setText("Close dialog");
+        PaperButton close = new PaperButton("Close dialog");
         close.addClickListener(evt -> dialog.close());
         dialog.add(createDivForButton(close));
 
-        PaperButton open = new PaperButton();
-        open.setRaised(true).setText("Modal dialog");
+        PaperButton open = new PaperButton("Modal dialog");
+        open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
+        // end-source-example
         add(open);
     }
 
     private void createNestedDialogs() {
+        // begin-source-example
+        // source-example-heading: Nested dialogs
         PaperDialog dialog = createDialog("Nested dialogs",
                 "Click on the button to open the nested dialog. Click anywhere on the page to close.");
 
@@ -81,42 +87,44 @@ public class PaperDialogView extends DemoView {
                 "This is the second dialog. Click anywhere on the page to close.");
         second.setId("second-dialog");
 
-        PaperButton openSecond = new PaperButton();
-        openSecond.setText("Open second dialog");
+        PaperButton openSecond = new PaperButton("Open second dialog");
         openSecond.addClickListener(evt -> addAndOpen(second));
         dialog.add(createDivForButton(openSecond));
 
-        PaperButton open = new PaperButton();
-        open.setRaised(true).setText("Nested dialogs");
+        PaperButton open = new PaperButton("Nested dialogs");
+        open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
+        // end-source-example
         add(open);
     }
 
     private void createDialogWithActions() {
+        // begin-source-example
+        // source-example-heading: Dialog with actions
         PaperDialog dialog = createDialog("Dialog with actions",
                 "A dialog can have any number of actions. Click anywhere on the page to close.");
 
-        PaperButton dummyAction = new PaperButton();
-        dummyAction.setText("Do nothing");
+        PaperButton dummyAction = new PaperButton("Do nothing");
 
-        PaperButton decline = new PaperButton();
+        PaperButton decline = new PaperButton("Decline");
         decline.getElement().setAttribute("dialog-dismiss", true);
-        decline.setText("Decline");
 
-        PaperButton accept = new PaperButton();
+        PaperButton accept = new PaperButton("Accept");
         accept.getElement().setAttribute("dialog-confirm", true);
         accept.getElement().setAttribute("autofocus", true);
-        accept.setText("Accept");
 
         dialog.add(createDivForButton(dummyAction, decline, accept));
 
-        PaperButton open = new PaperButton();
-        open.setRaised(true).setText("Dialog with actions");
+        PaperButton open = new PaperButton("Dialog with actions");
+        open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
+        // end-source-example
         add(open);
     }
 
     private void createAnimatedDialog() {
+        // begin-source-example
+        // source-example-heading: Animated dialog
         PaperDialog dialog = createDialog("Animated dialog",
                 "Isn't it cool? Click anywhere on the page to close.");
 
@@ -124,12 +132,15 @@ public class PaperDialogView extends DemoView {
         dialog.setExitAnimation("scale-down-animation");
         dialog.setWithBackdrop(true);
 
-        PaperButton open = new PaperButton();
-        open.setRaised(true).setText("Animated dialog");
+        PaperButton open = new PaperButton("Animated dialog");
+        open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
+        // end-source-example
         add(open);
     }
 
+    // begin-source-example
+    // source-example-heading: Helper methods
     private PaperDialog createDialog(String title, String text) {
         PaperDialog dialog = new PaperDialog();
         dialog.add(new H2(title));
@@ -154,11 +165,5 @@ public class PaperDialogView extends DemoView {
         }
         dialog.open();
     }
-
-    @Override
-    public void populateSources(SourceContent container) {
-        // waiting for #1925 - please review the code but don't merge it before
-        // this is fixed
-    }
-
+    // end-source-example
 }
