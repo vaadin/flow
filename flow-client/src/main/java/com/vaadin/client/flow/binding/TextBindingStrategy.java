@@ -36,7 +36,7 @@ import elemental.dom.Text;
  */
 public class TextBindingStrategy implements BindingStrategy<Text> {
 
-    private static JsWeakMap<StateNode, StateNode> BOUND = JsCollections
+    private static final JsWeakMap<StateNode, StateNode> BOUND = JsCollections
             .weakMap();
 
     @Override
