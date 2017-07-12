@@ -32,7 +32,7 @@ import com.vaadin.shared.Registration;
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * {@code <vaadin-text-field>} is a Polymer element for text field control in
+ * {@code <vaadin-text-field>} is a Polymer 2 element for text field control in
  * forms.
  * 
  * {@code }`html <vaadin-text-field label="First Name"> </vaadin-text-field>
@@ -90,20 +90,6 @@ public class VaadinTextField extends Component implements HasStyle {
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinTextField> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**
@@ -567,21 +553,6 @@ public class VaadinTextField extends Component implements HasStyle {
 	 */
 	public boolean isHasValue() {
 		return getElement().getProperty("hasValue", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * A read-only property indicating whether this input has a non empty value.
-	 * It can be used for example in styling of the component.
-	 * 
-	 * @param hasValue
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinTextField> R setHasValue(boolean hasValue) {
-		getElement().setProperty("hasValue", hasValue);
-		return getSelf();
 	}
 
 	/**

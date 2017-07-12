@@ -223,21 +223,6 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns the currently selected item.
-	 * 
-	 * @param selectedItem
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTabs> R setSelectedItem(
-			elemental.json.JsonObject selectedItem) {
-		getElement().setPropertyJson("selectedItem", selectedItem);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * The event that fires from items when they are selected. Selectable will
 	 * listen for this event from items and update the selection state. Set to
 	 * empty string to listen to no events.
@@ -388,20 +373,6 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The list of items from which a selection can be made.
-	 * 
-	 * @param items
-	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTabs> R setItems(elemental.json.JsonArray items) {
-		getElement().setPropertyJson("items", items);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, multiple selections are allowed.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -464,21 +435,6 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 */
 	public JsonArray getSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns an array of currently selected items.
-	 * 
-	 * @param selectedItems
-	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTabs> R setSelectedItems(
-			elemental.json.JsonArray selectedItems) {
-		getElement().setPropertyJson("selectedItems", selectedItems);
-		return getSelf();
 	}
 
 	/**
@@ -569,21 +525,6 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 */
 	public JsonObject getFocusedItem() {
 		return (JsonObject) getElement().getPropertyRaw("focusedItem");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns the currently focused item.
-	 * 
-	 * @param focusedItem
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTabs> R setFocusedItem(
-			elemental.json.JsonObject focusedItem) {
-		getElement().setPropertyJson("focusedItem", focusedItem);
-		return getSelf();
 	}
 
 	/**
@@ -1214,5 +1155,22 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 */
 	protected <R extends PaperTabs> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperTabs(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperTabs() {
 	}
 }

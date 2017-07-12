@@ -197,20 +197,6 @@ public class PaperButton extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the user is currently holding down the button.
-	 * 
-	 * @param pressed
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperButton> R setPressed(boolean pressed) {
-		getElement().setProperty("pressed", pressed);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
 	 * <p>
@@ -280,22 +266,6 @@ public class PaperButton extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the element is currently being pressed by a "pointer," which is
-	 * loosely defined as mouse or touch input (but specifically excluding
-	 * keyboard input).
-	 * 
-	 * @param pointerDown
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperButton> R setPointerDown(boolean pointerDown) {
-		getElement().setProperty("pointerDown", pointerDown);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
 	 * <p>
@@ -304,23 +274,6 @@ public class PaperButton extends Component
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the input device that caused the element to receive focus was a
-	 * keyboard.
-	 * 
-	 * @param receivedFocusFromKeyboard
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperButton> R setReceivedFocusFromKeyboard(
-			boolean receivedFocusFromKeyboard) {
-		getElement().setProperty("receivedFocusFromKeyboard",
-				receivedFocusFromKeyboard);
-		return getSelf();
 	}
 
 	/**
@@ -364,20 +317,6 @@ public class PaperButton extends Component
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperButton> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**
@@ -447,22 +386,6 @@ public class PaperButton extends Component
 	 */
 	public double getElevation() {
 		return getElement().getProperty("elevation", 0.0);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * The z-depth of this element, from 0-5. Setting to 0 will remove the
-	 * shadow, and each increasing number greater than 0 will be "deeper" than
-	 * the last.
-	 * 
-	 * @param elevation
-	 *            the double value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperButton> R setElevation(double elevation) {
-		getElement().setProperty("elevation", elevation);
-		return getSelf();
 	}
 
 	/**
@@ -626,5 +549,22 @@ public class PaperButton extends Component
 	 */
 	protected <R extends PaperButton> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Sets the given string as the content of this component.
+	 * 
+	 * @param the
+	 *            text content to set
+	 * @see HasText#setText(String)
+	 */
+	public PaperButton(java.lang.String text) {
+		setText(text);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperButton() {
 	}
 }

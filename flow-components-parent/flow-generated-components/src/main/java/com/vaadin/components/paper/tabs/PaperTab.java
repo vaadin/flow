@@ -80,20 +80,6 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTab> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
@@ -211,20 +197,6 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the user is currently holding down the button.
-	 * 
-	 * @param pressed
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTab> R setPressed(boolean pressed) {
-		getElement().setProperty("pressed", pressed);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
 	 * <p>
@@ -294,22 +266,6 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the element is currently being pressed by a "pointer," which is
-	 * loosely defined as mouse or touch input (but specifically excluding
-	 * keyboard input).
-	 * 
-	 * @param pointerDown
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTab> R setPointerDown(boolean pointerDown) {
-		getElement().setProperty("pointerDown", pointerDown);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
 	 * <p>
@@ -318,23 +274,6 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the input device that caused the element to receive focus was a
-	 * keyboard.
-	 * 
-	 * @param receivedFocusFromKeyboard
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperTab> R setReceivedFocusFromKeyboard(
-			boolean receivedFocusFromKeyboard) {
-		getElement().setProperty("receivedFocusFromKeyboard",
-				receivedFocusFromKeyboard);
-		return getSelf();
 	}
 
 	/**
@@ -544,5 +483,22 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 */
 	protected <R extends PaperTab> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperTab(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperTab() {
 	}
 }

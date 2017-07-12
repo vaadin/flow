@@ -183,20 +183,6 @@ public class PaperMenuButton extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperMenuButton> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a

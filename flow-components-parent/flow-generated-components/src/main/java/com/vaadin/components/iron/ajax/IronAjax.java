@@ -481,21 +481,6 @@ public class IronAjax extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The most recent request made by this iron-ajax element.
-	 * 
-	 * @param lastRequest
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAjax> R setLastRequest(
-			elemental.json.JsonObject lastRequest) {
-		getElement().setPropertyJson("lastRequest", lastRequest);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * True while lastRequest is in flight.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
@@ -504,20 +489,6 @@ public class IronAjax extends Component implements HasStyle {
 	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True while lastRequest is in flight.
-	 * 
-	 * @param loading
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAjax> R setLoading(boolean loading) {
-		getElement().setProperty("loading", loading);
-		return getSelf();
 	}
 
 	/**
@@ -542,28 +513,6 @@ public class IronAjax extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * lastRequest's response.
-	 * 
-	 * Note that lastResponse and lastError are set when lastRequest finishes,
-	 * so if loading is true, then lastResponse and lastError will correspond to
-	 * the result of the previous request.
-	 * 
-	 * The type of the response is determined by the value of {@code handleAs}
-	 * at the time that the request was generated.
-	 * 
-	 * @param lastResponse
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAjax> R setLastResponse(
-			elemental.json.JsonObject lastResponse) {
-		getElement().setPropertyJson("lastResponse", lastResponse);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * lastRequest's error, if any.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -571,21 +520,6 @@ public class IronAjax extends Component implements HasStyle {
 	 */
 	public JsonObject getLastError() {
 		return (JsonObject) getElement().getPropertyRaw("lastError");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * lastRequest's error, if any.
-	 * 
-	 * @param lastError
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAjax> R setLastError(
-			elemental.json.JsonObject lastError) {
-		getElement().setPropertyJson("lastError", lastError);
-		return getSelf();
 	}
 
 	/**
@@ -599,22 +533,6 @@ public class IronAjax extends Component implements HasStyle {
 	 */
 	public JsonArray getActiveRequests() {
 		return (JsonArray) getElement().getPropertyRaw("activeRequests");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * An Array of all in-flight requests originating from this iron-ajax
-	 * element.
-	 * 
-	 * @param activeRequests
-	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAjax> R setActiveRequests(
-			elemental.json.JsonArray activeRequests) {
-		getElement().setPropertyJson("activeRequests", activeRequests);
-		return getSelf();
 	}
 
 	/**

@@ -28,7 +28,6 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.annotations.EventData;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -462,20 +461,6 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 */
 	public boolean isCanceled() {
 		return getElement().getProperty("canceled", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the overlay was canceled when it was last closed.
-	 * 
-	 * @param canceled
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDialog> R setCanceled(boolean canceled) {
-		getElement().setProperty("canceled", canceled);
-		return getSelf();
 	}
 
 	/**
@@ -1051,16 +1036,8 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	public static class IronOverlayCanceledEvent
 			extends
 				ComponentEvent<PaperDialog> {
-		private final JsonObject event;
-
-		public IronOverlayCanceledEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") elemental.json.JsonObject event) {
+		public IronOverlayCanceledEvent(PaperDialog source, boolean fromClient) {
 			super(source, fromClient);
-			this.event = event;
-		}
-
-		public JsonObject getEvent() {
-			return event;
 		}
 	}
 
@@ -1073,16 +1050,8 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	public static class IronOverlayClosedEvent
 			extends
 				ComponentEvent<PaperDialog> {
-		private final JsonObject event;
-
-		public IronOverlayClosedEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") elemental.json.JsonObject event) {
+		public IronOverlayClosedEvent(PaperDialog source, boolean fromClient) {
 			super(source, fromClient);
-			this.event = event;
-		}
-
-		public JsonObject getEvent() {
-			return event;
 		}
 	}
 
@@ -1113,5 +1082,22 @@ public class PaperDialog extends Component implements HasStyle, HasComponents {
 	 */
 	protected <R extends PaperDialog> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperDialog(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperDialog() {
 	}
 }

@@ -66,7 +66,8 @@ import com.vaadin.ui.HasComponents;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-light#null", "Flow#0.1.13-SNAPSHOT"})
+		"WebComponent: vaadin-combo-box-light#2.0.0-beta1",
+		"Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class VaadinComboBoxLight extends Component
@@ -451,21 +452,6 @@ public class VaadinComboBoxLight extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A read-only property indicating whether this combo box has a value
-	 * selected or not. It can be used for example in styling of the component.
-	 * 
-	 * @param hasValue
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinComboBoxLight> R setHasValue(boolean hasValue) {
-		getElement().setProperty("hasValue", hasValue);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * When set to {@code true}, a loading spinner is displayed on top of the
 	 * list of options.
 	 * <p>
@@ -639,21 +625,6 @@ public class VaadinComboBoxLight extends Component
 	 */
 	public JsonObject getInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns a reference to the native input element.
-	 * 
-	 * @param inputElement
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinComboBoxLight> R setInputElement(
-			elemental.json.JsonObject inputElement) {
-		getElement().setPropertyJson("inputElement", inputElement);
-		return getSelf();
 	}
 
 	/**
@@ -1031,5 +1002,22 @@ public class VaadinComboBoxLight extends Component
 	 */
 	protected <R extends VaadinComboBoxLight> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public VaadinComboBoxLight(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public VaadinComboBoxLight() {
 	}
 }

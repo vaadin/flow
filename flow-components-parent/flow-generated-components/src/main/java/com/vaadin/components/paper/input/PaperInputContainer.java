@@ -304,20 +304,6 @@ public class PaperInputContainer extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the input has focus.
-	 * 
-	 * @param focused
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperInputContainer> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Call this to update the state of add-ons.
 	 * 
 	 * @param state

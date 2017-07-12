@@ -128,20 +128,6 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAutogrowTextarea> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
@@ -589,21 +575,6 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns textarea's selection start.
-	 * 
-	 * @param selectionStart
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAutogrowTextarea> R setSelectionStart(
-			elemental.json.JsonObject selectionStart) {
-		getElement().setPropertyJson("selectionStart", selectionStart);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Returns textarea's selection end.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -611,21 +582,6 @@ public class IronAutogrowTextarea extends Component implements HasStyle {
 	 */
 	public JsonObject getSelectionEnd() {
 		return (JsonObject) getElement().getPropertyRaw("selectionEnd");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns textarea's selection end.
-	 * 
-	 * @param selectionEnd
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronAutogrowTextarea> R setSelectionEnd(
-			elemental.json.JsonObject selectionEnd) {
-		getElement().setPropertyJson("selectionEnd", selectionEnd);
-		return getSelf();
 	}
 
 	/**

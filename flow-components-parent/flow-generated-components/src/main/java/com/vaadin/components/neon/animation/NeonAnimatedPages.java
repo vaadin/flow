@@ -167,21 +167,6 @@ public class NeonAnimatedPages extends Component
 	}
 
 	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns the currently selected item.
-	 * 
-	 * @param selectedItem
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends NeonAnimatedPages> R setSelectedItem(
-			elemental.json.JsonObject selectedItem) {
-		getElement().setPropertyJson("selectedItem", selectedItem);
-		return getSelf();
-	}
-
-	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
@@ -328,21 +313,6 @@ public class NeonAnimatedPages extends Component
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * The list of items from which a selection can be made.
-	 * 
-	 * @param items
-	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends NeonAnimatedPages> R setItems(
-			elemental.json.JsonArray items) {
-		getElement().setPropertyJson("items", items);
-		return getSelf();
 	}
 
 	/**
@@ -741,5 +711,22 @@ public class NeonAnimatedPages extends Component
 	 */
 	protected <R extends NeonAnimatedPages> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public NeonAnimatedPages(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public NeonAnimatedPages() {
 	}
 }

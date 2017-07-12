@@ -201,21 +201,6 @@ public class IronSelector extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Returns the currently selected item.
-	 * 
-	 * @param selectedItem
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronSelector> R setSelectedItem(
-			elemental.json.JsonObject selectedItem) {
-		getElement().setPropertyJson("selectedItem", selectedItem);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * The event that fires from items when they are selected. Selectable will
 	 * listen for this event from items and update the selection state. Set to
 	 * empty string to listen to no events.
@@ -376,20 +361,6 @@ public class IronSelector extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The list of items from which a selection can be made.
-	 * 
-	 * @param items
-	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronSelector> R setItems(elemental.json.JsonArray items) {
-		getElement().setPropertyJson("items", items);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, multiple selections are allowed.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -452,21 +423,6 @@ public class IronSelector extends Component implements HasStyle {
 	 */
 	public JsonArray getSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns an array of currently selected items.
-	 * 
-	 * @param selectedItems
-	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronSelector> R setSelectedItems(
-			elemental.json.JsonArray selectedItems) {
-		getElement().setPropertyJson("selectedItems", selectedItems);
-		return getSelf();
 	}
 
 	/**

@@ -62,21 +62,6 @@ public class IronRequest extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A reference to the XMLHttpRequest instance used to generate the network
-	 * request.
-	 * 
-	 * @param xhr
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setXhr(elemental.json.JsonObject xhr) {
-		getElement().setPropertyJson("xhr", xhr);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * A reference to the parsed response body, if the {@code xhr} has
 	 * completely resolved.
 	 * <p>
@@ -86,22 +71,6 @@ public class IronRequest extends Component implements HasStyle {
 	@Synchronize(property = "response", value = "response-changed")
 	public JsonObject getResponse() {
 		return (JsonObject) getElement().getPropertyRaw("response");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * A reference to the parsed response body, if the {@code xhr} has
-	 * completely resolved.
-	 * 
-	 * @param response
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setResponse(
-			elemental.json.JsonObject response) {
-		getElement().setPropertyJson("response", response);
-		return getSelf();
 	}
 
 	/**
@@ -121,21 +90,6 @@ public class IronRequest extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A reference to the status code, if the {@code xhr} has completely
-	 * resolved.
-	 * 
-	 * @param status
-	 *            the double value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setStatus(double status) {
-		getElement().setProperty("status", status);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * A reference to the status text, if the {@code xhr} has completely
 	 * resolved.
 	 * <p>
@@ -144,22 +98,6 @@ public class IronRequest extends Component implements HasStyle {
 	 */
 	public String getStatusText() {
 		return getElement().getProperty("statusText");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * A reference to the status text, if the {@code xhr} has completely
-	 * resolved.
-	 * 
-	 * @param statusText
-	 *            the String value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setStatusText(java.lang.String statusText) {
-		getElement().setProperty("statusText",
-				statusText == null ? "" : statusText);
-		return getSelf();
 	}
 
 	/**
@@ -179,22 +117,6 @@ public class IronRequest extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A promise that resolves when the {@code xhr} response comes back, or
-	 * rejects if there is an error before the {@code xhr} completes.
-	 * 
-	 * @param completes
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setCompletes(
-			elemental.json.JsonObject completes) {
-		getElement().setPropertyJson("completes", completes);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * An object that contains progress information emitted by the XHR if
 	 * available.
 	 * <p>
@@ -209,22 +131,6 @@ public class IronRequest extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * An object that contains progress information emitted by the XHR if
-	 * available.
-	 * 
-	 * @param progress
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setProgress(
-			elemental.json.JsonObject progress) {
-		getElement().setPropertyJson("progress", progress);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Aborted will be true if an abort of the request is attempted.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
@@ -233,20 +139,6 @@ public class IronRequest extends Component implements HasStyle {
 	@Synchronize(property = "aborted", value = "aborted-changed")
 	public boolean isAborted() {
 		return getElement().getProperty("aborted", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Aborted will be true if an abort of the request is attempted.
-	 * 
-	 * @param aborted
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setAborted(boolean aborted) {
-		getElement().setProperty("aborted", aborted);
-		return getSelf();
 	}
 
 	/**
@@ -266,21 +158,6 @@ public class IronRequest extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Errored will be true if the browser fired an error event from the XHR
-	 * object (mainly network errors).
-	 * 
-	 * @param errored
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setErrored(boolean errored) {
-		getElement().setProperty("errored", errored);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * TimedOut will be true if the XHR threw a timeout event.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -288,20 +165,6 @@ public class IronRequest extends Component implements HasStyle {
 	 */
 	public boolean isTimedOut() {
 		return getElement().getProperty("timedOut", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * TimedOut will be true if the XHR threw a timeout event.
-	 * 
-	 * @param timedOut
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronRequest> R setTimedOut(boolean timedOut) {
-		getElement().setProperty("timedOut", timedOut);
-		return getSelf();
 	}
 
 	/**

@@ -183,20 +183,6 @@ public class PaperDropdownMenu extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the user is currently holding down the button.
-	 * 
-	 * @param pressed
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDropdownMenu> R setPressed(boolean pressed) {
-		getElement().setProperty("pressed", pressed);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
 	 * <p>
@@ -266,22 +252,6 @@ public class PaperDropdownMenu extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the element is currently being pressed by a "pointer," which is
-	 * loosely defined as mouse or touch input (but specifically excluding
-	 * keyboard input).
-	 * 
-	 * @param pointerDown
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDropdownMenu> R setPointerDown(boolean pointerDown) {
-		getElement().setProperty("pointerDown", pointerDown);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
 	 * <p>
@@ -290,23 +260,6 @@ public class PaperDropdownMenu extends Component implements HasStyle {
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the input device that caused the element to receive focus was a
-	 * keyboard.
-	 * 
-	 * @param receivedFocusFromKeyboard
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDropdownMenu> R setReceivedFocusFromKeyboard(
-			boolean receivedFocusFromKeyboard) {
-		getElement().setProperty("receivedFocusFromKeyboard",
-				receivedFocusFromKeyboard);
-		return getSelf();
 	}
 
 	/**
@@ -350,20 +303,6 @@ public class PaperDropdownMenu extends Component implements HasStyle {
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDropdownMenu> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**
@@ -432,22 +371,6 @@ public class PaperDropdownMenu extends Component implements HasStyle {
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
 		return getElement().getProperty("value");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * The value for this element that will be used when submitting in a form.
-	 * It is read only, and will always have the same value as
-	 * {@code selectedItemLabel}.
-	 * 
-	 * @param value
-	 *            the String value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDropdownMenu> R setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
-		return getSelf();
 	}
 
 	/**
@@ -558,24 +481,6 @@ public class PaperDropdownMenu extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The derived "label" of the currently selected item. This value is the
-	 * {@code label} property on the selected item if set, or else the trimmed
-	 * text content of the selected item.
-	 * 
-	 * @param selectedItemLabel
-	 *            the String value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDropdownMenu> R setSelectedItemLabel(
-			java.lang.String selectedItemLabel) {
-		getElement().setProperty("selectedItemLabel",
-				selectedItemLabel == null ? "" : selectedItemLabel);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * The last selected item. An item is selected if the dropdown menu has a
 	 * child with slot {@code dropdown-content}, and that child triggers an
 	 * {@code iron-select} event with the selected {@code item} in the
@@ -586,24 +491,6 @@ public class PaperDropdownMenu extends Component implements HasStyle {
 	 */
 	public JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * The last selected item. An item is selected if the dropdown menu has a
-	 * child with slot {@code dropdown-content}, and that child triggers an
-	 * {@code iron-select} event with the selected {@code item} in the
-	 * {@code detail}.
-	 * 
-	 * @param selectedItem
-	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperDropdownMenu> R setSelectedItem(
-			elemental.json.JsonObject selectedItem) {
-		getElement().setPropertyJson("selectedItem", selectedItem);
-		return getSelf();
 	}
 
 	/**

@@ -367,20 +367,6 @@ public class IronImage extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Read-only value that is true when the image is loaded.
-	 * 
-	 * @param loaded
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronImage> R setLoaded(boolean loaded) {
-		getElement().setProperty("loaded", loaded);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Read-only value that tracks the loading state of the image when the
 	 * {@code preload} option is used.
 	 * <p>
@@ -395,21 +381,6 @@ public class IronImage extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Read-only value that tracks the loading state of the image when the
-	 * {@code preload} option is used.
-	 * 
-	 * @param loading
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronImage> R setLoading(boolean loading) {
-		getElement().setProperty("loading", loading);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Read-only value that indicates that the last set {@code src} failed to
 	 * load.
 	 * <p>
@@ -419,21 +390,6 @@ public class IronImage extends Component implements HasStyle {
 	@Synchronize(property = "error", value = "error-changed")
 	public boolean isError() {
 		return getElement().getProperty("error", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Read-only value that indicates that the last set {@code src} failed to
-	 * load.
-	 * 
-	 * @param error
-	 *            the boolean value to set
-	 * @return this instance, for method chaining
-	 */
-	public <R extends IronImage> R setError(boolean error) {
-		getElement().setProperty("error", error);
-		return getSelf();
 	}
 
 	/**
