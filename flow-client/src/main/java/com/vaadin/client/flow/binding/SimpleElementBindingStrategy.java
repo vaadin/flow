@@ -32,6 +32,7 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
 import com.vaadin.client.flow.collection.JsSet;
+import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
@@ -94,6 +95,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             .map();
 
     /**
+     * This is used as a weak set. Only keys are important so that they are
+     * weakly referenced
+     */
+    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
+            .weakMap();
+
+    /**
      * Just a context class whose instance is passed as a parameter between the
      * operations of various kind to be able to access the data like listeners,
      * node and element which they operate on.
@@ -148,6 +156,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     public void bind(StateNode stateNode, Element htmlNode,
             BinderContext nodeFactory) {
         assert hasSameTag(stateNode, htmlNode);
+
+        if (BOUND.has(stateNode)) {
+            return;
+        }
+        BOUND.set(stateNode, true);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
@@ -212,7 +225,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-        
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
@@ -696,6 +709,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.forEach(EventRemover::remove);
         context.synchronizedPropertyEventListeners
                 .forEach(EventRemover::remove);
+
+        BOUND.delete(context.node);
     }
 
     private EventRemover bindDomEventListeners(BindingContext context) {
