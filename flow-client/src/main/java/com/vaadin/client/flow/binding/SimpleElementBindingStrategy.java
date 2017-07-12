@@ -166,9 +166,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         JsArray<EventRemover> listeners = JsCollections.array();
 
-        Runnable unbound = () -> remove(listeners, context,
-                computationsCollection);
-
         listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
                 property -> updateProperty(property, htmlNode),
                 createComputations(computationsCollection), stateNode));
@@ -183,7 +180,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindChildren(context));
 
-        listeners.push(stateNode.addUnregisterListener(e -> unbound.run()));
+        listeners.push(stateNode.addUnregisterListener(
+                e -> remove(listeners, context, computationsCollection)));
 
         listeners.push(bindDomEventListeners(context));
 
