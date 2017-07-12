@@ -2,6 +2,7 @@
   "name": "vaadin-spinner",
   "tag": "vaadin-spinner",
   "baseUrl": "vaadin-combo-box/vaadin-spinner.html",
+  "version": "2.0.0-beta1",
   "properties": [
     {
       "name": "active",

@@ -13,22 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.demo.views;
-
-import com.vaadin.components.vaadin.text.field.VaadinTextField;
-import com.vaadin.flow.demo.ComponentDemo;
+package com.vaadin.flow.uitest.ui.dependencies;
 
 /**
- * View for {@link VaadinTextField} demo.
+ * The test for {@link FrontendInlineApiView}.
+ * <p>
+ * The test code is inside superclass.
+ *
+ *
+ * @author Vaadin Ltd
+ *
  */
-@ComponentDemo(name = "Vaadin Text Field", href = "vaadin-text-field")
-public class VaadinTextFieldView extends DemoView {
-    @Override
-    void initView() {
-        // begin-source-example
-        VaadinTextField textField = new VaadinTextField();
-        textField.setLabel("Text field label");
-        // end-source-example
-        add(textField);
-    }
+public class FrontendInlineApiIT extends AbstractFrontendInlineIT {
+
 }

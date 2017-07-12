@@ -13,22 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.vaadin.text.field.VaadinTextField;
-import com.vaadin.flow.demo.ComponentDemo;
+function doNotifyJsExecution(){
+    var lbl = document.createElement("label");
+    lbl.setAttribute("id", "js");
+    lbl.innerHTML='Inlined JS';
+    document.body.appendChild(lbl);
+}
 
-/**
- * View for {@link VaadinTextField} demo.
- */
-@ComponentDemo(name = "Vaadin Text Field", href = "vaadin-text-field")
-public class VaadinTextFieldView extends DemoView {
-    @Override
-    void initView() {
-        // begin-source-example
-        VaadinTextField textField = new VaadinTextField();
-        textField.setLabel("Text field label");
-        // end-source-example
-        add(textField);
+function notifyJsExecution(){
+    if ( document.body) {
+        doNotifyJsExecution()
+    }
+    else {
+        setTimeout(notifyJsExecution, 50);
     }
 }
+
+notifyJsExecution();
