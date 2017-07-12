@@ -57,7 +57,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         }
 
         private void addProperty(Method method,
-                Function<Method, Predicate<String>> filterProvider) {
+                Function<Method, Predicate<String>> filterProvider,
+                ModelConverterProvider converterProvider) {
             String propertyName = ReflectTools.getPropertyName(method);
             if (properties.containsKey(propertyName)) {
                 return;
@@ -70,15 +71,29 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
                     propertyName, filterProvider.apply(method));
 
-            ModelType propertyType = getModelType(
-                    ReflectTools.getPropertyType(method), innerFilter,
-                    propertyName, method.getDeclaringClass());
+            ModelConverterProvider newConverterProvider = new ModelConverterProvider(
+                    converterProvider,
+                    TemplateModelUtil.getModelConverters(method), innerFilter);
+
+            ModelType propertyType;
+            if (newConverterProvider.apply(innerFilter).isPresent()) {
+                propertyType = getConvertedModelType(
+                        ReflectTools.getPropertyType(method), innerFilter,
+                        propertyName, method.getDeclaringClass(),
+                        newConverterProvider);
+            } else {
+                propertyType = getModelType(
+                        ReflectTools.getPropertyType(method), innerFilter,
+                        propertyName, method.getDeclaringClass(),
+                        newConverterProvider);
+            }
 
             properties.put(propertyName, propertyType);
         }
 
         private void addProperty(Method method) {
-            addProperty(method, emptyFilterProvider);
+            addProperty(method, emptyFilterProvider,
+                    ModelConverterProvider.EMPTY_PROVIDER);
         }
 
         private Map<String, ModelType> getProperties() {
@@ -159,7 +174,14 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      *             if {@code propertyFilter} resolves empty properties
      */
     public BeanModelType(Class<T> javaType, PropertyFilter propertyFilter) {
-        this(javaType, propertyFilter, false);
+        this(javaType, propertyFilter, ModelConverterProvider.EMPTY_PROVIDER);
+    }
+
+    private BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
+            ModelConverterProvider converterProvider) {
+        this(javaType,
+                findProperties(javaType, propertyFilter, converterProvider),
+                false);
     }
 
     /**
@@ -179,12 +201,15 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      */
     protected BeanModelType(Class<T> javaType, PropertyFilter propertyFilter,
             boolean allowEmptyProperties) {
-        this(javaType, findProperties(javaType, propertyFilter),
+        this(javaType,
+                findProperties(javaType, propertyFilter,
+                        ModelConverterProvider.EMPTY_PROVIDER),
                 allowEmptyProperties);
     }
 
     private static Map<String, ModelType> findProperties(Class<?> javaType,
-            PropertyFilter propertyFilter) {
+            PropertyFilter propertyFilter,
+            ModelConverterProvider converterProvider) {
         assert javaType != null;
         assert propertyFilter != null;
 
@@ -193,7 +218,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         // Check setters first because they might have additional filters
         ReflectTools.getSetterMethods(javaType)
                 .forEach(setter -> builder.addProperty(setter,
-                        TemplateModelUtil::getFilterFromIncludeExclude));
+                        TemplateModelUtil::getFilterFromIncludeExclude,
+                        converterProvider));
 
         // Then go through the getters in case there are readonly-ish properties
         ReflectTools.getGetterMethods(javaType).forEach(builder::addProperty);
@@ -203,11 +229,12 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     private static ModelType getModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass) {
+            Class<?> declaringClass, ModelConverterProvider converterProvider) {
         if (propertyType instanceof Class<?>) {
             Class<?> propertyTypeClass = (Class<?>) propertyType;
             if (isBean(propertyTypeClass)) {
-                return new BeanModelType<>(propertyTypeClass, propertyFilter);
+                return new BeanModelType<>(propertyTypeClass, propertyFilter,
+                        converterProvider);
             } else {
                 Optional<ModelType> maybeBasicModelType = BasicModelType
                         .get(propertyTypeClass);
@@ -217,25 +244,77 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             }
         } else if (ListModelType.isList(propertyType)) {
             return getListModelType(propertyType, propertyFilter, propertyName,
-                    declaringClass);
+                    declaringClass, converterProvider);
         }
 
-        throw new InvalidTemplateModelException("Type "
-                + propertyType.toString() + " is not supported. Used in class "
-                + declaringClass.getSimpleName() + " with property named "
-                + propertyName + ". " + ModelType.getSupportedTypesString());
+        throw new InvalidTemplateModelException(String.format(
+                "Type '%s' is not supported."
+                        + " Used in class '%s' with property named '%s'. %s",
+                propertyType.toString(), declaringClass.getSimpleName(),
+                propertyName, ModelType.getSupportedTypesString()));
+    }
+
+    private static ModelType getConvertedModelType(
+            Type propertyType, PropertyFilter propertyFilter,
+            String propertyName, Class<?> declaringClass,
+            ModelConverterProvider converterProvider) {
+
+        if (!(propertyType instanceof Class<?>)) {
+            throw new UnsupportedOperationException(String.format(
+                    "Using converters with parameterized types is not currently supported."
+                            + "Used in class '%s' with property named '%s'",
+                    declaringClass.getSimpleName(), propertyName));
+        }
+
+        Optional<ModelConverter<?, ?>> converterOptional = converterProvider
+                .apply(propertyFilter);
+        if (!converterOptional.isPresent()) {
+            throw new IllegalStateException(
+                    "The ModelConverterProvider passed to "
+                            + "getConvertedModelType is unable to provide a converter "
+                            + "for the given PropertyFilter.");
+        }
+
+        ModelConverter<?, ?> converter = converterOptional.get();
+        if (!converter.getApplicationType().equals((Class<?>) propertyType)) {
+            throw new InvalidTemplateModelException(String.format(
+                    "Converter '%s' is incompatible with the type '%s'.",
+                    converter.getClass().getName(),
+                    propertyType.getTypeName()));
+        }
+
+        if (isBean(converter.getModelType())) {
+            return new ConvertedModelType<>(
+                    new BeanModelType<>(converter.getModelType(),
+                            propertyFilter, converterProvider),
+                    converter);
+        } else {
+            Optional<ModelType> maybeBasicModelType = BasicModelType
+                    .get(converter.getModelType());
+            if (maybeBasicModelType.isPresent()) {
+                return new ConvertedModelType<>(maybeBasicModelType.get(),
+                        converter);
+            }
+        }
+
+        throw new InvalidTemplateModelException(String.format(
+                "Converter '%s' implements an unsupported model type. "
+                        + "Used in class '%s' with property named '%s'. '%s'",
+                converter.getClass().getName(), declaringClass.getSimpleName(),
+                propertyName, ModelType.getSupportedTypesString()));
     }
 
     private static ModelType getListModelType(Type propertyType,
             PropertyFilter propertyFilter, String propertyName,
-            Class<?> declaringClass) {
+            Class<?> declaringClass, ModelConverterProvider converterProvider) {
         assert ListModelType.isList(propertyType);
         ParameterizedType pt = (ParameterizedType) propertyType;
 
         Type itemType = pt.getActualTypeArguments()[0];
         if (itemType instanceof ParameterizedType) {
             return new ListModelType<>((ComplexModelType<?>) getModelType(
-                    itemType, propertyFilter, propertyName, declaringClass));
+                    itemType, propertyFilter, propertyName, declaringClass,
+                    converterProvider));
         } else if (BasicComplexModelType.isBasicType(itemType)) {
             return new ListModelType<>(
                     BasicComplexModelType.get((Class<?>) itemType).get());
@@ -244,12 +323,11 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return new ListModelType<>(
                     new BeanModelType<>(beansListItemType, propertyFilter));
         } else {
-            throw new InvalidTemplateModelException(
-                    "Element type " + itemType.getTypeName()
-                            + " is not a valid Bean type. Used in class "
-                            + declaringClass.getSimpleName()
-                            + " with property named " + propertyName
-                            + " with list type " + propertyType.getTypeName());
+            throw new InvalidTemplateModelException(String.format(
+                    "Element type '%s' is not a valid Bean type. "
+                            + "Used in class '%s' with property named '%s' with list type '%s'.",
+                    itemType.getTypeName(), declaringClass.getSimpleName(),
+                    propertyName, propertyType.getTypeName()));
         }
     }
 
