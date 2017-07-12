@@ -22,8 +22,6 @@ import com.vaadin.flow.html.Label;
 
 public class EventListenersView extends AbstractDivView {
 
-    private Label tmp = new Label("a");
-
     @Override
     protected void onShow() {
         AtomicInteger count = new AtomicInteger();

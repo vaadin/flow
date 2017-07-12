@@ -36,7 +36,11 @@ import elemental.dom.Text;
  */
 public class TextBindingStrategy implements BindingStrategy<Text> {
 
-    private static final JsWeakMap<StateNode, StateNode> BOUND = JsCollections
+    /**
+     * This is used as a weak set. Only keys are important so that they are
+     * weakly referenced
+     */
+    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
             .weakMap();
 
     @Override
@@ -57,7 +61,7 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
         if (BOUND.has(stateNode)) {
             return;
         }
-        BOUND.set(stateNode, stateNode);
+        BOUND.set(stateNode, true);
 
         NodeMap textMap = stateNode.getMap(NodeFeatures.TEXT_NODE);
         MapProperty textProperty = textMap.getProperty(NodeFeatures.TEXT);

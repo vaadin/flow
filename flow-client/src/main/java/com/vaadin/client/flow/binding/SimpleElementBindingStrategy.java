@@ -94,7 +94,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
             .map();
 
-    private static final JsWeakMap<StateNode, StateNode> BOUND = JsCollections
+    /**
+     * This is used as a weak set. Only keys are important so that they are
+     * weakly referenced
+     */
+    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
             .weakMap();
 
     /**
@@ -156,7 +160,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (BOUND.has(stateNode)) {
             return;
         }
-        BOUND.set(stateNode, stateNode);
+        BOUND.set(stateNode, true);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
@@ -221,7 +225,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         this.@SimpleElementBindingStrategy::bindInitialModelProperties(*)(node, element);
         var self = this;
-    
+
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {

@@ -2121,29 +2121,6 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(element, child.getParentNode());
     }
 
-    @Test
-    public void addComponentInsideEventListener() {
-        Element div = ElementFactory.createDiv();
-
-        Element child = ElementFactory.createDiv();
-        AtomicInteger count = new AtomicInteger();
-        child.addEventListener("click", event -> {
-            count.incrementAndGet();
-            div.appendChild(child);
-            System.out.println("xxxxxx " + count.get());
-        });
-        div.appendChild(child);
-
-        child.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(child, "click", Json.createObject()));
-
-        child.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(child, "click", Json.createObject()));
-
-        child.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(child, "click", Json.createObject()));
-    }
-
     @Override
     protected Element createParentNode() {
         return ElementFactory.createDiv();
