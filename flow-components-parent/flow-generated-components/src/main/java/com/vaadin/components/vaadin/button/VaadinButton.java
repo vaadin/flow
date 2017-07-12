@@ -78,6 +78,7 @@ public class VaadinButton extends Component
 	 * Specify that this control should have input focus when the page loads.
 	 * 
 	 * @param autofocus
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinButton> R setAutofocus(boolean autofocus) {
@@ -115,6 +116,7 @@ public class VaadinButton extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinButton> R setDisabled(boolean disabled) {

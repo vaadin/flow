@@ -140,6 +140,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setAttrForSelected(
@@ -184,6 +185,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * 
 	 * @param selected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setSelected(java.lang.String selected) {
@@ -198,6 +200,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * 
 	 * @param selected
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setSelected(double selected) {
@@ -239,6 +242,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * empty string to listen to no events.
 	 * 
 	 * @param activateEvent
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setActivateEvent(
@@ -258,6 +262,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param selectable
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setSelectable(java.lang.String selectable) {
@@ -284,6 +289,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setSelectedClass(
@@ -311,6 +317,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setSelectedAttribute(
@@ -340,6 +347,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setFallbackSelection(
@@ -380,6 +388,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * If true, multiple selections are allowed.
 	 * 
 	 * @param multi
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setMulti(boolean multi) {
@@ -407,6 +416,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * {@code selected} when {@code multi} is true.
 	 * 
 	 * @param selectedValues
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setSelectedValues(
@@ -447,6 +457,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setKeyEventTarget(
@@ -475,6 +486,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setStopKeyboardEventPropagation(
@@ -494,6 +506,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setKeyBindings(
@@ -536,6 +549,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * unset, {@code textContent} will be used.
 	 * 
 	 * @param attrForItemTitle
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setAttrForItemTitle(
@@ -555,6 +569,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setDisabled(boolean disabled) {
@@ -584,6 +599,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * property changed to the new value as well.
 	 * 
 	 * @param noink
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setNoink(boolean noink) {
@@ -609,6 +625,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * If true, the bottom bar to indicate the selected tab will not be shown.
 	 * 
 	 * @param noBar
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setNoBar(boolean noBar) {
@@ -634,6 +651,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * If true, the slide effect for the bottom bar is disabled.
 	 * 
 	 * @param noSlide
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setNoSlide(boolean noSlide) {
@@ -661,6 +679,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * width.
 	 * 
 	 * @param scrollable
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setScrollable(boolean scrollable) {
@@ -688,6 +707,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * when scrollable is true.
 	 * 
 	 * @param fitContainer
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setFitContainer(boolean fitContainer) {
@@ -713,6 +733,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * If true, dragging on the tabs to scroll is disabled.
 	 * 
 	 * @param disableDrag
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setDisableDrag(boolean disableDrag) {
@@ -740,6 +761,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * tabs.
 	 * 
 	 * @param hideScrollButtons
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setHideScrollButtons(
@@ -768,6 +790,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * top).
 	 * 
 	 * @param alignBottom
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setAlignBottom(boolean alignBottom) {
@@ -793,6 +816,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * If true, tabs are automatically selected when focused using the keyboard.
 	 * 
 	 * @param autoselect
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setAutoselect(boolean autoselect) {
@@ -822,6 +846,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * selected (if {@code autoselect} is true).
 	 * 
 	 * @param autoselectDelay
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTabs> R setAutoselectDelay(double autoselectDelay) {
@@ -846,6 +871,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * ancestor detects a request for notifications.
 	 * 
 	 * @param parentResizable
+	 *            Missing documentation!
 	 */
 	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
@@ -858,6 +884,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * should be notified of a resize change.
 	 * 
 	 * @param target
+	 *            Missing documentation!
 	 */
 	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
@@ -871,6 +898,8 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * should be notified, or false if it should not be notified.
 	 * 
 	 * @param element
+	 *            A candidate descendant element that implements
+	 *            `IronResizableBehavior`.
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -883,6 +912,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * Returns the index of the given item.
 	 * 
 	 * @param item
+	 *            Missing documentation!
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -897,9 +927,9 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * {@code value} will be selected.
 	 * 
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 */
 	public void select(java.lang.String valueString, double valueNumber) {
 		getElement().callFunction("select", valueString, valueNumber);
@@ -929,6 +959,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * Selects the item at the given index.
 	 * 
 	 * @param index
+	 *            Missing documentation!
 	 */
 	public void selectIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("selectIndex", index);
@@ -954,6 +985,7 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param multi
+	 *            Missing documentation!
 	 */
 	public void multiChanged(elemental.json.JsonObject multi) {
 		getElement().callFunction("multiChanged", multi);
@@ -967,7 +999,9 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -989,7 +1023,9 @@ public class PaperTabs extends Component implements HasStyle, HasComponents {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported

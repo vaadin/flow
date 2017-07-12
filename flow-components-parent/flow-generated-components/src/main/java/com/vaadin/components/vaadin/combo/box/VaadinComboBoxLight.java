@@ -95,6 +95,7 @@ public class VaadinComboBoxLight extends Component
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setKeyEventTarget(
@@ -123,6 +124,7 @@ public class VaadinComboBoxLight extends Component
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setStopKeyboardEventPropagation(
@@ -152,6 +154,7 @@ public class VaadinComboBoxLight extends Component
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
 	 * 
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setKeyBindings(
@@ -178,6 +181,7 @@ public class VaadinComboBoxLight extends Component
 	 * The name of this element.
 	 * 
 	 * @param name
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setName(java.lang.String name) {
@@ -216,6 +220,7 @@ public class VaadinComboBoxLight extends Component
 	 * {@code items} array.
 	 * 
 	 * @param value
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setValue(java.lang.String value) {
@@ -251,6 +256,7 @@ public class VaadinComboBoxLight extends Component
 	 * when its value is invalid.
 	 * 
 	 * @param required
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setRequired(boolean required) {
@@ -277,6 +283,7 @@ public class VaadinComboBoxLight extends Component
 	 * True if the dropdown is open, false otherwise.
 	 * 
 	 * @param opened
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setOpened(boolean opened) {
@@ -302,6 +309,7 @@ public class VaadinComboBoxLight extends Component
 	 * Set to true to disable this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setDisabled(boolean disabled) {
@@ -327,6 +335,7 @@ public class VaadinComboBoxLight extends Component
 	 * When present, it specifies that the element field is read-only.
 	 * 
 	 * @param readonly
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setReadonly(boolean readonly) {
@@ -354,6 +363,7 @@ public class VaadinComboBoxLight extends Component
 	 * of either {@code String} or {@code Object} type.
 	 * 
 	 * @param items
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setItems(
@@ -386,6 +396,7 @@ public class VaadinComboBoxLight extends Component
 	 * will be set to reflect that value.
 	 * 
 	 * @param allowCustomValue
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setAllowCustomValue(
@@ -416,6 +427,7 @@ public class VaadinComboBoxLight extends Component
 	 * items can be of either {@code String} or {@code Object} type.
 	 * 
 	 * @param filteredItems
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setFilteredItems(
@@ -457,6 +469,7 @@ public class VaadinComboBoxLight extends Component
 	 * list of options.
 	 * 
 	 * @param loading
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setLoading(boolean loading) {
@@ -483,6 +496,7 @@ public class VaadinComboBoxLight extends Component
 	 * Filtering string the user has typed into the input field.
 	 * 
 	 * @param filter
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setFilter(java.lang.String filter) {
@@ -508,6 +522,7 @@ public class VaadinComboBoxLight extends Component
 	 * The selected item from the {@code items} array.
 	 * 
 	 * @param selectedItem
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setSelectedItem(
@@ -552,6 +567,7 @@ public class VaadinComboBoxLight extends Component
 	 * input box.
 	 * 
 	 * @param itemLabelPath
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setItemLabelPath(
@@ -589,6 +605,7 @@ public class VaadinComboBoxLight extends Component
 	 * provide the form value.
 	 * 
 	 * @param itemValuePath
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setItemValuePath(
@@ -630,6 +647,7 @@ public class VaadinComboBoxLight extends Component
 	 * custom input field.
 	 * 
 	 * @param attrForValue
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setAttrForValue(
@@ -659,6 +677,7 @@ public class VaadinComboBoxLight extends Component
 	 * dropdown.
 	 * 
 	 * @param overlayVerticalOffset
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxLight> R setOverlayVerticalOffset(
@@ -676,7 +695,9 @@ public class VaadinComboBoxLight extends Component
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -698,7 +719,9 @@ public class VaadinComboBoxLight extends Component
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -715,7 +738,11 @@ public class VaadinComboBoxLight extends Component
 	 * followed by {@code stamp} to create new instances of the template.
 	 * 
 	 * @param template
+	 *            Template to prepare
 	 * @param mutableData
+	 *            When `true`, the generated class will skip strict
+	 *            dirty-checking for objects and arrays (always consider them to
+	 *            be "dirty"). Defaults to false.
 	 */
 	public void templatize(elemental.json.JsonObject template,
 			elemental.json.JsonObject mutableData) {
@@ -732,6 +759,8 @@ public class VaadinComboBoxLight extends Component
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
 	 * @param model
+	 *            Object containing initial property values to populate into the
+	 *            template bindings.
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -747,6 +776,7 @@ public class VaadinComboBoxLight extends Component
 	 * manipulate data associated with this template instance.
 	 * 
 	 * @param el
+	 *            Element for which to return a template model.
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported

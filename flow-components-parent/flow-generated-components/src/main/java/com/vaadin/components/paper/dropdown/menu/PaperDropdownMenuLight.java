@@ -127,6 +127,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setKeyEventTarget(
@@ -155,6 +156,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setStopKeyboardEventPropagation(
@@ -174,6 +176,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setKeyBindings(
@@ -214,6 +217,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * the spacebar.
 	 * 
 	 * @param toggles
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setToggles(boolean toggles) {
@@ -240,6 +244,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setActive(boolean active) {
@@ -294,6 +299,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setAriaActiveAttribute(
@@ -335,6 +341,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setDisabled(boolean disabled) {
@@ -362,6 +369,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * with via the pointer.
 	 * 
 	 * @param noink
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setNoink(boolean noink) {
@@ -387,6 +395,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * The name of this element.
 	 * 
 	 * @param name
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setName(java.lang.String name) {
@@ -437,6 +446,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * when its value is invalid.
 	 * 
 	 * @param required
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setRequired(boolean required) {
@@ -462,6 +472,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setValidator(
@@ -490,6 +501,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setInvalid(boolean invalid) {
@@ -544,6 +556,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * The label for the dropdown.
 	 * 
 	 * @param label
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setLabel(java.lang.String label) {
@@ -569,6 +582,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * The placeholder for the dropdown.
 	 * 
 	 * @param placeholder
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setPlaceholder(
@@ -597,6 +611,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * True if the dropdown is open. Otherwise, false.
 	 * 
 	 * @param opened
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setOpened(boolean opened) {
@@ -626,6 +641,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * constrained to the dropdown when it opens.
 	 * 
 	 * @param allowOutsideScroll
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setAllowOutsideScroll(
@@ -654,6 +670,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * {@code <paper-input-container>}'s {@code noLabelFloat} property.
 	 * 
 	 * @param noLabelFloat
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setNoLabelFloat(
@@ -682,6 +699,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * 
 	 * @param alwaysFloatLabel
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setAlwaysFloatLabel(
@@ -708,6 +726,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * Set to true to disable animations when opening and closing the dropdown.
 	 * 
 	 * @param noAnimations
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setNoAnimations(
@@ -736,6 +755,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param horizontalAlign
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setHorizontalAlign(
@@ -765,6 +785,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param verticalAlign
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setVerticalAlign(
@@ -800,6 +821,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * The content element that is contained by the dropdown menu, if any.
 	 * 
 	 * @param contentElement
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperDropdownMenuLight> R setContentElement(
@@ -816,7 +838,9 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -838,7 +862,9 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -853,6 +879,7 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * ripple effect is dynamically on demand when needed.
 	 * 
 	 * @param optTriggeringEvent
+	 *            (optional) event that triggered the ripple.
 	 */
 	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);
@@ -895,6 +922,10 @@ public class PaperDropdownMenuLight extends Component implements HasStyle {
 	 * this method; override {@code _getValidity(value)} instead.
 	 * 
 	 * @param value
+	 *            Deprecated: The value to be validated. By default, it is
+	 *            passed to the validator's `validate()` function, if a
+	 *            validator is set. If this argument is not specified, then the
+	 *            element's `value` property is used, if it exists.
 	 * @return It would return a boolean
 	 */
 	@NotSupported
