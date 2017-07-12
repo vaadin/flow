@@ -62,6 +62,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setFocused(boolean focused) {
@@ -94,6 +95,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setDisabled(boolean disabled) {
@@ -121,6 +123,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setKeyEventTarget(
@@ -149,6 +152,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setStopKeyboardEventPropagation(
@@ -168,6 +172,7 @@ public class PaperInput extends Component implements HasStyle {
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setKeyBindings(
@@ -202,6 +207,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code template}
 	 * 
 	 * @param label
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setLabel(java.lang.String label) {
@@ -228,6 +234,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * The value for this element.
 	 * 
 	 * @param value
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setValue(java.lang.String value) {
@@ -266,6 +273,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * automatically, which can clobber attempts to manage it manually.
 	 * 
 	 * @param invalid
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setInvalid(boolean invalid) {
@@ -297,6 +305,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code allowedPattern} property.
 	 * 
 	 * @param allowedPattern
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAllowedPattern(
@@ -330,6 +339,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code type} property.
 	 * 
 	 * @param type
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setType(java.lang.String type) {
@@ -361,6 +371,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code list} property.
 	 * 
 	 * @param list
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setList(java.lang.String list) {
@@ -390,6 +401,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 * 
 	 * @param pattern
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setPattern(java.lang.String pattern) {
@@ -425,6 +437,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * when its value is invalid.
 	 * 
 	 * @param required
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setRequired(boolean required) {
@@ -454,6 +467,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * this to the {@code <paper-input-error>}'s content, if using.
 	 * 
 	 * @param errorMessage
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setErrorMessage(
@@ -481,6 +495,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * Set to true to show a character counter.
 	 * 
 	 * @param charCounter
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setCharCounter(boolean charCounter) {
@@ -512,6 +527,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param noLabelFloat
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setNoLabelFloat(boolean noLabelFloat) {
@@ -541,6 +557,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * 
 	 * @param alwaysFloatLabel
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
@@ -572,6 +589,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param autoValidate
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAutoValidate(boolean autoValidate) {
@@ -601,6 +619,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 * 
 	 * @param validator
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setValidator(java.lang.String validator) {
@@ -631,6 +650,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code autocomplete} property.
 	 * 
 	 * @param autocomplete
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAutocomplete(
@@ -662,6 +682,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code autofocus} property.
 	 * 
 	 * @param autofocus
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAutofocus(boolean autofocus) {
@@ -691,6 +712,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code inputmode} property.
 	 * 
 	 * @param inputmode
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setInputmode(java.lang.String inputmode) {
@@ -721,6 +743,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 * 
 	 * @param minlength
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setMinlength(double minlength) {
@@ -750,6 +773,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 * 
 	 * @param maxlength
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setMaxlength(double maxlength) {
@@ -779,6 +803,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 * 
 	 * @param min
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setMin(java.lang.String min) {
@@ -810,6 +835,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code max} property.
 	 * 
 	 * @param max
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setMax(java.lang.String max) {
@@ -839,6 +865,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 * 
 	 * @param step
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setStep(java.lang.String step) {
@@ -864,6 +891,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * The name of this element.
 	 * 
 	 * @param name
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setName(java.lang.String name) {
@@ -891,6 +919,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * will always float.
 	 * 
 	 * @param placeholder
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setPlaceholder(java.lang.String placeholder) {
@@ -921,6 +950,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code readonly} property.
 	 * 
 	 * @param readonly
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setReadonly(boolean readonly) {
@@ -950,6 +980,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param size
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setSize(double size) {
@@ -979,6 +1010,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code autocapitalize} property.
 	 * 
 	 * @param autocapitalize
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAutocapitalize(
@@ -1010,6 +1042,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code autocorrect} property.
 	 * 
 	 * @param autocorrect
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAutocorrect(java.lang.String autocorrect) {
@@ -1040,6 +1073,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code autosave} property, used with type=search.
 	 * 
 	 * @param autosave
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAutosave(java.lang.String autosave) {
@@ -1069,6 +1103,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code results} property, used with type=search.
 	 * 
 	 * @param results
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setResults(double results) {
@@ -1098,6 +1133,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code accept} property, used with type=file.
 	 * 
 	 * @param accept
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setAccept(java.lang.String accept) {
@@ -1127,6 +1163,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * {@code multiple} property, used with type=file.
 	 * 
 	 * @param multiple
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInput> R setMultiple(boolean multiple) {
@@ -1142,7 +1179,9 @@ public class PaperInput extends Component implements HasStyle {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -1164,7 +1203,9 @@ public class PaperInput extends Component implements HasStyle {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -1198,6 +1239,7 @@ public class PaperInput extends Component implements HasStyle {
 	 * Restores the cursor to its original position after updating the value.
 	 * 
 	 * @param newValue
+	 *            The value that should be saved.
 	 */
 	public void updateValueAndPreserveCaret(java.lang.String newValue) {
 		getElement().callFunction("updateValueAndPreserveCaret", newValue);

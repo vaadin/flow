@@ -53,7 +53,7 @@ import elemental.json.JsonObject;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: iron-iconset-svg#2.0.0", "Flow#0.1.13-SNAPSHOT"})
+		"WebComponent: iron-iconset-svg#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-iconset-svg")
 @HtmlImport("frontend://bower_components/iron-iconset-svg/iron-iconset-svg.html")
 public class IronIconsetSvg extends Component implements HasStyle {
@@ -76,6 +76,7 @@ public class IronIconsetSvg extends Component implements HasStyle {
 	 * The name of the iconset.
 	 * 
 	 * @param name
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronIconsetSvg> R setName(java.lang.String name) {
@@ -101,6 +102,7 @@ public class IronIconsetSvg extends Component implements HasStyle {
 	 * The size of an individual icon. Note that icons must be square.
 	 * 
 	 * @param size
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronIconsetSvg> R setSize(double size) {
@@ -138,6 +140,7 @@ public class IronIconsetSvg extends Component implements HasStyle {
 	 * cause their mirrored state to change.
 	 * 
 	 * @param rtlMirroring
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronIconsetSvg> R setRtlMirroring(boolean rtlMirroring) {
@@ -171,7 +174,9 @@ public class IronIconsetSvg extends Component implements HasStyle {
 	 * icons marked to be mirrored will be affected.
 	 * 
 	 * @param element
+	 *            Element to which the icon is applied.
 	 * @param iconName
+	 *            Name of the icon to apply.
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -185,6 +190,7 @@ public class IronIconsetSvg extends Component implements HasStyle {
 	 * {@code applyIcon}.
 	 * 
 	 * @param element
+	 *            The element from which the icon is removed.
 	 */
 	public void removeIcon(elemental.json.JsonObject element) {
 		getElement().callFunction("removeIcon", element);

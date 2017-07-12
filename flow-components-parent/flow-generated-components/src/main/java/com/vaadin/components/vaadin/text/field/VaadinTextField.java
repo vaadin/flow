@@ -72,6 +72,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * Specify that this control should have input focus when the page loads.
 	 * 
 	 * @param autofocus
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setAutofocus(boolean autofocus) {
@@ -97,6 +98,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setFocused(boolean focused) {
@@ -122,6 +124,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setDisabled(boolean disabled) {
@@ -153,6 +156,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * /Web/HTML/Element/input#attr-autocomplete
 	 * 
 	 * @param autocomplete
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setAutocomplete(
@@ -186,6 +190,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * autocorrection.
 	 * 
 	 * @param autocorrect
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setAutocorrect(
@@ -213,6 +218,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * Error to show when the input value is invalid.
 	 * 
 	 * @param errorMessage
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setErrorMessage(
@@ -240,6 +246,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * String used for the label element.
 	 * 
 	 * @param label
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setLabel(java.lang.String label) {
@@ -267,6 +274,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * value must be the id of a <datalist> element in the same document.
 	 * 
 	 * @param list
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setList(java.lang.String list) {
@@ -294,6 +302,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * enter.
 	 * 
 	 * @param maxlength
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setMaxlength(double maxlength) {
@@ -321,6 +330,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * enter.
 	 * 
 	 * @param minlength
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setMinlength(double minlength) {
@@ -346,6 +356,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * The name of the control, which is submitted with the form data.
 	 * 
 	 * @param name
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setName(java.lang.String name) {
@@ -373,6 +384,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * match the entire value, not just some subset.
 	 * 
 	 * @param pattern
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setPattern(java.lang.String pattern) {
@@ -398,6 +410,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * A hint to the user of what can be entered in the control.
 	 * 
 	 * @param placeholder
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setPlaceholder(
@@ -427,6 +440,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * control.
 	 * 
 	 * @param readonly
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setReadonly(boolean readonly) {
@@ -452,6 +466,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * Specifies that the user must fill in a value.
 	 * 
 	 * @param required
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setRequired(boolean required) {
@@ -477,6 +492,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * Message to show to the user when validation fails.
 	 * 
 	 * @param title
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setTitle(java.lang.String title) {
@@ -505,6 +521,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * binding.
 	 * 
 	 * @param value
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setValue(java.lang.String value) {
@@ -531,6 +548,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * This property is set to true when the control value invalid.
 	 * 
 	 * @param invalid
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setInvalid(boolean invalid) {
@@ -558,6 +576,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * It can be used for example in styling of the component.
 	 * 
 	 * @param hasValue
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setHasValue(boolean hasValue) {
@@ -585,6 +604,7 @@ public class VaadinTextField extends Component implements HasStyle {
 	 * with the given {@code pattern}.
 	 * 
 	 * @param preventInvalidInput
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinTextField> R setPreventInvalidInput(
@@ -625,8 +645,11 @@ public class VaadinTextField extends Component implements HasStyle {
 
 	/**
 	 * @param prop
+	 *            Missing documentation!
 	 * @param oldVal
+	 *            Missing documentation!
 	 * @param newVal
+	 *            Missing documentation!
 	 */
 	public void attributeChangedCallback(JsonObject prop,
 			elemental.json.JsonObject oldVal, elemental.json.JsonObject newVal) {

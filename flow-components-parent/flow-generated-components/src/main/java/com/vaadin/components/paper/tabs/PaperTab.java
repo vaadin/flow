@@ -83,6 +83,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setFocused(boolean focused) {
@@ -109,6 +110,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setDisabled(boolean disabled) {
@@ -136,6 +138,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setKeyEventTarget(
@@ -164,6 +167,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setStopKeyboardEventPropagation(
@@ -183,6 +187,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setKeyBindings(
@@ -209,6 +214,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * If true, the user is currently holding down the button.
 	 * 
 	 * @param pressed
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setPressed(boolean pressed) {
@@ -236,6 +242,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * the spacebar.
 	 * 
 	 * @param toggles
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setToggles(boolean toggles) {
@@ -262,6 +269,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setActive(boolean active) {
@@ -291,6 +299,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * keyboard input).
 	 * 
 	 * @param pointerDown
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setPointerDown(boolean pointerDown) {
@@ -318,6 +327,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * keyboard.
 	 * 
 	 * @param receivedFocusFromKeyboard
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setReceivedFocusFromKeyboard(
@@ -347,6 +357,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setAriaActiveAttribute(
@@ -376,6 +387,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * with via the pointer.
 	 * 
 	 * @param noink
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setNoink(boolean noink) {
@@ -403,6 +415,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * anchor element found in its descendants
 	 * 
 	 * @param link
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTab> R setLink(boolean link) {
@@ -418,7 +431,9 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -440,7 +455,9 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -455,6 +472,7 @@ public class PaperTab extends Component implements HasStyle, HasComponents {
 	 * ripple effect is dynamically on demand when needed.
 	 * 
 	 * @param optTriggeringEvent
+	 *            (optional) event that triggered the ripple.
 	 */
 	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);

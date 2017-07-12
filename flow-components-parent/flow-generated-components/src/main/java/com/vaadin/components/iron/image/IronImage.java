@@ -109,6 +109,7 @@ public class IronImage extends Component implements HasStyle {
 	 * The URL of an image.
 	 * 
 	 * @param src
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setSrc(java.lang.String src) {
@@ -134,6 +135,7 @@ public class IronImage extends Component implements HasStyle {
 	 * A short text alternative for the image.
 	 * 
 	 * @param alt
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setAlt(java.lang.String alt) {
@@ -161,6 +163,7 @@ public class IronImage extends Component implements HasStyle {
 	 * https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image
 	 * 
 	 * @param crossorigin
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setCrossorigin(java.lang.String crossorigin) {
@@ -191,6 +194,7 @@ public class IronImage extends Component implements HasStyle {
 	 * be invalid, to prevent 404 requests.
 	 * 
 	 * @param preventLoad
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setPreventLoad(boolean preventLoad) {
@@ -224,6 +228,7 @@ public class IronImage extends Component implements HasStyle {
 	 * size).
 	 * 
 	 * @param sizing
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setSizing(java.lang.String sizing) {
@@ -251,6 +256,7 @@ public class IronImage extends Component implements HasStyle {
 	 * determines how the image is aligned within the element bounds.
 	 * 
 	 * @param position
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setPosition(java.lang.String position) {
@@ -278,6 +284,7 @@ public class IronImage extends Component implements HasStyle {
 	 * {@code placeholder} image to be shown until the new image has loaded.
 	 * 
 	 * @param preload
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setPreload(boolean preload) {
@@ -307,6 +314,7 @@ public class IronImage extends Component implements HasStyle {
 	 * rendering.
 	 * 
 	 * @param placeholder
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setPlaceholder(java.lang.String placeholder) {
@@ -335,6 +343,7 @@ public class IronImage extends Component implements HasStyle {
 	 * image to fade into place.
 	 * 
 	 * @param fade
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setFade(boolean fade) {
@@ -361,6 +370,7 @@ public class IronImage extends Component implements HasStyle {
 	 * Read-only value that is true when the image is loaded.
 	 * 
 	 * @param loaded
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setLoaded(boolean loaded) {
@@ -389,6 +399,7 @@ public class IronImage extends Component implements HasStyle {
 	 * {@code preload} option is used.
 	 * 
 	 * @param loading
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setLoading(boolean loading) {
@@ -417,6 +428,7 @@ public class IronImage extends Component implements HasStyle {
 	 * load.
 	 * 
 	 * @param error
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setError(boolean error) {
@@ -444,6 +456,7 @@ public class IronImage extends Component implements HasStyle {
 	 * be set via CSS.
 	 * 
 	 * @param width
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setWidth(double width) {
@@ -471,6 +484,7 @@ public class IronImage extends Component implements HasStyle {
 	 * be set via CSS.
 	 * 
 	 * @param height
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronImage> R setHeight(double height) {

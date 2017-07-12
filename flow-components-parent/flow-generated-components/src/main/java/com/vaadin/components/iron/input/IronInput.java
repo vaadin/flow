@@ -123,6 +123,7 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	 * Name of the validator to use.
 	 * 
 	 * @param validator
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronInput> R setValidator(java.lang.String validator) {
@@ -150,6 +151,7 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	 * True if the last call to {@code validate} is invalid.
 	 * 
 	 * @param invalid
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronInput> R setInvalid(boolean invalid) {
@@ -179,6 +181,7 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	 * input's {@code value} property to set a default value.
 	 * 
 	 * @param bindValue
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronInput> R setBindValue(java.lang.String bindValue) {
@@ -209,6 +212,7 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	 * {@code input is="iron-input"} value attribute).
 	 * 
 	 * @param value
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronInput> R setValue(elemental.json.JsonObject value) {
@@ -268,6 +272,7 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	 * 
 	 * 
 	 * @param allowedPattern
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronInput> R setAllowedPattern(
@@ -295,6 +300,7 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	 * Set to true to auto-validate the input value as you type.
 	 * 
 	 * @param autoValidate
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronInput> R setAutoValidate(boolean autoValidate) {
@@ -320,6 +326,7 @@ public class IronInput extends Component implements HasStyle, HasComponents {
 	 * Returns the distributed <input> element.
 	 * 
 	 * @param inputElement
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronInput> R setInputElement(

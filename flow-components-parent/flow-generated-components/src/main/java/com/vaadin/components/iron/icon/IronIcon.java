@@ -113,6 +113,7 @@ public class IronIcon extends Component implements HasStyle {
 	 * {@code iconset_name:icon_name}.
 	 * 
 	 * @param icon
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronIcon> R setIcon(java.lang.String icon) {
@@ -138,6 +139,7 @@ public class IronIcon extends Component implements HasStyle {
 	 * The name of the theme to used, if one is specified by the iconset.
 	 * 
 	 * @param theme
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronIcon> R setTheme(java.lang.String theme) {
@@ -167,6 +169,7 @@ public class IronIcon extends Component implements HasStyle {
 	 * over a given icon attribute.
 	 * 
 	 * @param src
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronIcon> R setSrc(java.lang.String src) {

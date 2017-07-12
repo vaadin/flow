@@ -84,6 +84,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * The selected color, as hex (i.e. #ffffff). value.
 	 * 
 	 * @param color
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setColor(java.lang.String color) {
@@ -117,6 +118,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * the {@code columnCount} property.
 	 * 
 	 * @param colorList
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setColorList(
@@ -149,6 +151,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * Material Design palette has 18 colors
 	 * 
 	 * @param columnCount
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setColumnCount(double columnCount) {
@@ -176,6 +179,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param horizontalAlign
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setHorizontalAlign(
@@ -205,6 +209,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * relative to the dropdown trigger.
 	 * 
 	 * @param verticalAlign
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setVerticalAlign(
@@ -234,6 +239,7 @@ public class PaperSwatchPicker extends Component implements HasStyle {
 	 * interacted with via the pointer.
 	 * 
 	 * @param noink
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperSwatchPicker> R setNoink(boolean noink) {

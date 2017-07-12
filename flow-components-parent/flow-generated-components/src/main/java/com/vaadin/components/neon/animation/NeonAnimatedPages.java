@@ -86,6 +86,7 @@ public class NeonAnimatedPages extends Component
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setAttrForSelected(
@@ -130,6 +131,7 @@ public class NeonAnimatedPages extends Component
 	 * item.
 	 * 
 	 * @param selected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelected(java.lang.String selected) {
@@ -144,6 +146,7 @@ public class NeonAnimatedPages extends Component
 	 * item.
 	 * 
 	 * @param selected
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelected(double selected) {
@@ -169,6 +172,7 @@ public class NeonAnimatedPages extends Component
 	 * Returns the currently selected item.
 	 * 
 	 * @param selectedItem
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectedItem(
@@ -187,6 +191,7 @@ public class NeonAnimatedPages extends Component
 
 	/**
 	 * @param activateEvent
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setActivateEvent(
@@ -216,6 +221,7 @@ public class NeonAnimatedPages extends Component
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectable(
@@ -243,6 +249,7 @@ public class NeonAnimatedPages extends Component
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectedClass(
@@ -270,6 +277,7 @@ public class NeonAnimatedPages extends Component
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setSelectedAttribute(
@@ -299,6 +307,7 @@ public class NeonAnimatedPages extends Component
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setFallbackSelection(
@@ -327,6 +336,7 @@ public class NeonAnimatedPages extends Component
 	 * The list of items from which a selection can be made.
 	 * 
 	 * @param items
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setItems(
@@ -353,6 +363,7 @@ public class NeonAnimatedPages extends Component
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setAnimationConfig(
@@ -383,6 +394,7 @@ public class NeonAnimatedPages extends Component
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setEntryAnimation(
@@ -414,6 +426,7 @@ public class NeonAnimatedPages extends Component
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setExitAnimation(
@@ -443,6 +456,7 @@ public class NeonAnimatedPages extends Component
 	 * its animation config.
 	 * 
 	 * @param animateInitialSelection
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatedPages> R setAnimateInitialSelection(
@@ -469,6 +483,7 @@ public class NeonAnimatedPages extends Component
 	 * ancestor detects a request for notifications.
 	 * 
 	 * @param parentResizable
+	 *            Missing documentation!
 	 */
 	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
@@ -481,6 +496,7 @@ public class NeonAnimatedPages extends Component
 	 * should be notified of a resize change.
 	 * 
 	 * @param target
+	 *            Missing documentation!
 	 */
 	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
@@ -494,6 +510,8 @@ public class NeonAnimatedPages extends Component
 	 * should be notified, or false if it should not be notified.
 	 * 
 	 * @param element
+	 *            A candidate descendant element that implements
+	 *            `IronResizableBehavior`.
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -506,6 +524,7 @@ public class NeonAnimatedPages extends Component
 	 * Returns the index of the given item.
 	 * 
 	 * @param item
+	 *            Missing documentation!
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -518,9 +537,9 @@ public class NeonAnimatedPages extends Component
 	 * Selects the given value.
 	 * 
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 */
 	public void select(java.lang.String valueString, double valueNumber) {
 		getElement().callFunction("select", valueString, valueNumber);
@@ -550,6 +569,7 @@ public class NeonAnimatedPages extends Component
 	 * Selects the item at the given index.
 	 * 
 	 * @param index
+	 *            Missing documentation!
 	 */
 	public void selectIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("selectIndex", index);
@@ -583,6 +603,7 @@ public class NeonAnimatedPages extends Component
 	 * or a map of animation type to array of configuration objects.
 	 * 
 	 * @param type
+	 *            Missing documentation!
 	 */
 	public void getAnimationConfig(elemental.json.JsonObject type) {
 		getElement().callFunction("getAnimationConfig", type);
@@ -594,7 +615,9 @@ public class NeonAnimatedPages extends Component
 	 * Plays an animation with an optional {@code type}.
 	 * 
 	 * @param type
+	 *            Missing documentation!
 	 * @param cookie
+	 *            Missing documentation!
 	 */
 	public void playAnimation(elemental.json.JsonObject type,
 			elemental.json.JsonObject cookie) {

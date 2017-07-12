@@ -167,6 +167,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * input value is not null.
 	 * 
 	 * @param noLabelFloat
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setNoLabelFloat(
@@ -193,6 +194,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * Set to true to always float the floating label.
 	 * 
 	 * @param alwaysFloatLabel
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setAlwaysFloatLabel(
@@ -219,6 +221,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * The attribute to listen for value changes on.
 	 * 
 	 * @param attrForValue
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setAttrForValue(
@@ -246,6 +249,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * Set to true to auto-validate the input value when it changes.
 	 * 
 	 * @param autoValidate
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setAutoValidate(
@@ -276,6 +280,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * {@code iron-input-validate} event is heard from a child.
 	 * 
 	 * @param invalid
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setInvalid(boolean invalid) {
@@ -302,6 +307,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * True if the input has focus.
 	 * 
 	 * @param focused
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputContainer> R setFocused(boolean focused) {
@@ -315,6 +321,7 @@ public class PaperInputContainer extends Component implements HasStyle {
 	 * Call this to update the state of add-ons.
 	 * 
 	 * @param state
+	 *            Add-on state.
 	 */
 	public void updateAddons(JsonObject state) {
 		getElement().callFunction("updateAddons", state);
