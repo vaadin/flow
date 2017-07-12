@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.components.vaadin.text.field.VaadinTextField;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.demo.SourceContent;
 
 /**
  * View for {@link VaadinTextField} demo.
@@ -26,15 +25,10 @@ import com.vaadin.flow.demo.SourceContent;
 public class VaadinTextFieldView extends DemoView {
     @Override
     void initView() {
+        // begin-source-example
         VaadinTextField textField = new VaadinTextField();
         textField.setLabel("Text field label");
+        // end-source-example
         add(textField);
-    }
-
-    @Override
-    public void populateSources(SourceContent container) {
-        container.addCode("VaadinTextField textField = new VaadinTextField();\n"
-                + "textField.setLabel(\"Text field label\");\n"
-                + "layoutContainer.add(textField);");
     }
 }

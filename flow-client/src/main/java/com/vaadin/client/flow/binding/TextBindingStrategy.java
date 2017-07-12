@@ -16,6 +16,8 @@
 package com.vaadin.client.flow.binding;
 
 import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Computation;
@@ -34,6 +36,13 @@ import elemental.dom.Text;
  */
 public class TextBindingStrategy implements BindingStrategy<Text> {
 
+    /**
+     * This is used as a weak set. Only keys are important so that they are
+     * weakly referenced
+     */
+    private static final JsWeakMap<StateNode, Boolean> BOUND = JsCollections
+            .weakMap();
+
     @Override
     public Text create(StateNode node) {
         return Browser.getDocument().createTextNode("");
@@ -49,14 +58,23 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
             BinderContext nodeFactory) {
         assert stateNode.hasFeature(NodeFeatures.TEXT_NODE);
 
+        if (BOUND.has(stateNode)) {
+            return;
+        }
+        BOUND.set(stateNode, true);
+
         NodeMap textMap = stateNode.getMap(NodeFeatures.TEXT_NODE);
         MapProperty textProperty = textMap.getProperty(NodeFeatures.TEXT);
 
         Computation computation = Reactive.runWhenDepedenciesChange(
                 () -> htmlNode.setData((String) textProperty.getValue()));
 
-        stateNode.addUnregisterListener(e -> computation.stop());
+        stateNode.addUnregisterListener(e -> unbind(stateNode, computation));
 
     }
 
+    private void unbind(StateNode node, Computation computation) {
+        computation.stop();
+        BOUND.delete(node);
+    }
 }
