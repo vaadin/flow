@@ -34,7 +34,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the user is currently holding down the button.\n       "
+      "description": "If true, the user is currently holding down the button.\n       ",
+      "readOnly": true
     },
     {
       "name": "toggles",
@@ -58,7 +59,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the element is currently being pressed by a \"pointer,\" which\nis loosely defined as mouse or touch input (but specifically excluding\nkeyboard input).\n       "
+      "description": "True if the element is currently being pressed by a \"pointer,\" which\nis loosely defined as mouse or touch input (but specifically excluding\nkeyboard input).\n       ",
+      "readOnly": true
     },
     {
       "name": "receivedFocusFromKeyboard",
@@ -66,7 +68,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the input device that caused the element to receive focus\nwas a keyboard.\n       "
+      "description": "True if the input device that caused the element to receive focus\nwas a keyboard.\n       ",
+      "readOnly": true
     },
     {
       "name": "ariaActiveAttribute",
@@ -82,7 +85,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n       "
+      "description": "If true, the element currently has focus.\n       ",
+      "readOnly": true
     },
     {
       "name": "disabled",

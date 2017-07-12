@@ -100,19 +100,6 @@ public class VaadinButton extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinButton> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -151,5 +138,22 @@ public class VaadinButton extends Component
 	 */
 	protected <R extends VaadinButton> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Sets the given string as the content of this component.
+	 * 
+	 * @param the
+	 *            text content to set
+	 * @see HasText#setText(String)
+	 */
+	public VaadinButton(java.lang.String text) {
+		setText(text);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public VaadinButton() {
 	}
 }

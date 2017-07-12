@@ -395,20 +395,6 @@ public class VaadinComboBox extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A read-only property indicating whether this combo box has a value
-	 * selected or not. It can be used for example in styling of the component.
-	 * 
-	 * @param hasValue
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinComboBox> R setHasValue(boolean hasValue) {
-		getElement().setProperty("hasValue", hasValue);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * When set to {@code true}, a loading spinner is displayed on top of the
 	 * list of options.
 	 * <p>
@@ -577,20 +563,6 @@ public class VaadinComboBox extends Component implements HasStyle {
 	 */
 	public JsonObject getInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns a reference to the native input element.
-	 * 
-	 * @param inputElement
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinComboBox> R setInputElement(
-			elemental.json.JsonObject inputElement) {
-		getElement().setPropertyJson("inputElement", inputElement);
-		return getSelf();
 	}
 
 	/**
@@ -891,19 +863,6 @@ public class VaadinComboBox extends Component implements HasStyle {
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True when the input field has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public <R extends VaadinComboBox> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**

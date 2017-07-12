@@ -67,4 +67,21 @@ public class PaperItemBody extends Component implements HasStyle, HasComponents 
 	protected <R extends PaperItemBody> R getSelf() {
 		return (R) this;
 	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperItemBody(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperItemBody() {
+	}
 }

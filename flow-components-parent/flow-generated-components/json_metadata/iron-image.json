@@ -82,7 +82,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Read-only value that is true when the image is loaded.\n         "
+      "description": "Read-only value that is true when the image is loaded.\n         ",
+      "readOnly": true
     },
     {
       "name": "loading",
@@ -90,7 +91,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Read-only value that tracks the loading state of the image when the `preload`\noption is used.\n         "
+      "description": "Read-only value that tracks the loading state of the image when the `preload`\noption is used.\n         ",
+      "readOnly": true
     },
     {
       "name": "error",
@@ -98,7 +100,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Read-only value that indicates that the last set `src` failed to load.\n         "
+      "description": "Read-only value that indicates that the last set `src` failed to load.\n         ",
+      "readOnly": true
     },
     {
       "name": "width",

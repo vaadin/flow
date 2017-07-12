@@ -129,19 +129,6 @@ public class PaperIconButton extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * If true, the user is currently holding down the button.
-	 * 
-	 * @param pressed
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperIconButton> R setPressed(boolean pressed) {
-		getElement().setProperty("pressed", pressed);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
 	 * <p>
@@ -209,21 +196,6 @@ public class PaperIconButton extends Component implements HasStyle {
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the element is currently being pressed by a "pointer," which is
-	 * loosely defined as mouse or touch input (but specifically excluding
-	 * keyboard input).
-	 * 
-	 * @param pointerDown
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperIconButton> R setPointerDown(boolean pointerDown) {
-		getElement().setProperty("pointerDown", pointerDown);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
 	 * <p>
@@ -232,22 +204,6 @@ public class PaperIconButton extends Component implements HasStyle {
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the input device that caused the element to receive focus was a
-	 * keyboard.
-	 * 
-	 * @param receivedFocusFromKeyboard
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperIconButton> R setReceivedFocusFromKeyboard(
-			boolean receivedFocusFromKeyboard) {
-		getElement().setProperty("receivedFocusFromKeyboard",
-				receivedFocusFromKeyboard);
-		return getSelf();
 	}
 
 	/**
@@ -290,19 +246,6 @@ public class PaperIconButton extends Component implements HasStyle {
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperIconButton> R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**

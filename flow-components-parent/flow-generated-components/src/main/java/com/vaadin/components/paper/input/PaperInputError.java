@@ -20,10 +20,10 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.components.paper.input.PaperInputError;
 import elemental.json.JsonObject;
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.components.paper.input.PaperInputError;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -66,19 +66,6 @@ public class PaperInputError extends Component
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the error is showing.
-	 * 
-	 * @param invalid
-	 * @return this instance, for method chaining
-	 */
-	public <R extends PaperInputError> R setInvalid(boolean invalid) {
-		getElement().setProperty("invalid", invalid);
-		return getSelf();
 	}
 
 	/**
@@ -145,5 +132,22 @@ public class PaperInputError extends Component
 	 */
 	protected <R extends PaperInputError> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperInputError(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperInputError() {
 	}
 }

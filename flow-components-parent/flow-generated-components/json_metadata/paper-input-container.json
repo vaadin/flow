@@ -50,7 +50,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the input has focus.\n       "
+      "description": "True if the input has focus.\n       ",
+      "readOnly": true
     }
   ],
   "methods": [

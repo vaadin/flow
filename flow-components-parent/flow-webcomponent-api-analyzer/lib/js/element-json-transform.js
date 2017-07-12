@@ -128,7 +128,9 @@ const propertiesToJsonArray = (properties) => {
         "type": getTypes(property.type),
         "objectType": getObjectType(property.type),
         "description": property.jsdoc ? property.jsdoc.description : 'Missing documentation!',
-// TODO #1768 "readonly": true
+      }
+      if (property.readOnly) {
+        propertyJson.readOnly = true;
       }
       propertiesJson.push(propertyJson);
     }
@@ -154,6 +156,10 @@ const parametersToJsonArray = (parameters) => {
     return parametersJson;
   }
   for (let parameter of parameters) {
+    // ignore parameters of the type 'Event' - they don't have meaningful data
+    if (parameter.type === 'Event') {
+      continue;
+    }
     const parameterJson = {
       "name": parameter.name,
       "type": getTypes(parameter.type),
