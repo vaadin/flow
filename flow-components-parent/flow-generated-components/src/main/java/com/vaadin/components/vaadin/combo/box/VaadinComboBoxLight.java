@@ -66,7 +66,8 @@ import com.vaadin.ui.HasComponents;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-light#null", "Flow#0.1.13-SNAPSHOT"})
+		"WebComponent: vaadin-combo-box-light#2.0.0-beta1",
+		"Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class VaadinComboBoxLight extends Component
