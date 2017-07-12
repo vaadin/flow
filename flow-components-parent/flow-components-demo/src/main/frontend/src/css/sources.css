@@ -2,6 +2,8 @@
     margin: 10px 20px;
     line-height: 1.5em;
     font-family: monospace;
+    max-height: 50vh;
+    overflow-y: auto;
 }
 
 pre, code {
