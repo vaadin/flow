@@ -32,7 +32,7 @@ import com.vaadin.shared.Registration;
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * {@code <vaadin-text-field>} is a Polymer element for text field control in
+ * {@code <vaadin-text-field>} is a Polymer 2 element for text field control in
  * forms.
  * 
  * {@code }`html <vaadin-text-field label="First Name"> </vaadin-text-field>
