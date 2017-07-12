@@ -739,7 +739,9 @@ public class ComponentGenerator {
                     addJavaDoc(property.getDescription(), method.getJavaDoc());
                 }
 
-                method.getJavaDoc().addTagValue(JAVADOC_PARAM, parameterName);
+                method.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                        String.format("%s the %s value to set", parameterName,
+                                setterType.getSimpleName()));
 
                 if (fluentSetters) {
                     addFluentReturnToSetter(javaClass, method);
@@ -844,6 +846,10 @@ public class ComponentGenerator {
                         ComponentGeneratorUtils
                                 .generateValidJavaClassName(nameHint)));
 
+        method.getJavaDoc().addTagValue(JAVADOC_SEE, nestedClass.getName());
+        method.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                String.format("%s the %s object to pass as an argument",
+                        formattedName, nestedClass.getName()));
         method.addParameter(nestedClass, formattedName);
     }
 
@@ -870,10 +876,9 @@ public class ComponentGenerator {
             method.addParameter(ComponentGeneratorUtils.toJavaType(basicType),
                     name);
 
-            method.getJavaDoc().addTagValue(JAVADOC_PARAM,
-                    param.getName() + (useTypePostfixForVariableName
-                            ? " can be <code>null</code>"
-                            : ""));
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM, String
+                    .format("%s %s", param.getName(), param.getDescription()));
+
             names.add(name);
         }
         return names;

@@ -123,6 +123,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that represents the current value.
 	 * 
 	 * @param value
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setValue(double value) {
@@ -149,6 +150,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that indicates the minimum value of the range.
 	 * 
 	 * @param min
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setMin(double min) {
@@ -175,6 +177,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that indicates the maximum value of the range.
 	 * 
 	 * @param max
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setMax(double max) {
@@ -201,6 +204,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * Specifies the value granularity of the range's value.
 	 * 
 	 * @param step
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setStep(double step) {
@@ -239,6 +243,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that represents the current secondary progress.
 	 * 
 	 * @param secondaryProgress
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setSecondaryProgress(
@@ -277,6 +282,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * Use an indeterminate progress indicator.
 	 * 
 	 * @param indeterminate
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setIndeterminate(boolean indeterminate) {
@@ -302,6 +308,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * True if the progress is disabled.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setDisabled(boolean disabled) {

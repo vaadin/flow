@@ -124,6 +124,7 @@ public class PaperButton extends Component
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setKeyEventTarget(
@@ -152,6 +153,7 @@ public class PaperButton extends Component
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setStopKeyboardEventPropagation(
@@ -171,6 +173,7 @@ public class PaperButton extends Component
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setKeyBindings(
@@ -211,6 +214,7 @@ public class PaperButton extends Component
 	 * the spacebar.
 	 * 
 	 * @param toggles
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setToggles(boolean toggles) {
@@ -237,6 +241,7 @@ public class PaperButton extends Component
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setActive(boolean active) {
@@ -291,6 +296,7 @@ public class PaperButton extends Component
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setAriaActiveAttribute(
@@ -332,6 +338,7 @@ public class PaperButton extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setDisabled(boolean disabled) {
@@ -359,6 +366,7 @@ public class PaperButton extends Component
 	 * with via the pointer.
 	 * 
 	 * @param noink
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setNoink(boolean noink) {
@@ -398,6 +406,7 @@ public class PaperButton extends Component
 	 * If true, the button should be styled with a shadow.
 	 * 
 	 * @param raised
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperButton> R setRaised(boolean raised) {
@@ -413,7 +422,9 @@ public class PaperButton extends Component
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -435,7 +446,9 @@ public class PaperButton extends Component
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -450,6 +463,7 @@ public class PaperButton extends Component
 	 * ripple effect is dynamically on demand when needed.
 	 * 
 	 * @param optTriggeringEvent
+	 *            (optional) event that triggered the ripple.
 	 */
 	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);

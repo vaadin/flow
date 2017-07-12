@@ -118,6 +118,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setAttrForSelected(
@@ -162,6 +163,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * item.
 	 * 
 	 * @param selected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelected(java.lang.String selected) {
@@ -176,6 +178,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * item.
 	 * 
 	 * @param selected
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelected(double selected) {
@@ -217,6 +220,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * empty string to listen to no events.
 	 * 
 	 * @param activateEvent
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setActivateEvent(
@@ -246,6 +250,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectable(java.lang.String selectable) {
@@ -272,6 +277,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedClass(
@@ -299,6 +305,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedAttribute(
@@ -328,6 +335,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setFallbackSelection(
@@ -368,6 +376,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * If true, multiple selections are allowed.
 	 * 
 	 * @param multi
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setMulti(boolean multi) {
@@ -395,6 +404,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * {@code selected} when {@code multi} is true.
 	 * 
 	 * @param selectedValues
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronSelector> R setSelectedValues(
@@ -421,6 +431,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * Returns the index of the given item.
 	 * 
 	 * @param item
+	 *            Missing documentation!
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -435,9 +446,9 @@ public class IronSelector extends Component implements HasStyle {
 	 * {@code value} will be selected.
 	 * 
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 */
 	public void select(java.lang.String valueString, double valueNumber) {
 		getElement().callFunction("select", valueString, valueNumber);
@@ -467,6 +478,7 @@ public class IronSelector extends Component implements HasStyle {
 	 * Selects the item at the given index.
 	 * 
 	 * @param index
+	 *            Missing documentation!
 	 */
 	public void selectIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("selectIndex", index);
@@ -492,6 +504,7 @@ public class IronSelector extends Component implements HasStyle {
 
 	/**
 	 * @param multi
+	 *            Missing documentation!
 	 */
 	public void multiChanged(elemental.json.JsonObject multi) {
 		getElement().callFunction("multiChanged", multi);

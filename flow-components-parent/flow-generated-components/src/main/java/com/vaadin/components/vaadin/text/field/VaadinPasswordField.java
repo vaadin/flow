@@ -47,6 +47,7 @@ public class VaadinPasswordField extends Component implements HasStyle {
 	 * Set to true to hide the eye icon which toggles the password visibility.
 	 * 
 	 * @param hideToggleButton
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinPasswordField> R setHideToggleButton(

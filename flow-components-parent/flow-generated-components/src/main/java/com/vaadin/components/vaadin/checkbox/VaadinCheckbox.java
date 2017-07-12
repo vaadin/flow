@@ -82,6 +82,7 @@ public class VaadinCheckbox extends Component
 	 * Specify that this control should have input focus when the page loads.
 	 * 
 	 * @param autofocus
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinCheckbox> R setAutofocus(boolean autofocus) {
@@ -119,6 +120,7 @@ public class VaadinCheckbox extends Component
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinCheckbox> R setDisabled(boolean disabled) {
@@ -145,6 +147,7 @@ public class VaadinCheckbox extends Component
 	 * True if the checkbox is checked.
 	 * 
 	 * @param checked
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinCheckbox> R setChecked(boolean checked) {
@@ -177,6 +180,7 @@ public class VaadinCheckbox extends Component
 	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
 	 * 
 	 * @param indeterminate
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinCheckbox> R setIndeterminate(boolean indeterminate) {
@@ -202,6 +206,7 @@ public class VaadinCheckbox extends Component
 	 * The name of the control, which is submitted with the form data.
 	 * 
 	 * @param name
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinCheckbox> R setName(java.lang.String name) {
@@ -229,6 +234,7 @@ public class VaadinCheckbox extends Component
 	 * server when the control is inside a form.
 	 * 
 	 * @param value
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinCheckbox> R setValue(java.lang.String value) {

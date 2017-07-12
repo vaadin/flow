@@ -93,6 +93,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setDisabled(boolean disabled) {
@@ -120,6 +121,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setKeyEventTarget(
@@ -148,6 +150,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setStopKeyboardEventPropagation(
@@ -177,6 +180,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * callback. e.g. {@code keyBindings: 'esc': '_onEscPressed'}}
 	 * 
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setKeyBindings(
@@ -209,6 +213,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * inside the element.
 	 * 
 	 * @param sizingTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setSizingTarget(
@@ -235,6 +240,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * The element to fit {@code this} into.
 	 * 
 	 * @param fitInto
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setFitInto(
@@ -263,6 +269,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * it.
 	 * 
 	 * @param noOverlap
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoOverlap(boolean noOverlap) {
@@ -290,6 +297,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * will default to the parent node.
 	 * 
 	 * @param positionTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setPositionTarget(
@@ -320,6 +328,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code Polymer.IronFitBehavior}.
 	 * 
 	 * @param horizontalAlign
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setHorizontalAlign(
@@ -351,6 +360,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code Polymer.IronFitBehavior}.
 	 * 
 	 * @param verticalAlign
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setVerticalAlign(
@@ -382,6 +392,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * pick the values which minimize the cropping.
 	 * 
 	 * @param dynamicAlign
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setDynamicAlign(boolean dynamicAlign) {
@@ -431,6 +442,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * the left.
 	 * 
 	 * @param horizontalOffset
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setHorizontalOffset(
@@ -481,6 +493,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * upwards.
 	 * 
 	 * @param verticalOffset
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setVerticalOffset(double verticalOffset) {
@@ -506,6 +519,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to auto-fit on attach.
 	 * 
 	 * @param autoFitOnAttach
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAutoFitOnAttach(boolean autoFitOnAttach) {
@@ -532,6 +546,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * True if the overlay is currently displayed.
 	 * 
 	 * @param opened
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setOpened(boolean opened) {
@@ -571,6 +586,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * within the light DOM of the overlay.
 	 * 
 	 * @param withBackdrop
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setWithBackdrop(boolean withBackdrop) {
@@ -598,6 +614,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * {@code autofocus} attribute` when the overlay is opened.
 	 * 
 	 * @param noAutoFocus
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoAutoFocus(boolean noAutoFocus) {
@@ -623,6 +640,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to disable canceling the overlay with the ESC key.
 	 * 
 	 * @param noCancelOnEscKey
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoCancelOnEscKey(
@@ -649,6 +667,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to disable canceling the overlay by clicking outside it.
 	 * 
 	 * @param noCancelOnOutsideClick
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoCancelOnOutsideClick(
@@ -682,6 +701,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * reasons in addition to {@code canceled}.
 	 * 
 	 * @param closingReason
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setClosingReason(
@@ -708,6 +728,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to enable restoring of focus when overlay is closed.
 	 * 
 	 * @param restoreFocusOnClose
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setRestoreFocusOnClose(
@@ -734,6 +755,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to keep overlay always on top.
 	 * 
 	 * @param alwaysOnTop
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAlwaysOnTop(boolean alwaysOnTop) {
@@ -759,6 +781,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAnimationConfig(
@@ -789,6 +812,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setEntryAnimation(
@@ -820,6 +844,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setExitAnimation(
@@ -853,6 +878,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * details.
 	 * 
 	 * @param openAnimationConfig
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setOpenAnimationConfig(
@@ -886,6 +912,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * details.
 	 * 
 	 * @param closeAnimationConfig
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setCloseAnimationConfig(
@@ -915,6 +942,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * dropdown opens.
 	 * 
 	 * @param focusTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setFocusTarget(
@@ -941,6 +969,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Set to true to disable animations when opening and closing the dropdown.
 	 * 
 	 * @param noAnimations
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setNoAnimations(boolean noAnimations) {
@@ -970,6 +999,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * constrained to the dropdown when it opens.
 	 * 
 	 * @param allowOutsideScroll
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setAllowOutsideScroll(
@@ -996,6 +1026,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * The element that is contained by the dropdown, if any.
 	 * 
 	 * @param containedElement
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronDropdown> R setContainedElement(
@@ -1012,7 +1043,9 @@ public class IronDropdown extends Component implements HasStyle {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -1034,7 +1067,9 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -1121,6 +1156,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * ancestor detects a request for notifications.
 	 * 
 	 * @param parentResizable
+	 *            Missing documentation!
 	 */
 	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
@@ -1133,6 +1169,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * should be notified of a resize change.
 	 * 
 	 * @param target
+	 *            Missing documentation!
 	 */
 	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
@@ -1146,6 +1183,8 @@ public class IronDropdown extends Component implements HasStyle {
 	 * should be notified, or false if it should not be notified.
 	 * 
 	 * @param element
+	 *            A candidate descendant element that implements
+	 *            `IronResizableBehavior`.
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -1194,6 +1233,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Cancels the overlay.
 	 * 
 	 * @param event
+	 *            The original event
 	 */
 	public void cancel(elemental.json.JsonObject event) {
 		getElement().callFunction("cancel", event);
@@ -1219,6 +1259,7 @@ public class IronDropdown extends Component implements HasStyle {
 	 * or a map of animation type to array of configuration objects.
 	 * 
 	 * @param type
+	 *            Missing documentation!
 	 */
 	public void getAnimationConfig(elemental.json.JsonObject type) {
 		getElement().callFunction("getAnimationConfig", type);
@@ -1230,7 +1271,9 @@ public class IronDropdown extends Component implements HasStyle {
 	 * Plays an animation with an optional {@code type}.
 	 * 
 	 * @param type
+	 *            Missing documentation!
 	 * @param cookie
+	 *            Missing documentation!
 	 */
 	public void playAnimation(elemental.json.JsonObject type,
 			elemental.json.JsonObject cookie) {

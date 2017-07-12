@@ -49,6 +49,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The index of the item
 	 * 
 	 * @param index
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setIndex(double index) {
@@ -86,6 +87,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The item to render
 	 * 
 	 * @param item
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setItem(java.lang.String item) {
@@ -99,6 +101,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The item to render
 	 * 
 	 * @param item
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setItem(
@@ -125,6 +128,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * The text label corresponding to the item
 	 * 
 	 * @param label
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setLabel(java.lang.String label) {
@@ -150,6 +154,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * True when item is selected
 	 * 
 	 * @param selected
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setSelected(boolean selected) {
@@ -175,6 +180,7 @@ public class VaadinComboBoxItem extends Component implements HasStyle {
 	 * True when item is focused
 	 * 
 	 * @param focused
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxItem> R setFocused(boolean focused) {

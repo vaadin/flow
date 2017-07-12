@@ -59,6 +59,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setKeyEventTarget(
@@ -87,6 +88,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setStopKeyboardEventPropagation(
@@ -106,6 +108,7 @@ public class PaperIconButton extends Component implements HasStyle {
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setKeyBindings(
@@ -146,6 +149,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * the spacebar.
 	 * 
 	 * @param toggles
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setToggles(boolean toggles) {
@@ -172,6 +176,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setActive(boolean active) {
@@ -226,6 +231,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setAriaActiveAttribute(
@@ -267,6 +273,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setDisabled(boolean disabled) {
@@ -294,6 +301,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * with via the pointer.
 	 * 
 	 * @param noink
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setNoink(boolean noink) {
@@ -321,6 +329,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * icon property should not be.
 	 * 
 	 * @param src
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setSrc(java.lang.String src) {
@@ -350,6 +359,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * should not be.
 	 * 
 	 * @param icon
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setIcon(java.lang.String icon) {
@@ -375,6 +385,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * Specifies the alternate text for the button, for accessibility.
 	 * 
 	 * @param alt
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconButton> R setAlt(java.lang.String alt) {
@@ -390,7 +401,9 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -412,7 +425,9 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -427,6 +442,7 @@ public class PaperIconButton extends Component implements HasStyle {
 	 * ripple effect is dynamically on demand when needed.
 	 * 
 	 * @param optTriggeringEvent
+	 *            (optional) event that triggered the ripple.
 	 */
 	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);
