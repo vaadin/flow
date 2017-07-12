@@ -18,6 +18,9 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.demo.SourceContent;
+import com.vaadin.flow.demo.SourceContentResolver;
+import com.vaadin.flow.demo.model.SourceCodeExample;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
@@ -54,7 +57,28 @@ public abstract class DemoView extends Component
      * @param container
      *            sample source code container.
      */
-    public abstract void populateSources(SourceContent container);
+    public void populateSources(SourceContent container) {
+        SourceContentResolver.getSourceCodeExamplesForClass(getClass())
+                .forEach(example -> populateSourceExample(container, example));
+    }
+
+    private void populateSourceExample(SourceContent container,
+            SourceCodeExample example) {
+        container.add(ElementFactory.createHeading3(example.getHeading()));
+        String sourceString = example.getSourceCode();
+        switch (example.getSourceType()) {
+        case CSS:
+            container.addCss(sourceString);
+            break;
+        case JAVA:
+            container.addCode(sourceString);
+            break;
+        case UNDEFINED:
+        default:
+            container.addCode(sourceString);
+            break;
+        }
+    }
 
     @Override
     public void add(Component... components) {
