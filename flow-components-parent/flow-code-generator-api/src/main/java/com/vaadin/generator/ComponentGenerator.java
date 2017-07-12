@@ -60,6 +60,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasText;
 
 import elemental.json.JsonObject;
 
@@ -283,30 +284,11 @@ public class ComponentGenerator {
                 .setSuperType(Component.class).setName(ComponentGeneratorUtils
                         .generateValidJavaClassName(metadata.getTag()));
 
-        // all components have styles
-        javaClass.addInterface(HasStyle.class);
-
-        List<String> classBehaviorsAndMixins = new ArrayList<>();
-        classBehaviorsAndMixins.add(javaClass.getName());
-
-        if (metadata.getBehaviors() != null) {
-            classBehaviorsAndMixins.addAll(metadata.getBehaviors());
-        }
-
-        Set<Class<?>> interfaces = BehaviorRegistry
-                .getClassesForBehaviors(classBehaviorsAndMixins);
-        interfaces.forEach(javaClass::addInterface);
-
+        addInterfaces(metadata, javaClass);
         addClassAnnotations(metadata, javaClass);
 
         if (metadata.getProperties() != null) {
-            metadata.getProperties().forEach(property -> {
-                generateGetterFor(javaClass, property, metadata.getEvents());
-
-                if (!property.isReadOnly()) {
-                    generateSetterFor(javaClass, property);
-                }
-            });
+            generateGettersAndSetters(metadata, javaClass);
         }
 
         if (metadata.getMethods() != null) {
@@ -328,12 +310,81 @@ public class ComponentGenerator {
         }
 
         if (fluentSetters) {
-            javaClass.addTypeVariable().setName(GENERIC_TYPE)
-                    .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
             generateGetSelf(javaClass);
         }
 
+        generateConstructors(javaClass);
+
         return javaClass;
+    }
+
+    private void generateConstructors(JavaClassSource javaClass) {
+        boolean generateDefaultConstructor = false;
+        if (javaClass.hasInterface(HasText.class)) {
+            generateDefaultConstructor = true;
+            MethodSource<JavaClassSource> constructor = javaClass.addMethod()
+                    .setConstructor(true).setPublic().setBody("setText(text);");
+            constructor.addParameter(String.class, "text");
+            constructor.getJavaDoc().setText(
+                    "Sets the given string as the content of this component.")
+                    .addTagValue(JAVADOC_PARAM, "the text content to set")
+                    .addTagValue(JAVADOC_SEE, "HasText#setText(String)");
+
+        } else if (javaClass.hasInterface(HasComponents.class)) {
+            generateDefaultConstructor = true;
+            MethodSource<JavaClassSource> constructor = javaClass.addMethod()
+                    .setConstructor(true).setPublic()
+                    .setBody("add(components);");
+            constructor.addParameter(Component.class, "components")
+                    .setVarArgs(true);
+            constructor.getJavaDoc().setText(
+                    "Adds the given components as children of this component.")
+                    .addTagValue(JAVADOC_PARAM,
+                            "components the components to add")
+                    .addTagValue(JAVADOC_SEE,
+                            "HasComponents#add(Component...)");
+        }
+
+        if (generateDefaultConstructor) {
+            javaClass.addMethod().setConstructor(true).setPublic().setBody("")
+                    .getJavaDoc().setText("Default constructor.");
+        }
+    }
+
+    private void addInterfaces(ComponentMetadata metadata,
+            JavaClassSource javaClass) {
+
+        // all components have styles
+        javaClass.addInterface(HasStyle.class);
+
+        List<String> classBehaviorsAndMixins = new ArrayList<>();
+        classBehaviorsAndMixins.add(javaClass.getName());
+
+        if (metadata.getBehaviors() != null) {
+            classBehaviorsAndMixins.addAll(metadata.getBehaviors());
+        }
+
+        Set<Class<?>> interfaces = BehaviorRegistry
+                .getClassesForBehaviors(classBehaviorsAndMixins);
+        interfaces.forEach(clazz -> {
+            if (clazz.getTypeParameters().length > 0) {
+                javaClass.addInterface(
+                        clazz.getName() + "<" + javaClass.getName() + ">");
+            } else {
+                javaClass.addInterface(clazz);
+            }
+        });
+    }
+
+    private void generateGettersAndSetters(ComponentMetadata metadata,
+            JavaClassSource javaClass) {
+        metadata.getProperties().forEach(property -> {
+            generateGetterFor(javaClass, property, metadata.getEvents());
+
+            if (!property.isReadOnly()) {
+                generateSetterFor(javaClass, property);
+            }
+        });
     }
 
     private void generateAdders(ComponentMetadata metadata,
@@ -425,6 +476,7 @@ public class ComponentGenerator {
     private void generateGetSelf(JavaClassSource javaClass) {
         MethodSource<JavaClassSource> method = javaClass.addMethod()
                 .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
+        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
 
         method.getJavaDoc().setText(
                 "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
@@ -639,6 +691,9 @@ public class ComponentGenerator {
                             property.getName() + "-property");
 
             MethodSource<JavaClassSource> method = javaClass.addMethod()
+                    .setName(ComponentGeneratorUtils
+                            .generateMethodNameForProperty("set",
+                                    property.getName()))
                     .setPublic();
             method.setName(ComponentGeneratorUtils
                     .generateMethodNameForProperty("set", property.getName()));
@@ -657,7 +712,7 @@ public class ComponentGenerator {
                     "property the property to set");
 
             if (fluentSetters) {
-                addFluentReturnToSetter(method);
+                addFluentReturnToSetter(javaClass, method);
             }
 
         } else {
@@ -687,13 +742,15 @@ public class ComponentGenerator {
                 method.getJavaDoc().addTagValue(JAVADOC_PARAM, parameterName);
 
                 if (fluentSetters) {
-                    addFluentReturnToSetter(method);
+                    addFluentReturnToSetter(javaClass, method);
                 }
             }
         }
     }
 
-    private void addFluentReturnToSetter(MethodSource<JavaClassSource> method) {
+    private void addFluentReturnToSetter(JavaClassSource javaClass,
+            MethodSource<JavaClassSource> method) {
+        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
         method.setReturnType(GENERIC_TYPE);
         method.setBody(method.getBody() + "return getSelf();");
         method.getJavaDoc().addTagValue("@return",

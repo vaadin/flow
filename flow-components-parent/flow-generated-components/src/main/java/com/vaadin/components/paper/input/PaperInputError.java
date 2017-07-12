@@ -23,6 +23,7 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.components.paper.input.PaperInputError;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -50,7 +51,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
-public class PaperInputError<R extends PaperInputError<R>> extends Component
+public class PaperInputError extends Component
 		implements
 			HasStyle,
 			HasComponents {
@@ -65,19 +66,6 @@ public class PaperInputError<R extends PaperInputError<R>> extends Component
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the error is showing.
-	 * 
-	 * @param invalid
-	 * @return this instance, for method chaining
-	 */
-	public R setInvalid(boolean invalid) {
-		getElement().setProperty("invalid", invalid);
-		return getSelf();
 	}
 
 	/**
@@ -142,7 +130,24 @@ public class PaperInputError<R extends PaperInputError<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperInputError> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperInputError(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperInputError() {
 	}
 }

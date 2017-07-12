@@ -17,7 +17,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n         "
+      "description": "If true, the element currently has focus.\n         ",
+      "readOnly": true
     },
     {
       "name": "disabled",

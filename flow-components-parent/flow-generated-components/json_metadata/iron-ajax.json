@@ -106,7 +106,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "The most recent request made by this iron-ajax element.\n       "
+      "description": "The most recent request made by this iron-ajax element.\n       ",
+      "readOnly": true
     },
     {
       "name": "loading",
@@ -114,7 +115,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True while lastRequest is in flight.\n       "
+      "description": "True while lastRequest is in flight.\n       ",
+      "readOnly": true
     },
     {
       "name": "lastResponse",
@@ -122,7 +124,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "lastRequest's response.\n\nNote that lastResponse and lastError are set when lastRequest finishes,\nso if loading is true, then lastResponse and lastError will correspond\nto the result of the previous request.\n\nThe type of the response is determined by the value of `handleAs` at\nthe time that the request was generated."
+      "description": "lastRequest's response.\n\nNote that lastResponse and lastError are set when lastRequest finishes,\nso if loading is true, then lastResponse and lastError will correspond\nto the result of the previous request.\n\nThe type of the response is determined by the value of `handleAs` at\nthe time that the request was generated.",
+      "readOnly": true
     },
     {
       "name": "lastError",
@@ -130,7 +133,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "lastRequest's error, if any."
+      "description": "lastRequest's error, if any.",
+      "readOnly": true
     },
     {
       "name": "activeRequests",
@@ -138,7 +142,8 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "An Array of all in-flight requests originating from this iron-ajax\nelement.\n       "
+      "description": "An Array of all in-flight requests originating from this iron-ajax\nelement.\n       ",
+      "readOnly": true
     },
     {
       "name": "debounceDuration",

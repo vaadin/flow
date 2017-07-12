@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.input.IronInput;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
@@ -102,10 +103,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: iron-input#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-input")
 @HtmlImport("frontend://bower_components/iron-input/iron-input.html")
-public class IronInput<R extends IronInput<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class IronInput extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -127,7 +125,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * @param validator
 	 * @return this instance, for method chaining
 	 */
-	public R setValidator(java.lang.String validator) {
+	public <R extends IronInput> R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
 		return getSelf();
@@ -154,7 +152,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * @param invalid
 	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public <R extends IronInput> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
 		return getSelf();
 	}
@@ -183,7 +181,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * @param bindValue
 	 * @return this instance, for method chaining
 	 */
-	public R setBindValue(java.lang.String bindValue) {
+	public <R extends IronInput> R setBindValue(java.lang.String bindValue) {
 		getElement().setProperty("bindValue",
 				bindValue == null ? "" : bindValue);
 		return getSelf();
@@ -201,21 +199,6 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 */
 	public JsonObject getValue() {
 		return (JsonObject) getElement().getPropertyRaw("value");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Computed property that echoes {@code bindValue} (mostly used for Polymer
-	 * 1.0 backcompatibility, if you were one-way binding to the Polymer 1.0
-	 * {@code input is="iron-input"} value attribute).
-	 * 
-	 * @param value
-	 * @return this instance, for method chaining
-	 */
-	public R setValue(elemental.json.JsonObject value) {
-		getElement().setPropertyJson("value", value);
-		return getSelf();
 	}
 
 	/**
@@ -272,7 +255,8 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * @param allowedPattern
 	 * @return this instance, for method chaining
 	 */
-	public R setAllowedPattern(java.lang.String allowedPattern) {
+	public <R extends IronInput> R setAllowedPattern(
+			java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
 				allowedPattern == null ? "" : allowedPattern);
 		return getSelf();
@@ -298,7 +282,7 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * @param autoValidate
 	 * @return this instance, for method chaining
 	 */
-	public R setAutoValidate(boolean autoValidate) {
+	public <R extends IronInput> R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
 		return getSelf();
 	}
@@ -323,7 +307,8 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * @param inputElement
 	 * @return this instance, for method chaining
 	 */
-	public R setInputElement(elemental.json.JsonObject inputElement) {
+	public <R extends IronInput> R setInputElement(
+			elemental.json.JsonObject inputElement) {
 		getElement().setPropertyJson("inputElement", inputElement);
 		return getSelf();
 	}
@@ -379,7 +364,24 @@ public class IronInput<R extends IronInput<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronInput> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public IronInput(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public IronInput() {
 	}
 }

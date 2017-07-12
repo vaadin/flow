@@ -95,6 +95,8 @@ public class ScrollPositionHandler {
 
     private boolean ignoreScrollRestorationOnNextPopStateEvent;
 
+    private HandlerRegistration resetScrollRegistration;
+
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -267,6 +269,16 @@ public class ScrollPositionHandler {
                 createStateObjectWithHistoryIndexAndToken(), "",
                 Browser.getWindow().getLocation().getHref());
 
+        // move to page top only if there is no fragment so scroll position
+        // doesn't bounce around
+        if (!newHref.contains("#")) {
+            if (triggersServerSideRoundtrip) {
+                resetScrollAfterResponse();
+            } else {
+                Browser.getWindow().scroll(0, 0);
+            }
+        }
+
         currentHistoryIndex++;
 
         if (triggersServerSideRoundtrip) {
@@ -280,6 +292,18 @@ public class ScrollPositionHandler {
                 yPositions.length() - currentHistoryIndex);
         xPositions.splice(currentHistoryIndex,
                 xPositions.length() - currentHistoryIndex);
+    }
+
+    private void resetScrollAfterResponse() {
+        if (resetScrollRegistration == null) {
+            resetScrollRegistration = registry.getRequestResponseTracker()
+                    .addResponseHandlingEndedHandler(event -> {
+                        resetScrollRegistration.removeHandler();
+                        resetScrollRegistration = null;
+
+                        Browser.getWindow().scroll(0, 0);
+                    });
+        }
     }
 
     private void captureCurrentScrollPositions() {

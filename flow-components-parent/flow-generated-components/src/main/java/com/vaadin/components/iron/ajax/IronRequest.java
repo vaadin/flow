@@ -22,6 +22,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.iron.ajax.IronRequest;
 import com.vaadin.components.NotSupported;
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.annotations.DomEvent;
@@ -42,9 +43,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-request#2.0.2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-request")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-request.html")
-public class IronRequest<R extends IronRequest<R>> extends Component
-		implements
-			HasStyle {
+public class IronRequest extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -58,20 +57,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	@Synchronize(property = "xhr", value = "xhr-changed")
 	public JsonObject getXhr() {
 		return (JsonObject) getElement().getPropertyRaw("xhr");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * A reference to the XMLHttpRequest instance used to generate the network
-	 * request.
-	 * 
-	 * @param xhr
-	 * @return this instance, for method chaining
-	 */
-	public R setXhr(elemental.json.JsonObject xhr) {
-		getElement().setPropertyJson("xhr", xhr);
-		return getSelf();
 	}
 
 	/**
@@ -91,20 +76,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A reference to the parsed response body, if the {@code xhr} has
-	 * completely resolved.
-	 * 
-	 * @param response
-	 * @return this instance, for method chaining
-	 */
-	public R setResponse(elemental.json.JsonObject response) {
-		getElement().setPropertyJson("response", response);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * A reference to the status code, if the {@code xhr} has completely
 	 * resolved.
 	 * <p>
@@ -119,20 +90,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A reference to the status code, if the {@code xhr} has completely
-	 * resolved.
-	 * 
-	 * @param status
-	 * @return this instance, for method chaining
-	 */
-	public R setStatus(double status) {
-		getElement().setProperty("status", status);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * A reference to the status text, if the {@code xhr} has completely
 	 * resolved.
 	 * <p>
@@ -141,21 +98,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 */
 	public String getStatusText() {
 		return getElement().getProperty("statusText");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * A reference to the status text, if the {@code xhr} has completely
-	 * resolved.
-	 * 
-	 * @param statusText
-	 * @return this instance, for method chaining
-	 */
-	public R setStatusText(java.lang.String statusText) {
-		getElement().setProperty("statusText",
-				statusText == null ? "" : statusText);
-		return getSelf();
 	}
 
 	/**
@@ -175,20 +117,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * A promise that resolves when the {@code xhr} response comes back, or
-	 * rejects if there is an error before the {@code xhr} completes.
-	 * 
-	 * @param completes
-	 * @return this instance, for method chaining
-	 */
-	public R setCompletes(elemental.json.JsonObject completes) {
-		getElement().setPropertyJson("completes", completes);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * An object that contains progress information emitted by the XHR if
 	 * available.
 	 * <p>
@@ -203,20 +131,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * An object that contains progress information emitted by the XHR if
-	 * available.
-	 * 
-	 * @param progress
-	 * @return this instance, for method chaining
-	 */
-	public R setProgress(elemental.json.JsonObject progress) {
-		getElement().setPropertyJson("progress", progress);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * Aborted will be true if an abort of the request is attempted.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
@@ -225,19 +139,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	@Synchronize(property = "aborted", value = "aborted-changed")
 	public boolean isAborted() {
 		return getElement().getProperty("aborted", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Aborted will be true if an abort of the request is attempted.
-	 * 
-	 * @param aborted
-	 * @return this instance, for method chaining
-	 */
-	public R setAborted(boolean aborted) {
-		getElement().setProperty("aborted", aborted);
-		return getSelf();
 	}
 
 	/**
@@ -257,20 +158,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * Errored will be true if the browser fired an error event from the XHR
-	 * object (mainly network errors).
-	 * 
-	 * @param errored
-	 * @return this instance, for method chaining
-	 */
-	public R setErrored(boolean errored) {
-		getElement().setProperty("errored", errored);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * TimedOut will be true if the XHR threw a timeout event.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -278,19 +165,6 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 */
 	public boolean isTimedOut() {
 		return getElement().getProperty("timedOut", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * TimedOut will be true if the XHR threw a timeout event.
-	 * 
-	 * @param timedOut
-	 * @return this instance, for method chaining
-	 */
-	public R setTimedOut(boolean timedOut) {
-		getElement().setProperty("timedOut", timedOut);
-		return getSelf();
 	}
 
 	/**
@@ -323,7 +197,8 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * @param succeeded
 	 * @return this instance, for method chaining
 	 */
-	public R setSucceeded(elemental.json.JsonObject succeeded) {
+	public <R extends IronRequest> R setSucceeded(
+			elemental.json.JsonObject succeeded) {
 		getElement().setPropertyJson("succeeded", succeeded);
 		return getSelf();
 	}
@@ -580,7 +455,7 @@ public class IronRequest<R extends IronRequest<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronRequest> R getSelf() {
 		return (R) this;
 	}
 }

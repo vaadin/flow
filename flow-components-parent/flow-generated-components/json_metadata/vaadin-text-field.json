@@ -17,7 +17,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n         "
+      "description": "If true, the element currently has focus.\n         ",
+      "readOnly": true
     },
     {
       "name": "disabled",
@@ -153,7 +154,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n             "
+      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n             ",
+      "readOnly": true
     },
     {
       "name": "preventInvalidInput",

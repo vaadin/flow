@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.neon.animation.NeonAnimatable;
 import com.vaadin.components.NotSupported;
 import com.vaadin.ui.HasComponents;
 
@@ -41,7 +42,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: neon-animatable#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("neon-animatable")
 @HtmlImport("frontend://bower_components/neon-animation/neon-animatable.html")
-public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
+public class NeonAnimatable extends Component
 		implements
 			HasStyle,
 			HasComponents {
@@ -66,7 +67,8 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * @param animationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	public <R extends NeonAnimatable> R setAnimationConfig(
+			elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
 		return getSelf();
 	}
@@ -95,7 +97,8 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * @param entryAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setEntryAnimation(java.lang.String entryAnimation) {
+	public <R extends NeonAnimatable> R setEntryAnimation(
+			java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
 				entryAnimation == null ? "" : entryAnimation);
 		return getSelf();
@@ -125,7 +128,8 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * @param exitAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setExitAnimation(java.lang.String exitAnimation) {
+	public <R extends NeonAnimatable> R setExitAnimation(
+			java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
 				exitAnimation == null ? "" : exitAnimation);
 		return getSelf();
@@ -200,7 +204,24 @@ public class NeonAnimatable<R extends NeonAnimatable<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends NeonAnimatable> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public NeonAnimatable(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public NeonAnimatable() {
 	}
 }

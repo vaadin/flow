@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.ajax.IronAjax;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonArray;
@@ -54,9 +55,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: iron-ajax#2.0.2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-ajax")
 @HtmlImport("frontend://bower_components/iron-ajax/iron-ajax.html")
-public class IronAjax<R extends IronAjax<R>> extends Component
-		implements
-			HasStyle {
+public class IronAjax extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -78,7 +77,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param url
 	 * @return this instance, for method chaining
 	 */
-	public R setUrl(java.lang.String url) {
+	public <R extends IronAjax> R setUrl(java.lang.String url) {
 		getElement().setProperty("url", url == null ? "" : url);
 		return getSelf();
 	}
@@ -109,7 +108,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param params
 	 * @return this instance, for method chaining
 	 */
-	public R setParams(elemental.json.JsonObject params) {
+	public <R extends IronAjax> R setParams(elemental.json.JsonObject params) {
 		getElement().setPropertyJson("params", params);
 		return getSelf();
 	}
@@ -136,7 +135,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param method
 	 * @return this instance, for method chaining
 	 */
-	public R setMethod(java.lang.String method) {
+	public <R extends IronAjax> R setMethod(java.lang.String method) {
 		getElement().setProperty("method", method == null ? "" : method);
 		return getSelf();
 	}
@@ -177,7 +176,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param headers
 	 * @return this instance, for method chaining
 	 */
-	public R setHeaders(elemental.json.JsonObject headers) {
+	public <R extends IronAjax> R setHeaders(elemental.json.JsonObject headers) {
 		getElement().setPropertyJson("headers", headers);
 		return getSelf();
 	}
@@ -212,7 +211,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param contentType
 	 * @return this instance, for method chaining
 	 */
-	public R setContentType(java.lang.String contentType) {
+	public <R extends IronAjax> R setContentType(java.lang.String contentType) {
 		getElement().setProperty("contentType",
 				contentType == null ? "" : contentType);
 		return getSelf();
@@ -266,7 +265,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param body
 	 * @return this instance, for method chaining
 	 */
-	public R setBody(elemental.json.JsonObject body) {
+	public <R extends IronAjax> R setBody(elemental.json.JsonObject body) {
 		getElement().setPropertyJson("body", body);
 		return getSelf();
 	}
@@ -293,7 +292,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param sync
 	 * @return this instance, for method chaining
 	 */
-	public R setSync(boolean sync) {
+	public <R extends IronAjax> R setSync(boolean sync) {
 		getElement().setProperty("sync", sync);
 		return getSelf();
 	}
@@ -348,7 +347,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param handleAs
 	 * @return this instance, for method chaining
 	 */
-	public R setHandleAs(java.lang.String handleAs) {
+	public <R extends IronAjax> R setHandleAs(java.lang.String handleAs) {
 		getElement().setProperty("handleAs", handleAs == null ? "" : handleAs);
 		return getSelf();
 	}
@@ -373,7 +372,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param withCredentials
 	 * @return this instance, for method chaining
 	 */
-	public R setWithCredentials(boolean withCredentials) {
+	public <R extends IronAjax> R setWithCredentials(boolean withCredentials) {
 		getElement().setProperty("withCredentials", withCredentials);
 		return getSelf();
 	}
@@ -398,7 +397,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param timeout
 	 * @return this instance, for method chaining
 	 */
-	public R setTimeout(double timeout) {
+	public <R extends IronAjax> R setTimeout(double timeout) {
 		getElement().setProperty("timeout", timeout);
 		return getSelf();
 	}
@@ -425,7 +424,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param auto
 	 * @return this instance, for method chaining
 	 */
-	public R setAuto(boolean auto) {
+	public <R extends IronAjax> R setAuto(boolean auto) {
 		getElement().setProperty("auto", auto);
 		return getSelf();
 	}
@@ -450,7 +449,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param verbose
 	 * @return this instance, for method chaining
 	 */
-	public R setVerbose(boolean verbose) {
+	public <R extends IronAjax> R setVerbose(boolean verbose) {
 		getElement().setProperty("verbose", verbose);
 		return getSelf();
 	}
@@ -470,19 +469,6 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * The most recent request made by this iron-ajax element.
-	 * 
-	 * @param lastRequest
-	 * @return this instance, for method chaining
-	 */
-	public R setLastRequest(elemental.json.JsonObject lastRequest) {
-		getElement().setPropertyJson("lastRequest", lastRequest);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * True while lastRequest is in flight.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
@@ -491,19 +477,6 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	@Synchronize(property = "loading", value = "loading-changed")
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True while lastRequest is in flight.
-	 * 
-	 * @param loading
-	 * @return this instance, for method chaining
-	 */
-	public R setLoading(boolean loading) {
-		getElement().setProperty("loading", loading);
-		return getSelf();
 	}
 
 	/**
@@ -528,26 +501,6 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * lastRequest's response.
-	 * 
-	 * Note that lastResponse and lastError are set when lastRequest finishes,
-	 * so if loading is true, then lastResponse and lastError will correspond to
-	 * the result of the previous request.
-	 * 
-	 * The type of the response is determined by the value of {@code handleAs}
-	 * at the time that the request was generated.
-	 * 
-	 * @param lastResponse
-	 * @return this instance, for method chaining
-	 */
-	public R setLastResponse(elemental.json.JsonObject lastResponse) {
-		getElement().setPropertyJson("lastResponse", lastResponse);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * lastRequest's error, if any.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -555,19 +508,6 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 */
 	public JsonObject getLastError() {
 		return (JsonObject) getElement().getPropertyRaw("lastError");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * lastRequest's error, if any.
-	 * 
-	 * @param lastError
-	 * @return this instance, for method chaining
-	 */
-	public R setLastError(elemental.json.JsonObject lastError) {
-		getElement().setPropertyJson("lastError", lastError);
-		return getSelf();
 	}
 
 	/**
@@ -581,20 +521,6 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 */
 	public JsonArray getActiveRequests() {
 		return (JsonArray) getElement().getPropertyRaw("activeRequests");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * An Array of all in-flight requests originating from this iron-ajax
-	 * element.
-	 * 
-	 * @param activeRequests
-	 * @return this instance, for method chaining
-	 */
-	public R setActiveRequests(elemental.json.JsonArray activeRequests) {
-		getElement().setPropertyJson("activeRequests", activeRequests);
-		return getSelf();
 	}
 
 	/**
@@ -619,7 +545,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param debounceDuration
 	 * @return this instance, for method chaining
 	 */
-	public R setDebounceDuration(double debounceDuration) {
+	public <R extends IronAjax> R setDebounceDuration(double debounceDuration) {
 		getElement().setProperty("debounceDuration", debounceDuration);
 		return getSelf();
 	}
@@ -658,7 +584,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param jsonPrefix
 	 * @return this instance, for method chaining
 	 */
-	public R setJsonPrefix(java.lang.String jsonPrefix) {
+	public <R extends IronAjax> R setJsonPrefix(java.lang.String jsonPrefix) {
 		getElement().setProperty("jsonPrefix",
 				jsonPrefix == null ? "" : jsonPrefix);
 		return getSelf();
@@ -702,7 +628,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param bubbles
 	 * @return this instance, for method chaining
 	 */
-	public R setBubbles(boolean bubbles) {
+	public <R extends IronAjax> R setBubbles(boolean bubbles) {
 		getElement().setProperty("bubbles", bubbles);
 		return getSelf();
 	}
@@ -729,7 +655,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param rejectWithRequest
 	 * @return this instance, for method chaining
 	 */
-	public R setRejectWithRequest(boolean rejectWithRequest) {
+	public <R extends IronAjax> R setRejectWithRequest(boolean rejectWithRequest) {
 		getElement().setProperty("rejectWithRequest", rejectWithRequest);
 		return getSelf();
 	}
@@ -756,7 +682,8 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param queryString
 	 * @return this instance, for method chaining
 	 */
-	public R setQueryString(elemental.json.JsonObject queryString) {
+	public <R extends IronAjax> R setQueryString(
+			elemental.json.JsonObject queryString) {
 		getElement().setPropertyJson("queryString", queryString);
 		return getSelf();
 	}
@@ -783,7 +710,8 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param requestUrl
 	 * @return this instance, for method chaining
 	 */
-	public R setRequestUrl(elemental.json.JsonObject requestUrl) {
+	public <R extends IronAjax> R setRequestUrl(
+			elemental.json.JsonObject requestUrl) {
 		getElement().setPropertyJson("requestUrl", requestUrl);
 		return getSelf();
 	}
@@ -812,7 +740,8 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * @param requestHeaders
 	 * @return this instance, for method chaining
 	 */
-	public R setRequestHeaders(elemental.json.JsonObject requestHeaders) {
+	public <R extends IronAjax> R setRequestHeaders(
+			elemental.json.JsonObject requestHeaders) {
 		getElement().setPropertyJson("requestHeaders", requestHeaders);
 		return getSelf();
 	}
@@ -975,7 +904,7 @@ public class IronAjax<R extends IronAjax<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronAjax> R getSelf() {
 		return (R) this;
 	}
 }

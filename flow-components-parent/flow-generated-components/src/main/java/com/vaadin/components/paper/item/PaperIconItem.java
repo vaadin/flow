@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.item.PaperIconItem;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -66,10 +67,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-icon-item#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-icon-item")
 @HtmlImport("frontend://bower_components/paper-item/paper-icon-item.html")
-public class PaperIconItem<R extends PaperIconItem<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class PaperIconItem extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -93,7 +91,8 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperIconItem> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -120,7 +119,7 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperIconItem> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -139,7 +138,8 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperIconItem> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -154,19 +154,6 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 */
 	public boolean isPressed() {
 		return getElement().getProperty("pressed", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the user is currently holding down the button.
-	 * 
-	 * @param pressed
-	 * @return this instance, for method chaining
-	 */
-	public R setPressed(boolean pressed) {
-		getElement().setProperty("pressed", pressed);
-		return getSelf();
 	}
 
 	/**
@@ -191,7 +178,7 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * @param toggles
 	 * @return this instance, for method chaining
 	 */
-	public R setToggles(boolean toggles) {
+	public <R extends PaperIconItem> R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
 		return getSelf();
 	}
@@ -217,7 +204,7 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * @param active
 	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public <R extends PaperIconItem> R setActive(boolean active) {
 		getElement().setProperty("active", active);
 		return getSelf();
 	}
@@ -239,21 +226,6 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	/**
 	 * Description copied from corresponding location in WebComponent:
 	 * 
-	 * True if the element is currently being pressed by a "pointer," which is
-	 * loosely defined as mouse or touch input (but specifically excluding
-	 * keyboard input).
-	 * 
-	 * @param pointerDown
-	 * @return this instance, for method chaining
-	 */
-	public R setPointerDown(boolean pointerDown) {
-		getElement().setProperty("pointerDown", pointerDown);
-		return getSelf();
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
 	 * <p>
@@ -262,21 +234,6 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the input device that caused the element to receive focus was a
-	 * keyboard.
-	 * 
-	 * @param receivedFocusFromKeyboard
-	 * @return this instance, for method chaining
-	 */
-	public R setReceivedFocusFromKeyboard(boolean receivedFocusFromKeyboard) {
-		getElement().setProperty("receivedFocusFromKeyboard",
-				receivedFocusFromKeyboard);
-		return getSelf();
 	}
 
 	/**
@@ -301,7 +258,8 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * @param ariaActiveAttribute
 	 * @return this instance, for method chaining
 	 */
-	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public <R extends PaperIconItem> R setAriaActiveAttribute(
+			java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
 		return getSelf();
@@ -318,19 +276,6 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**
@@ -354,7 +299,7 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperIconItem> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -485,7 +430,24 @@ public class PaperIconItem<R extends PaperIconItem<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperIconItem> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperIconItem(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperIconItem() {
 	}
 }

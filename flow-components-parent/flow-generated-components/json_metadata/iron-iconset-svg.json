@@ -2,7 +2,7 @@
   "name": "iron-iconset-svg",
   "tag": "iron-iconset-svg",
   "baseUrl": "iron-iconset-svg/iron-iconset-svg.html",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "properties": [
     {
       "name": "name",

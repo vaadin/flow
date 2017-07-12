@@ -21,6 +21,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.paper.input.PaperTextarea;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -53,9 +54,7 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
-public class PaperTextarea<R extends PaperTextarea<R>> extends Component
-		implements
-			HasStyle {
+public class PaperTextarea extends Component implements HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -68,19 +67,6 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**
@@ -110,7 +96,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends PaperTextarea> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -137,7 +123,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param keyEventTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	public <R extends PaperTextarea> R setKeyEventTarget(
+			elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return getSelf();
 	}
@@ -164,7 +151,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param stopKeyboardEventPropagation
 	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public <R extends PaperTextarea> R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
@@ -183,7 +170,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param keyBindings
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	public <R extends PaperTextarea> R setKeyBindings(
+			elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return getSelf();
 	}
@@ -216,7 +204,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param label
 	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public <R extends PaperTextarea> R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
 		return getSelf();
 	}
@@ -242,7 +230,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param value
 	 * @return this instance, for method chaining
 	 */
-	public R setValue(java.lang.String value) {
+	public <R extends PaperTextarea> R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return getSelf();
 	}
@@ -280,7 +268,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param invalid
 	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public <R extends PaperTextarea> R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
 		return getSelf();
 	}
@@ -311,7 +299,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param allowedPattern
 	 * @return this instance, for method chaining
 	 */
-	public R setAllowedPattern(java.lang.String allowedPattern) {
+	public <R extends PaperTextarea> R setAllowedPattern(
+			java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
 				allowedPattern == null ? "" : allowedPattern);
 		return getSelf();
@@ -343,7 +332,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param type
 	 * @return this instance, for method chaining
 	 */
-	public R setType(java.lang.String type) {
+	public <R extends PaperTextarea> R setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
 		return getSelf();
 	}
@@ -374,7 +363,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param list
 	 * @return this instance, for method chaining
 	 */
-	public R setList(java.lang.String list) {
+	public <R extends PaperTextarea> R setList(java.lang.String list) {
 		getElement().setProperty("list", list == null ? "" : list);
 		return getSelf();
 	}
@@ -403,7 +392,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param pattern
 	 * @return this instance, for method chaining
 	 */
-	public R setPattern(java.lang.String pattern) {
+	public <R extends PaperTextarea> R setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
 		return getSelf();
 	}
@@ -438,7 +427,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param required
 	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public <R extends PaperTextarea> R setRequired(boolean required) {
 		getElement().setProperty("required", required);
 		return getSelf();
 	}
@@ -467,7 +456,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param errorMessage
 	 * @return this instance, for method chaining
 	 */
-	public R setErrorMessage(java.lang.String errorMessage) {
+	public <R extends PaperTextarea> R setErrorMessage(
+			java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
 		return getSelf();
@@ -493,7 +483,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param charCounter
 	 * @return this instance, for method chaining
 	 */
-	public R setCharCounter(boolean charCounter) {
+	public <R extends PaperTextarea> R setCharCounter(boolean charCounter) {
 		getElement().setProperty("charCounter", charCounter);
 		return getSelf();
 	}
@@ -524,7 +514,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param noLabelFloat
 	 * @return this instance, for method chaining
 	 */
-	public R setNoLabelFloat(boolean noLabelFloat) {
+	public <R extends PaperTextarea> R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
 		return getSelf();
 	}
@@ -553,7 +543,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param alwaysFloatLabel
 	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public <R extends PaperTextarea> R setAlwaysFloatLabel(
+			boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
 		return getSelf();
 	}
@@ -584,7 +575,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param autoValidate
 	 * @return this instance, for method chaining
 	 */
-	public R setAutoValidate(boolean autoValidate) {
+	public <R extends PaperTextarea> R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
 		return getSelf();
 	}
@@ -613,7 +604,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param validator
 	 * @return this instance, for method chaining
 	 */
-	public R setValidator(java.lang.String validator) {
+	public <R extends PaperTextarea> R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
 		return getSelf();
@@ -643,7 +634,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param autocomplete
 	 * @return this instance, for method chaining
 	 */
-	public R setAutocomplete(java.lang.String autocomplete) {
+	public <R extends PaperTextarea> R setAutocomplete(
+			java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
 				autocomplete == null ? "" : autocomplete);
 		return getSelf();
@@ -673,7 +665,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param autofocus
 	 * @return this instance, for method chaining
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public <R extends PaperTextarea> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
 		return getSelf();
 	}
@@ -702,7 +694,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param inputmode
 	 * @return this instance, for method chaining
 	 */
-	public R setInputmode(java.lang.String inputmode) {
+	public <R extends PaperTextarea> R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
 				inputmode == null ? "" : inputmode);
 		return getSelf();
@@ -732,7 +724,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param minlength
 	 * @return this instance, for method chaining
 	 */
-	public R setMinlength(double minlength) {
+	public <R extends PaperTextarea> R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
 		return getSelf();
 	}
@@ -761,7 +753,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param maxlength
 	 * @return this instance, for method chaining
 	 */
-	public R setMaxlength(double maxlength) {
+	public <R extends PaperTextarea> R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
 		return getSelf();
 	}
@@ -790,7 +782,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param min
 	 * @return this instance, for method chaining
 	 */
-	public R setMin(java.lang.String min) {
+	public <R extends PaperTextarea> R setMin(java.lang.String min) {
 		getElement().setProperty("min", min == null ? "" : min);
 		return getSelf();
 	}
@@ -821,7 +813,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param max
 	 * @return this instance, for method chaining
 	 */
-	public R setMax(java.lang.String max) {
+	public <R extends PaperTextarea> R setMax(java.lang.String max) {
 		getElement().setProperty("max", max == null ? "" : max);
 		return getSelf();
 	}
@@ -850,7 +842,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param step
 	 * @return this instance, for method chaining
 	 */
-	public R setStep(java.lang.String step) {
+	public <R extends PaperTextarea> R setStep(java.lang.String step) {
 		getElement().setProperty("step", step == null ? "" : step);
 		return getSelf();
 	}
@@ -875,7 +867,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param name
 	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public <R extends PaperTextarea> R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
 		return getSelf();
 	}
@@ -902,7 +894,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param placeholder
 	 * @return this instance, for method chaining
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public <R extends PaperTextarea> R setPlaceholder(
+			java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
 		return getSelf();
@@ -932,7 +925,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param readonly
 	 * @return this instance, for method chaining
 	 */
-	public R setReadonly(boolean readonly) {
+	public <R extends PaperTextarea> R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
 		return getSelf();
 	}
@@ -961,7 +954,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param size
 	 * @return this instance, for method chaining
 	 */
-	public R setSize(double size) {
+	public <R extends PaperTextarea> R setSize(double size) {
 		getElement().setProperty("size", size);
 		return getSelf();
 	}
@@ -990,7 +983,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param autocapitalize
 	 * @return this instance, for method chaining
 	 */
-	public R setAutocapitalize(java.lang.String autocapitalize) {
+	public <R extends PaperTextarea> R setAutocapitalize(
+			java.lang.String autocapitalize) {
 		getElement().setProperty("autocapitalize",
 				autocapitalize == null ? "" : autocapitalize);
 		return getSelf();
@@ -1020,7 +1014,8 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param autocorrect
 	 * @return this instance, for method chaining
 	 */
-	public R setAutocorrect(java.lang.String autocorrect) {
+	public <R extends PaperTextarea> R setAutocorrect(
+			java.lang.String autocorrect) {
 		getElement().setProperty("autocorrect",
 				autocorrect == null ? "" : autocorrect);
 		return getSelf();
@@ -1050,7 +1045,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param autosave
 	 * @return this instance, for method chaining
 	 */
-	public R setAutosave(java.lang.String autosave) {
+	public <R extends PaperTextarea> R setAutosave(java.lang.String autosave) {
 		getElement().setProperty("autosave", autosave == null ? "" : autosave);
 		return getSelf();
 	}
@@ -1079,7 +1074,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param results
 	 * @return this instance, for method chaining
 	 */
-	public R setResults(double results) {
+	public <R extends PaperTextarea> R setResults(double results) {
 		getElement().setProperty("results", results);
 		return getSelf();
 	}
@@ -1108,7 +1103,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param accept
 	 * @return this instance, for method chaining
 	 */
-	public R setAccept(java.lang.String accept) {
+	public <R extends PaperTextarea> R setAccept(java.lang.String accept) {
 		getElement().setProperty("accept", accept == null ? "" : accept);
 		return getSelf();
 	}
@@ -1137,7 +1132,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param multiple
 	 * @return this instance, for method chaining
 	 */
-	public R setMultiple(boolean multiple) {
+	public <R extends PaperTextarea> R setMultiple(boolean multiple) {
 		getElement().setProperty("multiple", multiple);
 		return getSelf();
 	}
@@ -1162,7 +1157,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param rows
 	 * @return this instance, for method chaining
 	 */
-	public R setRows(double rows) {
+	public <R extends PaperTextarea> R setRows(double rows) {
 		getElement().setProperty("rows", rows);
 		return getSelf();
 	}
@@ -1189,7 +1184,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * @param maxRows
 	 * @return this instance, for method chaining
 	 */
-	public R setMaxRows(double maxRows) {
+	public <R extends PaperTextarea> R setMaxRows(double maxRows) {
 		getElement().setProperty("maxRows", maxRows);
 		return getSelf();
 	}
@@ -1365,7 +1360,7 @@ public class PaperTextarea<R extends PaperTextarea<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperTextarea> R getSelf() {
 		return (R) this;
 	}
 }

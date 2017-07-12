@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.iron.overlay.behavior.IronOverlayBackdrop;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -46,9 +47,10 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: iron-overlay-backdrop#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("iron-overlay-backdrop")
 @HtmlImport("frontend://bower_components/iron-overlay-behavior/iron-overlay-backdrop.html")
-public class IronOverlayBackdrop<R extends IronOverlayBackdrop<R>>
-		extends
-			Component implements HasStyle, HasComponents {
+public class IronOverlayBackdrop extends Component
+		implements
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -70,7 +72,7 @@ public class IronOverlayBackdrop<R extends IronOverlayBackdrop<R>>
 	 * @param opened
 	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public <R extends IronOverlayBackdrop> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
 		return getSelf();
 	}
@@ -117,7 +119,24 @@ public class IronOverlayBackdrop<R extends IronOverlayBackdrop<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends IronOverlayBackdrop> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public IronOverlayBackdrop(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public IronOverlayBackdrop() {
 	}
 }

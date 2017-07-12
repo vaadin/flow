@@ -21,13 +21,13 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.components.paper.dialog.PaperDialog;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.annotations.EventData;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -87,10 +87,7 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.13-SNAPSHOT"})
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
-public class PaperDialog<R extends PaperDialog<R>> extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class PaperDialog extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -118,7 +115,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param sizingTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setSizingTarget(elemental.json.JsonObject sizingTarget) {
+	public <R extends PaperDialog> R setSizingTarget(
+			elemental.json.JsonObject sizingTarget) {
 		getElement().setPropertyJson("sizingTarget", sizingTarget);
 		return getSelf();
 	}
@@ -143,7 +141,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param fitInto
 	 * @return this instance, for method chaining
 	 */
-	public R setFitInto(elemental.json.JsonObject fitInto) {
+	public <R extends PaperDialog> R setFitInto(
+			elemental.json.JsonObject fitInto) {
 		getElement().setPropertyJson("fitInto", fitInto);
 		return getSelf();
 	}
@@ -170,7 +169,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param noOverlap
 	 * @return this instance, for method chaining
 	 */
-	public R setNoOverlap(boolean noOverlap) {
+	public <R extends PaperDialog> R setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
 		return getSelf();
 	}
@@ -197,7 +196,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param positionTarget
 	 * @return this instance, for method chaining
 	 */
-	public R setPositionTarget(elemental.json.JsonObject positionTarget) {
+	public <R extends PaperDialog> R setPositionTarget(
+			elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
 		return getSelf();
 	}
@@ -226,7 +226,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param horizontalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public <R extends PaperDialog> R setHorizontalAlign(
+			java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
 		return getSelf();
@@ -254,7 +255,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param verticalAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public <R extends PaperDialog> R setVerticalAlign(
+			java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
 		return getSelf();
@@ -284,7 +286,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param dynamicAlign
 	 * @return this instance, for method chaining
 	 */
-	public R setDynamicAlign(boolean dynamicAlign) {
+	public <R extends PaperDialog> R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
 		return getSelf();
 	}
@@ -333,7 +335,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param horizontalOffset
 	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalOffset(double horizontalOffset) {
+	public <R extends PaperDialog> R setHorizontalOffset(double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
 		return getSelf();
 	}
@@ -382,7 +384,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param verticalOffset
 	 * @return this instance, for method chaining
 	 */
-	public R setVerticalOffset(double verticalOffset) {
+	public <R extends PaperDialog> R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
 		return getSelf();
 	}
@@ -407,7 +409,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param autoFitOnAttach
 	 * @return this instance, for method chaining
 	 */
-	public R setAutoFitOnAttach(boolean autoFitOnAttach) {
+	public <R extends PaperDialog> R setAutoFitOnAttach(boolean autoFitOnAttach) {
 		getElement().setProperty("autoFitOnAttach", autoFitOnAttach);
 		return getSelf();
 	}
@@ -433,7 +435,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param opened
 	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public <R extends PaperDialog> R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
 		return getSelf();
 	}
@@ -448,19 +450,6 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 */
 	public boolean isCanceled() {
 		return getElement().getProperty("canceled", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the overlay was canceled when it was last closed.
-	 * 
-	 * @param canceled
-	 * @return this instance, for method chaining
-	 */
-	public R setCanceled(boolean canceled) {
-		getElement().setProperty("canceled", canceled);
-		return getSelf();
 	}
 
 	/**
@@ -485,7 +474,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param withBackdrop
 	 * @return this instance, for method chaining
 	 */
-	public R setWithBackdrop(boolean withBackdrop) {
+	public <R extends PaperDialog> R setWithBackdrop(boolean withBackdrop) {
 		getElement().setProperty("withBackdrop", withBackdrop);
 		return getSelf();
 	}
@@ -512,7 +501,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param noAutoFocus
 	 * @return this instance, for method chaining
 	 */
-	public R setNoAutoFocus(boolean noAutoFocus) {
+	public <R extends PaperDialog> R setNoAutoFocus(boolean noAutoFocus) {
 		getElement().setProperty("noAutoFocus", noAutoFocus);
 		return getSelf();
 	}
@@ -537,7 +526,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param noCancelOnEscKey
 	 * @return this instance, for method chaining
 	 */
-	public R setNoCancelOnEscKey(boolean noCancelOnEscKey) {
+	public <R extends PaperDialog> R setNoCancelOnEscKey(
+			boolean noCancelOnEscKey) {
 		getElement().setProperty("noCancelOnEscKey", noCancelOnEscKey);
 		return getSelf();
 	}
@@ -562,7 +552,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param noCancelOnOutsideClick
 	 * @return this instance, for method chaining
 	 */
-	public R setNoCancelOnOutsideClick(boolean noCancelOnOutsideClick) {
+	public <R extends PaperDialog> R setNoCancelOnOutsideClick(
+			boolean noCancelOnOutsideClick) {
 		getElement().setProperty("noCancelOnOutsideClick",
 				noCancelOnOutsideClick);
 		return getSelf();
@@ -594,7 +585,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param closingReason
 	 * @return this instance, for method chaining
 	 */
-	public R setClosingReason(elemental.json.JsonObject closingReason) {
+	public <R extends PaperDialog> R setClosingReason(
+			elemental.json.JsonObject closingReason) {
 		getElement().setPropertyJson("closingReason", closingReason);
 		return getSelf();
 	}
@@ -619,7 +611,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param restoreFocusOnClose
 	 * @return this instance, for method chaining
 	 */
-	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+	public <R extends PaperDialog> R setRestoreFocusOnClose(
+			boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
 		return getSelf();
 	}
@@ -644,7 +637,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param alwaysOnTop
 	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysOnTop(boolean alwaysOnTop) {
+	public <R extends PaperDialog> R setAlwaysOnTop(boolean alwaysOnTop) {
 		getElement().setProperty("alwaysOnTop", alwaysOnTop);
 		return getSelf();
 	}
@@ -671,7 +664,7 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param modal
 	 * @return this instance, for method chaining
 	 */
-	public R setModal(boolean modal) {
+	public <R extends PaperDialog> R setModal(boolean modal) {
 		getElement().setProperty("modal", modal);
 		return getSelf();
 	}
@@ -696,7 +689,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param animationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	public <R extends PaperDialog> R setAnimationConfig(
+			elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
 		return getSelf();
 	}
@@ -725,7 +719,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param entryAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setEntryAnimation(java.lang.String entryAnimation) {
+	public <R extends PaperDialog> R setEntryAnimation(
+			java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
 				entryAnimation == null ? "" : entryAnimation);
 		return getSelf();
@@ -755,7 +750,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * @param exitAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setExitAnimation(java.lang.String exitAnimation) {
+	public <R extends PaperDialog> R setExitAnimation(
+			java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
 				exitAnimation == null ? "" : exitAnimation);
 		return getSelf();
@@ -1010,16 +1006,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	public static class IronOverlayCanceledEvent
 			extends
 				ComponentEvent<PaperDialog> {
-		private final JsonObject event;
-
-		public IronOverlayCanceledEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") elemental.json.JsonObject event) {
+		public IronOverlayCanceledEvent(PaperDialog source, boolean fromClient) {
 			super(source, fromClient);
-			this.event = event;
-		}
-
-		public JsonObject getEvent() {
-			return event;
 		}
 	}
 
@@ -1032,16 +1020,8 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	public static class IronOverlayClosedEvent
 			extends
 				ComponentEvent<PaperDialog> {
-		private final JsonObject event;
-
-		public IronOverlayClosedEvent(PaperDialog source, boolean fromClient,
-				@EventData("event.event") elemental.json.JsonObject event) {
+		public IronOverlayClosedEvent(PaperDialog source, boolean fromClient) {
 			super(source, fromClient);
-			this.event = event;
-		}
-
-		public JsonObject getEvent() {
-			return event;
 		}
 	}
 
@@ -1070,7 +1050,24 @@ public class PaperDialog<R extends PaperDialog<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends PaperDialog> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperDialog(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperDialog() {
 	}
 }

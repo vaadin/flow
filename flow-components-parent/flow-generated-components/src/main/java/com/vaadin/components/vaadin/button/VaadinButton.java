@@ -17,10 +17,12 @@ package com.vaadin.components.vaadin.button;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasText;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.vaadin.button.VaadinButton;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -51,9 +53,10 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
-public class VaadinButton<R extends VaadinButton<R>> extends Component
+public class VaadinButton extends Component
 		implements
 			HasStyle,
+			HasClickListeners<VaadinButton>,
 			HasText,
 			HasComponents {
 
@@ -77,7 +80,7 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 * @param autofocus
 	 * @return this instance, for method chaining
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public <R extends VaadinButton> R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
 		return getSelf();
 	}
@@ -92,19 +95,6 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * If true, the element currently has focus.
-	 * 
-	 * @param focused
-	 * @return this instance, for method chaining
-	 */
-	public R setFocused(boolean focused) {
-		getElement().setProperty("focused", focused);
-		return getSelf();
 	}
 
 	/**
@@ -127,7 +117,7 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 * @param disabled
 	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public <R extends VaadinButton> R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
 		return getSelf();
 	}
@@ -146,7 +136,24 @@ public class VaadinButton<R extends VaadinButton<R>> extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends VaadinButton> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Sets the given string as the content of this component.
+	 * 
+	 * @param the
+	 *            text content to set
+	 * @see HasText#setText(String)
+	 */
+	public VaadinButton(java.lang.String text) {
+		setText(text);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public VaadinButton() {
 	}
 }

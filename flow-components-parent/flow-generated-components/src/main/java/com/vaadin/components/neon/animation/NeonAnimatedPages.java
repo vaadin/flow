@@ -20,6 +20,7 @@ import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.components.neon.animation.NeonAnimatedPages;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import elemental.json.JsonArray;
@@ -48,9 +49,10 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: neon-animated-pages#2.0.1", "Flow#0.1.13-SNAPSHOT"})
 @Tag("neon-animated-pages")
 @HtmlImport("frontend://bower_components/neon-animation/neon-animated-pages.html")
-public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
-		extends
-			Component implements HasStyle, HasComponents {
+public class NeonAnimatedPages extends Component
+		implements
+			HasStyle,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -86,7 +88,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param attrForSelected
 	 * @return this instance, for method chaining
 	 */
-	public R setAttrForSelected(java.lang.String attrForSelected) {
+	public <R extends NeonAnimatedPages> R setAttrForSelected(
+			java.lang.String attrForSelected) {
 		getElement().setProperty("attrForSelected",
 				attrForSelected == null ? "" : attrForSelected);
 		return getSelf();
@@ -129,7 +132,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param selected
 	 * @return this instance, for method chaining
 	 */
-	public R setSelected(java.lang.String selected) {
+	public <R extends NeonAnimatedPages> R setSelected(java.lang.String selected) {
 		getElement().setProperty("selected", selected == null ? "" : selected);
 		return getSelf();
 	}
@@ -143,7 +146,7 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param selected
 	 * @return this instance, for method chaining
 	 */
-	public R setSelected(double selected) {
+	public <R extends NeonAnimatedPages> R setSelected(double selected) {
 		getElement().setProperty("selected", selected);
 		return getSelf();
 	}
@@ -161,19 +164,6 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	}
 
 	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns the currently selected item.
-	 * 
-	 * @param selectedItem
-	 * @return this instance, for method chaining
-	 */
-	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
-		getElement().setPropertyJson("selectedItem", selectedItem);
-		return getSelf();
-	}
-
-	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
@@ -185,7 +175,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param activateEvent
 	 * @return this instance, for method chaining
 	 */
-	public R setActivateEvent(java.lang.String activateEvent) {
+	public <R extends NeonAnimatedPages> R setActivateEvent(
+			java.lang.String activateEvent) {
 		getElement().setProperty("activateEvent",
 				activateEvent == null ? "" : activateEvent);
 		return getSelf();
@@ -213,7 +204,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param selectable
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectable(java.lang.String selectable) {
+	public <R extends NeonAnimatedPages> R setSelectable(
+			java.lang.String selectable) {
 		getElement().setProperty("selectable",
 				selectable == null ? "" : selectable);
 		return getSelf();
@@ -239,7 +231,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param selectedClass
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedClass(java.lang.String selectedClass) {
+	public <R extends NeonAnimatedPages> R setSelectedClass(
+			java.lang.String selectedClass) {
 		getElement().setProperty("selectedClass",
 				selectedClass == null ? "" : selectedClass);
 		return getSelf();
@@ -265,7 +258,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param selectedAttribute
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedAttribute(java.lang.String selectedAttribute) {
+	public <R extends NeonAnimatedPages> R setSelectedAttribute(
+			java.lang.String selectedAttribute) {
 		getElement().setProperty("selectedAttribute",
 				selectedAttribute == null ? "" : selectedAttribute);
 		return getSelf();
@@ -293,7 +287,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param fallbackSelection
 	 * @return this instance, for method chaining
 	 */
-	public R setFallbackSelection(java.lang.String fallbackSelection) {
+	public <R extends NeonAnimatedPages> R setFallbackSelection(
+			java.lang.String fallbackSelection) {
 		getElement().setProperty("fallbackSelection",
 				fallbackSelection == null ? "" : fallbackSelection);
 		return getSelf();
@@ -310,19 +305,6 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	@Synchronize(property = "items", value = "items-changed")
 	public JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * The list of items from which a selection can be made.
-	 * 
-	 * @param items
-	 * @return this instance, for method chaining
-	 */
-	public R setItems(elemental.json.JsonArray items) {
-		getElement().setPropertyJson("items", items);
-		return getSelf();
 	}
 
 	/**
@@ -345,7 +327,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param animationConfig
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	public <R extends NeonAnimatedPages> R setAnimationConfig(
+			elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
 		return getSelf();
 	}
@@ -374,7 +357,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param entryAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setEntryAnimation(java.lang.String entryAnimation) {
+	public <R extends NeonAnimatedPages> R setEntryAnimation(
+			java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
 				entryAnimation == null ? "" : entryAnimation);
 		return getSelf();
@@ -404,7 +388,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param exitAnimation
 	 * @return this instance, for method chaining
 	 */
-	public R setExitAnimation(java.lang.String exitAnimation) {
+	public <R extends NeonAnimatedPages> R setExitAnimation(
+			java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
 				exitAnimation == null ? "" : exitAnimation);
 		return getSelf();
@@ -432,7 +417,8 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * @param animateInitialSelection
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimateInitialSelection(boolean animateInitialSelection) {
+	public <R extends NeonAnimatedPages> R setAnimateInitialSelection(
+			boolean animateInitialSelection) {
 		getElement().setProperty("animateInitialSelection",
 				animateInitialSelection);
 		return getSelf();
@@ -702,7 +688,24 @@ public class NeonAnimatedPages<R extends NeonAnimatedPages<R>>
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected R getSelf() {
+	protected <R extends NeonAnimatedPages> R getSelf() {
 		return (R) this;
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public NeonAnimatedPages(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public NeonAnimatedPages() {
 	}
 }
