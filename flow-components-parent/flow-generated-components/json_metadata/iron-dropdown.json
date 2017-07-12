@@ -10,7 +10,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n       "
+      "description": "If true, the element currently has focus.\n       ",
+      "readOnly": true
     },
     {
       "name": "disabled",
@@ -138,7 +139,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the overlay was canceled when it was last closed.\n       "
+      "description": "True if the overlay was canceled when it was last closed.\n       ",
+      "readOnly": true
     },
     {
       "name": "withBackdrop",
@@ -528,30 +530,12 @@
     {
       "name": "iron-overlay-canceled",
       "description": "iron-overlay-canceled",
-      "properties": [
-        {
-          "name": "event",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "The closing of the overlay can be prevented\nby calling `event.preventDefault()`. The `event.detail` is the original event that\noriginated the canceling (e.g. ESC keyboard event or click event outside the overlay)."
-        }
-      ]
+      "properties": []
     },
     {
       "name": "iron-overlay-closed",
       "description": "iron-overlay-closed",
-      "properties": [
-        {
-          "name": "event",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "The `event.detail` is the `closingReason` property\n(contains `canceled`, whether the overlay was canceled)."
-        }
-      ]
+      "properties": []
     },
     {
       "name": "iron-overlay-opened",

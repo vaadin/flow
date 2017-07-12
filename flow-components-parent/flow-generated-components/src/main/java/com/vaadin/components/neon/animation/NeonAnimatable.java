@@ -215,4 +215,21 @@ public class NeonAnimatable extends Component
 	protected <R extends NeonAnimatable> R getSelf() {
 		return (R) this;
 	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public NeonAnimatable(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public NeonAnimatable() {
+	}
 }

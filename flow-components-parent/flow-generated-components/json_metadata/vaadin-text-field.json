@@ -17,7 +17,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n         "
+      "description": "If true, the element currently has focus.\n         ",
+      "readOnly": true
     },
     {
       "name": "disabled",
@@ -153,7 +154,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n             "
+      "description": "A read-only property indicating whether this input has a non empty value.\nIt can be used for example in styling of the component.\n             ",
+      "readOnly": true
     },
     {
       "name": "preventInvalidInput",
@@ -258,5 +260,5 @@
     "Vaadin.FormElementMixin",
     "Vaadin.ThemableMixin"
   ],
-  "description": "`<vaadin-text-field>` is a Polymer element for text field control in forms.\n\n```html\n<vaadin-text-field label=\"First Name\">\n</vaadin-text-field>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The input element\n`error-message` | The error message element\n`input-field` | The element that wraps prefix, value and suffix"
+  "description": "`<vaadin-text-field>` is a Polymer 2 element for text field control in forms.\n\n```html\n<vaadin-text-field label=\"First Name\">\n</vaadin-text-field>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name | Description\n----------------|----------------\n`label` | The label element\n`value` | The input element\n`error-message` | The error message element\n`input-field` | The element that wraps prefix, value and suffix"
 }

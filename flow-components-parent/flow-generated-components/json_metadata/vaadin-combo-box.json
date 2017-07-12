@@ -2,6 +2,7 @@
   "name": "vaadin-combo-box",
   "tag": "vaadin-combo-box",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box.html",
+  "version": "2.0.0-beta1",
   "properties": [
     {
       "name": "validator",
@@ -97,7 +98,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "A read-only property indicating whether this combo box has a value\nselected or not. It can be used for example in styling of the component.\n       "
+      "description": "A read-only property indicating whether this combo box has a value\nselected or not. It can be used for example in styling of the component.\n       ",
+      "readOnly": true
     },
     {
       "name": "loading",
@@ -145,7 +147,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Returns a reference to the native input element."
+      "description": "Returns a reference to the native input element.",
+      "readOnly": true
     },
     {
       "name": "label",
@@ -249,7 +252,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True when the input field has focus.\n       "
+      "description": "True when the input field has focus.\n       ",
+      "readOnly": true
     }
   ],
   "methods": [

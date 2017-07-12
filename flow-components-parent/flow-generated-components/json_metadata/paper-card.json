@@ -74,7 +74,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Read-only property used to pass down the `animatedShadow` value to\nthe underlying paper-material style (since they have different names).\n         "
+      "description": "Read-only property used to pass down the `animatedShadow` value to\nthe underlying paper-material style (since they have different names).\n         ",
+      "readOnly": true
     }
   ],
   "methods": [],

@@ -2,6 +2,7 @@
   "name": "vaadin-combo-box-light",
   "tag": "vaadin-combo-box-light",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-light.html",
+  "version": "2.0.0-beta1",
   "properties": [
     {
       "name": "keyEventTarget",
@@ -105,7 +106,8 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "A read-only property indicating whether this combo box has a value\nselected or not. It can be used for example in styling of the component.\n       "
+      "description": "A read-only property indicating whether this combo box has a value\nselected or not. It can be used for example in styling of the component.\n       ",
+      "readOnly": true
     },
     {
       "name": "loading",
@@ -153,7 +155,8 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "Returns a reference to the native input element."
+      "description": "Returns a reference to the native input element.",
+      "readOnly": true
     },
     {
       "name": "attrForValue",

@@ -25,7 +25,8 @@ import elemental.json.JsonObject;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-item#null", "Flow#0.1.13-SNAPSHOT"})
+		"WebComponent: vaadin-combo-box-item#2.0.0-beta1",
+		"Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
 public class VaadinComboBoxItem extends Component implements HasStyle {

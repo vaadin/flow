@@ -59,22 +59,10 @@ public class PopStateHandler {
     public void bind() {
         // track the location after the latest response from server
         registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
-                event -> updateCurrentPathAndScroll());
+                event -> pathAfterPreviousResponse = Browser.getWindow()                
+                .getLocation().getPathname());                
 
         Browser.getWindow().setOnpopstate(this::onPopStateEvent);
-    }
-
-    private void updateCurrentPathAndScroll() {
-        String oldPath = pathAfterPreviousResponse;
-        pathAfterPreviousResponse = Browser.getWindow().getLocation()
-                .getPathname();
-
-        // move to page top only if there is no fragment so scroll position
-        // doesn't bounce around
-        if (!pathAfterPreviousResponse.equals(oldPath)
-                && !pathAfterPreviousResponse.contains("#")) {
-            Browser.getWindow().scrollTo(0, 0);
-        }
     }
 
     private void onPopStateEvent(Event e) {

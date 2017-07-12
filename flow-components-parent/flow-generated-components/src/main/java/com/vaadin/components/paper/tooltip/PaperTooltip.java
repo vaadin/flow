@@ -453,4 +453,21 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	protected <R extends PaperTooltip> R getSelf() {
 		return (R) this;
 	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public PaperTooltip(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public PaperTooltip() {
+	}
 }

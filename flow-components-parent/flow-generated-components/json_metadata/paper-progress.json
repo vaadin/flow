@@ -42,7 +42,8 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Returns the ratio of the value.\n     "
+      "description": "Returns the ratio of the value.\n     ",
+      "readOnly": true
     },
     {
       "name": "secondaryProgress",
@@ -58,7 +59,8 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "The secondary ratio\n       "
+      "description": "The secondary ratio\n       ",
+      "readOnly": true
     },
     {
       "name": "indeterminate",
