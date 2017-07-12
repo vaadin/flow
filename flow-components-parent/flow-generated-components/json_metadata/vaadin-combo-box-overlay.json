@@ -2,6 +2,7 @@
   "name": "vaadin-combo-box-overlay",
   "tag": "vaadin-combo-box-overlay",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-overlay.html",
+  "version": "2.0.0-beta1",
   "properties": [
     {
       "name": "positionTarget",
