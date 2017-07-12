@@ -91,6 +91,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * The title of the card.
 	 * 
 	 * @param heading
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setHeading(java.lang.String heading) {
@@ -116,6 +117,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * The url of the title image of the card.
 	 * 
 	 * @param image
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setImage(java.lang.String image) {
@@ -141,6 +143,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * The text alternative of the card's title image.
 	 * 
 	 * @param alt
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setAlt(java.lang.String alt) {
@@ -168,6 +171,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * {@code placeholder} image to be shown until the image is fully rendered.
 	 * 
 	 * @param preloadImage
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setPreloadImage(boolean preloadImage) {
@@ -195,6 +199,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * cause the image to fade into place.
 	 * 
 	 * @param fadeImage
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setFadeImage(boolean fadeImage) {
@@ -224,6 +229,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * rendering.
 	 * 
 	 * @param placeholderImage
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setPlaceholderImage(
@@ -251,6 +257,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * The z-depth of the card, from 0-5.
 	 * 
 	 * @param elevation
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setElevation(double elevation) {
@@ -278,6 +285,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * value.
 	 * 
 	 * @param animatedShadow
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setAnimatedShadow(boolean animatedShadow) {
@@ -305,6 +313,7 @@ public class PaperCard extends Component implements HasStyle, HasComponents {
 	 * the underlying paper-material style (since they have different names).
 	 * 
 	 * @param animated
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperCard> R setAnimated(boolean animated) {

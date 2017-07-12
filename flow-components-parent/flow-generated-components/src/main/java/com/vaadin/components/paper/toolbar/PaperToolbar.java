@@ -141,6 +141,7 @@ public class PaperToolbar extends Component implements HasStyle {
 	 * {@code justified} and {@code around}.
 	 * 
 	 * @param bottomJustify
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperToolbar> R setBottomJustify(
@@ -172,6 +173,7 @@ public class PaperToolbar extends Component implements HasStyle {
 	 * {@code around}.
 	 * 
 	 * @param justify
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperToolbar> R setJustify(java.lang.String justify) {
@@ -201,6 +203,7 @@ public class PaperToolbar extends Component implements HasStyle {
 	 * {@code justified} and {@code around}.
 	 * 
 	 * @param middleJustify
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperToolbar> R setMiddleJustify(

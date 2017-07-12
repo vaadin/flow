@@ -79,6 +79,7 @@ public class IronA11yAnnouncer extends Component implements HasStyle {
 	 * {@code polite} and {@code assertive}.
 	 * 
 	 * @param mode
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronA11yAnnouncer> R setMode(java.lang.String mode) {
@@ -92,6 +93,7 @@ public class IronA11yAnnouncer extends Component implements HasStyle {
 	 * Cause a text string to be announced by screen readers.
 	 * 
 	 * @param text
+	 *            The text that should be announced.
 	 */
 	public void announce(java.lang.String text) {
 		getElement().callFunction("announce", text);

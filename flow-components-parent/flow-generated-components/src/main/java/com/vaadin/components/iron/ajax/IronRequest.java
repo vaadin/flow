@@ -66,6 +66,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * request.
 	 * 
 	 * @param xhr
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setXhr(elemental.json.JsonObject xhr) {
@@ -94,6 +95,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * completely resolved.
 	 * 
 	 * @param response
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setResponse(
@@ -123,6 +125,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * resolved.
 	 * 
 	 * @param status
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setStatus(double status) {
@@ -150,6 +153,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * resolved.
 	 * 
 	 * @param statusText
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setStatusText(java.lang.String statusText) {
@@ -179,6 +183,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * rejects if there is an error before the {@code xhr} completes.
 	 * 
 	 * @param completes
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setCompletes(
@@ -208,6 +213,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * available.
 	 * 
 	 * @param progress
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setProgress(
@@ -235,6 +241,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * Aborted will be true if an abort of the request is attempted.
 	 * 
 	 * @param aborted
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setAborted(boolean aborted) {
@@ -263,6 +270,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * object (mainly network errors).
 	 * 
 	 * @param errored
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setErrored(boolean errored) {
@@ -288,6 +296,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * TimedOut will be true if the XHR threw a timeout event.
 	 * 
 	 * @param timedOut
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setTimedOut(boolean timedOut) {
@@ -323,6 +332,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * file:// - don't provide status codes.
 	 * 
 	 * @param succeeded
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setSucceeded(
@@ -340,6 +350,9 @@ public class IronRequest extends Component implements HasStyle {
 	 * Content-Type header. See the docs for iron-ajax's {@code body} param for
 	 * details.
 	 * 
+	 * @see SendOptions
+	 * @param options
+	 *            The SendOptions object to pass as an argument.
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported

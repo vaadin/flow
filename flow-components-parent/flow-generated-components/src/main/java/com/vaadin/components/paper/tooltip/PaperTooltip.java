@@ -94,6 +94,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * animationConfig has the exact format below.
 	 * 
 	 * @param animationConfig
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setAnimationConfig(
@@ -124,6 +125,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setEntryAnimation(
@@ -155,6 +157,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setExitAnimation(
@@ -184,6 +187,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * be a sibling of the tooltip.
 	 * 
 	 * @param _for
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setFor(java.lang.String _for) {
@@ -211,6 +215,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * shown or hidden.
 	 * 
 	 * @param manualMode
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setManualMode(boolean manualMode) {
@@ -236,6 +241,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * Positions the tooltip to the top, right, bottom, left of its content.
 	 * 
 	 * @param position
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setPosition(java.lang.String position) {
@@ -261,6 +267,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * If true, no parts of the tooltip will ever be shown offscreen.
 	 * 
 	 * @param fitToVisibleBounds
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setFitToVisibleBounds(
@@ -289,6 +296,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * to.
 	 * 
 	 * @param offset
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setOffset(double offset) {
@@ -318,6 +326,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * and {@code marginTop} are provided, {@code marginTop} will be ignored.
 	 * 
 	 * @param marginTop
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setMarginTop(double marginTop) {
@@ -345,6 +354,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * played when showing the tooltip.
 	 * 
 	 * @param animationDelay
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setAnimationDelay(double animationDelay) {
@@ -374,6 +384,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * of the tooltip.
 	 * 
 	 * @param target
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTooltip> R setTarget(elemental.json.JsonObject target) {
@@ -391,6 +402,7 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * or a map of animation type to array of configuration objects.
 	 * 
 	 * @param type
+	 *            Missing documentation!
 	 */
 	public void getAnimationConfig(elemental.json.JsonObject type) {
 		getElement().callFunction("getAnimationConfig", type);
@@ -402,7 +414,9 @@ public class PaperTooltip extends Component implements HasStyle, HasComponents {
 	 * Plays an animation with an optional {@code type}.
 	 * 
 	 * @param type
+	 *            Missing documentation!
 	 * @param cookie
+	 *            Missing documentation!
 	 */
 	public void playAnimation(elemental.json.JsonObject type,
 			elemental.json.JsonObject cookie) {

@@ -58,6 +58,7 @@ public class SlideUpAnimation extends Component implements HasStyle {
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends SlideUpAnimation> R setAnimationTiming(
@@ -84,6 +85,7 @@ public class SlideUpAnimation extends Component implements HasStyle {
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends SlideUpAnimation> R setIsNeonAnimation(
@@ -99,6 +101,7 @@ public class SlideUpAnimation extends Component implements HasStyle {
 	 * to the defaults defined by the animation.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
@@ -111,8 +114,11 @@ public class SlideUpAnimation extends Component implements HasStyle {
 	 * the prefixed versions.
 	 * 
 	 * @param node
+	 *            Missing documentation!
 	 * @param property
+	 *            Missing documentation!
 	 * @param value
+	 *            Missing documentation!
 	 */
 	public void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {

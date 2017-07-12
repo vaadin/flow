@@ -90,6 +90,7 @@ public class IronMeta extends Component implements HasStyle {
 	 * The type of meta-data. All meta-data of the same type is stored together.
 	 * 
 	 * @param type
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronMeta> R setType(java.lang.String type) {
@@ -115,6 +116,7 @@ public class IronMeta extends Component implements HasStyle {
 	 * The key used to store {@code value} under the {@code type} namespace.
 	 * 
 	 * @param key
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronMeta> R setKey(elemental.json.JsonObject key) {
@@ -141,6 +143,7 @@ public class IronMeta extends Component implements HasStyle {
 	 * The meta-data to store or retrieve.
 	 * 
 	 * @param value
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronMeta> R setValue(elemental.json.JsonObject value) {
@@ -166,6 +169,7 @@ public class IronMeta extends Component implements HasStyle {
 	 * If true, {@code value} is set to the iron-meta instance itself.
 	 * 
 	 * @param self
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronMeta> R setSelf(boolean self) {
@@ -183,6 +187,7 @@ public class IronMeta extends Component implements HasStyle {
 
 	/**
 	 * @param list
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronMeta> R setList(elemental.json.JsonObject list) {
@@ -196,6 +201,7 @@ public class IronMeta extends Component implements HasStyle {
 	 * Retrieves meta data value by key.
 	 * 
 	 * @param key
+	 *            The key of the meta-data to be returned.
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported

@@ -74,6 +74,7 @@ public class PaperInputError extends Component
 	 * True if the error is showing.
 	 * 
 	 * @param invalid
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperInputError> R setInvalid(boolean invalid) {
@@ -85,6 +86,10 @@ public class PaperInputError extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * This overrides the update function in PaperInputAddonBehavior.
+	 * 
+	 * @see UpdateState
+	 * @param state
+	 *            The UpdateState object to pass as an argument.
 	 */
 	public void update(UpdateState state) {
 		getElement().callFunction("update", state.toJson());

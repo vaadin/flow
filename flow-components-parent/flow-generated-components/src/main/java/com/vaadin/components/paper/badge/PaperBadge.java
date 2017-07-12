@@ -94,6 +94,7 @@ public class PaperBadge extends Component implements HasStyle {
 	 * a sibling of the badge.
 	 * 
 	 * @param _for
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperBadge> R setFor(java.lang.String _for) {
@@ -121,6 +122,7 @@ public class PaperBadge extends Component implements HasStyle {
 	 * should have very few characters.
 	 * 
 	 * @param label
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperBadge> R setLabel(java.lang.String label) {
@@ -152,6 +154,7 @@ public class PaperBadge extends Component implements HasStyle {
 	 * purposes.
 	 * 
 	 * @param icon
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperBadge> R setIcon(java.lang.String icon) {
@@ -181,6 +184,7 @@ public class PaperBadge extends Component implements HasStyle {
 	 * of the badge.
 	 * 
 	 * @param target
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperBadge> R setTarget(elemental.json.JsonObject target) {
@@ -205,6 +209,7 @@ public class PaperBadge extends Component implements HasStyle {
 	 * ancestor detects a request for notifications.
 	 * 
 	 * @param parentResizable
+	 *            Missing documentation!
 	 */
 	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
@@ -217,6 +222,7 @@ public class PaperBadge extends Component implements HasStyle {
 	 * should be notified of a resize change.
 	 * 
 	 * @param target
+	 *            Missing documentation!
 	 */
 	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
@@ -230,6 +236,8 @@ public class PaperBadge extends Component implements HasStyle {
 	 * should be notified, or false if it should not be notified.
 	 * 
 	 * @param element
+	 *            A candidate descendant element that implements
+	 *            `IronResizableBehavior`.
 	 * @return It would return a boolean
 	 */
 	@NotSupported

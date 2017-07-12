@@ -65,6 +65,7 @@ public class NeonAnimatable extends Component
 	 * Animation configuration. See README for more info.
 	 * 
 	 * @param animationConfig
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatable> R setAnimationConfig(
@@ -95,6 +96,7 @@ public class NeonAnimatable extends Component
 	 * is set to {@code this} if using this property.
 	 * 
 	 * @param entryAnimation
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatable> R setEntryAnimation(
@@ -126,6 +128,7 @@ public class NeonAnimatable extends Component
 	 * set to {@code this} if using this property.
 	 * 
 	 * @param exitAnimation
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends NeonAnimatable> R setExitAnimation(
@@ -145,6 +148,7 @@ public class NeonAnimatable extends Component
 	 * or a map of animation type to array of configuration objects.
 	 * 
 	 * @param type
+	 *            Missing documentation!
 	 */
 	public void getAnimationConfig(elemental.json.JsonObject type) {
 		getElement().callFunction("getAnimationConfig", type);
@@ -167,6 +171,7 @@ public class NeonAnimatable extends Component
 	 * ancestor detects a request for notifications.
 	 * 
 	 * @param parentResizable
+	 *            Missing documentation!
 	 */
 	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
@@ -179,6 +184,7 @@ public class NeonAnimatable extends Component
 	 * should be notified of a resize change.
 	 * 
 	 * @param target
+	 *            Missing documentation!
 	 */
 	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
@@ -192,6 +198,8 @@ public class NeonAnimatable extends Component
 	 * should be notified, or false if it should not be notified.
 	 * 
 	 * @param element
+	 *            A candidate descendant element that implements
+	 *            `IronResizableBehavior`.
 	 * @return It would return a boolean
 	 */
 	@NotSupported

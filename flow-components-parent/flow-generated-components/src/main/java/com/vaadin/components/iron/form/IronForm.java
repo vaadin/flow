@@ -118,6 +118,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * the form has been submitted.
 	 * 
 	 * @param allowRedirect
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronForm> R setAllowRedirect(boolean allowRedirect) {
@@ -145,6 +146,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * details. Only works when {@code allowRedirect} is false.
 	 * 
 	 * @param headers
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronForm> R setHeaders(elemental.json.JsonObject headers) {
@@ -174,6 +176,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * {@code allowRedirect} is false.
 	 * 
 	 * @param withCredentials
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronForm> R setWithCredentials(boolean withCredentials) {
@@ -198,6 +201,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * Submits the form.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 */
 	public void submit(elemental.json.JsonObject event) {
 		getElement().callFunction("submit", event);
@@ -209,6 +213,7 @@ public class IronForm extends Component implements HasStyle, HasComponents {
 	 * Resets the form to the default values.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 */
 	public void reset(elemental.json.JsonObject event) {
 		getElement().callFunction("reset", event);

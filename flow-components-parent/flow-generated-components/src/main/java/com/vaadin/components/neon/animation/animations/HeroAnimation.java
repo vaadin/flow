@@ -51,6 +51,7 @@ public class HeroAnimation extends Component implements HasStyle {
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends HeroAnimation> R setAnimationTiming(
@@ -77,6 +78,7 @@ public class HeroAnimation extends Component implements HasStyle {
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends HeroAnimation> R setIsNeonAnimation(
@@ -103,6 +105,7 @@ public class HeroAnimation extends Component implements HasStyle {
 	 * Cached copy of shared elements.
 	 * 
 	 * @param sharedElements
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends HeroAnimation> R setSharedElements(
@@ -118,6 +121,7 @@ public class HeroAnimation extends Component implements HasStyle {
 	 * to the defaults defined by the animation.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
@@ -130,8 +134,11 @@ public class HeroAnimation extends Component implements HasStyle {
 	 * the prefixed versions.
 	 * 
 	 * @param node
+	 *            Missing documentation!
 	 * @param property
+	 *            Missing documentation!
 	 * @param value
+	 *            Missing documentation!
 	 */
 	public void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {
@@ -140,6 +147,7 @@ public class HeroAnimation extends Component implements HasStyle {
 
 	/**
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void complete(elemental.json.JsonObject config) {
 		getElement().callFunction("complete", config);
@@ -151,6 +159,7 @@ public class HeroAnimation extends Component implements HasStyle {
 	 * Finds shared elements based on {@code config}.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void findSharedElements(elemental.json.JsonObject config) {
 		getElement().callFunction("findSharedElements", config);

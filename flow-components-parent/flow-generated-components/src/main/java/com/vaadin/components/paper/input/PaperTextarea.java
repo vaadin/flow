@@ -75,6 +75,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * If true, the element currently has focus.
 	 * 
 	 * @param focused
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setFocused(boolean focused) {
@@ -107,6 +108,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param disabled
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setDisabled(boolean disabled) {
@@ -134,6 +136,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setKeyEventTarget(
@@ -162,6 +165,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setStopKeyboardEventPropagation(
@@ -181,6 +185,7 @@ public class PaperTextarea extends Component implements HasStyle {
 
 	/**
 	 * @param keyBindings
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setKeyBindings(
@@ -215,6 +220,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code template}
 	 * 
 	 * @param label
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setLabel(java.lang.String label) {
@@ -241,6 +247,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * The value for this element.
 	 * 
 	 * @param value
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setValue(java.lang.String value) {
@@ -279,6 +286,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * automatically, which can clobber attempts to manage it manually.
 	 * 
 	 * @param invalid
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setInvalid(boolean invalid) {
@@ -310,6 +318,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code allowedPattern} property.
 	 * 
 	 * @param allowedPattern
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAllowedPattern(
@@ -343,6 +352,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code type} property.
 	 * 
 	 * @param type
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setType(java.lang.String type) {
@@ -374,6 +384,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code list} property.
 	 * 
 	 * @param list
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setList(java.lang.String list) {
@@ -403,6 +414,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 * 
 	 * @param pattern
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setPattern(java.lang.String pattern) {
@@ -438,6 +450,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * when its value is invalid.
 	 * 
 	 * @param required
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setRequired(boolean required) {
@@ -467,6 +480,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * this to the {@code <paper-input-error>}'s content, if using.
 	 * 
 	 * @param errorMessage
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setErrorMessage(
@@ -494,6 +508,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * Set to true to show a character counter.
 	 * 
 	 * @param charCounter
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setCharCounter(boolean charCounter) {
@@ -525,6 +540,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param noLabelFloat
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setNoLabelFloat(boolean noLabelFloat) {
@@ -554,6 +570,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * 
 	 * @param alwaysFloatLabel
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAlwaysFloatLabel(
@@ -586,6 +603,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param autoValidate
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAutoValidate(boolean autoValidate) {
@@ -615,6 +633,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 * 
 	 * @param validator
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setValidator(java.lang.String validator) {
@@ -645,6 +664,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code autocomplete} property.
 	 * 
 	 * @param autocomplete
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAutocomplete(
@@ -676,6 +696,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code autofocus} property.
 	 * 
 	 * @param autofocus
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAutofocus(boolean autofocus) {
@@ -705,6 +726,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code inputmode} property.
 	 * 
 	 * @param inputmode
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setInputmode(java.lang.String inputmode) {
@@ -735,6 +757,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 * 
 	 * @param minlength
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setMinlength(double minlength) {
@@ -764,6 +787,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 * 
 	 * @param maxlength
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setMaxlength(double maxlength) {
@@ -793,6 +817,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 * 
 	 * @param min
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setMin(java.lang.String min) {
@@ -824,6 +849,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code max} property.
 	 * 
 	 * @param max
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setMax(java.lang.String max) {
@@ -853,6 +879,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 * 
 	 * @param step
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setStep(java.lang.String step) {
@@ -878,6 +905,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * The name of this element.
 	 * 
 	 * @param name
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setName(java.lang.String name) {
@@ -905,6 +933,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * will always float.
 	 * 
 	 * @param placeholder
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setPlaceholder(
@@ -936,6 +965,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code readonly} property.
 	 * 
 	 * @param readonly
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setReadonly(boolean readonly) {
@@ -965,6 +995,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param size
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setSize(double size) {
@@ -994,6 +1025,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code autocapitalize} property.
 	 * 
 	 * @param autocapitalize
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAutocapitalize(
@@ -1025,6 +1057,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code autocorrect} property.
 	 * 
 	 * @param autocorrect
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAutocorrect(
@@ -1056,6 +1089,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code autosave} property, used with type=search.
 	 * 
 	 * @param autosave
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAutosave(java.lang.String autosave) {
@@ -1085,6 +1119,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code results} property, used with type=search.
 	 * 
 	 * @param results
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setResults(double results) {
@@ -1114,6 +1149,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code accept} property, used with type=file.
 	 * 
 	 * @param accept
+	 *            The String value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setAccept(java.lang.String accept) {
@@ -1143,6 +1179,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * {@code multiple} property, used with type=file.
 	 * 
 	 * @param multiple
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setMultiple(boolean multiple) {
@@ -1168,6 +1205,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * The initial number of rows.
 	 * 
 	 * @param rows
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setRows(double rows) {
@@ -1195,6 +1233,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * means no maximum.
 	 * 
 	 * @param maxRows
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperTextarea> R setMaxRows(double maxRows) {
@@ -1210,7 +1249,9 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -1232,7 +1273,9 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -1266,6 +1309,7 @@ public class PaperTextarea extends Component implements HasStyle {
 	 * Restores the cursor to its original position after updating the value.
 	 * 
 	 * @param newValue
+	 *            The value that should be saved.
 	 */
 	public void updateValueAndPreserveCaret(java.lang.String newValue) {
 		getElement().callFunction("updateValueAndPreserveCaret", newValue);

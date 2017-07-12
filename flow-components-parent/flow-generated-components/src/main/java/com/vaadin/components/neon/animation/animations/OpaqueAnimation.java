@@ -55,6 +55,7 @@ public class OpaqueAnimation extends Component implements HasStyle {
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends OpaqueAnimation> R setAnimationTiming(
@@ -81,6 +82,7 @@ public class OpaqueAnimation extends Component implements HasStyle {
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends OpaqueAnimation> R setIsNeonAnimation(
@@ -96,6 +98,7 @@ public class OpaqueAnimation extends Component implements HasStyle {
 	 * to the defaults defined by the animation.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
@@ -108,8 +111,11 @@ public class OpaqueAnimation extends Component implements HasStyle {
 	 * the prefixed versions.
 	 * 
 	 * @param node
+	 *            Missing documentation!
 	 * @param property
+	 *            Missing documentation!
 	 * @param value
+	 *            Missing documentation!
 	 */
 	public void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {
@@ -118,6 +124,7 @@ public class OpaqueAnimation extends Component implements HasStyle {
 
 	/**
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void complete(elemental.json.JsonObject config) {
 		getElement().callFunction("complete", config);

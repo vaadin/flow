@@ -123,6 +123,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that represents the current value.
 	 * 
 	 * @param value
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setValue(double value) {
@@ -149,6 +150,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that indicates the minimum value of the range.
 	 * 
 	 * @param min
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setMin(double min) {
@@ -175,6 +177,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that indicates the maximum value of the range.
 	 * 
 	 * @param max
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setMax(double max) {
@@ -201,6 +204,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * Specifies the value granularity of the range's value.
 	 * 
 	 * @param step
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setStep(double step) {
@@ -227,6 +231,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * Returns the ratio of the value.
 	 * 
 	 * @param ratio
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setRatio(double ratio) {
@@ -252,6 +257,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The number that represents the current secondary progress.
 	 * 
 	 * @param secondaryProgress
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setSecondaryProgress(
@@ -278,6 +284,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * The secondary ratio
 	 * 
 	 * @param secondaryRatio
+	 *            The double value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setSecondaryRatio(double secondaryRatio) {
@@ -303,6 +310,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * Use an indeterminate progress indicator.
 	 * 
 	 * @param indeterminate
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setIndeterminate(boolean indeterminate) {
@@ -328,6 +336,7 @@ public class PaperProgress extends Component implements HasStyle {
 	 * True if the progress is disabled.
 	 * 
 	 * @param disabled
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperProgress> R setDisabled(boolean disabled) {

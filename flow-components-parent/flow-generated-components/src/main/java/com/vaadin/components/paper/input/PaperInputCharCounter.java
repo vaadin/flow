@@ -54,6 +54,10 @@ public class PaperInputCharCounter extends Component implements HasStyle {
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * This overrides the update function in PaperInputAddonBehavior.
+	 * 
+	 * @see UpdateState
+	 * @param state
+	 *            The UpdateState object to pass as an argument.
 	 */
 	public void update(UpdateState state) {
 		getElement().callFunction("update", state.toJson());

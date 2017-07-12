@@ -51,6 +51,7 @@ public class PaperMenuShrinkHeightAnimation extends Component
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
+	 *            The JsonObject value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperMenuShrinkHeightAnimation> R setAnimationTiming(
@@ -77,6 +78,7 @@ public class PaperMenuShrinkHeightAnimation extends Component
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
+	 *            The boolean value to set.
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperMenuShrinkHeightAnimation> R setIsNeonAnimation(
@@ -92,6 +94,7 @@ public class PaperMenuShrinkHeightAnimation extends Component
 	 * to the defaults defined by the animation.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
@@ -104,8 +107,11 @@ public class PaperMenuShrinkHeightAnimation extends Component
 	 * the prefixed versions.
 	 * 
 	 * @param node
+	 *            Missing documentation!
 	 * @param property
+	 *            Missing documentation!
 	 * @param value
+	 *            Missing documentation!
 	 */
 	public void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {
