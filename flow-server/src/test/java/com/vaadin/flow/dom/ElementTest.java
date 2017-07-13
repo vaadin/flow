@@ -1720,10 +1720,9 @@ public class ElementTest extends AbstractNodeTest {
         AtomicInteger childTriggered = new AtomicInteger();
         AtomicInteger grandChildTriggered = new AtomicInteger();
 
-        Registration registrationHandle = child
-                .addAttachListener(event -> {
-                    childTriggered.addAndGet(1);
-                });
+        Registration registrationHandle = child.addAttachListener(event -> {
+            childTriggered.addAndGet(1);
+        });
         child.addAttachListener(event -> {
             Assert.assertEquals(child, event.getSource());
         });
@@ -1772,11 +1771,10 @@ public class ElementTest extends AbstractNodeTest {
 
         AtomicInteger triggered = new AtomicInteger();
 
-        Registration registrationHandle = child
-                .addDetachListener(event -> {
-                    triggered.addAndGet(1);
-                    Assert.assertEquals(child, event.getSource());
-                });
+        Registration registrationHandle = child.addDetachListener(event -> {
+            triggered.addAndGet(1);
+            Assert.assertEquals(child, event.getSource());
+        });
 
         grandChild.addDetachListener(event -> {
             triggered.addAndGet(1);

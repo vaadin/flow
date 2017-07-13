@@ -39,9 +39,9 @@
     "paper-tabs": "PolymerElements/paper-tabs#^2.0.0",
     "paper-toolbar": "PolymerElements/paper-toolbar#^2.0.0",
     "paper-tooltip": "PolymerElements/paper-tooltip#^2.0.0",
-    "vaadin-text-field": "vaadin/vaadin-text-field#^1.0.0-beta1",
-    "vaadin-button": "vaadin/vaadin-button#^1.0.0-beta2",
+    "vaadin-text-field": "vaadin/vaadin-text-field#^1.1.0-alpha2",
+    "vaadin-button": "vaadin/vaadin-button#^1.0.0-beta3",
     "vaadin-checkbox": "vaadin/vaadin-checkbox#^1.0.0-alpha1",
-    "vaadin-combo-box": "vaadin/vaadin-combo-box#^2.0.0-alpha4"
+    "vaadin-combo-box": "vaadin/vaadin-combo-box#^2.0.0-beta1"
   }
 }

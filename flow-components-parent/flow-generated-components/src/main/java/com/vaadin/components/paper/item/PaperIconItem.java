@@ -89,6 +89,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setKeyEventTarget(
@@ -117,6 +118,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setStopKeyboardEventPropagation(
@@ -136,6 +138,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setKeyBindings(
@@ -176,6 +179,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * the spacebar.
 	 * 
 	 * @param toggles
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setToggles(boolean toggles) {
@@ -202,6 +206,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the button is a toggle and is currently in the active state.
 	 * 
 	 * @param active
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setActive(boolean active) {
@@ -256,6 +261,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * state.
 	 * 
 	 * @param ariaActiveAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setAriaActiveAttribute(
@@ -297,6 +303,7 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * If true, the user cannot interact with this element.
 	 * 
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperIconItem> R setDisabled(boolean disabled) {
@@ -312,7 +319,9 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -334,7 +343,9 @@ public class PaperIconItem extends Component implements HasStyle, HasComponents 
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported

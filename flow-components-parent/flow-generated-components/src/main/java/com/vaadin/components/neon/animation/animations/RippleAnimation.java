@@ -51,6 +51,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends RippleAnimation> R setAnimationTiming(
@@ -77,6 +78,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends RippleAnimation> R setIsNeonAnimation(
@@ -103,6 +105,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * Cached copy of shared elements.
 	 * 
 	 * @param sharedElements
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends RippleAnimation> R setSharedElements(
@@ -118,6 +121,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * to the defaults defined by the animation.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
@@ -130,8 +134,11 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * the prefixed versions.
 	 * 
 	 * @param node
+	 *            Missing documentation!
 	 * @param property
+	 *            Missing documentation!
 	 * @param value
+	 *            Missing documentation!
 	 */
 	public void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {
@@ -148,6 +155,7 @@ public class RippleAnimation extends Component implements HasStyle {
 	 * Finds shared elements based on {@code config}.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void findSharedElements(elemental.json.JsonObject config) {
 		getElement().callFunction("findSharedElements", config);

@@ -75,6 +75,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * The URL target of the request.
 	 * 
 	 * @param url
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setUrl(java.lang.String url) {
@@ -106,6 +107,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * property instead.
 	 * 
 	 * @param params
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setParams(elemental.json.JsonObject params) {
@@ -133,6 +135,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * is 'GET'.
 	 * 
 	 * @param method
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setMethod(java.lang.String method) {
@@ -174,6 +177,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * specified by the {@code contentType} property of this element.
 	 * 
 	 * @param headers
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setHeaders(elemental.json.JsonObject headers) {
@@ -209,6 +213,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * Varies the handling of the {@code body} param.
 	 * 
 	 * @param contentType
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setContentType(java.lang.String contentType) {
@@ -263,6 +268,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * handle any encoding (e.g. for FormData, Blob, ArrayBuffer).
 	 * 
 	 * @param body
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setBody(elemental.json.JsonObject body) {
@@ -290,6 +296,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * true unless You Know What You Are Doing™.
 	 * 
 	 * @param sync
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setSync(boolean sync) {
@@ -345,6 +352,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * {@code document}: uses {@code XHR.response}.
 	 * 
 	 * @param handleAs
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setHandleAs(java.lang.String handleAs) {
@@ -370,6 +378,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * Set the withCredentials flag on the request.
 	 * 
 	 * @param withCredentials
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setWithCredentials(boolean withCredentials) {
@@ -395,6 +404,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * Set the timeout flag on the request.
 	 * 
 	 * @param timeout
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setTimeout(double timeout) {
@@ -422,6 +432,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * or {@code params} changes.
 	 * 
 	 * @param auto
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setAuto(boolean auto) {
@@ -447,6 +458,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * If true, error messages will automatically be logged to the console.
 	 * 
 	 * @param verbose
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setVerbose(boolean verbose) {
@@ -543,6 +555,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * generated requests.
 	 * 
 	 * @param debounceDuration
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setDebounceDuration(double debounceDuration) {
@@ -582,6 +595,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * 
 	 * 
 	 * @param jsonPrefix
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setJsonPrefix(java.lang.String jsonPrefix) {
@@ -626,6 +640,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * -shadow-dom-20151215/#events-that-are-not-leaked-into-ancestor-trees
 	 * 
 	 * @param bubbles
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setBubbles(boolean bubbles) {
@@ -653,6 +668,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * an object containing the error message as well as the request.
 	 * 
 	 * @param rejectWithRequest
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setRejectWithRequest(boolean rejectWithRequest) {
@@ -680,6 +696,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * from the current value of {@code params}.
 	 * 
 	 * @param queryString
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setQueryString(
@@ -708,6 +725,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * suitable for providing to an {@code iron-request} instance.
 	 * 
 	 * @param requestUrl
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setRequestUrl(
@@ -738,6 +756,7 @@ public class IronAjax extends Component implements HasStyle {
 	 * in the {@code headers} property.
 	 * 
 	 * @param requestHeaders
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronAjax> R setRequestHeaders(

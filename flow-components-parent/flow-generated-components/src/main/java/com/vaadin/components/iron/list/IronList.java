@@ -100,6 +100,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * document.querySelector('#scrollable-element'); {@code }`
 	 * 
 	 * @param scrollTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setScrollTarget(
@@ -130,6 +131,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * otherwise strict equality checking will be used.
 	 * 
 	 * @param mutableData
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setMutableData(boolean mutableData) {
@@ -157,6 +159,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * to stamp and that that each template instance should bind to.
 	 * 
 	 * @param items
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setItems(elemental.json.JsonArray items) {
@@ -182,6 +185,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * The max count of physical items the pool can extend to.
 	 * 
 	 * @param maxPhysicalCount
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setMaxPhysicalCount(double maxPhysicalCount) {
@@ -209,6 +213,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * element associated with a given template instance.
 	 * 
 	 * @param as
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setAs(java.lang.String as) {
@@ -236,6 +241,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * the row.
 	 * 
 	 * @param indexAs
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setIndexAs(java.lang.String indexAs) {
@@ -263,6 +269,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * row is selected.
 	 * 
 	 * @param selectedAs
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setSelectedAs(java.lang.String selectedAs) {
@@ -299,6 +306,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * </iron-list> {@code }`
 	 * 
 	 * @param grid
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setGrid(boolean grid) {
@@ -332,6 +340,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * in selection, since they are presumed to have their * own action.
 	 * 
 	 * @param selectionEnabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setSelectionEnabled(boolean selectionEnabled) {
@@ -359,6 +368,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * item, or {@code null} if no item is selected.
 	 * 
 	 * @param selectedItem
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setSelectedItem(
@@ -387,6 +397,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * selected items.
 	 * 
 	 * @param selectedItems
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setSelectedItems(
@@ -417,6 +428,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * {@code false}, only one item may be selected at a time.
 	 * 
 	 * @param multiSelection
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setMultiSelection(boolean multiSelection) {
@@ -456,6 +468,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * example: a header is placed above the list.
 	 * 
 	 * @param scrollOffset
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setScrollOffset(double scrollOffset) {
@@ -481,6 +494,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Gets the index of the first visible item in the viewport.
 	 * 
 	 * @param firstVisibleIndex
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setFirstVisibleIndex(double firstVisibleIndex) {
@@ -506,6 +520,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Gets the index of the last visible item in the viewport.
 	 * 
 	 * @param lastVisibleIndex
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronList> R setLastVisibleIndex(double lastVisibleIndex) {
@@ -522,7 +537,11 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * followed by {@code stamp} to create new instances of the template.
 	 * 
 	 * @param template
+	 *            Template to prepare
 	 * @param mutableData
+	 *            When `true`, the generated class will skip strict
+	 *            dirty-checking for objects and arrays (always consider them to
+	 *            be "dirty"). Defaults to false.
 	 */
 	public void templatize(elemental.json.JsonObject template,
 			elemental.json.JsonObject mutableData) {
@@ -539,6 +558,8 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * accessors corresponding to properties referenced in template bindings.
 	 * 
 	 * @param model
+	 *            Object containing initial property values to populate into the
+	 *            template bindings.
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -554,6 +575,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * manipulate data associated with this template instance.
 	 * 
 	 * @param el
+	 *            Element for which to return a template model.
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -577,6 +599,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * ancestor detects a request for notifications.
 	 * 
 	 * @param parentResizable
+	 *            Missing documentation!
 	 */
 	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
@@ -589,6 +612,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * should be notified of a resize change.
 	 * 
 	 * @param target
+	 *            Missing documentation!
 	 */
 	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
@@ -602,6 +626,8 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * should be notified, or false if it should not be notified.
 	 * 
 	 * @param element
+	 *            A candidate descendant element that implements
+	 *            `IronResizableBehavior`.
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -614,7 +640,9 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Scrolls the content to a particular place.
 	 * 
 	 * @param left
+	 *            The left position
 	 * @param top
+	 *            The top position
 	 */
 	public void scroll(double left, double top) {
 		getElement().callFunction("scroll", left, top);
@@ -626,6 +654,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Enables or disables the scroll event listener.
 	 * 
 	 * @param yes
+	 *            True to add the event, False to remove it.
 	 */
 	public void toggleScrollListener(boolean yes) {
 		getElement().callFunction("toggleScrollListener", yes);
@@ -648,6 +677,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * items in the DOM tree.
 	 * 
 	 * @param item
+	 *            The item to be scrolled to
 	 */
 	public void scrollToItem(elemental.json.JsonObject item) {
 		getElement().callFunction("scrollToItem", item);
@@ -660,6 +690,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * items in the DOM tree.
 	 * 
 	 * @param idx
+	 *            The index of the item
 	 */
 	public void scrollToIndex(double idx) {
 		getElement().callFunction("scrollToIndex", idx);
@@ -671,6 +702,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Selects the given item.
 	 * 
 	 * @param item
+	 *            The item instance.
 	 */
 	public void selectItem(elemental.json.JsonObject item) {
 		getElement().callFunction("selectItem", item);
@@ -682,6 +714,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Selects the item at the given index in the items array.
 	 * 
 	 * @param index
+	 *            The item instance.
 	 */
 	public void selectIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("selectIndex", index);
@@ -693,6 +726,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Deselects the given item.
 	 * 
 	 * @param item
+	 *            The item instance.
 	 */
 	public void deselectItem(elemental.json.JsonObject item) {
 		getElement().callFunction("deselectItem", item);
@@ -704,6 +738,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Deselects the item at the given index in the items array.
 	 * 
 	 * @param index
+	 *            The index of the item in the items array.
 	 */
 	public void deselectIndex(double index) {
 		getElement().callFunction("deselectIndex", index);
@@ -716,6 +751,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * already been selected.
 	 * 
 	 * @param item
+	 *            The item object.
 	 */
 	public void toggleSelectionForItem(elemental.json.JsonObject item) {
 		getElement().callFunction("toggleSelectionForItem", item);
@@ -728,6 +764,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * depending on whether the item has already been selected.
 	 * 
 	 * @param index
+	 *            The index of the item in the items array.
 	 */
 	public void toggleSelectionForIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("toggleSelectionForIndex", index);
@@ -748,6 +785,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Updates the size of a given list item.
 	 * 
 	 * @param item
+	 *            The item instance.
 	 */
 	public void updateSizeForItem(elemental.json.JsonObject item) {
 		getElement().callFunction("updateSizeForItem", item);
@@ -759,6 +797,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 	 * Updates the size of the item at the given index in the items array.
 	 * 
 	 * @param index
+	 *            The index of the item in the items array.
 	 */
 	public void updateSizeForIndex(double index) {
 		getElement().callFunction("updateSizeForIndex", index);
@@ -766,6 +805,7 @@ public class IronList extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param idx
+	 *            Missing documentation!
 	 */
 	public void focusItem(elemental.json.JsonObject idx) {
 		getElement().callFunction("focusItem", idx);

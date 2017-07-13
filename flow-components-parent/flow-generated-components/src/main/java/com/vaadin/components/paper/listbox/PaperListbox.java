@@ -113,6 +113,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * of {@code attrOrPropertyName}.)
 	 * 
 	 * @param attrForSelected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setAttrForSelected(
@@ -157,6 +158,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * 
 	 * @param selected
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelected(java.lang.String selected) {
@@ -171,6 +173,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * item.
 	 * 
 	 * @param selected
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelected(double selected) {
@@ -212,6 +215,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * empty string to listen to no events.
 	 * 
 	 * @param activateEvent
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setActivateEvent(
@@ -241,6 +245,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * CSS selector are selectable.
 	 * 
 	 * @param selectable
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectable(java.lang.String selectable) {
@@ -267,6 +272,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * The class to set on elements when selected.
 	 * 
 	 * @param selectedClass
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedClass(
@@ -294,6 +300,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * The attribute to set on elements when selected.
 	 * 
 	 * @param selectedAttribute
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedAttribute(
@@ -323,6 +330,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * {@code attrForSelected} is not found.
 	 * 
 	 * @param fallbackSelection
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setFallbackSelection(
@@ -363,6 +371,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * If true, multiple selections are allowed.
 	 * 
 	 * @param multi
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setMulti(boolean multi) {
@@ -390,6 +399,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * {@code selected} when {@code multi} is true.
 	 * 
 	 * @param selectedValues
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setSelectedValues(
@@ -430,6 +440,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setKeyEventTarget(
@@ -458,6 +469,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setStopKeyboardEventPropagation(
@@ -477,6 +489,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setKeyBindings(
@@ -519,6 +532,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * unset, {@code textContent} will be used.
 	 * 
 	 * @param attrForItemTitle
+	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setAttrForItemTitle(
@@ -538,6 +552,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param disabled
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperListbox> R setDisabled(boolean disabled) {
@@ -551,6 +566,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * Returns the index of the given item.
 	 * 
 	 * @param item
+	 *            Missing documentation!
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
@@ -565,9 +581,9 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * {@code value} will be selected.
 	 * 
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 * @param value
-	 *            can be <code>null</code>
+	 *            the value to select.
 	 */
 	public void select(java.lang.String valueString, double valueNumber) {
 		getElement().callFunction("select", valueString, valueNumber);
@@ -597,6 +613,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * Selects the item at the given index.
 	 * 
 	 * @param index
+	 *            Missing documentation!
 	 */
 	public void selectIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("selectIndex", index);
@@ -622,6 +639,7 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 
 	/**
 	 * @param multi
+	 *            Missing documentation!
 	 */
 	public void multiChanged(elemental.json.JsonObject multi) {
 		getElement().callFunction("multiChanged", multi);
@@ -635,7 +653,9 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -657,7 +677,9 @@ public class PaperListbox extends Component implements HasStyle, HasComponents {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported

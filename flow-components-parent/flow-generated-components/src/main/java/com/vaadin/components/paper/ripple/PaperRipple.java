@@ -112,6 +112,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * {@code null} to disable the listeners.
 	 * 
 	 * @param keyEventTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setKeyEventTarget(
@@ -140,6 +141,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * 
 	 * @param stopKeyboardEventPropagation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setStopKeyboardEventPropagation(
@@ -159,6 +161,7 @@ public class PaperRipple extends Component implements HasStyle {
 
 	/**
 	 * @param keyBindings
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setKeyBindings(
@@ -185,6 +188,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * The initial opacity set on the wave.
 	 * 
 	 * @param initialOpacity
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setInitialOpacity(double initialOpacity) {
@@ -210,6 +214,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * How fast (opacity per second) the wave fades out.
 	 * 
 	 * @param opacityDecayVelocity
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setOpacityDecayVelocity(
@@ -238,6 +243,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * their container as they fade away.
 	 * 
 	 * @param recenters
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setRecenters(boolean recenters) {
@@ -263,6 +269,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * If true, ripples will center inside its container
 	 * 
 	 * @param center
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setCenter(boolean center) {
@@ -288,6 +295,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * A list of the visual ripples.
 	 * 
 	 * @param ripples
+	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setRipples(elemental.json.JsonArray ripples) {
@@ -327,6 +335,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * {@code holdDown} is set to false again.
 	 * 
 	 * @param holdDown
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setHoldDown(boolean holdDown) {
@@ -356,6 +365,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * will still generate the ripple effect.
 	 * 
 	 * @param noink
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setNoink(boolean noink) {
@@ -373,6 +383,7 @@ public class PaperRipple extends Component implements HasStyle {
 
 	/**
 	 * @param target
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setTarget(elemental.json.JsonObject target) {
@@ -390,6 +401,7 @@ public class PaperRipple extends Component implements HasStyle {
 
 	/**
 	 * @param shouldKeepAnimating
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends PaperRipple> R setShouldKeepAnimating(
@@ -407,7 +419,9 @@ public class PaperRipple extends Component implements HasStyle {
 	 * the {@code keyBindings} prototype property.
 	 * 
 	 * @param eventString
+	 *            Missing documentation!
 	 * @param handlerName
+	 *            Missing documentation!
 	 */
 	public void addOwnKeyBinding(java.lang.String eventString,
 			java.lang.String handlerName) {
@@ -429,7 +443,9 @@ public class PaperRipple extends Component implements HasStyle {
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 * @param eventString
+	 *            Missing documentation!
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -448,6 +464,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * {@code noink} property.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 */
 	public void uiDownAction(elemental.json.JsonObject event) {
 		getElement().callFunction("uiDownAction", event);
@@ -460,6 +477,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * {@code noink} property.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 */
 	public void downAction(elemental.json.JsonObject event) {
 		getElement().callFunction("downAction", event);
@@ -472,6 +490,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * property.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 */
 	public void uiUpAction(elemental.json.JsonObject event) {
 		getElement().callFunction("uiUpAction", event);
@@ -484,6 +503,7 @@ public class PaperRipple extends Component implements HasStyle {
 	 * {@code noink} property.
 	 * 
 	 * @param event
+	 *            Missing documentation!
 	 */
 	public void upAction(elemental.json.JsonObject event) {
 		getElement().callFunction("upAction", event);
@@ -499,6 +519,7 @@ public class PaperRipple extends Component implements HasStyle {
 
 	/**
 	 * @param ripple
+	 *            Missing documentation!
 	 */
 	public void removeRipple(elemental.json.JsonObject ripple) {
 		getElement().callFunction("removeRipple", ripple);

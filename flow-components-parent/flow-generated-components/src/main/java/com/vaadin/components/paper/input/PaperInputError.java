@@ -72,6 +72,10 @@ public class PaperInputError extends Component
 	 * Description copied from corresponding location in WebComponent:
 	 * 
 	 * This overrides the update function in PaperInputAddonBehavior.
+	 * 
+	 * @see UpdateState
+	 * @param state
+	 *            the UpdateState object to pass as an argument
 	 */
 	public void update(UpdateState state) {
 		getElement().callFunction("update", state.toJson());

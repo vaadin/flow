@@ -26,7 +26,8 @@ import com.vaadin.components.NotSupported;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-overlay#null", "Flow#0.1.13-SNAPSHOT"})
+		"WebComponent: vaadin-combo-box-overlay#2.0.0-beta1",
+		"Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
 public class VaadinComboBoxOverlay extends Component implements HasStyle {
@@ -49,6 +50,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * The element to position/align the dropdown by.
 	 * 
 	 * @param positionTarget
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setPositionTarget(
@@ -75,6 +77,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * Vertical offset for the overlay position.
 	 * 
 	 * @param verticalOffset
+	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setVerticalOffset(
@@ -101,6 +104,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * True if the device supports touch events.
 	 * 
 	 * @param touchDevice
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setTouchDevice(
@@ -127,6 +131,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * {@code true} when new items are being loaded.
 	 * 
 	 * @param loading
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends VaadinComboBoxOverlay> R setLoading(boolean loading) {
@@ -151,6 +156,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * ancestor detects a request for notifications.
 	 * 
 	 * @param parentResizable
+	 *            Missing documentation!
 	 */
 	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
@@ -163,6 +169,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * should be notified of a resize change.
 	 * 
 	 * @param target
+	 *            Missing documentation!
 	 */
 	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
@@ -176,6 +183,8 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * should be notified, or false if it should not be notified.
 	 * 
 	 * @param element
+	 *            A candidate descendant element that implements
+	 *            `IronResizableBehavior`.
 	 * @return It would return a boolean
 	 */
 	@NotSupported
@@ -188,6 +197,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * Gets the index of the item with the provided label.
 	 * 
 	 * @param label
+	 *            Missing documentation!
 	 * @return It would return a double
 	 */
 	@NotSupported
@@ -200,6 +210,7 @@ public class VaadinComboBoxOverlay extends Component implements HasStyle {
 	 * Gets the label string for the item based on the {@code _itemLabelPath}.
 	 * 
 	 * @param item
+	 *            Missing documentation!
 	 * @return It would return a class java.lang.String
 	 */
 	@NotSupported

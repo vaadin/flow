@@ -56,6 +56,7 @@ public class FadeOutAnimation extends Component implements HasStyle {
 	 * Defines the animation timing.
 	 * 
 	 * @param animationTiming
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends FadeOutAnimation> R setAnimationTiming(
@@ -82,6 +83,7 @@ public class FadeOutAnimation extends Component implements HasStyle {
 	 * Can be used to determine that elements implement this behavior.
 	 * 
 	 * @param isNeonAnimation
+	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends FadeOutAnimation> R setIsNeonAnimation(
@@ -97,6 +99,7 @@ public class FadeOutAnimation extends Component implements HasStyle {
 	 * to the defaults defined by the animation.
 	 * 
 	 * @param config
+	 *            Missing documentation!
 	 */
 	public void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
@@ -109,8 +112,11 @@ public class FadeOutAnimation extends Component implements HasStyle {
 	 * the prefixed versions.
 	 * 
 	 * @param node
+	 *            Missing documentation!
 	 * @param property
+	 *            Missing documentation!
 	 * @param value
+	 *            Missing documentation!
 	 */
 	public void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {

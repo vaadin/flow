@@ -195,6 +195,7 @@ public class IronRequest extends Component implements HasStyle {
 	 * file:// - don't provide status codes.
 	 * 
 	 * @param succeeded
+	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
 	public <R extends IronRequest> R setSucceeded(
@@ -212,6 +213,9 @@ public class IronRequest extends Component implements HasStyle {
 	 * Content-Type header. See the docs for iron-ajax's {@code body} param for
 	 * details.
 	 * 
+	 * @see SendOptions
+	 * @param options
+	 *            the SendOptions object to pass as an argument
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
