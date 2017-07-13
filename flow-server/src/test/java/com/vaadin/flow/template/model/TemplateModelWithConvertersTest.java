@@ -129,6 +129,22 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
+    public static class TemplateWithConvertedReadOnlyBean extends
+            EmptyDivTemplate<TemplateWithConvertedReadOnlyBean.TemplateModelWithConvertedReadOnlyBean> {
+        public interface TemplateModelWithConvertedReadOnlyBean
+                extends TemplateModel {
+
+            @Convert(value = LongToStringConverter.class, path = "id")
+            public void setReadOnlyBean(ReadOnlyBean readOnlyBean);
+            public ReadOnlyBean getReadOnlyBean();
+        }
+
+        @Override
+        protected TemplateModelWithConvertedReadOnlyBean getModel() {
+            return super.getModel();
+        }
+    }
+
     public static class LongToStringConverter
             implements ModelConverter<Long, String> {
         public LongToStringConverter() {
@@ -346,6 +362,12 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
+    public static class ReadOnlyBean implements Serializable {
+        public long getId() {
+            return 0L;
+        }
+    }
+
     @Before
     public void setUp() {
         Assert.assertNull(VaadinService.getCurrent());
@@ -408,6 +430,13 @@ public class TemplateModelWithConvertersTest {
         TemplateWithConverterOnConvertedType template = new TemplateWithConverterOnConvertedType();
         template.getModel().setLongValue(10L);
         Assert.assertEquals(10L, template.getModel().getLongValue());
+    }
+
+    @Test
+    public void converter_on_bean_with_read_only_property() {
+        TemplateWithConvertedReadOnlyBean template = new TemplateWithConvertedReadOnlyBean();
+        template.getModel().setReadOnlyBean(new ReadOnlyBean());
+        Assert.assertEquals(0L, template.getModel().getReadOnlyBean().getId());
     }
 
     @Test(expected = InvalidTemplateModelException.class)
