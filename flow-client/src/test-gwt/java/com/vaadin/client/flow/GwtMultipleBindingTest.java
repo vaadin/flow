@@ -272,7 +272,6 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
     /*-{
         $wnd.Polymer = function() {};
         $wnd.Polymer.Element = {};
-        $wnd.Polymer.version="2.0.1";
         element.__proto__ = $wnd.Polymer.Element;
     }-*/;
 
