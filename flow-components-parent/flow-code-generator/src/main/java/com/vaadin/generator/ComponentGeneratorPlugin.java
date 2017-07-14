@@ -69,6 +69,12 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
     @Parameter(property = "generate.fail.on.error", defaultValue = "true", required = false)
     private boolean failOnError;
 
+    /**
+     * The prefix to add to the name of all generated classes.
+     */
+    @Parameter(property = "generate.class.name.prefix", defaultValue = "", required = false)
+    private String classNamePrefix;
+
     @Parameter(property = "generate.dependencies.working.directory", defaultValue = "bower_components")
     private String dependenciesWorkingDirectory;
 
@@ -107,7 +113,8 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
         getLog().info("Generating " + files.length + " Java classes...");
 
         generator.withTargetPath(targetDir).withBasePackage(basePackage)
-                .withFrontendDirectory(dependenciesWorkingDirectory);
+                .withFrontendDirectory(dependenciesWorkingDirectory)
+                .withClassNamePrefix(classNamePrefix);
 
         for (File file : files) {
             getLog().info("Generating class for " + file.getName() + "...");
@@ -120,10 +127,9 @@ public class ComponentGeneratorPlugin extends AbstractMojo {
                                     + file.getAbsolutePath(),
                             e);
                 }
-                getLog().error(
-                        "Error generating Java source for "
-                                + file.getAbsolutePath()
-                                + ". The property \"failOnError\" is false, skipping file...",
+                getLog().error("Error generating Java source for "
+                        + file.getAbsolutePath()
+                        + ". The property \"failOnError\" is false, skipping file...",
                         e);
             }
         }

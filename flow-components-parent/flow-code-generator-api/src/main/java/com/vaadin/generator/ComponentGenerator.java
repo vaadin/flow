@@ -86,6 +86,7 @@ public class ComponentGenerator {
     private File jsonFile;
     private File targetPath;
     private String basePackage;
+    private String classNamePrefix;
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
     private boolean fluentSetters = true;
@@ -205,6 +206,18 @@ public class ComponentGenerator {
     }
 
     /**
+     * Set a prefix for the name of all generated classes. e.g. "Generated"
+     * 
+     * @param classNamePrefix
+     *            the class name prefix
+     * @return this
+     */
+    public ComponentGenerator withClassNamePrefix(String classNamePrefix) {
+        this.classNamePrefix = classNamePrefix;
+        return this;
+    }
+
+    /**
      * Generate the class according to the set values.
      */
     public void build() {
@@ -281,8 +294,10 @@ public class ComponentGenerator {
 
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(targetPackage).setPublic()
-                .setSuperType(Component.class).setName(ComponentGeneratorUtils
-                        .generateValidJavaClassName(metadata.getTag()));
+                .setSuperType(Component.class)
+                .setName(ComponentGeneratorUtils.generateValidJavaClassName(
+                        (classNamePrefix == null ? "" : classNamePrefix + "-")
+                                + metadata.getTag()));
 
         addInterfaces(metadata, javaClass);
         addClassAnnotations(metadata, javaClass);
@@ -358,7 +373,7 @@ public class ComponentGenerator {
         javaClass.addInterface(HasStyle.class);
 
         List<String> classBehaviorsAndMixins = new ArrayList<>();
-        classBehaviorsAndMixins.add(javaClass.getName());
+        classBehaviorsAndMixins.add(metadata.getTag());
 
         if (metadata.getBehaviors() != null) {
             classBehaviorsAndMixins.addAll(metadata.getBehaviors());
