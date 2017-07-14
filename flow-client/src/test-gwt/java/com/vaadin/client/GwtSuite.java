@@ -4,6 +4,7 @@ import com.google.gwt.junit.tools.GWTTestSuite;
 import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
+import com.vaadin.client.flow.GwtMultipleBindingTest;
 import com.vaadin.client.flow.GwtPolymerModelTest;
 import com.vaadin.client.flow.GwtRouterLinkHandlerTest;
 import com.vaadin.client.flow.GwtStateTreeTest;
@@ -46,6 +47,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtWidgetUtilTest.class);
         suite.addTestSuite(GwtExecuteJavaScriptElementUtilsTest.class);
         suite.addTestSuite(GwtDependencyLoaderTest.class);
+        suite.addTestSuite(GwtMultipleBindingTest.class);
         return suite;
     }
 }

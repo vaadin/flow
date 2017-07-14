@@ -101,8 +101,8 @@ import com.vaadin.shared.Registration;
  * </style>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.13-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-dropdown-menu-light")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html")
 public class PaperDropdownMenuLight extends Component implements HasStyle {
