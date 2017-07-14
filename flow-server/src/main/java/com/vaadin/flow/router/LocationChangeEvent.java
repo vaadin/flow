@@ -32,9 +32,10 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 public class LocationChangeEvent extends EventObject {
+    private final UI ui;
+    private final NavigationTrigger trigger;
     private final Location location;
     private final List<View> viewChain;
-    private final UI ui;
     private final Map<String, String> routePlaceholders;
 
     private int statusCode = HttpServletResponse.SC_OK;
@@ -47,6 +48,9 @@ public class LocationChangeEvent extends EventObject {
      *            the router that triggered the change, not {@code null}
      * @param ui
      *            the UI in which the view is used, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
      * @param location
      *            the new location, not {@code null}
      * @param viewChain
@@ -55,16 +59,19 @@ public class LocationChangeEvent extends EventObject {
      *            a map containing actual path segment values used for
      *            placeholders in the used route mapping, not {@code null}
      */
-    public LocationChangeEvent(Router router, UI ui, Location location,
-            List<View> viewChain, Map<String, String> routePlaceholders) {
+    public LocationChangeEvent(Router router, UI ui, NavigationTrigger trigger,
+            Location location, List<View> viewChain,
+            Map<String, String> routePlaceholders) {
         super(router);
 
         assert ui != null;
+        assert trigger != null;
         assert location != null;
         assert viewChain != null;
         assert routePlaceholders != null;
 
         this.ui = ui;
+        this.trigger = trigger;
         this.location = location;
         this.viewChain = Collections.unmodifiableList(viewChain);
         this.routePlaceholders = Collections.unmodifiableMap(routePlaceholders);
@@ -107,6 +114,16 @@ public class LocationChangeEvent extends EventObject {
      */
     public UI getUI() {
         return ui;
+    }
+
+    /**
+     * Gets the type of user action that triggered this location change.
+     * 
+     * @return the type of user action that triggered this location change, not
+     *         <code>null</code>
+     */
+    public NavigationTrigger getTrigger() {
+        return trigger;
     }
 
     /**

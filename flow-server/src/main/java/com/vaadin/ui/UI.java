@@ -31,6 +31,7 @@ import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.server.Command;
@@ -643,6 +644,8 @@ public class UI extends Component
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
      *
+     * @see #navigateTo(String, QueryParameters)
+     *
      * @param location
      *            the location to navigate to, not {@code null}
      */
@@ -654,6 +657,8 @@ public class UI extends Component
      * Updates this UI to show the view corresponding to the given location and
      * query parameters. The location must be a relative path without any ".."
      * segments.
+     *
+     * @see #navigateTo(String)
      *
      * @param location
      *            the location to navigate to, not {@code null}
@@ -680,7 +685,8 @@ public class UI extends Component
         // Enable navigating back
         getPage().getHistory().pushState(null, navigationLocation);
 
-        getRouter().get().navigate(this, navigationLocation);
+        getRouter().get().navigate(this, navigationLocation,
+                NavigationTrigger.PROGRAMMATIC);
     }
 
     /**

@@ -37,9 +37,9 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         ServerConnector connector = new ServerConnector(null) {
             @Override
             public void sendNavigationMessage(String location,
-                    Object stateObject) {
+                    Object stateObject, boolean routerLinkEvent) {
                 invocations.push(location);
-            };
+            }
         };
 
         UILifecycle lifecycle = new UILifecycle();

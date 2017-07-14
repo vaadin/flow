@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.uitest.servlet.ViewClassLocator;
@@ -46,8 +47,8 @@ public class SerializationTest {
             for (Class<? extends View> viewClass : viewClasses) {
                 View view = viewClass.newInstance();
                 view.onLocationChange(new LocationChangeEvent(new Router(), ui,
-                        new Location(""), Collections.emptyList(),
-                        Collections.emptyMap()));
+                        NavigationTrigger.PROGRAMMATIC, new Location(""),
+                        Collections.emptyList(), Collections.emptyMap()));
                 try {
                     Assert.assertNotNull(serializeDeserialize(view));
                 } catch (Exception e) {
