@@ -50,8 +50,13 @@ public class ServerConnector {
      *            the relative location of the navigation
      * @param stateObject
      *            the state object or <code>null</code> if none applicable
+     * @param routerLinkEvent
+     *            <code>true</code> if this event was triggered by interaction
+     *            with a router link; <code>false</code> if triggered by history
+     *            navigation
      */
-    public void sendNavigationMessage(String location, Object stateObject) {
+    public void sendNavigationMessage(String location, Object stateObject,
+            boolean routerLinkEvent) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_NAVIGATION);
         message.put(JsonConstants.RPC_NAVIGATION_LOCATION, location);
@@ -59,6 +64,10 @@ public class ServerConnector {
             JsonValue stateJson = ClientJsonCodec
                     .encodeWithoutTypeInfo(stateObject);
             message.put(JsonConstants.RPC_NAVIGATION_STATE, stateJson);
+        }
+        if (routerLinkEvent) {
+            // Only presence of key is checked, so use a possibly short value
+            message.put(JsonConstants.RPC_NAVIGATION_ROUTERLINK, 1);
         }
         sendMessage(message);
     }
@@ -135,7 +144,7 @@ public class ServerConnector {
 
     /**
      * Sends a data for attach existing element server side callback.
-     * 
+     *
      * @param parent
      *            parent of the node to attach
      * @param requestedId

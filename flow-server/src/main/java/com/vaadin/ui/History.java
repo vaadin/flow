@@ -20,6 +20,7 @@ import java.util.EventObject;
 import java.util.Optional;
 
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.json.JsonValue;
@@ -46,6 +47,7 @@ public class History implements Serializable {
     public static class HistoryStateChangeEvent extends EventObject {
         private final Location location;
         private final transient JsonValue state;
+        private final NavigationTrigger trigger;
 
         /**
          * Creates a new event.
@@ -58,15 +60,20 @@ public class History implements Serializable {
          *            no state was provided
          * @param location
          *            the new browser location, not <code>null</code>
+         * @param trigger
+         *            the type of user action that triggered this history
+         *            change, not <code>null</code>
          */
         public HistoryStateChangeEvent(History history, JsonValue state,
-                Location location) {
+                Location location, NavigationTrigger trigger) {
             super(history);
 
             assert location != null;
+            assert trigger != null;
 
             this.location = location;
             this.state = state;
+            this.trigger = trigger;
         }
 
         @Override
@@ -93,6 +100,15 @@ public class History implements Serializable {
             return Optional.ofNullable(state);
         }
 
+        /**
+         * Gets the type of user action that triggered this history change.
+         *
+         * @return the type of user action that triggered this history change,
+         *         not <code>null</code>
+         */
+        public NavigationTrigger getTrigger() {
+            return trigger;
+        }
     }
 
     /**
