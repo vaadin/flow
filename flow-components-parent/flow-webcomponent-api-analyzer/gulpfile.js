@@ -22,6 +22,7 @@ const map = require('map-stream');
 const path = require('path');
 const fs = require('fs-extra');
 const globalVar = require('./lib/js/global-variables');
+const ElementFilter = require('./lib/js/element-filter');
 const VersionReader = require('./lib/js/version-transform');
 const AnalyzerTransform = require('./lib/js/analyzer-transform');
 const ElementJsonTransform = require('./lib/js/element-json-transform');
@@ -31,6 +32,7 @@ const runSequence = require('run-sequence');
 const jsonfile = require('jsonfile');
 const rename = require("gulp-rename");
 const marked = require('marked');
+const gulpIgnore = require('gulp-ignore');
 
 gulp.task('clean:target', function() {
   fs.removeSync(globalVar.targetDir);
@@ -65,8 +67,12 @@ gulp.task('bower:install', ['clean', 'bower:configure'], function() {
 
 gulp.task('generate', ['clean:target'], function() {
   console.log('Running generate task, for resources from: ' + globalVar.bowerTargetDir);
+
+  // the element filter reads the bower.json file and parses the dependecies
+  const elementFilter = new ElementFilter();
   // the version reader reads the versions only for those elements that the json is created for
   const versionReader = new VersionReader();
+
   return gulp.src([globalVar.bowerTargetDir + "*/*.html",
     // ignore Polymer itself
     "!" + globalVar.bowerTargetDir + "polymer/*",
@@ -79,8 +85,9 @@ gulp.task('generate', ['clean:target'], function() {
     // Not useful in gwt and also has spurious event names
     "!" + globalVar.bowerTargetDir + "iron-jsonp-library/*",
     ])
+    .pipe(gulpIgnore.include((file) => elementFilter.acceptFile(file))) // ignores files not directly mentioned in the dependencies
     .pipe(versionReader) // Reads the versions of the elements
-    .pipe(new AnalyzerTransform()) // transforms out PolymerElements
+    .pipe(new AnalyzerTransform(elementFilter)) // transforms out PolymerElements
     .pipe(new ElementJsonTransform(versionReader)) // transforms out json files
     .pipe(gulp.dest('.'));
 });

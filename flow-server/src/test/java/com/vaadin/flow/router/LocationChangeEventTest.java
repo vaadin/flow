@@ -39,7 +39,7 @@ public class LocationChangeEventTest {
         UI ui = new RouterTestUI();
 
         event = new LocationChangeEvent(ui.getRouter().get(), ui,
-                new Location(""),
+                NavigationTrigger.PROGRAMMATIC, new Location(""),
                 Arrays.asList(new AnotherTestView(), new AnotherParentView()),
                 Collections.emptyMap());
 
@@ -47,7 +47,7 @@ public class LocationChangeEventTest {
                 c -> c.setParentView(TestView.class, ParentView.class));
 
         navigationEvent = new NavigationEvent(event.getSource(),
-                event.getLocation(), event.getUI());
+                event.getLocation(), event.getUI(), event.getTrigger());
     }
 
     @Test
