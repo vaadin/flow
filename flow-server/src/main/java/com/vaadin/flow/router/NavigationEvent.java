@@ -27,6 +27,7 @@ import com.vaadin.ui.UI;
 public class NavigationEvent extends EventObject {
     private final Location location;
     private final UI ui;
+    private final NavigationTrigger trigger;
 
     /**
      * Creates a new navigation event.
@@ -37,15 +38,21 @@ public class NavigationEvent extends EventObject {
      *            the new location, not {@code null}
      * @param ui
      *            the UI in which the navigation occurs, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this navigation event,
+     *            not {@code null}
      */
-    public NavigationEvent(Router router, Location location, UI ui) {
+    public NavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger) {
         super(router);
 
         assert location != null;
         assert ui != null;
+        assert trigger != null;
 
         this.location = location;
         this.ui = ui;
+        this.trigger = trigger;
     }
 
     @Override
@@ -69,5 +76,15 @@ public class NavigationEvent extends EventObject {
      */
     public UI getUI() {
         return ui;
+    }
+
+    /**
+     * Gets the type of user action that triggered this navigation event.
+     *
+     * @return the type of user action that triggered this navigation event, not
+     *         {@code null}
+     */
+    public NavigationTrigger getTrigger() {
+        return trigger;
     }
 }

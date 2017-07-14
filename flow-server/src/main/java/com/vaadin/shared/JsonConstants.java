@@ -184,6 +184,11 @@ public class JsonConstants implements Serializable {
     public static final String RPC_NAVIGATION_STATE = "state";
 
     /**
+     * Key used in navigation messages triggered by a router link.
+     */
+    public static final String RPC_NAVIGATION_ROUTERLINK = "link";
+
+    /**
      * Type value for events sent from the client to an event handler published
      * on the server.
      */
