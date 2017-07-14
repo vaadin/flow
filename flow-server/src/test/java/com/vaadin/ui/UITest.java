@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.MockVaadinSession;
@@ -139,7 +140,7 @@ public class UITest {
 
         history.getHistoryStateChangeHandler()
                 .onHistoryStateChange(new HistoryStateChangeEvent(history, null,
-                        new Location("foo/bar")));
+                        new Location("foo/bar"), NavigationTrigger.HISTORY));
 
         assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
