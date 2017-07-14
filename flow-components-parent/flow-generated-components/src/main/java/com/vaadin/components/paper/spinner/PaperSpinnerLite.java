@@ -54,8 +54,8 @@ import com.vaadin.components.paper.spinner.PaperSpinnerLite;
  * {@code --paper-spinner-stroke-width} | The width of the spinner stroke | 3px
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: paper-spinner-lite#2.0.0", "Flow#0.1.13-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"WebComponent: paper-spinner-lite#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-spinner-lite")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner-lite.html")
 public class PaperSpinnerLite extends Component implements HasStyle {

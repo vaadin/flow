@@ -47,6 +47,11 @@ require('coa').Cmd()
     .title('Create Components to flow-components/json_metadata directory')
     .long('flow_components')
     .end()
+  .opt()
+    .name('Dependencies file name')
+    .title('Sets the name of the dependencies file name, which is parsed for directory names that are used during the analysis. (Default: bower.json)')
+    .long('dependenciesFile')
+    .end()
   .act(function() {
     gulp.start('default');
   })
