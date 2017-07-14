@@ -16,6 +16,7 @@
 package com.vaadin.server.communication.rpc;
 
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
@@ -51,8 +52,13 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
             String location = invocationJson
                     .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
 
+            boolean triggeredByLink = invocationJson
+                    .hasKey(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
+            NavigationTrigger trigger = triggeredByLink
+                    ? NavigationTrigger.ROUTER_LINK : NavigationTrigger.HISTORY;
+
             HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
-                    state, new Location(location));
+                    state, new Location(location), trigger);
             historyStateChangeHandler.onHistoryStateChange(event);
         }
     }

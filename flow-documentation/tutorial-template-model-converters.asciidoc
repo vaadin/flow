@@ -12,9 +12,9 @@ exclude any property with this type (see `@Exclude` in
 <<tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>).
 
 But what if you need this property on the client side for some reason (e.g. you
-want this identifier of a bean to be able to reference it)? In this case you can use `@Converter`
+want this identifier of a bean to be able to reference it)? In this case you can use `@Convert`
 annotation. You can just convert a `Long` value to a `String` value and it
-will be sent to the client-side as a string. Then once client side send this value
+will be sent to the client-side as a string. Then once the client side sends this value
 back it will be converted back to a `Long`.
 
 Here is the `Person` JPA entity class with the model class :
@@ -75,7 +75,7 @@ in the usual way but it will have the `String` type.
 
 [NOTE]
 The annotation parameter `path="id"` is used to address the `id` sub-property of the `person` property.
-By default the `path` value is  `""` which means that a converter is applied to the property itself.
+By default the `path` value is `""` which means that a converter is applied to the property itself.
 
 You can use any type to convert to any supported type. Another usecase for converters may be
 splitting one property value to several sub-properties to use them in different UI controls instead of one.
@@ -152,9 +152,11 @@ public class DateToDateBeanConverter implements ModelConverter<Date, DateBean> {
             return null;
         }
         DateBean bean = new DateBean();
-        bean.setDay(Integer.toString(applicationValue.getDay()));
-        bean.setMonth(Integer.toString(applicationValue.getMonth() + 1));
-        bean.setYear(Integer.toString(applicationValue.getYear() + 1900));
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTime(applicationValue);
+        bean.setDay(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)));
+        bean.setMonth(Integer.toString(calendar.get(Calendar.MONTH) + 1));
+        bean.setYear(Integer.toString(calendar.get(Calendar.YEAR)));
         return bean;
     }
 
@@ -163,10 +165,12 @@ public class DateToDateBeanConverter implements ModelConverter<Date, DateBean> {
         if (modelValue == null) {
             return null;
         }
-        int year = Integer.parseInt(modelValue.getYear()) - 1900;
+        int year = Integer.parseInt(modelValue.getYear());
         int day = Integer.parseInt(modelValue.getDay());
         int month = Integer.parseInt(modelValue.getMonth()) - 1;
-        return new Date(year, month, day);
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.set(year, month, day);
+        return calendar.getTime();
     }
 
 }
@@ -191,7 +195,7 @@ So here one `Date` property is converted to 3 sub-properties: the day, month and
 Each of them has its own editor but on the server side it's still the same one property `birthDate`.
 
 [NOTE]
-Please note that you still should use your original property name `birthDate` in this example 
+Please note that you still need use your original property name `birthDate` in this example 
 to access to sub-properties. So those 3 sub-properties requires prefix which is the original
 property name and its name is still the same `birthDate` (and not a `dateBean` e.g.).
 

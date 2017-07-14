@@ -191,12 +191,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindClassList(htmlNode, stateNode));
 
-        listeners.push(ServerEventHandlerBinder
-                .bindServerEventHandlerNames(htmlNode, stateNode));
+        listeners.push(bindClientDelegateMethods(context));
 
         listeners.push(bindPolymerEventHandlerNames(context));
-
-        listeners.push(bindClientDelegateMethods(context));
 
         listeners.push(bindShadowRoot(context));
 

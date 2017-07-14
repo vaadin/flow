@@ -1,6 +1,8 @@
 package com.vaadin.flow.tutorial.polymer;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import com.vaadin.flow.template.model.ModelConverter;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
@@ -24,9 +26,11 @@ public class DateToDateBeanConverter implements ModelConverter<Date, DateBean> {
             return null;
         }
         DateBean bean = new DateBean();
-        bean.setDay(Integer.toString(applicationValue.getDay()));
-        bean.setMonth(Integer.toString(applicationValue.getMonth() + 1));
-        bean.setYear(Integer.toString(applicationValue.getYear() + 1900));
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTime(applicationValue);
+        bean.setDay(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)));
+        bean.setMonth(Integer.toString(calendar.get(Calendar.MONTH) + 1));
+        bean.setYear(Integer.toString(calendar.get(Calendar.YEAR)));
         return bean;
     }
 
@@ -35,10 +39,12 @@ public class DateToDateBeanConverter implements ModelConverter<Date, DateBean> {
         if (modelValue == null) {
             return null;
         }
-        int year = Integer.parseInt(modelValue.getYear()) - 1900;
+        int year = Integer.parseInt(modelValue.getYear());
         int day = Integer.parseInt(modelValue.getDay());
         int month = Integer.parseInt(modelValue.getMonth()) - 1;
-        return new Date(year, month, day);
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.set(year, month, day);
+        return calendar.getTime();
     }
 
 }

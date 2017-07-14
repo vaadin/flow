@@ -98,7 +98,7 @@ public class RouterTest {
 
         Location testLocation = new Location("");
 
-        router.navigate(ui, testLocation);
+        router.navigate(ui, testLocation, NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertSame(testLocation, resolver.resolvedLocation.get());
         Assert.assertSame(testLocation,
@@ -126,7 +126,8 @@ public class RouterTest {
 
         ui.getPage().getHistory().getHistoryStateChangeHandler()
                 .onHistoryStateChange(new HistoryStateChangeEvent(
-                        ui.getPage().getHistory(), null, new Location("foo")));
+                        ui.getPage().getHistory(), null, new Location("foo"),
+                        NavigationTrigger.HISTORY));
 
         Assert.assertEquals(Arrays.asList("foo"),
                 resolver.resolvedLocation.get().getSegments());
@@ -153,7 +154,7 @@ public class RouterTest {
         Router router = new Router();
         router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
 
-        router.navigate(ui, new Location(""));
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
         // 404 code should be sent ONLY on initial request
@@ -177,7 +178,7 @@ public class RouterTest {
         Router router = new Router();
         router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
 
-        router.navigate(ui, new Location(""));
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
     }
@@ -270,7 +271,8 @@ public class RouterTest {
             });
         });
 
-        router.navigate(new RouterTestUI(), new Location(""));
+        router.navigate(new RouterTestUI(), new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("resolver", usedHandler.get());
     }
@@ -290,7 +292,8 @@ public class RouterTest {
             });
         });
 
-        router.navigate(new RouterTestUI(), new Location(""));
+        router.navigate(new RouterTestUI(), new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("route", usedHandler.get());
     }
@@ -303,7 +306,7 @@ public class RouterTest {
         router.reconfigure(c -> {
         });
 
-        router.navigate(ui, new Location(""));
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(new DefaultErrorView().getText(),
                 ui.getElement().getTextRecursively());
@@ -318,7 +321,7 @@ public class RouterTest {
             c.setErrorView(ErrorView.class);
         });
 
-        router.navigate(ui, new Location(""));
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(new ErrorView().getText(),
                 ui.getElement().getTextRecursively());
@@ -334,11 +337,13 @@ public class RouterTest {
             c.setRoute("bar/*", TestView.class);
         });
 
-        router.navigate(ui, new Location("foo/bar/"));
+        router.navigate(ui, new Location("foo/bar/"),
+                NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
 
-        router.navigate(ui, new Location("bar"));
+        router.navigate(ui, new Location("bar"),
+                NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("bar/",
                 ui.getInternals().getActiveViewLocation().getPath());
     }
@@ -365,7 +370,8 @@ public class RouterTest {
             // Response status should be set when initializing
             Mockito.verify(response).setStatus(123);
 
-            router.navigate(ui, new Location("foo"));
+            router.navigate(ui, new Location("foo"),
+                    NavigationTrigger.PROGRAMMATIC);
 
             // Non-init navigation shouldn't set any status code
             Mockito.verifyNoMoreInteractions(response);

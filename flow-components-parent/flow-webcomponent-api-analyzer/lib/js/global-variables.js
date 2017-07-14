@@ -34,6 +34,8 @@ const bowerSrcDir = currentDir + (args.resourcesDir || 'bower_components').repla
 const bowerTargetDir = currentDir + ('dependencies/bower_components/').replace(/,+$/, "");
 
 const skipInheritedAPI = args.skipInheritedAPI || false;
+/* This is the file where the webcomponent dependencies are declared */
+const dependenciesFile = currentDir + (args.dependenciesFile || 'bower.json').replace(/,+$/, "");
 
 module.exports = {
   currentDir: currentDir,
@@ -41,5 +43,6 @@ module.exports = {
   bowerSrcDir: bowerSrcDir,
   bowerTargetDir: bowerTargetDir,
   bowerPackages: args.package ? args.package.split(/[, ]+/) : null,
-  skipInheritedAPI: skipInheritedAPI
+  skipInheritedAPI: skipInheritedAPI,
+  dependenciesFile: dependenciesFile
 };
