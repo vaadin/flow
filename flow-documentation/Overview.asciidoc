@@ -60,6 +60,7 @@ These tutorials show how the different features are used.
 *** <<tutorial-template-bindings#two-way-binding,Two-way data binding>>
 *** <<tutorial-template-list-bindings#,Using List of Items in a PolymerTemplate with template repeater>>
 ** <<tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>
+** <<tutorial-template-model-converters#,Using Model Converters with a PolymerTemplate Model>>
 * Misc
 ** <<tutorial-execute-javascript#,Executing JavaScript>>
 ** <<tutorial-history-api#,The History API>>
