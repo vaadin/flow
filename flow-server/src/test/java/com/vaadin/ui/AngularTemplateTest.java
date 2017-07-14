@@ -34,6 +34,7 @@ import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
 import com.vaadin.flow.template.angular.InlineTemplate;
@@ -249,7 +250,7 @@ public class AngularTemplateTest {
         });
 
         UI ui = new UI();
-        router.navigate(ui, new Location(""));
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(
                 Arrays.asList(TestView.class, TemplateParentView.class),
@@ -263,7 +264,8 @@ public class AngularTemplateTest {
         Assert.assertEquals("h1", uiContent.getChild(0).getTag());
         Assert.assertEquals("div", uiContent.getChild(1).getTag());
 
-        router.navigate(ui, new Location("empty"));
+        router.navigate(ui, new Location("empty"),
+                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals(Arrays.asList(TemplateParentView.class),
                 ui.getInternals().getActiveViewChain().stream()

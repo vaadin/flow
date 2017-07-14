@@ -117,7 +117,7 @@ public class RouterLinkHandler {
         }
         registry.getScrollPositionHandler().beforeNavigation(href, true);
 
-        sendServerNavigationEvent(registry, location, null);
+        sendServerNavigationEvent(registry, location, null, true);
     }
 
     /**
@@ -238,9 +238,13 @@ public class RouterLinkHandler {
      *            the location to navigate to, relative to the base URI
      * @param stateObject
      *            the state object or <code>null</code> if none applicable
+     * @param routerLinkEvent
+     *            <code>true</code> if this event was triggered by interaction
+     *            with a router link; <code>false</code> if triggered by history
+     *            navigation
      */
     public static void sendServerNavigationEvent(Registry registry,
-            String location, Object stateObject) {
+            String location, Object stateObject, boolean routerLinkEvent) {
         assert registry != null;
         assert location != null;
 
@@ -249,7 +253,7 @@ public class RouterLinkHandler {
         registry.getMessageHandler().setNextResponseSessionExpiredHandler(
                 () -> WidgetUtil.refresh());
         registry.getServerConnector().sendNavigationMessage(location,
-                stateObject);
+                stateObject, routerLinkEvent);
 
     }
 }
