@@ -38,11 +38,12 @@ const getBowerPath = (filePath) => path.relative(globalVar.bowerTargetDir, fileP
  * Runs Analyzer for all the files and emits the Element (?) instance with the analysis data for every element found.
  */
 module.exports = class AnalyzerTransform extends Transform {
-  constructor(options) {
-    if (!options) options = {};
+  constructor(elementFilter) {
+    const options = {};
     options.objectMode = true;
     super(options);
     this._importPaths = [];
+    this._elementFilter = elementFilter;
   }
 
   _transform(file, encoding, callback) {
@@ -65,8 +66,9 @@ module.exports = class AnalyzerTransform extends Transform {
         const elements = [];
         for (const element of elementSet) {
           const baseUrl = element._parsedDocument.baseUrl;
-          // TODO #1804 This is a temporary solution for skipping things that are not UI elements
-          if (baseUrl.startsWith('polymer/') || baseUrl.startsWith('paper-styles/')) {
+
+          // Skip elements not in the directories referenced in the dependency file (bower.json)
+          if (!this._elementFilter.acceptPath(baseUrl)) {
             console.info("Skipping element of tagName " + element.tagName);
             continue;
           }
