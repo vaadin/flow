@@ -24,7 +24,7 @@ import com.vaadin.components.vaadin.combo.box.VaadinSpinner;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: vaadin-spinner#2.0.0-beta1", "Flow#0.1.13-SNAPSHOT"})
+		"WebComponent: vaadin-spinner#2.0.0-beta2", "Flow#0.1.13-SNAPSHOT"})
 @Tag("vaadin-spinner")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
 public class VaadinSpinner extends Component implements HasStyle {
