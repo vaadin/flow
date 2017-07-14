@@ -92,6 +92,6 @@ public class PopStateHandler {
         }
         Object stateObject = WidgetUtil.getJsProperty(e, "state");
         RouterLinkHandler.sendServerNavigationEvent(registry, location,
-                stateObject);
+                stateObject, false);
     }
 }

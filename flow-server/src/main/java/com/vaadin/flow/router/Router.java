@@ -85,10 +85,10 @@ public class Router implements Serializable {
                 .full(initRequest.getParameterMap());
 
         ui.getPage().getHistory().setHistoryStateChangeHandler(
-                e -> navigate(ui, e.getLocation()));
+                e -> navigate(ui, e.getLocation(), e.getTrigger()));
 
         Location location = new Location(path, queryParameters);
-        int statusCode = navigate(ui, location);
+        int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
 
         VaadinResponse response = VaadinService.getCurrentResponse();
         if (response != null) {
@@ -101,18 +101,25 @@ public class Router implements Serializable {
      * Navigates the given UI to the given location.
      *
      * @param ui
-     *            the UI to update
+     *            the UI to update, not <code>null</code>
      * @param location
-     *            the location to navigate to
+     *            the location to navigate to, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this navigation, not
+     *            <code>null</code>
      * @return the HTTP status code resulting from the navigation
      */
-    public int navigate(UI ui, Location location) {
+    public int navigate(UI ui, Location location, NavigationTrigger trigger) {
+        assert ui != null;
+        assert location != null;
+        assert trigger != null;
+
         // Read volatile field only once per navigation
         ImmutableRouterConfiguration currentConfig = configuration;
         assert currentConfig.isConfigured();
 
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
-                ui);
+                ui, trigger);
 
         Optional<NavigationHandler> handler = currentConfig.getResolver()
                 .resolve(navigationEvent);

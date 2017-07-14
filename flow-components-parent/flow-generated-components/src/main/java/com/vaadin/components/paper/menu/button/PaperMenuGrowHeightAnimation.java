@@ -24,9 +24,9 @@ import elemental.json.JsonObject;
 import com.vaadin.components.paper.menu.button.PaperMenuGrowHeightAnimation;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
 		"WebComponent: paper-menu-grow-height-animation#UNKNOWN",
-		"Flow#0.1.13-SNAPSHOT"})
+		"Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-menu-grow-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class PaperMenuGrowHeightAnimation extends Component implements HasStyle {

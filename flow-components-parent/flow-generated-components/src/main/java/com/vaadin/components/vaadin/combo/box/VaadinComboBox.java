@@ -84,8 +84,8 @@ import com.vaadin.annotations.EventData;
  * max height of overlay | {@code 65vh}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: vaadin-combo-box#2.0.0-beta2", "Flow#0.1.13-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"WebComponent: vaadin-combo-box#2.0.0-beta2", "Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
 public class VaadinComboBox extends Component implements HasStyle {
