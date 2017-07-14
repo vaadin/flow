@@ -66,8 +66,8 @@ import com.vaadin.ui.HasComponents;
  * {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: paper-tooltip#2.0.0", "Flow#0.1.13-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"WebComponent: paper-tooltip#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-tooltip")
 @HtmlImport("frontend://bower_components/paper-tooltip/paper-tooltip.html")
 public class PaperTooltip extends Component implements HasStyle, HasComponents {

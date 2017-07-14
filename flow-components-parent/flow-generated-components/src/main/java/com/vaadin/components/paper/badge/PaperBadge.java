@@ -68,8 +68,8 @@ import com.vaadin.components.NotSupported;
  * {@code --paper-badge} | Mixin applied to the badge | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: paper-badge#2.0.0", "Flow#0.1.13-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"WebComponent: paper-badge#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-badge")
 @HtmlImport("frontend://bower_components/paper-badge/paper-badge.html")
 public class PaperBadge extends Component implements HasStyle {

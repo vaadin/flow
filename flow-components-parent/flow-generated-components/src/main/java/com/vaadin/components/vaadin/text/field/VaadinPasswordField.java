@@ -23,8 +23,8 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.components.vaadin.text.field.VaadinPasswordField;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.13-SNAPSHOT",
-		"WebComponent: PasswordFieldElement#null", "Flow#0.1.13-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"WebComponent: PasswordFieldElement#null", "Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
 public class VaadinPasswordField extends Component implements HasStyle {
