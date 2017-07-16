@@ -255,10 +255,9 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 propertyName, ModelType.getSupportedTypesString()));
     }
 
-    private static ModelType getConvertedModelType(
-            Type propertyType, PropertyFilter propertyFilter,
-            String propertyName, Class<?> declaringClass,
-            ModelConverterProvider converterProvider) {
+    private static ModelType getConvertedModelType(Type propertyType,
+            PropertyFilter propertyFilter, String propertyName,
+            Class<?> declaringClass, ModelConverterProvider converterProvider) {
 
         if (!(propertyType instanceof Class<?>)) {
             throw new UnsupportedOperationException(String.format(
@@ -277,7 +276,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         }
 
         ModelConverter<?, ?> converter = converterOptional.get();
-        if (!converter.getApplicationType().equals((Class<?>) propertyType)) {
+        if (!converter.getApplicationType().equals(propertyType)) {
             throw new InvalidTemplateModelException(String.format(
                     "Converter '%s' is incompatible with the type '%s'.",
                     converter.getClass().getName(),
@@ -313,9 +312,9 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
         Type itemType = pt.getActualTypeArguments()[0];
         if (itemType instanceof ParameterizedType) {
-            return new ListModelType<>((ComplexModelType<?>) getModelType(
-                    itemType, propertyFilter, propertyName, declaringClass,
-                    converterProvider));
+            return new ListModelType<>(
+                    (ComplexModelType<?>) getModelType(itemType, propertyFilter,
+                            propertyName, declaringClass, converterProvider));
         } else if (BasicComplexModelType.isBasicType(itemType)) {
             return new ListModelType<>(
                     BasicComplexModelType.get((Class<?>) itemType).get());
@@ -558,6 +557,26 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         properties.forEach((name, type) -> json.put(name, type.toJson()));
 
         return json;
+    }
+
+    @Override
+    public void createInitialValue(StateNode node, String property) {
+        createInitialValues(node.getFeature(ElementPropertyMap.class)
+                .resolveModelMap(property).getNode());
+    }
+
+    /**
+     * Creates initial values for the given {@code node} using info from this
+     * model type.
+     * <p>
+     * Initial values are created for all sub-properties as well.
+     *
+     * @param node
+     *            the node whose properties need to be populated
+     */
+    public void createInitialValues(StateNode node) {
+        properties.forEach(
+                (property, type) -> type.createInitialValue(node, property));
     }
 
     private void initBeanPropertyCache() {

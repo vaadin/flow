@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.ListModelType;
 import com.vaadin.flow.template.model.ModelDescriptor;
 import com.vaadin.flow.template.model.ModelType;
@@ -61,12 +60,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         // This a workaround to propagate model to a Polymer template.
         // Correct implementation will follow in
         // https://github.com/vaadin/flow/issues/1371
-
-        ElementPropertyMap modelMap = getStateNode()
-                .getFeature(ElementPropertyMap.class);
-        ModelDescriptor.get(getModelType()).getPropertyNames().forEach(
-                propertyName -> modelMap.setProperty(propertyName, null));
-
+        getModel();
     }
 
     /**
