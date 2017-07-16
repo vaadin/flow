@@ -38,8 +38,6 @@ public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
     private static final String QUERY_SEPARATOR = "?";
     private static final String PARAMETERS_SEPARATOR = "&";
-    private static final String PARAMETER_VALUES_SEPARATOR = "=";
-    private static final String ABSENT_PARAMETER_VALUE = "";
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
@@ -223,17 +221,41 @@ public class Location implements Serializable {
         Map<String, List<String>> parsedParams = Arrays
                 .stream(path.substring(beginIndex + 1)
                         .split(PARAMETERS_SEPARATOR))
-                .map(paramAndValue -> paramAndValue
-                        .split(PARAMETER_VALUES_SEPARATOR))
-                .collect(Collectors.toMap(array -> array[0],
-                        array -> Collections.singletonList(array.length == 1
-                                ? ABSENT_PARAMETER_VALUE : array[1]),
-                        (values1, values2) -> {
-                            List<String> result = new ArrayList<>(values1);
-                            result.addAll(values2);
-                            return result;
-                        }));
+                .map(Location::makeQueryParamList)
+                .collect(Collectors.toMap(list -> list.get(0),
+                        Location::getParameterValues, Location::mergeLists));
         return new QueryParameters(parsedParams);
+    }
+
+    private static List<String> makeQueryParamList(String paramAndValue) {
+        int index = paramAndValue.indexOf('=');
+        if (index == -1) {
+            return Collections.singletonList(paramAndValue);
+        }
+        String param = paramAndValue.substring(0, index);
+        String value = paramAndValue.substring(index + 1);
+        return Arrays.asList(param, value);
+    }
+
+    private static List<String> getParameterValues(List<String> paramAndValue) {
+        if (paramAndValue.size() == 1) {
+            return Collections.emptyList();
+        } else {
+            return Collections.singletonList(paramAndValue.get(1));
+        }
+    }
+
+    private static List<String> mergeLists(List<String> list1,
+            List<String> list2) {
+        List<String> result = new ArrayList<>(list1);
+        if (result.isEmpty()) {
+            result.add(null);
+        }
+        result.addAll(list2);
+        if (list2.isEmpty()) {
+            result.add(null);
+        }
+        return result;
     }
 
     private static List<String> parsePath(String path) {

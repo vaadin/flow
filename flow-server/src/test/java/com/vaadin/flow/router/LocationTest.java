@@ -54,8 +54,18 @@ public class LocationTest {
     }
 
     @Test
-    public void parseLocationWithQueryString() {
+    public void parseLocationWithQueryString_noValue() {
         Location location = new Location("path?query");
+
+        assertEquals("path", location.getPath());
+        assertEquals(Collections.singletonMap("query", Collections.emptyList()),
+                location.getQueryParameters().getParameters());
+        assertEquals("path?query", location.getPathWithQueryParameters());
+    }
+
+    @Test
+    public void parseLocationWithQueryString_emptyValue() {
+        Location location = new Location("path?query=");
 
         assertEquals("path", location.getPath());
         assertEquals(
@@ -185,5 +195,24 @@ public class LocationTest {
     @Test(expected = IllegalArgumentException.class)
     public void locationWithParamsInUrlAndParameters() {
         new Location("foo/bar/?one&two=222", getQueryParameters());
+    }
+
+    @Test
+    public void locationWithParamWithAndWithoutValue() {
+        Location location = new Location("foo?param&param=bar");
+        Assert.assertEquals("param&param=bar",
+                location.getQueryParameters().getQueryString());
+
+        location = new Location("foo?param=bar&param");
+        Assert.assertEquals("param=bar&param",
+                location.getQueryParameters().getQueryString());
+    }
+
+    @Test
+    public void locationWithParamAndEmptyValue() {
+        Location location = new Location("foo?param=&param=bar");
+
+        Assert.assertEquals("param=&param=bar",
+                location.getQueryParameters().getQueryString());
     }
 }
