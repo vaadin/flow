@@ -54,8 +54,18 @@ public class LocationTest {
     }
 
     @Test
-    public void parseLocationWithQueryString() {
+    public void parseLocationWithQueryString_noValue() {
         Location location = new Location("path?query");
+
+        assertEquals("path", location.getPath());
+        assertEquals(Collections.singletonMap("query", Collections.emptyList()),
+                location.getQueryParameters().getParameters());
+        assertEquals("path?query", location.getPathWithQueryParameters());
+    }
+
+    @Test
+    public void parseLocationWithQueryString_emptyValue() {
+        Location location = new Location("path?query=");
 
         assertEquals("path", location.getPath());
         assertEquals(

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class QueryParametersTest {
@@ -160,5 +161,19 @@ public class QueryParametersTest {
     public void underlyingListsUnmodifiable_full() {
         checkListsForImmutability(QueryParameters.full(getFullInputParameters())
                 .getParameters().values());
+    }
+
+    @Test
+    public void parameterWithoutValue() {
+        QueryParameters fullParams = new QueryParameters(
+                Collections.singletonMap("foo", Collections.emptyList()));
+        Assert.assertEquals("foo", fullParams.getQueryString());
+    }
+
+    @Test
+    public void parameterWithEmptyValue() {
+        QueryParameters fullParams = new QueryParameters(
+                Collections.singletonMap("foo", Collections.singletonList("")));
+        Assert.assertEquals("foo=", fullParams.getQueryString());
     }
 }
