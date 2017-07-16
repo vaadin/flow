@@ -300,6 +300,10 @@ public class TemplateModelProxyHandler implements Serializable {
     private static Object handleGetter(ElementPropertyMap modelMap,
             String propertyName, ModelType propertyType) {
         Serializable modelValue = modelMap.getProperty(propertyName);
+        if (modelValue == null) {
+            modelValue = propertyType.createInitialValue(modelMap.getNode(),
+                    propertyName);
+        }
 
         return propertyType.modelToApplication(modelValue);
     }

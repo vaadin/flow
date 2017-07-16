@@ -18,12 +18,14 @@ package com.vaadin.flow.template.model;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
+import com.vaadin.flow.StateNode;
+
 import elemental.json.JsonValue;
 
 /**
  * A {@link ModelType} implementation that wraps a model type for performing
  * type conversions on together with a {@link ModelConverter}.
- * 
+ *
  * @author Vaadin Ltd
  *
  * @param <A>
@@ -39,14 +41,13 @@ public class ConvertedModelType<A, M extends Serializable>
 
     /**
      * Creates a new ConvertedModelType from the given model type and converter.
-     * 
+     *
      * @param modelType
      *            the model type to wrap
      * @param converter
      *            the converter to use
      */
-    ConvertedModelType(ModelType modelType,
-            ModelConverter<A, M> converter) {
+    ConvertedModelType(ModelType modelType, ModelConverter<A, M> converter) {
         wrappedModelType = modelType;
         this.converter = converter;
     }
@@ -64,14 +65,12 @@ public class ConvertedModelType<A, M extends Serializable>
         throw new UnsupportedOperationException("Obsolete functionality");
     }
 
-
     @Override
     public Serializable applicationToModel(Object applicationValue,
             PropertyFilter filter) {
         @SuppressWarnings("unchecked")
         M convertedValue = converter.toModel((A) applicationValue);
-        return wrappedModelType.applicationToModel(convertedValue,
-                filter);
+        return wrappedModelType.applicationToModel(convertedValue, filter);
     }
 
     @Override
@@ -88,5 +87,10 @@ public class ConvertedModelType<A, M extends Serializable>
     @Override
     public JsonValue toJson() {
         return wrappedModelType.toJson();
+    }
+
+    @Override
+    public Serializable createInitialValue(StateNode node, String property) {
+        return wrappedModelType.createInitialValue(node, property);
     }
 }

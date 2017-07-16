@@ -559,6 +559,13 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
         return json;
     }
+    
+    @Override
+    public Serializable createInitialValue(StateNode node, String property){
+    	ElementPropertyMap feature = node.getFeature(ElementPropertyMap.class);
+    	feature.resolveModelMap(property);
+    	return feature.getProperty(property);
+    }
 
     private void initBeanPropertyCache() {
         beanPropertyCache = new ReflectionCache<>(this::findBeanGetters);

@@ -114,4 +114,20 @@ public interface ModelType extends Serializable {
      * @return a JSON representation of this model type, not <code>null</code>
      */
     JsonValue toJson();
+
+    /**
+     * Create initial value for the given {@code property} and set it for the
+     * {@code node}.
+     *
+     * @param node
+     *            the node where the initial value should be set the
+     *            {@code property}
+     * @param property
+     *            the property in the {@code node} whose initial value needs to
+     *            be created
+     * @return the initial value of the {@code property} for the {@code node}
+     */
+    default Serializable createInitialValue(StateNode node, String property) {
+        return null;
+    }
 }

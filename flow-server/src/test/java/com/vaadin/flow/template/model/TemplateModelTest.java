@@ -103,6 +103,8 @@ public class TemplateModelTest {
     }
 
     public interface BeanModel extends TemplateModel {
+        Bean getBean();
+
         void setBean(Bean bean);
     }
 
@@ -1200,6 +1202,44 @@ public class TemplateModelTest {
                 container2Map.resolveModelMap("bean2"));
         Assert.assertTrue(container2Bean2Properties.remove("booleanValue"));
         Assert.assertEquals(0, container2Bean2Properties.size());
+    }
+
+    @Test
+    public void beanModelType_emptyBeanAsInitialValue() {
+        BeanModelTemplate template = new BeanModelTemplate();
+
+        Assert.assertNotNull(template.getModel().getBean());
+
+        Assert.assertEquals(0, template.getModel().getBean().getIntValue());
+    }
+
+    @Test
+    public void beanModelType_emptySubBeanAsInitialValue() {
+        SubBeansTemplate template = new SubBeansTemplate();
+
+        Assert.assertNotNull(template.getModel().getBean().getBean());
+    }
+
+    @Test
+    public void listModelType_emptyListAsInitialValue() {
+        ListBeanModelTemplate template = new ListBeanModelTemplate();
+
+        List<Bean> list = template.getModel().getBeans();
+        Assert.assertNotNull(list);
+        Assert.assertEquals(0, list.size());
+    }
+
+    @Test
+    public void basicModelType_defaultValues() {
+        BasicTypeModelTemplate template = new BasicTypeModelTemplate();
+        Assert.assertNull(template.getModel().getBoolean());
+        Assert.assertFalse(template.getModel().getBooleanPrimitive());
+        Assert.assertNull(template.getModel().getDouble());
+        Assert.assertEquals(String.valueOf(0.0d),
+                String.valueOf(template.getModel().getDoublePrimitive()));
+        Assert.assertEquals(0, template.getModel().getInt());
+        Assert.assertNull(template.getModel().getInteger());
+        Assert.assertNull(template.getModel().getString());
     }
 
     private static Set<String> getKeys(ElementPropertyMap map) {
