@@ -453,4 +453,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         return json;
     }
 
+    @Override
+    public void createInitialValue(StateNode node, String property) {
+    }
+
 }

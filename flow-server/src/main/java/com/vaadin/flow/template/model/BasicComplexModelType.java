@@ -32,9 +32,9 @@ import com.vaadin.util.ReflectTools;
  * There is a similar class {@link BasicModelType} which do the same but it
  * keeps handles the values as is. This class wraps them into {@link StateNode}
  * to be able to use them in side lists.
- * 
+ *
  * @see BasicModelType
- * 
+ *
  * @param <T>
  *            the (basic) Java type used by this model type
  *
@@ -64,7 +64,7 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
 
     /**
      * Checks whether the {@code type} is a basic supported type.
-     * 
+     *
      * @param type
      *            type to check
      * @return {@code true} is the {@code type} is basic supported type,
