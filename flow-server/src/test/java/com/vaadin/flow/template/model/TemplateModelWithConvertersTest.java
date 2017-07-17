@@ -191,17 +191,10 @@ public class TemplateModelWithConvertersTest {
 
     public static class LongToStringConverter
             implements ModelConverter<Long, String> {
-        public LongToStringConverter() {
-        }
 
         @Override
         public Class<Long> getApplicationType() {
             return long.class;
-        }
-
-        @Override
-        public Class<String> getModelType() {
-            return String.class;
         }
 
         @Override
@@ -219,16 +212,6 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<Date, String> {
 
         @Override
-        public Class<Date> getApplicationType() {
-            return Date.class;
-        }
-
-        @Override
-        public Class<String> getModelType() {
-            return String.class;
-        }
-
-        @Override
         public String toModel(Date applicationValue) {
             return Long.toString(applicationValue.getTime());
         }
@@ -241,16 +224,6 @@ public class TemplateModelWithConvertersTest {
 
     public static class StringToBeanWithStringConverter
             implements ModelConverter<String, BeanWithString> {
-
-        @Override
-        public Class<String> getApplicationType() {
-            return String.class;
-        }
-
-        @Override
-        public Class<BeanWithString> getModelType() {
-            return BeanWithString.class;
-        }
 
         @Override
         public BeanWithString toModel(String applicationValue) {
@@ -272,11 +245,6 @@ public class TemplateModelWithConvertersTest {
         }
 
         @Override
-        public Class<BeanWithLong> getModelType() {
-            return BeanWithLong.class;
-        }
-
-        @Override
         public BeanWithLong toModel(Long applicationValue) {
             return new BeanWithLong(applicationValue);
         }
@@ -289,16 +257,6 @@ public class TemplateModelWithConvertersTest {
 
     public static class DateToBeanWithStringConverter
             implements ModelConverter<Date, BeanWithString> {
-
-        @Override
-        public Class<Date> getApplicationType() {
-            return Date.class;
-        }
-
-        @Override
-        public Class<BeanWithString> getModelType() {
-            return BeanWithString.class;
-        }
 
         @Override
         public BeanWithString toModel(Date applicationValue) {
@@ -322,11 +280,6 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<String, Long> {
 
         @Override
-        public Class<String> getApplicationType() {
-            return String.class;
-        }
-
-        @Override
         public Class<Long> getModelType() {
             return long.class;
         }
@@ -344,16 +297,6 @@ public class TemplateModelWithConvertersTest {
 
     public static class DateToDateBeanConverter
             implements ModelConverter<Date, DateBean> {
-
-        @Override
-        public Class<Date> getApplicationType() {
-            return Date.class;
-        }
-
-        @Override
-        public Class<DateBean> getModelType() {
-            return DateBean.class;
-        }
 
         @Override
         public DateBean toModel(Date applicationValue) {
