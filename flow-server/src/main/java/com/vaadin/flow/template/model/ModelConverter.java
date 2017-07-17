@@ -16,7 +16,9 @@
 package com.vaadin.flow.template.model;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.annotations.Convert;
 
 /**
@@ -41,14 +43,36 @@ public interface ModelConverter<A, M extends Serializable>
      * 
      * @return the application type
      */
-    Class<A> getApplicationType();
+    @SuppressWarnings("unchecked")
+    default Class<A> getApplicationType() {
+        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
+                ModelConverter.class.getTypeParameters()[0]);
+        if (type instanceof Class<?>) {
+            return (Class<A>) GenericTypeReflector.erase(type);
+        }
+        throw new InvalidTemplateModelException(String.format(
+                "Could not detect the application type of ModelConverter '%s'. "
+                        + "The method getApplicationType needs to be overridden manually.",
+                this.getClass().getName()));
+    }
 
     /**
      * Get the model type of this converter.
      * 
      * @return the model type
      */
-    Class<M> getModelType();
+    @SuppressWarnings("unchecked")
+    default Class<M> getModelType() {
+        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
+                ModelConverter.class.getTypeParameters()[1]);
+        if (type instanceof Class<?>) {
+            return (Class<M>) GenericTypeReflector.erase(type);
+        }
+        throw new InvalidTemplateModelException(String.format(
+                "Could not detect the model type of ModelConverter '%s'. "
+                        + "The method getModelType needs to be overridden manually.",
+                this.getClass().getName()));
+    }
 
     /**
      * Converts the given value from application type to the model type.
