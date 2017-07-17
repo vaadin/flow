@@ -23,17 +23,17 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
-import com.vaadin.components.paper.button.PaperButton;
-import com.vaadin.components.paper.dialog.PaperDialog;
 import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
 import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.html.Div;
+import com.vaadin.flow.html.H2;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.generated.paper.button.GeneratedPaperButton;
+import com.vaadin.generated.paper.dialog.GeneratedPaperDialog;
 import com.vaadin.ui.UI;
 
 /**
@@ -47,7 +47,7 @@ import com.vaadin.ui.UI;
 public class MainLayout extends PolymerTemplate<MainLayoutModel>
         implements HasChildView {
 
-    private PaperDialog sourceDialog;
+    private GeneratedPaperDialog sourceDialog;
     private View selectedView;
 
     /**
@@ -117,34 +117,30 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
             content.setText("No source content available for non demo view");
         }
 
-        Element element = sourceDialog.getElement();
-        element.appendChild(ElementFactory.createHeading2(
-                selectedView.getClass().getAnnotation(ComponentDemo.class)
-                        .name() + " sources"));
-        element.appendChild(content.getElement());
+        sourceDialog.add(new H2(selectedView.getClass()
+                .getAnnotation(ComponentDemo.class).name() + " sources"),
+                content);
 
-        sourceDialog.setOpened(true);
+        GeneratedPaperButton closeButton = new GeneratedPaperButton("Close");
+        closeButton.addClickListener(event -> sourceDialog.close());
 
-        PaperButton closeButton = new PaperButton();
-        closeButton.getElement().setText("Close");
-        closeButton.getElement().getStyle().set("float", "right");
-        closeButton.setRaised(true);
-        closeButton.getElement().addEventListener("click",
-                event -> sourceDialog.setOpened(false));
+        Div div = new Div(closeButton);
+        div.setClassName("buttons");
+        sourceDialog.add(div);
 
-        sourceDialog.getElement().appendChild(closeButton.getElement());
+        sourceDialog.open();
 
         UI.getCurrent().getPage().executeJavaScript("Prism.highlightAll();");
     }
 
     private void prepareDialog() {
         if (sourceDialog == null) {
-            sourceDialog = new PaperDialog();
+            sourceDialog = new GeneratedPaperDialog();
             sourceDialog.setModal(true);
 
-            getUI().get().getElement().appendChild(sourceDialog.getElement());
+            getUI().get().add(sourceDialog);
         }
 
-        sourceDialog.getElement().removeAllChildren();
+        sourceDialog.removeAll();
     }
 }
