@@ -16,12 +16,12 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.annotations.StyleSheet;
-import com.vaadin.components.paper.progress.PaperProgress;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Label;
+import com.vaadin.generated.paper.progress.GeneratedPaperProgress;
 
 /**
- * View for {@link PaperProgress} demo.
+ * View for {@link GeneratedPaperProgress} demo.
  */
 @ComponentDemo(name = "Paper Progress", href = "paper-progress")
 @StyleSheet("frontend://src/css/progress.css")
@@ -32,15 +32,15 @@ public class PaperProgressView extends DemoView {
         // begin-source-example
         // source-example-heading: Modified and default indeterminate and static progress:
         // source-example-type: JAVA
-        PaperProgress slowBlue = new PaperProgress();
+        GeneratedPaperProgress slowBlue = new GeneratedPaperProgress();
         slowBlue.setIndeterminate(true);
         slowBlue.getElement().setAttribute("class", "slow blue");
 
-        PaperProgress red = new PaperProgress();
+        GeneratedPaperProgress red = new GeneratedPaperProgress();
         red.setIndeterminate(true);
         red.getElement().setAttribute("class", "red");
 
-        PaperProgress staticGreen = new PaperProgress();
+        GeneratedPaperProgress staticGreen = new GeneratedPaperProgress();
         staticGreen.setValue(45);
         staticGreen.setSecondaryProgress(70);
         // end-source-example

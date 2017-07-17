@@ -15,21 +15,21 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.paper.spinner.PaperSpinner;
-import com.vaadin.components.paper.swatch.picker.PaperSwatchPicker;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Label;
+import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
+import com.vaadin.generated.paper.swatch.picker.GeneratedPaperSwatchPicker;
 
 /**
- * View for {@link PaperSpinner} demo.
+ * View for {@link GeneratedPaperSpinner} demo.
  */
 @ComponentDemo(name = "Paper Swatch Picker", href = "paper-swatch-picker")
 public class PaperSwatchPickerView extends DemoView {
 
     @Override
     public void initView() {
-        PaperSwatchPicker picker = new PaperSwatchPicker();
+        GeneratedPaperSwatchPicker picker = new GeneratedPaperSwatchPicker();
         picker.setColor("#f4511e");
         final Label color = new Label("Picker color: " + picker.getColor());
 

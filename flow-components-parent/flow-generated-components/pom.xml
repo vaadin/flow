@@ -69,7 +69,8 @@
                                     <goal>generate</goal>
                                 </goals>
                                 <configuration>
-                                    <basePackage>com.vaadin.components</basePackage>
+                                    <basePackage>com.vaadin.generated</basePackage>
+                                    <classNamePrefix>Generated</classNamePrefix>
                                     <licenseFile>license_header</licenseFile>
                                 </configuration>
                             </execution>

@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.paper.button.PaperButton;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Div;
+import com.vaadin.generated.paper.button.GeneratedPaperButton;
 
 /**
- * View for {@link PaperButton} demo.
+ * View for {@link GeneratedPaperButton} demo.
  */
 @ComponentDemo(name = "Paper Button", href = "paper-button")
 public class PaperButtonView extends DemoView {
@@ -40,8 +40,8 @@ public class PaperButtonView extends DemoView {
         add(message);
     }
 
-    private PaperButton createButton(String text) {
-        PaperButton button = new PaperButton(text);
+    private GeneratedPaperButton createButton(String text) {
+        GeneratedPaperButton button = new GeneratedPaperButton(text);
         button.getStyle().set("backgroundColor", "white");
         button.addClickListener(evt -> {
             message.setText("Button " + evt.getSource().getText().toUpperCase()
