@@ -15,11 +15,12 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
+
 /**
  * Placeholder class to validate the project structure. It will be replaced by
  * the actual implementation of the component.
  */
-public class VaadinButton
-        extends com.vaadin.components.vaadin.button.VaadinButton {
+public class VaadinButton extends GeneratedVaadinButton {
 
 }
