@@ -134,7 +134,7 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void syncJSON_jsonIsForNonListStateNode_propertySetToJSON()
+    public void syncJSON_jsonIsPropertyValueOfStateNode_propertySetToJSON()
             throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
@@ -158,12 +158,14 @@ public class MapSyncRpcHandlerTest {
         json.put("nodeId", model.getId());
 
         // send sync request
-        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, json);
+        sendSynchronizePropertyEvent(element, ui, "foo", json);
 
-        Serializable testPropertyValue = propertyMap.getProperty(TEST_PROPERTY);
+        Serializable testPropertyValue = propertyMap.getProperty("foo");
 
-        Assert.assertFalse(testPropertyValue instanceof StateNode);
-        Assert.assertTrue(testPropertyValue instanceof JsonObject);
+        Assert.assertTrue(testPropertyValue instanceof StateNode);
+
+        StateNode newNode = (StateNode) testPropertyValue;
+        Assert.assertSame(model, newNode);
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,
