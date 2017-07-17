@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-components-parent</artifactId>
+        <version>0.1.14-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-components</artifactId>
+    <name>Flow server side components</name>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <!-- Project dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-generated-components</artifactId>
+            <version>${flow.version}</version>
+        </dependency>
+    </dependencies>
+</project>
