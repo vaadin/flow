@@ -1,7 +1,10 @@
 package com.vaadin.flow.template.model;
 
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.junit.After;
@@ -125,6 +128,54 @@ public class TemplateModelWithConvertersTest {
         
         @Override
         protected TemplateModelWithUnsupportedConverterModel getModel() {
+            return super.getModel();
+        }
+    }
+
+
+    public static class TemplateWithConvertedReadOnlyBean extends
+            EmptyDivTemplate<TemplateWithConvertedReadOnlyBean.TemplateModelWithConvertedReadOnlyBean> {
+        public interface TemplateModelWithConvertedReadOnlyBean
+                extends TemplateModel {
+
+            @Convert(value = LongToStringConverter.class, path = "id")
+            public void setReadOnlyBean(ReadOnlyBean readOnlyBean);
+            public ReadOnlyBean getReadOnlyBean();
+        }
+
+        @Override
+        protected TemplateModelWithConvertedReadOnlyBean getModel() {
+            return super.getModel();
+        }
+    }
+
+    public static class TemplateWithDate
+            extends EmptyDivTemplate<TemplateWithDate.TemplateModelWithDate> {
+        public interface TemplateModelWithDate extends TemplateModel {
+
+            @Convert(value = DateToDateBeanConverter.class)
+            public void setDate(Date date);
+            public Date getDate();
+        }
+
+        @Override
+        protected TemplateModelWithDate getModel() {
+            return super.getModel();
+        }
+    }
+
+    public static class TemplateWithListOfBeans extends
+            EmptyDivTemplate<TemplateWithListOfBeans.TemplateModelWithListOfBeans> {
+        public interface TemplateModelWithListOfBeans extends TemplateModel {
+
+            @Convert(value = LongToStringConverter.class, path = "longValue")
+            @Convert(value = DateToStringConverter.class, path = "date")
+            public void setTestBeans(List<TestBean> testBeans);
+            public List<TestBean> getTestBeans();
+        }
+
+        @Override
+        protected TemplateModelWithListOfBeans getModel() {
             return super.getModel();
         }
     }
@@ -276,6 +327,47 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
+    public static class DateToDateBeanConverter
+            implements ModelConverter<Date, DateBean> {
+
+        @Override
+        public Class<Date> getApplicationType() {
+            return Date.class;
+        }
+
+        @Override
+        public Class<DateBean> getModelType() {
+            return DateBean.class;
+        }
+
+        @Override
+        public DateBean toModel(Date applicationValue) {
+            if (applicationValue == null) {
+                return null;
+            }
+
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(applicationValue);
+
+            DateBean bean = new DateBean();
+            bean.setDay(calendar.get(Calendar.DATE));
+            bean.setMonth(calendar.get(Calendar.MONTH));
+            bean.setYear(calendar.get(Calendar.YEAR));
+            return bean;
+        }
+
+        @Override
+        public Date toApplication(DateBean modelValue) {
+            if (modelValue == null) {
+                return null;
+            }
+            int year = modelValue.getYear();
+            int day = modelValue.getDay();
+            int month = modelValue.getMonth();
+            return new GregorianCalendar(year, month, day).getTime();
+        }
+    }
+
     public static class BeanWithString implements Serializable {
         private String stringValue;
 
@@ -346,6 +438,43 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
+    public static class ReadOnlyBean implements Serializable {
+        public long getId() {
+            return 0L;
+        }
+    }
+
+    public static class DateBean implements Serializable {
+
+        private int day;
+        private int month;
+        private int year;
+
+        public int getDay() {
+            return day;
+        }
+
+        public void setDay(int day) {
+            this.day = day;
+        }
+
+        public int getMonth() {
+            return month;
+        }
+
+        public void setMonth(int month) {
+            this.month = month;
+        }
+
+        public int getYear() {
+            return year;
+        }
+
+        public void setYear(int year) {
+            this.year = year;
+        }
+    }
+
     @Before
     public void setUp() {
         Assert.assertNull(VaadinService.getCurrent());
@@ -408,6 +537,42 @@ public class TemplateModelWithConvertersTest {
         TemplateWithConverterOnConvertedType template = new TemplateWithConverterOnConvertedType();
         template.getModel().setLongValue(10L);
         Assert.assertEquals(10L, template.getModel().getLongValue());
+    }
+
+    @Test
+    public void converter_on_bean_with_read_only_property() {
+        TemplateWithConvertedReadOnlyBean template = new TemplateWithConvertedReadOnlyBean();
+        template.getModel().setReadOnlyBean(new ReadOnlyBean());
+        Assert.assertEquals(0L, template.getModel().getReadOnlyBean().getId());
+    }
+
+    public void convert_date_to_datebean() {
+        // DateBean strips time information
+        Date date = new Date();
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date dateWithoutTime = calendar.getTime();
+
+        TemplateWithDate template = new TemplateWithDate();
+        template.getModel().setDate(dateWithoutTime);
+        Assert.assertEquals(dateWithoutTime, template.getModel().getDate());
+    }
+
+    @Test
+    public void convert_on_list_of_beans() {
+        Date date = new Date();
+        List<TestBean> testBeans = Collections
+                .singletonList(new TestBean(0L, date));
+        TemplateWithListOfBeans template = new TemplateWithListOfBeans();
+        template.getModel().setTestBeans(testBeans);
+        Assert.assertEquals(0L,
+                template.getModel().getTestBeans().get(0).getLongValue());
+        Assert.assertEquals(date,
+                template.getModel().getTestBeans().get(0).getDate());
     }
 
     @Test(expected = InvalidTemplateModelException.class)

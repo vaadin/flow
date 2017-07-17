@@ -51,14 +51,16 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
         private final Map<String, ModelType> properties = new HashMap<>();
         private PropertyFilter propertyFilter;
+        private ModelConverterProvider converterProvider;
 
-        private PropertyMapBuilder(PropertyFilter propertyFilter) {
+        private PropertyMapBuilder(PropertyFilter propertyFilter,
+                ModelConverterProvider converterProvider) {
             this.propertyFilter = propertyFilter;
+            this.converterProvider = converterProvider;
         }
 
         private void addProperty(Method method,
-                Function<Method, Predicate<String>> filterProvider,
-                ModelConverterProvider converterProvider) {
+                Function<Method, Predicate<String>> filterProvider) {
             String propertyName = ReflectTools.getPropertyName(method);
             if (properties.containsKey(propertyName)) {
                 return;
@@ -92,8 +94,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         }
 
         private void addProperty(Method method) {
-            addProperty(method, emptyFilterProvider,
-                    ModelConverterProvider.EMPTY_PROVIDER);
+            addProperty(method, emptyFilterProvider);
         }
 
         private Map<String, ModelType> getProperties() {
@@ -213,13 +214,13 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         assert javaType != null;
         assert propertyFilter != null;
 
-        PropertyMapBuilder builder = new PropertyMapBuilder(propertyFilter);
+        PropertyMapBuilder builder = new PropertyMapBuilder(propertyFilter,
+                converterProvider);
 
         // Check setters first because they might have additional filters
         ReflectTools.getSetterMethods(javaType)
                 .forEach(setter -> builder.addProperty(setter,
-                        TemplateModelUtil::getFilterFromIncludeExclude,
-                        converterProvider));
+                        TemplateModelUtil::getFilterFromIncludeExclude));
 
         // Then go through the getters in case there are readonly-ish properties
         ReflectTools.getGetterMethods(javaType).forEach(builder::addProperty);
@@ -321,7 +322,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         } else if (isBean(itemType)) {
             Class<?> beansListItemType = (Class<?>) itemType;
             return new ListModelType<>(
-                    new BeanModelType<>(beansListItemType, propertyFilter));
+                    new BeanModelType<>(beansListItemType, propertyFilter,
+                            converterProvider));
         } else {
             throw new InvalidTemplateModelException(String.format(
                     "Element type '%s' is not a valid Bean type. "

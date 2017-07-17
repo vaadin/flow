@@ -38,8 +38,8 @@ public final class BehaviorRegistry {
 
     static {
         put(HasClickListeners.class, "Polymer.PaperButtonBehavior",
-                "Polymer.GestureEventListeners", "VaadinButton");
-        put(HasText.class, "VaadinButton", "PaperButton");
+                "Polymer.GestureEventListeners", "vaadin-button");
+        put(HasText.class, "vaadin-button", "paper-button");
     }
 
     private BehaviorRegistry() {
