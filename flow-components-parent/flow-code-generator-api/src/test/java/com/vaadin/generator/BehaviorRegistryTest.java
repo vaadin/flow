@@ -53,7 +53,7 @@ public class BehaviorRegistryTest {
 
     @Test
     public void clickableBehaviors() {
-        assertClassIsPresent(HasClickListeners.class, "VaadinButton");
+        assertClassIsPresent(HasClickListeners.class, "vaadin-button");
         assertClassIsPresent(HasClickListeners.class,
                 "Polymer.PaperButtonBehavior");
         assertClassIsPresent(HasClickListeners.class,
@@ -62,8 +62,8 @@ public class BehaviorRegistryTest {
 
     @Test
     public void hasTextBehaviors() {
-        assertClassIsPresent(HasText.class, "VaadinButton");
-        assertClassIsPresent(HasText.class, "PaperButton");
+        assertClassIsPresent(HasText.class, "vaadin-button");
+        assertClassIsPresent(HasText.class, "paper-button");
     }
 
     private void assertClassIsPresent(Class<?> clazz, String selector) {

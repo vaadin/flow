@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.vaadin.checkbox.VaadinCheckbox;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
+import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
 
 /**
- * View for {@link VaadinCheckbox} demo.
+ * View for {@link GeneratedVaadinCheckbox} demo.
  */
 @ComponentDemo(name = "Vaadin Checkbox", href = "vaadin-checkbox")
 public class VaadinCheckboxView extends DemoView {
     @Override
     void initView() {
-        VaadinCheckbox textField = new VaadinCheckbox();
+        GeneratedVaadinCheckbox textField = new GeneratedVaadinCheckbox();
         add(textField);
     }
 
