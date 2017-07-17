@@ -15,22 +15,22 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.paper.button.PaperButton;
-import com.vaadin.components.paper.card.PaperCard;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.generated.paper.button.GeneratedPaperButton;
+import com.vaadin.generated.paper.card.GeneratedPaperCard;
 
 /**
- * View for {@link PaperCard} demo.
+ * View for {@link GeneratedPaperCard} demo.
  */
 @ComponentDemo(name = "Paper Card", href = "paper-card")
 public class PaperCardView extends DemoView {
 
     @Override
     public void initView() {
-        PaperCard card = new PaperCard();
+        GeneratedPaperCard card = new GeneratedPaperCard();
         card.setImage(
                 "https://vaadin.com/image/image_gallery?uuid=42c717c0-b63b-4c39-8ee8-3a14b6f477f6&groupId=10187&t=1359960061382");
         Element cardContent = ElementFactory.createDiv();
@@ -47,10 +47,10 @@ public class PaperCardView extends DemoView {
 
         card.getElement().appendChild(cardContent, cardActions);
 
-        PaperButton reserve = new PaperButton();
+        GeneratedPaperButton reserve = new GeneratedPaperButton();
         reserve.getElement().setText("Reserve");
 
-        PaperButton visit = new PaperButton();
+        GeneratedPaperButton visit = new GeneratedPaperButton();
         visit.getElement().setText("Visit page");
 
         buttons.appendChild(visit.getElement())

@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.paper.button.PaperButton;
-import com.vaadin.components.paper.card.PaperCard;
-import com.vaadin.components.paper.input.PaperInput;
-import com.vaadin.components.paper.progress.PaperProgress;
-import com.vaadin.components.paper.spinner.PaperSpinner;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.html.Label;
+import com.vaadin.generated.paper.button.GeneratedPaperButton;
+import com.vaadin.generated.paper.card.GeneratedPaperCard;
+import com.vaadin.generated.paper.input.GeneratedPaperInput;
+import com.vaadin.generated.paper.progress.GeneratedPaperProgress;
+import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
 
 /**
  * Collection view that showcases multiple components on multiple cards.
@@ -34,21 +34,21 @@ public class Collection extends DemoView {
 
     @Override
     void initView() {
-        PaperProgress progress = new PaperProgress();
+        GeneratedPaperProgress progress = new GeneratedPaperProgress();
 
         progress.getElement().setAttribute("indeterminate", "");
         progress.getElement().getStyle().set("width", "100%");
 
         add(createCard(), progress);
 
-        PaperButton button = new PaperButton();
+        GeneratedPaperButton button = new GeneratedPaperButton();
         button.getElement().setText("Button");
         button.getElement().setAttribute("raised", "");
         button.getElement().getStyle().set("backgroundColor", "white");
 
-        PaperInput input = new PaperInput();
+        GeneratedPaperInput input = new GeneratedPaperInput();
 
-        PaperSpinner paperSpinner = new PaperSpinner();
+        GeneratedPaperSpinner paperSpinner = new GeneratedPaperSpinner();
         paperSpinner.getElement().setAttribute("active", "");
 
         Card card = addCard(button, input, paperSpinner);
@@ -56,11 +56,12 @@ public class Collection extends DemoView {
 
     @Override
     public void populateSources(SourceContent container) {
-        container.add(new Label("No sources here. Go to the wanted component for examples."));
+        container.add(new Label(
+                "No sources here. Go to the wanted component for examples."));
     }
 
-    private PaperCard createCard() {
-        PaperCard card = new PaperCard();
+    private GeneratedPaperCard createCard() {
+        GeneratedPaperCard card = new GeneratedPaperCard();
 
         Element cardContent = ElementFactory.createDiv();
         cardContent.setAttribute("class", "card-content");
@@ -76,10 +77,10 @@ public class Collection extends DemoView {
 
         card.getElement().appendChild(cardContent, cardActions);
 
-        PaperButton reserve = new PaperButton();
+        GeneratedPaperButton reserve = new GeneratedPaperButton();
         reserve.getElement().setText("Reserve");
 
-        PaperButton visit = new PaperButton();
+        GeneratedPaperButton visit = new GeneratedPaperButton();
         visit.getElement().setText("Visit page");
 
         buttons.appendChild(visit.getElement())

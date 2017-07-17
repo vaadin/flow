@@ -15,19 +15,19 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.paper.spinner.PaperSpinner;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
+import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
 
 /**
- * View for {@link PaperSpinner} demo.
+ * View for {@link GeneratedPaperSpinner} demo.
  */
 @ComponentDemo(name = "Paper Spinner", href = "paper-spinner")
 public class PaperSpinnerView extends DemoView {
 
     @Override
     public void initView() {
-        PaperSpinner paperSpinner = new PaperSpinner();
+        GeneratedPaperSpinner paperSpinner = new GeneratedPaperSpinner();
         paperSpinner.setActive(true);
         add(paperSpinner);
     }

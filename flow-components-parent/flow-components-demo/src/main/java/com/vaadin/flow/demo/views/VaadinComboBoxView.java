@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.vaadin.combo.box.VaadinComboBox;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.html.Label;
+import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
- * View for {@link VaadinComboBox} demo.
+ * View for {@link GeneratedVaadinComboBox} demo.
  */
 @ComponentDemo(name = "Vaadin ComboBox", href = "vaadin-combo-box")
 public class VaadinComboBoxView extends DemoView {
@@ -37,7 +37,7 @@ public class VaadinComboBoxView extends DemoView {
 
     @Override
     void initView() {
-        VaadinComboBox comboBox = new VaadinComboBox();
+        GeneratedVaadinComboBox comboBox = new GeneratedVaadinComboBox();
         comboBox.setLabel("Music selection");
         comboBox.setItemLabelPath("Song");
         comboBox.setItemValuePath("Song");

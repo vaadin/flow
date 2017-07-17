@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.components.vaadin.text.field.VaadinTextField;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
 
 /**
- * View for {@link VaadinTextField} demo.
+ * View for {@link GeneratedVaadinTextField} demo.
  */
 @ComponentDemo(name = "Vaadin Text Field", href = "vaadin-text-field")
 public class VaadinTextFieldView extends DemoView {
     @Override
     void initView() {
         // begin-source-example
-        VaadinTextField textField = new VaadinTextField();
+        GeneratedVaadinTextField textField = new GeneratedVaadinTextField();
         textField.setLabel("Text field label");
         // end-source-example
         add(textField);

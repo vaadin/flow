@@ -771,6 +771,39 @@ public class ComponentGeneratorTest {
 
     }
 
+    @Test
+    public void generateClassWithNamePrefix_classNameIsPrefixedAndFormatted() {
+        generator.withClassNamePrefix("Generated");
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Generated class name should contain the 'Generated' prefix",
+                generatedClass.contains(
+                        "public class GeneratedMyComponent extends Component"));
+
+        generator.withClassNamePrefix("generated");
+
+        generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Generated class name should contain the 'Generated' prefix",
+                generatedClass.contains(
+                        "public class GeneratedMyComponent extends Component"));
+
+        generator.withClassNamePrefix(" 123 gene-rated 321 ");
+
+        generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Generated class name should contain the '_123GeneRated321' prefix",
+                generatedClass.contains(
+                        "public class _123GeneRated321MyComponent extends Component"));
+    }
+
     private String removeIndentation(String sourceCode) {
         return sourceCode.replaceAll("\\s\\s+", " ");
     }
