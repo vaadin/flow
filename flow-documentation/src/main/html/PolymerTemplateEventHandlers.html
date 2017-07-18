@@ -48,3 +48,24 @@ tutorial::tutorial-template-event-handlers.asciidoc
     customElements.define(ModelItemHandler.is, ModelItemHandler);
   </script>
 </dom-module>
+
+<dom-module id="contact-handler">
+    <template>
+        <input id="name" type="text"></label>
+        <button on-click="onClick">Send the contact</button>
+    </template>
+</dom-module>
+
+<script>
+class ContactHandler extends Polymer.Element {
+      static get is() { return 'contact-handler' }
+    
+        onClick(event) {
+            this.userInfo.name = this.$.name.value;
+            event.detail = {
+                userInfo: this.userInfo,
+        };
+    }
+    customElements.define(ContactHandler.is, ContactHandler);
+</script>
+}
