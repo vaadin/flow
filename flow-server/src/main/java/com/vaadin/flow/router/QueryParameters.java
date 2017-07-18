@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Holds query parameters information.
@@ -37,7 +39,8 @@ public class QueryParameters implements Serializable {
     /**
      * Creates query parameters from parameter map.
      *
-     * @param parameters the parameter map
+     * @param parameters
+     *            the parameter map
      */
     public QueryParameters(Map<String, List<String>> parameters) {
         this.parameters = Collections
@@ -115,9 +118,17 @@ public class QueryParameters implements Serializable {
      */
     public String getQueryString() {
         return parameters.entrySet().stream()
-                .flatMap(entry -> entry.getValue().stream()
-                        .map(value -> entry.getKey()
-                                + PARAMETER_VALUES_SEPARATOR + value))
+                .flatMap(this::getParameterAndValues)
                 .collect(Collectors.joining(PARAMETERS_SEPARATOR));
+    }
+
+    private Stream<String> getParameterAndValues(
+            Entry<String, List<String>> entry) {
+        if (entry.getValue().isEmpty()) {
+            return Stream.of(entry.getKey());
+        }
+        String param = entry.getKey();
+        return entry.getValue().stream().map(value -> value == null ? param
+                : param + PARAMETER_VALUES_SEPARATOR + value);
     }
 }
