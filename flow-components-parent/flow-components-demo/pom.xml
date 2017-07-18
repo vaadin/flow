@@ -9,6 +9,7 @@
     </parent>
     <artifactId>flow-components-demo</artifactId>
     <name>Flow generated components demo</name>
+    <packaging>war</packaging>
 
     <properties>
         <frontend.working.directory>src/main/frontend</frontend.working.directory>
@@ -139,6 +140,7 @@
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
+                            <resourceBase>src/main/webapp</resourceBase>
                             <resourceBase>${jetty.extra.resource.base}</resourceBase>
                         </resourceBases>
                     </webAppConfig>
@@ -218,6 +220,9 @@
                         <configuration>
                             <webResources>
                                 <resource>
+                                    <directory>${project.basedir}/src/main/webapp</directory>
+                                </resource>
+                                <resource>
                                     <directory>${frontend.working.directory}/build</directory>
                                     <targetPath>${vaadin.frontend.path}</targetPath>
                                 </resource>
@@ -269,9 +274,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>3.0.0</version>
                         <configuration>
                             <webResources>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/webapp</directory>
+                                </resource>
                                 <resource>
                                     <directory>${frontend.working.directory}</directory>
                                     <excludes>
