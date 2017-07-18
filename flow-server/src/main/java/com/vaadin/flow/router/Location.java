@@ -251,10 +251,12 @@ public class Location implements Serializable {
         if (result.isEmpty()) {
             result.add(null);
         }
-        result.addAll(list2);
         if (list2.isEmpty()) {
             result.add(null);
+        } else {
+            result.addAll(list2);
         }
+
         return result;
     }
 
