@@ -3,7 +3,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 The application bootstrap page is created for you by the framework and normally there is no need to modify it.
 For instance FW includes its internal JavaScripts to be able to provide its core functionality.
-Also it is possible to include additional JavaScrips, HTML imports and Style Sheets using annotations `@JavaScript`,
+Also it is possible to include additional JavaScripts, HTML imports and Style Sheets using annotations `@JavaScript`,
 `HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>). 
 
 Sometimes you may want to customize the page header and add there some additional data, e.g. custom `meta` tags.
