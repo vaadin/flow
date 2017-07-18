@@ -4,11 +4,8 @@
   "main": "",
   "dependencies": {
     "bower": "^1.8.0",
-    "gulp": "^3.9.1",
-    "polymer-cli": "next"
-  },
-  "devDependencies": {
-    "bower": "^1.8.0"
+    "gulp": "~3.9.1",
+    "polymer-cli": "~1.3.1"
   },
   "scripts": {
     "prodMode": "bower install && polymer build",
