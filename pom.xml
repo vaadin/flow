@@ -58,11 +58,18 @@
         <!--Plugins-->
         <driver.binary.downloader.maven.plugin.version>1.0.12</driver.binary.downloader.maven.plugin.version>
         <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>2.20</maven.failsafe.plugin.version>
+        <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
+        <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already in use' -->
+        <jetty.version>9.3.7.v20160115</jetty.version>
 
         <!--Frontend-->
-        <node.version>v7.10.0</node.version>
-        <npm.version>4.6.1</npm.version>
+        <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
+        <node.version>v7.10.1</node.version>
+        <npm.version>5.3.0</npm.version>
+        <yarn.version>v0.28.1</yarn.version>
         <frontend.working.directory>src/main/frontend</frontend.working.directory>
+        <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
 
         <maven.test.skip>false</maven.test.skip>
     </properties>
@@ -317,7 +324,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>${maven.war.plugin.version}</version>
                     <configuration>
                         <packagingExcludes>**/node_modules/,**/node/,**/etc/,**/bower.json,**/package.json
                         </packagingExcludes>
@@ -326,7 +333,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.20</version>
+                    <version>${maven.failsafe.plugin.version}</version>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>

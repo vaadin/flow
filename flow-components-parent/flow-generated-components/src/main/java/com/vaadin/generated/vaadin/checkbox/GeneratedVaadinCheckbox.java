@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.checkbox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -61,7 +62,12 @@ import com.vaadin.ui.HasComponents;
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			Focusable<R>,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

@@ -29,7 +29,7 @@ import com.vaadin.ui.HasComponents;
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * {@code <vaadin-button>} is a Polymer element providing an accessible and
+ * {@code <vaadin-button>} is a Polymer 2 element providing an accessible and
  * customizable button.
  * 
  * {@code }`html <vaadin-button> </vaadin-button> {@code }`
