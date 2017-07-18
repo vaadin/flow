@@ -16,11 +16,11 @@
 package com.vaadin.generated.vaadin.combo.box;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBoxItem;
 import elemental.json.JsonObject;
 
 @Generated({
@@ -29,7 +29,9 @@ import elemental.json.JsonObject;
 		"Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
-public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
+public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -52,9 +54,9 @@ public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxItem> R setIndex(double index) {
+	public R setIndex(double index) {
 		getElement().setProperty("index", index);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -90,10 +92,9 @@ public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxItem> R setItem(
-			java.lang.String item) {
+	public R setItem(java.lang.String item) {
 		getElement().setProperty("item", item == null ? "" : item);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -105,10 +106,9 @@ public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxItem> R setItem(
-			elemental.json.JsonObject item) {
+	public R setItem(elemental.json.JsonObject item) {
 		getElement().setPropertyJson("item", item);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -132,10 +132,9 @@ public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxItem> R setLabel(
-			java.lang.String label) {
+	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -159,10 +158,9 @@ public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxItem> R setSelected(
-			boolean selected) {
+	public R setSelected(boolean selected) {
 		getElement().setProperty("selected", selected);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -186,9 +184,9 @@ public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxItem> R setFocused(boolean focused) {
+	public R setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -197,7 +195,8 @@ public class GeneratedVaadinComboBoxItem extends Component implements HasStyle {
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedVaadinComboBoxItem> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 }

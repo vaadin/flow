@@ -19,6 +19,7 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Div;
 import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
+import com.vaadin.ui.VaadinButton;
 
 /**
  * View for {@link GeneratedVaadinButton} demo.
@@ -30,8 +31,8 @@ public class VaadinButtonView extends DemoView {
 
     @Override
     void initView() {
-        GeneratedVaadinButton button = new GeneratedVaadinButton(
-                "Vaadin button");
+        VaadinButton button = new VaadinButton("Vaadin button");
+
         button.addClickListener(evt -> message.setText(
                 "Button " + evt.getSource().getText() + " was clicked."));
         add(button);

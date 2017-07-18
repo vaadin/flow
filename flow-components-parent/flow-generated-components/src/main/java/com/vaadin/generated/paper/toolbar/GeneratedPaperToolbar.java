@@ -16,11 +16,11 @@
 package com.vaadin.generated.paper.toolbar;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.paper.toolbar.GeneratedPaperToolbar;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -117,7 +117,9 @@ import com.vaadin.generated.paper.toolbar.GeneratedPaperToolbar;
 		"WebComponent: paper-toolbar#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-toolbar")
 @HtmlImport("frontend://bower_components/paper-toolbar/paper-toolbar.html")
-public class GeneratedPaperToolbar extends Component implements HasStyle {
+public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -144,11 +146,10 @@ public class GeneratedPaperToolbar extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperToolbar> R setBottomJustify(
-			java.lang.String bottomJustify) {
+	public R setBottomJustify(java.lang.String bottomJustify) {
 		getElement().setProperty("bottomJustify",
 				bottomJustify == null ? "" : bottomJustify);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -176,10 +177,9 @@ public class GeneratedPaperToolbar extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperToolbar> R setJustify(
-			java.lang.String justify) {
+	public R setJustify(java.lang.String justify) {
 		getElement().setProperty("justify", justify == null ? "" : justify);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -207,11 +207,10 @@ public class GeneratedPaperToolbar extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperToolbar> R setMiddleJustify(
-			java.lang.String middleJustify) {
+	public R setMiddleJustify(java.lang.String middleJustify) {
 		getElement().setProperty("middleJustify",
 				middleJustify == null ? "" : middleJustify);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -311,7 +310,8 @@ public class GeneratedPaperToolbar extends Component implements HasStyle {
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedPaperToolbar> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 }

@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.menu.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.paper.menu.button.GeneratedPaperMenuGrowWidthAnimation;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
@@ -29,9 +29,9 @@ import com.vaadin.generated.paper.menu.button.GeneratedPaperMenuGrowWidthAnimati
 		"Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-menu-grow-width-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
-public class GeneratedPaperMenuGrowWidthAnimation extends Component
-		implements
-			HasStyle {
+public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGrowWidthAnimation<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -54,10 +54,9 @@ public class GeneratedPaperMenuGrowWidthAnimation extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuGrowWidthAnimation> R setAnimationTiming(
-			elemental.json.JsonObject animationTiming) {
+	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -81,10 +80,9 @@ public class GeneratedPaperMenuGrowWidthAnimation extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuGrowWidthAnimation> R setIsNeonAnimation(
-			boolean isNeonAnimation) {
+	public R setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -133,7 +131,8 @@ public class GeneratedPaperMenuGrowWidthAnimation extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedPaperMenuGrowWidthAnimation> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 }

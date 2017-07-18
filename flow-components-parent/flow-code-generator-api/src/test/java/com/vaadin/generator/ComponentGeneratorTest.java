@@ -204,8 +204,8 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
-        Assert.assertTrue("No fluent setter found", generatedClass.contains(
-                "public <R extends MyComponent> R setName(java.lang.String name)"));
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setName(java.lang.String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -433,8 +433,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("No fluent setter found", generatedClass.contains(
-                "public <R extends MyComponent> R setName(java.lang.String name)"));
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setName(java.lang.String name)"));
 
         Assert.assertTrue("Fluent setter doesn't check for null value",
                 generatedClass.contains(propertyData.getName()
@@ -473,8 +473,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("No fluent setter found", generatedClass.contains(
-                "public <R extends MyComponent> R setRequired(boolean required)"));
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setRequired(boolean required)"));
 
         Assert.assertFalse("Fluent setter checks for null value",
                 generatedClass.contains(propertyData.getName()
@@ -504,12 +504,12 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithFluentSetters_classContainsGetSelf() {
+    public void generateClass_classContainsGet() {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("The method getSelf() wasn't found", generatedClass
-                .contains("protected <R extends MyComponent> R getSelf()"));
+        Assert.assertTrue("The method get() wasn't found",
+                generatedClass.contains("public R get()"));
     }
 
     @Test
@@ -687,7 +687,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated class should contain the setSomething method",
                 generatedClass.contains(
-                        "public <R extends MyComponent> R setSomething(SomethingProperty property)"));
+                        "public R setSomething(SomethingProperty property)"));
     }
 
     @Test
@@ -778,30 +778,36 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
+        generatedClass = removeIndentation(generatedClass);
+
         Assert.assertTrue(
                 "Generated class name should contain the 'Generated' prefix",
                 generatedClass.contains(
-                        "public class GeneratedMyComponent extends Component"));
+                        "public class GeneratedMyComponent<R extends GeneratedMyComponent<R>> extends Component"));
 
         generator.withClassNamePrefix("generated");
 
         generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
+        generatedClass = removeIndentation(generatedClass);
+
         Assert.assertTrue(
                 "Generated class name should contain the 'Generated' prefix",
                 generatedClass.contains(
-                        "public class GeneratedMyComponent extends Component"));
+                        "public class GeneratedMyComponent<R extends GeneratedMyComponent<R>> extends Component"));
 
         generator.withClassNamePrefix(" 123 gene-rated 321 ");
 
         generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
+        generatedClass = removeIndentation(generatedClass);
+
         Assert.assertTrue(
                 "Generated class name should contain the '_123GeneRated321' prefix",
                 generatedClass.contains(
-                        "public class _123GeneRated321MyComponent extends Component"));
+                        "public class _123GeneRated321MyComponent<R extends _123GeneRated321MyComponent<R>> extends Component"));
     }
 
     private String removeIndentation(String sourceCode) {

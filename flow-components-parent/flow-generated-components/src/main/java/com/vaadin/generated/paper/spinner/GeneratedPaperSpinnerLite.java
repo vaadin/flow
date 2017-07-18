@@ -16,11 +16,11 @@
 package com.vaadin.generated.paper.spinner;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.paper.spinner.GeneratedPaperSpinnerLite;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -58,7 +58,9 @@ import com.vaadin.generated.paper.spinner.GeneratedPaperSpinnerLite;
 		"WebComponent: paper-spinner-lite#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-spinner-lite")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner-lite.html")
-public class GeneratedPaperSpinnerLite extends Component implements HasStyle {
+public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -81,9 +83,9 @@ public class GeneratedPaperSpinnerLite extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSpinnerLite> R setActive(boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -111,9 +113,9 @@ public class GeneratedPaperSpinnerLite extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSpinnerLite> R setAlt(java.lang.String alt) {
+	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -122,7 +124,8 @@ public class GeneratedPaperSpinnerLite extends Component implements HasStyle {
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedPaperSpinnerLite> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 }

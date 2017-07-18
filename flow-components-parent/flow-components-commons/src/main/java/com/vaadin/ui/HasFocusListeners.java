@@ -18,44 +18,32 @@ package com.vaadin.ui;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasClickListeners.ClickEvent;
 
-/**
- * Mixin interface to handle click events on components.
- *
- * @param <T>
- *            the type of the component returned at the
- *            {@link ClickEvent#getSource()}
- */
-public interface HasClickListeners<T extends Component>
+public interface HasFocusListeners<T extends Component>
         extends ComponentEventNotifier {
 
     /**
-     * Add a listener to click DOM events.
+     * Add a listener to focus DOM events.
      * 
      * @param listener
-     *            The click listener.
-     * @return A registration that can be used to unregister the listener.
+     *            the focus listener
+     * @return a registration that can be used to unregister the listener
      * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/Events/click">click
+     *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">focus
      *      event at MDN</a>
      */
-    default Registration addClickListener(
+    default Registration addFocusListener(
             ComponentEventListener<ClickEvent<T>> listener) {
-        return addListener(ClickEvent.class, (ComponentEventListener) listener);
+        return addListener(FocusEvent.class, (ComponentEventListener) listener);
     }
 
-    /**
-     * Class that represents the DOM event "click".
-     * 
-     * @param <C>
-     *            The source component type.
-     */
-    @DomEvent("click")
-    public static class ClickEvent<C extends Component>
+    @DomEvent("focus")
+    public static class FocusEvent<C extends Component>
             extends ComponentEvent<C> {
 
         /**
-         * ComponentEvent base constructor.
+         * FocusEvent base constructor.
          * 
          * @param source
          *            the source component
@@ -64,7 +52,7 @@ public interface HasClickListeners<T extends Component>
          *            side, <code>false</code> otherwise
          * @see ComponentEvent
          */
-        public ClickEvent(C source, boolean fromClient) {
+        public FocusEvent(C source, boolean fromClient) {
             super(source, fromClient);
         }
     }

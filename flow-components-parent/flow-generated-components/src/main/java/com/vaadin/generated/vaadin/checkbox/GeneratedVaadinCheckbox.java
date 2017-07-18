@@ -16,11 +16,11 @@
 package com.vaadin.generated.vaadin.checkbox;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -59,10 +59,9 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
-public class GeneratedVaadinCheckbox extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -85,9 +84,9 @@ public class GeneratedVaadinCheckbox extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinCheckbox> R setAutofocus(boolean autofocus) {
+	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -123,9 +122,9 @@ public class GeneratedVaadinCheckbox extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinCheckbox> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -150,9 +149,9 @@ public class GeneratedVaadinCheckbox extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinCheckbox> R setChecked(boolean checked) {
+	public R setChecked(boolean checked) {
 		getElement().setProperty("checked", checked);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -183,10 +182,9 @@ public class GeneratedVaadinCheckbox extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinCheckbox> R setIndeterminate(
-			boolean indeterminate) {
+	public R setIndeterminate(boolean indeterminate) {
 		getElement().setProperty("indeterminate", indeterminate);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -210,9 +208,9 @@ public class GeneratedVaadinCheckbox extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinCheckbox> R setName(java.lang.String name) {
+	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -238,9 +236,9 @@ public class GeneratedVaadinCheckbox extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinCheckbox> R setValue(java.lang.String value) {
+	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
-		return getSelf();
+		return get();
 	}
 
 	public void connectedCallback() {
@@ -287,7 +285,8 @@ public class GeneratedVaadinCheckbox extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedVaadinCheckbox> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 

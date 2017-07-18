@@ -58,6 +58,7 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasText;
@@ -324,10 +325,7 @@ public class ComponentGenerator {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
 
-        if (fluentSetters) {
-            generateGetSelf(javaClass);
-        }
-
+        generateGetSelf(javaClass);
         generateConstructors(javaClass);
 
         return javaClass;
@@ -369,6 +367,9 @@ public class ComponentGenerator {
     private void addInterfaces(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
+        javaClass.addInterface(
+                ComponentSupplier.class.getName() + "<" + GENERIC_TYPE + ">");
+
         // all components have styles
         javaClass.addInterface(HasStyle.class);
 
@@ -379,12 +380,16 @@ public class ComponentGenerator {
             classBehaviorsAndMixins.addAll(metadata.getBehaviors());
         }
 
+        if (metadata.getMixins() != null) {
+            classBehaviorsAndMixins.addAll(metadata.getMixins());
+        }
+
         Set<Class<?>> interfaces = BehaviorRegistry
                 .getClassesForBehaviors(classBehaviorsAndMixins);
         interfaces.forEach(clazz -> {
             if (clazz.getTypeParameters().length > 0) {
                 javaClass.addInterface(
-                        clazz.getName() + "<" + javaClass.getName() + ">");
+                        clazz.getName() + "<" + GENERIC_TYPE + ">");
             } else {
                 javaClass.addInterface(clazz);
             }
@@ -489,9 +494,13 @@ public class ComponentGenerator {
     }
 
     private void generateGetSelf(JavaClassSource javaClass) {
+        javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
+
         MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
-        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
+                .setName("get").setPublic().setReturnType(GENERIC_TYPE);
+
+        method.addAnnotation(Override.class);
 
         method.getJavaDoc().setText(
                 "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
@@ -767,9 +776,8 @@ public class ComponentGenerator {
 
     private void addFluentReturnToSetter(JavaClassSource javaClass,
             MethodSource<JavaClassSource> method) {
-        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
         method.setReturnType(GENERIC_TYPE);
-        method.setBody(method.getBody() + "return getSelf();");
+        method.setBody(method.getBody() + "return get();");
         method.getJavaDoc().addTagValue("@return",
                 "this instance, for method chaining");
     }

@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.tabs;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.generated.paper.tabs.GeneratedPaperTab;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -62,10 +62,9 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-tab#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-tab")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tab.html")
-public class GeneratedPaperTab extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -102,9 +101,9 @@ public class GeneratedPaperTab extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -130,10 +129,9 @@ public class GeneratedPaperTab extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setKeyEventTarget(
-			elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -159,11 +157,11 @@ public class GeneratedPaperTab extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -179,10 +177,9 @@ public class GeneratedPaperTab extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setKeyBindings(
-			elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -220,9 +217,9 @@ public class GeneratedPaperTab extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setToggles(boolean toggles) {
+	public R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -247,9 +244,9 @@ public class GeneratedPaperTab extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setActive(boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -302,11 +299,10 @@ public class GeneratedPaperTab extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setAriaActiveAttribute(
-			java.lang.String ariaActiveAttribute) {
+	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -332,9 +328,9 @@ public class GeneratedPaperTab extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setNoink(boolean noink) {
+	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -360,9 +356,9 @@ public class GeneratedPaperTab extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTab> R setLink(boolean link) {
+	public R setLink(boolean link) {
 		getElement().setProperty("link", link);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -490,7 +486,8 @@ public class GeneratedPaperTab extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedPaperTab> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 

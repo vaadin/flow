@@ -16,12 +16,12 @@
 package com.vaadin.generated.vaadin.combo.box;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBoxOverlay;
 import com.vaadin.components.NotSupported;
 
 @Generated({
@@ -30,9 +30,9 @@ import com.vaadin.components.NotSupported;
 		"Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
-public class GeneratedVaadinComboBoxOverlay extends Component
-		implements
-			HasStyle {
+public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOverlay<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -55,10 +55,9 @@ public class GeneratedVaadinComboBoxOverlay extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxOverlay> R setPositionTarget(
-			elemental.json.JsonObject positionTarget) {
+	public R setPositionTarget(elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -82,10 +81,9 @@ public class GeneratedVaadinComboBoxOverlay extends Component
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxOverlay> R setVerticalOffset(
-			double verticalOffset) {
+	public R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -109,10 +107,9 @@ public class GeneratedVaadinComboBoxOverlay extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxOverlay> R setTouchDevice(
-			boolean touchDevice) {
+	public R setTouchDevice(boolean touchDevice) {
 		getElement().setProperty("touchDevice", touchDevice);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -136,10 +133,9 @@ public class GeneratedVaadinComboBoxOverlay extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinComboBoxOverlay> R setLoading(
-			boolean loading) {
+	public R setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -238,7 +234,8 @@ public class GeneratedVaadinComboBoxOverlay extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedVaadinComboBoxOverlay> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 }

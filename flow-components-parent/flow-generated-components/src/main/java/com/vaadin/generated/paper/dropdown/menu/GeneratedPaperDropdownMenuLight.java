@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.dropdown.menu;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.paper.dropdown.menu.GeneratedPaperDropdownMenuLight;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -105,9 +105,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-dropdown-menu-light")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html")
-public class GeneratedPaperDropdownMenuLight extends Component
-		implements
-			HasStyle {
+public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMenuLight<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -132,10 +132,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setKeyEventTarget(
-			elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -161,11 +160,11 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -181,10 +180,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setKeyBindings(
-			elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -222,10 +220,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setToggles(
-			boolean toggles) {
+	public R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -250,10 +247,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setActive(
-			boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -306,11 +302,10 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setAriaActiveAttribute(
-			java.lang.String ariaActiveAttribute) {
+	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -348,10 +343,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setDisabled(
-			boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -377,9 +371,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setNoink(boolean noink) {
+	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -403,10 +397,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setName(
-			java.lang.String name) {
+	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -455,10 +448,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setRequired(
-			boolean required) {
+	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -482,11 +474,10 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setValidator(
-			java.lang.String validator) {
+	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -511,10 +502,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setInvalid(
-			boolean invalid) {
+	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -567,10 +557,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setLabel(
-			java.lang.String label) {
+	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -594,11 +583,10 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setPlaceholder(
-			java.lang.String placeholder) {
+	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -623,10 +611,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setOpened(
-			boolean opened) {
+	public R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -654,10 +641,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setAllowOutsideScroll(
-			boolean allowOutsideScroll) {
+	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -683,10 +669,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setNoLabelFloat(
-			boolean noLabelFloat) {
+	public R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -712,10 +697,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setAlwaysFloatLabel(
-			boolean alwaysFloatLabel) {
+	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -739,10 +723,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setNoAnimations(
-			boolean noAnimations) {
+	public R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -768,11 +751,10 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setHorizontalAlign(
-			java.lang.String horizontalAlign) {
+	public R setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -798,11 +780,10 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setVerticalAlign(
-			java.lang.String verticalAlign) {
+	public R setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -834,10 +815,9 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperDropdownMenuLight> R setContentElement(
-			elemental.json.JsonObject contentElement) {
+	public R setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1167,7 +1147,8 @@ public class GeneratedPaperDropdownMenuLight extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedPaperDropdownMenuLight> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 }

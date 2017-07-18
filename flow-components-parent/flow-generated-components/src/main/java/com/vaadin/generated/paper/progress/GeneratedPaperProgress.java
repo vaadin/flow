@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.progress;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.generated.paper.progress.GeneratedPaperProgress;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -102,7 +102,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-progress#2.0.1", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
-public class GeneratedPaperProgress extends Component implements HasStyle {
+public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -126,9 +128,9 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperProgress> R setValue(double value) {
+	public R setValue(double value) {
 		getElement().setProperty("value", value);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -153,9 +155,9 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperProgress> R setMin(double min) {
+	public R setMin(double min) {
 		getElement().setProperty("min", min);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -180,9 +182,9 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperProgress> R setMax(double max) {
+	public R setMax(double max) {
 		getElement().setProperty("max", max);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -207,9 +209,9 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperProgress> R setStep(double step) {
+	public R setStep(double step) {
 		getElement().setProperty("step", step);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -246,10 +248,9 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperProgress> R setSecondaryProgress(
-			double secondaryProgress) {
+	public R setSecondaryProgress(double secondaryProgress) {
 		getElement().setProperty("secondaryProgress", secondaryProgress);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -285,10 +286,9 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperProgress> R setIndeterminate(
-			boolean indeterminate) {
+	public R setIndeterminate(boolean indeterminate) {
 		getElement().setProperty("indeterminate", indeterminate);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -312,9 +312,9 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperProgress> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	@DomEvent("value-changed")
@@ -396,7 +396,8 @@ public class GeneratedPaperProgress extends Component implements HasStyle {
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedPaperProgress> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 }

@@ -16,14 +16,15 @@
 package com.vaadin.generated.paper.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasText;
+import com.vaadin.ui.Focusable;
 import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -97,11 +98,15 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-button#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
-public class GeneratedPaperButton extends Component
+public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
+		extends
+			Component
 		implements
+			ComponentSupplier<R>,
 			HasStyle,
 			HasText,
-			HasClickListeners<GeneratedPaperButton>,
+			Focusable<R>,
+			HasClickListeners<R>,
 			HasComponents {
 
 	/**
@@ -127,10 +132,9 @@ public class GeneratedPaperButton extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setKeyEventTarget(
-			elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -156,11 +160,11 @@ public class GeneratedPaperButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -176,10 +180,9 @@ public class GeneratedPaperButton extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setKeyBindings(
-			elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -217,9 +220,9 @@ public class GeneratedPaperButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setToggles(boolean toggles) {
+	public R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -244,9 +247,9 @@ public class GeneratedPaperButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setActive(boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -299,11 +302,10 @@ public class GeneratedPaperButton extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setAriaActiveAttribute(
-			java.lang.String ariaActiveAttribute) {
+	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -341,9 +343,9 @@ public class GeneratedPaperButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -369,9 +371,9 @@ public class GeneratedPaperButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setNoink(boolean noink) {
+	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -409,9 +411,9 @@ public class GeneratedPaperButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperButton> R setRaised(boolean raised) {
+	public R setRaised(boolean raised) {
 		getElement().setProperty("raised", raised);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -557,7 +559,8 @@ public class GeneratedPaperButton extends Component
 	 * 
 	 * @return This object casted to its type.
 	 */
-	protected <R extends GeneratedPaperButton> R getSelf() {
+	@Override
+	public R get() {
 		return (R) this;
 	}
 

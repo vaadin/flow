@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.ui.Focusable;
 import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasText;
 
@@ -40,6 +41,8 @@ public final class BehaviorRegistry {
         put(HasClickListeners.class, "Polymer.PaperButtonBehavior",
                 "Polymer.GestureEventListeners", "vaadin-button");
         put(HasText.class, "vaadin-button", "paper-button");
+        put(Focusable.class, "vaadin-button", "paper-button",
+                "Vaadin.FormElementMixin");
     }
 
     private BehaviorRegistry() {
