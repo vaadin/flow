@@ -20,6 +20,13 @@ import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.HasClickListeners.ClickEvent;
 
+/**
+ * Mixin interface to handle blur events on components.
+ *
+ * @param <T>
+ *            the type of the component returned at the
+ *            {@link BlurEvent#getSource()}
+ */
 public interface HasBlurListeners<T extends Component>
         extends ComponentEventNotifier {
 
@@ -38,6 +45,12 @@ public interface HasBlurListeners<T extends Component>
         return addListener(BlurEvent.class, (ComponentEventListener) listener);
     }
 
+    /**
+     * Class that represents the DOM event "blur".
+     * 
+     * @param <C>
+     *            The source component type.
+     */
     @DomEvent("blur")
     public static class BlurEvent<C extends Component>
             extends ComponentEvent<C> {

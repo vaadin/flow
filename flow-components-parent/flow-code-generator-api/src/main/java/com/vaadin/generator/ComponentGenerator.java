@@ -736,7 +736,7 @@ public class ComponentGenerator {
                     "property the property to set");
 
             if (fluentSetters) {
-                addFluentReturnToSetter(javaClass, method);
+                addFluentReturnToSetter(method);
             }
 
         } else {
@@ -768,14 +768,13 @@ public class ComponentGenerator {
                                 setterType.getSimpleName()));
 
                 if (fluentSetters) {
-                    addFluentReturnToSetter(javaClass, method);
+                    addFluentReturnToSetter(method);
                 }
             }
         }
     }
 
-    private void addFluentReturnToSetter(JavaClassSource javaClass,
-            MethodSource<JavaClassSource> method) {
+    private void addFluentReturnToSetter(MethodSource<JavaClassSource> method) {
         method.setReturnType(GENERIC_TYPE);
         method.setBody(method.getBody() + "return get();");
         method.getJavaDoc().addTagValue("@return",

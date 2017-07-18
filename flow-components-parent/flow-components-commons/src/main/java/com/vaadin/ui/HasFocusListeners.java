@@ -20,6 +20,13 @@ import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.HasClickListeners.ClickEvent;
 
+/**
+ * Mixin interface to handle focus events on components.
+ *
+ * @param <T>
+ *            the type of the component returned at the
+ *            {@link FocusEvent#getSource()}
+ */
 public interface HasFocusListeners<T extends Component>
         extends ComponentEventNotifier {
 
@@ -38,6 +45,12 @@ public interface HasFocusListeners<T extends Component>
         return addListener(FocusEvent.class, (ComponentEventListener) listener);
     }
 
+    /**
+     * Class that represents the DOM event "focus".
+     * 
+     * @param <C>
+     *            The source component type.
+     */
     @DomEvent("focus")
     public static class FocusEvent<C extends Component>
             extends ComponentEvent<C> {
