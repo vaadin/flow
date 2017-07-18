@@ -14,4 +14,4 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aerokube/cm:1.0.0 s
 
 # Run Selenoid (https://github.com/aerokube/selenoid)
 docker run --name selenoid -d -p 4444:4444 -v `pwd`/target/selenoid:/etc/selenoid:ro \
-      -v /var/run/docker.sock:/var/run/docker.sock aerokube/selenoid:1.3.1 -limit 10
+      -v /var/run/docker.sock:/var/run/docker.sock aerokube/selenoid -limit 10
