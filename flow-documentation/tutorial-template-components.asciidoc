@@ -21,7 +21,7 @@ Here is the content of the HTML template file which has a placeholder `div` elem
 <dom-module id="main-page">
     <template>
         <div id="header">Main page</div>
-        <div id="container"></div>
+        <div id="content"></div>
         <hr>
         <div id="footer">
             <a href="mailto:someone@example.com?Subject=Hello%20again" target="_top">Send Mail</a>
@@ -48,11 +48,11 @@ You can implement the method that wires a `Component` to the content of your tem
 public class MainPage extends PolymerTemplate<TemplateModel> {
 
     @Id("content")
-    private Div container;
+    private Div content;
 
     public void setContent(Component content) {
-        container.removeAll();
-        container.add(content);
+        this.content.removeAll();
+        this.content.add(content);
     }
 }
 ----
