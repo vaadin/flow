@@ -32,11 +32,11 @@ public class PolymerComponents {
     public class MainPage extends PolymerTemplate<TemplateModel> {
 
         @Id("content")
-        private Div container;
+        private Div content;
 
         public void setContent(Component content) {
-            container.removeAll();
-            container.add(content);
+            this.content.removeAll();
+            this.content.add(content);
         }
     }
 
