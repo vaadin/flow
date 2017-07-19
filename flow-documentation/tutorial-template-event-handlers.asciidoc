@@ -173,4 +173,69 @@ The method `handleClick` will be called in the server side with the data identif
 
 [NOTE]
 You can use the annotation `@ModelItem` with any value provided as a data path. 
-By default the data path is `event.model.item`. But your data type should be declared somehow via the model definition (it should be referenced from the model). 
+By default the data path is `event.model.item`. But your data type should be declared somehow via the model definition (it should be referenced from the model).
+
+[NOTE]
+Please note that `@ModelItem` is just a convenience way of model data access. The argument which you 
+receive in your event handler callback is the *model data* from the server side which you may access directly via your model instance.
+It means that the server doesn't update the model item anyhow from the client. So if you create a custom event on the client side
+with data that you want to send to the server as a model item it will be completely ignored by the server-side and the current model
+data will be used instead. You always should keep your model in sync on the server and client-sides, by correctly updating it.
+
+So if you have the the following model definition and the event handler method:
+
+[source,java]
+----
+    public static class UserInfo {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    public interface Model extends TemplateModel {
+        void setUserInfo(UserInfo userInfo);
+    }
+    
+    @EventHandler
+    private void onClick(
+            @ModelItem("event.detail.userInfo") UserInfo userInfo) {
+        System.err.println("contact : name = " + userInfo.getName());
+    }
+----
+
+Then the client side code below won't update the name of the `UserInfo` bean instance.
+
+[source,html]
+----
+<dom-module id="contact-handler">
+    <template>
+        <input id="name" type="text"></label>
+        <button on-click="onClick">Send the contact</button>
+    </template>
+</dom-module>
+
+<script>
+class ContactHandler extends Polymer.Element {
+      static get is() { return 'contact-handler' }
+    
+        onClick(event) {
+            this.userInfo.name = this.$.name.value;
+            event.detail = {
+                userInfo: this.userInfo,
+        };
+    }
+    customElements.define(ContactHandler.is, ContactHandler);
+</script>
+}
+----
+
+In this example the server-side model becomes desynchronized with the client side because client side model is updated incorrectly.
+The line `this.userInfo.name = this.$.name.value` should be replaced to `this.set("userInfo.name", this.$.name.value)`. That's 
+the correct way to update sub-properties in Polymer. But in this case the server-side model will be updated automatically for 
+you and there is no need to send this custom event at all. You may just notify somehow the server about the click event (e.g. via 
+`this.$server` and a `@ClientDelegate` method, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>) and get the model value directly from the server-side model. 
