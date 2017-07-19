@@ -69,6 +69,7 @@
         <npm.version>5.3.0</npm.version>
         <yarn.version>v0.28.1</yarn.version>
         <frontend.working.directory>src/main/frontend</frontend.working.directory>
+        <webapp.directory>src/main/webapp</webapp.directory>
         <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
 
         <maven.test.skip>false</maven.test.skip>

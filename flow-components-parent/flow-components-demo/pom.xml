@@ -11,10 +11,6 @@
     <name>Flow generated components demo</name>
     <packaging>war</packaging>
     
-    <properties>
-        <webappFolder>${project.basedir}/src/main/webapp</webappFolder>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -134,7 +130,7 @@
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
-                            <resourceBase>${webappFolder}</resourceBase>
+                            <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
                             <resourceBase>${jetty.extra.resource.base}</resourceBase>
                         </resourceBases>
                     </webAppConfig>
@@ -214,7 +210,7 @@
                         <configuration>
                             <webResources>
                                 <resource>
-                                    <directory>${webappFolder}</directory>
+                                    <directory>${project.basedir}/${webapp.directory}</directory>
                                 </resource>
                                 <resource>
                                     <directory>${frontend.working.directory}/build</directory>
@@ -271,7 +267,7 @@
                         <configuration>
                             <webResources>
                                 <resource>
-                                    <directory>${webappFolder}</directory>
+                                    <directory>${project.basedir}/${webapp.directory}</directory>
                                 </resource>
                                 <resource>
                                     <directory>${frontend.working.directory}</directory>
