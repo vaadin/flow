@@ -45,7 +45,10 @@ const getObjectType = (type) => {
       objectTypesJson.push(objectTypeJson);
     }
   }
-  return objectTypesJson;
+  if (objectTypesJson.length > 0) {
+    return [{"innerTypes": objectTypesJson}];
+  }
+  return [];
 };
 
 const getTypes = (type) => {
