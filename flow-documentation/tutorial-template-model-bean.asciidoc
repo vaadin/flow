@@ -11,23 +11,24 @@ A typical use case would be a form where you want to edit the contents of one or
 [source,html]
 ----
 <dom-module id="my-form">
-    <div>
+    <template>
         <div>
-            <span>First name</span>
-            <input value="[[person.firstName]]" />
+            <div>
+                <span>First name</span>
+                <input value="[[person.firstName]]" />
+            </div>
+            <div>
+                <span>Last name</span>
+                <input value="[[person.lastName]]" />
+            </div>
+            <div>
+                <span>Age</span>
+                <input value="[[person.age]]" />
+            </div>
         </div>
         <div>
-            <span>Last name</span>
-            <input value="[[person.lastName]]" />
+            <button on-click="setNameToJeff">Set Name To Jeff</button>
         </div>
-        <div>
-            <span>Age</span>
-            <input value="[[person.age]]" />
-        </div>
-    </div>
-    <div>
-        <button on-click="setNameToJeff">Set Name To Jeff</button>
-    </div>
     </template>
 
     <script>
