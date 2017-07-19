@@ -504,15 +504,6 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClass_classContainsGet() {
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        Assert.assertTrue("The method get() wasn't found",
-                generatedClass.contains("public R get()"));
-    }
-
-    @Test
     public void generateClass_implementsHasStyle() {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);

@@ -325,7 +325,6 @@ public class ComponentGenerator {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
         }
 
-        generateGetSelf(javaClass);
         generateConstructors(javaClass);
 
         return javaClass;
@@ -491,22 +490,6 @@ public class ComponentGenerator {
                             + "text content as well as child elements that have been added directly to "
                             + "this component using the {@link Element} API."));
         }
-    }
-
-    private void generateGetSelf(JavaClassSource javaClass) {
-        javaClass.addTypeVariable().setName(GENERIC_TYPE)
-                .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
-
-        MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("get").setPublic().setReturnType(GENERIC_TYPE);
-
-        method.addAnnotation(Override.class);
-
-        method.getJavaDoc().setText(
-                "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
-                .addTagValue("@return", "This object casted to its type.");
-
-        method.setBody("return (" + GENERIC_TYPE + ") this;");
     }
 
     /*

@@ -26,8 +26,17 @@ import java.util.function.Supplier;
  * @param <C>
  *            the type of the component
  */
-@FunctionalInterface
 public interface ComponentSupplier<C extends Component>
         extends Supplier<C>, Serializable {
+
+    /**
+     * Gets this instance as a {@link Component}.
+     * 
+     * @return this instance
+     */
+    @Override
+    default C get() {
+        return (C) this;
+    }
 
 }
