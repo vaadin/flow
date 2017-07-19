@@ -29,8 +29,10 @@ import com.vaadin.generator.metadata.ComponentFunctionData;
 import com.vaadin.generator.metadata.ComponentFunctionParameterData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
@@ -513,6 +515,15 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void generateClass_implementsComponentSupplier() {
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                ComponentSupplier.class);
+    }
+
+    @Test
     public void generateClassWithClickableBehavior_classImplementsHasClickListeners() {
         componentMetadata
                 .setBehaviors(Arrays.asList("Polymer.GestureEventListeners"));
@@ -650,13 +661,16 @@ public class ComponentGeneratorTest {
     public void classContainsObjectProperty_generatedClassContainsInnerClass() {
         // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
-        ComponentObjectType stringObjectType = new ComponentObjectType();
+        ComponentObjectTypeInnerType stringObjectType = new ComponentObjectTypeInnerType();
         stringObjectType.setName("internalString");
         stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
 
+        ComponentObjectType objectType = new ComponentObjectType();
+        objectType.setInnerTypes(Arrays.asList(stringObjectType));
+
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("something");
-        property.setObjectType(Arrays.asList(stringObjectType));
+        property.setObjectType(Arrays.asList(objectType));
 
         componentMetadata.setProperties(Arrays.asList(property));
 
@@ -685,13 +699,16 @@ public class ComponentGeneratorTest {
     public void classContainsMethodWithObjectParameter_generatedClassContainsInnerClass() {
         // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
-        ComponentObjectType stringObjectType = new ComponentObjectType();
+        ComponentObjectTypeInnerType stringObjectType = new ComponentObjectTypeInnerType();
         stringObjectType.setName("internalString");
         stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
 
+        ComponentObjectType objectType = new ComponentObjectType();
+        objectType.setInnerTypes(Arrays.asList(stringObjectType));
+
         ComponentFunctionParameterData parameter = new ComponentFunctionParameterData();
         parameter.setName("somethingParam");
-        parameter.setObjectType(Arrays.asList(stringObjectType));
+        parameter.setObjectType(Arrays.asList(objectType));
 
         ComponentFunctionData function = new ComponentFunctionData();
         function.setName("callSomething");
@@ -719,13 +736,16 @@ public class ComponentGeneratorTest {
     public void classContainsEventWithObjectParameter_generatedClassContainsInnerClass() {
         // note: the tests for the nested class are covered by the
         // NestedClassGeneratorTest
-        ComponentObjectType stringObjectType = new ComponentObjectType();
+        ComponentObjectTypeInnerType stringObjectType = new ComponentObjectTypeInnerType();
         stringObjectType.setName("internalString");
         stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
 
+        ComponentObjectType objectType = new ComponentObjectType();
+        objectType.setInnerTypes(Arrays.asList(stringObjectType));
+
         ComponentPropertyBaseData eventData = new ComponentPropertyBaseData();
         eventData.setName("details");
-        eventData.setObjectType(Arrays.asList(stringObjectType));
+        eventData.setObjectType(Arrays.asList(objectType));
 
         ComponentEventData event = new ComponentEventData();
         event.setName("something-changed");
@@ -763,42 +783,72 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithNamePrefix_classNameIsPrefixedAndFormatted() {
-        generator.withClassNamePrefix("Generated");
+    public void classContainsOverloadedMethodsForMethodsThatAcceptMultipleTypes() {
+        ComponentFunctionParameterData firstParameter = new ComponentFunctionParameterData();
+        firstParameter.setName("firstParam");
+        firstParameter.setType(Arrays.asList(ComponentBasicType.STRING,
+                ComponentBasicType.BOOLEAN));
+        ComponentFunctionParameterData secondParameter = new ComponentFunctionParameterData();
+        secondParameter.setName("secondParam");
+        secondParameter.setType(Arrays.asList(ComponentBasicType.STRING,
+                ComponentBasicType.BOOLEAN));
+
+        ComponentFunctionData function = new ComponentFunctionData();
+        function.setName("callSomething");
+        function.setParameters(Arrays.asList(firstParameter, secondParameter));
+
+        componentMetadata.setMethods(Arrays.asList(function));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
         generatedClass = removeIndentation(generatedClass);
 
-        Assert.assertTrue(
-                "Generated class name should contain the 'Generated' prefix",
-                generatedClass.contains(
-                        "public class GeneratedMyComponent<R extends GeneratedMyComponent<R>> extends Component"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomething(java.lang.String firstParam, java.lang.String secondParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomething(java.lang.String firstParam, boolean secondParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomething(boolean firstParam, java.lang.String secondParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomething(boolean firstParam, boolean secondParam)"));
+    }
 
-        generator.withClassNamePrefix("generated");
+    @Test
+    public void classContainsOverloadedMethodsForMethodsThatAcceptMultipleTypes_withObjectTypes() {
+        ComponentObjectTypeInnerType stringObjectTypeInnerType = new ComponentObjectTypeInnerType();
+        stringObjectTypeInnerType.setName("internalString");
+        stringObjectTypeInnerType
+                .setType(Arrays.asList(ComponentBasicType.STRING));
 
-        generatedClass = generator.generateClass(componentMetadata,
+        ComponentObjectType stringObjectType = new ComponentObjectType();
+        stringObjectType
+                .setInnerTypes(Arrays.asList(stringObjectTypeInnerType));
+
+        ComponentFunctionParameterData firstParameter = new ComponentFunctionParameterData();
+        firstParameter.setName("firstParam");
+        firstParameter.setObjectType(Arrays.asList(stringObjectType));
+
+        ComponentFunctionParameterData secondParameter = new ComponentFunctionParameterData();
+        secondParameter.setName("secondParam");
+        secondParameter.setType(Arrays.asList(ComponentBasicType.STRING,
+                ComponentBasicType.BOOLEAN));
+
+        ComponentFunctionData function = new ComponentFunctionData();
+        function.setName("callSomething");
+        function.setParameters(Arrays.asList(firstParameter, secondParameter));
+
+        componentMetadata.setMethods(Arrays.asList(function));
+
+        String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
         generatedClass = removeIndentation(generatedClass);
 
-        Assert.assertTrue(
-                "Generated class name should contain the 'Generated' prefix",
-                generatedClass.contains(
-                        "public class GeneratedMyComponent<R extends GeneratedMyComponent<R>> extends Component"));
-
-        generator.withClassNamePrefix(" 123 gene-rated 321 ");
-
-        generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        generatedClass = removeIndentation(generatedClass);
-
-        Assert.assertTrue(
-                "Generated class name should contain the '_123GeneRated321' prefix",
-                generatedClass.contains(
-                        "public class _123GeneRated321MyComponent<R extends _123GeneRated321MyComponent<R>> extends Component"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomething(CallSomethingFirstParam firstParam, java.lang.String secondParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomething(CallSomethingFirstParam firstParam, boolean secondParam)"));
     }
 
     private String removeIndentation(String sourceCode) {
