@@ -513,15 +513,4 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 			ComponentEventListener<DisabledChangedEvent> listener) {
 		return addListener(DisabledChangedEvent.class, listener);
 	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	@Override
-	public R get() {
-		return (R) this;
-	}
 }

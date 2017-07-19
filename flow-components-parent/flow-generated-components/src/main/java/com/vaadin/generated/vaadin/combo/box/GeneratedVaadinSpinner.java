@@ -48,15 +48,4 @@ public class GeneratedVaadinSpinner<R extends GeneratedVaadinSpinner<R>>
 		getElement().setProperty("active", active);
 		return get();
 	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	@Override
-	public R get() {
-		return (R) this;
-	}
 }

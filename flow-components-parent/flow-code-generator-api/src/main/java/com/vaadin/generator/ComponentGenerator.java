@@ -302,6 +302,9 @@ public class ComponentGenerator {
                         (classNamePrefix == null ? "" : classNamePrefix + "-")
                                 + metadata.getTag()));
 
+        javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
+
         addInterfaces(metadata, javaClass);
         addClassAnnotations(metadata, javaClass);
 
@@ -783,8 +786,7 @@ public class ComponentGenerator {
                 addJavaDoc(function.getDescription(), method.getJavaDoc());
             }
 
-            String parameterString = generateMethodParameters(javaClass,
-                    method,
+            String parameterString = generateMethodParameters(javaClass, method,
                     function, typeVariant, nestedClassesMap);
 
             // methods with return values are currently not supported
@@ -833,10 +835,10 @@ public class ComponentGenerator {
                     .getName();
             String paramDescription = function.getParameters().get(paramIndex)
                     .getDescription();
-            String formattedName = StringUtils
-                    .uncapitalize(ComponentGeneratorUtils
-                    .formatStringToValidJavaIdentifier(function.getParameters()
-                            .get(paramIndex).getName()));
+            String formattedName = StringUtils.uncapitalize(
+                    ComponentGeneratorUtils.formatStringToValidJavaIdentifier(
+                            function.getParameters().get(paramIndex)
+                                    .getName()));
             paramIndex++;
 
             if (paramType.isBasicType()) {
@@ -863,8 +865,8 @@ public class ComponentGenerator {
                 method.addParameter(nestedClass, formattedName);
             }
 
-            method.getJavaDoc().addTagValue(JAVADOC_PARAM, String.format(
-                    "%s %s", paramName, paramDescription));
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                    String.format("%s %s", paramName, paramDescription));
         }
         return sb.toString();
     }
@@ -979,8 +981,7 @@ public class ComponentGenerator {
     }
 
     private JavaClassSource generateNestedPojo(JavaClassSource javaClass,
-            ComponentObjectType type, String nameHint,
-            String description) {
+            ComponentObjectType type, String nameHint, String description) {
         JavaClassSource nestedClass = new NestedClassGenerator().withType(type)
                 .withFluentSetters(fluentSetters).withNameHint(nameHint)
                 .build();

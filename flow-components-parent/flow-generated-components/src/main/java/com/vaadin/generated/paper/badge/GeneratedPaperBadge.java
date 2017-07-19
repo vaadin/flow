@@ -261,15 +261,4 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	public void updatePosition() {
 		getElement().callFunction("updatePosition");
 	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	@Override
-	public R get() {
-		return (R) this;
-	}
 }

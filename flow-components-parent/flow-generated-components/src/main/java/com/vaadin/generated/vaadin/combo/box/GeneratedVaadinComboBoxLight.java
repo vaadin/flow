@@ -989,17 +989,6 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	}
 
 	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	@Override
-	public R get() {
-		return (R) this;
-	}
-
-	/**
 	 * Adds the given components as children of this component.
 	 * 
 	 * @param components
