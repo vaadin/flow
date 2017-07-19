@@ -42,6 +42,7 @@ public class FunctionParameterVariantCombinator {
      * 
      * @param function
      *            the function to generate parameter variants for
+     * @return all the valid combinations of function parameter types
      */
     public static List<List<ComponentType>> generateVariants(
             ComponentFunctionData function) {

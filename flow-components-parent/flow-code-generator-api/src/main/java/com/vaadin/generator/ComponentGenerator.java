@@ -310,7 +310,7 @@ public class ComponentGenerator {
 
         if (metadata.getMethods() != null) {
             metadata.getMethods().forEach(
-                    function -> generateFuncFor(javaClass, function));
+                    function -> generateMethodFor(javaClass, function));
         }
 
         if (metadata.getEvents() != null) {
@@ -777,7 +777,7 @@ public class ComponentGenerator {
                 "this instance, for method chaining");
     }
 
-    private void generateFuncFor(JavaClassSource javaClass,
+    private void generateMethodFor(JavaClassSource javaClass,
             ComponentFunctionData function) {
         List<List<ComponentType>> typeVariants = FunctionParameterVariantCombinator
                 .generateVariants(function);
@@ -793,10 +793,11 @@ public class ComponentGenerator {
                 addJavaDoc(function.getDescription(), method.getJavaDoc());
             }
 
-            String parameterString = generateFunctionParameters(javaClass,
+            String parameterString = generateMethodParameters(javaClass,
                     method,
                     function, typeVariant, nestedClassesMap);
 
+            // methods with return values are currently not supported
             if (function.getReturns() != null
                     && function.getReturns() != ComponentBasicType.UNDEFINED) {
                 method.setProtected();
@@ -831,7 +832,7 @@ public class ComponentGenerator {
      * @return a string of the parameters of the function, or an empty string if
      *         no parameters
      */
-    private String generateFunctionParameters(JavaClassSource javaClass,
+    private String generateMethodParameters(JavaClassSource javaClass,
             MethodSource<JavaClassSource> method,
             ComponentFunctionData function, List<ComponentType> typeVariant,
             Map<ComponentObjectType, JavaClassSource> nestedClassesMap) {
