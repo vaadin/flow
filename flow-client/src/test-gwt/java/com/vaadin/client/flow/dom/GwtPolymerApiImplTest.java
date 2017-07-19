@@ -47,7 +47,7 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
     public void testPolymer2() {
         initTest();
 
-        setPolymerVersion("2.0.0");
+        setPolymerVersion("2.0.2");
 
         verifyPolymerMicro(false);
     }

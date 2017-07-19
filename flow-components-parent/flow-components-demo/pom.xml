@@ -10,16 +10,6 @@
     <artifactId>flow-components-demo</artifactId>
     <name>Flow generated components demo</name>
 
-    <properties>
-        <frontend.working.directory>src/main/frontend</frontend.working.directory>
-        <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
-        
-        <jetty.version>9.3.7.v20160115</jetty.version>
-        <node.version>v7.10.0</node.version>
-        <npm.version>4.6.1</npm.version>
-        <yarn.version>v0.24.5</yarn.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -34,7 +24,7 @@
             <artifactId>flow-generated-components</artifactId>
             <version>${flow.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
@@ -214,7 +204,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>${maven.war.plugin.version}</version>
                         <configuration>
                             <webResources>
                                 <resource>
@@ -269,7 +259,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>${maven.war.plugin.version}</version>
                         <configuration>
                             <webResources>
                                 <resource>
@@ -284,7 +274,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>local-run</id>
             <activation>
@@ -316,6 +306,6 @@
                 </plugins>
             </build>
         </profile>
-        
+
     </profiles>
 </project>
