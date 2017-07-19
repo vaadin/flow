@@ -30,8 +30,8 @@ You specify the tag name of the element using the `@Tag` annotation, just like y
 [NOTE]
 If you are using some skeleton project or a demo such as `flow-hello-world` as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
 
-The imported file `paper-slider.html` contains a client side code which needs to be available as a web resource. So it should be 
-fetched and saved in some directory which is served by your server. 
+The imported file `paper-slider.html` contains a client side code which needs to be available as a web resource. So it should be
+fetched and saved in some directory which is served by your server.
 If you use maven then just add  the following snippet in your `pom.xml` file inside your `plugins` section:
 
 [source,xml]
@@ -60,7 +60,7 @@ If you use maven then just add  the following snippet in your `pom.xml` file ins
     </plugin>
 ----
 
-This plugin will install for you tools for webcomponents management (`npm` and `bower`) assuming you are using 
+This plugin will install for you tools for webcomponents management (`npm` and `bower`) assuming you are using
 `src/main/frontend` directory as a web resource folder in your project. This directory should have files `bower.json` and
 `package.json`.
 
@@ -84,8 +84,8 @@ The `bower.json` content is:
     "tests"
   ],
   "dependencies": {
-    "polymer": "2.0.0",
-    "paper-slider": "2.0.0"
+    "polymer": "~2.0.2",
+    "paper-slider": "~2.0.0"
   }
 }
 ----
@@ -99,9 +99,8 @@ The `package.json` content is:
   "version": "1.0.0",
   "main": "",
   "dependencies": {
-    "bower": "^1.8.0"
+    "bower": "~1.8.0"
   },
-  "devDependencies": {},
   "scripts": {
   },
   "author": "",
@@ -110,7 +109,7 @@ The `package.json` content is:
 ----
 
 [NOTE]
-You should take care explicitly about availability of your `src/main/frontend` folder 
+You should take care explicitly about availability of your `src/main/frontend` folder
 as a _Web resource_ served by your Web server.  It means that some additional configuration
 might be required. E.g. jetty requires this kind of configuration:
 
