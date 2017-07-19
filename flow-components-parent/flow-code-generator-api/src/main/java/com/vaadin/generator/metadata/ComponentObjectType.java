@@ -28,65 +28,97 @@ import java.util.List;
  * @see ComponentPropertyBaseData
  * @see ComponentFunctionParameterData
  */
-public class ComponentObjectType {
-
-    private String name;
-    private List<ComponentBasicType> type = new ArrayList<>();
-    private boolean optional;
+public class ComponentObjectType implements ComponentType {
 
     /**
-     * Gets the name of the property.
-     *
-     * @return the name The name of the property.
+     * Class for holding the list of actual types in a ComponentObjectType.
      */
-    public String getName() {
-        return name;
+    public static class ComponentObjectTypeInnerType {
+
+        private String name;
+        private List<ComponentBasicType> type = new ArrayList<>();
+        private boolean optional;
+
+        /**
+         * Gets the name of the property.
+         *
+         * @return the name The name of the property.
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Sets the name of the property.
+         *
+         * @param name
+         *            The name of the property.
+         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        /**
+         * Gets the type of the property.
+         *
+         * @return the type The type of the property.
+         */
+        public List<ComponentBasicType> getType() {
+            return type;
+        }
+
+        /**
+         * Sets the type of the property.
+         *
+         * @param type
+         *            The type of the property.
+         */
+        public void setType(List<ComponentBasicType> type) {
+            this.type = type;
+        }
+
+        /**
+         * Returns whether the this property is optional or not.
+         *
+         * @return {@code true} if optional and doesn't have to be defined,
+         *         {@code false} if this property should be defined always
+         */
+        public boolean isOptional() {
+            return optional;
+        }
+
+        /**
+         * Set this property as optional or not.
+         *
+         * @param optional
+         */
+        public void setOptional(boolean optional) {
+            this.optional = optional;
+        }
+    }
+
+    private List<ComponentObjectTypeInnerType> innerTypes = new ArrayList<>();
+
+    /**
+     * Get the list of actual types contained in this ComponentObjectType.
+     * 
+     * @see ComponentObjectTypeInnerType
+     * 
+     * @return the list of inner types within this ComponentObjectType
+     */
+    public List<ComponentObjectTypeInnerType> getInnerTypes() {
+        return innerTypes;
     }
 
     /**
-     * Sets the name of the property.
-     *
-     * @param name The name of the property.
+     * Sets the list of actual types contained in this ComponentObjectType.
+     * 
+     * @see ComponentObjectTypeInnerType
+     * 
+     * @param innerTypes
+     *            the list of inner types to set
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setInnerTypes(List<ComponentObjectTypeInnerType> innerTypes) {
+        this.innerTypes = innerTypes;
     }
-
-    /**
-     * Gets the type of the property.
-     *
-     * @return the type The type of the property.
-     */
-    public List<ComponentBasicType> getType() {
-        return type;
-    }
-
-    /**
-     * Sets the type of the property.
-     *
-     * @param type The type of the property.
-     */
-    public void setType(List<ComponentBasicType> type) {
-        this.type = type;
-    }
-
-    /**
-     * Returns whether the this property is optional or not.
-     *
-     * @return {@code true} if optional and doesn't have to be defined,
-     * {@code false} if this property should be defined always
-     */
-    public boolean isOptional() {
-        return optional;
-    }
-
-    /**
-     * Set this property as optional or not.
-     *
-     * @param optional
-     */
-    public void setOptional(boolean optional) {
-        this.optional = optional;
-    }
-
 }

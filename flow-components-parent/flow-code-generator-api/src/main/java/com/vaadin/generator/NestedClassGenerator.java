@@ -26,6 +26,7 @@ import com.vaadin.components.NotSupported;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 
 import elemental.json.JsonObject;
 
@@ -37,19 +38,20 @@ import elemental.json.JsonObject;
  */
 public class NestedClassGenerator {
 
-    private List<ComponentObjectType> type;
+    private ComponentObjectType type;
     private String nameHint;
     private boolean fluentSetters = true;
 
     /**
-     * Sets the {@link ComponentObjectType}s this generator will use to create
+     * Sets the {@link ComponentObjectType} this generator will use to create
      * the getters and setters for the properties.
      * 
      * @param type
-     *            The list containing the object definition.
+     *            The ComponentObjectType instance containing the object
+     *            definition.
      * @return this instance for method chaining.
      */
-    public NestedClassGenerator withType(List<ComponentObjectType> type) {
+    public NestedClassGenerator withType(ComponentObjectType type) {
         this.type = type;
         return this;
     }
@@ -98,7 +100,7 @@ public class NestedClassGenerator {
         javaClass.addField().setType(JsonObject.class).setPrivate()
                 .setName("internalObject");
 
-        for (ComponentObjectType object : type) {
+        for (ComponentObjectTypeInnerType object : type.getInnerTypes()) {
             ComponentBasicType simpleType = getSimpleBasicType(
                     object.getType());
 
@@ -113,7 +115,8 @@ public class NestedClassGenerator {
     }
 
     private void generateGetter(JavaClassSource javaClass,
-            ComponentObjectType object, ComponentBasicType simpleType) {
+            ComponentObjectTypeInnerType object,
+            ComponentBasicType simpleType) {
 
         MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
                 .setReturnType(ComponentGeneratorUtils.toJavaType(simpleType))
@@ -154,7 +157,8 @@ public class NestedClassGenerator {
     }
 
     private void generateSetter(JavaClassSource javaClass,
-            ComponentObjectType object, ComponentBasicType simpleType) {
+            ComponentObjectTypeInnerType object,
+            ComponentBasicType simpleType) {
 
         Class<?> javaType = ComponentGeneratorUtils.toJavaType(simpleType);
         MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()

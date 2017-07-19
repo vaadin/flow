@@ -75,7 +75,8 @@ public class GeneratedPaperInputError extends Component
 	 * 
 	 * @see UpdateState
 	 * @param state
-	 *            the UpdateState object to pass as an argument
+	 *            inputElement: The input element. value: The input value.
+	 *            invalid: True if the input value is invalid.
 	 */
 	public void update(UpdateState state) {
 		getElement().callFunction("update", state.toJson());

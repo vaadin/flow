@@ -16,13 +16,18 @@
 package com.vaadin.generator.metadata;
 
 /**
- * Enum with all the supported types that are read from the webcomponent and
- * translated to Java types.
- *
- * @see ComponentMetadata
+ * Marker interface for component types.
+ * 
+ * @author Vaadin Ltd
  */
-public enum ComponentBasicType implements ComponentType {
+public interface ComponentType {
 
-    BOOLEAN, DATE, NUMBER, STRING, ARRAY, OBJECT, UNDEFINED;
-
+    /**
+     * Check whether this instance represents a basic type.
+     * 
+     * @return whether this type represents a basic type
+     */
+    default boolean isBasicType() {
+        return this instanceof ComponentBasicType;
+    }
 }

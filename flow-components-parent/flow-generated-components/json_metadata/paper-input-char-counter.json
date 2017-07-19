@@ -14,23 +14,27 @@
           "type": [],
           "objectType": [
             {
-              "name": "inputElement",
-              "type": [
-                "OBJECT"
-              ],
-              "optional": true
-            },
-            {
-              "name": "value",
-              "type": [
-                "STRING"
-              ],
-              "optional": true
-            },
-            {
-              "name": "invalid",
-              "type": [
-                "BOOLEAN"
+              "innerTypes": [
+                {
+                  "name": "inputElement",
+                  "type": [
+                    "OBJECT"
+                  ],
+                  "optional": true
+                },
+                {
+                  "name": "value",
+                  "type": [
+                    "STRING"
+                  ],
+                  "optional": true
+                },
+                {
+                  "name": "invalid",
+                  "type": [
+                    "BOOLEAN"
+                  ]
+                }
               ]
             }
           ],

@@ -15,9 +15,7 @@
  */
 package com.vaadin.generator;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.junit.Assert;
@@ -27,6 +25,7 @@ import org.junit.Test;
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentObjectType;
+import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -38,12 +37,12 @@ import elemental.json.JsonValue;
 public class NestedClassGeneratorTest {
 
     private NestedClassGenerator generator;
-    private List<ComponentObjectType> type;
+    private ComponentObjectType type;
 
     @Before
     public void init() {
         generator = new NestedClassGenerator();
-        type = new ArrayList<>();
+        type = new ComponentObjectType();
     }
 
     @Test
@@ -56,17 +55,17 @@ public class NestedClassGeneratorTest {
 
     @Test
     public void simpleObjectTypesClassDefinition_classHasGettersAndSetters() {
-        type.add(createComponentObjectType("booleanProperty",
+        type.getInnerTypes().add(createComponentObjectType("booleanProperty",
                 ComponentBasicType.BOOLEAN));
-        type.add(createComponentObjectType("stringProperty",
+        type.getInnerTypes().add(createComponentObjectType("stringProperty",
                 ComponentBasicType.STRING));
-        type.add(createComponentObjectType("numberProperty",
+        type.getInnerTypes().add(createComponentObjectType("numberProperty",
                 ComponentBasicType.NUMBER));
-        type.add(createComponentObjectType("objectProperty",
+        type.getInnerTypes().add(createComponentObjectType("objectProperty",
                 ComponentBasicType.OBJECT));
-        type.add(createComponentObjectType("arrayProperty",
+        type.getInnerTypes().add(createComponentObjectType("arrayProperty",
                 ComponentBasicType.ARRAY));
-        type.add(createComponentObjectType("undefinedProperty",
+        type.getInnerTypes().add(createComponentObjectType("undefinedProperty",
                 ComponentBasicType.UNDEFINED));
 
         JavaClassSource javaClass = generator.withNameHint("test")
@@ -90,13 +89,16 @@ public class NestedClassGeneratorTest {
 
     @Test
     public void multipleObjectTypesClassDefinition_classHasGenericGetterAndSetter() {
-        type.add(createComponentObjectType("multipleSimpleProperty",
+        type.getInnerTypes()
+                .add(createComponentObjectType("multipleSimpleProperty",
                 ComponentBasicType.BOOLEAN, ComponentBasicType.STRING,
                 ComponentBasicType.NUMBER));
-        type.add(createComponentObjectType("multipleObjectProperty",
+        type.getInnerTypes()
+                .add(createComponentObjectType("multipleObjectProperty",
                 ComponentBasicType.STRING, ComponentBasicType.OBJECT,
                 ComponentBasicType.BOOLEAN));
-        type.add(createComponentObjectType("multipleRepeatedProperty",
+        type.getInnerTypes()
+                .add(createComponentObjectType("multipleRepeatedProperty",
                 ComponentBasicType.NUMBER, ComponentBasicType.NUMBER));
 
         JavaClassSource javaClass = generator.withNameHint("test")
@@ -143,12 +145,11 @@ public class NestedClassGeneratorTest {
                 javaClass.hasMethodSignature(setterName, setterType));
     }
 
-    private ComponentObjectType createComponentObjectType(String name,
+    private ComponentObjectTypeInnerType createComponentObjectType(String name,
             ComponentBasicType... basicTypes) {
-        ComponentObjectType objectType = new ComponentObjectType();
+        ComponentObjectTypeInnerType objectType = new ComponentObjectTypeInnerType();
         objectType.setType(Arrays.asList(basicTypes));
         objectType.setName(name);
         return objectType;
     }
-
 }
