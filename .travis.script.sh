@@ -88,9 +88,9 @@ then
         org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
     # Get the status for the previous maven command and if not exception then run sonar.
     STATUS=$?
-    if [ "$SKIP_SONAR" != "true" ]
+    if [ $STATUS -eq 0 ]
     then
-        if [ $STATUS -eq 0 ]
+        if [ "$SKIP_SONAR" != "true" ]
         then
             # Run sonar
             echo "Running Sonar"
@@ -106,11 +106,11 @@ then
                 -DskipTests \
                 compile sonar:sonar
         else
-            echo "Build failed, skipping sonar."
-            exit 1
+            echo "Skipping sonar."
         fi
     else
-        echo "Skipping sonar."
+        echo "Build failed, skipping sonar."
+        exit 1
     fi
 elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
 then
@@ -126,10 +126,10 @@ then
 
     # Get the status for the previous maven command and if not exception then run sonar.
     STATUS=$?
-    if [ "$SKIP_SONAR" != "true" ]
-    then    
-        if [ $STATUS -eq 0 ]
-        then
+    if [ $STATUS -eq 0 ]
+    then
+        if [ "$SKIP_SONAR" != "true" ]
+        then    
             # Sonar should be run after the project is built so that findbugs can analyze compiled sources
             echo "Running Sonar"
             mvn -B -e -V \
@@ -143,11 +143,11 @@ then
                 -DskipTests \
                 compile sonar:sonar
         else
-            echo "Build failed, skipping sonar."
-            exit 1
+            echo "Skipping sonar."
         fi
     else
-        echo "Skipping sonar."
+        echo "Build failed, skipping sonar."
+        exit 1
     fi
 else
     # Something else than a "safe" pull request
