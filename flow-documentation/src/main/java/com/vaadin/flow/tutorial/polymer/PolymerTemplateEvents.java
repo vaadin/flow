@@ -29,6 +29,8 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("tutorial-template-event-handlers.asciidoc")
 public class PolymerTemplateEvents {
+
+    // @formatter:off
     @Tag("event-handler")
     @HtmlImport("/com/example/EventHandler.html")
     public class EventHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
@@ -39,6 +41,7 @@ public class PolymerTemplateEvents {
         }
     }
 
+
     @Tag("event-handler")
     @HtmlImport("/com/example/EventHandler.html")
     public class EventDataHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
@@ -48,13 +51,13 @@ public class PolymerTemplateEvents {
                 @EventData("event.srcElement.tagName") String tag,
                 @EventData("event.offsetX") int offsetX,
                 @EventData("event.offsetY") int offsetY) {
-            //@formatter:off
             System.out.println("Event alt pressed: " + altPressed);
             System.out.println("Event tag: " + tag.toLowerCase(Locale.ENGLISH));
             System.out.println("Click position on element: [" + offsetX + ", "+ offsetY +"]");
-            //@formatter:on
+
         }
     }
+  //@formatter:on
 
     public static class Message {
         private String text;
@@ -88,5 +91,27 @@ public class PolymerTemplateEvents {
         private void handleClick(@ModelItem Message message) {
             System.out.println("Received a message: " + message.getText());
         }
+    }
+
+    public static class UserInfo {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    public interface Model extends TemplateModel {
+        void setUserInfo(UserInfo userInfo);
+    }
+
+    @EventHandler
+    private void onClick(
+            @ModelItem("event.detail.userInfo") UserInfo userInfo) {
+        System.err.println("contact : name = " + userInfo.getName());
     }
 }

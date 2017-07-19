@@ -934,11 +934,23 @@ public class GeneratedPaperTabs extends Component
 	 * 
 	 * @param value
 	 *            the value to select.
+	 */
+	public void select(java.lang.String value) {
+		getElement().callFunction("select", value);
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Selects the given value. If the {@code multi} property is true, then the
+	 * selected state of the {@code value} will be toggled; otherwise the
+	 * {@code value} will be selected.
+	 * 
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(java.lang.String valueString, double valueNumber) {
-		getElement().callFunction("select", valueString, valueNumber);
+	public void select(double value) {
+		getElement().callFunction("select", value);
 	}
 
 	/**
