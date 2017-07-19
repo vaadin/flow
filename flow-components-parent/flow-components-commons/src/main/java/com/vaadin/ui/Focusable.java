@@ -30,9 +30,27 @@ public interface Focusable<T extends Component> extends HasElement,
     /**
      * Sets the <code>tabindex</code> attribute in the component. The tabIndex
      * indicates if its element can be focused, and if/where it participates in
-     * sequential keyboard navigation.
+     * sequential keyboard navigation:
+     * <ul>
+     * <li>A negative value (usually <code>tabindex = -1</code> means that the
+     * component should be focusable, but should not be reachable via sequential
+     * keyboard navigation.</li>
+     * 
+     * <li><code>tabindex = 0</code> means that the component should be
+     * focusable in sequential keyboard navigation, but its order is defined by
+     * the document's source order.</li>
+     * 
+     * <li>A positive value means the component should be focusable in
+     * sequential keyboard navigation, with its order defined by the value of
+     * the number. That is, <code>tabindex = 4</code> would be focused before
+     * <code>tabindex = 5</code>, but after <code>tabindex = 3</code>. If
+     * multiple components share the same positive tabindex value, their order
+     * relative to each other follows their position in the document
+     * source.</li>
+     * </ul>
      * 
      * @param tabIndex
+     *            the tabindex attribute
      * @return this instance, for method chaining
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex">tabindex

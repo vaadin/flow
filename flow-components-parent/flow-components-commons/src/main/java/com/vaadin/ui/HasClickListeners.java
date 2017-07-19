@@ -51,8 +51,7 @@ public interface HasClickListeners<T extends Component>
      *            The source component type.
      */
     @DomEvent("click")
-    public static class ClickEvent<C extends Component>
-            extends ComponentEvent<C> {
+    class ClickEvent<C extends Component> extends ComponentEvent<C> {
 
         /**
          * ComponentEvent base constructor.
