@@ -71,7 +71,7 @@ then
   modules="$modules -pl flow-server-production-mode"
 fi
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
+if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$SKIP_SONAR" != "true" ] 
 then
     # Pull request for master with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available
 
@@ -107,7 +107,7 @@ then
         echo "Build failed, skipping sonar."
         exit 1
     fi
-elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
+elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ] && [ "$SKIP_SONAR" != "true" ]
 then
     # master build
     mvn -B -e -V \
