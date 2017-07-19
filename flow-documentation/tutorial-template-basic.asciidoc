@@ -138,7 +138,7 @@ public interface HelloWorldModel extends TemplateModel {
 
 ====== Imports
 
-In order for a component to be processed correctly, we need tovbind a Java class with the template, created earlier, by specifying `@HtmlImport` with path to a template
+In order for a component to be processed correctly, we need to bind a Java class with the template, created earlier, by specifying `@HtmlImport` with path to a template
 
 [NOTE] Java class name and template file name doesn't have to match each other, this is just a resource file which you can put to any location.
 But you have to be sure that it's accessible via the web.
