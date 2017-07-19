@@ -180,7 +180,7 @@ Please note that `@ModelItem` is just a convenience way of model data access. Th
 receive in your event handler callback is the *model data* from the server side which you may access directly via your model instance.
 It means that the server doesn't update the model item anyhow from the client. So if you create a custom event on the client side
 with data that you want to send to the server as a model item it will be completely ignored by the server-side and the current model
-data will be used instead. You always should keep your model on the server-side and on the client-side in sync correctly updating it.
+data will be used instead. You always should keep your model in sync on the server and client-sides, by correctly updating it.
 
 So if you have the the following model definition and the event handler method:
 
