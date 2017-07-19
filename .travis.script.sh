@@ -71,7 +71,7 @@ then
   modules="$modules -pl flow-server-production-mode"
 fi
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
+if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] 
 then
     # Pull request for master with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available
 
@@ -90,19 +90,24 @@ then
     STATUS=$?
     if [ $STATUS -eq 0 ]
     then
-        # Run sonar
-        echo "Running Sonar"
-        mvn -B -e -V \
-            -Dsonar.github.repository=$TRAVIS_REPO_SLUG \
-            -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH \
-            -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST \
-            -Dgatling.skip=true \
-            -Dsonar.verbose=true \
-            -Dsonar.analysis.mode=issues \
-            -Dsonar.host.url=$SONAR_HOST \
-            -Dsonar.login=$SONAR_LOGIN \
-            -DskipTests \
-            compile sonar:sonar
+        if [ "$SKIP_SONAR" != "true" ]
+        then
+            # Run sonar
+            echo "Running Sonar"
+            mvn -B -e -V \
+                -Dsonar.github.repository=$TRAVIS_REPO_SLUG \
+                -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH \
+                -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST \
+                -Dgatling.skip=true \
+                -Dsonar.verbose=true \
+                -Dsonar.analysis.mode=issues \
+                -Dsonar.host.url=$SONAR_HOST \
+                -Dsonar.login=$SONAR_LOGIN \
+                -DskipTests \
+                compile sonar:sonar
+        else
+            echo "Skipping sonar."
+        fi
     else
         echo "Build failed, skipping sonar."
         exit 1
@@ -123,18 +128,23 @@ then
     STATUS=$?
     if [ $STATUS -eq 0 ]
     then
-        # Sonar should be run after the project is built so that findbugs can analyze compiled sources
-        echo "Running Sonar"
-        mvn -B -e -V \
-            -Dmaven.javadoc.skip=false \
-            -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
-            -Dgatling.skip=true \
-            -Dsonar.verbose=true \
-            -Dsonar.analysis.mode=publish \
-            -Dsonar.host.url=$SONAR_HOST \
-            -Dsonar.login=$SONAR_LOGIN \
-            -DskipTests \
-            compile sonar:sonar
+        if [ "$SKIP_SONAR" != "true" ]
+        then    
+            # Sonar should be run after the project is built so that findbugs can analyze compiled sources
+            echo "Running Sonar"
+            mvn -B -e -V \
+                -Dmaven.javadoc.skip=false \
+                -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
+                -Dgatling.skip=true \
+                -Dsonar.verbose=true \
+                -Dsonar.analysis.mode=publish \
+                -Dsonar.host.url=$SONAR_HOST \
+                -Dsonar.login=$SONAR_LOGIN \
+                -DskipTests \
+                compile sonar:sonar
+        else
+            echo "Skipping sonar."
+        fi
     else
         echo "Build failed, skipping sonar."
         exit 1
