@@ -117,7 +117,7 @@ public interface HasValue<C extends Component, V>
          * @param event
          *            the received event, not null
          */
-        public void onComponentEvent(ValueChangeEvent<C, V> event);
+        void onComponentEvent(ValueChangeEvent<C, V> event);
     }
 
     /**
@@ -133,7 +133,7 @@ public interface HasValue<C extends Component, V>
      * @throws IllegalArgumentException
      *             if the value is invalid
      */
-    public C setValue(V value);
+    C setValue(V value);
 
     /**
      * Returns the current value of this object.
@@ -143,7 +143,7 @@ public interface HasValue<C extends Component, V>
      *
      * @return the current value
      */
-    public V getValue();
+    V getValue();
 
     /**
      * Adds a value change listener. The listener is called when the value of
@@ -153,7 +153,7 @@ public interface HasValue<C extends Component, V>
      *            the value change listener, not null
      * @return a registration for the listener
      */
-    public Registration addValueChangeListener(
+    Registration addValueChangeListener(
             ValueChangeListener<C, V> listener);
 
     /**
@@ -164,7 +164,7 @@ public interface HasValue<C extends Component, V>
      *
      * @return empty value
      */
-    public default V getEmptyValue() {
+    default V getEmptyValue() {
         return null;
     }
 
@@ -176,7 +176,7 @@ public interface HasValue<C extends Component, V>
      *
      * @return the current value, wrapped in an {@code Optional}
      */
-    public default Optional<V> getOptionalValue() {
+    default Optional<V> getOptionalValue() {
         return isEmpty() ? Optional.empty() : Optional.ofNullable(getValue());
     }
 
@@ -188,7 +188,7 @@ public interface HasValue<C extends Component, V>
      *
      * @return {@code true} if considered empty; {@code false} if not
      */
-    public default boolean isEmpty() {
+    default boolean isEmpty() {
         return Objects.equals(getValue(), getEmptyValue());
     }
 
@@ -201,7 +201,7 @@ public interface HasValue<C extends Component, V>
      * @see #setValue(Object)
      * @see #getEmptyValue()
      */
-    public default void clear() {
+    default void clear() {
         setValue(getEmptyValue());
     }
 }
