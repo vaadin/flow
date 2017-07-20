@@ -1,0 +1,81 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.ui;
+
+import com.vaadin.components.data.HasValue;
+import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
+import com.vaadin.shared.Registration;
+
+/**
+ * Server-side component for the {@code vaadin-text-field} element.
+ * 
+ * @author Vaadin Ltd
+ */
+public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField>
+        implements HasValue<VaadinTextField, String> {
+
+    /**
+     * Constructs an empty {@code VaadinTextField}.
+     */
+    public VaadinTextField() {
+        getElement().synchronizeProperty("hasValue", "value-changed");
+        clear();
+    }
+
+    /**
+     * Constructs an empty {@code VaadinTextField} with the given label.
+     * 
+     * @param labelText
+     *            the text to set as the label
+     */
+    public VaadinTextField(String labelText) {
+        this();
+        setLabel(labelText);
+    }
+
+    /**
+     * Constructs an empty {@code VaadinTextField} with the given label and
+     * placeholder text.
+     * 
+     * @param labelText
+     *            the text to set as the label
+     * @param placeholder
+     *            the placeholder text to set
+     */
+    public VaadinTextField(String labelText, String placeholder) {
+        this(labelText);
+        setPlaceholder(placeholder);
+    }
+
+    @Override
+    public Registration addValueChangeListener(
+            ValueChangeListener<VaadinTextField, String> listener) {
+        return getElement().addPropertyChangeListener("value",
+                event -> listener.onComponentEvent(new ValueChangeEvent<>(this,
+                        this, (String) event.getOldValue(),
+                        event.isUserOriginated())));
+    }
+
+    @Override
+    public String getEmptyValue() {
+        return "";
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return isHasValue();
+    }
+}
