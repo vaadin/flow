@@ -16,11 +16,11 @@
 package com.vaadin.generated.vaadin.combo.box;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBoxSharedStyles;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
@@ -28,17 +28,7 @@ import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBoxSharedStyles
 		"Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-combo-box-shared-styles")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-shared-styles.html")
-public class GeneratedVaadinComboBoxSharedStyles extends Component
-		implements
-			HasStyle {
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedVaadinComboBoxSharedStyles> R getSelf() {
-		return (R) this;
-	}
+public class GeneratedVaadinComboBoxSharedStyles<R extends GeneratedVaadinComboBoxSharedStyles<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 }

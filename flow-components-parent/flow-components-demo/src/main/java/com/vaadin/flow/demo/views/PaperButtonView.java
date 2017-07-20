@@ -43,10 +43,9 @@ public class PaperButtonView extends DemoView {
     private GeneratedPaperButton createButton(String text) {
         GeneratedPaperButton button = new GeneratedPaperButton(text);
         button.getStyle().set("backgroundColor", "white");
-        button.addClickListener(evt -> {
-            message.setText("Button " + evt.getSource().getText().toUpperCase()
-                    + " was clicked.");
-        });
+        button.addClickListener(evt -> message.setText(
+                "Button " + evt.getSource().getElement().getText().toUpperCase()
+                        + " was clicked."));
         return button;
     }
 

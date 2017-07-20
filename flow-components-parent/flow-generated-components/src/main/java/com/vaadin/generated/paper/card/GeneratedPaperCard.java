@@ -16,11 +16,11 @@
 package com.vaadin.generated.paper.card;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.paper.card.GeneratedPaperCard;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -71,10 +71,9 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-card#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
-public class GeneratedPaperCard extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -97,9 +96,9 @@ public class GeneratedPaperCard extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setHeading(java.lang.String heading) {
+	public R setHeading(java.lang.String heading) {
 		getElement().setProperty("heading", heading == null ? "" : heading);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -123,9 +122,9 @@ public class GeneratedPaperCard extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setImage(java.lang.String image) {
+	public R setImage(java.lang.String image) {
 		getElement().setProperty("image", image == null ? "" : image);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -149,9 +148,9 @@ public class GeneratedPaperCard extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setAlt(java.lang.String alt) {
+	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -177,9 +176,9 @@ public class GeneratedPaperCard extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setPreloadImage(boolean preloadImage) {
+	public R setPreloadImage(boolean preloadImage) {
 		getElement().setProperty("preloadImage", preloadImage);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -205,9 +204,9 @@ public class GeneratedPaperCard extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setFadeImage(boolean fadeImage) {
+	public R setFadeImage(boolean fadeImage) {
 		getElement().setProperty("fadeImage", fadeImage);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -235,11 +234,10 @@ public class GeneratedPaperCard extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setPlaceholderImage(
-			java.lang.String placeholderImage) {
+	public R setPlaceholderImage(java.lang.String placeholderImage) {
 		getElement().setProperty("placeholderImage",
 				placeholderImage == null ? "" : placeholderImage);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -263,9 +261,9 @@ public class GeneratedPaperCard extends Component
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setElevation(double elevation) {
+	public R setElevation(double elevation) {
 		getElement().setProperty("elevation", elevation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -291,10 +289,9 @@ public class GeneratedPaperCard extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperCard> R setAnimatedShadow(
-			boolean animatedShadow) {
+	public R setAnimatedShadow(boolean animatedShadow) {
 		getElement().setProperty("animatedShadow", animatedShadow);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -308,16 +305,6 @@ public class GeneratedPaperCard extends Component
 	 */
 	public boolean isAnimated() {
 		return getElement().getProperty("animated", false);
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperCard> R getSelf() {
-		return (R) this;
 	}
 
 	/**

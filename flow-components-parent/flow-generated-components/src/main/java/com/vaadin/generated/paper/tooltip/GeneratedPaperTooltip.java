@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.tooltip;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.paper.tooltip.GeneratedPaperTooltip;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -70,10 +70,9 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: paper-tooltip#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-tooltip")
 @HtmlImport("frontend://bower_components/paper-tooltip/paper-tooltip.html")
-public class GeneratedPaperTooltip extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -100,10 +99,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setAnimationConfig(
-			elemental.json.JsonObject animationConfig) {
+	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -131,11 +129,10 @@ public class GeneratedPaperTooltip extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setEntryAnimation(
-			java.lang.String entryAnimation) {
+	public R setEntryAnimation(java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
 				entryAnimation == null ? "" : entryAnimation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -163,11 +160,10 @@ public class GeneratedPaperTooltip extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setExitAnimation(
-			java.lang.String exitAnimation) {
+	public R setExitAnimation(java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
 				exitAnimation == null ? "" : exitAnimation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -193,9 +189,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setFor(java.lang.String _for) {
+	public R setFor(java.lang.String _for) {
 		getElement().setProperty("for", _for == null ? "" : _for);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -221,9 +217,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setManualMode(boolean manualMode) {
+	public R setManualMode(boolean manualMode) {
 		getElement().setProperty("manualMode", manualMode);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -247,10 +243,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setPosition(
-			java.lang.String position) {
+	public R setPosition(java.lang.String position) {
 		getElement().setProperty("position", position == null ? "" : position);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -274,10 +269,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setFitToVisibleBounds(
-			boolean fitToVisibleBounds) {
+	public R setFitToVisibleBounds(boolean fitToVisibleBounds) {
 		getElement().setProperty("fitToVisibleBounds", fitToVisibleBounds);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -303,9 +297,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setOffset(double offset) {
+	public R setOffset(double offset) {
 		getElement().setProperty("offset", offset);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -333,9 +327,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setMarginTop(double marginTop) {
+	public R setMarginTop(double marginTop) {
 		getElement().setProperty("marginTop", marginTop);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -361,10 +355,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setAnimationDelay(
-			double animationDelay) {
+	public R setAnimationDelay(double animationDelay) {
 		getElement().setProperty("animationDelay", animationDelay);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -392,10 +385,9 @@ public class GeneratedPaperTooltip extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTooltip> R setTarget(
-			elemental.json.JsonObject target) {
+	public R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -448,16 +440,6 @@ public class GeneratedPaperTooltip extends Component
 
 	public void updatePosition() {
 		getElement().callFunction("updatePosition");
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperTooltip> R getSelf() {
-		return (R) this;
 	}
 
 	/**

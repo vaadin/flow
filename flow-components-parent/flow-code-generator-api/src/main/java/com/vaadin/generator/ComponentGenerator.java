@@ -60,6 +60,7 @@ import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasText;
@@ -301,6 +302,9 @@ public class ComponentGenerator {
                         (classNamePrefix == null ? "" : classNamePrefix + "-")
                                 + metadata.getTag()));
 
+        javaClass.addTypeVariable().setName(GENERIC_TYPE)
+                .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
+
         addInterfaces(metadata, javaClass);
         addClassAnnotations(metadata, javaClass);
 
@@ -324,10 +328,6 @@ public class ComponentGenerator {
 
         if (StringUtils.isNotEmpty(metadata.getDescription())) {
             addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
-        }
-
-        if (fluentSetters) {
-            generateGetSelf(javaClass);
         }
 
         generateConstructors(javaClass);
@@ -371,6 +371,9 @@ public class ComponentGenerator {
     private void addInterfaces(ComponentMetadata metadata,
             JavaClassSource javaClass) {
 
+        javaClass.addInterface(
+                ComponentSupplier.class.getName() + "<" + GENERIC_TYPE + ">");
+
         // all components have styles
         javaClass.addInterface(HasStyle.class);
 
@@ -381,12 +384,16 @@ public class ComponentGenerator {
             classBehaviorsAndMixins.addAll(metadata.getBehaviors());
         }
 
+        if (metadata.getMixins() != null) {
+            classBehaviorsAndMixins.addAll(metadata.getMixins());
+        }
+
         Set<Class<?>> interfaces = BehaviorRegistry
                 .getClassesForBehaviors(classBehaviorsAndMixins);
         interfaces.forEach(clazz -> {
             if (clazz.getTypeParameters().length > 0) {
                 javaClass.addInterface(
-                        clazz.getName() + "<" + javaClass.getName() + ">");
+                        clazz.getName() + "<" + GENERIC_TYPE + ">");
             } else {
                 javaClass.addInterface(clazz);
             }
@@ -488,18 +495,6 @@ public class ComponentGenerator {
                             + "text content as well as child elements that have been added directly to "
                             + "this component using the {@link Element} API."));
         }
-    }
-
-    private void generateGetSelf(JavaClassSource javaClass) {
-        MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("getSelf").setProtected().setReturnType(GENERIC_TYPE);
-        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
-
-        method.getJavaDoc().setText(
-                "Gets the narrow typed reference to this object. Subclasses should override this method to support method chaining using the inherited type.")
-                .addTagValue("@return", "This object casted to its type.");
-
-        method.setBody("return (" + GENERIC_TYPE + ") this;");
     }
 
     /*
@@ -730,7 +725,7 @@ public class ComponentGenerator {
                     "property the property to set");
 
             if (fluentSetters) {
-                addFluentReturnToSetter(javaClass, method);
+                addFluentReturnToSetter(method);
             }
 
         } else {
@@ -762,17 +757,15 @@ public class ComponentGenerator {
                                 setterType.getSimpleName()));
 
                 if (fluentSetters) {
-                    addFluentReturnToSetter(javaClass, method);
+                    addFluentReturnToSetter(method);
                 }
             }
         }
     }
 
-    private void addFluentReturnToSetter(JavaClassSource javaClass,
-            MethodSource<JavaClassSource> method) {
-        method.addTypeVariable(GENERIC_TYPE).setBounds(javaClass);
+    private void addFluentReturnToSetter(MethodSource<JavaClassSource> method) {
         method.setReturnType(GENERIC_TYPE);
-        method.setBody(method.getBody() + "return getSelf();");
+        method.setBody(method.getBody() + "return get();");
         method.getJavaDoc().addTagValue("@return",
                 "this instance, for method chaining");
     }
@@ -793,8 +786,7 @@ public class ComponentGenerator {
                 addJavaDoc(function.getDescription(), method.getJavaDoc());
             }
 
-            String parameterString = generateMethodParameters(javaClass,
-                    method,
+            String parameterString = generateMethodParameters(javaClass, method,
                     function, typeVariant, nestedClassesMap);
 
             // methods with return values are currently not supported
@@ -843,10 +835,10 @@ public class ComponentGenerator {
                     .getName();
             String paramDescription = function.getParameters().get(paramIndex)
                     .getDescription();
-            String formattedName = StringUtils
-                    .uncapitalize(ComponentGeneratorUtils
-                    .formatStringToValidJavaIdentifier(function.getParameters()
-                            .get(paramIndex).getName()));
+            String formattedName = StringUtils.uncapitalize(
+                    ComponentGeneratorUtils.formatStringToValidJavaIdentifier(
+                            function.getParameters().get(paramIndex)
+                                    .getName()));
             paramIndex++;
 
             if (paramType.isBasicType()) {
@@ -873,8 +865,8 @@ public class ComponentGenerator {
                 method.addParameter(nestedClass, formattedName);
             }
 
-            method.getJavaDoc().addTagValue(JAVADOC_PARAM, String.format(
-                    "%s %s", paramName, paramDescription));
+            method.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                    String.format("%s %s", paramName, paramDescription));
         }
         return sb.toString();
     }
@@ -989,8 +981,7 @@ public class ComponentGenerator {
     }
 
     private JavaClassSource generateNestedPojo(JavaClassSource javaClass,
-            ComponentObjectType type, String nameHint,
-            String description) {
+            ComponentObjectType type, String nameHint, String description) {
         JavaClassSource nestedClass = new NestedClassGenerator().withType(type)
                 .withFluentSetters(fluentSetters).withNameHint(nameHint)
                 .build();

@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.icon.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.paper.icon.button.GeneratedPaperIconButton;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -37,7 +37,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-icon-button#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-icon-button")
 @HtmlImport("frontend://bower_components/paper-icon-button/paper-icon-button.html")
-public class GeneratedPaperIconButton extends Component implements HasStyle {
+public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -62,10 +64,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setKeyEventTarget(
-			elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -91,11 +92,11 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -111,10 +112,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setKeyBindings(
-			elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -152,9 +152,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setToggles(boolean toggles) {
+	public R setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -179,9 +179,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setActive(boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -234,11 +234,10 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setAriaActiveAttribute(
-			java.lang.String ariaActiveAttribute) {
+	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -276,9 +275,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -304,9 +303,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setNoink(boolean noink) {
+	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -332,9 +331,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setSrc(java.lang.String src) {
+	public R setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -362,9 +361,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setIcon(java.lang.String icon) {
+	public R setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -388,9 +387,9 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperIconButton> R setAlt(java.lang.String alt) {
+	public R setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -513,15 +512,5 @@ public class GeneratedPaperIconButton extends Component implements HasStyle {
 	public Registration addDisabledChangedListener(
 			ComponentEventListener<DisabledChangedEvent> listener) {
 		return addListener(DisabledChangedEvent.class, listener);
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperIconButton> R getSelf() {
-		return (R) this;
 	}
 }
