@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.server.startup;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +32,9 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.TemplateParser;
 import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.server.InvalidCustomElementNameException;
+import com.vaadin.server.VaadinService;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
@@ -40,6 +43,8 @@ public class CustomElementRegistryInitializerTest {
 
     private static final TemplateParser TEST_PARSER = (clazz, tag) -> Jsoup
             .parse("<dom-module id='" + tag + "'></dom-module>");
+
+    private CustomElementRegistryInitializer customElementRegistryInitializer;
 
     @Before
     public void setup() {
@@ -52,6 +57,7 @@ public class CustomElementRegistryInitializerTest {
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
         VaadinService.setCurrent(service);
+        customElementRegistryInitializer = new CustomElementRegistryInitializer();
     }
 
     @After
@@ -62,7 +68,6 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void registeringACustomElementWithValidNameIsCollectedToTheRegistry()
             throws ServletException {
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class).collect(Collectors.toSet()),
                 null);
@@ -75,7 +80,6 @@ public class CustomElementRegistryInitializerTest {
     public void registeringCustomElementWithInvalidNameThrowsException()
             throws ServletException {
         // Invalid name should throw an exception due to not being supported
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(Stream
                 .of(InvalidCustomElement.class).collect(Collectors.toSet()),
                 null);
@@ -84,7 +88,6 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void multipleCustomElementsWithSameValidTagNameRegisterCorrectSuperClass()
             throws ServletException {
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class, ValidExtendingElement.class)
                         .collect(Collectors.toSet()),
@@ -100,7 +103,6 @@ public class CustomElementRegistryInitializerTest {
     @Test(expected = ClassCastException.class)
     public void testMultipleCustomElementsWithSameValidTagNameFailsDueToFaultyExtends()
             throws ServletException {
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(Stream
                 .of(ValidCustomElement.class, InvalidExtendingElement.class)
                 .collect(Collectors.toSet()), null);
@@ -109,7 +111,6 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void nonPolymerTemplateElementsAreNotRegistered()
             throws ServletException {
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(NonPolymerElement.class).collect(Collectors.toSet()),
                 null);
@@ -121,7 +122,6 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void creatingElementWithRegisteredCustomTagNameWiresComponentForElement()
             throws ServletException {
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(Stream
                 .of(CustomPolymerElement.class).collect(Collectors.toSet()),
                 null);
@@ -139,7 +139,6 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void creatingElementWithRegisteredCustomTagNameGetsSuperClassComponent()
             throws ServletException {
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class, ValidExtendingElement.class,
                         CustomPolymerElement.class).collect(Collectors.toSet()),
@@ -158,7 +157,6 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void creatingElementsWhenMultipleRegisteredCustomTagNamesInRegistryGetCorrectComponentWired()
             throws ServletException {
-        CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class, ValidExtendingElement.class,
                         CustomPolymerElement.class).collect(Collectors.toSet()),
@@ -169,18 +167,16 @@ public class CustomElementRegistryInitializerTest {
         Assert.assertTrue("CustomElement didn't have a Component",
                 customElement.getComponent().isPresent());
 
-        Assert.assertTrue("CustomElement got unexpected Component",
-                customElement.getComponent().get().getClass()
-                        .equals(ValidCustomElement.class));
+        Assert.assertEquals("CustomElement got unexpected Component",
+                ValidCustomElement.class, customElement.getComponent().get().getClass());
 
         Element polymerElement = new Element("custom-polymer-element");
 
         Assert.assertTrue("PolymerElement didn't have a Component",
                 polymerElement.getComponent().isPresent());
 
-        Assert.assertTrue("PolymerElement got unexpected Component",
-                polymerElement.getComponent().get().getClass()
-                        .equals(CustomPolymerElement.class));
+        Assert.assertEquals("PolymerElement got unexpected Component",
+                CustomPolymerElement.class, polymerElement.getComponent().get().getClass());
     }
 
     @Tag("custom-element")
