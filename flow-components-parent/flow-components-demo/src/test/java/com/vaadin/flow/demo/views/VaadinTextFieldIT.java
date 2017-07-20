@@ -38,17 +38,17 @@ public class VaadinTextFieldIT extends AbstractChromeTest {
                 .findElement(By.id("text-field-with-value-change-listener"));
 
         textField.sendKeys("a");
-        Assert.assertEquals("Text field value changed from '' to 'a'",
+        waitUntilTextsEqual("Text field value changed from '' to 'a'",
                 textFieldValueDiv.getText());
 
         textField.sendKeys(Keys.BACK_SPACE);
-        Assert.assertEquals("Text field value changed from 'a' to ''",
+        waitUntilTextsEqual("Text field value changed from 'a' to ''",
                 textFieldValueDiv.getText());
 
         textField.sendKeys("abcdefg");
         new Actions(getDriver()).keyDown(Keys.ALT).sendKeys(Keys.BACK_SPACE)
                 .build().perform();
-        Assert.assertEquals("Text field value changed from 'abcdefg' to ''",
+        waitUntilTextsEqual("Text field value changed from 'abcdefg' to ''",
                 textFieldValueDiv.getText());
     }
 
@@ -58,5 +58,9 @@ public class VaadinTextFieldIT extends AbstractChromeTest {
                 .findElement(By.id("text-field-with-value-change-listener"));
         Assert.assertEquals(textField.getAttribute("placeholder"),
                 "placeholder text");
+    }
+
+    private void waitUntilTextsEqual(String expected, String actual) {
+        waitUntil(driver -> expected.equals(actual));
     }
 }
