@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
@@ -58,12 +57,6 @@ public class VaadinTextFieldIT extends AbstractChromeTest {
 
         textField.sendKeys(Keys.BACK_SPACE);
         waitUntilTextsEqual("Text field value changed from 'a' to ''",
-                textFieldValueDiv.getText());
-
-        textField.sendKeys("abcdefg");
-        new Actions(getDriver()).keyDown(Keys.ALT).sendKeys(Keys.BACK_SPACE)
-                .build().perform();
-        waitUntilTextsEqual("Text field value changed from 'abcdefg' to ''",
                 textFieldValueDiv.getText());
     }
 
