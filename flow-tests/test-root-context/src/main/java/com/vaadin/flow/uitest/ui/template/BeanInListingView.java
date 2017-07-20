@@ -34,7 +34,11 @@ public class BeanInListingView extends PolymerTemplate<ListModel>
 
         void setUsers(List<User> users);
 
+        List<User> getUsers();
+
         User getActiveUser();
+
+        void setActiveUser(User user);
 
         void setSelected(String name);
 
@@ -68,6 +72,8 @@ public class BeanInListingView extends PolymerTemplate<ListModel>
 
         getElement().addPropertyChangeListener("activeMessage",
                 event -> messageSelected());
+
+        getModel().setActiveUser(getModel().getUsers().get(0));
     }
 
     private User createUser(String name) {
