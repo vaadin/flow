@@ -268,9 +268,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 model = (StateNode) mapProperty.getValue();
             }
         }
-        // Don't send to the server parent of the updated property
         if (mapProperty.getValue() instanceof StateNode) {
-            return;
+            // Don't send to the server updates for list nodes
+            StateNode nodeValue = (StateNode) mapProperty.getValue();
+            JsonObject obj = WidgetUtil.crazyJsCast(valueProvider.get());
+            if (!obj.hasKey("nodeId")
+                    || nodeValue.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+                return;
+            }
         }
 
         mapProperty.syncToServer(valueProvider.get());

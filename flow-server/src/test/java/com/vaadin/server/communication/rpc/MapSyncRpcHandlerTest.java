@@ -35,6 +35,7 @@ import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class MapSyncRpcHandlerTest {
 
@@ -134,7 +135,7 @@ public class MapSyncRpcHandlerTest {
     }
 
     @Test
-    public void syncJSON_jsonIsForNonListStateNode_propertySetToJSON()
+    public void syncJSON_jsonIsPropertyValueOfStateNode_propertySetToNode()
             throws Exception {
         // Let's use element's ElementPropertyMap for testing.
         TestComponent component = new TestComponent();
@@ -158,12 +159,43 @@ public class MapSyncRpcHandlerTest {
         json.put("nodeId", model.getId());
 
         // send sync request
-        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, json);
+        sendSynchronizePropertyEvent(element, ui, "foo", json);
 
-        Serializable testPropertyValue = propertyMap.getProperty(TEST_PROPERTY);
+        Serializable testPropertyValue = propertyMap.getProperty("foo");
 
-        Assert.assertFalse(testPropertyValue instanceof StateNode);
-        Assert.assertTrue(testPropertyValue instanceof JsonObject);
+        Assert.assertTrue(testPropertyValue instanceof StateNode);
+
+        StateNode newNode = (StateNode) testPropertyValue;
+        Assert.assertSame(model, newNode);
+    }
+
+    @Test
+    public void syncJSON_jsonIsNotListItemAndNotPropertyValue_propertySetToJSON()
+            throws Exception {
+        // Let's use element's ElementPropertyMap for testing.
+        TestComponent component = new TestComponent();
+        Element element = component.getElement();
+        UI ui = new UI();
+        ui.add(component);
+
+        StateNode node = element.getNode();
+
+        TestComponent anotherComonent = new TestComponent();
+        StateNode anotherNode = anotherComonent.getElement().getNode();
+
+        // Use the model node id for JSON object which represents a value to
+        // update
+        JsonObject json = Json.createObject();
+        json.put("nodeId", anotherNode.getId());
+
+        // send sync request
+        sendSynchronizePropertyEvent(element, ui, "foo", json);
+
+        Serializable testPropertyValue = node
+                .getFeature(ElementPropertyMap.class).getProperty("foo");
+
+        Assert.assertNotSame(anotherNode, testPropertyValue);
+        Assert.assertTrue(testPropertyValue instanceof JsonValue);
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,
