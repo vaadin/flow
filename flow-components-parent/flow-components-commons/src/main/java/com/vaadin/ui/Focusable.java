@@ -66,9 +66,15 @@ public interface Focusable<T extends Component> extends HasElement,
      * if its element can be focused, and if/where it participates in sequential
      * keyboard navigation.
      * <p>
-     * If there's no such attribute set, returns 0.
+     * If there's no such attribute set, it returns the default setting for the
+     * element, which depends on the element and on the browser. If the
+     * attribute cannot be parsed to <code>int</code>, then an
+     * {@link IllegalStateException} is thrown.
      * 
      * @return the tabindex attribute, or 0 if none
+     * @throws IllegalStateException
+     *             if the returned tabindex from the element is empty or can not
+     *             be parsed to int
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex">tabindex
      *      at MDN</a>
@@ -76,9 +82,17 @@ public interface Focusable<T extends Component> extends HasElement,
     default int getTabIndex() {
         String attribute = getElement().getAttribute("tabindex");
         if (attribute == null || attribute.isEmpty()) {
-            return 0;
+            throw new IllegalStateException(
+                    "tabindex attribute is empty on element "
+                            + getElement().getTag());
         }
-        return Integer.parseInt(attribute);
+        try {
+            return Integer.parseInt(attribute);
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "tabindex attribute could not be parsed on element "
+                            + getElement().getTag() + ": " + attribute);
+        }
     }
 
     /**
