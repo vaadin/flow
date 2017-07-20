@@ -24,6 +24,7 @@ import java.util.List;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.util.ReflectTools;
@@ -153,5 +154,10 @@ public class ListModelType<T> implements ComplexModelType<T> {
     @Override
     public Object modelToNashorn(Serializable modelValue) {
         throw new UnsupportedOperationException("Not yet supported");
+    }
+
+    @Override
+    public void createInitialValue(StateNode node, String property) {
+        node.getFeature(ElementPropertyMap.class).resolveModelList(property);
     }
 }

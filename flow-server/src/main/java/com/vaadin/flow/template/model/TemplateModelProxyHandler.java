@@ -251,6 +251,8 @@ public class TemplateModelProxyHandler implements Serializable {
             ModelProxy modelProxy = (ModelProxy) instance;
             modelProxy.$stateNode(node);
             modelProxy.$modelType(modelType);
+
+            modelType.createInitialValues(node);
             return instance;
         };
     }

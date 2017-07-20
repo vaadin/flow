@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.template.model;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Map;
@@ -22,6 +23,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.StateNode;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
@@ -29,7 +32,7 @@ import elemental.json.JsonValue;
 
 /**
  * Common abstract class with generic functionality for basic mode type.
- * 
+ *
  * @param <T>
  *            the (basic) Java type used by this model type
  * @author Vaadin Ltd
@@ -60,6 +63,15 @@ public abstract class AbstractBasicModelType<T> implements ModelType {
     @Override
     public JsonValue toJson() {
         return Json.create(type.getSimpleName());
+    }
+
+    @Override
+    public void createInitialValue(StateNode node, String property) {
+        ElementPropertyMap feature = node.getFeature(ElementPropertyMap.class);
+        if (!feature.hasProperty(property)) {
+            feature.setProperty(property,
+                    (Serializable) modelToApplication(null));
+        }
     }
 
     protected static <M> Map<Class<?>, M> loadBasicTypes(
