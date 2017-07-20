@@ -61,8 +61,8 @@ public class VaadinTextFieldIT extends AbstractChromeTest {
                 textFieldValueDiv.getText());
 
         textField.sendKeys("abcdefg");
-        new Actions(getDriver()).keyDown(Keys.ALT).sendKeys(Keys.BACK_SPACE)
-                .build().perform();
+        new Actions(getDriver()).keyDown(Keys.COMMAND)
+                .sendKeys(Keys.BACK_SPACE).build().perform();
         waitUntilTextsEqual("Text field value changed from 'abcdefg' to ''",
                 textFieldValueDiv.getText());
     }
