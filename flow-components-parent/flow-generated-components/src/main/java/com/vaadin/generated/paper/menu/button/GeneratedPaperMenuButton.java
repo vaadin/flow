@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.menu.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.paper.menu.button.GeneratedPaperMenuButton;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -77,7 +77,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
-public class GeneratedPaperMenuButton extends Component implements HasStyle {
+public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -102,10 +104,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setKeyEventTarget(
-			elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -131,11 +132,11 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -161,10 +162,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setKeyBindings(
-			elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -202,9 +202,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -229,9 +229,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setOpened(boolean opened) {
+	public R setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -257,11 +257,10 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setHorizontalAlign(
-			java.lang.String horizontalAlign) {
+	public R setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -287,11 +286,10 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setVerticalAlign(
-			java.lang.String verticalAlign) {
+	public R setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -321,10 +319,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setDynamicAlign(
-			boolean dynamicAlign) {
+	public R setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -352,10 +349,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setHorizontalOffset(
-			double horizontalOffset) {
+	public R setHorizontalOffset(double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -383,10 +379,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setVerticalOffset(
-			double verticalOffset) {
+	public R setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -412,9 +407,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setNoOverlap(boolean noOverlap) {
+	public R setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -438,10 +433,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setNoAnimations(
-			boolean noAnimations) {
+	public R setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -467,10 +461,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setIgnoreSelect(
-			boolean ignoreSelect) {
+	public R setIgnoreSelect(boolean ignoreSelect) {
 		getElement().setProperty("ignoreSelect", ignoreSelect);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -496,10 +489,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setCloseOnActivate(
-			boolean closeOnActivate) {
+	public R setCloseOnActivate(boolean closeOnActivate) {
 		getElement().setProperty("closeOnActivate", closeOnActivate);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -525,11 +517,11 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setOpenAnimationConfig(
+	public R setOpenAnimationConfig(
 			elemental.json.JsonObject openAnimationConfig) {
 		getElement()
 				.setPropertyJson("openAnimationConfig", openAnimationConfig);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -555,11 +547,11 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setCloseAnimationConfig(
+	public R setCloseAnimationConfig(
 			elemental.json.JsonObject closeAnimationConfig) {
 		getElement().setPropertyJson("closeAnimationConfig",
 				closeAnimationConfig);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -587,10 +579,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setAllowOutsideScroll(
-			boolean allowOutsideScroll) {
+	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -614,10 +605,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setRestoreFocusOnClose(
-			boolean restoreFocusOnClose) {
+	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -641,10 +631,9 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuButton> R setContentElement(
-			elemental.json.JsonObject contentElement) {
+	public R setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -891,15 +880,5 @@ public class GeneratedPaperMenuButton extends Component implements HasStyle {
 		getElement().getChildren().forEach(
 				child -> child.removeAttribute("slot"));
 		getElement().removeAllChildren();
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperMenuButton> R getSelf() {
-		return (R) this;
 	}
 }

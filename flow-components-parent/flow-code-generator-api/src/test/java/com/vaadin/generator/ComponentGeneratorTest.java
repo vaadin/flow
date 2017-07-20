@@ -32,6 +32,7 @@ import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
@@ -205,8 +206,8 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
-        Assert.assertTrue("No fluent setter found", generatedClass.contains(
-                "public <R extends MyComponent> R setName(java.lang.String name)"));
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setName(java.lang.String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
@@ -434,8 +435,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("No fluent setter found", generatedClass.contains(
-                "public <R extends MyComponent> R setName(java.lang.String name)"));
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setName(java.lang.String name)"));
 
         Assert.assertTrue("Fluent setter doesn't check for null value",
                 generatedClass.contains(propertyData.getName()
@@ -474,8 +475,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("No fluent setter found", generatedClass.contains(
-                "public <R extends MyComponent> R setRequired(boolean required)"));
+        Assert.assertTrue("No fluent setter found", generatedClass
+                .contains("public R setRequired(boolean required)"));
 
         Assert.assertFalse("Fluent setter checks for null value",
                 generatedClass.contains(propertyData.getName()
@@ -505,21 +506,21 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithFluentSetters_classContainsGetSelf() {
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        Assert.assertTrue("The method getSelf() wasn't found", generatedClass
-                .contains("protected <R extends MyComponent> R getSelf()"));
-    }
-
-    @Test
     public void generateClass_implementsHasStyle() {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
         assertClassImplementsInterface(generatedClass, "MyComponent",
                 HasStyle.class);
+    }
+
+    @Test
+    public void generateClass_implementsComponentSupplier() {
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                ComponentSupplier.class);
     }
 
     @Test
@@ -691,7 +692,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated class should contain the setSomething method",
                 generatedClass.contains(
-                        "public <R extends MyComponent> R setSomething(SomethingProperty property)"));
+                        "public R setSomething(SomethingProperty property)"));
     }
 
     @Test

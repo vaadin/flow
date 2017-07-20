@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.swatch.picker;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.generated.paper.swatch.picker.GeneratedPaperSwatchPicker;
 import elemental.json.JsonArray;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -63,7 +63,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
-public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
+public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -87,10 +89,9 @@ public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSwatchPicker> R setColor(
-			java.lang.String color) {
+	public R setColor(java.lang.String color) {
 		getElement().setProperty("color", color == null ? "" : color);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -122,10 +123,9 @@ public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSwatchPicker> R setColorList(
-			elemental.json.JsonArray colorList) {
+	public R setColorList(elemental.json.JsonArray colorList) {
 		getElement().setPropertyJson("colorList", colorList);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -155,10 +155,9 @@ public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSwatchPicker> R setColumnCount(
-			double columnCount) {
+	public R setColumnCount(double columnCount) {
 		getElement().setProperty("columnCount", columnCount);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -184,11 +183,10 @@ public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSwatchPicker> R setHorizontalAlign(
-			java.lang.String horizontalAlign) {
+	public R setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -214,11 +212,10 @@ public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSwatchPicker> R setVerticalAlign(
-			java.lang.String verticalAlign) {
+	public R setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -244,9 +241,9 @@ public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperSwatchPicker> R setNoink(boolean noink) {
+	public R setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
-		return getSelf();
+		return get();
 	}
 
 	@DomEvent("color-picker-selected")
@@ -277,15 +274,5 @@ public class GeneratedPaperSwatchPicker extends Component implements HasStyle {
 	public Registration addColorChangedListener(
 			ComponentEventListener<ColorChangedEvent> listener) {
 		return addListener(ColorChangedEvent.class, listener);
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperSwatchPicker> R getSelf() {
-		return (R) this;
 	}
 }

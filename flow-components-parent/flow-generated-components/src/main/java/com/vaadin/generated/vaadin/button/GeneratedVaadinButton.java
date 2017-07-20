@@ -16,13 +16,14 @@
 package com.vaadin.generated.vaadin.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasText;
+import com.vaadin.ui.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
 import com.vaadin.ui.HasComponents;
 
 /**
@@ -53,11 +54,15 @@ import com.vaadin.ui.HasComponents;
 		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
-public class GeneratedVaadinButton extends Component
+public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
+		extends
+			Component
 		implements
+			ComponentSupplier<R>,
 			HasStyle,
-			HasClickListeners<GeneratedVaadinButton>,
+			HasClickListeners<R>,
 			HasText,
+			Focusable<R>,
 			HasComponents {
 
 	/**
@@ -81,9 +86,9 @@ public class GeneratedVaadinButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinButton> R setAutofocus(boolean autofocus) {
+	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -119,9 +124,9 @@ public class GeneratedVaadinButton extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinButton> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	public void connectedCallback() {
@@ -130,16 +135,6 @@ public class GeneratedVaadinButton extends Component
 
 	public void disconnectedCallback() {
 		getElement().callFunction("disconnectedCallback");
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedVaadinButton> R getSelf() {
-		return (R) this;
 	}
 
 	/**

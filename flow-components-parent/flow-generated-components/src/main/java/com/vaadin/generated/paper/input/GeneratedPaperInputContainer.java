@@ -16,11 +16,11 @@
 package com.vaadin.generated.paper.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.paper.input.GeneratedPaperInputContainer;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.DomEvent;
@@ -145,7 +145,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-input-container#2.0.1", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
-public class GeneratedPaperInputContainer extends Component implements HasStyle {
+public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -170,10 +172,9 @@ public class GeneratedPaperInputContainer extends Component implements HasStyle 
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperInputContainer> R setNoLabelFloat(
-			boolean noLabelFloat) {
+	public R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -197,10 +198,9 @@ public class GeneratedPaperInputContainer extends Component implements HasStyle 
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperInputContainer> R setAlwaysFloatLabel(
-			boolean alwaysFloatLabel) {
+	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -224,11 +224,10 @@ public class GeneratedPaperInputContainer extends Component implements HasStyle 
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperInputContainer> R setAttrForValue(
-			java.lang.String attrForValue) {
+	public R setAttrForValue(java.lang.String attrForValue) {
 		getElement().setProperty("attrForValue",
 				attrForValue == null ? "" : attrForValue);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -252,10 +251,9 @@ public class GeneratedPaperInputContainer extends Component implements HasStyle 
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperInputContainer> R setAutoValidate(
-			boolean autoValidate) {
+	public R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -283,9 +281,9 @@ public class GeneratedPaperInputContainer extends Component implements HasStyle 
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperInputContainer> R setInvalid(boolean invalid) {
+	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -457,15 +455,5 @@ public class GeneratedPaperInputContainer extends Component implements HasStyle 
 		getElement().getChildren().forEach(
 				child -> child.removeAttribute("slot"));
 		getElement().removeAllChildren();
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperInputContainer> R getSelf() {
-		return (R) this;
 	}
 }

@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.menu.button;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.generated.paper.menu.button.GeneratedPaperMenuShrinkWidthAnimation;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
@@ -29,9 +29,9 @@ import com.vaadin.generated.paper.menu.button.GeneratedPaperMenuShrinkWidthAnima
 		"Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-menu-shrink-width-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
-public class GeneratedPaperMenuShrinkWidthAnimation extends Component
-		implements
-			HasStyle {
+public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenuShrinkWidthAnimation<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -54,10 +54,9 @@ public class GeneratedPaperMenuShrinkWidthAnimation extends Component
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuShrinkWidthAnimation> R setAnimationTiming(
-			elemental.json.JsonObject animationTiming) {
+	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -81,10 +80,9 @@ public class GeneratedPaperMenuShrinkWidthAnimation extends Component
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperMenuShrinkWidthAnimation> R setIsNeonAnimation(
-			boolean isNeonAnimation) {
+	public R setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -125,15 +123,5 @@ public class GeneratedPaperMenuShrinkWidthAnimation extends Component
 	 */
 	public void complete() {
 		getElement().callFunction("complete");
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperMenuShrinkWidthAnimation> R getSelf() {
-		return (R) this;
 	}
 }

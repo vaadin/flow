@@ -16,18 +16,20 @@
 package com.vaadin.generated.vaadin.text.field;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.vaadin.text.field.GeneratedVaadinPasswordField;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
 		"WebComponent: PasswordFieldElement#null", "Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
-public class GeneratedVaadinPasswordField extends Component implements HasStyle {
+public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -50,10 +52,9 @@ public class GeneratedVaadinPasswordField extends Component implements HasStyle 
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinPasswordField> R setHideToggleButton(
-			boolean hideToggleButton) {
+	public R setHideToggleButton(boolean hideToggleButton) {
 		getElement().setProperty("hideToggleButton", hideToggleButton);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -66,15 +67,5 @@ public class GeneratedVaadinPasswordField extends Component implements HasStyle 
 	 */
 	public boolean isPasswordVisible() {
 		return getElement().getProperty("passwordVisible", false);
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedVaadinPasswordField> R getSelf() {
-		return (R) this;
 	}
 }

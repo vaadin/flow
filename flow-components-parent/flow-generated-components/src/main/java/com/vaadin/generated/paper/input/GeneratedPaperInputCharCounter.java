@@ -16,13 +16,13 @@
 package com.vaadin.generated.paper.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.components.JsonSerializable;
-import com.vaadin.generated.paper.input.GeneratedPaperInputCharCounter;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -48,9 +48,9 @@ import com.vaadin.generated.paper.input.GeneratedPaperInputCharCounter;
 		"WebComponent: paper-input-char-counter#2.0.1", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
-public class GeneratedPaperInputCharCounter extends Component
-		implements
-			HasStyle {
+public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCounter<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -111,15 +111,5 @@ public class GeneratedPaperInputCharCounter extends Component
 			internalObject = value;
 			return this;
 		}
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperInputCharCounter> R getSelf() {
-		return (R) this;
 	}
 }

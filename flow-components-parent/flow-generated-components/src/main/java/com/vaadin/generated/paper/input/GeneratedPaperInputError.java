@@ -16,6 +16,7 @@
 package com.vaadin.generated.paper.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
@@ -23,7 +24,6 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.HasComponents;
-import com.vaadin.generated.paper.input.GeneratedPaperInputError;
 
 /**
  * Description copied from corresponding location in WebComponent:
@@ -51,10 +51,9 @@ import com.vaadin.generated.paper.input.GeneratedPaperInputError;
 		"WebComponent: paper-input-error#2.0.1", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
-public class GeneratedPaperInputError extends Component
-		implements
-			HasStyle,
-			HasComponents {
+public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -127,16 +126,6 @@ public class GeneratedPaperInputError extends Component
 			internalObject = value;
 			return this;
 		}
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperInputError> R getSelf() {
-		return (R) this;
 	}
 
 	/**

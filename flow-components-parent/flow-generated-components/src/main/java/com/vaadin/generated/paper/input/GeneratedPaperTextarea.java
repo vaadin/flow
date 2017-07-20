@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.input;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.generated.paper.input.GeneratedPaperTextarea;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -54,7 +54,9 @@ import com.vaadin.shared.Registration;
 		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
-public class GeneratedPaperTextarea extends Component implements HasStyle {
+public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -97,9 +99,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setDisabled(boolean disabled) {
+	public R setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -125,10 +127,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setKeyEventTarget(
-			elemental.json.JsonObject keyEventTarget) {
+	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -154,11 +155,11 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setStopKeyboardEventPropagation(
+	public R setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -174,10 +175,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setKeyBindings(
-			elemental.json.JsonObject keyBindings) {
+	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -209,9 +209,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setLabel(java.lang.String label) {
+	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -236,9 +236,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setValue(java.lang.String value) {
+	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -275,9 +275,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setInvalid(boolean invalid) {
+	public R setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -307,11 +307,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAllowedPattern(
-			java.lang.String allowedPattern) {
+	public R setAllowedPattern(java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
 				allowedPattern == null ? "" : allowedPattern);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -341,9 +340,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setType(java.lang.String type) {
+	public R setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -373,9 +372,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setList(java.lang.String list) {
+	public R setList(java.lang.String list) {
 		getElement().setProperty("list", list == null ? "" : list);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -403,10 +402,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setPattern(
-			java.lang.String pattern) {
+	public R setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -440,9 +438,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setRequired(boolean required) {
+	public R setRequired(boolean required) {
 		getElement().setProperty("required", required);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -470,11 +468,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setErrorMessage(
-			java.lang.String errorMessage) {
+	public R setErrorMessage(java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -498,10 +495,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setCharCounter(
-			boolean charCounter) {
+	public R setCharCounter(boolean charCounter) {
 		getElement().setProperty("charCounter", charCounter);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -531,10 +527,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setNoLabelFloat(
-			boolean noLabelFloat) {
+	public R setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -562,10 +557,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAlwaysFloatLabel(
-			boolean alwaysFloatLabel) {
+	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -595,10 +589,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAutoValidate(
-			boolean autoValidate) {
+	public R setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -626,11 +619,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setValidator(
-			java.lang.String validator) {
+	public R setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -658,11 +650,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAutocomplete(
-			java.lang.String autocomplete) {
+	public R setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
 				autocomplete == null ? "" : autocomplete);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -690,9 +681,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAutofocus(boolean autofocus) {
+	public R setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -720,11 +711,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setInputmode(
-			java.lang.String inputmode) {
+	public R setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
 				inputmode == null ? "" : inputmode);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -752,9 +742,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setMinlength(double minlength) {
+	public R setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -782,9 +772,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setMaxlength(double maxlength) {
+	public R setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -812,9 +802,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setMin(java.lang.String min) {
+	public R setMin(java.lang.String min) {
 		getElement().setProperty("min", min == null ? "" : min);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -844,9 +834,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setMax(java.lang.String max) {
+	public R setMax(java.lang.String max) {
 		getElement().setProperty("max", max == null ? "" : max);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -874,9 +864,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setStep(java.lang.String step) {
+	public R setStep(java.lang.String step) {
 		getElement().setProperty("step", step == null ? "" : step);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -900,9 +890,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setName(java.lang.String name) {
+	public R setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -928,11 +918,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setPlaceholder(
-			java.lang.String placeholder) {
+	public R setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -960,9 +949,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setReadonly(boolean readonly) {
+	public R setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -990,9 +979,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setSize(double size) {
+	public R setSize(double size) {
 		getElement().setProperty("size", size);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1020,11 +1009,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAutocapitalize(
-			java.lang.String autocapitalize) {
+	public R setAutocapitalize(java.lang.String autocapitalize) {
 		getElement().setProperty("autocapitalize",
 				autocapitalize == null ? "" : autocapitalize);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1052,11 +1040,10 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAutocorrect(
-			java.lang.String autocorrect) {
+	public R setAutocorrect(java.lang.String autocorrect) {
 		getElement().setProperty("autocorrect",
 				autocorrect == null ? "" : autocorrect);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1084,10 +1071,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAutosave(
-			java.lang.String autosave) {
+	public R setAutosave(java.lang.String autosave) {
 		getElement().setProperty("autosave", autosave == null ? "" : autosave);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1115,9 +1101,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setResults(double results) {
+	public R setResults(double results) {
 		getElement().setProperty("results", results);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1145,10 +1131,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setAccept(
-			java.lang.String accept) {
+	public R setAccept(java.lang.String accept) {
 		getElement().setProperty("accept", accept == null ? "" : accept);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1176,9 +1161,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setMultiple(boolean multiple) {
+	public R setMultiple(boolean multiple) {
 		getElement().setProperty("multiple", multiple);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1202,9 +1187,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setRows(double rows) {
+	public R setRows(double rows) {
 		getElement().setProperty("rows", rows);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1230,9 +1215,9 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperTextarea> R setMaxRows(double maxRows) {
+	public R setMaxRows(double maxRows) {
 		getElement().setProperty("maxRows", maxRows);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -1411,15 +1396,5 @@ public class GeneratedPaperTextarea extends Component implements HasStyle {
 	public Registration addIronFormElementUnregisterListener(
 			ComponentEventListener<IronFormElementUnregisterEvent> listener) {
 		return addListener(IronFormElementUnregisterEvent.class, listener);
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperTextarea> R getSelf() {
-		return (R) this;
 	}
 }

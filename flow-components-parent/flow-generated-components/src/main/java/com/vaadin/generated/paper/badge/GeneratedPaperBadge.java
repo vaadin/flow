@@ -16,11 +16,11 @@
 package com.vaadin.generated.paper.badge;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.paper.badge.GeneratedPaperBadge;
 import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 
@@ -72,7 +72,9 @@ import com.vaadin.components.NotSupported;
 		"WebComponent: paper-badge#2.0.0", "Flow#0.1.14-SNAPSHOT"})
 @Tag("paper-badge")
 @HtmlImport("frontend://bower_components/paper-badge/paper-badge.html")
-public class GeneratedPaperBadge extends Component implements HasStyle {
+public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -97,9 +99,9 @@ public class GeneratedPaperBadge extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperBadge> R setFor(java.lang.String _for) {
+	public R setFor(java.lang.String _for) {
 		getElement().setProperty("for", _for == null ? "" : _for);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -125,9 +127,9 @@ public class GeneratedPaperBadge extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperBadge> R setLabel(java.lang.String label) {
+	public R setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -157,9 +159,9 @@ public class GeneratedPaperBadge extends Component implements HasStyle {
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperBadge> R setIcon(java.lang.String icon) {
+	public R setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -187,10 +189,9 @@ public class GeneratedPaperBadge extends Component implements HasStyle {
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedPaperBadge> R setTarget(
-			elemental.json.JsonObject target) {
+	public R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
-		return getSelf();
+		return get();
 	}
 
 	/**
@@ -259,15 +260,5 @@ public class GeneratedPaperBadge extends Component implements HasStyle {
 	 */
 	public void updatePosition() {
 		getElement().callFunction("updatePosition");
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedPaperBadge> R getSelf() {
-		return (R) this;
 	}
 }

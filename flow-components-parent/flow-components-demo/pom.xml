@@ -9,7 +9,8 @@
     </parent>
     <artifactId>flow-components-demo</artifactId>
     <name>Flow generated components demo</name>
-
+    <packaging>war</packaging>
+    
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -21,10 +22,10 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-generated-components</artifactId>
+            <artifactId>flow-components</artifactId>
             <version>${flow.version}</version>
         </dependency>
-
+        
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
@@ -129,6 +130,7 @@
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
+                            <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
                             <resourceBase>${jetty.extra.resource.base}</resourceBase>
                         </resourceBases>
                     </webAppConfig>
@@ -208,6 +210,9 @@
                         <configuration>
                             <webResources>
                                 <resource>
+                                    <directory>${project.basedir}/${webapp.directory}</directory>
+                                </resource>
+                                <resource>
                                     <directory>${frontend.working.directory}/build</directory>
                                     <targetPath>${vaadin.frontend.path}</targetPath>
                                 </resource>
@@ -259,9 +264,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
-                        <version>${maven.war.plugin.version}</version>
                         <configuration>
                             <webResources>
+                                <resource>
+                                    <directory>${project.basedir}/${webapp.directory}</directory>
+                                </resource>
                                 <resource>
                                     <directory>${frontend.working.directory}</directory>
                                     <excludes>
@@ -274,7 +281,7 @@
                 </plugins>
             </build>
         </profile>
-
+        
         <profile>
             <id>local-run</id>
             <activation>
@@ -306,6 +313,6 @@
                 </plugins>
             </build>
         </profile>
-
+        
     </profiles>
 </project>

@@ -16,18 +16,20 @@
 package com.vaadin.generated.vaadin.combo.box;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinSpinner;
 
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
 		"WebComponent: vaadin-spinner#2.0.0-beta2", "Flow#0.1.14-SNAPSHOT"})
 @Tag("vaadin-spinner")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
-public class GeneratedVaadinSpinner extends Component implements HasStyle {
+public class GeneratedVaadinSpinner<R extends GeneratedVaadinSpinner<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * This property is not synchronized automatically from the client side, so
@@ -42,18 +44,8 @@ public class GeneratedVaadinSpinner extends Component implements HasStyle {
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public <R extends GeneratedVaadinSpinner> R setActive(boolean active) {
+	public R setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return getSelf();
-	}
-
-	/**
-	 * Gets the narrow typed reference to this object. Subclasses should
-	 * override this method to support method chaining using the inherited type.
-	 * 
-	 * @return This object casted to its type.
-	 */
-	protected <R extends GeneratedVaadinSpinner> R getSelf() {
-		return (R) this;
+		return get();
 	}
 }

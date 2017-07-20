@@ -8,4 +8,6 @@
     align-items: center;
     -webkit-justify-content: center;
     justify-content: center;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
 }

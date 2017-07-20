@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
-import java.util.List;
-
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -29,22 +28,83 @@ import com.vaadin.testbench.By;
  */
 public class VaadinButtonIT extends AbstractChromeTest {
 
-    @Test
-    public void clickOnButton_textIsDisaplayed() {
+    private WebElement layout;
+
+    @Before
+    public void init() {
         open();
-
         waitForElementPresent(By.tagName("main-layout"));
-        WebElement layout = findElement(By.tagName("main-layout"));
-        List<WebElement> buttons = layout
-                .findElements(By.tagName("vaadin-button"));
-        Assert.assertEquals(1, buttons.size());
+        layout = findElement(By.tagName("main-layout"));
+    }
 
-        WebElement button = buttons.get(0);
-        WebElement message = layout.findElement(By.id("buttonMessage"));
+    @Test
+    public void clickOnDefaultButton_textIsDisplayed() {
+        WebElement button = layout.findElement(By.id("default-button"));
 
         button.click();
+        waitUntilMessageIsChangedForClickedButton("Vaadin button");
+    }
+
+    @Test
+    public void clickOnImageButton_textIsDisplayed() {
+        WebElement button = layout.findElement(By.id("image-button"));
+
+        WebElement img = button.findElement(By.tagName("img"));
+        img.getAttribute("href");
+
+        Assert.assertEquals(getRootURL() + "/img/vaadin-logo.svg",
+                img.getAttribute("src"));
+        Assert.assertEquals("Vaadin logo", img.getAttribute("alt"));
+
+        button.click();
+        waitUntilMessageIsChangedForClickedButton("with image");
+    }
+
+    @Test
+    public void clickOnAccessibleButton_textIsDisplayed() {
+        WebElement button = layout.findElement(By.id("accessible-button"));
+        Assert.assertEquals("Click me", button.getAttribute("aria-label"));
+
+        button.click();
+        waitUntilMessageIsChangedForClickedButton("Accessible");
+    }
+
+    @Test
+    public void clickOnTabIndexButtons_textIsDisplayed() {
+        WebElement button1 = layout.findElement(By.id("button-tabindex-1"));
+        Assert.assertEquals("1", button1.getAttribute("tabindex"));
+        WebElement button2 = layout.findElement(By.id("button-tabindex-2"));
+        Assert.assertEquals("2", button2.getAttribute("tabindex"));
+        WebElement button3 = layout.findElement(By.id("button-tabindex-3"));
+        Assert.assertEquals("3", button3.getAttribute("tabindex"));
+
+        button1.click();
+        waitUntilMessageIsChangedForClickedButton("1");
+
+        button2.click();
+        waitUntilMessageIsChangedForClickedButton("2");
+
+        button3.click();
+        waitUntilMessageIsChangedForClickedButton("3");
+    }
+
+    @Test
+    public void clickOnDisabledButton_nothingIsDisplayed() {
+        WebElement button = layout.findElement(By.id("disabled-button"));
+        Assert.assertTrue("The button should contain the 'disabled' attribute",
+                button.getAttribute("disabled").equals("")
+                        || button.getAttribute("disabled").equals("true"));
+
+        button.click();
+        WebElement message = layout.findElement(By.id("buttonMessage"));
+        Assert.assertEquals("", message.getText());
+    }
+
+    private void waitUntilMessageIsChangedForClickedButton(
+            String messageString) {
+        WebElement message = layout.findElement(By.id("buttonMessage"));
         waitUntil(driver -> message.getText()
-                .equals("Button " + button.getText() + " was clicked."));
+                .equals("Button " + messageString + " was clicked."));
     }
 
     @Override
