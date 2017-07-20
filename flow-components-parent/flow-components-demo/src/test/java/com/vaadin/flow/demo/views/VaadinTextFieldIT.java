@@ -38,17 +38,18 @@ public class VaadinTextFieldIT extends AbstractChromeTest {
                 .findElement(By.id("text-field-with-value-change-listener"));
 
         textField.sendKeys("a");
-        Assert.assertEquals(textFieldValueDiv.getText(),
-                "Text field value changed from '' to 'a'");
+        Assert.assertEquals("Text field value changed from '' to 'a'",
+                textFieldValueDiv.getText());
+
         textField.sendKeys(Keys.BACK_SPACE);
-        Assert.assertEquals(textFieldValueDiv.getText(),
-                "Text field value changed from 'a' to ''");
+        Assert.assertEquals("Text field value changed from 'a' to ''",
+                textFieldValueDiv.getText());
 
         textField.sendKeys("abcdefg");
         new Actions(getDriver()).keyDown(Keys.ALT).sendKeys(Keys.BACK_SPACE)
                 .build().perform();
-        Assert.assertEquals(textFieldValueDiv.getText(),
-                "Text field value changed from 'abcdefg' to ''");
+        Assert.assertEquals("Text field value changed from 'abcdefg' to ''",
+                textFieldValueDiv.getText());
     }
 
     @Test
