@@ -50,7 +50,7 @@ public class PaperProgressView extends DemoView {
                 new Label("Static green with 2 states"), staticGreen);
     }
 
-    // @formatter::off
+    // @formatter:off
     /*
     // begin-source-example
     // source-example-heading: Style sheet:
@@ -65,5 +65,5 @@ public class PaperProgressView extends DemoView {
     }
     // end-source-example
     */
-    // @formatter::on
+    // @formatter:on
 }
