@@ -29,6 +29,9 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField>
 
     /**
      * Constructs an empty {@code VaadinTextField}.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
      */
     public VaadinTextField() {
         getElement().synchronizeProperty("hasValue", "value-changed");
@@ -37,6 +40,9 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField>
 
     /**
      * Constructs an empty {@code VaadinTextField} with the given label.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
      * 
      * @param labelText
      *            the text to set as the label
@@ -49,6 +55,9 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField>
     /**
      * Constructs an empty {@code VaadinTextField} with the given label and
      * placeholder text.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
      * 
      * @param labelText
      *            the text to set as the label
