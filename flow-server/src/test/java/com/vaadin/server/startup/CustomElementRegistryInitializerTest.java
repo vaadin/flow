@@ -211,19 +211,19 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Tag("custom-element")
-    public static class ValidExtendingElement extends ValidCustomElement {
+    private static class ValidExtendingElement extends ValidCustomElement {
     }
 
     @Tag("custom-element")
-    public static class ValidExtendingElement2 extends ValidCustomElement {
+    private static class ValidExtendingElement2 extends ValidCustomElement {
     }
 
     @Tag("custom-element")
-    public static class ValidExtendingElement3 extends ValidCustomElement {
+    private static class ValidExtendingElement3 extends ValidCustomElement {
     }
 
     @Tag("-invalid")
-    public static class InvalidCustomElement
+    private static class InvalidCustomElement
             extends PolymerTemplate<TemplateModel> {
 
         public InvalidCustomElement() {
@@ -232,7 +232,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Tag("custom-element")
-    public static class InvalidExtendingElement
+    private static class InvalidExtendingElement
             extends PolymerTemplate<TemplateModel> {
 
         public InvalidExtendingElement() {
@@ -251,6 +251,6 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Tag("non-polymer")
-    public static class NonPolymerElement {
+    private static class NonPolymerElement {
     }
 }
