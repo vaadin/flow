@@ -16,7 +16,9 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.html.Div;
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
+import com.vaadin.ui.VaadinTextField;
 
 /**
  * View for {@link GeneratedVaadinTextField} demo.
@@ -25,10 +27,21 @@ import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
 public class VaadinTextFieldView extends DemoView {
     @Override
     void initView() {
+        Div message = new Div();
+
         // begin-source-example
-        GeneratedVaadinTextField textField = new GeneratedVaadinTextField();
-        textField.setLabel("Text field label");
+        VaadinTextField textField = new VaadinTextField()
+                .setLabel("Text field label")
+                .setPlaceholder("placeholder text");
+        textField.addValueChangeListener(event -> message.setText(
+                String.format("Text field value changed from '%s' to '%s'",
+                        event.getOldValue(), event.getValue())));
         // end-source-example
+
+        textField.setId("text-field-with-value-change-listener");
+        message.setId("text-field-value");
+
         add(textField);
+        add(message);
     }
 }
