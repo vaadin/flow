@@ -31,7 +31,7 @@ public class VaadinFormLayoutIT extends AbstractChromeTest {
     public void init() {
         open();
         waitForElementPresent(By.tagName("main-layout"));
-        Assert.assertFalse(isElementPresent(By.tagName("paper-dialog")));
+        Assert.assertFalse(isElementPresent(By.tagName("vaadin-form-layout")));
     }
 
     @Test

@@ -16,12 +16,13 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
+import com.vaadin.flow.html.H3;
 import com.vaadin.ui.VaadinButton;
 import com.vaadin.ui.VaadinFormLayout;
 import com.vaadin.ui.VaadinFormLayout.ResponsiveStep;
 import com.vaadin.ui.VaadinFormLayout.ResponsiveStep.LabelsPosition;
 import com.vaadin.ui.VaadinFormLayout.VaadinFormItem;
+import com.vaadin.ui.VaadinTextField;
 
 /**
  * Demo view for {@link VaadinFormLayout}.
@@ -33,27 +34,51 @@ public class VaadinFormLayoutView extends DemoView {
 
     @Override
     void initView() {
+        // @formatter:off
         // begin-source-example
-        VaadinFormLayout layout = new VaadinFormLayout();
-        GeneratedVaadinTextField tf = new GeneratedVaadinTextField()
-                .setLabel("tf1").setPlaceholder("tf1");
-        GeneratedVaadinTextField tf2 = new GeneratedVaadinTextField()
-                .setLabel("tf2").setPlaceholder("tf2");
-        layout.add(tf, tf2);
-        layout.setResponsiveSteps(
-                new ResponsiveStep("0px", 2, LabelsPosition.ASIDE));
+        // source-example-heading: A form layout with custom responsive layouting
+        VaadinFormLayout nameLayout = new VaadinFormLayout();
+
+        VaadinTextField titleField = new VaadinTextField()
+                .setLabel("Title")
+                .setPlaceholder("Sir");
+        VaadinTextField firstNameField = new VaadinTextField()
+                .setLabel("First name")
+                .setPlaceholder("John");
+        VaadinTextField lastNameField = new VaadinTextField()
+                .setLabel("Last name")
+                .setPlaceholder("Doe");
+
+        nameLayout.add(titleField, firstNameField, lastNameField);
+
+        nameLayout.setResponsiveSteps(
+                new ResponsiveStep("0", 1, LabelsPosition.ASIDE),
+                new ResponsiveStep("18em", 2, LabelsPosition.TOP),
+                new ResponsiveStep("20em", 3, LabelsPosition.TOP));
         // end-source-example
+        // @formatter:on
 
         // begin-source-example
-        VaadinFormLayout layout2 = new VaadinFormLayout();
-        VaadinFormItem item1 = new VaadinFormItem(new GeneratedVaadinTextField());
-        VaadinFormItem item2 = new VaadinFormItem(new GeneratedVaadinTextField());
-        item1.addToLabel(new VaadinButton("Button in label :o WOAH"));
-        item2.addToLabel(new VaadinButton("And another one!"), new VaadinButton("And another one!"));
-        layout2.add(item1, item2);
+        // source-example-heading: A form layout with fields wrapped in form items
+        VaadinFormLayout layoutWithFormItems = new VaadinFormLayout();
+
+        VaadinFormItem firstItem = new VaadinFormItem(
+                new VaadinTextField("First name", "John"));
+        VaadinFormItem secondItem = new VaadinFormItem(
+                new VaadinTextField("Last name", "Doe"));
+
+        firstItem.addToLabel(
+                new VaadinButton("Button inside the label"));
+        secondItem.addToLabel(
+                new VaadinButton("And another one!"),
+                new VaadinButton("And another one!"));
+
+        layoutWithFormItems.add(firstItem, secondItem);
         // end-source-example
 
-        add(layout);
-        add(layout2);
+        add(new H3("A form layout with custom responsive layouting"),
+                nameLayout);
+        add(new H3("A form layout with fields wrapped in form items"),
+                layoutWithFormItems);
     }
 }
