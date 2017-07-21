@@ -50,7 +50,7 @@ public class CustomElementRegistryInitializer
                 .forEach(this::processComponentClass);
 
         if (!elementRegistry.isInitialized()) {
-            elementRegistry.setCustomElements(customElements.getElements());
+            elementRegistry.setCustomElements(customElements.computeTagToElementRelation());
         }
     }
 
@@ -63,7 +63,7 @@ public class CustomElementRegistryInitializer
     private void processComponentClass(Class<?> clazz) {
         String tagName = clazz.getAnnotation(Tag.class).value();
         if (CustomElementNameValidator.isCustomElementName(tagName)) {
-            customElements.put(tagName, (Class<? extends Component>) clazz);
+            customElements.addElement(tagName, (Class<? extends Component>) clazz);
         } else {
             String msg = String.format(
                     "Tag name '%s' for '%s' is not a valid custom element name.",

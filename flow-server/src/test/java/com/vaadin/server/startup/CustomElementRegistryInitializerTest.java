@@ -101,7 +101,7 @@ public class CustomElementRegistryInitializerTest {
                         .getRegisteredCustomElement("custom-element"));
     }
 
-    @Test(expected = ClassCastException.class)
+    @Test(expected = IllegalStateException.class)
     public void testMultipleCustomElementsWithSameValidTagNameFailsDueToFaultyExtends()
             throws ServletException {
         customElementRegistryInitializer.onStartup(Stream
