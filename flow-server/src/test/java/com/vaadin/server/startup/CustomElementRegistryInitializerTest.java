@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.startup;
 
+import java.util.LinkedHashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -168,7 +169,8 @@ public class CustomElementRegistryInitializerTest {
                 customElement.getComponent().isPresent());
 
         Assert.assertEquals("CustomElement got unexpected Component",
-                ValidCustomElement.class, customElement.getComponent().get().getClass());
+                ValidCustomElement.class,
+                customElement.getComponent().get().getClass());
 
         Element polymerElement = new Element("custom-polymer-element");
 
@@ -176,7 +178,26 @@ public class CustomElementRegistryInitializerTest {
                 polymerElement.getComponent().isPresent());
 
         Assert.assertEquals("PolymerElement got unexpected Component",
-                CustomPolymerElement.class, polymerElement.getComponent().get().getClass());
+                CustomPolymerElement.class,
+                polymerElement.getComponent().get().getClass());
+    }
+
+    @Test
+    public void shouldNotFailWhenCommonSuperClassIsLastElement() throws ServletException {
+        customElementRegistryInitializer.onStartup(Stream
+                .of(ValidExtendingElement.class, ValidExtendingElement2.class,
+                        ValidExtendingElement3.class,
+                        CustomPolymerElement.class, ValidCustomElement.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new)), null);
+
+        Element element = new Element("custom-element");
+
+        Assert.assertTrue("Element didn't have a Component",
+                element.getComponent().isPresent());
+
+        Assert.assertTrue("Element got unexpected Component",
+                element.getComponent().get().getClass()
+                        .equals(ValidCustomElement.class));
     }
 
     @Tag("custom-element")
@@ -191,6 +212,14 @@ public class CustomElementRegistryInitializerTest {
 
     @Tag("custom-element")
     public static class ValidExtendingElement extends ValidCustomElement {
+    }
+
+    @Tag("custom-element")
+    public static class ValidExtendingElement2 extends ValidCustomElement {
+    }
+
+    @Tag("custom-element")
+    public static class ValidExtendingElement3 extends ValidCustomElement {
     }
 
     @Tag("-invalid")
