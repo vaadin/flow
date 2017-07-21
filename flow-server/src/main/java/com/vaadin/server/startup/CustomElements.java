@@ -19,9 +19,10 @@ package com.vaadin.server.startup;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.ui.Component;
 
@@ -32,33 +33,30 @@ class CustomElements {
     private final Map<String, Set<Class<? extends Component>>> elements = new HashMap<>();
 
     Map<String, Class<? extends Component>> getElements() {
-        return elements.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> entry.getValue().iterator().next()));
+        return elements.entrySet().stream().collect(Collectors
+                .toMap(Map.Entry::getKey, CustomElements::getComponentClass));
+    }
+
+    private static Class<? extends Component> getComponentClass(
+            Map.Entry<String, Set<Class<? extends Component>>> entry) {
+        Set<Class<? extends Component>> componentClasses = entry.getValue();
+        if (componentClasses.size() > 1) {
+            String msg = String.format(
+                    "Components '%s' have the same @Tag annotation, but neither is a super class of the other.",
+                    componentClasses);
+            throw new ClassCastException(msg);
+        }
+        return componentClasses.iterator().next();
     }
 
     void put(String elementName, Class<? extends Component> newClass) {
-        elements.put(elementName,
-                elements.computeIfAbsent(elementName,
-                        key -> Collections.singleton(newClass)).stream()
-                        .map(oldClass -> pickTheOneToLeave(oldClass, newClass))
-                        .collect(Collectors.toSet()));
+        elements.put(elementName, elements
+                .computeIfAbsent(
+                        elementName, key -> Collections.singleton(newClass))
+                .stream()
+                .map(oldClass -> newClass.isAssignableFrom(oldClass)
+                        ? Stream.of(newClass)
+                        : Stream.of(oldClass, newClass))
+                .flatMap(Function.identity()).collect(Collectors.toSet()));
     }
-
-    private static Class<? extends Component> pickTheOneToLeave(
-            Class<? extends Component> oldClass,
-            Class<? extends Component> newClass) {
-        if (Objects.equals(oldClass, newClass)
-                || newClass.isAssignableFrom(oldClass)) {
-            return newClass;
-        }
-        if (!oldClass.isAssignableFrom(newClass)) {
-            String msg = String.format(
-                    "Components '%s' and '%s' have the same @Tag annotation, but neither is a super class of the other.",
-                    oldClass.getCanonicalName(), newClass.getCanonicalName());
-            throw new ClassCastException(msg);
-        }
-        return oldClass;
-    }
-
 }
