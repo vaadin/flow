@@ -615,13 +615,28 @@ public class ComponentGenerator {
             boolean postfixWithVariableType = property.getType().size() > 1;
             for (ComponentBasicType basicType : property.getType()) {
                 MethodSource<JavaClassSource> method = javaClass.addMethod()
-                        .setPublic().setReturnType(
+                        .setReturnType(
                                 ComponentGeneratorUtils.toJavaType(basicType));
 
+                if (isUnregognizedObjectType(basicType)) {
+                    method.setProtected();
+                } else {
+                    method.setPublic();
+                }
+
                 if (basicType == ComponentBasicType.BOOLEAN) {
-                    method.setName(ComponentGeneratorUtils
-                            .generateMethodNameForProperty("is",
-                                    property.getName()));
+                    if (!property.getName().startsWith("is")
+                            && !property.getName().startsWith("has")
+                            && !property.getName().startsWith("have")) {
+
+                        method.setName(ComponentGeneratorUtils
+                                .generateMethodNameForProperty("is",
+                                        property.getName()));
+                    } else {
+                        method.setName(ComponentGeneratorUtils
+                                .formatStringToValidJavaIdentifier(
+                                        property.getName()));
+                    }
                 } else {
                     method.setName(ComponentGeneratorUtils
                             .generateMethodNameForProperty("get",
@@ -639,6 +654,32 @@ public class ComponentGenerator {
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
                         events);
             }
+        }
+    }
+
+    /**
+     * Gets whether the type is undefined in Java terms. Methods with undefined
+     * returns or parameters are created as protected.
+     */
+    private boolean isUnregognizedObjectType(ComponentType type) {
+        if (!type.isBasicType()) {
+            return false;
+        }
+
+        ComponentBasicType basicType = (ComponentBasicType) type;
+
+        switch (basicType) {
+        case NUMBER:
+        case STRING:
+        case BOOLEAN:
+        case DATE:
+            return false;
+
+        case ARRAY:
+        case UNDEFINED:
+        case OBJECT:
+        default:
+            return true;
         }
     }
 
@@ -734,8 +775,13 @@ public class ComponentGenerator {
                 MethodSource<JavaClassSource> method = javaClass.addMethod()
                         .setName(ComponentGeneratorUtils
                                 .generateMethodNameForProperty("set",
-                                        property.getName()))
-                        .setPublic();
+                                        property.getName()));
+
+                if (isUnregognizedObjectType(basicType)) {
+                    method.setProtected();
+                } else {
+                    method.setPublic();
+                }
 
                 Class<?> setterType = ComponentGeneratorUtils
                         .toJavaType(basicType);
@@ -799,7 +845,12 @@ public class ComponentGenerator {
                                 .toJavaType(function.getReturns()));
                 method.setBody("");
             } else {
-                method.setPublic();
+                if (typeVariant.stream()
+                        .anyMatch(this::isUnregognizedObjectType)) {
+                    method.setProtected();
+                } else {
+                    method.setPublic();
+                }
                 method.setBody(
                         String.format("getElement().callFunction(\"%s\"%s);",
                                 function.getName(), parameterString));
@@ -820,7 +871,7 @@ public class ComponentGenerator {
      * @param typeVariant
      *            the list of types to use for each added parameter
      * @param nestedClassesMap
-     *            map for memoizing already generated nested classes
+     *            map for memorizing already generated nested classes
      * @return a string of the parameters of the function, or an empty string if
      *         no parameters
      */
