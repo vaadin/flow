@@ -13,7 +13,7 @@ import com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingView;
 import com.vaadin.flow.uitest.ui.template.RouterLinksTemplate;
 import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate;
 import com.vaadin.flow.uitest.ui.template.TwoWayPolymerBindingView;
-import com.vaadin.server.CustomElementRegistry;
+import com.vaadin.server.startup.CustomElementRegistry;
 
 @Title("Registered custom elements view")
 public class CustomElementMappingView extends AbstractDivView {
