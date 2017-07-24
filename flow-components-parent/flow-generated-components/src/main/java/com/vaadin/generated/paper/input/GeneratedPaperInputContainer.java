@@ -307,7 +307,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * @param state
 	 *            Add-on state.
 	 */
-	public void updateAddons(JsonObject state) {
+	protected void updateAddons(JsonObject state) {
 		getElement().callFunction("updateAddons", state);
 	}
 

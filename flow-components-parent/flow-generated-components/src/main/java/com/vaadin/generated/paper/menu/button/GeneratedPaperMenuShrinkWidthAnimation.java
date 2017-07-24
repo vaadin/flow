@@ -41,7 +41,7 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getAnimationTiming() {
+	protected JsonObject getAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
 	}
 
@@ -54,7 +54,7 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	protected R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return get();
 	}
@@ -67,7 +67,7 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isIsNeonAnimation() {
+	public boolean isNeonAnimation() {
 		return getElement().getProperty("isNeonAnimation", false);
 	}
 
@@ -94,7 +94,7 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	 * @param config
 	 *            Missing documentation!
 	 */
-	public void timingFromConfig(elemental.json.JsonObject config) {
+	protected void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
 	}
 
@@ -111,7 +111,7 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	 * @param value
 	 *            Missing documentation!
 	 */
-	public void setPrefixedProperty(elemental.json.JsonObject node,
+	protected void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {
 		getElement().callFunction("setPrefixedProperty", node, property, value);
 	}

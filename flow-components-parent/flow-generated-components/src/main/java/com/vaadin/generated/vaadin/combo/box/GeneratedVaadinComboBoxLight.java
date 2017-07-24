@@ -83,7 +83,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -97,7 +97,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -141,7 +141,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -155,7 +155,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -349,7 +349,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getItems() {
+	protected JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}
 
@@ -363,7 +363,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setItems(elemental.json.JsonArray items) {
+	protected R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
 		return get();
 	}
@@ -410,7 +410,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getFilteredItems() {
+	protected JsonArray getFilteredItems() {
 		return (JsonArray) getElement().getPropertyRaw("filteredItems");
 	}
 
@@ -425,7 +425,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setFilteredItems(elemental.json.JsonArray filteredItems) {
+	protected R setFilteredItems(elemental.json.JsonArray filteredItems) {
 		getElement().setPropertyJson("filteredItems", filteredItems);
 		return get();
 	}
@@ -439,7 +439,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isHasValue() {
+	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
 	}
 
@@ -506,7 +506,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getSelectedItem() {
+	protected JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -519,7 +519,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
+	protected R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
 		return get();
 	}
@@ -614,7 +614,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getInputElement() {
+	protected JsonObject getInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
 	}
 
@@ -733,7 +733,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            dirty-checking for objects and arrays (always consider them to
 	 *            be "dirty"). Defaults to false.
 	 */
-	public void templatize(elemental.json.JsonObject template,
+	protected void templatize(elemental.json.JsonObject template,
 			elemental.json.JsonObject mutableData) {
 		getElement().callFunction("templatize", template, mutableData);
 	}

@@ -115,7 +115,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -129,7 +129,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -168,7 +168,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -177,7 +177,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -412,7 +412,7 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	 * @param optTriggeringEvent
 	 *            (optional) event that triggered the ripple.
 	 */
-	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+	protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);
 	}
 

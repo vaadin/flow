@@ -106,7 +106,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getColorList() {
+	protected JsonArray getColorList() {
 		return (JsonArray) getElement().getPropertyRaw("colorList");
 	}
 
@@ -123,7 +123,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setColorList(elemental.json.JsonArray colorList) {
+	protected R setColorList(elemental.json.JsonArray colorList) {
 		getElement().setPropertyJson("colorList", colorList);
 		return get();
 	}

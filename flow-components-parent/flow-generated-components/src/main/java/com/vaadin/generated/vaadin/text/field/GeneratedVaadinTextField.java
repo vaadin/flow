@@ -550,7 +550,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isHasValue() {
+	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
 	}
 
@@ -620,7 +620,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * @param newVal
 	 *            Missing documentation!
 	 */
-	public void attributeChangedCallback(JsonObject prop,
+	protected void attributeChangedCallback(JsonObject prop,
 			elemental.json.JsonObject oldVal, elemental.json.JsonObject newVal) {
 		getElement().callFunction("attributeChangedCallback", prop, oldVal,
 				newVal);

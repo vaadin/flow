@@ -48,12 +48,14 @@ public class VaadinComboBoxView extends DemoView {
         items.set(1, createItem("Sculpted", "Haywyre", "Two Fold Pt.1"));
         items.set(2, createItem("Voices of a Distant Star", "Killigrew",
                 "Animus II"));
-        comboBox.setItems(items);
+        // Demo temporarily disabled. Waiting for the VaadinComboBox class to be
+        // implemented
+        // comboBox.setItems(items);
 
         comboBox.getElement().synchronizeProperty("selectedItem",
                 "selected-item-changed");
-        comboBox.addChangeListener(
-                event -> setSelection(comboBox.getSelectedItem()));
+        // comboBox.addChangeListener(
+        // event -> setSelection(comboBox.getSelectedItem()));
 
         add(comboBox);
 
