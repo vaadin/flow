@@ -312,18 +312,18 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperInputContainer> {
-		public FocusedChangedEvent(GeneratedPaperInputContainer source,
+		public FocusedChangeEvent(GeneratedPaperInputContainer source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	/**

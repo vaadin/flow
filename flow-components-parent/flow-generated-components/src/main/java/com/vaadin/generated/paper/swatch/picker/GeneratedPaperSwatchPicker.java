@@ -262,17 +262,17 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	@DomEvent("color-changed")
-	public static class ColorChangedEvent
+	public static class ColorChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperSwatchPicker> {
-		public ColorChangedEvent(GeneratedPaperSwatchPicker source,
+		public ColorChangeEvent(GeneratedPaperSwatchPicker source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addColorChangedListener(
-			ComponentEventListener<ColorChangedEvent> listener) {
-		return addListener(ColorChangedEvent.class, listener);
+	public Registration addColorChangeListener(
+			ComponentEventListener<ColorChangeEvent> listener) {
+		return addListener(ColorChangeEvent.class, listener);
 	}
 }
