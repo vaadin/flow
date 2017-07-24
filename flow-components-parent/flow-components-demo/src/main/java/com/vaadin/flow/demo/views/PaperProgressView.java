@@ -30,7 +30,8 @@ public class PaperProgressView extends DemoView {
     @Override
     public void initView() {
         // begin-source-example
-        // source-example-heading: Modified and default indeterminate and static progress:
+        // source-example-heading: Modified and default indeterminate and static
+        // progress:
         // source-example-type: JAVA
         GeneratedPaperProgress slowBlue = new GeneratedPaperProgress();
         slowBlue.setIndeterminate(true);
@@ -50,7 +51,7 @@ public class PaperProgressView extends DemoView {
                 new Label("Static green with 2 states"), staticGreen);
     }
 
-    // @formatter::off
+    // @formatter:off
     /*
     // begin-source-example
     // source-example-heading: Style sheet:
@@ -65,5 +66,5 @@ public class PaperProgressView extends DemoView {
     }
     // end-source-example
     */
-    // @formatter::on
+    // @formatter:on
 }
