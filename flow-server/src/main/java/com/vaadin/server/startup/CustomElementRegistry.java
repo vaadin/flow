@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.server.startup;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +31,7 @@ public class CustomElementRegistry {
 
     private static final CustomElementRegistry INSTANCE = new CustomElementRegistry();
 
-    protected boolean initialized = false;
+     boolean initialized;
 
     private CustomElementRegistry() {
     }

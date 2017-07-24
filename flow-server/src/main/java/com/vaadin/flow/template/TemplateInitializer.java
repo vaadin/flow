@@ -36,8 +36,8 @@ import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.util.ReflectionCache;
-import com.vaadin.server.CustomElementRegistry;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
@@ -56,7 +56,7 @@ public class TemplateInitializer {
     private final PolymerTemplate<?> template;
 
     // id to Element map
-    private Map<String, Element> registeredCustomElements = new HashMap<String, Element>();
+    private final Map<String, Element> registeredCustomElements = new HashMap<>();
 
     @SuppressWarnings("rawtypes")
     private static final ReflectionCache<PolymerTemplate, ParserData> CACHE = new ReflectionCache<>(
