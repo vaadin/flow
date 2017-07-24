@@ -2,12 +2,15 @@ package com.vaadin.ui;
 
 import java.util.Collection;
 
+import com.vaadin.components.data.HasValue;
 import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
+import com.vaadin.shared.Registration;
 import com.vaadin.util.JsonSerializer;
 
 import elemental.json.JsonObject;
 
-public class VaadinComboBox extends GeneratedVaadinComboBox<VaadinComboBox> {
+public class VaadinComboBox extends GeneratedVaadinComboBox<VaadinComboBox>
+        implements HasValue<VaadinComboBox, String> {
 
     public VaadinComboBox() {
         getElement().synchronizeProperty("selectedItem",
@@ -33,6 +36,12 @@ public class VaadinComboBox extends GeneratedVaadinComboBox<VaadinComboBox> {
     public <T> T getSelectedValue(Class<T> clazz) {
         JsonObject selectedItem = getSelectedItem();
         return JsonSerializer.toObject(clazz, selectedItem);
+    }
+
+    @Override
+    public Registration addValueChangeListener(
+            ValueChangeListener<VaadinComboBox, String> listener) {
+        return null;
     }
 
 }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.event;
 
 import java.io.Serializable;
+import java.util.EventListener;
 
 import com.vaadin.ui.ComponentEvent;
 
@@ -29,7 +30,7 @@ import com.vaadin.ui.ComponentEvent;
  */
 @FunctionalInterface
 public interface ComponentEventListener<T extends ComponentEvent<?>>
-        extends Serializable {
+        extends EventListener, Serializable {
 
     /**
      * Invoked when a component event has been fired.
