@@ -15,18 +15,17 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.html.Label;
-import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.ui.VaadinComboBox;
 
 /**
- * View for {@link GeneratedVaadinComboBox} demo.
+ * View for {@link VaadinComboBox} demo.
  */
 @ComponentDemo(name = "Vaadin ComboBox", href = "vaadin-combo-box")
 public class VaadinComboBoxView extends DemoView {
@@ -35,25 +34,83 @@ public class VaadinComboBoxView extends DemoView {
     private Label artist;
     private Label album;
 
+    public static class Song {
+        private String name;
+        private String artist;
+        private String album;
+
+        public Song() {
+        }
+
+        public Song(String name, String artist, String album) {
+            this.name = name;
+            this.artist = artist;
+            this.album = album;
+        }
+
+        /**
+         * @return the name
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * @param name
+         *            the name to set
+         */
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        /**
+         * @return the artist
+         */
+        public String getArtist() {
+            return artist;
+        }
+
+        /**
+         * @param artist
+         *            the artist to set
+         */
+        public void setArtist(String artist) {
+            this.artist = artist;
+        }
+
+        /**
+         * @return the album
+         */
+        public String getAlbum() {
+            return album;
+        }
+
+        /**
+         * @param album
+         *            the album to set
+         */
+        public void setAlbum(String album) {
+            this.album = album;
+        }
+    }
+
     @Override
     void initView() {
-        GeneratedVaadinComboBox comboBox = new GeneratedVaadinComboBox();
+        VaadinComboBox comboBox = new VaadinComboBox();
         comboBox.setLabel("Music selection");
-        comboBox.setItemLabelPath("Song");
-        comboBox.setItemValuePath("Song");
+        comboBox.setItemLabelPath("name");
+        comboBox.setItemValuePath("");
 
-        JsonArray items = Json.createArray();
-        items.set(0, createItem("A V Club Disagrees", "Haircuts for Men",
+        List<Song> listOfSongs = new ArrayList<>();
+        listOfSongs.add(new Song("A V Club Disagrees", "Haircuts for Men",
                 "Physical Fitness"));
-        items.set(1, createItem("Sculpted", "Haywyre", "Two Fold Pt.1"));
-        items.set(2, createItem("Voices of a Distant Star", "Killigrew",
-                "Animus II"));
-        comboBox.setItems(items);
+        listOfSongs.add(new Song("Sculpted", "Haywyre", "Two Fold Pt.1"));
+        listOfSongs.add(
+                new Song("Voices of a Distant Star", "Killigrew", "Animus II"));
 
-        comboBox.getElement().synchronizeProperty("selectedItem",
-                "selected-item-changed");
+        comboBox.setItems(listOfSongs);
         comboBox.addChangeListener(
-                event -> setSelection(comboBox.getSelectedItem()));
+                event -> setSelection(comboBox.getSelectedValue(Song.class)));
 
         add(comboBox);
 
@@ -90,23 +147,12 @@ public class VaadinComboBoxView extends DemoView {
                 + "\n" + "layoutContainer.add(comboBox);\n");
     }
 
-    private JsonObject createItem(String song, String artist, String album) {
-        JsonObject item = Json.createObject();
-
-        item.put("Song", song);
-        item.put("Artist", artist);
-        item.put("Album", album);
-
-        return item;
-    }
-
-    public void setSelection(JsonObject selection) {
+    public void setSelection(Song selection) {
         if (selection == null) {
             updateLabels("", "", "");
         } else {
-            updateLabels(selection.getString("Song"),
-                    selection.getString("Artist"),
-                    selection.getString("Album"));
+            updateLabels(selection.getName(), selection.getArtist(),
+                    selection.getAlbum());
         }
     }
 
