@@ -33,8 +33,6 @@ import elemental.json.JsonValue;
 
 /**
  * Server-side component for the {@code <vaadin-form-layout>} element.
- * <p>
- * TODO
  * 
  * @author Vaadin Ltd
  */
@@ -42,13 +40,29 @@ public class VaadinFormLayout
         extends GeneratedVaadinFormLayout<VaadinFormLayout> {
 
     /**
+     * A class used in describing the responsive layouting behavior of a
+     * {@link VaadinFormLayout}.
      * 
      * @author Vaadin Ltd
      */
     public static class ResponsiveStep implements JsonSerializable {
 
+        /**
+         * Enum for describing the position of label components in a
+         * {@link VaadinFormItem}.
+         */
         public enum LabelsPosition {
-            ASIDE, TOP;
+
+            /**
+             * Labels are displayed on the left hand side of the wrapped
+             * component.
+             */
+            ASIDE,
+
+            /**
+             * Labels are displayed atop the wrapped component.
+             */
+            TOP;
 
             @Override
             public String toString() {
@@ -65,10 +79,14 @@ public class VaadinFormLayout
         private LabelsPosition labelsPosition;
 
         /**
-         * TODO
+         * Constructs a ResponsiveStep with the given minimum width and number
+         * of columns.
          * 
          * @param minWidth
+         *            the minimum width as a CSS string value after which this
+         *            responsive step is to be applied
          * @param columns
+         *            the number of columns the layout should have
          */
         public ResponsiveStep(String minWidth, int columns) {
             this.minWidth = minWidth;
@@ -76,11 +94,20 @@ public class VaadinFormLayout
         }
 
         /**
-         * TODO
+         * Constructs a ResponsiveStep with the given minimum width, number of
+         * columns and label position.
+         * 
+         * @see LabelsPosition
+         * @see VaadinFormItem
          * 
          * @param minWidth
+         *            the minimum width as a CSS string value after which this
+         *            responsive step is to be applied
          * @param columns
+         *            the number of columns the layout should have
          * @param labelsPosition
+         *            the position where label components are to be displayed in
+         *            {@link VaadinFormItem}s
          */
         public ResponsiveStep(String minWidth, int columns,
                 LabelsPosition labelsPosition) {
@@ -89,10 +116,6 @@ public class VaadinFormLayout
             this.labelsPosition = labelsPosition;
         }
 
-        /**
-         * 
-         * @param value
-         */
         private ResponsiveStep(JsonObject value) {
             readJson(value);
         }
@@ -128,9 +151,8 @@ public class VaadinFormLayout
     }
 
     /**
-     * Server-side component for the {@code <vaadin-form-item>} element.
-     * <p>
-     * TODO
+     * Server-side component for the {@code <vaadin-form-item>} element. Used to
+     * wrap components for display in a {@link VaadinFormLayout}.
      * 
      * @author Vaadin Ltd
      */
@@ -138,26 +160,23 @@ public class VaadinFormLayout
             extends GeneratedVaadinFormItem<VaadinFormItem> {
 
         /**
-         * TODO
+         * Constructs a VaadinFormItem with the given initial components to
+         * wrap. Additional components can be added after construction with
+         * {@link #add(Component...)}.
          * 
          * @param components
-         *            the components to add
+         *            the initial components to wrap as a form item.
          * @see HasComponents#add(Component...)
          */
         public VaadinFormItem(com.vaadin.ui.Component... components) {
             super(components);
         }
-
-        /**
-         * TODO
-         */
-        public VaadinFormItem() {
-            super();
-        }
     }
 
     /**
-     * TODO
+     * Constructs a VaadinFormLayout with the given initial components.
+     * Additional components can be added after construction with
+     * {@link #add(Component...)}.
      * 
      * @param components
      *            the components to add
@@ -168,16 +187,11 @@ public class VaadinFormLayout
     }
 
     /**
-     * TODO
-     */
-    public VaadinFormLayout() {
-        super();
-    }
-
-    /**
-     * TODO
+     * Get the list of {@link ResponsiveStep}s used to configure this layout.
      * 
-     * @return
+     * @see ResponsiveStep
+     * 
+     * @return the list of {@link ResponsiveStep}s used to configure this layout
      */
     public List<ResponsiveStep> getResponsiveStepsWrapped() {
         JsonArray stepsJsonArray = (JsonArray) getElement()
@@ -190,10 +204,13 @@ public class VaadinFormLayout
     }
 
     /**
-     * TODO
+     * Configure the responsive steps used in this layout.
+     * 
+     * @see ResponsiveStep
      * 
      * @param steps
-     * @return
+     *            list of {@link ResponsiveStep}s to set
+     * @return this instance, for method chaining
      */
     public VaadinFormLayout setResponsiveSteps(List<ResponsiveStep> steps) {
         AtomicInteger index = new AtomicInteger();
@@ -212,29 +229,36 @@ public class VaadinFormLayout
     }
 
     /**
-     * TODO
+     * Configure the responsive steps used in this layout.
+     * 
+     * @see ResponsiveStep
      * 
      * @param steps
-     * @return
+     *            the {@link ResponsiveStep}s to set
+     * @return this instance, for method chaining
      */
     public VaadinFormLayout setResponsiveSteps(ResponsiveStep... steps) {
         return setResponsiveSteps(Arrays.asList(steps));
     }
 
     /**
-     * TODO
+     * @deprecated Use {@link #getResponsiveStepsWrapped()} instead.
      */
+    @Deprecated
     @Override
     public JsonObject getResponsiveSteps() {
-        throw new UnsupportedOperationException("");
+        throw new UnsupportedOperationException(
+                "Use getResponsiveStepsWrapped() instead.");
     }
 
     /**
-     * TODO
+     * @deprecated Use {@link #setResponsiveSteps(ResponsiveStep...)} instead.
      */
+    @Deprecated
     @Override
     public VaadinFormLayout setResponsiveSteps(
             elemental.json.JsonObject responsiveSteps) {
-        throw new UnsupportedOperationException("");
+        throw new UnsupportedOperationException(
+                "Use setResponsiveSteps(ResponsiveStep...) instead.");
     }
 }
