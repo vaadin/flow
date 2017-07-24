@@ -1,1 +1,1 @@
-com.vaadin.server.CustomElementRegistryInitializer
+com.vaadin.server.startup.CustomElementRegistryInitializer
