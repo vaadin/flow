@@ -16,8 +16,8 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
-import com.vaadin.ui.VaadinButton;
 import com.vaadin.ui.VaadinFormLayout;
 import com.vaadin.ui.VaadinFormLayout.ResponsiveStep;
 import com.vaadin.ui.VaadinFormLayout.VaadinFormItem;
@@ -52,8 +52,8 @@ public class VaadinFormLayoutView extends DemoView {
 
         nameLayout.setResponsiveSteps(
                 new ResponsiveStep("0", 1),
-                new ResponsiveStep("18em", 2),
-                new ResponsiveStep("20em", 3));
+                new ResponsiveStep("20em", 2),
+                new ResponsiveStep("22em", 3));
         // end-source-example
         // @formatter:on
 
@@ -62,15 +62,18 @@ public class VaadinFormLayoutView extends DemoView {
         VaadinFormLayout layoutWithFormItems = new VaadinFormLayout();
 
         VaadinFormItem firstItem = new VaadinFormItem(
-                new VaadinTextField("First name", "John"));
+                new VaadinTextField().setPlaceholder("John"));
         VaadinFormItem secondItem = new VaadinFormItem(
-                new VaadinTextField("Last name", "Doe"));
+                new VaadinTextField().setPlaceholder("Doe"));
 
-        firstItem.addToLabel(
-                new VaadinButton("Button inside the label"));
-        secondItem.addToLabel(
-                new VaadinButton("And another one!"),
-                new VaadinButton("And another one!"));
+        Div firstItemLabelComponent = new Div();
+        firstItemLabelComponent.setText("First name");
+
+        Div secondItemLabelComponent = new Div();
+        secondItemLabelComponent.setText("Last name");
+
+        firstItem.addToLabel(firstItemLabelComponent);
+        secondItem.addToLabel(secondItemLabelComponent);
 
         layoutWithFormItems.add(firstItem, secondItem);
         // end-source-example
