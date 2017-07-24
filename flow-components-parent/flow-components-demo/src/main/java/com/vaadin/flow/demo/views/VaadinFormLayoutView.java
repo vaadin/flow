@@ -20,7 +20,6 @@ import com.vaadin.flow.html.H3;
 import com.vaadin.ui.VaadinButton;
 import com.vaadin.ui.VaadinFormLayout;
 import com.vaadin.ui.VaadinFormLayout.ResponsiveStep;
-import com.vaadin.ui.VaadinFormLayout.ResponsiveStep.LabelsPosition;
 import com.vaadin.ui.VaadinFormLayout.VaadinFormItem;
 import com.vaadin.ui.VaadinTextField;
 
@@ -52,9 +51,9 @@ public class VaadinFormLayoutView extends DemoView {
         nameLayout.add(titleField, firstNameField, lastNameField);
 
         nameLayout.setResponsiveSteps(
-                new ResponsiveStep("0", 1, LabelsPosition.ASIDE),
-                new ResponsiveStep("18em", 2, LabelsPosition.TOP),
-                new ResponsiveStep("20em", 3, LabelsPosition.TOP));
+                new ResponsiveStep("0", 1),
+                new ResponsiveStep("18em", 2),
+                new ResponsiveStep("20em", 3));
         // end-source-example
         // @formatter:on
 
