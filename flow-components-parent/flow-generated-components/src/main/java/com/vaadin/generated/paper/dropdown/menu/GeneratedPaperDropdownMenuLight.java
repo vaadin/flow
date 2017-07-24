@@ -941,48 +941,48 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	}
 
 	@DomEvent("active-changed")
-	public static class ActiveChangedEvent
+	public static class ActiveChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public ActiveChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public ActiveChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addActiveChangedListener(
-			ComponentEventListener<ActiveChangedEvent> listener) {
-		return addListener(ActiveChangedEvent.class, listener);
+	public Registration addActiveChangeListener(
+			ComponentEventListener<ActiveChangeEvent> listener) {
+		return addListener(ActiveChangeEvent.class, listener);
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public FocusedChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public FocusedChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public DisabledChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public DisabledChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("iron-form-element-register")
@@ -1016,78 +1016,78 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	}
 
 	@DomEvent("value-changed")
-	public static class ValueChangedEvent
+	public static class ValueChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public ValueChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public ValueChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addValueChangedListener(
-			ComponentEventListener<ValueChangedEvent> listener) {
-		return addListener(ValueChangedEvent.class, listener);
+	public Registration addValueChangeListener(
+			ComponentEventListener<ValueChangeEvent> listener) {
+		return addListener(ValueChangeEvent.class, listener);
 	}
 
 	@DomEvent("invalid-changed")
-	public static class InvalidChangedEvent
+	public static class InvalidChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public InvalidChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public InvalidChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addInvalidChangedListener(
-			ComponentEventListener<InvalidChangedEvent> listener) {
-		return addListener(InvalidChangedEvent.class, listener);
+	public Registration addInvalidChangeListener(
+			ComponentEventListener<InvalidChangeEvent> listener) {
+		return addListener(InvalidChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-item-label-changed")
-	public static class SelectedItemLabelChangedEvent
+	public static class SelectedItemLabelChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public SelectedItemLabelChangedEvent(
+		public SelectedItemLabelChangeEvent(
 				GeneratedPaperDropdownMenuLight source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedItemLabelChangedListener(
-			ComponentEventListener<SelectedItemLabelChangedEvent> listener) {
-		return addListener(SelectedItemLabelChangedEvent.class, listener);
+	public Registration addSelectedItemLabelChangeListener(
+			ComponentEventListener<SelectedItemLabelChangeEvent> listener) {
+		return addListener(SelectedItemLabelChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangedEvent
+	public static class SelectedItemChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public SelectedItemChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public SelectedItemChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedItemChangedListener(
-			ComponentEventListener<SelectedItemChangedEvent> listener) {
-		return addListener(SelectedItemChangedEvent.class, listener);
+	public Registration addSelectedItemChangeListener(
+			ComponentEventListener<SelectedItemChangeEvent> listener) {
+		return addListener(SelectedItemChangeEvent.class, listener);
 	}
 
 	@DomEvent("opened-changed")
-	public static class OpenedChangedEvent
+	public static class OpenedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public OpenedChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public OpenedChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addOpenedChangedListener(
-			ComponentEventListener<OpenedChangedEvent> listener) {
-		return addListener(OpenedChangedEvent.class, listener);
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent> listener) {
+		return addListener(OpenedChangeEvent.class, listener);
 	}
 
 	/**

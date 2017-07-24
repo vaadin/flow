@@ -439,45 +439,45 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTab> {
-		public FocusedChangedEvent(GeneratedPaperTab source, boolean fromClient) {
+		public FocusedChangeEvent(GeneratedPaperTab source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTab> {
-		public DisabledChangedEvent(GeneratedPaperTab source, boolean fromClient) {
+		public DisabledChangeEvent(GeneratedPaperTab source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("active-changed")
-	public static class ActiveChangedEvent
+	public static class ActiveChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTab> {
-		public ActiveChangedEvent(GeneratedPaperTab source, boolean fromClient) {
+		public ActiveChangeEvent(GeneratedPaperTab source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addActiveChangedListener(
-			ComponentEventListener<ActiveChangedEvent> listener) {
-		return addListener(ActiveChangedEvent.class, listener);
+	public Registration addActiveChangeListener(
+			ComponentEventListener<ActiveChangeEvent> listener) {
+		return addListener(ActiveChangeEvent.class, listener);
 	}
 
 	/**

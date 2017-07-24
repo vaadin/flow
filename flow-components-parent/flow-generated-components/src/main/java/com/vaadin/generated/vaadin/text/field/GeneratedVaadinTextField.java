@@ -23,6 +23,7 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.components.NotSupported;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.DomEvent;
@@ -55,7 +56,12 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle, Focusable<R> {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			Focusable<R>,
+			HasValue<R, String> {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -495,6 +501,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
+	@Override
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -509,6 +516,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
+	@Override
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return get();
@@ -656,49 +664,34 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 		return addListener(IronFormElementUnregisterEvent.class, listener);
 	}
 
-	@DomEvent("value-changed")
-	public static class ValueChangedEvent
-			extends
-				ComponentEvent<GeneratedVaadinTextField> {
-		public ValueChangedEvent(GeneratedVaadinTextField source,
-				boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
-
-	public Registration addValueChangedListener(
-			ComponentEventListener<ValueChangedEvent> listener) {
-		return addListener(ValueChangedEvent.class, listener);
-	}
-
 	@DomEvent("invalid-changed")
-	public static class InvalidChangedEvent
+	public static class InvalidChangeEvent
 			extends
 				ComponentEvent<GeneratedVaadinTextField> {
-		public InvalidChangedEvent(GeneratedVaadinTextField source,
+		public InvalidChangeEvent(GeneratedVaadinTextField source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addInvalidChangedListener(
-			ComponentEventListener<InvalidChangedEvent> listener) {
-		return addListener(InvalidChangedEvent.class, listener);
+	public Registration addInvalidChangeListener(
+			ComponentEventListener<InvalidChangeEvent> listener) {
+		return addListener(InvalidChangeEvent.class, listener);
 	}
 
 	@DomEvent("has-value-changed")
-	public static class HasValueChangedEvent
+	public static class HasValueChangeEvent
 			extends
 				ComponentEvent<GeneratedVaadinTextField> {
-		public HasValueChangedEvent(GeneratedVaadinTextField source,
+		public HasValueChangeEvent(GeneratedVaadinTextField source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addHasValueChangedListener(
-			ComponentEventListener<HasValueChangedEvent> listener) {
-		return addListener(HasValueChangedEvent.class, listener);
+	public Registration addHasValueChangeListener(
+			ComponentEventListener<HasValueChangeEvent> listener) {
+		return addListener(HasValueChangeEvent.class, listener);
 	}
 
 	/**

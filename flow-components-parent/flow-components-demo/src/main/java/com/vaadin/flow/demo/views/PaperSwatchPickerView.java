@@ -33,7 +33,7 @@ public class PaperSwatchPickerView extends DemoView {
         picker.setColor("#f4511e");
         final Label color = new Label("Picker color: " + picker.getColor());
 
-        picker.addColorChangedListener(
+        picker.addColorChangeListener(
                 event -> color.setText("Picker color: " + picker.getColor()));
 
         add(picker, color);

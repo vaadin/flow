@@ -707,33 +707,33 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperMenuButton> {
-		public FocusedChangedEvent(GeneratedPaperMenuButton source,
+		public FocusedChangeEvent(GeneratedPaperMenuButton source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperMenuButton> {
-		public DisabledChangedEvent(GeneratedPaperMenuButton source,
+		public DisabledChangeEvent(GeneratedPaperMenuButton source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("paper-dropdown-close")
@@ -767,48 +767,48 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	}
 
 	@DomEvent("opened-changed")
-	public static class OpenedChangedEvent
+	public static class OpenedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperMenuButton> {
-		public OpenedChangedEvent(GeneratedPaperMenuButton source,
+		public OpenedChangeEvent(GeneratedPaperMenuButton source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addOpenedChangedListener(
-			ComponentEventListener<OpenedChangedEvent> listener) {
-		return addListener(OpenedChangedEvent.class, listener);
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent> listener) {
+		return addListener(OpenedChangeEvent.class, listener);
 	}
 
 	@DomEvent("horizontal-offset-changed")
-	public static class HorizontalOffsetChangedEvent
+	public static class HorizontalOffsetChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperMenuButton> {
-		public HorizontalOffsetChangedEvent(GeneratedPaperMenuButton source,
+		public HorizontalOffsetChangeEvent(GeneratedPaperMenuButton source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addHorizontalOffsetChangedListener(
-			ComponentEventListener<HorizontalOffsetChangedEvent> listener) {
-		return addListener(HorizontalOffsetChangedEvent.class, listener);
+	public Registration addHorizontalOffsetChangeListener(
+			ComponentEventListener<HorizontalOffsetChangeEvent> listener) {
+		return addListener(HorizontalOffsetChangeEvent.class, listener);
 	}
 
 	@DomEvent("vertical-offset-changed")
-	public static class VerticalOffsetChangedEvent
+	public static class VerticalOffsetChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperMenuButton> {
-		public VerticalOffsetChangedEvent(GeneratedPaperMenuButton source,
+		public VerticalOffsetChangeEvent(GeneratedPaperMenuButton source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addVerticalOffsetChangedListener(
-			ComponentEventListener<VerticalOffsetChangedEvent> listener) {
-		return addListener(VerticalOffsetChangedEvent.class, listener);
+	public Registration addVerticalOffsetChangeListener(
+			ComponentEventListener<VerticalOffsetChangeEvent> listener) {
+		return addListener(VerticalOffsetChangeEvent.class, listener);
 	}
 
 	/**

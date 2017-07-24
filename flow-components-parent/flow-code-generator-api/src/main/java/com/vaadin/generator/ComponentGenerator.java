@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -30,6 +31,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.Generated;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
@@ -47,6 +49,7 @@ import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.components.JsonSerializable;
 import com.vaadin.components.NotSupported;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
@@ -318,8 +321,9 @@ public class ComponentGenerator {
         }
 
         if (metadata.getEvents() != null) {
-            metadata.getEvents().forEach(
-                    event -> generateEventListenerFor(javaClass, event));
+            metadata.getEvents()
+                    .forEach(event -> generateEventListenerFor(javaClass,
+                            metadata, event));
         }
 
         if (metadata.getSlots() != null && !metadata.getSlots().isEmpty()) {
@@ -403,10 +407,11 @@ public class ComponentGenerator {
     private void generateGettersAndSetters(ComponentMetadata metadata,
             JavaClassSource javaClass) {
         metadata.getProperties().forEach(property -> {
-            generateGetterFor(javaClass, property, metadata.getEvents());
+            generateGetterFor(javaClass, metadata, property,
+                    metadata.getEvents());
 
             if (!property.isReadOnly()) {
-                generateSetterFor(javaClass, property);
+                generateSetterFor(javaClass, metadata, property);
             }
         });
     }
@@ -590,7 +595,8 @@ public class ComponentGenerator {
     }
 
     private void generateGetterFor(JavaClassSource javaClass,
-            ComponentPropertyData property, List<ComponentEventData> events) {
+            ComponentMetadata metadata, ComponentPropertyData property,
+            List<ComponentEventData> events) {
 
         if (containsObjectType(property)) {
             JavaClassSource nestedClass = generateNestedPojo(javaClass,
@@ -611,12 +617,20 @@ public class ComponentGenerator {
             addSynchronizeAnnotationAndJavadocToGetter(method, property,
                     events);
 
+            if ("value".equals(property.getName())
+                    && shouldImplementHasValue(metadata)) {
+                javaClass.addInterface(HasValue.class.getName() + "<"
+                        + GENERIC_TYPE + ", " + nestedClass.getName() + ">");
+                method.addAnnotation(Override.class);
+            }
+
         } else {
             boolean postfixWithVariableType = property.getType().size() > 1;
             for (ComponentBasicType basicType : property.getType()) {
+                Class<?> javaType = ComponentGeneratorUtils
+                        .toJavaType(basicType);
                 MethodSource<JavaClassSource> method = javaClass.addMethod()
-                        .setPublic().setReturnType(
-                                ComponentGeneratorUtils.toJavaType(basicType));
+                        .setPublic().setReturnType(javaType);
 
                 if (basicType == ComponentBasicType.BOOLEAN) {
                     method.setName(ComponentGeneratorUtils
@@ -638,6 +652,18 @@ public class ComponentGenerator {
 
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
                         events);
+
+                if ("value".equals(property.getName())
+                        && shouldImplementHasValue(metadata)) {
+
+                    if (javaType.isPrimitive()) {
+                        javaType = ClassUtils.primitiveToWrapper(javaType);
+                        method.setReturnType(javaType);
+                    }
+                    javaClass.addInterface(HasValue.class.getName() + "<"
+                            + GENERIC_TYPE + ", " + javaType.getName() + ">");
+                    method.addAnnotation(Override.class);
+                }
             }
         }
     }
@@ -678,6 +704,34 @@ public class ComponentGenerator {
                 .anyMatch(name -> name.equals(eventName));
     }
 
+    /**
+     * Verifies whether a component should implement the {@link HasValue}
+     * interface.
+     * <p>
+     * To be able to implement the interface, the component must have a
+     * non-read-only property called "value", and publish "value-changed"
+     * events.
+     * <p>
+     * The "value" also cannot be multi-typed.
+     */
+    private boolean shouldImplementHasValue(ComponentMetadata metadata) {
+        if (metadata.getProperties() == null || metadata.getEvents() == null
+                || !fluentSetters) {
+            return false;
+        }
+
+        if (metadata.getProperties().stream()
+                .anyMatch(property -> "value".equals(property.getName())
+                        && !property.isReadOnly()
+                        && (containsObjectType(property)
+                                || property.getType().size() == 1))) {
+
+            return metadata.getEvents().stream()
+                    .anyMatch(event -> "value-changed".equals(event.getName()));
+        }
+        return false;
+    }
+
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
         String nl = System.getProperty("line.separator");
         String text = String.format("%s%s%s%s",
@@ -694,7 +748,7 @@ public class ComponentGenerator {
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
-            ComponentPropertyData property) {
+            ComponentMetadata metadata, ComponentPropertyData property) {
 
         if (containsObjectType(property)) {
             // the getter already created the nested pojo, so here we just need
@@ -726,6 +780,11 @@ public class ComponentGenerator {
 
             if (fluentSetters) {
                 addFluentReturnToSetter(method);
+
+                if ("value".equals(property.getName())
+                        && shouldImplementHasValue(metadata)) {
+                    method.addAnnotation(Override.class);
+                }
             }
 
         } else {
@@ -758,8 +817,61 @@ public class ComponentGenerator {
 
                 if (fluentSetters) {
                     addFluentReturnToSetter(method);
+
+                    if ("value".equals(property.getName())
+                            && shouldImplementHasValue(metadata)) {
+
+                        method.addAnnotation(Override.class);
+                        if (setterType.isPrimitive()) {
+                            implementHasValueSetterWithPimitiveType(javaClass,
+                                    property, method, setterType,
+                                    parameterName);
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    /**
+     * HasValue interface use a generic type for the value, and generics can't
+     * be used with primitive types. This method converts any boolean or double
+     * parameters to {@link Boolean} and {@link Double} respectively.
+     * <p>
+     * Note that for double, an overload setter with {@link Number} is also
+     * created, to allow the developer to call the setValue method using int.
+     */
+    private void implementHasValueSetterWithPimitiveType(
+            JavaClassSource javaClass, ComponentPropertyData property,
+            MethodSource<JavaClassSource> method, Class<?> setterType,
+            String parameterName) {
+        method.removeParameter(setterType, parameterName);
+        setterType = ClassUtils.primitiveToWrapper(setterType);
+        method.addParameter(setterType, parameterName);
+        method.setBody(String.format("Objects.requireNonNull(%s, \"%s\");",
+                parameterName, javaClass.getName() + " value must not be null")
+                + method.getBody());
+        javaClass.addImport(Objects.class);
+
+        if (setterType.equals(Double.class)) {
+            MethodSource<JavaClassSource> overloadMethod = javaClass.addMethod()
+                    .setName(method.getName()).setPublic();
+            overloadMethod.addParameter(Number.class, parameterName);
+            overloadMethod.setBody(String.format("setValue(%s.doubleValue());",
+                    parameterName));
+
+            if (StringUtils.isNotEmpty(property.getDescription())) {
+                addJavaDoc(property.getDescription(),
+                        overloadMethod.getJavaDoc());
+            }
+
+            overloadMethod.getJavaDoc().addTagValue(JAVADOC_PARAM,
+                    String.format("%s the %s value to set", parameterName,
+                            Number.class.getSimpleName()));
+            overloadMethod.getJavaDoc().addTagValue(JAVADOC_SEE,
+                    "#setValue(Double)");
+
+            addFluentReturnToSetter(overloadMethod);
         }
     }
 
@@ -872,12 +984,26 @@ public class ComponentGenerator {
     }
 
     private void generateEventListenerFor(JavaClassSource javaClass,
-            ComponentEventData event) {
+            ComponentMetadata metadata, ComponentEventData event) {
+
+        // verify whether the HasValue interface is implemented. If yes, then
+        // the method doesn't need to be created
+        if ("value-changed".equals(event.getName())
+                && shouldImplementHasValue(metadata)) {
+            return;
+        }
+
         String eventName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(event.getName());
 
+        if (eventName.endsWith("Changed")) {
+            // removes the "d" in the end, to create addSomethingChangeListener
+            // and SomethingChangeEvent
+            eventName = eventName.substring(0, eventName.length() - 1);
+        }
+
         JavaClassSource eventListener = createEventListenerEventClass(javaClass,
-                event);
+                event, eventName);
 
         javaClass.addNestedType(eventListener);
         MethodSource<JavaClassSource> method = javaClass.addMethod()
@@ -892,10 +1018,9 @@ public class ComponentGenerator {
     }
 
     private JavaClassSource createEventListenerEventClass(
-            JavaClassSource javaClass, ComponentEventData event) {
-        String eventName = ComponentGeneratorUtils
-                .formatStringToValidJavaIdentifier(event.getName());
-        String eventClassName = StringUtils.capitalize(eventName);
+            JavaClassSource javaClass, ComponentEventData event,
+            String javaEventName) {
+        String eventClassName = StringUtils.capitalize(javaEventName);
         String eventListenerString = String.format(
                 "public static class %sEvent extends ComponentEvent<%s> {}",
                 eventClassName, javaClass.getName());
