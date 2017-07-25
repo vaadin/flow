@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.form.layout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -111,13 +112,18 @@ import com.vaadin.ui.HasComponents;
  * between the form item elements | {@code 1em}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: Vaadin.FormItemElement#null", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: Vaadin.FormItemElement#null", "Flow#0.1.15-SNAPSHOT"})
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-item.html")
 public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasClickListeners<R>,
+			HasComponents {
 
 	/**
 	 * Adds the given components as children of this component at the slot

@@ -95,8 +95,8 @@ import com.vaadin.ui.HasComponents;
  * {@code 2em}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: Vaadin.FormLayoutElement#null", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: Vaadin.FormLayoutElement#null", "Flow#0.1.15-SNAPSHOT"})
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
@@ -148,7 +148,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	  </dd>
 	</dl><p>This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
 	 */
-	public JsonObject getResponsiveSteps() {
+	protected JsonObject getResponsiveSteps() {
 		return (JsonObject) getElement().getPropertyRaw("responsiveSteps");
 	}
 
@@ -199,7 +199,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	 * @param responsiveSteps the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setResponsiveSteps(elemental.json.JsonObject responsiveSteps) {
+	protected R setResponsiveSteps(elemental.json.JsonObject responsiveSteps) {
 		getElement().setPropertyJson("responsiveSteps", responsiveSteps);
 		return get();
 	}
@@ -215,7 +215,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	 * 
 	 * @param ...args Missing documentation!
 	 */
-	public void updateStyles(elemental.json.JsonObject _Args) {
+	protected void updateStyles(elemental.json.JsonObject _Args) {
 		getElement().callFunction("updateStyles", _Args);
 	}
 

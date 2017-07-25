@@ -193,7 +193,7 @@ public class VaadinFormLayout
      * 
      * @return the list of {@link ResponsiveStep}s used to configure this layout
      */
-    public List<ResponsiveStep> getResponsiveStepsWrapped() {
+    public List<ResponsiveStep> getResponsiveStepsList() {
         JsonArray stepsJsonArray = (JsonArray) getElement()
                 .getPropertyRaw("responsiveSteps");
         List<ResponsiveStep> steps = new ArrayList<>();
@@ -239,26 +239,5 @@ public class VaadinFormLayout
      */
     public VaadinFormLayout setResponsiveSteps(ResponsiveStep... steps) {
         return setResponsiveSteps(Arrays.asList(steps));
-    }
-
-    /**
-     * @deprecated Use {@link #getResponsiveStepsWrapped()} instead.
-     */
-    @Deprecated
-    @Override
-    public JsonObject getResponsiveSteps() {
-        throw new UnsupportedOperationException(
-                "Use getResponsiveStepsWrapped() instead.");
-    }
-
-    /**
-     * @deprecated Use {@link #setResponsiveSteps(ResponsiveStep...)} instead.
-     */
-    @Deprecated
-    @Override
-    public VaadinFormLayout setResponsiveSteps(
-            elemental.json.JsonObject responsiveSteps) {
-        throw new UnsupportedOperationException(
-                "Use setResponsiveSteps(ResponsiveStep...) instead.");
     }
 }
