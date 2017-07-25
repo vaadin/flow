@@ -193,7 +193,7 @@ public class VaadinFormLayout
      * 
      * @return the list of {@link ResponsiveStep}s used to configure this layout
      */
-    public List<ResponsiveStep> getResponsiveStepsList() {
+    public List<ResponsiveStep> getResponsiveSteps() {
         JsonArray stepsJsonArray = (JsonArray) getElement()
                 .getPropertyRaw("responsiveSteps");
         List<ResponsiveStep> steps = new ArrayList<>();
