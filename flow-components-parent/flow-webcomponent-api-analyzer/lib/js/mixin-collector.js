@@ -38,7 +38,8 @@ module.exports = class MixinCollector {
     try {
       return this._internalGetFlattenedHierarchy(this._mixinMap, elementIdentifier);
     } catch(e) {
-      console.error(`Loop detected in mixin hierarchy for element ${elementIdentifier}`)
+      console.error(`Loop detected in mixin hierarchy for element ${elementIdentifier}. `
+      + `Please verify the mixin definitions for descendants of element ${e.message}.`);
       return []
     }
   }
@@ -66,7 +67,8 @@ module.exports = class MixinCollector {
     try {
       return this._internalGetFlattenedHierarchy(this._behaviorMap, elementIdentifier);
     } catch(e) {
-      console.error(`Loop detected in behavior hierarchy for element ${elementIdentifier}`)
+      console.error(`Loop detected in behavior hierarchy for element ${elementIdentifier}. `
+      + `Please verify the behavior definitions for descendants of element ${e.message}.`);
       return []
     }
   }
@@ -84,7 +86,7 @@ module.exports = class MixinCollector {
 
   _internalGetFlattenedHierarchy(mixinMap, elementIdentifier) {
     if (this._loopDetect.has(elementIdentifier)) {
-      throw new Error();
+      throw new Error(elementIdentifier);
     }
     this._loopDetect.add(elementIdentifier);
     const mixins = mixinMap[elementIdentifier];
