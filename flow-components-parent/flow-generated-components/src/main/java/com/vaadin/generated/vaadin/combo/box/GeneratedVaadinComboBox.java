@@ -316,7 +316,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonArray getItems() {
+	protected JsonArray protectedGetItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}
 
@@ -377,7 +377,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonArray getFilteredItems() {
+	protected JsonArray protectedGetFilteredItems() {
 		return (JsonArray) getElement().getPropertyRaw("filteredItems");
 	}
 
@@ -473,7 +473,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getSelectedItem() {
+	protected JsonObject protectedGetSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -581,7 +581,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getInputElement() {
+	protected JsonObject protectedGetInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
 	}
 

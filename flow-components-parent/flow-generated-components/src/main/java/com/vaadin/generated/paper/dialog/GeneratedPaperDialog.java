@@ -102,7 +102,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getSizingTarget() {
+	protected JsonObject protectedGetSizingTarget() {
 		return (JsonObject) getElement().getPropertyRaw("sizingTarget");
 	}
 
@@ -131,7 +131,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getFitInto() {
+	protected JsonObject protectedGetFitInto() {
 		return (JsonObject) getElement().getPropertyRaw("fitInto");
 	}
 
@@ -186,7 +186,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getPositionTarget() {
+	protected JsonObject protectedGetPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
 	}
 
@@ -580,7 +580,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getClosingReason() {
+	protected JsonObject protectedGetClosingReason() {
 		return (JsonObject) getElement().getPropertyRaw("closingReason");
 	}
 
@@ -689,7 +689,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getAnimationConfig() {
+	protected JsonObject protectedGetAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
 	}
 
