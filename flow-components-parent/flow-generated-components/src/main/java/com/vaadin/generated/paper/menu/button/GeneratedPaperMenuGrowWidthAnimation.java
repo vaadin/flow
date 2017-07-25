@@ -24,9 +24,9 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
 		"WebComponent: paper-menu-grow-width-animation#UNKNOWN",
-		"Flow#0.1.14-SNAPSHOT"})
+		"Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-menu-grow-width-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGrowWidthAnimation<R>>
@@ -41,7 +41,7 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getAnimationTiming() {
+	protected JsonObject getAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
 	}
 
@@ -54,7 +54,7 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	protected R setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
 		return get();
 	}
@@ -67,7 +67,7 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isIsNeonAnimation() {
+	public boolean isNeonAnimation() {
 		return getElement().getProperty("isNeonAnimation", false);
 	}
 
@@ -94,7 +94,7 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
 	 * @param config
 	 *            Missing documentation!
 	 */
-	public void timingFromConfig(elemental.json.JsonObject config) {
+	protected void timingFromConfig(elemental.json.JsonObject config) {
 		getElement().callFunction("timingFromConfig", config);
 	}
 
@@ -111,7 +111,7 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
 	 * @param value
 	 *            Missing documentation!
 	 */
-	public void setPrefixedProperty(elemental.json.JsonObject node,
+	protected void setPrefixedProperty(elemental.json.JsonObject node,
 			elemental.json.JsonObject property, elemental.json.JsonObject value) {
 		getElement().callFunction("setPrefixedProperty", node, property, value);
 	}

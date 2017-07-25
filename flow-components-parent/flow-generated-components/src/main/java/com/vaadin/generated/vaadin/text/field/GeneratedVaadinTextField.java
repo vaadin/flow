@@ -50,8 +50,8 @@ import com.vaadin.shared.Registration;
  * value and suffix
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: Vaadin.TextFieldElement#null", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: Vaadin.TextFieldElement#null", "Flow#0.1.15-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
@@ -558,7 +558,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isHasValue() {
+	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
 	}
 
@@ -628,7 +628,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * @param newVal
 	 *            Missing documentation!
 	 */
-	public void attributeChangedCallback(JsonObject prop,
+	protected void attributeChangedCallback(JsonObject prop,
 			elemental.json.JsonObject oldVal, elemental.json.JsonObject newVal) {
 		getElement().callFunction("attributeChangedCallback", prop, oldVal,
 				newVal);

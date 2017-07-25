@@ -101,8 +101,8 @@ import com.vaadin.shared.Registration;
  * </style>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-dropdown-menu-light")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html")
 public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMenuLight<R>>
@@ -118,7 +118,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -132,7 +132,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -171,7 +171,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -180,7 +180,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -532,7 +532,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getSelectedItem() {
+	protected JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -790,7 +790,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isHasContent() {
+	public boolean hasContent() {
 		return getElement().getProperty("hasContent", false);
 	}
 
@@ -802,7 +802,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getContentElement() {
+	protected JsonObject getContentElement() {
 		return (JsonObject) getElement().getPropertyRaw("contentElement");
 	}
 
@@ -815,7 +815,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setContentElement(elemental.json.JsonObject contentElement) {
+	protected R setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
 		return get();
 	}
@@ -871,7 +871,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * @param optTriggeringEvent
 	 *            (optional) event that triggered the ripple.
 	 */
-	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+	protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);
 	}
 

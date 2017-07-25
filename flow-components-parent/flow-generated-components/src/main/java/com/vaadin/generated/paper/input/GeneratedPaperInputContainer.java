@@ -141,8 +141,8 @@ import com.vaadin.shared.Registration;
  * {@code inline} attribute to make it {@code display:inline-block}.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-input-container#2.0.1", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-input-container#2.0.1", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
 public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>
@@ -307,7 +307,7 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * @param state
 	 *            Add-on state.
 	 */
-	public void updateAddons(JsonObject state) {
+	protected void updateAddons(JsonObject state) {
 		getElement().callFunction("updateAddons", state);
 	}
 

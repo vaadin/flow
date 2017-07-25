@@ -83,8 +83,8 @@ import com.vaadin.ui.HasComponents;
  * features implemented by this element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
 public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
@@ -102,7 +102,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getSizingTarget() {
+	protected JsonObject getSizingTarget() {
 		return (JsonObject) getElement().getPropertyRaw("sizingTarget");
 	}
 
@@ -118,7 +118,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setSizingTarget(elemental.json.JsonObject sizingTarget) {
+	protected R setSizingTarget(elemental.json.JsonObject sizingTarget) {
 		getElement().setPropertyJson("sizingTarget", sizingTarget);
 		return get();
 	}
@@ -131,7 +131,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getFitInto() {
+	protected JsonObject getFitInto() {
 		return (JsonObject) getElement().getPropertyRaw("fitInto");
 	}
 
@@ -144,7 +144,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setFitInto(elemental.json.JsonObject fitInto) {
+	protected R setFitInto(elemental.json.JsonObject fitInto) {
 		getElement().setPropertyJson("fitInto", fitInto);
 		return get();
 	}
@@ -186,7 +186,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getPositionTarget() {
+	protected JsonObject getPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
 	}
 
@@ -200,7 +200,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setPositionTarget(elemental.json.JsonObject positionTarget) {
+	protected R setPositionTarget(elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
 		return get();
 	}
@@ -580,7 +580,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getClosingReason() {
+	protected JsonObject getClosingReason() {
 		return (JsonObject) getElement().getPropertyRaw("closingReason");
 	}
 
@@ -596,7 +596,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setClosingReason(elemental.json.JsonObject closingReason) {
+	protected R setClosingReason(elemental.json.JsonObject closingReason) {
 		getElement().setPropertyJson("closingReason", closingReason);
 		return get();
 	}
@@ -689,7 +689,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getAnimationConfig() {
+	protected JsonObject getAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
 	}
 
@@ -702,7 +702,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	protected R setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
 		return get();
 	}
@@ -850,7 +850,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * @param parentResizable
 	 *            Missing documentation!
 	 */
-	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
+	protected void assignParentResizable(
+			elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
 	}
 
@@ -863,7 +864,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * @param target
 	 *            Missing documentation!
 	 */
-	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
+	protected void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
 	}
 
@@ -927,7 +928,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * @param event
 	 *            The original event
 	 */
-	public void cancel(elemental.json.JsonObject event) {
+	protected void cancel(elemental.json.JsonObject event) {
 		getElement().callFunction("cancel", event);
 	}
 
@@ -953,7 +954,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * @param type
 	 *            Missing documentation!
 	 */
-	public void getAnimationConfig(elemental.json.JsonObject type) {
+	protected void getAnimationConfig(elemental.json.JsonObject type) {
 		getElement().callFunction("getAnimationConfig", type);
 	}
 
@@ -967,7 +968,7 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * @param cookie
 	 *            Missing documentation!
 	 */
-	public void playAnimation(elemental.json.JsonObject type,
+	protected void playAnimation(elemental.json.JsonObject type,
 			elemental.json.JsonObject cookie) {
 		getElement().callFunction("playAnimation", type, cookie);
 	}

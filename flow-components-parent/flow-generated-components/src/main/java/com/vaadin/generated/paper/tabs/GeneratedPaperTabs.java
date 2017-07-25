@@ -102,8 +102,8 @@ import com.vaadin.ui.HasComponents;
  * applied to the layout container of tabs | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
 public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
@@ -217,7 +217,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getSelectedItem() {
+	protected JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -363,7 +363,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
-	public JsonArray getItems() {
+	protected JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}
 
@@ -402,7 +402,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getSelectedValues() {
+	protected JsonArray getSelectedValues() {
 		return (JsonArray) getElement().getPropertyRaw("selectedValues");
 	}
 
@@ -416,7 +416,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedValues(elemental.json.JsonArray selectedValues) {
+	protected R setSelectedValues(elemental.json.JsonArray selectedValues) {
 		getElement().setPropertyJson("selectedValues", selectedValues);
 		return get();
 	}
@@ -429,7 +429,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getSelectedItems() {
+	protected JsonArray getSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
 	}
 
@@ -442,7 +442,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -456,7 +456,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -495,7 +495,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -504,7 +504,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -517,7 +517,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getFocusedItem() {
+	protected JsonObject getFocusedItem() {
 		return (JsonObject) getElement().getPropertyRaw("focusedItem");
 	}
 
@@ -865,7 +865,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param parentResizable
 	 *            Missing documentation!
 	 */
-	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
+	protected void assignParentResizable(
+			elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
 	}
 
@@ -878,7 +879,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param target
 	 *            Missing documentation!
 	 */
-	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
+	protected void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
 	}
 
@@ -965,7 +966,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param index
 	 *            Missing documentation!
 	 */
-	public void selectIndex(elemental.json.JsonObject index) {
+	protected void selectIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("selectIndex", index);
 	}
 
@@ -991,7 +992,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param multi
 	 *            Missing documentation!
 	 */
-	public void multiChanged(elemental.json.JsonObject multi) {
+	protected void multiChanged(elemental.json.JsonObject multi) {
 		getElement().callFunction("multiChanged", multi);
 	}
 

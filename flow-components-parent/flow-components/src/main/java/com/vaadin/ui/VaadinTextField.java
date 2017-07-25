@@ -73,6 +73,6 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField> {
 
     @Override
     public boolean isEmpty() {
-        return isHasValue();
+        return !hasValue();
     }
 }

@@ -902,6 +902,105 @@ public class ComponentGeneratorTest {
                 .contains("public R setValue(java.lang.Number value)"));
     }
 
+    @Test
+    public void componentContainsUnregognizedPropertyTypes_methodsAreGeneratedAsProtected() {
+        ComponentPropertyData objectProperty = new ComponentPropertyData();
+        objectProperty.setName("objectProperty");
+        objectProperty.setType(Arrays.asList(ComponentBasicType.OBJECT));
+
+        ComponentPropertyData arrayProperty = new ComponentPropertyData();
+        arrayProperty.setName("arrayProperty");
+        arrayProperty.setType(Arrays.asList(ComponentBasicType.ARRAY));
+
+        ComponentPropertyData undefinedProperty = new ComponentPropertyData();
+        undefinedProperty.setName("undefinedProperty");
+        undefinedProperty.setType(Arrays.asList(ComponentBasicType.UNDEFINED));
+        componentMetadata.setProperties(Arrays.asList(objectProperty,
+                arrayProperty, undefinedProperty));
+
+        ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
+        objectParameter.setName("objectParam");
+        objectParameter.setType(Arrays.asList(ComponentBasicType.OBJECT));
+
+        ComponentFunctionData function = new ComponentFunctionData();
+        function.setName("callSomething");
+        function.setParameters(Arrays.asList(objectParameter));
+
+        componentMetadata.setMethods(Arrays.asList(function));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        Assert.assertTrue(generatedClass
+                .contains("protected JsonObject getObjectProperty()"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected R setObjectProperty(elemental.json.JsonObject objectProperty)"));
+        Assert.assertTrue(generatedClass
+                .contains("protected JsonArray getArrayProperty()"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected R setArrayProperty(elemental.json.JsonArray arrayProperty)"));
+        Assert.assertTrue(generatedClass
+                .contains("protected JsonValue getUndefinedProperty()"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected R setUndefinedProperty(elemental.json.JsonValue undefinedProperty)"));
+
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomething(elemental.json.JsonObject objectParam)"));
+    }
+
+    @Test
+    public void componentContainsFunctionsWithUnregognizedParameterTypes_methodsAreGeneratedAsProtected() {
+        ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
+        objectParameter.setName("objectParam");
+        objectParameter.setType(Arrays.asList(ComponentBasicType.OBJECT));
+
+        ComponentFunctionData function1 = new ComponentFunctionData();
+        function1.setName("callSomethingWithObject");
+        function1.setParameters(Arrays.asList(objectParameter));
+
+        ComponentFunctionParameterData stringParameter = new ComponentFunctionParameterData();
+        stringParameter.setName("stringParam");
+        stringParameter.setType(Arrays.asList(ComponentBasicType.STRING));
+
+        ComponentFunctionData function2 = new ComponentFunctionData();
+        function2.setName("callSomethingWithObjectAndString");
+        function2
+                .setParameters(Arrays.asList(objectParameter, stringParameter));
+
+        ComponentFunctionParameterData multiParameter = new ComponentFunctionParameterData();
+        multiParameter.setName("multiParam");
+        multiParameter.setType(Arrays.asList(ComponentBasicType.STRING,
+                ComponentBasicType.OBJECT, ComponentBasicType.ARRAY,
+                ComponentBasicType.UNDEFINED));
+
+        ComponentFunctionData function3 = new ComponentFunctionData();
+        function3.setName("callSomethingWithMultiTypes");
+        function3.setParameters(Arrays.asList(multiParameter));
+
+        componentMetadata
+                .setMethods(Arrays.asList(function1, function2, function3));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithObject(JsonObject objectParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithObjectAndString( elemental.json.JsonObject objectParam, java.lang.String stringParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomethingWithMultiTypes(java.lang.String multiParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithMultiTypes( elemental.json.JsonObject multiParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithMultiTypes(JsonArray multiParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithMultiTypes(JsonValue multiParam)"));
+    }
+
     private String removeIndentation(String sourceCode) {
         return sourceCode.replaceAll("\\s\\s+", " ");
     }

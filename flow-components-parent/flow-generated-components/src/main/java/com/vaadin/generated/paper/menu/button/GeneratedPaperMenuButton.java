@@ -73,8 +73,8 @@ import com.vaadin.shared.Registration;
  * paper-menu-button content | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
 public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
@@ -90,7 +90,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -104,7 +104,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -148,7 +148,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -162,7 +162,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -503,7 +503,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getOpenAnimationConfig() {
+	protected JsonObject getOpenAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("openAnimationConfig");
 	}
 
@@ -517,7 +517,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setOpenAnimationConfig(
+	protected R setOpenAnimationConfig(
 			elemental.json.JsonObject openAnimationConfig) {
 		getElement()
 				.setPropertyJson("openAnimationConfig", openAnimationConfig);
@@ -533,7 +533,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getCloseAnimationConfig() {
+	protected JsonObject getCloseAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("closeAnimationConfig");
 	}
 
@@ -547,7 +547,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setCloseAnimationConfig(
+	protected R setCloseAnimationConfig(
 			elemental.json.JsonObject closeAnimationConfig) {
 		getElement().setPropertyJson("closeAnimationConfig",
 				closeAnimationConfig);
@@ -618,7 +618,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getContentElement() {
+	protected JsonObject getContentElement() {
 		return (JsonObject) getElement().getPropertyRaw("contentElement");
 	}
 
@@ -631,7 +631,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setContentElement(elemental.json.JsonObject contentElement) {
+	protected R setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
 		return get();
 	}

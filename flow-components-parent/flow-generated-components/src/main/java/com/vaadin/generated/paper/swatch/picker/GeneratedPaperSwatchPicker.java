@@ -59,8 +59,8 @@ import com.vaadin.shared.Registration;
  * Mixin applied to the color picker icon | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
@@ -106,7 +106,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getColorList() {
+	protected JsonArray getColorList() {
 		return (JsonArray) getElement().getPropertyRaw("colorList");
 	}
 
@@ -123,7 +123,7 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setColorList(elemental.json.JsonArray colorList) {
+	protected R setColorList(elemental.json.JsonArray colorList) {
 		getElement().setPropertyJson("colorList", colorList);
 		return get();
 	}

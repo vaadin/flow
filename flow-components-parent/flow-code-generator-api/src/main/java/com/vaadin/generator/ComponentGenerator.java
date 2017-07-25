@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -630,12 +632,23 @@ public class ComponentGenerator {
                 Class<?> javaType = ComponentGeneratorUtils
                         .toJavaType(basicType);
                 MethodSource<JavaClassSource> method = javaClass.addMethod()
-                        .setPublic().setReturnType(javaType);
+                        .setReturnType(javaType);
+
+                setMethodVisibility(method, basicType);
 
                 if (basicType == ComponentBasicType.BOOLEAN) {
-                    method.setName(ComponentGeneratorUtils
-                            .generateMethodNameForProperty("is",
-                                    property.getName()));
+                    if (!property.getName().startsWith("is")
+                            && !property.getName().startsWith("has")
+                            && !property.getName().startsWith("have")) {
+
+                        method.setName(ComponentGeneratorUtils
+                                .generateMethodNameForProperty("is",
+                                        property.getName()));
+                    } else {
+                        method.setName(ComponentGeneratorUtils
+                                .formatStringToValidJavaIdentifier(
+                                        property.getName()));
+                    }
                 } else {
                     method.setName(ComponentGeneratorUtils
                             .generateMethodNameForProperty("get",
@@ -666,6 +679,63 @@ public class ComponentGenerator {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the method visibility, taking account whether is the type is
+     * supported or not by the Java API.
+     * 
+     * @param method
+     *            the method which visibility should be set
+     * @param type
+     *            the type of objects used by in the method signature
+     * @see #isUnsupportedObjectType(ComponentType)
+     */
+    private void setMethodVisibility(MethodSource<JavaClassSource> method,
+            ComponentType type) {
+        setMethodVisibility(method, Collections.singleton(type));
+    }
+
+    /**
+     * Sets the method visibility, taking account whether is the types are
+     * supported or not by the Java API.
+     * 
+     * @param method
+     *            the method which visibility should be set
+     * @param types
+     *            the types of objects used by in the method signature
+     * @see #isSupportedObjectType(ComponentType)
+     */
+    private void setMethodVisibility(MethodSource<JavaClassSource> method,
+            Collection<? extends ComponentType> types) {
+
+        if (types.stream().allMatch(this::isSupportedObjectType)) {
+            method.setPublic();
+        } else {
+            method.setProtected();
+        }
+    }
+
+    /**
+     * Gets whether the type is undefined in Java terms. Methods with undefined
+     * returns or parameters are created as protected.
+     */
+    private boolean isSupportedObjectType(ComponentType type) {
+        if (!type.isBasicType()) {
+            return true;
+        }
+
+        ComponentBasicType basicType = (ComponentBasicType) type;
+
+        switch (basicType) {
+        case NUMBER:
+        case STRING:
+        case BOOLEAN:
+        case DATE:
+            return true;
+        }
+
+        return false;
     }
 
     private void addSynchronizeAnnotationAndJavadocToGetter(
@@ -793,8 +863,9 @@ public class ComponentGenerator {
                 MethodSource<JavaClassSource> method = javaClass.addMethod()
                         .setName(ComponentGeneratorUtils
                                 .generateMethodNameForProperty("set",
-                                        property.getName()))
-                        .setPublic();
+                                        property.getName()));
+
+                setMethodVisibility(method, basicType);
 
                 Class<?> setterType = ComponentGeneratorUtils
                         .toJavaType(basicType);
@@ -911,7 +982,8 @@ public class ComponentGenerator {
                                 .toJavaType(function.getReturns()));
                 method.setBody("");
             } else {
-                method.setPublic();
+                setMethodVisibility(method, typeVariant);
+
                 method.setBody(
                         String.format("getElement().callFunction(\"%s\"%s);",
                                 function.getName(), parameterString));
@@ -932,7 +1004,7 @@ public class ComponentGenerator {
      * @param typeVariant
      *            the list of types to use for each added parameter
      * @param nestedClassesMap
-     *            map for memoizing already generated nested classes
+     *            map for memorizing already generated nested classes
      * @return a string of the parameters of the function, or an empty string if
      *         no parameters
      */
