@@ -53,7 +53,8 @@ public class VaadinFormLayoutIT extends AbstractChromeTest {
 
         // 3 columns, all should be horizontally aligned (tolerance of 2 pixels
         // given)
-        Assert.assertTrue(Math.abs(textFields.get(2).getLocation().getY()
+        Assert.assertTrue("All 3 columns should be horizontally aligned",
+                Math.abs(textFields.get(2).getLocation().getY()
                 - textFields.get(1).getLocation().getY()) < 2);
         Assert.assertTrue(Math.abs(textFields.get(1).getLocation().getY()
                 - textFields.get(0).getLocation().getY()) < 2);
@@ -62,7 +63,9 @@ public class VaadinFormLayoutIT extends AbstractChromeTest {
 
         // window resized, should be in 2 column mode, last textfield below
         // other two
-        Assert.assertTrue(textFields.get(2).getLocation().getY() > textFields
+        Assert.assertTrue(
+                "Layout should be in 2 column mode, last field should be below the first two",
+                textFields.get(2).getLocation().getY() > textFields
                 .get(1).getLocation().getY());
         Assert.assertTrue(textFields.get(2).getLocation().getY() > textFields
                 .get(0).getLocation().getY());
@@ -70,7 +73,9 @@ public class VaadinFormLayoutIT extends AbstractChromeTest {
         getDriver().manage().window().setSize(new Dimension(400, 620));
 
         // resized to 1 column mode, fields should be arranged below one another
-        Assert.assertTrue(textFields.get(2).getLocation().getY() > textFields
+        Assert.assertTrue(
+                "Layout should be in 1 column mode, all fields should be below one another",
+                textFields.get(2).getLocation().getY() > textFields
                 .get(1).getLocation().getY());
         Assert.assertTrue(textFields.get(1).getLocation().getY() > textFields
                 .get(0).getLocation().getY());
