@@ -79,7 +79,7 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getItemObject() {
+	protected JsonObject protectedGetItemObject() {
 		return (JsonObject) getElement().getPropertyRaw("item");
 	}
 

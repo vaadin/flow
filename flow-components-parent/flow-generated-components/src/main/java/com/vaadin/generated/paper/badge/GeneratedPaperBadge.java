@@ -174,7 +174,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getTarget() {
+	protected JsonObject protectedGetTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
 	}
 

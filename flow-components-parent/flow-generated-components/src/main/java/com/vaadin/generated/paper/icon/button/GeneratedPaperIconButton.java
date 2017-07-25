@@ -50,7 +50,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getKeyEventTarget() {
+	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -103,7 +103,7 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getKeyBindings() {
+	protected JsonObject protectedGetKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 

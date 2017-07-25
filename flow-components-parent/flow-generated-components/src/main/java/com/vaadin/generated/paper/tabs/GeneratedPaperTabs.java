@@ -217,7 +217,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getSelectedItem() {
+	protected JsonObject protectedGetSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -363,7 +363,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
-	protected JsonArray getItems() {
+	protected JsonArray protectedGetItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}
 
@@ -402,7 +402,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonArray getSelectedValues() {
+	protected JsonArray protectedGetSelectedValues() {
 		return (JsonArray) getElement().getPropertyRaw("selectedValues");
 	}
 
@@ -429,7 +429,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonArray getSelectedItems() {
+	protected JsonArray protectedGetSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
 	}
 
@@ -442,7 +442,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getKeyEventTarget() {
+	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -495,7 +495,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getKeyBindings() {
+	protected JsonObject protectedGetKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -517,7 +517,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getFocusedItem() {
+	protected JsonObject protectedGetFocusedItem() {
 		return (JsonObject) getElement().getPropertyRaw("focusedItem");
 	}
 

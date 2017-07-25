@@ -934,15 +934,16 @@ public class ComponentGeneratorTest {
         generatedClass = removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass
-                .contains("protected JsonObject getObjectProperty()"));
+                .contains("protected JsonObject protectedGetObjectProperty()"));
         Assert.assertTrue(generatedClass.contains(
                 "protected R setObjectProperty(elemental.json.JsonObject objectProperty)"));
         Assert.assertTrue(generatedClass
-                .contains("protected JsonArray getArrayProperty()"));
+                .contains("protected JsonArray protectedGetArrayProperty()"));
         Assert.assertTrue(generatedClass.contains(
                 "protected R setArrayProperty(elemental.json.JsonArray arrayProperty)"));
         Assert.assertTrue(generatedClass
-                .contains("protected JsonValue getUndefinedProperty()"));
+                .contains(
+                        "protected JsonValue protectedGetUndefinedProperty()"));
         Assert.assertTrue(generatedClass.contains(
                 "protected R setUndefinedProperty(elemental.json.JsonValue undefinedProperty)"));
 
