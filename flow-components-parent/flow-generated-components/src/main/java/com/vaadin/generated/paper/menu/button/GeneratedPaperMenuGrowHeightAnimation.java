@@ -41,7 +41,7 @@ public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuG
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getAnimationTiming() {
+	protected JsonObject protectedGetAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
 	}
 

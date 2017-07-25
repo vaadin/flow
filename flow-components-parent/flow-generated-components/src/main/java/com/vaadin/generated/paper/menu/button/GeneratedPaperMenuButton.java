@@ -90,7 +90,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getKeyEventTarget() {
+	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -148,7 +148,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getKeyBindings() {
+	protected JsonObject protectedGetKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -503,7 +503,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getOpenAnimationConfig() {
+	protected JsonObject protectedGetOpenAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("openAnimationConfig");
 	}
 
@@ -533,7 +533,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getCloseAnimationConfig() {
+	protected JsonObject protectedGetCloseAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("closeAnimationConfig");
 	}
 
@@ -618,7 +618,7 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getContentElement() {
+	protected JsonObject protectedGetContentElement() {
 		return (JsonObject) getElement().getPropertyRaw("contentElement");
 	}
 
