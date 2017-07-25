@@ -704,15 +704,15 @@ public class ComponentGenerator {
      *            the method which visibility should be set
      * @param types
      *            the types of objects used by in the method signature
-     * @see #isUnsupportedObjectType(ComponentType)
+     * @see #isSupportedObjectType(ComponentType)
      */
     private void setMethodVisibility(MethodSource<JavaClassSource> method,
             Collection<? extends ComponentType> types) {
 
-        if (types.stream().anyMatch(this::isUnsupportedObjectType)) {
-            method.setProtected();
-        } else {
+        if (types.stream().allMatch(this::isSupportedObjectType)) {
             method.setPublic();
+        } else {
+            method.setProtected();
         }
     }
 
@@ -720,9 +720,9 @@ public class ComponentGenerator {
      * Gets whether the type is undefined in Java terms. Methods with undefined
      * returns or parameters are created as protected.
      */
-    private boolean isUnsupportedObjectType(ComponentType type) {
+    private boolean isSupportedObjectType(ComponentType type) {
         if (!type.isBasicType()) {
-            return false;
+            return true;
         }
 
         ComponentBasicType basicType = (ComponentBasicType) type;
@@ -732,14 +732,10 @@ public class ComponentGenerator {
         case STRING:
         case BOOLEAN:
         case DATE:
-            return false;
-
-        case ARRAY:
-        case UNDEFINED:
-        case OBJECT:
-        default:
             return true;
         }
+
+        return false;
     }
 
     private void addSynchronizeAnnotationAndJavadocToGetter(
