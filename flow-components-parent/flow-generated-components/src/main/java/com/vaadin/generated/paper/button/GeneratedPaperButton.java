@@ -94,8 +94,8 @@ import com.vaadin.ui.HasComponents;
  * button after it's been focused using the keyboard | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-button#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-button#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
@@ -118,7 +118,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -132,7 +132,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -171,7 +171,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -180,7 +180,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -467,7 +467,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * @param optTriggeringEvent
 	 *            (optional) event that triggered the ripple.
 	 */
-	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+	protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);
 	}
 
@@ -494,48 +494,47 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	}
 
 	@DomEvent("active-changed")
-	public static class ActiveChangedEvent
+	public static class ActiveChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperButton> {
-		public ActiveChangedEvent(GeneratedPaperButton source,
-				boolean fromClient) {
+		public ActiveChangeEvent(GeneratedPaperButton source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addActiveChangedListener(
-			ComponentEventListener<ActiveChangedEvent> listener) {
-		return addListener(ActiveChangedEvent.class, listener);
+	public Registration addActiveChangeListener(
+			ComponentEventListener<ActiveChangeEvent> listener) {
+		return addListener(ActiveChangeEvent.class, listener);
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperButton> {
-		public FocusedChangedEvent(GeneratedPaperButton source,
+		public FocusedChangeEvent(GeneratedPaperButton source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperButton> {
-		public DisabledChangedEvent(GeneratedPaperButton source,
+		public DisabledChangeEvent(GeneratedPaperButton source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("transitionend")

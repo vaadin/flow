@@ -68,8 +68,8 @@ import com.vaadin.components.NotSupported;
  * {@code --paper-badge} | Mixin applied to the badge | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-badge#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-badge#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-badge")
 @HtmlImport("frontend://bower_components/paper-badge/paper-badge.html")
 public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
@@ -174,7 +174,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getTarget() {
+	protected JsonObject getTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
 	}
 
@@ -189,7 +189,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setTarget(elemental.json.JsonObject target) {
+	protected R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
 		return get();
 	}
@@ -213,7 +213,8 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * @param parentResizable
 	 *            Missing documentation!
 	 */
-	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
+	protected void assignParentResizable(
+			elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
 	}
 
@@ -226,7 +227,7 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * @param target
 	 *            Missing documentation!
 	 */
-	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
+	protected void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
 	}
 

@@ -97,6 +97,9 @@ public final class JsonSerializer {
         if (bean instanceof Character) {
             return Optional.of(Json.create(Character.toString((char) bean)));
         }
+        if (bean instanceof Enum) {
+            return Optional.of(Json.create(((Enum<?>) bean).name()));
+        }
         if (bean instanceof JsonValue) {
             return Optional.of((JsonValue) bean);
         }
@@ -143,7 +146,6 @@ public final class JsonSerializer {
 
                 Method method = writers.get(key);
                 if (method != null) {
-                    System.out.println(key);
                     Class<?> parameterType = method.getParameterTypes()[0];
                     Object value = toObject(parameterType, jsonValue);
                     method.invoke(instance, value);
@@ -192,6 +194,10 @@ public final class JsonSerializer {
         if (type.isAssignableFrom(Boolean.class)
                 || type.isAssignableFrom(boolean.class)) {
             return Optional.of(json.asBoolean());
+        }
+        if (type.isEnum()) {
+            return Optional.of(Enum.valueOf((Class<? extends Enum>) type,
+                    json.asString()));
         }
         if (type.isAssignableFrom(JsonValue.class)) {
             return Optional.of(json);

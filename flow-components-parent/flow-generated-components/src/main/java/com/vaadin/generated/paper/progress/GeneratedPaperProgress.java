@@ -22,6 +22,8 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.data.HasValue;
+import java.util.Objects;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -98,13 +100,17 @@ import com.vaadin.shared.Registration;
  * of an indeterminate cycle | {@code 2s}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-progress#2.0.1", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-progress#2.0.1", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
 public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasValue<R, Double> {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -115,7 +121,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
-	public double getValue() {
+	@Override
+	public Double getValue() {
 		return getElement().getProperty("value", 0.0);
 	}
 
@@ -128,8 +135,26 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 *            the double value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setValue(double value) {
+	@Override
+	public R setValue(java.lang.Double value) {
+		Objects.requireNonNull(value,
+				"GeneratedPaperProgress value must not be null");
 		getElement().setProperty("value", value);
+		return get();
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * The number that represents the current value.
+	 * 
+	 * @param value
+	 *            the Number value to set
+	 * @see #setValue(Double)
+	 * @return this instance, for method chaining
+	 */
+	public R setValue(java.lang.Number value) {
+		setValue(value.doubleValue());
 		return get();
 	}
 
@@ -317,76 +342,60 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 		return get();
 	}
 
-	@DomEvent("value-changed")
-	public static class ValueChangedEvent
-			extends
-				ComponentEvent<GeneratedPaperProgress> {
-		public ValueChangedEvent(GeneratedPaperProgress source,
-				boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
-
-	public Registration addValueChangedListener(
-			ComponentEventListener<ValueChangedEvent> listener) {
-		return addListener(ValueChangedEvent.class, listener);
-	}
-
 	@DomEvent("min-changed")
-	public static class MinChangedEvent
+	public static class MinChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperProgress> {
-		public MinChangedEvent(GeneratedPaperProgress source, boolean fromClient) {
+		public MinChangeEvent(GeneratedPaperProgress source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addMinChangedListener(
-			ComponentEventListener<MinChangedEvent> listener) {
-		return addListener(MinChangedEvent.class, listener);
+	public Registration addMinChangeListener(
+			ComponentEventListener<MinChangeEvent> listener) {
+		return addListener(MinChangeEvent.class, listener);
 	}
 
 	@DomEvent("max-changed")
-	public static class MaxChangedEvent
+	public static class MaxChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperProgress> {
-		public MaxChangedEvent(GeneratedPaperProgress source, boolean fromClient) {
+		public MaxChangeEvent(GeneratedPaperProgress source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addMaxChangedListener(
-			ComponentEventListener<MaxChangedEvent> listener) {
-		return addListener(MaxChangedEvent.class, listener);
+	public Registration addMaxChangeListener(
+			ComponentEventListener<MaxChangeEvent> listener) {
+		return addListener(MaxChangeEvent.class, listener);
 	}
 
 	@DomEvent("step-changed")
-	public static class StepChangedEvent
+	public static class StepChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperProgress> {
-		public StepChangedEvent(GeneratedPaperProgress source,
-				boolean fromClient) {
+		public StepChangeEvent(GeneratedPaperProgress source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addStepChangedListener(
-			ComponentEventListener<StepChangedEvent> listener) {
-		return addListener(StepChangedEvent.class, listener);
+	public Registration addStepChangeListener(
+			ComponentEventListener<StepChangeEvent> listener) {
+		return addListener(StepChangeEvent.class, listener);
 	}
 
 	@DomEvent("ratio-changed")
-	public static class RatioChangedEvent
+	public static class RatioChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperProgress> {
-		public RatioChangedEvent(GeneratedPaperProgress source,
+		public RatioChangeEvent(GeneratedPaperProgress source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addRatioChangedListener(
-			ComponentEventListener<RatioChangedEvent> listener) {
-		return addListener(RatioChangedEvent.class, listener);
+	public Registration addRatioChangeListener(
+			ComponentEventListener<RatioChangeEvent> listener) {
+		return addListener(RatioChangeEvent.class, listener);
 	}
 }

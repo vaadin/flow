@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class VaadinComboBoxView extends DemoView {
     private Label artist;
     private Label album;
 
-    public static class Song {
+    public static class Song implements Serializable {
         private String name;
         private String artist;
         private String album;
@@ -96,7 +97,7 @@ public class VaadinComboBoxView extends DemoView {
 
     @Override
     void initView() {
-        VaadinComboBox comboBox = new VaadinComboBox();
+        VaadinComboBox<Song> comboBox = new VaadinComboBox<>();
         comboBox.setLabel("Music selection");
         comboBox.setItemLabelPath("name");
         comboBox.setItemValuePath("");
@@ -110,7 +111,7 @@ public class VaadinComboBoxView extends DemoView {
 
         comboBox.setItems(listOfSongs);
         comboBox.addChangeListener(
-                event -> setSelection(comboBox.getSelectedValue(Song.class)));
+                event -> setSelection(comboBox.getSelectedObject(Song.class)));
 
         add(comboBox);
 

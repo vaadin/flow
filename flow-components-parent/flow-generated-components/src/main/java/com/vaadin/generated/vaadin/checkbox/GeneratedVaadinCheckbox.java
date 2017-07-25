@@ -56,8 +56,8 @@ import com.vaadin.ui.HasComponents;
  * when the checkbox is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.15-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
@@ -256,33 +256,33 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	@DomEvent("checked-changed")
-	public static class CheckedChangedEvent
+	public static class CheckedChangeEvent
 			extends
 				ComponentEvent<GeneratedVaadinCheckbox> {
-		public CheckedChangedEvent(GeneratedVaadinCheckbox source,
+		public CheckedChangeEvent(GeneratedVaadinCheckbox source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addCheckedChangedListener(
-			ComponentEventListener<CheckedChangedEvent> listener) {
-		return addListener(CheckedChangedEvent.class, listener);
+	public Registration addCheckedChangeListener(
+			ComponentEventListener<CheckedChangeEvent> listener) {
+		return addListener(CheckedChangeEvent.class, listener);
 	}
 
 	@DomEvent("indeterminate-changed")
-	public static class IndeterminateChangedEvent
+	public static class IndeterminateChangeEvent
 			extends
 				ComponentEvent<GeneratedVaadinCheckbox> {
-		public IndeterminateChangedEvent(GeneratedVaadinCheckbox source,
+		public IndeterminateChangeEvent(GeneratedVaadinCheckbox source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addIndeterminateChangedListener(
-			ComponentEventListener<IndeterminateChangedEvent> listener) {
-		return addListener(IndeterminateChangedEvent.class, listener);
+	public Registration addIndeterminateChangeListener(
+			ComponentEventListener<IndeterminateChangeEvent> listener) {
+		return addListener(IndeterminateChangeEvent.class, listener);
 	}
 
 	/**

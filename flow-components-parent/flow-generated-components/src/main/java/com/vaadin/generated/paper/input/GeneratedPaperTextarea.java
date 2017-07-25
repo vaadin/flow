@@ -23,6 +23,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -50,13 +51,17 @@ import com.vaadin.shared.Registration;
  * to style this element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasValue<R, String> {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -113,7 +118,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -127,7 +132,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -166,7 +171,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -175,7 +180,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -223,6 +228,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
+	@Override
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -236,6 +242,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
+	@Override
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return get();
@@ -1295,33 +1302,33 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTextarea> {
-		public FocusedChangedEvent(GeneratedPaperTextarea source,
+		public FocusedChangeEvent(GeneratedPaperTextarea source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTextarea> {
-		public DisabledChangedEvent(GeneratedPaperTextarea source,
+		public DisabledChangeEvent(GeneratedPaperTextarea source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("change")
@@ -1338,34 +1345,19 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 		return addListener(ChangeEvent.class, listener);
 	}
 
-	@DomEvent("value-changed")
-	public static class ValueChangedEvent
-			extends
-				ComponentEvent<GeneratedPaperTextarea> {
-		public ValueChangedEvent(GeneratedPaperTextarea source,
-				boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
-
-	public Registration addValueChangedListener(
-			ComponentEventListener<ValueChangedEvent> listener) {
-		return addListener(ValueChangedEvent.class, listener);
-	}
-
 	@DomEvent("invalid-changed")
-	public static class InvalidChangedEvent
+	public static class InvalidChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTextarea> {
-		public InvalidChangedEvent(GeneratedPaperTextarea source,
+		public InvalidChangeEvent(GeneratedPaperTextarea source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addInvalidChangedListener(
-			ComponentEventListener<InvalidChangedEvent> listener) {
-		return addListener(InvalidChangedEvent.class, listener);
+	public Registration addInvalidChangeListener(
+			ComponentEventListener<InvalidChangeEvent> listener) {
+		return addListener(InvalidChangeEvent.class, listener);
 	}
 
 	@DomEvent("iron-form-element-register")

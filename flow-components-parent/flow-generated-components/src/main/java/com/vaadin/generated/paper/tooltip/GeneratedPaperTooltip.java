@@ -66,8 +66,8 @@ import com.vaadin.ui.HasComponents;
  * {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-tooltip#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-tooltip#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-tooltip")
 @HtmlImport("frontend://bower_components/paper-tooltip/paper-tooltip.html")
 public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
@@ -84,7 +84,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getAnimationConfig() {
+	protected JsonObject getAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
 	}
 
@@ -99,7 +99,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	protected R setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
 		return get();
 	}
@@ -370,7 +370,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getTarget() {
+	protected JsonObject getTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
 	}
 
@@ -385,7 +385,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setTarget(elemental.json.JsonObject target) {
+	protected R setTarget(elemental.json.JsonObject target) {
 		getElement().setPropertyJson("target", target);
 		return get();
 	}
@@ -402,7 +402,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * @param type
 	 *            Missing documentation!
 	 */
-	public void getAnimationConfig(elemental.json.JsonObject type) {
+	protected void getAnimationConfig(elemental.json.JsonObject type) {
 		getElement().callFunction("getAnimationConfig", type);
 	}
 
@@ -416,7 +416,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * @param cookie
 	 *            Missing documentation!
 	 */
-	public void playAnimation(elemental.json.JsonObject type,
+	protected void playAnimation(elemental.json.JsonObject type,
 			elemental.json.JsonObject cookie) {
 		getElement().callFunction("playAnimation", type, cookie);
 	}

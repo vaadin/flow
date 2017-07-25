@@ -12,6 +12,10 @@ import elemental.json.JsonValue;
 
 public class JsonSerializerTest {
 
+    public static enum SomeEnum {
+        SOME_VALUE_1, SOME_VALUE_2;
+    }
+
     public static class ObjectWithSimpleTypes {
 
         private String stringProperty;
@@ -29,6 +33,7 @@ public class JsonSerializerTest {
         private Boolean booleanObjectProperty;
         private char charProperty;
         private Character characterProperty;
+        private SomeEnum enumProperty;
 
         public String getStringProperty() {
             return stringProperty;
@@ -150,6 +155,13 @@ public class JsonSerializerTest {
             this.characterProperty = characterProperty;
         }
 
+        public SomeEnum getEnumProperty() {
+            return enumProperty;
+        }
+
+        public void setEnumProperty(SomeEnum enumProperty) {
+            this.enumProperty = enumProperty;
+        }
     }
 
     @Test
@@ -193,6 +205,11 @@ public class JsonSerializerTest {
         Assert.assertTrue("The JsonValue should be instanceof JsonBoolean",
                 json instanceof JsonBoolean);
         Assert.assertFalse(json.asBoolean());
+
+        json = JsonSerializer.toJson(SomeEnum.SOME_VALUE_1);
+        Assert.assertTrue("The JsonValue should be instanceof JsonString",
+                json instanceof JsonString);
+        Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(), json.asString());
     }
 
     @Test
@@ -224,14 +241,12 @@ public class JsonSerializerTest {
         assertObjectHasFalseValueForKey(object, "booleanProperty");
         assertObjectHasNullValueForKey(object, "booleanObjectProperty");
         assertObjectHasNullValueForKey(object, "characterProperty");
+        assertObjectHasNullValueForKey(object, "enumProperty");
 
         // char is a different case, it is a string at the json
         Assert.assertTrue(object.hasKey("charProperty"));
         Assert.assertEquals((char) 0,
                 object.getString("charProperty").charAt(0));
-
-        char c = 65535;
-        short s = 32767;
 
         bean = JsonSerializer.toObject(ObjectWithSimpleTypes.class, json);
         Assert.assertNotNull(bean);
@@ -250,6 +265,7 @@ public class JsonSerializerTest {
         Assert.assertNull(bean.getBooleanObjectProperty());
         Assert.assertEquals(0, bean.getCharProperty());
         Assert.assertNull(bean.getCharacterProperty());
+        Assert.assertNull(bean.getEnumProperty());
     }
 
     @Test
@@ -270,6 +286,7 @@ public class JsonSerializerTest {
         bean.setBooleanObjectProperty(false);
         bean.setCharProperty('c');
         bean.setCharacterProperty('C');
+        bean.setEnumProperty(SomeEnum.SOME_VALUE_2);
 
         JsonValue json = JsonSerializer.toJson(bean);
         Assert.assertTrue("The JsonValue should be instanceof JsonObject",
@@ -296,6 +313,29 @@ public class JsonSerializerTest {
         Assert.assertEquals('c', object.getString("charProperty").charAt(0));
         Assert.assertEquals('C',
                 object.getString("characterProperty").charAt(0));
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
+                object.getString("enumProperty"));
+
+        bean = JsonSerializer.toObject(ObjectWithSimpleTypes.class, json);
+        Assert.assertNotNull(bean);
+        Assert.assertEquals("someProperty", bean.getStringProperty());
+        Assert.assertEquals(1, bean.getIntProperty());
+        Assert.assertEquals(Integer.valueOf(2), bean.getIntegerProperty());
+        Assert.assertEquals(3, bean.getLongProperty());
+        Assert.assertEquals(Long.valueOf(4), bean.getLongObjectProperty());
+        Assert.assertEquals(5, bean.getShortProperty());
+        Assert.assertEquals(Short.valueOf((short) 6),
+                bean.getShortObjectProperty());
+        Assert.assertEquals(7, bean.getDoubleProperty(), 0.00001);
+        Assert.assertEquals(Double.valueOf(8), bean.getDoubleObjectProperty());
+        Assert.assertEquals(9, bean.getByteProperty());
+        Assert.assertEquals(Byte.valueOf((byte) 10),
+                bean.getByteObjectProperty());
+        Assert.assertEquals(true, bean.isBooleanProperty());
+        Assert.assertEquals(Boolean.FALSE, bean.getBooleanObjectProperty());
+        Assert.assertEquals('c', bean.getCharProperty());
+        Assert.assertEquals((Character) 'C', bean.getCharacterProperty());
+        Assert.assertEquals(SomeEnum.SOME_VALUE_2, bean.getEnumProperty());
     }
 
     private void assertObjectHasNullValueForKey(JsonObject object, String key) {

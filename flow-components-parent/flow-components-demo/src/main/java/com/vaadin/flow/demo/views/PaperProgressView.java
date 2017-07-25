@@ -30,7 +30,8 @@ public class PaperProgressView extends DemoView {
     @Override
     public void initView() {
         // begin-source-example
-        // source-example-heading: Modified and default indeterminate and static progress:
+        // source-example-heading: Modified and default indeterminate and static
+        // progress:
         // source-example-type: JAVA
         GeneratedPaperProgress slowBlue = new GeneratedPaperProgress();
         slowBlue.setIndeterminate(true);

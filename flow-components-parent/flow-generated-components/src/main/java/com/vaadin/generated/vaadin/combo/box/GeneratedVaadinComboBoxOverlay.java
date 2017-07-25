@@ -25,9 +25,9 @@ import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
 		"WebComponent: vaadin-combo-box-overlay#2.0.0-beta2",
-		"Flow#0.1.14-SNAPSHOT"})
+		"Flow#0.1.15-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
 public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOverlay<R>>
@@ -42,7 +42,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getPositionTarget() {
+	protected JsonObject getPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
 	}
 
@@ -55,7 +55,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setPositionTarget(elemental.json.JsonObject positionTarget) {
+	protected R setPositionTarget(elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
 		return get();
 	}
@@ -157,7 +157,8 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * @param parentResizable
 	 *            Missing documentation!
 	 */
-	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
+	protected void assignParentResizable(
+			elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
 	}
 
@@ -170,7 +171,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * @param target
 	 *            Missing documentation!
 	 */
-	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
+	protected void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
 	}
 
