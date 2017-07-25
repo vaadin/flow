@@ -84,7 +84,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getAnimationConfig() {
+	protected JsonObject protectedGetAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
 	}
 
@@ -370,7 +370,7 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getTarget() {
+	protected JsonObject protectedGetTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
 	}
 
