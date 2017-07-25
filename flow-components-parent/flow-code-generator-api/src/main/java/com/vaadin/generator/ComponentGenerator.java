@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -632,11 +634,7 @@ public class ComponentGenerator {
                 MethodSource<JavaClassSource> method = javaClass.addMethod()
                         .setReturnType(javaType);
 
-                if (isUnregognizedObjectType(basicType)) {
-                    method.setProtected();
-                } else {
-                    method.setPublic();
-                }
+                setMethodVisibility(method, basicType);
 
                 if (basicType == ComponentBasicType.BOOLEAN) {
                     if (!property.getName().startsWith("is")
@@ -684,10 +682,45 @@ public class ComponentGenerator {
     }
 
     /**
+     * Sets the method visibility, taking account whether is the type is
+     * supported or not by the Java API.
+     * 
+     * @param method
+     *            the method which visibility should be set
+     * @param type
+     *            the type of objects used by in the method signature
+     * @see #isUnsupportedObjectType(ComponentType)
+     */
+    private void setMethodVisibility(MethodSource<JavaClassSource> method,
+            ComponentType type) {
+        setMethodVisibility(method, Collections.singleton(type));
+    }
+
+    /**
+     * Sets the method visibility, taking account whether is the types are
+     * supported or not by the Java API.
+     * 
+     * @param method
+     *            the method which visibility should be set
+     * @param types
+     *            the types of objects used by in the method signature
+     * @see #isUnsupportedObjectType(ComponentType)
+     */
+    private void setMethodVisibility(MethodSource<JavaClassSource> method,
+            Collection<? extends ComponentType> types) {
+
+        if (types.stream().anyMatch(this::isUnsupportedObjectType)) {
+            method.setProtected();
+        } else {
+            method.setPublic();
+        }
+    }
+
+    /**
      * Gets whether the type is undefined in Java terms. Methods with undefined
      * returns or parameters are created as protected.
      */
-    private boolean isUnregognizedObjectType(ComponentType type) {
+    private boolean isUnsupportedObjectType(ComponentType type) {
         if (!type.isBasicType()) {
             return false;
         }
@@ -836,11 +869,7 @@ public class ComponentGenerator {
                                 .generateMethodNameForProperty("set",
                                         property.getName()));
 
-                if (isUnregognizedObjectType(basicType)) {
-                    method.setProtected();
-                } else {
-                    method.setPublic();
-                }
+                setMethodVisibility(method, basicType);
 
                 Class<?> setterType = ComponentGeneratorUtils
                         .toJavaType(basicType);
@@ -957,12 +986,8 @@ public class ComponentGenerator {
                                 .toJavaType(function.getReturns()));
                 method.setBody("");
             } else {
-                if (typeVariant.stream()
-                        .anyMatch(this::isUnregognizedObjectType)) {
-                    method.setProtected();
-                } else {
-                    method.setPublic();
-                }
+                setMethodVisibility(method, typeVariant);
+
                 method.setBody(
                         String.format("getElement().callFunction(\"%s\"%s);",
                                 function.getName(), parameterString));
