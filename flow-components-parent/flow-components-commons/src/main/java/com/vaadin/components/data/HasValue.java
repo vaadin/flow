@@ -68,8 +68,7 @@ public interface HasValue<C extends Component, V>
          *            {@code true} if this event originates from the client,
          *            {@code false} otherwise.
          */
-        public ValueChangeEvent(C component,
-                HasValue<C, V> hasValue,
+        public ValueChangeEvent(C component, HasValue<C, V> hasValue,
                 V oldValue, boolean fromClient) {
             super(component, fromClient);
             this.oldValue = oldValue;
@@ -106,9 +105,8 @@ public interface HasValue<C extends Component, V>
      * @see Registration
      */
     @FunctionalInterface
-    public interface ValueChangeListener<C extends Component, V>
-            extends ComponentEventListener<ValueChangeEvent<C, V>>,
-            Serializable {
+    public interface ValueChangeListener<C extends Component, V> extends
+            ComponentEventListener<ValueChangeEvent<C, V>>, Serializable {
 
         /**
          * Invoked when this listener receives a value change event from an
@@ -153,8 +151,13 @@ public interface HasValue<C extends Component, V>
      *            the value change listener, not null
      * @return a registration for the listener
      */
-    Registration addValueChangeListener(
-            ValueChangeListener<C, V> listener);
+    default Registration addValueChangeListener(
+            ValueChangeListener<C, V> listener) {
+        return get().getElement().addPropertyChangeListener("value",
+                event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),
+                        this, (V) event.getOldValue(),
+                        event.isUserOriginated())));
+    }
 
     /**
      * Returns the value that represents an empty value.

@@ -150,7 +150,7 @@ public class PaperDialogView extends DemoView {
         HtmlComponent p = new HtmlComponent("p");
         p.getElement().setText(text);
         dialog.add(p);
-        dialog.addOpenedChangedListener(evt -> message
+        dialog.addOpenedChangeListener(evt -> message
                 .setText(dialog.isOpened() ? (title + " was opened")
                         : (title + " was closed")));
         return dialog;

@@ -23,6 +23,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.data.HasValue;
 import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
@@ -65,14 +66,19 @@ import com.vaadin.ui.HasComponents;
  * </vaadin-combo-box-light> {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
 		"WebComponent: vaadin-combo-box-light#2.0.0-beta2",
-		"Flow#0.1.14-SNAPSHOT"})
+		"Flow#0.1.15-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasValue<R, String>,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -83,7 +89,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -97,7 +103,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -141,7 +147,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -155,7 +161,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -201,6 +207,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
+	@Override
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -220,6 +227,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
+	@Override
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return get();
@@ -349,7 +357,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getItems() {
+	protected JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}
 
@@ -363,7 +371,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setItems(elemental.json.JsonArray items) {
+	protected R setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
 		return get();
 	}
@@ -410,7 +418,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getFilteredItems() {
+	protected JsonArray getFilteredItems() {
 		return (JsonArray) getElement().getPropertyRaw("filteredItems");
 	}
 
@@ -425,7 +433,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setFilteredItems(elemental.json.JsonArray filteredItems) {
+	protected R setFilteredItems(elemental.json.JsonArray filteredItems) {
 		getElement().setPropertyJson("filteredItems", filteredItems);
 		return get();
 	}
@@ -439,7 +447,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isHasValue() {
+	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
 	}
 
@@ -506,7 +514,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getSelectedItem() {
+	protected JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -519,7 +527,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedItem(elemental.json.JsonObject selectedItem) {
+	protected R setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
 		return get();
 	}
@@ -614,7 +622,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getInputElement() {
+	protected JsonObject getInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
 	}
 
@@ -733,7 +741,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 *            dirty-checking for objects and arrays (always consider them to
 	 *            be "dirty"). Defaults to false.
 	 */
-	public void templatize(elemental.json.JsonObject template,
+	protected void templatize(elemental.json.JsonObject template,
 			elemental.json.JsonObject mutableData) {
 		getElement().callFunction("templatize", template, mutableData);
 	}
@@ -829,36 +837,6 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 		return addListener(IronFormElementUnregisterEvent.class, listener);
 	}
 
-	@DomEvent("value-changed")
-	public static class ValueChangedEvent
-			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		private final JsonObject detail;
-		private final String detailValue;
-
-		public ValueChangedEvent(GeneratedVaadinComboBoxLight source,
-				boolean fromClient,
-				@EventData("event.detail") elemental.json.JsonObject detail,
-				@EventData("event.detail.value") java.lang.String detailValue) {
-			super(source, fromClient);
-			this.detail = detail;
-			this.detailValue = detailValue;
-		}
-
-		public JsonObject getDetail() {
-			return detail;
-		}
-
-		public String getDetailValue() {
-			return detailValue;
-		}
-	}
-
-	public Registration addValueChangedListener(
-			ComponentEventListener<ValueChangedEvent> listener) {
-		return addListener(ValueChangedEvent.class, listener);
-	}
-
 	@DomEvent("vaadin-dropdown-closed")
 	public static class VaadinDropdownClosedEvent
 			extends
@@ -890,43 +868,43 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	}
 
 	@DomEvent("opened-changed")
-	public static class OpenedChangedEvent
+	public static class OpenedChangeEvent
 			extends
 				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public OpenedChangedEvent(GeneratedVaadinComboBoxLight source,
+		public OpenedChangeEvent(GeneratedVaadinComboBoxLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addOpenedChangedListener(
-			ComponentEventListener<OpenedChangedEvent> listener) {
-		return addListener(OpenedChangedEvent.class, listener);
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent> listener) {
+		return addListener(OpenedChangeEvent.class, listener);
 	}
 
 	@DomEvent("filter-changed")
-	public static class FilterChangedEvent
+	public static class FilterChangeEvent
 			extends
 				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public FilterChangedEvent(GeneratedVaadinComboBoxLight source,
+		public FilterChangeEvent(GeneratedVaadinComboBoxLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFilterChangedListener(
-			ComponentEventListener<FilterChangedEvent> listener) {
-		return addListener(FilterChangedEvent.class, listener);
+	public Registration addFilterChangeListener(
+			ComponentEventListener<FilterChangeEvent> listener) {
+		return addListener(FilterChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangedEvent
+	public static class SelectedItemChangeEvent
 			extends
 				ComponentEvent<GeneratedVaadinComboBoxLight> {
 		private final JsonObject detail;
 		private final JsonObject detailValue;
 
-		public SelectedItemChangedEvent(
+		public SelectedItemChangeEvent(
 				GeneratedVaadinComboBoxLight source,
 				boolean fromClient,
 				@EventData("event.detail") elemental.json.JsonObject detail,
@@ -945,9 +923,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 		}
 	}
 
-	public Registration addSelectedItemChangedListener(
-			ComponentEventListener<SelectedItemChangedEvent> listener) {
-		return addListener(SelectedItemChangedEvent.class, listener);
+	public Registration addSelectedItemChangeListener(
+			ComponentEventListener<SelectedItemChangeEvent> listener) {
+		return addListener(SelectedItemChangeEvent.class, listener);
 	}
 
 	@DomEvent("change")

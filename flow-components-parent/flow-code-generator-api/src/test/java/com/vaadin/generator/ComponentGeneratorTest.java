@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.components.data.HasValue;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -759,17 +760,17 @@ public class ComponentGeneratorTest {
         generatedClass = removeIndentation(generatedClass);
 
         Assert.assertTrue(
-                "Generated class should contain the SomethingChangedDetails nested class",
+                "Generated class should contain the SomethingChangeDetails nested class",
                 generatedClass.contains(
-                        "public static class SomethingChangedDetails implements JsonSerializable"));
+                        "public static class SomethingChangeDetails implements JsonSerializable"));
 
         Assert.assertTrue(
-                "Generated class should contain the addSomethingChangedListener method",
+                "Generated class should contain the addSomethingChangeListener method",
                 generatedClass.contains(
-                        "public Registration addSomethingChangedListener( ComponentEventListener<SomethingChangedEvent> listener)"));
+                        "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent> listener)"));
 
         int indexOfEventDeclaration = generatedClass.indexOf(
-                "public static class SomethingChangedEvent extends ComponentEvent<MyComponent> {");
+                "public static class SomethingChangeEvent extends ComponentEvent<MyComponent> {");
         int endIndexOfEventDeclaration = generatedClass.indexOf("} }",
                 indexOfEventDeclaration);
         String eventDeclaration = generatedClass.substring(
@@ -778,7 +779,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated event should contain the getDetails method",
                 eventDeclaration.contains(
-                        "public SomethingChangedDetails getDetails() { return new SomethingChangedDetails().readJson(details); } }"));
+                        "public SomethingChangeDetails getDetails() { return new SomethingChangeDetails().readJson(details); } }"));
 
     }
 
@@ -849,6 +850,155 @@ public class ComponentGeneratorTest {
                 "public void callSomething(CallSomethingFirstParam firstParam, java.lang.String secondParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "public void callSomething(CallSomethingFirstParam firstParam, boolean secondParam)"));
+    }
+
+    @Test
+    public void componentContainsValueProperty_generatedClassImplementsHasValue() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Arrays.asList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Arrays.asList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Arrays.asList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasValue.class);
+        Assert.assertTrue(
+                generatedClass.contains("@Override public String getValue()"));
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public R setValue(java.lang.String value)"));
+    }
+
+    @Test
+    public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
+        componentMetadata.setProperties(Arrays.asList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Arrays.asList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasValue.class);
+        Assert.assertTrue(
+                generatedClass.contains("@Override public Double getValue()"));
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public R setValue(java.lang.Double value)"));
+        Assert.assertTrue(generatedClass
+                .contains("public R setValue(java.lang.Number value)"));
+    }
+
+    @Test
+    public void componentContainsUnregognizedPropertyTypes_methodsAreGeneratedAsProtected() {
+        ComponentPropertyData objectProperty = new ComponentPropertyData();
+        objectProperty.setName("objectProperty");
+        objectProperty.setType(Arrays.asList(ComponentBasicType.OBJECT));
+
+        ComponentPropertyData arrayProperty = new ComponentPropertyData();
+        arrayProperty.setName("arrayProperty");
+        arrayProperty.setType(Arrays.asList(ComponentBasicType.ARRAY));
+
+        ComponentPropertyData undefinedProperty = new ComponentPropertyData();
+        undefinedProperty.setName("undefinedProperty");
+        undefinedProperty.setType(Arrays.asList(ComponentBasicType.UNDEFINED));
+        componentMetadata.setProperties(Arrays.asList(objectProperty,
+                arrayProperty, undefinedProperty));
+
+        ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
+        objectParameter.setName("objectParam");
+        objectParameter.setType(Arrays.asList(ComponentBasicType.OBJECT));
+
+        ComponentFunctionData function = new ComponentFunctionData();
+        function.setName("callSomething");
+        function.setParameters(Arrays.asList(objectParameter));
+
+        componentMetadata.setMethods(Arrays.asList(function));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        Assert.assertTrue(generatedClass
+                .contains("protected JsonObject getObjectProperty()"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected R setObjectProperty(elemental.json.JsonObject objectProperty)"));
+        Assert.assertTrue(generatedClass
+                .contains("protected JsonArray getArrayProperty()"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected R setArrayProperty(elemental.json.JsonArray arrayProperty)"));
+        Assert.assertTrue(generatedClass
+                .contains("protected JsonValue getUndefinedProperty()"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected R setUndefinedProperty(elemental.json.JsonValue undefinedProperty)"));
+
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomething(elemental.json.JsonObject objectParam)"));
+    }
+
+    @Test
+    public void componentContainsFunctionsWithUnregognizedParameterTypes_methodsAreGeneratedAsProtected() {
+        ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
+        objectParameter.setName("objectParam");
+        objectParameter.setType(Arrays.asList(ComponentBasicType.OBJECT));
+
+        ComponentFunctionData function1 = new ComponentFunctionData();
+        function1.setName("callSomethingWithObject");
+        function1.setParameters(Arrays.asList(objectParameter));
+
+        ComponentFunctionParameterData stringParameter = new ComponentFunctionParameterData();
+        stringParameter.setName("stringParam");
+        stringParameter.setType(Arrays.asList(ComponentBasicType.STRING));
+
+        ComponentFunctionData function2 = new ComponentFunctionData();
+        function2.setName("callSomethingWithObjectAndString");
+        function2
+                .setParameters(Arrays.asList(objectParameter, stringParameter));
+
+        ComponentFunctionParameterData multiParameter = new ComponentFunctionParameterData();
+        multiParameter.setName("multiParam");
+        multiParameter.setType(Arrays.asList(ComponentBasicType.STRING,
+                ComponentBasicType.OBJECT, ComponentBasicType.ARRAY,
+                ComponentBasicType.UNDEFINED));
+
+        ComponentFunctionData function3 = new ComponentFunctionData();
+        function3.setName("callSomethingWithMultiTypes");
+        function3.setParameters(Arrays.asList(multiParameter));
+
+        componentMetadata
+                .setMethods(Arrays.asList(function1, function2, function3));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithObject(JsonObject objectParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithObjectAndString( elemental.json.JsonObject objectParam, java.lang.String stringParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void callSomethingWithMultiTypes(java.lang.String multiParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithMultiTypes( elemental.json.JsonObject multiParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithMultiTypes(JsonArray multiParam)"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected void callSomethingWithMultiTypes(JsonValue multiParam)"));
     }
 
     private String removeIndentation(String sourceCode) {

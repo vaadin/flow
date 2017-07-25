@@ -102,8 +102,8 @@ import com.vaadin.ui.HasComponents;
  * applied to the layout container of tabs | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
 public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
@@ -217,7 +217,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getSelectedItem() {
+	protected JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -363,7 +363,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * 'items-changed' event happens.
 	 */
 	@Synchronize(property = "items", value = "items-changed")
-	public JsonArray getItems() {
+	protected JsonArray getItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}
 
@@ -402,7 +402,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getSelectedValues() {
+	protected JsonArray getSelectedValues() {
 		return (JsonArray) getElement().getPropertyRaw("selectedValues");
 	}
 
@@ -416,7 +416,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 *            the JsonArray value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setSelectedValues(elemental.json.JsonArray selectedValues) {
+	protected R setSelectedValues(elemental.json.JsonArray selectedValues) {
 		getElement().setPropertyJson("selectedValues", selectedValues);
 		return get();
 	}
@@ -429,7 +429,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonArray getSelectedItems() {
+	protected JsonArray getSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
 	}
 
@@ -442,7 +442,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -456,7 +456,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -495,7 +495,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -504,7 +504,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -517,7 +517,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getFocusedItem() {
+	protected JsonObject getFocusedItem() {
 		return (JsonObject) getElement().getPropertyRaw("focusedItem");
 	}
 
@@ -865,7 +865,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param parentResizable
 	 *            Missing documentation!
 	 */
-	public void assignParentResizable(elemental.json.JsonObject parentResizable) {
+	protected void assignParentResizable(
+			elemental.json.JsonObject parentResizable) {
 		getElement().callFunction("assignParentResizable", parentResizable);
 	}
 
@@ -878,7 +879,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param target
 	 *            Missing documentation!
 	 */
-	public void stopResizeNotificationsFor(elemental.json.JsonObject target) {
+	protected void stopResizeNotificationsFor(elemental.json.JsonObject target) {
 		getElement().callFunction("stopResizeNotificationsFor", target);
 	}
 
@@ -965,7 +966,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param index
 	 *            Missing documentation!
 	 */
-	public void selectIndex(elemental.json.JsonObject index) {
+	protected void selectIndex(elemental.json.JsonObject index) {
 		getElement().callFunction("selectIndex", index);
 	}
 
@@ -991,7 +992,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param multi
 	 *            Missing documentation!
 	 */
-	public void multiChanged(elemental.json.JsonObject multi) {
+	protected void multiChanged(elemental.json.JsonObject multi) {
 		getElement().callFunction("multiChanged", multi);
 	}
 
@@ -1066,18 +1067,18 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	@DomEvent("iron-items-changed")
-	public static class IronItemsChangedEvent
+	public static class IronItemsChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTabs> {
-		public IronItemsChangedEvent(GeneratedPaperTabs source,
+		public IronItemsChangeEvent(GeneratedPaperTabs source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addIronItemsChangedListener(
-			ComponentEventListener<IronItemsChangedEvent> listener) {
-		return addListener(IronItemsChangedEvent.class, listener);
+	public Registration addIronItemsChangeListener(
+			ComponentEventListener<IronItemsChangeEvent> listener) {
+		return addListener(IronItemsChangeEvent.class, listener);
 	}
 
 	@DomEvent("iron-select")
@@ -1095,77 +1096,76 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	@DomEvent("selected-changed")
-	public static class SelectedChangedEvent
+	public static class SelectedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedChangedEvent(GeneratedPaperTabs source,
-				boolean fromClient) {
+		public SelectedChangeEvent(GeneratedPaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedChangedListener(
-			ComponentEventListener<SelectedChangedEvent> listener) {
-		return addListener(SelectedChangedEvent.class, listener);
+	public Registration addSelectedChangeListener(
+			ComponentEventListener<SelectedChangeEvent> listener) {
+		return addListener(SelectedChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangedEvent
+	public static class SelectedItemChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedItemChangedEvent(GeneratedPaperTabs source,
+		public SelectedItemChangeEvent(GeneratedPaperTabs source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedItemChangedListener(
-			ComponentEventListener<SelectedItemChangedEvent> listener) {
-		return addListener(SelectedItemChangedEvent.class, listener);
+	public Registration addSelectedItemChangeListener(
+			ComponentEventListener<SelectedItemChangeEvent> listener) {
+		return addListener(SelectedItemChangeEvent.class, listener);
 	}
 
 	@DomEvent("items-changed")
-	public static class ItemsChangedEvent
+	public static class ItemsChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTabs> {
-		public ItemsChangedEvent(GeneratedPaperTabs source, boolean fromClient) {
+		public ItemsChangeEvent(GeneratedPaperTabs source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addItemsChangedListener(
-			ComponentEventListener<ItemsChangedEvent> listener) {
-		return addListener(ItemsChangedEvent.class, listener);
+	public Registration addItemsChangeListener(
+			ComponentEventListener<ItemsChangeEvent> listener) {
+		return addListener(ItemsChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-values-changed")
-	public static class SelectedValuesChangedEvent
+	public static class SelectedValuesChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedValuesChangedEvent(GeneratedPaperTabs source,
+		public SelectedValuesChangeEvent(GeneratedPaperTabs source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedValuesChangedListener(
-			ComponentEventListener<SelectedValuesChangedEvent> listener) {
-		return addListener(SelectedValuesChangedEvent.class, listener);
+	public Registration addSelectedValuesChangeListener(
+			ComponentEventListener<SelectedValuesChangeEvent> listener) {
+		return addListener(SelectedValuesChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-items-changed")
-	public static class SelectedItemsChangedEvent
+	public static class SelectedItemsChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedItemsChangedEvent(GeneratedPaperTabs source,
+		public SelectedItemsChangeEvent(GeneratedPaperTabs source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedItemsChangedListener(
-			ComponentEventListener<SelectedItemsChangedEvent> listener) {
-		return addListener(SelectedItemsChangedEvent.class, listener);
+	public Registration addSelectedItemsChangeListener(
+			ComponentEventListener<SelectedItemsChangeEvent> listener) {
+		return addListener(SelectedItemsChangeEvent.class, listener);
 	}
 
 	/**

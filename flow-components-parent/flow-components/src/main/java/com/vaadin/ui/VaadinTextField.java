@@ -15,17 +15,14 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.components.data.HasValue;
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
-import com.vaadin.shared.Registration;
 
 /**
  * Server-side component for the {@code vaadin-text-field} element.
  * 
  * @author Vaadin Ltd
  */
-public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField>
-        implements HasValue<VaadinTextField, String> {
+public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField> {
 
     /**
      * Constructs an empty {@code VaadinTextField}.
@@ -70,21 +67,12 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField>
     }
 
     @Override
-    public Registration addValueChangeListener(
-            ValueChangeListener<VaadinTextField, String> listener) {
-        return getElement().addPropertyChangeListener("value",
-                event -> listener.onComponentEvent(new ValueChangeEvent<>(this,
-                        this, (String) event.getOldValue(),
-                        event.isUserOriginated())));
-    }
-
-    @Override
     public String getEmptyValue() {
         return "";
     }
 
     @Override
     public boolean isEmpty() {
-        return isHasValue();
+        return !hasValue();
     }
 }

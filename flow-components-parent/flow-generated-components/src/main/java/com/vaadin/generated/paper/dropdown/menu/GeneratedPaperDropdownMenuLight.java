@@ -101,8 +101,8 @@ import com.vaadin.shared.Registration;
  * </style>
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-dropdown-menu-light")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html")
 public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMenuLight<R>>
@@ -118,7 +118,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyEventTarget() {
+	protected JsonObject getKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
@@ -132,7 +132,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
 		return get();
 	}
@@ -171,7 +171,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getKeyBindings() {
+	protected JsonObject getKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
 	}
 
@@ -180,7 +180,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
 		return get();
 	}
@@ -532,7 +532,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getSelectedItem() {
+	protected JsonObject getSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
@@ -790,7 +790,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isHasContent() {
+	public boolean hasContent() {
 		return getElement().getProperty("hasContent", false);
 	}
 
@@ -802,7 +802,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public JsonObject getContentElement() {
+	protected JsonObject getContentElement() {
 		return (JsonObject) getElement().getPropertyRaw("contentElement");
 	}
 
@@ -815,7 +815,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 *            the JsonObject value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setContentElement(elemental.json.JsonObject contentElement) {
+	protected R setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
 		return get();
 	}
@@ -871,7 +871,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * @param optTriggeringEvent
 	 *            (optional) event that triggered the ripple.
 	 */
-	public void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
+	protected void ensureRipple(elemental.json.JsonObject optTriggeringEvent) {
 		getElement().callFunction("ensureRipple", optTriggeringEvent);
 	}
 
@@ -941,48 +941,48 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	}
 
 	@DomEvent("active-changed")
-	public static class ActiveChangedEvent
+	public static class ActiveChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public ActiveChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public ActiveChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addActiveChangedListener(
-			ComponentEventListener<ActiveChangedEvent> listener) {
-		return addListener(ActiveChangedEvent.class, listener);
+	public Registration addActiveChangeListener(
+			ComponentEventListener<ActiveChangeEvent> listener) {
+		return addListener(ActiveChangeEvent.class, listener);
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public FocusedChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public FocusedChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public DisabledChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public DisabledChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("iron-form-element-register")
@@ -1016,78 +1016,78 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	}
 
 	@DomEvent("value-changed")
-	public static class ValueChangedEvent
+	public static class ValueChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public ValueChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public ValueChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addValueChangedListener(
-			ComponentEventListener<ValueChangedEvent> listener) {
-		return addListener(ValueChangedEvent.class, listener);
+	public Registration addValueChangeListener(
+			ComponentEventListener<ValueChangeEvent> listener) {
+		return addListener(ValueChangeEvent.class, listener);
 	}
 
 	@DomEvent("invalid-changed")
-	public static class InvalidChangedEvent
+	public static class InvalidChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public InvalidChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public InvalidChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addInvalidChangedListener(
-			ComponentEventListener<InvalidChangedEvent> listener) {
-		return addListener(InvalidChangedEvent.class, listener);
+	public Registration addInvalidChangeListener(
+			ComponentEventListener<InvalidChangeEvent> listener) {
+		return addListener(InvalidChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-item-label-changed")
-	public static class SelectedItemLabelChangedEvent
+	public static class SelectedItemLabelChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public SelectedItemLabelChangedEvent(
+		public SelectedItemLabelChangeEvent(
 				GeneratedPaperDropdownMenuLight source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedItemLabelChangedListener(
-			ComponentEventListener<SelectedItemLabelChangedEvent> listener) {
-		return addListener(SelectedItemLabelChangedEvent.class, listener);
+	public Registration addSelectedItemLabelChangeListener(
+			ComponentEventListener<SelectedItemLabelChangeEvent> listener) {
+		return addListener(SelectedItemLabelChangeEvent.class, listener);
 	}
 
 	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangedEvent
+	public static class SelectedItemChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public SelectedItemChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public SelectedItemChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addSelectedItemChangedListener(
-			ComponentEventListener<SelectedItemChangedEvent> listener) {
-		return addListener(SelectedItemChangedEvent.class, listener);
+	public Registration addSelectedItemChangeListener(
+			ComponentEventListener<SelectedItemChangeEvent> listener) {
+		return addListener(SelectedItemChangeEvent.class, listener);
 	}
 
 	@DomEvent("opened-changed")
-	public static class OpenedChangedEvent
+	public static class OpenedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDropdownMenuLight> {
-		public OpenedChangedEvent(GeneratedPaperDropdownMenuLight source,
+		public OpenedChangeEvent(GeneratedPaperDropdownMenuLight source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addOpenedChangedListener(
-			ComponentEventListener<OpenedChangedEvent> listener) {
-		return addListener(OpenedChangedEvent.class, listener);
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent> listener) {
+		return addListener(OpenedChangeEvent.class, listener);
 	}
 
 	/**
