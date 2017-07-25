@@ -59,8 +59,8 @@ import com.vaadin.shared.Registration;
  * Mixin applied to the color picker icon | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
@@ -262,17 +262,17 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	@DomEvent("color-changed")
-	public static class ColorChangedEvent
+	public static class ColorChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperSwatchPicker> {
-		public ColorChangedEvent(GeneratedPaperSwatchPicker source,
+		public ColorChangeEvent(GeneratedPaperSwatchPicker source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addColorChangedListener(
-			ComponentEventListener<ColorChangedEvent> listener) {
-		return addListener(ColorChangedEvent.class, listener);
+	public Registration addColorChangeListener(
+			ComponentEventListener<ColorChangeEvent> listener) {
+		return addListener(ColorChangeEvent.class, listener);
 	}
 }

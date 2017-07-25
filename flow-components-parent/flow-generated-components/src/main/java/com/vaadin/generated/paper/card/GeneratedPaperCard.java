@@ -67,8 +67,8 @@ import com.vaadin.ui.HasComponents;
  * {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-card#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-card#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-card")
 @HtmlImport("frontend://bower_components/paper-card/paper-card.html")
 public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>

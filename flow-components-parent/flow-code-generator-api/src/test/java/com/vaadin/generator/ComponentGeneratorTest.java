@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.components.data.HasValue;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -759,17 +760,17 @@ public class ComponentGeneratorTest {
         generatedClass = removeIndentation(generatedClass);
 
         Assert.assertTrue(
-                "Generated class should contain the SomethingChangedDetails nested class",
+                "Generated class should contain the SomethingChangeDetails nested class",
                 generatedClass.contains(
-                        "public static class SomethingChangedDetails implements JsonSerializable"));
+                        "public static class SomethingChangeDetails implements JsonSerializable"));
 
         Assert.assertTrue(
-                "Generated class should contain the addSomethingChangedListener method",
+                "Generated class should contain the addSomethingChangeListener method",
                 generatedClass.contains(
-                        "public Registration addSomethingChangedListener( ComponentEventListener<SomethingChangedEvent> listener)"));
+                        "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent> listener)"));
 
         int indexOfEventDeclaration = generatedClass.indexOf(
-                "public static class SomethingChangedEvent extends ComponentEvent<MyComponent> {");
+                "public static class SomethingChangeEvent extends ComponentEvent<MyComponent> {");
         int endIndexOfEventDeclaration = generatedClass.indexOf("} }",
                 indexOfEventDeclaration);
         String eventDeclaration = generatedClass.substring(
@@ -778,7 +779,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated event should contain the getDetails method",
                 eventDeclaration.contains(
-                        "public SomethingChangedDetails getDetails() { return new SomethingChangedDetails().readJson(details); } }"));
+                        "public SomethingChangeDetails getDetails() { return new SomethingChangeDetails().readJson(details); } }"));
 
     }
 
@@ -849,6 +850,56 @@ public class ComponentGeneratorTest {
                 "public void callSomething(CallSomethingFirstParam firstParam, java.lang.String secondParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "public void callSomething(CallSomethingFirstParam firstParam, boolean secondParam)"));
+    }
+
+    @Test
+    public void componentContainsValueProperty_generatedClassImplementsHasValue() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Arrays.asList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Arrays.asList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Arrays.asList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasValue.class);
+        Assert.assertTrue(
+                generatedClass.contains("@Override public String getValue()"));
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public R setValue(java.lang.String value)"));
+    }
+
+    @Test
+    public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
+        componentMetadata.setProperties(Arrays.asList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Arrays.asList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = removeIndentation(generatedClass);
+
+        assertClassImplementsInterface(generatedClass, "MyComponent",
+                HasValue.class);
+        Assert.assertTrue(
+                generatedClass.contains("@Override public Double getValue()"));
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public R setValue(java.lang.Double value)"));
+        Assert.assertTrue(generatedClass
+                .contains("public R setValue(java.lang.Number value)"));
     }
 
     @Test

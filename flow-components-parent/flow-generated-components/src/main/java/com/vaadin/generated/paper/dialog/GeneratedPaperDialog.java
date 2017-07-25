@@ -83,8 +83,8 @@ import com.vaadin.ui.HasComponents;
  * features implemented by this element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
 public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
@@ -983,48 +983,47 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	}
 
 	@DomEvent("horizontal-offset-changed")
-	public static class HorizontalOffsetChangedEvent
+	public static class HorizontalOffsetChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDialog> {
-		public HorizontalOffsetChangedEvent(GeneratedPaperDialog source,
+		public HorizontalOffsetChangeEvent(GeneratedPaperDialog source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addHorizontalOffsetChangedListener(
-			ComponentEventListener<HorizontalOffsetChangedEvent> listener) {
-		return addListener(HorizontalOffsetChangedEvent.class, listener);
+	public Registration addHorizontalOffsetChangeListener(
+			ComponentEventListener<HorizontalOffsetChangeEvent> listener) {
+		return addListener(HorizontalOffsetChangeEvent.class, listener);
 	}
 
 	@DomEvent("vertical-offset-changed")
-	public static class VerticalOffsetChangedEvent
+	public static class VerticalOffsetChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDialog> {
-		public VerticalOffsetChangedEvent(GeneratedPaperDialog source,
+		public VerticalOffsetChangeEvent(GeneratedPaperDialog source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addVerticalOffsetChangedListener(
-			ComponentEventListener<VerticalOffsetChangedEvent> listener) {
-		return addListener(VerticalOffsetChangedEvent.class, listener);
+	public Registration addVerticalOffsetChangeListener(
+			ComponentEventListener<VerticalOffsetChangeEvent> listener) {
+		return addListener(VerticalOffsetChangeEvent.class, listener);
 	}
 
 	@DomEvent("opened-changed")
-	public static class OpenedChangedEvent
+	public static class OpenedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperDialog> {
-		public OpenedChangedEvent(GeneratedPaperDialog source,
-				boolean fromClient) {
+		public OpenedChangeEvent(GeneratedPaperDialog source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addOpenedChangedListener(
-			ComponentEventListener<OpenedChangedEvent> listener) {
-		return addListener(OpenedChangedEvent.class, listener);
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent> listener) {
+		return addListener(OpenedChangeEvent.class, listener);
 	}
 
 	@DomEvent("iron-overlay-canceled")

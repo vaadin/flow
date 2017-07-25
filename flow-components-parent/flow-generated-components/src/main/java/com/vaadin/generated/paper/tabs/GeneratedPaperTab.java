@@ -58,8 +58,8 @@ import com.vaadin.ui.HasComponents;
  * {@code paper-styles/typography.html}.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-tab#2.0.0", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-tab#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-tab")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tab.html")
 public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
@@ -439,45 +439,45 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTab> {
-		public FocusedChangedEvent(GeneratedPaperTab source, boolean fromClient) {
+		public FocusedChangeEvent(GeneratedPaperTab source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTab> {
-		public DisabledChangedEvent(GeneratedPaperTab source, boolean fromClient) {
+		public DisabledChangeEvent(GeneratedPaperTab source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("active-changed")
-	public static class ActiveChangedEvent
+	public static class ActiveChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperTab> {
-		public ActiveChangedEvent(GeneratedPaperTab source, boolean fromClient) {
+		public ActiveChangeEvent(GeneratedPaperTab source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addActiveChangedListener(
-			ComponentEventListener<ActiveChangedEvent> listener) {
-		return addListener(ActiveChangedEvent.class, listener);
+	public Registration addActiveChangeListener(
+			ComponentEventListener<ActiveChangeEvent> listener) {
+		return addListener(ActiveChangeEvent.class, listener);
 	}
 
 	/**

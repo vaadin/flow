@@ -23,6 +23,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.components.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -37,13 +38,17 @@ import com.vaadin.shared.Registration;
  * 2.0. Expect some conditional code (especially in the tests).
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.14-SNAPSHOT",
-		"WebComponent: paper-input#2.0.1", "Flow#0.1.14-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: paper-input#2.0.1", "Flow#0.1.15-SNAPSHOT"})
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasValue<R, String> {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
@@ -210,6 +215,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 'value-changed' event happens.
 	 */
 	@Synchronize(property = "value", value = "value-changed")
+	@Override
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
@@ -223,6 +229,7 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
+	@Override
 	public R setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
 		return get();
@@ -1228,33 +1235,32 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangedEvent
+	public static class FocusedChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperInput> {
-		public FocusedChangedEvent(GeneratedPaperInput source,
-				boolean fromClient) {
+		public FocusedChangeEvent(GeneratedPaperInput source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addFocusedChangedListener(
-			ComponentEventListener<FocusedChangedEvent> listener) {
-		return addListener(FocusedChangedEvent.class, listener);
+	public Registration addFocusedChangeListener(
+			ComponentEventListener<FocusedChangeEvent> listener) {
+		return addListener(FocusedChangeEvent.class, listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangedEvent
+	public static class DisabledChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperInput> {
-		public DisabledChangedEvent(GeneratedPaperInput source,
+		public DisabledChangeEvent(GeneratedPaperInput source,
 				boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addDisabledChangedListener(
-			ComponentEventListener<DisabledChangedEvent> listener) {
-		return addListener(DisabledChangedEvent.class, listener);
+	public Registration addDisabledChangeListener(
+			ComponentEventListener<DisabledChangeEvent> listener) {
+		return addListener(DisabledChangeEvent.class, listener);
 	}
 
 	@DomEvent("change")
@@ -1269,33 +1275,18 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 		return addListener(ChangeEvent.class, listener);
 	}
 
-	@DomEvent("value-changed")
-	public static class ValueChangedEvent
-			extends
-				ComponentEvent<GeneratedPaperInput> {
-		public ValueChangedEvent(GeneratedPaperInput source, boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
-
-	public Registration addValueChangedListener(
-			ComponentEventListener<ValueChangedEvent> listener) {
-		return addListener(ValueChangedEvent.class, listener);
-	}
-
 	@DomEvent("invalid-changed")
-	public static class InvalidChangedEvent
+	public static class InvalidChangeEvent
 			extends
 				ComponentEvent<GeneratedPaperInput> {
-		public InvalidChangedEvent(GeneratedPaperInput source,
-				boolean fromClient) {
+		public InvalidChangeEvent(GeneratedPaperInput source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
-	public Registration addInvalidChangedListener(
-			ComponentEventListener<InvalidChangedEvent> listener) {
-		return addListener(InvalidChangedEvent.class, listener);
+	public Registration addInvalidChangeListener(
+			ComponentEventListener<InvalidChangeEvent> listener) {
+		return addListener(InvalidChangeEvent.class, listener);
 	}
 
 	@DomEvent("iron-form-element-register")
