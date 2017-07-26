@@ -265,11 +265,12 @@ const slotsToJsonArray = (slots) => {
 };
 
 module.exports = class ElementJsonTransform extends Transform {
-  constructor(versionReader) {
+  constructor(versionReader, mixinCollector) {
     const options = {};
     options.objectMode = true;
     super(options);
     this.versionReader = versionReader;
+    this.mixinCollector = mixinCollector;
   }
 
   /**
@@ -295,8 +296,9 @@ module.exports = class ElementJsonTransform extends Transform {
   _transform(element, encoding, callback) {
     console.info("Generating JSON for " + element.tagName);
     const version = this.versionReader.getElementVersion(element.tagName);
+    const name = element.name ? element.name : element.tagName;
     const json = {
-      "name": element.name ? element.name : element.tagName,
+      "name": name,
       "tag": element.tagName,
       "baseUrl": element._parsedDocument.baseUrl,
       "version": version,
@@ -305,8 +307,8 @@ module.exports = class ElementJsonTransform extends Transform {
       "events": eventsToJsonArray(element.events),
       "slots": slotsToJsonArray(element.slots),
       "listeners": element.listers,
-      "behaviors": element.behaviorAssignments.map(behavior => behavior.name),
-      "mixins": element.mixins.map(mixin => mixin.identifier),
+      "behaviors": this.mixinCollector.getFlattenedBehaviorHierarchy(name),
+      "mixins": this.mixinCollector.getFlattenedMixinHierarchy(name),
       "description": element.jsdoc ? element.jsdoc.description : "Missing documentation!"
     };
 

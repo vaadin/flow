@@ -401,7 +401,10 @@
   ],
   "behaviors": [
     "Polymer.IronA11yKeysBehavior",
-    "vaadin.elements.combobox.ComboBoxBehavior"
+    "vaadin.elements.combobox.ComboBoxBehavior",
+    "Polymer.IronFormElementBehavior",
+    "Polymer.Templatizer",
+    "vaadin.elements.combobox.DropdownBehavior"
   ],
   "mixins": [],
   "description": "`<vaadin-combo-box-light>` is a customizable version of the `<vaadin-combo-box>` providing\nonly the dropdown functionality and leaving the input field definition to the user.\n\nThis element is using the same [`ComboBoxBehavior`](#vaadin.elements.combobox.ComboBoxBehavior) as\n[`<vaadin-combo-box>`](#vaadin-combo-box), so the API remains the same.\n\nTo create a custom input field, you need to add a child element which has a two-way\ndata-bindable property representing the input value. The property name is expected\nto be `bindValue` by default. See the example below for a simplest possible example\nusing an `<input>` element extended with `iron-input`.\n\n```html\n<vaadin-combo-box-light>\n  <iron-input>\n    <input>\n  </iron-input>\n</vaadin-combo-box-light>\n```\n\nIf you are using other custom input fields like `<paper-input>`, you\nneed to define the name of value property with `attrForValue` property.\nSee the example below on how to create a custom input field based\non a `<paper-input>` decorated with a custom `<iron-icon>` and\ntwo `<paper-button>`s to act as the clear and toggle controls.\n\n```html\n<vaadin-combo-box-light attr-for-value=\"value\">\n  <paper-input label=\"Elements\" class=\"input\">\n    <iron-icon icon=\"toll\" prefix></iron-icon>\n    <paper-button suffix class=\"clear-button\">Clear</paper-button>\n    <paper-button suffix class=\"toggle-button\">Toggle</paper-button>\n  </paper-input>\n</vaadin-combo-box-light>\n```"
