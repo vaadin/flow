@@ -36,6 +36,7 @@ import javax.annotation.Generated;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.forge.roaster.Roaster;
+import org.jboss.forge.roaster.model.Visibility;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jboss.forge.roaster.model.source.JavaDocSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
@@ -657,6 +658,11 @@ public class ComponentGenerator {
                                     ? StringUtils.capitalize(
                                             basicType.name().toLowerCase())
                                     : ""));
+                }
+
+                if (method.getVisibility() == Visibility.PROTECTED) {
+                    method.setName("protected"
+                            + StringUtils.capitalize(method.getName()));
                 }
 
                 method.setBody(

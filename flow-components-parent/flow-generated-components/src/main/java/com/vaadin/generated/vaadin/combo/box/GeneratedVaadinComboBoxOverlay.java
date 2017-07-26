@@ -42,7 +42,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	protected JsonObject getPositionTarget() {
+	protected JsonObject protectedGetPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
 	}
 
