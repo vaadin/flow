@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
@@ -601,10 +602,13 @@ public class ComponentGenerator {
             ComponentMetadata metadata, ComponentPropertyData property,
             List<ComponentEventData> events) {
 
+        String propertyJavaName = getJavaNameForProperty(metadata,
+                property.getName());
+
         if (containsObjectType(property)) {
             JavaClassSource nestedClass = generateNestedPojo(javaClass,
                     property.getObjectType().get(0),
-                    property.getName() + "-property",
+                    propertyJavaName + "-property",
                     String.format(
                             "Class that encapsulates the data of the '%s' property in the {@link %s} component.",
                             property.getName(), javaClass.getName()));
@@ -612,7 +616,7 @@ public class ComponentGenerator {
             MethodSource<JavaClassSource> method = javaClass.addMethod()
                     .setPublic().setReturnType(nestedClass);
             method.setName(ComponentGeneratorUtils
-                    .generateMethodNameForProperty("get", property.getName()));
+                    .generateMethodNameForProperty("get", propertyJavaName));
             method.setBody(String.format(
                     "return new %s().readJson((JsonObject) getElement().getPropertyRaw(\"%s\"));",
                     nestedClass.getName(), property.getName()));
@@ -620,7 +624,7 @@ public class ComponentGenerator {
             addSynchronizeAnnotationAndJavadocToGetter(method, property,
                     events);
 
-            if ("value".equals(property.getName())
+            if ("value".equals(propertyJavaName)
                     && shouldImplementHasValue(metadata)) {
                 javaClass.addInterface(HasValue.class.getName() + "<"
                         + GENERIC_TYPE + ", " + nestedClass.getName() + ">");
@@ -638,22 +642,22 @@ public class ComponentGenerator {
                 setMethodVisibility(method, basicType);
 
                 if (basicType == ComponentBasicType.BOOLEAN) {
-                    if (!property.getName().startsWith("is")
-                            && !property.getName().startsWith("has")
-                            && !property.getName().startsWith("have")) {
+                    if (!propertyJavaName.startsWith("is")
+                            && !propertyJavaName.startsWith("has")
+                            && !propertyJavaName.startsWith("have")) {
 
                         method.setName(ComponentGeneratorUtils
                                 .generateMethodNameForProperty("is",
-                                        property.getName()));
+                                        propertyJavaName));
                     } else {
                         method.setName(ComponentGeneratorUtils
                                 .formatStringToValidJavaIdentifier(
-                                        property.getName()));
+                                        propertyJavaName));
                     }
                 } else {
                     method.setName(ComponentGeneratorUtils
                             .generateMethodNameForProperty("get",
-                                    property.getName())
+                                    propertyJavaName)
                             + (postfixWithVariableType
                                     ? StringUtils.capitalize(
                                             basicType.name().toLowerCase())
@@ -672,7 +676,7 @@ public class ComponentGenerator {
                 addSynchronizeAnnotationAndJavadocToGetter(method, property,
                         events);
 
-                if ("value".equals(property.getName())
+                if ("value".equals(propertyJavaName)
                         && shouldImplementHasValue(metadata)) {
 
                     if (javaType.isPrimitive()) {
@@ -826,20 +830,21 @@ public class ComponentGenerator {
     private void generateSetterFor(JavaClassSource javaClass,
             ComponentMetadata metadata, ComponentPropertyData property) {
 
+        String propertyJavaName = getJavaNameForProperty(metadata,
+                property.getName());
+
         if (containsObjectType(property)) {
             // the getter already created the nested pojo, so here we just need
             // to get the name
             String nestedClassName = ComponentGeneratorUtils
                     .generateValidJavaClassName(
-                            property.getName() + "-property");
+                            propertyJavaName + "-property");
 
             MethodSource<JavaClassSource> method = javaClass.addMethod()
                     .setName(ComponentGeneratorUtils
                             .generateMethodNameForProperty("set",
-                                    property.getName()))
+                                    propertyJavaName))
                     .setPublic();
-            method.setName(ComponentGeneratorUtils
-                    .generateMethodNameForProperty("set", property.getName()));
 
             method.addParameter(nestedClassName, "property");
 
@@ -857,7 +862,7 @@ public class ComponentGenerator {
             if (fluentSetters) {
                 addFluentReturnToSetter(method);
 
-                if ("value".equals(property.getName())
+                if ("value".equals(propertyJavaName)
                         && shouldImplementHasValue(metadata)) {
                     method.addAnnotation(Override.class);
                 }
@@ -869,7 +874,7 @@ public class ComponentGenerator {
                 MethodSource<JavaClassSource> method = javaClass.addMethod()
                         .setName(ComponentGeneratorUtils
                                 .generateMethodNameForProperty("set",
-                                        property.getName()));
+                                        propertyJavaName));
 
                 setMethodVisibility(method, basicType);
 
@@ -877,7 +882,7 @@ public class ComponentGenerator {
                         .toJavaType(basicType);
 
                 String parameterName = ComponentGeneratorUtils
-                        .formatStringToValidJavaIdentifier(property.getName());
+                        .formatStringToValidJavaIdentifier(propertyJavaName);
                 method.addParameter(setterType, parameterName);
 
                 method.setBody(
@@ -895,7 +900,7 @@ public class ComponentGenerator {
                 if (fluentSetters) {
                     addFluentReturnToSetter(method);
 
-                    if ("value".equals(property.getName())
+                    if ("value".equals(propertyJavaName)
                             && shouldImplementHasValue(metadata)) {
 
                         method.addAnnotation(Override.class);
@@ -1070,22 +1075,31 @@ public class ComponentGenerator {
                 && shouldImplementHasValue(metadata)) {
             return;
         }
+        
+        String eventJavaApiName = event.getName();
+        if (event.getName().endsWith("-changed")) {
+            String eventPropertyName = event.getName().substring(0,
+                    event.getName().length() - "-changed".length());
+            eventJavaApiName = getJavaNameForProperty(metadata,
+                    eventPropertyName) + "-changed";
+        }
+        eventJavaApiName = ComponentGeneratorUtils
+                .formatStringToValidJavaIdentifier(eventJavaApiName);
 
-        String eventName = ComponentGeneratorUtils
-                .formatStringToValidJavaIdentifier(event.getName());
-
-        if (eventName.endsWith("Changed")) {
+        if (eventJavaApiName.endsWith("Changed")) {
             // removes the "d" in the end, to create addSomethingChangeListener
             // and SomethingChangeEvent
-            eventName = eventName.substring(0, eventName.length() - 1);
+            eventJavaApiName = eventJavaApiName.substring(0,
+                    eventJavaApiName.length() - 1);
         }
 
         JavaClassSource eventListener = createEventListenerEventClass(javaClass,
-                event, eventName);
+                event, eventJavaApiName);
 
         javaClass.addNestedType(eventListener);
         MethodSource<JavaClassSource> method = javaClass.addMethod()
-                .setName("add" + StringUtils.capitalize(eventName + "Listener"))
+                .setName("add"
+                        + StringUtils.capitalize(eventJavaApiName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
         method.addParameter(
                 "ComponentEventListener<" + eventListener.getName() + ">",
@@ -1216,5 +1230,16 @@ public class ComponentGenerator {
         }
 
         return config;
+    }
+
+    private String getJavaNameForProperty(ComponentMetadata metadata,
+            String propertyName) {
+        String javaApiName = propertyName;
+        Optional<String> nameRemapping = PropertyNameRemapRegistry
+                .getOptionalMappingFor(metadata.getName(), propertyName);
+        if (nameRemapping.isPresent()) {
+            javaApiName = nameRemapping.get();
+        }
+        return javaApiName;
     }
 }

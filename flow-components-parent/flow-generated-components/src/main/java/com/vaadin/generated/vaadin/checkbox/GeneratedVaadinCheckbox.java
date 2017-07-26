@@ -228,7 +228,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public String getValue() {
+	public String getPostValue() {
 		return getElement().getProperty("value");
 	}
 
@@ -238,12 +238,12 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * The value given to the data submitted with the checkbox's name to the
 	 * server when the control is inside a form.
 	 * 
-	 * @param value
+	 * @param postValue
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+	public R setPostValue(java.lang.String postValue) {
+		getElement().setProperty("value", postValue == null ? "" : postValue);
 		return get();
 	}
 
