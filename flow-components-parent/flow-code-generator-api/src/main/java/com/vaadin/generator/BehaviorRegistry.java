@@ -39,7 +39,8 @@ public final class BehaviorRegistry {
 
     static {
         put(HasClickListeners.class, "Polymer.PaperButtonBehavior",
-                "Polymer.GestureEventListeners", "vaadin-button");
+                "Polymer.GestureEventListeners", "vaadin-button",
+                "vaadin-form-item");
         put(HasText.class, "vaadin-button", "paper-button");
         put(Focusable.class, "paper-button", "Vaadin.FormElementMixin",
                 "Vaadin.ControlStateMixin");

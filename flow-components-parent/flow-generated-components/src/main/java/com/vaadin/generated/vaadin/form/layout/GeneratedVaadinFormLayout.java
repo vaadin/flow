@@ -1,0 +1,238 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.generated.vaadin.form.layout;
+
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
+import elemental.json.JsonObject;
+import com.vaadin.ui.HasComponents;
+
+/**
+ * Description copied from corresponding location in WebComponent:
+ * 
+ * {@code <vaadin-form-layout>} is a Polymer 2 element providing configurable
+ * responsive layout for form elements.
+ * 
+ * {@code }`html <vaadin-form-layout>
+ * 
+ * <vaadin-form-item> <label slot="label">First Name</label> <input
+ * class="full-width" value="Jane"> </vaadin-form-item>
+ * 
+ * <vaadin-form-item> <label slot="label">Last Name</label> <input
+ * class="full-width" value="Doe"> </vaadin-form-item>
+ * 
+ * <vaadin-form-item> <label slot="label">Email</label> <input
+ * class="full-width" value="jane.doe@example.com"> </vaadin-form-item>
+ * 
+ * </vaadin-form-layout> {@code }`
+ * 
+ * It supports any child elements as layout items.
+ * 
+ * By default, it makes a layout of two columns if the element width is equal or
+ * wider than 40em, and a single column layout otherwise.
+ * 
+ * The number of columns and the responsive behavior are customizable with the
+ * {@code responsiveSteps} property.
+ * 
+ * ### Spanning Items on Multiple Columns
+ * 
+ * You can use {@code colspan} attribute on the items. In the example below, the
+ * first text field spans on two columns:
+ * 
+ * {@code }`html <vaadin-form-layout>
+ * 
+ * <vaadin-form-item colspan="2"> <label slot="label">Address</label> <input
+ * class="full-width"> </vaadin-form-item>
+ * 
+ * <vaadin-form-item> <label slot="label">First Name</label> <input
+ * class="full-width" value="Jane"> </vaadin-form-item>
+ * 
+ * <vaadin-form-item> <label slot="label">Last Name</label> <input
+ * class="full-width" value="Doe"> </vaadin-form-item>
+ * 
+ * </vaadin-form-layout> {@code }`
+ * 
+ * ### Explicit New Row
+ * 
+ * Use the {@code <br>} line break element to wrap the items on a new row:
+ * 
+ * {@code }`html <vaadin-form-layout>
+ * 
+ * <vaadin-form-item> <label slot="label">Email</label> <input
+ * class="full-width"> </vaadin-form-item>
+ * 
+ * <br>
+ * 
+ * <vaadin-form-item> <label slot="label">Confirm Email</label> <input
+ * class="full-width"> </vaadin-form-item>
+ * 
+ * </vaadin-form-layout> {@code }`
+ * 
+ * ### CSS Properties Reference
+ * 
+ * The following custom CSS properties are available on the
+ * {@code <vaadin-form-layout>} element:
+ * 
+ * Custom CSS property | Description | Default ---|---|---
+ * {@code --vaadin-form-layout-column-gap} | Length of the gap between columns |
+ * {@code 2em}
+ */
+@Generated({
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
+		"WebComponent: Vaadin.FormLayoutElement#null", "Flow#0.1.15-SNAPSHOT"})
+@Tag("vaadin-form-layout")
+@HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
+public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
+		extends
+			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+
+/**
+	 * Description copied from corresponding location in WebComponent:
+
+	Allows specifying a responsive behavior with the number of columns
+	and the label position depending on the layout width.
+
+	Format: array of objects, each object defines one responsive step
+	with {@code minWidth} CSS length, {@code columns} number, and optional
+	{@code labelsPosition} string of {@code "aside"} or {@code "top"}. At least one item is required.
+
+	#### Examples
+
+	<dl>
+	  <dt>{@code [{columns: 1}]}</dt>
+	  <dd>
+	    <p>The layout is always a single column, labels aside.
+	  </dd>
+
+	  <dt><pre><code>[
+	  {minWidth: 0, columns: 1},
+	  {minWidth: '40em', columns: 2}
+	]</code></pre></dt>
+	  <dd>
+	    <p>Sets two responsive steps:
+	    <ol>
+	      <li>When the layout width is < 40em, one column, labels aside.
+	      <li>Width >= 40em, two columns, labels aside.
+	    </ol>
+	  </dd>
+
+	  <dt><pre><code>[
+	  {minWidth: 0, columns: 1, labelsPosition: 'top'},
+	  {minWidth: '20em', columns: 1},
+	  {minWidth: '40em', columns: 2}
+	]</code></pre></dt>
+	  <dd>
+	    <p>Default value. Three responsive steps:
+	    <ol>
+	      <li>Width < 20em, one column, labels on top.
+	      <li>20em <= width < 40em, one column, labels aside.
+	      <li>Width >= 40em, two columns, labels aside.
+	    </ol>
+	  </dd>
+	</dl><p>This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
+	 */
+	protected JsonObject protectedGetResponsiveSteps() {
+		return (JsonObject) getElement().getPropertyRaw("responsiveSteps");
+	}
+
+/**
+	 * Description copied from corresponding location in WebComponent:
+
+	Allows specifying a responsive behavior with the number of columns
+	and the label position depending on the layout width.
+
+	Format: array of objects, each object defines one responsive step
+	with {@code minWidth} CSS length, {@code columns} number, and optional
+	{@code labelsPosition} string of {@code "aside"} or {@code "top"}. At least one item is required.
+
+	#### Examples
+
+	<dl>
+	  <dt>{@code [{columns: 1}]}</dt>
+	  <dd>
+	    <p>The layout is always a single column, labels aside.
+	  </dd>
+
+	  <dt><pre><code>[
+	  {minWidth: 0, columns: 1},
+	  {minWidth: '40em', columns: 2}
+	]</code></pre></dt>
+	  <dd>
+	    <p>Sets two responsive steps:
+	    <ol>
+	      <li>When the layout width is < 40em, one column, labels aside.
+	      <li>Width >= 40em, two columns, labels aside.
+	    </ol>
+	  </dd>
+
+	  <dt><pre><code>[
+	  {minWidth: 0, columns: 1, labelsPosition: 'top'},
+	  {minWidth: '20em', columns: 1},
+	  {minWidth: '40em', columns: 2}
+	]</code></pre></dt>
+	  <dd>
+	    <p>Default value. Three responsive steps:
+	    <ol>
+	      <li>Width < 20em, one column, labels on top.
+	      <li>20em <= width < 40em, one column, labels aside.
+	      <li>Width >= 40em, two columns, labels aside.
+	    </ol>
+	  </dd>
+	</dl>
+	 * @param responsiveSteps the JsonObject value to set
+	 * @return this instance, for method chaining
+	 */
+	protected R setResponsiveSteps(elemental.json.JsonObject responsiveSteps) {
+		getElement().setPropertyJson("responsiveSteps", responsiveSteps);
+		return get();
+	}
+
+	public void connectedCallback() {
+		getElement().callFunction("connectedCallback");
+	}
+
+	/**
+	 * Description copied from corresponding location in WebComponent:
+	 * 
+	 * Set custom CSS property values and update the layout.
+	 * 
+	 * @param ...args Missing documentation!
+	 */
+	protected void updateStyles(elemental.json.JsonObject _Args) {
+		getElement().callFunction("updateStyles", _Args);
+	}
+
+	/**
+	 * Adds the given components as children of this component.
+	 * 
+	 * @param components
+	 *            the components to add
+	 * @see HasComponents#add(Component...)
+	 */
+	public GeneratedVaadinFormLayout(com.vaadin.ui.Component... components) {
+		add(components);
+	}
+
+	/**
+	 * Default constructor.
+	 */
+	public GeneratedVaadinFormLayout() {
+	}
+}
