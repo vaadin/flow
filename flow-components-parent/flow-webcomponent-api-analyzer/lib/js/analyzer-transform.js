@@ -38,12 +38,13 @@ const getBowerPath = (filePath) => path.relative(globalVar.bowerTargetDir, fileP
  * Runs Analyzer for all the files and emits the Element (?) instance with the analysis data for every element found.
  */
 module.exports = class AnalyzerTransform extends Transform {
-  constructor(elementFilter) {
+  constructor(elementFilter, mixinCollector) {
     const options = {};
     options.objectMode = true;
     super(options);
     this._importPaths = [];
     this._elementFilter = elementFilter;
+    this._mixinCollector = mixinCollector;
   }
 
   _transform(file, encoding, callback) {
@@ -62,6 +63,22 @@ module.exports = class AnalyzerTransform extends Transform {
     console.info("Running analyzer with paths: " + importsContent.join('\n    '));
     analyzer.analyze(importsContent)
       .then((analysis) => {
+
+        ["element", "element-mixin", "behavior"].forEach(kind => {
+          analysis.getFeatures({kind})
+          .forEach(component => {
+            const name = component.name ? component.name : component.tagName;
+            this._mixinCollector
+                .putBehaviors(
+                  name,
+                  component.behaviorAssignments.map(behavior => behavior.name));
+            this._mixinCollector
+                .putMixins(
+                  name,
+                  component.mixins.map(mixin => mixin.identifier));
+          });
+        });
+
         const elementSet = analysis.getFeatures({kind: 'element'});
         const elements = [];
         for (const element of elementSet) {
