@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.demo.views;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.demo.SourceContent;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.html.Label;
+import com.vaadin.flow.html.Div;
+import com.vaadin.flow.html.H3;
 import com.vaadin.ui.VaadinComboBox;
 
 /**
@@ -31,11 +30,10 @@ import com.vaadin.ui.VaadinComboBox;
 @ComponentDemo(name = "Vaadin ComboBox", href = "vaadin-combo-box")
 public class VaadinComboBoxView extends DemoView {
 
-    private Label song;
-    private Label artist;
-    private Label album;
-
-    public static class Song implements Serializable {
+    /**
+     * Example object.
+     */
+    public static class Song {
         private String name;
         private String artist;
         private String album;
@@ -49,117 +47,215 @@ public class VaadinComboBoxView extends DemoView {
             this.album = album;
         }
 
-        /**
-         * @return the name
-         */
         public String getName() {
             return name;
         }
 
-        /**
-         * @param name
-         *            the name to set
-         */
         public void setName(String name) {
             this.name = name;
         }
 
-        /**
-         * @return the artist
-         */
         public String getArtist() {
             return artist;
         }
 
-        /**
-         * @param artist
-         *            the artist to set
-         */
         public void setArtist(String artist) {
             this.artist = artist;
         }
 
-        /**
-         * @return the album
-         */
         public String getAlbum() {
             return album;
         }
 
-        /**
-         * @param album
-         *            the album to set
-         */
         public void setAlbum(String album) {
             this.album = album;
         }
     }
 
+    /**
+     * Another example object.
+     */
+    public static class Fruit {
+        private String name;
+        private String color;
+
+        public Fruit() {
+        }
+
+        public Fruit(String name, String color) {
+            this.name = name;
+            this.color = color;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getColor() {
+            return color;
+        }
+
+        public void setColor(String color) {
+            this.color = color;
+        }
+    }
+
     @Override
     void initView() {
+        createStringComboBox();
+        createObjectComboBox();
+        createComboBoxWithObjectStringSimpleValue();
+        createComboBoxWithCustomFilter();
+    }
+
+    private void createStringComboBox() {
+        Div message = createMessageDiv();
+
+        // begin-source-example
+        // source-example-heading: String selection
+        VaadinComboBox<String> comboBox = new VaadinComboBox<>("Browsers");
+        comboBox.setItems("Google Chrome", "Mozilla Firefox", "Opera",
+                "Apple Safari", "Microsoft Edge");
+
+        comboBox.addValueChangeListener(event -> {
+            if (event.getSource().isEmpty()) {
+                message.setText("No browser selected");
+            } else {
+                message.setText("Selected browser: " + event.getValue());
+            }
+        });
+        // end-source-example
+
+        comboBox.getStyle().set("width", "250px");
+        add(new H3("String selection"), comboBox, message);
+    }
+
+    private void createObjectComboBox() {
+        Div message = createMessageDiv();
+
+        // begin-source-example
+        // source-example-heading: Object selection
         VaadinComboBox<Song> comboBox = new VaadinComboBox<>();
         comboBox.setLabel("Music selection");
         comboBox.setItemLabelPath("name");
-        comboBox.setItemValuePath("");
 
+        List<Song> listOfSongs = createListOfSongs();
+
+        comboBox.setItems(listOfSongs);
+        comboBox.addSelectedItemChangeListener(event -> {
+            Song song = comboBox.getSelectedItem();
+            if (song != null) {
+                message.setText("Selected song: " + song.getName()
+                        + "\nFrom album: " + song.getAlbum() + "\nBy artist: "
+                        + song.getArtist());
+            } else {
+                message.setText("No song is selected");
+            }
+        });
+        // end-source-example
+
+        comboBox.getStyle().set("width", "250px");
+        addCard(new H3("Object selection"), comboBox, message);
+    }
+
+    private void createComboBoxWithObjectStringSimpleValue() {
+        Div message = createMessageDiv();
+
+        // begin-source-example
+        // source-example-heading: Value selection from objects
+        VaadinComboBox<Song> comboBox = new VaadinComboBox<>("Artists");
+        comboBox.setItemLabelPath("artist");
+        comboBox.setItemValuePath("artist");
+
+        List<Song> listOfSongs = createListOfSongs();
+
+        comboBox.setItems(listOfSongs);
+
+        comboBox.addValueChangeListener(event -> {
+            if (event.getSource().isEmpty()) {
+                message.setText("No artist selected");
+            } else {
+                message.setText("Selected artist: " + event.getValue()
+                        + "\nThe old selection was: " + event.getOldValue());
+            }
+        });
+        // end-source-example
+
+        comboBox.getStyle().set("width", "250px");
+        addCard(new H3("Value selection from objects"), comboBox, message);
+    }
+
+    private void createComboBoxWithCustomFilter() {
+        Div message = createMessageDiv();
+
+        // begin-source-example
+        // source-example-heading: Custom filtering
+        VaadinComboBox<Fruit> comboBox = new VaadinComboBox<>(
+                "Filter fruits by color (e.g. red, green, yellow...)");
+        comboBox.setItemLabelPath("name");
+        comboBox.setItemTemplate(
+                "Fruit: [[item.name]]<br>Color: <b>[[item.color]]</b>");
+
+        // when using custom filter, you don't need to call setItems
+        List<Fruit> listOfFruits = createListOfFruits();
+
+        comboBox.addFilterChangeListener(event -> {
+            String filter = comboBox.getFilter();
+            if (filter == null) {
+                comboBox.setFilteredItems(listOfFruits);
+            } else {
+                List<Fruit> filtered = listOfFruits.stream()
+                        .filter(fruit -> fruit.getColor().toLowerCase()
+                                .startsWith(filter.toLowerCase()))
+                        .collect(Collectors.toList());
+                comboBox.setFilteredItems(filtered);
+            }
+        });
+
+        comboBox.addChangeListener(event -> {
+            if (event.getSource().isEmpty()) {
+                message.setText("No fruit selected");
+            } else {
+                message.setText("Selected fruit: "
+                        + comboBox.getSelectedItem().getName());
+            }
+        });
+        // end-source-example
+
+        comboBox.getStyle().set("width", "250px");
+        addCard(new H3("Custom filtering"), comboBox, message);
+    }
+
+    private List<Song> createListOfSongs() {
         List<Song> listOfSongs = new ArrayList<>();
         listOfSongs.add(new Song("A V Club Disagrees", "Haircuts for Men",
                 "Physical Fitness"));
         listOfSongs.add(new Song("Sculpted", "Haywyre", "Two Fold Pt.1"));
         listOfSongs.add(
                 new Song("Voices of a Distant Star", "Killigrew", "Animus II"));
-
-        comboBox.setItems(listOfSongs);
-        comboBox.addChangeListener(
-                event -> setSelection(comboBox.getSelectedObject(Song.class)));
-
-        add(comboBox);
-
-        song = new Label("Song:");
-        artist = new Label("Artist:");
-        album = new Label("Album:");
-
-        add(song, artist, album);
+        return listOfSongs;
     }
 
-    @Override
-    public void populateSources(SourceContent container) {
-        container.add(ElementFactory.createHeading3("Simple sample:"));
-        container.addCode("VaadinComboBox comboBox = new VaadinComboBox();\n"
-                + "comboBox.setLabel(\"Music selection\");\n"
-                + "JsonArray items = Json.createArray();\n"
-                + "items.set(0, \"A V Club Disagrees\");\n"
-                + "items.set(1, \"Sculpted\");\n"
-                + "items.set(2, \"Voices of a Distant Star\");\n"
-                + "comboBox.setItems(items);\n"
-                + "layoutContainer.add(comboBox);");
-
-        container.add(ElementFactory
-                .createHeading3("Moderate sample using JsonItem:"));
-        container.addCode("VaadinComboBox comboBox = new VaadinComboBox();\n"
-                + "comboBox.setLabel(\"Music selection\");\n"
-                + "comboBox.setItemLabelPath(\"Song\");\n"
-                + "comboBox.setItemValuePath(\"Song\");\n\n"
-                + "JsonArray items = Json.createArray();\n"
-                + "items.set(0, createItem(\"A V Club Disagrees\", \"Haircuts for Men\", \"Physical Fitness\"));comboBox.setItems(items);\n"
-                + "\n"
-                + "comboBox.getElement().synchronizeProperty(\"selectedItem\", \"selected-item-changed\");\n"
-                + "comboBox.addChangeListener( event -> setSelection(comboBox.getSelectedItem()));\n"
-                + "\n" + "layoutContainer.add(comboBox);\n");
+    private List<Fruit> createListOfFruits() {
+        List<Fruit> listOfFruits = new ArrayList<>();
+        listOfFruits.add(new Fruit("Banana", "Yellow"));
+        listOfFruits.add(new Fruit("Apple", "Red"));
+        listOfFruits.add(new Fruit("Strawberry", "Red"));
+        listOfFruits.add(new Fruit("Grape", "Purple"));
+        listOfFruits.add(new Fruit("Lemon", "Green"));
+        listOfFruits.add(new Fruit("Watermelon", "Green"));
+        listOfFruits.add(new Fruit("Orange", "Orange"));
+        return listOfFruits;
     }
 
-    public void setSelection(Song selection) {
-        if (selection == null) {
-            updateLabels("", "", "");
-        } else {
-            updateLabels(selection.getName(), selection.getArtist(),
-                    selection.getAlbum());
-        }
-    }
-
-    private void updateLabels(String song, String artist, String album) {
-        this.song.setText("Song:   " + song);
-        this.artist.setText("Artist: " + artist);
-        this.album.setText("Album:  " + album);
+    private Div createMessageDiv() {
+        Div message = new Div();
+        message.setClassName("comboBoxMessage");
+        message.getStyle().set("whiteSpace", "pre");
+        return message;
     }
 }
