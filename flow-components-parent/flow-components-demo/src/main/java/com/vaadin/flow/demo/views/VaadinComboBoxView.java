@@ -113,7 +113,7 @@ public class VaadinComboBoxView extends DemoView {
     }
 
     private void createStringComboBox() {
-        Div message = createMessageDiv();
+        Div message = createMessageDiv("string-selection-message");
 
         // begin-source-example
         // source-example-heading: String selection
@@ -131,11 +131,12 @@ public class VaadinComboBoxView extends DemoView {
         // end-source-example
 
         comboBox.getStyle().set("width", "250px");
+        comboBox.setId("string-selection-box");
         add(new H3("String selection"), comboBox, message);
     }
 
     private void createObjectComboBox() {
-        Div message = createMessageDiv();
+        Div message = createMessageDiv("object-selection-message");
 
         // begin-source-example
         // source-example-heading: Object selection
@@ -159,11 +160,12 @@ public class VaadinComboBoxView extends DemoView {
         // end-source-example
 
         comboBox.getStyle().set("width", "250px");
+        comboBox.setId("object-selection-box");
         addCard(new H3("Object selection"), comboBox, message);
     }
 
     private void createComboBoxWithObjectStringSimpleValue() {
-        Div message = createMessageDiv();
+        Div message = createMessageDiv("value-selection-message");
 
         // begin-source-example
         // source-example-heading: Value selection from objects
@@ -178,6 +180,8 @@ public class VaadinComboBoxView extends DemoView {
         comboBox.addValueChangeListener(event -> {
             if (event.getSource().isEmpty()) {
                 message.setText("No artist selected");
+            } else if (event.getOldValue().isEmpty()) {
+                message.setText("Selected artist: " + event.getValue());
             } else {
                 message.setText("Selected artist: " + event.getValue()
                         + "\nThe old selection was: " + event.getOldValue());
@@ -186,11 +190,12 @@ public class VaadinComboBoxView extends DemoView {
         // end-source-example
 
         comboBox.getStyle().set("width", "250px");
+        comboBox.setId("value-selection-box");
         addCard(new H3("Value selection from objects"), comboBox, message);
     }
 
     private void createComboBoxWithCustomFilter() {
-        Div message = createMessageDiv();
+        Div message = createMessageDiv("custom-filter-message");
 
         // begin-source-example
         // source-example-heading: Custom filtering
@@ -205,9 +210,10 @@ public class VaadinComboBoxView extends DemoView {
 
         comboBox.addFilterChangeListener(event -> {
             String filter = comboBox.getFilter();
-            if (filter == null) {
+            if (filter.isEmpty()) {
                 comboBox.setFilteredItems(listOfFruits);
             } else {
+                message.setText("Filter used: " + filter);
                 List<Fruit> filtered = listOfFruits.stream()
                         .filter(fruit -> fruit.getColor().toLowerCase()
                                 .startsWith(filter.toLowerCase()))
@@ -216,7 +222,7 @@ public class VaadinComboBoxView extends DemoView {
             }
         });
 
-        comboBox.addChangeListener(event -> {
+        comboBox.addSelectedItemChangeListener(event -> {
             if (event.getSource().isEmpty()) {
                 message.setText("No fruit selected");
             } else {
@@ -227,6 +233,7 @@ public class VaadinComboBoxView extends DemoView {
         // end-source-example
 
         comboBox.getStyle().set("width", "250px");
+        comboBox.setId("custom-filter-box");
         addCard(new H3("Custom filtering"), comboBox, message);
     }
 
@@ -252,9 +259,9 @@ public class VaadinComboBoxView extends DemoView {
         return listOfFruits;
     }
 
-    private Div createMessageDiv() {
+    private Div createMessageDiv(String id) {
         Div message = new Div();
-        message.setClassName("comboBoxMessage");
+        message.setId(id);
         message.getStyle().set("whiteSpace", "pre");
         return message;
     }

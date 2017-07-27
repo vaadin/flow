@@ -170,9 +170,17 @@ public final class JsonSerializer {
             return (T) simpleType.get();
         }
 
+        T instance;
         try {
-            T instance = type.newInstance();
+            instance = type.newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Could not create an instance of type " + type
+                            + ". Make sure it contains a default public constructor and the class is accessible.",
+                    e);
+        }
 
+        try {
             if (instance instanceof JsonSerializable
                     && json instanceof JsonObject) {
                 return type.cast(JsonSerializable.class.cast(instance)
