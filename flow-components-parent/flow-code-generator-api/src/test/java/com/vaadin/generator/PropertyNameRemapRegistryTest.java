@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.components.data.HasValue;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentMetadata;
@@ -167,9 +168,8 @@ public class PropertyNameRemapRegistryTest {
         String generated = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue(
-                "Remapped value property should not generated the HasValue interface",
-                generated.contains("HasValue"));
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(generated,
+                "SomeTag", HasValue.class);
         Assert.assertFalse(
                 "Remapped value change event should not be generated",
                 generated.contains("ValueChangeEvent"));
