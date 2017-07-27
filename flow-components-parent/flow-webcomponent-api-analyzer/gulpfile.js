@@ -24,6 +24,7 @@ const fs = require('fs-extra');
 const globalVar = require('./lib/js/global-variables');
 const ElementFilter = require('./lib/js/element-filter');
 const VersionReader = require('./lib/js/version-transform');
+const MixinCollector = require('./lib/js/mixin-collector');
 const AnalyzerTransform = require('./lib/js/analyzer-transform');
 const ElementJsonTransform = require('./lib/js/element-json-transform');
 const gutil = require('gulp-util');
@@ -72,6 +73,8 @@ gulp.task('generate', ['clean:target'], function() {
   const elementFilter = new ElementFilter();
   // the version reader reads the versions only for those elements that the json is created for
   const versionReader = new VersionReader();
+  // stores mixin/behavior information of encountered components
+  const mixinCollector = new MixinCollector();
 
   return gulp.src([globalVar.bowerTargetDir + "*/*.html",
     // ignore Polymer itself
@@ -87,8 +90,8 @@ gulp.task('generate', ['clean:target'], function() {
     ])
     .pipe(gulpIgnore.include((file) => elementFilter.acceptFile(file))) // ignores files not directly mentioned in the dependencies
     .pipe(versionReader) // Reads the versions of the elements
-    .pipe(new AnalyzerTransform(elementFilter)) // transforms out PolymerElements
-    .pipe(new ElementJsonTransform(versionReader)) // transforms out json files
+    .pipe(new AnalyzerTransform(elementFilter, mixinCollector)) // transforms out PolymerElements
+    .pipe(new ElementJsonTransform(versionReader, mixinCollector)) // transforms out json files
     .pipe(gulp.dest('.'));
 });
 
