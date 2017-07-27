@@ -137,7 +137,7 @@ public class RedeployLeakIT extends AbstractTestBenchTest {
             context = null;
 
             // This is needed for the class to be actually GCed
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 100; i++) {
                 System.gc();
                 Thread.sleep(100);
                 if (testReference.get() == null) {
