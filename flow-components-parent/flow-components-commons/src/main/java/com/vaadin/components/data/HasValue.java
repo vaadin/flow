@@ -154,7 +154,7 @@ public interface HasValue<C extends Component, V>
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
         get().getElement().synchronizeProperty(getClientValuePropertyName(),
-                getClientValuePropertyName() + "-changed");
+                getClientPropertyChangeEventName());
         return get().getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
                 event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),
@@ -215,9 +215,20 @@ public interface HasValue<C extends Component, V>
      * Get the client-side component's property name for the value this
      * interface is bound to.
      * 
-     * @return the name of the client-side property this interface is bound to.
+     * @return the name of the client-side property this interface is bound to
      */
     default String getClientValuePropertyName() {
         return "value";
+    }
+
+    /**
+     * Get the name of the client-side change event that is fired when the value
+     * property is changed.
+     * 
+     * @return the name of the client-side change event that is fired when the
+     *         value changes
+     */
+    default String getClientPropertyChangeEventName() {
+        return getClientValuePropertyName() + "-changed";
     }
 }
