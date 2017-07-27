@@ -141,7 +141,8 @@
   "events": [],
   "slots": [],
   "behaviors": [
-    "vaadin.elements.combobox.OverlayBehavior"
+    "vaadin.elements.combobox.OverlayBehavior",
+    "Polymer.IronResizableBehavior"
   ],
   "mixins": [],
   "description": ""
