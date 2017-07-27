@@ -511,7 +511,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        assertClassImplementsInterface(generatedClass, "MyComponent",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent",
                 HasStyle.class);
     }
 
@@ -520,7 +521,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        assertClassImplementsInterface(generatedClass, "MyComponent",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent",
                 ComponentSupplier.class);
     }
 
@@ -532,7 +534,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        assertClassImplementsInterface(generatedClass, "MyComponent",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent",
                 HasClickListeners.class);
     }
 
@@ -544,21 +547,9 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        assertClassImplementsInterface(generatedClass, "VaadinButton",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "VaadinButton",
                 HasText.class);
-    }
-
-    private void assertClassImplementsInterface(String generatedClass,
-            String className, Class<?> interfaceToBeImplemented) {
-        Pattern pattern = Pattern.compile("\\s*public\\s+class\\s+" + className
-                + ".*\\s+extends\\s+Component\\s+implements\\s+([^\\{]+)\\{");
-        Matcher matcher = pattern.matcher(generatedClass);
-        Assert.assertTrue("Wrong class declaration", matcher.find());
-
-        String interfaces = matcher.group(1);
-        Assert.assertTrue(interfaceToBeImplemented.getSimpleName()
-                + " interface not found in the class definition: " + interfaces,
-                interfaces.contains(interfaceToBeImplemented.getSimpleName()));
     }
 
     @Test
@@ -575,7 +566,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(
                 "Wrong getter definition. It should contains @Synchronize(property = \"somepropery\", value = \"someproperty-changed\")",
@@ -591,7 +583,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        assertClassImplementsInterface(generatedClass, "MyComponent",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent",
                 HasComponents.class);
         Assert.assertFalse(
                 "The generated class shouldn't contain the \"remove\" method",
@@ -638,7 +631,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        assertClassImplementsInterface(generatedClass, "MyComponent",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent",
                 HasComponents.class);
 
         Assert.assertTrue(
@@ -678,7 +672,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(
                 "Generated class should contain the SomethingProperty nested class",
@@ -720,7 +715,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(
                 "Generated class should contain the CallSomethingSomethingParam nested class",
@@ -757,7 +753,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(
                 "Generated class should contain the SomethingChangeDetails nested class",
@@ -803,7 +800,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
                 "public void callSomething(java.lang.String firstParam, java.lang.String secondParam)"));
@@ -844,7 +842,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
                 "public void callSomething(CallSomethingFirstParam firstParam, java.lang.String secondParam)"));
@@ -866,9 +865,11 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
-        assertClassImplementsInterface(generatedClass, "MyComponent",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent",
                 HasValue.class);
         Assert.assertTrue(
                 generatedClass.contains("@Override public String getValue()"));
@@ -890,9 +891,11 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
-        assertClassImplementsInterface(generatedClass, "MyComponent",
+        ComponentGeneratorTestUtils.assertClassImplementsInterface(
+                generatedClass, "MyComponent",
                 HasValue.class);
         Assert.assertTrue(
                 generatedClass.contains("@Override public Double getValue()"));
@@ -931,7 +934,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass
                 .contains("protected JsonObject protectedGetObjectProperty()"));
@@ -986,7 +990,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        generatedClass = removeIndentation(generatedClass);
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
 
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomethingWithObject(JsonObject objectParam)"));
@@ -1000,9 +1005,5 @@ public class ComponentGeneratorTest {
                 "protected void callSomethingWithMultiTypes(JsonArray multiParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomethingWithMultiTypes(JsonValue multiParam)"));
-    }
-
-    private String removeIndentation(String sourceCode) {
-        return sourceCode.replaceAll("\\s\\s+", " ");
     }
 }
