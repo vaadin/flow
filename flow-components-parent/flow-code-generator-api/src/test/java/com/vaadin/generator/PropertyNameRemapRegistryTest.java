@@ -15,9 +15,11 @@
  */
 package com.vaadin.generator;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,25 +35,34 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
  */
 public class PropertyNameRemapRegistryTest {
 
-    private static final String TEST_COMPONENT_NAME = "ThisShouldNeverBeInTheActualRegistry";
+    private static final String TEST_COMPONENT_TAG = "test-tag";
 
     private String generatedSource;
 
     @Before
     public void init() throws NoSuchMethodException, SecurityException,
             IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
+            InvocationTargetException, NoSuchFieldException {
+        Field registryField = PropertyNameRemapRegistry.class
+                .getDeclaredField("REGISTRY");
+        registryField.setAccessible(true);
+        @SuppressWarnings("rawtypes")
+        Map registry = (Map) registryField.get(null);
+        registry.clear();
+
         Method putMethod = PropertyNameRemapRegistry.class.getDeclaredMethod(
                 "put", String.class, String.class, String.class);
         putMethod.setAccessible(true);
-        putMethod.invoke(null, TEST_COMPONENT_NAME, "original-property-name",
+        putMethod.invoke(null, TEST_COMPONENT_TAG, "original-property-name",
                 "renamed");
+        putMethod.invoke(null, TEST_COMPONENT_TAG, "value", "other-value");
+        putMethod.invoke(null, TEST_COMPONENT_TAG, "map-to-value", "value");
 
         ComponentGenerator generator = new ComponentGenerator();
 
         ComponentMetadata componentMetadata = new ComponentMetadata();
-        componentMetadata.setName(TEST_COMPONENT_NAME);
-        componentMetadata.setTag("some-tag");
+        componentMetadata.setName("test-name");
+        componentMetadata.setTag(TEST_COMPONENT_TAG);
         componentMetadata.setBaseUrl("");
 
         ComponentPropertyData propertyData = new ComponentPropertyData();
@@ -70,9 +81,10 @@ public class PropertyNameRemapRegistryTest {
     @Test
     public void notInRegistry_returnsEmptyOptional() {
         Assert.assertFalse(PropertyNameRemapRegistry.getOptionalMappingFor(
-                TEST_COMPONENT_NAME, "mapping that doesn't exist").isPresent());
+                TEST_COMPONENT_TAG, "mapping that doesn't exist").isPresent());
         Assert.assertFalse(PropertyNameRemapRegistry
-                .getOptionalMappingFor("not$in$the$registry", "neither$is$this")
+                .getOptionalMappingFor("mapping that doesn't exist",
+                        "mapping that doesn't exist")
                 .isPresent());
     }
 
@@ -104,5 +116,67 @@ public class PropertyNameRemapRegistryTest {
                 "Renamed change event class should still be bound to the original property name",
                 generatedSource.contains(
                         "@DomEvent(\"original-property-name-changed\")"));
+    }
+
+    @Test
+    public void hasValueWithRemapping_remapFromValueToOther() {
+        ComponentGenerator generator = new ComponentGenerator();
+
+        ComponentMetadata componentMetadata = new ComponentMetadata();
+        componentMetadata.setName("test-name");
+        componentMetadata.setTag(TEST_COMPONENT_TAG);
+        componentMetadata.setBaseUrl("");
+
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("value");
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("value-changed");
+        componentMetadata.setEvents(Arrays.asList(eventData));
+
+        String generated = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertFalse(
+                "Remapped value property should not generate the HasValue interface",
+                generated.contains("HasValue"));
+        Assert.assertTrue("Remapped change event should be generated",
+                generated.contains("OtherValueChangeEvent"));
+    }
+
+    @Test
+    public void hasValueWithRemapping_remapFromOtherToValue() {
+        ComponentGenerator generator = new ComponentGenerator();
+
+        ComponentMetadata componentMetadata = new ComponentMetadata();
+        componentMetadata.setName("test-name");
+        componentMetadata.setTag(TEST_COMPONENT_TAG);
+        componentMetadata.setBaseUrl("");
+
+        ComponentPropertyData propertyData = new ComponentPropertyData();
+        propertyData.setName("map-to-value");
+        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Arrays.asList(propertyData));
+
+        ComponentEventData eventData = new ComponentEventData();
+        eventData.setName("map-to-value-changed");
+        componentMetadata.setEvents(Arrays.asList(eventData));
+
+        String generated = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertTrue(
+                "Remapped value property should not generated the HasValue interface",
+                generated.contains("HasValue"));
+        Assert.assertFalse(
+                "Remapped value change event should not be generated",
+                generated.contains("ValueChangeEvent"));
+        Assert.assertTrue(
+                "HasValue getClientValuePropertyName overridden",
+                generated.contains("String getClientValuePropertyName()"));
+        Assert.assertTrue("HasValue getClientValuePropertyName overridden",
+                generated.contains("return \"map-to-value\";"));
     }
 }

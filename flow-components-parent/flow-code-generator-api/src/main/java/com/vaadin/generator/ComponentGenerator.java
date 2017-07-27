@@ -89,6 +89,7 @@ public class ComponentGenerator {
     private static final String JAVADOC_SEE = "@see";
     private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
+    private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
 
     private static final Logger logger = Logger.getLogger("ComponentGenerator");
 
@@ -678,7 +679,7 @@ public class ComponentGenerator {
 
                 if ("value".equals(propertyJavaName)
                         && shouldImplementHasValue(metadata)) {
-
+                    method.setName("getValue");
                     if (javaType.isPrimitive()) {
                         javaType = ClassUtils.primitiveToWrapper(javaType);
                         method.setReturnType(javaType);
@@ -801,13 +802,17 @@ public class ComponentGenerator {
         }
 
         if (metadata.getProperties().stream()
-                .anyMatch(property -> "value".equals(property.getName())
+                .anyMatch(property -> "value"
+                        .equals(getJavaNameForProperty(metadata,
+                                property.getName()))
                         && !property.isReadOnly()
                         && (containsObjectType(property)
                                 || property.getType().size() == 1))) {
 
             return metadata.getEvents().stream()
-                    .anyMatch(event -> "value-changed".equals(event.getName()));
+                    .anyMatch(event -> "value-changed"
+                            .equals(getJavaNameForPropertyChangeEvent(metadata,
+                                    event.getName())));
         }
         return false;
     }
@@ -1068,21 +1073,19 @@ public class ComponentGenerator {
 
     private void generateEventListenerFor(JavaClassSource javaClass,
             ComponentMetadata metadata, ComponentEventData event) {
-
-        // verify whether the HasValue interface is implemented. If yes, then
-        // the method doesn't need to be created
-        if ("value-changed".equals(event.getName())
+        String eventJavaApiName = getJavaNameForPropertyChangeEvent(metadata,
+                event.getName());
+        
+        // verify whether the HasValue interface is implemented.
+        if ("value-changed".equals(eventJavaApiName)
                 && shouldImplementHasValue(metadata)) {
+            if (!eventJavaApiName.equals(event.getName())) {
+                overrideHasValueGetClientValuePropertyName(javaClass, event
+                        .getName().replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""));
+            }
             return;
         }
         
-        String eventJavaApiName = event.getName();
-        if (event.getName().endsWith("-changed")) {
-            String eventPropertyName = event.getName().substring(0,
-                    event.getName().length() - "-changed".length());
-            eventJavaApiName = getJavaNameForProperty(metadata,
-                    eventPropertyName) + "-changed";
-        }
         eventJavaApiName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(eventJavaApiName);
 
@@ -1107,6 +1110,15 @@ public class ComponentGenerator {
 
         method.setBody(String.format("return addListener(%s.class, listener);",
                 eventListener.getName()));
+    }
+
+    private void overrideHasValueGetClientValuePropertyName(
+            JavaClassSource javaClass, String propertyName) {
+        MethodSource<JavaClassSource> method = javaClass.addMethod()
+                .setName("getClientValuePropertyName").setPublic()
+                .setReturnType(String.class);
+        method.addAnnotation(Override.class);
+        method.setBody(String.format("return \"%s\";", propertyName));
     }
 
     private JavaClassSource createEventListenerEventClass(
@@ -1236,10 +1248,20 @@ public class ComponentGenerator {
             String propertyName) {
         String javaApiName = propertyName;
         Optional<String> nameRemapping = PropertyNameRemapRegistry
-                .getOptionalMappingFor(metadata.getName(), propertyName);
+                .getOptionalMappingFor(metadata.getTag(), propertyName);
         if (nameRemapping.isPresent()) {
             javaApiName = nameRemapping.get();
         }
         return javaApiName;
+    }
+
+    private String getJavaNameForPropertyChangeEvent(ComponentMetadata metadata, String propertyChangeEventName) {
+        if (!propertyChangeEventName.endsWith(PROPERTY_CHANGE_EVENT_POSTFIX)) {
+            // not a property change event, just pass original value through
+            return propertyChangeEventName;
+        }
+        return getJavaNameForProperty(metadata, propertyChangeEventName
+                .replace(PROPERTY_CHANGE_EVENT_POSTFIX, ""))
+                + PROPERTY_CHANGE_EVENT_POSTFIX;
     }
 }

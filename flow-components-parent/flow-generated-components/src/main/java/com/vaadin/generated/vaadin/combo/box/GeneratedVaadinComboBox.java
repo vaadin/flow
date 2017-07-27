@@ -86,7 +86,7 @@ import com.vaadin.annotations.EventData;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: vaadin-combo-box#2.0.0-beta2", "Flow#0.1.15-SNAPSHOT"})
+		"WebComponent: vaadin-combo-box#2.0.0", "Flow#0.1.15-SNAPSHOT"})
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
 public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>

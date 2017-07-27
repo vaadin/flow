@@ -22,7 +22,7 @@ import java.util.Optional;
 
 /**
  * Registry that facilitates remapping of element property names to different
- * names for the generated components java API.
+ * names for the generated components' java API.
  * 
  * @author Vaadin ltd
  */
@@ -30,7 +30,8 @@ public final class PropertyNameRemapRegistry {
 
     private static final HashMap<String, Map<String, String>> REGISTRY = new HashMap<>();
     static {
-        put("Vaadin.CheckboxElement", "value", "postValue");
+        put("vaadin-checkbox", "value", "postValue");
+        put("vaadin-checkbox", "checked", "value");
     }
 
     private PropertyNameRemapRegistry() {
@@ -52,7 +53,7 @@ public final class PropertyNameRemapRegistry {
      * registry. Returns an empty optional if no mapping exists.
      * 
      * @param elementIdentifier
-     *            the element to look up mappings for
+     *            the tag name for the element to look up mappings for
      * @param propertyName
      *            the property name to look for
      * @return an optional of the mapping, empty if no mapping exists

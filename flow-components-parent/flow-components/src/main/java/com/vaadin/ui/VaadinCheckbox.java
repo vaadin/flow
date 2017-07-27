@@ -15,42 +15,47 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.components.data.HasValue;
 import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
-import com.vaadin.shared.Registration;
 
 /**
  * Server-side component for the {@code vaadin-checkbox} element.
  * 
  * @author Vaadin Ltd
  */
-public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox>
-        implements HasValue<VaadinCheckbox, Boolean> {
-
-    @Override
-    public Registration addValueChangeListener(
-            ValueChangeListener<VaadinCheckbox, Boolean> listener) {
-        return get().getElement().addPropertyChangeListener("checked",
-                event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),
-                        this, (Boolean) event.getOldValue(),
-                        event.isUserOriginated())));
-    }
+public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
 
     /**
      * Default constructor.
      */
     public VaadinCheckbox() {
-        super();
     }
 
     /**
      * Constructs a VaadinCheckbox with the initial label text.
      * 
+     * @see #setLabelText(String)
      * @param labelText
      *            the label text to set
      */
     public VaadinCheckbox(String labelText) {
         setLabelText(labelText);
+    }
+
+    /**
+     * Constructs a VaadinCheckbox with the initial label text and value change
+     * listener.
+     * 
+     * @see #setLabelText(String)
+     * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
+     * @param labelText
+     *            the label text to set
+     * @param listener
+     *            the value change listener to add
+     */
+    public VaadinCheckbox(String labelText,
+            ValueChangeListener<VaadinCheckbox, Boolean> listener) {
+        this(labelText);
+        addValueChangeListener(listener);
     }
 
     /**
@@ -94,7 +99,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox>
      * Set whether this checkbox should be checked. Given a null value as an
      * argument the checkbox state will be set to be indeterminate.
      * 
-     * @see {@link #isIndeterminate()}
+     * @see #isIndeterminate()
      * @param value
      *            the value to set
      * @return this instance, for method chaining
@@ -106,7 +111,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox>
             return get();
         }
         setIndeterminate(false);
-        setChecked(value);
+        super.setValue(value);
         return get();
     }
 
@@ -114,7 +119,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox>
      * Get the current checked state of this checkbox. A null return value
      * implies that the checked state is indeterminate.
      * 
-     * @see {@link #isIndeterminate()}
+     * @see #isIndeterminate()
      * @return the checked state of this checkbox
      */
     @Override
@@ -122,13 +127,13 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox>
         if (isEmpty()) {
             return null;
         }
-        return isChecked();
+        return super.getValue();
     }
 
     /**
      * Returns whether the value of this checkbox is indeterminate.
      * 
-     * @see {@link #isIndeterminate()}
+     * @see #isIndeterminate()
      * @return whether the checkbox' value is indeterminate
      */
     @Override

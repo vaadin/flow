@@ -2,7 +2,7 @@
   "name": "vaadin-combo-box",
   "tag": "vaadin-combo-box",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box.html",
-  "version": "2.0.0-beta2",
+  "version": "2.0.0",
   "properties": [
     {
       "name": "validator",
