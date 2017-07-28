@@ -304,16 +304,19 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
         Assert.assertTrue("Custom event class was not found.",
                 generatedClass.contains(
-                        "public static class ChangeEvent extends ComponentEvent<MyComponent> {"));
+                        "public static class ChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {"));
 
         Assert.assertTrue("No DomEvent annotation found",
                 generatedClass.contains("@DomEvent(\"change\")"));
 
         // Using matcher as the formatter may cut the method.
         Pattern pattern = Pattern.compile(
-                "addChangeListener\\((\\w?)(\\s*?)ComponentEventListener<ChangeEvent> listener\\)");
+                "addChangeListener\\((\\w?)(\\s*?)ComponentEventListener<ChangeEvent<R>> listener\\)");
         Matcher matcher = pattern.matcher(generatedClass);
         Assert.assertTrue("Couldn't find correct listener for event.",
                 matcher.find());
@@ -348,7 +351,7 @@ public class ComponentGeneratorTest {
 
         // Using matcher as the formatter may cut the method.
         Pattern pattern = Pattern.compile(
-                "public ChangeEvent\\(MyComponent source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.button\"\\) double button\\)");
+                "public ChangeEvent\\(R source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.button\"\\) double button\\)");
         Matcher matcher = pattern.matcher(generatedClass);
         Assert.assertTrue("Couldn't find constructor with EventData.",
                 matcher.find());
@@ -384,7 +387,7 @@ public class ComponentGeneratorTest {
 
         // Using matcher as the formatter may cut the method.
         Pattern pattern = Pattern.compile(
-                "public ChangeEvent\\(MyComponent source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.details\\.property\"\\) double detailsProperty\\)");
+                "public ChangeEvent\\(R source, boolean fromClient,(\\w?)(\\s*?)@EventData\\(\"event\\.details\\.property\"\\) double detailsProperty\\)");
         Matcher matcher = pattern.matcher(generatedClass);
         Assert.assertTrue("Couldn't find constructor with EventData.",
                 matcher.find());
@@ -512,8 +515,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent",
-                HasStyle.class);
+                generatedClass, "MyComponent", HasStyle.class);
     }
 
     @Test
@@ -522,8 +524,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent",
-                ComponentSupplier.class);
+                generatedClass, "MyComponent", ComponentSupplier.class);
     }
 
     @Test
@@ -535,8 +536,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent",
-                HasClickListeners.class);
+                generatedClass, "MyComponent", HasClickListeners.class);
     }
 
     @Test
@@ -548,8 +548,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "VaadinButton",
-                HasText.class);
+                generatedClass, "VaadinButton", HasText.class);
     }
 
     @Test
@@ -584,8 +583,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent",
-                HasComponents.class);
+                generatedClass, "MyComponent", HasComponents.class);
         Assert.assertFalse(
                 "The generated class shouldn't contain the \"remove\" method",
                 generatedClass.contains("public void remove("));
@@ -632,8 +630,7 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent",
-                HasComponents.class);
+                generatedClass, "MyComponent", HasComponents.class);
 
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed1\" method",
@@ -764,10 +761,10 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated class should contain the addSomethingChangeListener method",
                 generatedClass.contains(
-                        "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent> listener)"));
+                        "public Registration addSomethingChangeListener( ComponentEventListener<SomethingChangeEvent<R>> listener)"));
 
         int indexOfEventDeclaration = generatedClass.indexOf(
-                "public static class SomethingChangeEvent extends ComponentEvent<MyComponent> {");
+                "public static class SomethingChangeEvent<R extends MyComponent<R>> extends ComponentEvent<R> {");
         int endIndexOfEventDeclaration = generatedClass.indexOf("} }",
                 indexOfEventDeclaration);
         String eventDeclaration = generatedClass.substring(
@@ -869,8 +866,7 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent",
-                HasValue.class);
+                generatedClass, "MyComponent", HasValue.class);
         Assert.assertTrue(
                 generatedClass.contains("@Override public String getValue()"));
         Assert.assertTrue(generatedClass.contains(
@@ -895,8 +891,7 @@ public class ComponentGeneratorTest {
                 .removeIndentation(generatedClass);
 
         ComponentGeneratorTestUtils.assertClassImplementsInterface(
-                generatedClass, "MyComponent",
-                HasValue.class);
+                generatedClass, "MyComponent", HasValue.class);
         Assert.assertTrue(
                 generatedClass.contains("@Override public Double getValue()"));
         Assert.assertTrue(generatedClass.contains(
@@ -945,9 +940,8 @@ public class ComponentGeneratorTest {
                 .contains("protected JsonArray protectedGetArrayProperty()"));
         Assert.assertTrue(generatedClass.contains(
                 "protected R setArrayProperty(elemental.json.JsonArray arrayProperty)"));
-        Assert.assertTrue(generatedClass
-                .contains(
-                        "protected JsonValue protectedGetUndefinedProperty()"));
+        Assert.assertTrue(generatedClass.contains(
+                "protected JsonValue protectedGetUndefinedProperty()"));
         Assert.assertTrue(generatedClass.contains(
                 "protected R setUndefinedProperty(elemental.json.JsonValue undefinedProperty)"));
 
