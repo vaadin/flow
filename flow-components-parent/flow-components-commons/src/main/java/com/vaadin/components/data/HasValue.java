@@ -153,7 +153,10 @@ public interface HasValue<C extends Component, V>
      */
     default Registration addValueChangeListener(
             ValueChangeListener<C, V> listener) {
-        return get().getElement().addPropertyChangeListener("value",
+        get().getElement().synchronizeProperty(getClientValuePropertyName(),
+                getClientPropertyChangeEventName());
+        return get().getElement().addPropertyChangeListener(
+                getClientValuePropertyName(),
                 event -> listener.onComponentEvent(new ValueChangeEvent<>(get(),
                         this, (V) event.getOldValue(),
                         event.isUserOriginated())));
@@ -206,5 +209,26 @@ public interface HasValue<C extends Component, V>
      */
     default void clear() {
         setValue(getEmptyValue());
+    }
+
+    /**
+     * Get the client-side component's property name for the value this
+     * interface is bound to.
+     * 
+     * @return the name of the client-side property this interface is bound to
+     */
+    default String getClientValuePropertyName() {
+        return "value";
+    }
+
+    /**
+     * Get the name of the client-side change event that is fired when the value
+     * property is changed.
+     * 
+     * @return the name of the client-side change event that is fired when the
+     *         value changes
+     */
+    default String getClientPropertyChangeEventName() {
+        return getClientValuePropertyName() + "-changed";
     }
 }

@@ -392,11 +392,6 @@
       "name": "selected-item-changed",
       "description": "Fired when the `selectedItem` property changes.",
       "properties": []
-    },
-    {
-      "name": "opened-changed",
-      "description": "Fired when the `opened` property changes.",
-      "properties": []
     }
   ],
   "slots": [
