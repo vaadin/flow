@@ -23,6 +23,8 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.data.HasValue;
+import java.util.Objects;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -67,6 +69,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 			ComponentSupplier<R>,
 			HasStyle,
 			Focusable<R>,
+			HasValue<R, Boolean>,
 			HasComponents {
 
 	/**
@@ -142,7 +145,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 'checked-changed' event happens.
 	 */
 	@Synchronize(property = "checked", value = "checked-changed")
-	public boolean isChecked() {
+	@Override
+	public Boolean getValue() {
 		return getElement().getProperty("checked", false);
 	}
 
@@ -151,12 +155,15 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 
 	 * True if the checkbox is checked.
 	 * 
-	 * @param checked
+	 * @param value
 	 *            the boolean value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setChecked(boolean checked) {
-		getElement().setProperty("checked", checked);
+	@Override
+	public R setValue(java.lang.Boolean value) {
+		Objects.requireNonNull(value,
+				"GeneratedVaadinCheckbox value must not be null");
+		getElement().setProperty("checked", value);
 		return get();
 	}
 
@@ -228,7 +235,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public String getValue() {
+	public String getPostValue() {
 		return getElement().getProperty("value");
 	}
 
@@ -238,12 +245,12 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * The value given to the data submitted with the checkbox's name to the
 	 * server when the control is inside a form.
 	 * 
-	 * @param value
+	 * @param postValue
 	 *            the String value to set
 	 * @return this instance, for method chaining
 	 */
-	public R setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+	public R setPostValue(java.lang.String postValue) {
+		getElement().setProperty("value", postValue == null ? "" : postValue);
 		return get();
 	}
 
@@ -255,19 +262,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 		getElement().callFunction("disconnectedCallback");
 	}
 
-	@DomEvent("checked-changed")
-	public static class CheckedChangeEvent
-			extends
-				ComponentEvent<GeneratedVaadinCheckbox> {
-		public CheckedChangeEvent(GeneratedVaadinCheckbox source,
-				boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
-
-	public Registration addCheckedChangeListener(
-			ComponentEventListener<CheckedChangeEvent> listener) {
-		return addListener(CheckedChangeEvent.class, listener);
+	@Override
+	public String getClientValuePropertyName() {
+		return "checked";
 	}
 
 	@DomEvent("indeterminate-changed")
