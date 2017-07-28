@@ -66,7 +66,7 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
         NodeMap textMap = stateNode.getMap(NodeFeatures.TEXT_NODE);
         MapProperty textProperty = textMap.getProperty(NodeFeatures.TEXT);
 
-        Computation computation = Reactive.runWhenDepedenciesChange(
+        Computation computation = Reactive.runWhenDependenciesChange(
                 () -> htmlNode.setData((String) textProperty.getValue()));
 
         stateNode.addUnregisterListener(e -> unbind(stateNode, computation));

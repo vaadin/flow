@@ -179,7 +179,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
             Consumer<Optional<Object>> executor) {
         if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
             Computation computation = Reactive
-                    .runWhenDepedenciesChange(() -> executor
+                    .runWhenDependenciesChange(() -> executor
                             .accept(getModelBindingValue(modelNode, binding)));
             modelNode.addUnregisterListener(event -> computation.stop());
         } else {

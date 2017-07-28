@@ -23,6 +23,7 @@ import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.dom.ShadowRoot;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -152,7 +153,7 @@ public final class PolymerUtils {
 
     /**
      * Checks whether the {@code htmlNode} is a polymer 2 element.
-     * 
+     *
      * @param htmlNode
      *            HTML element to check
      * @return {@code true} if the {@code htmlNode} is a polymer element
@@ -163,17 +164,38 @@ public final class PolymerUtils {
     }-*/;
 
     /**
-     * Checks whether the {@code htmlNode} can turn into polymer 2 element later.
+     * Checks whether the {@code htmlNode} can turn into polymer 2 element
+     * later.
      * <p>
-     * Lazy loaded dependencies can load {@literal polymer.html} much later then the element itself gets processed
-     * by the Flow. This method helps to determine such elements.
+     * Lazy loaded dependencies can load {@literal polymer.html} much later then
+     * the element itself gets processed by the Flow. This method helps to
+     * determine such elements.
      *
      * @param htmlNode
      *            HTML element to check
-     * @return {@code true} if the {@code htmlNode} can become a polymer 2 element
+     * @return {@code true} if the {@code htmlNode} can become a polymer 2
+     *         element
      */
     public static native boolean mayBePolymerElement(Element htmlNode)
     /*-{
         return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
+    }-*/;
+
+    /**
+     * Get first element by css query in the shadow root provided.
+     *
+     * @param shadowRoot
+     *            shadow root element
+     * @param cssQuery
+     *            css query
+     * @return first element matching the query or {@code null} for no matches
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM">https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM</a>
+     */
+    public static native Node searchForElementInShadowRoot(
+            ShadowRoot shadowRoot, String cssQuery)
+    /*-{
+        return shadowRoot.querySelector(cssQuery);
     }-*/;
 }

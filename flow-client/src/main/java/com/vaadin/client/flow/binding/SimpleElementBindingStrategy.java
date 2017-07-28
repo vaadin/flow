@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.PolymerUtils;
@@ -48,6 +49,7 @@ import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.dom.ShadowRoot;
 import elemental.events.Event;
 import elemental.events.EventRemover;
 import elemental.json.Json;
@@ -319,11 +321,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
-        Computation computation = Reactive.runWhenDepedenciesChange(
-                () -> stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                        .forEachProperty((property, key) -> bindSubProperty(
-                                stateNode, htmlNode, path, property)));
-        stateNode.addUnregisterListener(event -> computation.stop());
+        Command command = () -> stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .forEachProperty((property, key) -> bindSubProperty(
+                        stateNode, htmlNode, path, property));
+        invokeWhenNodeIsConstructed(command, stateNode);
     }
 
     private void bindSubProperty(StateNode stateNode, Element htmlNode,
@@ -398,12 +399,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             if (feature != null) {
                 feature.addPropertyAddListener(event -> {
-                    Computation computation = Reactive.runWhenDepedenciesChange(
-                            () -> PolymerUtils.setListValueByIndex(htmlNode,
-                                    polymerModelPath, subNodeIndex,
-                                    PolymerUtils.convertToJson(
-                                            event.getProperty())));
-                    stateNode.addUnregisterListener(e -> computation.stop());
+                    Command command = () ->
+                            PolymerUtils.setListValueByIndex(htmlNode, polymerModelPath,
+                                    subNodeIndex, PolymerUtils.convertToJson(event.getProperty()));
+                    invokeWhenNodeIsConstructed(command, stateNode);
                 });
             }
         }
@@ -439,7 +438,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert !bindings.has(name) : "There's already a binding for " + name;
 
         Computation computation = Reactive
-                .runWhenDepedenciesChange(() -> user.use(property));
+                .runWhenDependenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
     }
@@ -575,8 +574,20 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
-
-            context.binderContext.bind(childNode, childNode.getDomNode());
+            if (childNode.getDomNode() == null) {
+                String childTag = getTag(childNode);
+                Node parentNode = context.node.getDomNode();
+                if (childTag != null && parentNode instanceof ShadowRoot) {
+                    Command command = () -> bindAnElementFromShadowRoot(
+                            context.binderContext, childNode, childTag, ((ShadowRoot) parentNode));
+                    invokeWhenNodeIsConstructed(command, childNode);
+                } else {
+                    throw new IllegalStateException("Unexpected childTag: "
+                            + childTag + "and parentNode: " + parentNode);
+                }
+            } else {
+                context.binderContext.bind(childNode, childNode.getDomNode());
+            }
         }
 
         return children.addSpliceListener(e -> {
@@ -588,6 +599,22 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Reactive.addFlushListener(
                     () -> handleVirtualChildrenSplice(e, context));
         });
+    }
+
+    private void invokeWhenNodeIsConstructed(Command command, StateNode node) {
+        Computation computation = Reactive.runWhenDependenciesChange(command);
+        node.addUnregisterListener(event -> computation.stop());
+    }
+
+    private void bindAnElementFromShadowRoot(BinderContext binderContext,
+            StateNode childNode, String childTag, ShadowRoot shadowRoot) {
+        Node shadowRootElement = PolymerUtils.searchForElementInShadowRoot(shadowRoot,
+                childTag);
+        if (shadowRootElement == null) {
+            throw new IllegalStateException("Could not locate element with tag "
+                    + childTag + " in shadow root of a parent element");
+        }
+        binderContext.bind(childNode, shadowRootElement);
     }
 
     private void handleChildrenSplice(ListSpliceEvent event,
@@ -730,7 +757,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         String name = eventHandlerProperty.getName();
         assert !context.listenerBindings.has(name);
 
-        Computation computation = Reactive.runWhenDepedenciesChange(() -> {
+        Computation computation = Reactive.runWhenDependenciesChange(() -> {
             boolean hasValue = eventHandlerProperty.hasValue();
             boolean hasListener = context.listenerRemovers.has(name);
 
