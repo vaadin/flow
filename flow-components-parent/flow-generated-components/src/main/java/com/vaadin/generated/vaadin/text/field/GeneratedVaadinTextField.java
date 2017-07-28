@@ -50,8 +50,8 @@ import com.vaadin.shared.Registration;
  * value and suffix
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: Vaadin.TextFieldElement#null", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: Vaadin.TextFieldElement#null", "Flow#0.1.16-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
@@ -635,63 +635,63 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	@DomEvent("iron-form-element-register")
-	public static class IronFormElementRegisterEvent
+	public static class IronFormElementRegisterEvent<R extends GeneratedVaadinTextField<R>>
 			extends
-				ComponentEvent<GeneratedVaadinTextField> {
-		public IronFormElementRegisterEvent(GeneratedVaadinTextField source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public IronFormElementRegisterEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronFormElementRegisterListener(
-			ComponentEventListener<IronFormElementRegisterEvent> listener) {
-		return addListener(IronFormElementRegisterEvent.class, listener);
+			ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
+		return addListener(IronFormElementRegisterEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("iron-form-element-unregister")
-	public static class IronFormElementUnregisterEvent
+	public static class IronFormElementUnregisterEvent<R extends GeneratedVaadinTextField<R>>
 			extends
-				ComponentEvent<GeneratedVaadinTextField> {
-		public IronFormElementUnregisterEvent(GeneratedVaadinTextField source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public IronFormElementUnregisterEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronFormElementUnregisterListener(
-			ComponentEventListener<IronFormElementUnregisterEvent> listener) {
-		return addListener(IronFormElementUnregisterEvent.class, listener);
+			ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
+		return addListener(IronFormElementUnregisterEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("invalid-changed")
-	public static class InvalidChangeEvent
+	public static class InvalidChangeEvent<R extends GeneratedVaadinTextField<R>>
 			extends
-				ComponentEvent<GeneratedVaadinTextField> {
-		public InvalidChangeEvent(GeneratedVaadinTextField source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public InvalidChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addInvalidChangeListener(
-			ComponentEventListener<InvalidChangeEvent> listener) {
-		return addListener(InvalidChangeEvent.class, listener);
+			ComponentEventListener<InvalidChangeEvent<R>> listener) {
+		return addListener(InvalidChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("has-value-changed")
-	public static class HasValueChangeEvent
+	public static class HasValueChangeEvent<R extends GeneratedVaadinTextField<R>>
 			extends
-				ComponentEvent<GeneratedVaadinTextField> {
-		public HasValueChangeEvent(GeneratedVaadinTextField source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public HasValueChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addHasValueChangeListener(
-			ComponentEventListener<HasValueChangeEvent> listener) {
-		return addListener(HasValueChangeEvent.class, listener);
+			ComponentEventListener<HasValueChangeEvent<R>> listener) {
+		return addListener(HasValueChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	/**
