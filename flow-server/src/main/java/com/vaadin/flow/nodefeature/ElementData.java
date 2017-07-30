@@ -17,7 +17,7 @@
 package com.vaadin.flow.nodefeature;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 /**
  * Map of basic element information.
@@ -39,7 +39,7 @@ public class ElementData extends NodeValue<String> {
 
     @Override
     protected String getKey() {
-        return NodeFeatures.TAG;
+        return NodeProperties.TAG;
     }
 
     /**

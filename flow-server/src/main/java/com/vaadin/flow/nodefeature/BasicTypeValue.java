@@ -18,7 +18,7 @@ package com.vaadin.flow.nodefeature;
 import java.io.Serializable;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 /**
  * The feature contains a value of the basic type.
@@ -44,7 +44,7 @@ public class BasicTypeValue extends NodeValue<Serializable> {
 
     @Override
     protected String getKey() {
-        return NodeFeatures.VALUE;
+        return NodeProperties.VALUE;
     }
 
     /**

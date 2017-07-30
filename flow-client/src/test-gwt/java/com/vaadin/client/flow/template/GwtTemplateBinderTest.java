@@ -35,6 +35,7 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.ChildSlotNode;
 import com.vaadin.flow.template.angular.ForTemplateNode;
 import com.vaadin.flow.template.angular.ModelValueBindingProvider;
@@ -578,7 +579,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         StateNode childContentNode = new StateNode(79, stateNode.getTree());
 
         childContentNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("span");
+                .getProperty(NodeProperties.TAG).setValue("span");
 
         stateNode.getMap(NodeFeatures.TEMPLATE)
                 .getProperty(TemplateMap.CHILD_SLOT_CONTENT)
@@ -622,7 +623,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         templateNode.setChildrenIds(new double[] { childId });
 
         childContentNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("span");
+                .getProperty(NodeProperties.TAG).setValue("span");
 
         stateNode.getMap(NodeFeatures.TEMPLATE)
                 .getProperty(TemplateMap.CHILD_SLOT_CONTENT)
@@ -659,7 +660,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         StateNode simpleNode = new StateNode(2, tree);
         simpleNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("div");
+                .getProperty(NodeProperties.TAG).setValue("div");
         simpleNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, templateState);
 
         Element element = new SimpleElementBindingStrategy().create(simpleNode);
@@ -1214,7 +1215,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
             StateNode node, int id) {
         registry.getTemplateRegistry().register(id, templateNode);
         node.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
+                .getProperty(NodeProperties.ROOT_TEMPLATE_ID)
                 .setValue(Double.valueOf(id));
     }
 
@@ -1233,7 +1234,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         constantPool.importFromJson(constantsJson);
 
         node.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeFeatures.MODEL_DESCRIPTOR)
+                .getProperty(NodeProperties.MODEL_DESCRIPTOR)
                 .setValue(constantId);
     }
 }

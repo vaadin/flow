@@ -23,6 +23,7 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Node;
@@ -64,7 +65,7 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
         BOUND.set(stateNode, true);
 
         NodeMap textMap = stateNode.getMap(NodeFeatures.TEXT_NODE);
-        MapProperty textProperty = textMap.getProperty(NodeFeatures.TEXT);
+        MapProperty textProperty = textMap.getProperty(NodeProperties.TEXT);
 
         Computation computation = Reactive.runWhenDepedenciesChange(
                 () -> htmlNode.setData((String) textProperty.getValue()));

@@ -27,6 +27,7 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -186,7 +187,7 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
 
         NodeMap shadow = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
 
-        shadow.getProperty(NodeFeatures.SHADOW_ROOT).setValue(createChild(1));
+        shadow.getProperty(NodeProperties.SHADOW_ROOT).setValue(createChild(1));
 
         Reactive.flush();
 
@@ -220,7 +221,7 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         Text domNode = Browser.getDocument().createTextNode("");
 
         MapProperty textProperty = textNode.getMap(NodeFeatures.TEXT_NODE)
-                .getProperty(NodeFeatures.TEXT);
+                .getProperty(NodeProperties.TEXT);
 
         Binder.bind(textNode, domNode);
 
@@ -245,7 +246,7 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         TestStateNode childNode = new TestStateNode(1, node.getTree());
 
         childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("div");
+                .getProperty(NodeProperties.TAG).setValue("div");
         return childNode;
     }
 
