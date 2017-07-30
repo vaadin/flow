@@ -224,7 +224,7 @@ public class StateTree {
 
     /**
      * Sends a data for attach existing element server side callback.
-     * 
+     *
      * @param parent
      *            parent of the node to attach
      * @param requestedId
@@ -284,16 +284,18 @@ public class StateTree {
      *            the node feature id
      * @return a human readable string describing the node feature
      */
-    public String getFeatureDebugName(int id) {
+    String getFeatureDebugName(int id) {
         if (nodeFeatureDebugName == null) {
             nodeFeatureDebugName = JsCollections.map();
+            // GWT does not allow to call Class::getFields method, so we cannot
+            // use reflection to fill the map automatically
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_DATA, "elementData");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_PROPERTIES,
                     "elementProperties");
-            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_ATTRIBUTES,
-                    "elementAttributes");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_CHILDREN,
                     "elementChildren");
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_ATTRIBUTES,
+                    "elementAttributes");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_LISTENERS,
                     "elementListeners");
             nodeFeatureDebugName.set(NodeFeatures.UI_PUSHCONFIGURATION,
@@ -313,15 +315,41 @@ public class StateTree {
             nodeFeatureDebugName.set(NodeFeatures.CLASS_LIST, "classList");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
-            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE, "template");
-            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS,
-                    "synchronizedPropertyEvents");
             nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTIES,
                     "synchronizedProperties");
+            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS,
+                    "synchronizedPropertyEvents");
+            nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING,
+                    "componentMapping");
+            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE, "template");
+            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELMAP,
+                    "templateModelMap");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_OVERRIDES,
                     "templateOverrides");
             nodeFeatureDebugName.set(NodeFeatures.OVERRIDE_DATA,
                     "overrideNodeData");
+            nodeFeatureDebugName.set(NodeFeatures.PARENT_GENERATOR,
+                    "parentGeneratorHolder");
+            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,
+                    "modelList");
+            nodeFeatureDebugName.set(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                    "polymerServerEventHandlers");
+            nodeFeatureDebugName.set(NodeFeatures.POLYMER_EVENT_LISTENERS,
+                    "polymerEventListenerMap");
+            nodeFeatureDebugName.set(NodeFeatures.CLIENT_DELEGATE_HANDLERS,
+                    "clientDelegateHandlers");
+            nodeFeatureDebugName.set(NodeFeatures.SHADOW_ROOT_DATA,
+                    "shadowRootData");
+            nodeFeatureDebugName.set(NodeFeatures.SHADOW_ROOT_HOST,
+                    "shadowRootHost");
+            nodeFeatureDebugName.set(NodeFeatures.ATTACH_EXISTING_ELEMENT,
+                    "attachExistingElementFeature");
+            nodeFeatureDebugName.set(NodeFeatures.ATTACH_TEMPLATE_CHILD_ELEMENT,
+                    "attachTemplateChildFeature");
+            nodeFeatureDebugName.set(NodeFeatures.VIRTUAL_CHILD_ELEMENTS,
+                    "virtualChildrenList");
+            nodeFeatureDebugName.set(NodeFeatures.BASIC_TYPE_VALUE,
+                    "basicTypeValue");
         }
         if (nodeFeatureDebugName.has(id)) {
             return nodeFeatureDebugName.get(id);
