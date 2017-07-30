@@ -44,6 +44,8 @@ else
 
     if [[ $change == *"flow-components-parent/"* ]]
     then
+      # flow-components-parent imports modules from flow-components, so we need to build it also
+      modules="$modules -pl flow-components"
       ## only trigger the analyzer & generator for validation builds on PRs that touched component generation
       echo "Setting components flag to true"
       modules="$modules -pl flow-components-parent -P generator"
