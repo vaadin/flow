@@ -583,8 +583,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                             context.binderContext, childNode, childTag, ((ShadowRoot) parentNode));
                     invokeWhenNodeIsConstructed(command, childNode);
                 } else {
-                    throw new IllegalStateException("Unexpected childTag: "
-                            + childTag + "and parentNode: " + parentNode);
+                    if (childTag == null) {
+                        throw new IllegalStateException(
+                                "Received element with no tag information, id = "
+                                        + childNode.getId());
+                    }
+                    throw new IllegalStateException(
+                            "Expected parent element to be a shadow root to bind elements to, but got "
+                                    + parentNode);
                 }
             } else {
                 context.binderContext.bind(childNode, childNode.getDomNode());
@@ -612,8 +618,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         Node shadowRootElement = PolymerUtils.searchForElementInShadowRoot(shadowRoot,
                 childTag);
         if (shadowRootElement == null) {
-            throw new IllegalStateException("Could not locate element with tag "
-                    + childTag + " in shadow root of a parent element");
+            throw new IllegalStateException(
+                    "Could not locate element imported with @Id annotation, tag '"
+                            + childTag
+                            + "', in shadow root of a parent element");
         }
         binderContext.bind(childNode, shadowRootElement);
     }
