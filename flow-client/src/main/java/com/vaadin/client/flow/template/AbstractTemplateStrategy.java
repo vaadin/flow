@@ -32,6 +32,7 @@ import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.ModelValueBindingProvider;
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;
 
@@ -253,7 +254,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
             String modelDescriptorId = (String) node
                     .getMap(NodeFeatures.TEMPLATE)
-                    .getProperty(NodeFeatures.MODEL_DESCRIPTOR).getValue();
+                    .getProperty(NodeProperties.MODEL_DESCRIPTOR).getValue();
 
             assert modelDescriptorId != null;
 
@@ -332,7 +333,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
     private int getTemplateId(StateNode node) {
         return node.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
+                .getProperty(NodeProperties.ROOT_TEMPLATE_ID)
                 .getValueOrDefault(-1);
     }
 

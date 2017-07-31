@@ -52,7 +52,7 @@ import com.vaadin.flow.nodefeature.VirtualChildrenList;
  *
  * @author Vaadin Ltd
  */
-public class NodeFeatures {
+public final class NodeFeatures {
     /**
      * Id for {@link ElementData}.
      */
@@ -190,36 +190,6 @@ public class NodeFeatures {
      * Id for {@link BasicTypeValue}.
      */
     public static final int BASIC_TYPE_VALUE = 30;
-
-    /**
-     * Key for {@link ElementData#getTag()}.
-     */
-    public static final String TAG = "tag";
-
-    /**
-     * Key for {@link TextNodeMap#getText()}.
-     */
-    public static final String TEXT = "text";
-
-    /**
-     * Key for {@link ShadowRootData}.
-     */
-    public static final String SHADOW_ROOT = "shadowRoot";
-
-    /**
-     * Key for {@link TemplateMap#getRootTemplate()}.
-     */
-    public static final String ROOT_TEMPLATE_ID = "root";
-
-    /**
-     * Key for {@link TemplateMap#getModelDescriptor()}.
-     */
-    public static final String MODEL_DESCRIPTOR = "descriptor";
-
-    /**
-     * Key for {@link BasicTypeValue#getValue()}.
-     */
-    public static final String VALUE = "value";
 
     private NodeFeatures() {
         // Only static

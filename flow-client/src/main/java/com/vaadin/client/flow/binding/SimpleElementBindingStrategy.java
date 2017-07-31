@@ -43,6 +43,7 @@ import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -294,7 +295,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void attachShadow(BindingContext context) {
         NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeFeatures.SHADOW_ROOT).getValue();
+                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
         if (shadowRootNode != null) {
             NativeFunction function = NativeFunction.create("element",
                     "if ( element.shadowRoot ) { return element.shadowRoot; } "

@@ -12,6 +12,7 @@ import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -435,7 +436,7 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         StateNode node = new StateNode(nextId, tree);
         nextId++;
         node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
-                .getProperty(NodeFeatures.VALUE).setValue(value);
+                .getProperty(NodeProperties.VALUE).setValue(value);
         return node;
     }
 

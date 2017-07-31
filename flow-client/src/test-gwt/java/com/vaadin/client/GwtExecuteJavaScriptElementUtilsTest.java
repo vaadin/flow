@@ -20,6 +20,7 @@ import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -263,7 +264,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeFeatures.SHADOW_ROOT).getValue();
+                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
         NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
 
         StateNode elementNode = new StateNode(99, tree);
@@ -289,7 +290,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRootNode = (StateNode) map
-                .getProperty(NodeFeatures.SHADOW_ROOT).getValue();
+                .getProperty(NodeProperties.SHADOW_ROOT).getValue();
         NodeList list = shadowRootNode.getList(NodeFeatures.ELEMENT_CHILDREN);
 
         StateNode elementNode = new StateNode(99, tree);
@@ -313,7 +314,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
         setupParent(element);
 
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
-        map.getProperty(NodeFeatures.SHADOW_ROOT)
+        map.getProperty(NodeProperties.SHADOW_ROOT)
                 .setValue(new StateNode(34, tree));
     }
 

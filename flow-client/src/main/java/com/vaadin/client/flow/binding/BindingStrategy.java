@@ -17,6 +17,7 @@ package com.vaadin.client.flow.binding;
 
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.dom.Node;
 
@@ -79,6 +80,6 @@ public interface BindingStrategy<T extends Node> {
      */
     default String getTag(StateNode node) {
         return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).getValue();
+                .getProperty(NodeProperties.TAG).getValue();
     }
 }

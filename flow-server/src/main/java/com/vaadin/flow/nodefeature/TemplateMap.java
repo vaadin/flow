@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.ChildSlotNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.model.ModelDescriptor;
@@ -54,7 +54,7 @@ public class TemplateMap extends NodeMap {
      * @return the template node
      */
     public TemplateNode getRootTemplate() {
-        int rootId = getOrDefault(NodeFeatures.ROOT_TEMPLATE_ID, -1);
+        int rootId = getOrDefault(NodeProperties.ROOT_TEMPLATE_ID, -1);
         return TemplateNode.get(rootId);
     }
 
@@ -70,7 +70,7 @@ public class TemplateMap extends NodeMap {
         assert !rootTemplate.getParent()
                 .isPresent() : "Root template node should not have any parent";
 
-        put(NodeFeatures.ROOT_TEMPLATE_ID,
+        put(NodeProperties.ROOT_TEMPLATE_ID,
                 Integer.valueOf(rootTemplate.getId()));
     }
 
@@ -82,10 +82,10 @@ public class TemplateMap extends NodeMap {
      */
     public void setModelDescriptor(ModelDescriptor<?> modelDescriptor) {
         assert modelDescriptor != null;
-        assert !contains(NodeFeatures.MODEL_DESCRIPTOR);
+        assert !contains(NodeProperties.MODEL_DESCRIPTOR);
 
         this.modelDescriptor = modelDescriptor;
-        put(NodeFeatures.MODEL_DESCRIPTOR,
+        put(NodeProperties.MODEL_DESCRIPTOR,
                 new ConstantPoolKey(modelDescriptor.toJson()));
     }
 

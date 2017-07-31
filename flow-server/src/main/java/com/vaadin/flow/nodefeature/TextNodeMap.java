@@ -16,7 +16,7 @@
 package com.vaadin.flow.nodefeature;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 /**
  * Map holding the data of a text node.
@@ -37,7 +37,7 @@ public class TextNodeMap extends NodeValue<String> {
 
     @Override
     protected String getKey() {
-        return NodeFeatures.TEXT;
+        return NodeProperties.TEXT;
     }
 
     /**
