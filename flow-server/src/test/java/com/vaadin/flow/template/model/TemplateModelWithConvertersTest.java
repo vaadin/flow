@@ -193,17 +193,17 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<Long, String> {
 
         @Override
-        public Class<Long> getApplicationType() {
+        public Class<Long> getModelType() {
             return long.class;
         }
 
         @Override
-        public String toModel(Long applicationValue) {
+        public String toPresentation(Long applicationValue) {
             return applicationValue.toString();
         }
 
         @Override
-        public Long toApplication(String modelValue) {
+        public Long toModel(String modelValue) {
             return Long.parseLong(modelValue);
         }
     }
@@ -212,12 +212,12 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<Date, String> {
 
         @Override
-        public String toModel(Date applicationValue) {
+        public String toPresentation(Date applicationValue) {
             return Long.toString(applicationValue.getTime());
         }
 
         @Override
-        public Date toApplication(String modelValue) {
+        public Date toModel(String modelValue) {
             return new Date(Long.valueOf(modelValue));
         }
     }
@@ -226,7 +226,7 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<String, BeanWithString> {
 
         @Override
-        public BeanWithString toModel(String applicationValue) {
+        public BeanWithString toPresentation(String applicationValue) {
             return new BeanWithString(applicationValue);
         }
 
@@ -240,12 +240,12 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<Long, BeanWithLong> {
 
         @Override
-        public Class<Long> getApplicationType() {
+        public Class<Long> getModelType() {
             return long.class;
         }
 
         @Override
-        public BeanWithLong toModel(Long applicationValue) {
+        public BeanWithLong toPresentation(Long applicationValue) {
             return new BeanWithLong(applicationValue);
         }
 
@@ -259,7 +259,7 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<Date, BeanWithString> {
 
         @Override
-        public BeanWithString toModel(Date applicationValue) {
+        public BeanWithString toPresentation(Date applicationValue) {
             if (applicationValue == null) {
                 return null;
             }
@@ -285,12 +285,12 @@ public class TemplateModelWithConvertersTest {
         }
 
         @Override
-        public Long toModel(String applicationValue) {
+        public Long toPresentation(String applicationValue) {
             return Long.valueOf(applicationValue);
         }
 
         @Override
-        public String toApplication(Long modelValue) {
+        public String toModel(Long modelValue) {
             return modelValue.toString();
         }
     }
@@ -299,7 +299,7 @@ public class TemplateModelWithConvertersTest {
             implements ModelConverter<Date, DateBean> {
 
         @Override
-        public DateBean toModel(Date applicationValue) {
+        public DateBean toPresentation(Date applicationValue) {
             if (applicationValue == null) {
                 return null;
             }
