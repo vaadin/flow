@@ -55,7 +55,7 @@ public class ReconnectDialogConfiguration {
      *            the connection state handler to bind to
      */
     public static void bind(ConnectionStateHandler connectionStateHandler) {
-        Reactive.runWhenDepedenciesChange(
+        Reactive.runWhenDependenciesChange(
                 () -> connectionStateHandler.configurationUpdated());
     }
 
