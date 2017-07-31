@@ -265,7 +265,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     public void testInsertChild() {
         Binder.bind(node, element);
 
-        createAndAppendElementToShadowRoot(element, "div");
+        createAndAppendElementToShadowRoot(element, null, "div");
 
         StateNode childNode = createChildNode("first");
 
@@ -338,7 +338,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     public void testInsertChild_recalculateIndex() {
         Binder.bind(node, element);
 
-        createAndAppendElementToShadowRoot(element, "div");
+        createAndAppendElementToShadowRoot(element, null, "div");
 
         // The order is important: some StateNodes during event handling don't
         // have yet DOM node with this order
@@ -745,6 +745,16 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(existingElementMap.getElement(childNode.getId()));
     }
 
+    public void testPropertyValueHasPrototypeMethods() {
+        NodeMap map = new NodeMap(0, new StateNode(0, new StateTree(null)));
+        JsonObject object = Json.createObject();
+        object.put("name", "bar");
+        map.getProperty("foo").setValue(object);
+        assertTrue(map.hasPropertyValue("foo"));
+        String toString = getToString(map.getProperty("foo").getValue());
+        assertEquals("[object Object]", toString);
+    }
+
     public void testBindVirtualElement() {
         addShadowRootElement(element);
         StateNode shadowRootNode = createAndAttachShadowRootNode();
@@ -784,34 +794,56 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertNull(existingElementMap.getElement(childNode.getId()));
     }
 
-    public void testBindChild_noTag() {
+    public void testBindChild_noTagAndId() {
         addShadowRootElement(element);
-        String tag = null;
-        assertNull("This test requires null string to be used as tag name",
-                tag);
-
         addVirtualChild(createAndAttachShadowRootNode(),
-                createChildNode("childElement", tag));
+                createChildNode(null, null));
 
         try {
             Binder.bind(node, element);
-            fail("Appending child state node with no tag name should cause an exception");
+            fail("Appending child state node with no tag and id should cause an exception");
         } catch (IllegalStateException ignored) {
             // expected
         }
     }
 
-    public void testBindChild_noCorrespondingElementInShadowRoot() {
+    public void testBindChild_noCorrespondingElementInShadowRoot_searchById() {
+        Element shadowRootElement = addShadowRootElement(element);
+
+        String childId = "childElement";
+        addVirtualChild(createAndAttachShadowRootNode(),
+                createChildNode(childId, null));
+
+        Binder.bind(node, element);
+
+        Element elementWithDifferentId = createAndAppendElementToShadowRoot(
+                shadowRootElement, "otherId", null);
+        assertNotSame(
+                "Element added to shadow root should not have same id as virtual child node",
+                childId, elementWithDifferentId.getId());
+
+        try {
+            Reactive.flush();
+            fail("Appending state node for element with no corresponding element in shadow root should cause an exception");
+        } catch (IllegalStateException e) {
+            assertTrue(
+                    "Exception message '" + e.getMessage()
+                            + "' should contain id '" + childId + '\'',
+                    e.getMessage().contains(childId));
+        }
+    }
+
+    public void testBindChild_noCorrespondingElementInShadowRoot_searchByTag() {
         Element shadowRootElement = addShadowRootElement(element);
 
         String childTagName = "span";
-        StateNode childNode = createChildNode("childElement", childTagName);
-        addVirtualChild(createAndAttachShadowRootNode(), childNode);
+        addVirtualChild(createAndAttachShadowRootNode(),
+                createChildNode(null, childTagName));
 
         Binder.bind(node, element);
 
         Element elementWithDifferentTag = createAndAppendElementToShadowRoot(
-                shadowRootElement, "div");
+                shadowRootElement, null, "div");
         assertNotSame(
                 "Element added to shadow root should not have same tag name as virtual child node",
                 childTagName, elementWithDifferentTag.getTagName());
@@ -826,14 +858,45 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         }
     }
 
-    public void testBindChild_withCorrespondingElementInShadowRoot() {
+    public void testBindChild_withCorrespondingElementInShadowRoot_byTagName() {
         Element shadowRootElement = addShadowRootElement(element);
-        StateNode childNode = createChildNode("childElement",
-                element.getTagName());
+        StateNode childNode = createChildNode(null, element.getTagName());
         addVirtualChild(createAndAttachShadowRootNode(), childNode);
 
         Binder.bind(node, element);
-        createAndAppendElementToShadowRoot(shadowRootElement,
+        createAndAppendElementToShadowRoot(shadowRootElement, null,
+                element.getTagName());
+
+        List<Integer> expectedAfterBindingFeatures = Arrays.asList(
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_CHILDREN,
+                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
+                "Child node should not have any features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but got feature "
+                        + notExpectedFeature,
+                childNode.hasFeature(notExpectedFeature)));
+
+        Reactive.flush();
+
+        expectedAfterBindingFeatures.forEach(expectedFeature -> assertTrue(
+                "Child node should have all features from list "
+                        + expectedAfterBindingFeatures
+                        + " before binding, but missing feature "
+                        + expectedFeature,
+                childNode.hasFeature(expectedFeature)));
+    }
+
+    public void testBindChild_withCorrespondingElementInShadowRoot_byId() {
+        Element shadowRootElement = addShadowRootElement(element);
+        String childId = "childElement";
+        StateNode childNode = createChildNode(childId, element.getTagName());
+        addVirtualChild(createAndAttachShadowRootNode(), childNode);
+
+        Binder.bind(node, element);
+        createAndAppendElementToShadowRoot(shadowRootElement, childId,
                 element.getTagName());
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
@@ -860,11 +923,11 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
     public void testBindChild_withAlreadyInitializedElement() {
         Element shadowRootElement = addShadowRootElement(element);
-        StateNode childNode = createChildNode("childElement",
-                element.getTagName());
+        String childId = "childElement";
+        StateNode childNode = createChildNode(childId, element.getTagName());
         addVirtualChild(createAndAttachShadowRootNode(), childNode);
         childNode.setDomNode(createAndAppendElementToShadowRoot(
-                shadowRootElement, element.getTagName()));
+                shadowRootElement, childId, element.getTagName()));
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
@@ -889,9 +952,10 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     private Element createAndAppendElementToShadowRoot(Element shadowRoot,
-            String tagName) {
+            String id, String tagName) {
         Element childShadowRootElement = Browser.getDocument()
                 .createElement(tagName);
+        childShadowRootElement.setId(id);
         shadowRoot.appendChild(childShadowRootElement);
         return childShadowRootElement;
     }
@@ -906,26 +970,24 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     private StateNode createAndAttachShadowRootNode() {
         StateNode shadowRootNode = new StateNode(34, tree);
         node.getMap(NodeFeatures.SHADOW_ROOT_DATA)
-                .getProperty(NodeProperties.SHADOW_ROOT).setValue(shadowRootNode);
+                .getProperty(NodeProperties.SHADOW_ROOT)
+                .setValue(shadowRootNode);
         return shadowRootNode;
     }
 
-    private native Element addShadowRootElement(Element element) /*-{
-                                                                 element.shadowRoot = $doc.createElement("div");
-                                                                 return element.shadowRoot;
-                                                                 }-*/;
+    private native Element addShadowRootElement(Element element)
+    /*-{
+        var shadowRoot = $doc.createElement("div");
+        // GWT does not provide this method by default, so we use a stub
+        shadowRoot.getElementById = function (id) {
+            return this.querySelector('#' + id);
+        };
+        element.shadowRoot = shadowRoot;
+        return shadowRoot;
+    }-*/;
 
-    public void testPropertyValueHasPrototypeMethods() {
-        NodeMap map = new NodeMap(0, new StateNode(0, new StateTree(null)));
-        JsonObject object = Json.createObject();
-        object.put("name", "bar");
-        map.getProperty("foo").setValue(object);
-        assertTrue(map.hasPropertyValue("foo"));
-        String toString = getToString(map.getProperty("foo").getValue());
-        assertEquals("[object Object]", toString);
-    }
-
-    private native String getToString(Object value) /*-{
-                                                    return value.toString();
-                                                    }-*/;
+    private native String getToString(Object value)
+    /*-{
+        return value.toString();
+    }-*/;
 }

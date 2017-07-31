@@ -199,4 +199,22 @@ public final class PolymerUtils {
     /*-{
         return shadowRoot.querySelector(cssQuery);
     }-*/;
+
+    /**
+     * Get the element by id from the shadow root provided.
+     *
+     * @param shadowRoot
+     *            shadow root element
+     * @param id
+     *            element id
+     * @return the element with id provided or {@code null} for no matches
+     *
+     * @see <a href=
+     *      "http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html">http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html</a>
+     */
+    public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
+            String id)
+    /*-{
+        return shadowRoot.getElementById(id);
+    }-*/;
 }

@@ -322,9 +322,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
-        Command command = () -> stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .forEachProperty((property, key) -> bindSubProperty(
-                        stateNode, htmlNode, path, property));
+        Command command = () -> stateNode
+                .getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .forEachProperty((property, key) -> bindSubProperty(stateNode,
+                        htmlNode, path, property));
         invokeWhenNodeIsConstructed(command, stateNode);
     }
 
@@ -400,9 +401,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             if (feature != null) {
                 feature.addPropertyAddListener(event -> {
-                    Command command = () ->
-                            PolymerUtils.setListValueByIndex(htmlNode, polymerModelPath,
-                                    subNodeIndex, PolymerUtils.convertToJson(event.getProperty()));
+                    Command command = () -> PolymerUtils.setListValueByIndex(
+                            htmlNode, polymerModelPath, subNodeIndex,
+                            PolymerUtils.convertToJson(event.getProperty()));
                     invokeWhenNodeIsConstructed(command, stateNode);
                 });
             }
@@ -576,22 +577,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
             if (childNode.getDomNode() == null) {
-                String childTag = getTag(childNode);
-                Node parentNode = context.node.getDomNode();
-                if (childTag != null && parentNode instanceof ShadowRoot) {
-                    Command command = () -> bindAnElementFromShadowRoot(
-                            context.binderContext, childNode, childTag, ((ShadowRoot) parentNode));
-                    invokeWhenNodeIsConstructed(command, childNode);
-                } else {
-                    if (childTag == null) {
-                        throw new IllegalStateException(
-                                "Received element with no tag information, id = "
-                                        + childNode.getId());
-                    }
-                    throw new IllegalStateException(
-                            "Expected parent element to be a shadow root to bind elements to, but got "
-                                    + parentNode);
-                }
+                invokeWhenNodeIsConstructed(
+                        getBindingCommand(context, childNode), childNode);
             } else {
                 context.binderContext.bind(childNode, childNode.getDomNode());
             }
@@ -608,19 +595,70 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         });
     }
 
+    private Command getBindingCommand(BindingContext context,
+            StateNode childNode) {
+        Node parentNode = context.node.getDomNode();
+        if (parentNode instanceof ShadowRoot) {
+            Optional<String> childId = extractNodeId(childNode);
+            if (childId.isPresent()) {
+                return () -> bindElementFromShadowRootById(
+                        context.binderContext, childNode, childId.get(),
+                        (ShadowRoot) parentNode);
+            } else {
+                String childTag = getTag(childNode);
+                if (childTag == null) {
+                    throw new IllegalStateException(
+                            "Received element with no id and tag information, element node id = "
+                                    + childNode.getId());
+                }
+                return () -> bindElementFromShadowRootByTagName(
+                        context.binderContext, childNode, childTag,
+                        (ShadowRoot) parentNode);
+            }
+        } else {
+            throw new IllegalStateException(
+                    "Expected parent element to be a shadow root to bind elements to, but got "
+                            + parentNode);
+        }
+    }
+
+    private static Optional<String> extractNodeId(StateNode node) {
+        if (node.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
+            return Optional.ofNullable(node
+                    .getMap(NodeFeatures.ELEMENT_ATTRIBUTES)
+                    .getProperty(NodeProperties.ID).getValueOrDefault(null));
+        }
+        return Optional.empty();
+    }
+
     private void invokeWhenNodeIsConstructed(Command command, StateNode node) {
         Computation computation = Reactive.runWhenDependenciesChange(command);
         node.addUnregisterListener(event -> computation.stop());
     }
 
-    private void bindAnElementFromShadowRoot(BinderContext binderContext,
-            StateNode childNode, String childTag, ShadowRoot shadowRoot) {
-        Node shadowRootElement = PolymerUtils.searchForElementInShadowRoot(shadowRoot,
-                childTag);
+    private static void bindElementFromShadowRootByTagName(
+            BinderContext binderContext, StateNode childNode, String childTag,
+            ShadowRoot shadowRoot) {
+        Node shadowRootElement = PolymerUtils
+                .searchForElementInShadowRoot(shadowRoot, childTag);
         if (shadowRootElement == null) {
             throw new IllegalStateException(
-                    "Could not locate element imported with @Id annotation, tag '"
+                    "Could not locate element imported with @Id annotation, tag = '"
                             + childTag
+                            + "', in shadow root of a parent element");
+        }
+        binderContext.bind(childNode, shadowRootElement);
+    }
+
+    private static void bindElementFromShadowRootById(
+            BinderContext binderContext, StateNode childNode, String childId,
+            ShadowRoot shadowRoot) {
+        Node shadowRootElement = PolymerUtils
+                .getElementInShadowRootById(shadowRoot, childId);
+        if (shadowRootElement == null) {
+            throw new IllegalStateException(
+                    "Could not locate element imported with @Id annotation, id = '"
+                            + childId
                             + "', in shadow root of a parent element");
         }
         binderContext.bind(childNode, shadowRootElement);
@@ -642,7 +680,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         JsArray<?> add = event.getAdd();
-        if (add.length() != 0) {
+        if (!add.isEmpty()) {
             addChildren(event.getIndex(), context, add);
         }
     }
@@ -712,7 +750,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         // Actually removing of a virtual element from the dom is not supported.
 
         JsArray<?> add = event.getAdd();
-        if (add.length() != 0) {
+        if (!add.isEmpty()) {
             for (int i = 0; i < add.length(); i++) {
                 StateNode newChild = (StateNode) add.get(i);
 
