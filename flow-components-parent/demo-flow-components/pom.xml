@@ -8,7 +8,7 @@
         <version>0.1.16-SNAPSHOT</version>
     </parent>
     <artifactId>demo-flow-components</artifactId>
-    <name>Flow generated components demo</name>
+    <name>Flow components demo</name>
     <packaging>war</packaging>
 
     <dependencies>
