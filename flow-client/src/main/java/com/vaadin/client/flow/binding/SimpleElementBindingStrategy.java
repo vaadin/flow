@@ -608,8 +608,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 String childTag = getTag(childNode);
                 if (childTag == null) {
                     throw new IllegalStateException(
-                            "Received element with no id and tag information, element node id = "
-                                    + childNode.getId());
+                            "Received element with no id and tag information, element node id = '"
+                                    + childNode.getId() + "', parent node = " + parentNode);
                 }
                 return () -> bindElementFromShadowRootByTagName(
                         context.binderContext, childNode, childTag,
