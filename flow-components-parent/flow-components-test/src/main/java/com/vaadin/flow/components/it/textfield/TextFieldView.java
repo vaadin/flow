@@ -13,27 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.tests.components.textfield;
+package com.vaadin.flow.components.it.textfield;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import com.vaadin.flow.tests.components.AbstractComponentIT;
-import com.vaadin.testbench.By;
+import com.vaadin.flow.components.it.TestView;
+import com.vaadin.flow.html.Div;
 import com.vaadin.ui.VaadinTextField;
 
 /**
- * Integration tests for {@link VaadinTextField}.
+ * Test view for {@link VaadinTextField}.
  */
-public class TextFieldTest extends AbstractComponentIT {
+public class TextFieldView extends TestView {
 
-    @Before
-    public void init() {
-        open();
-    }
-
-    @Test
-    public void pass() {
-        isElementPresent(By.tagName("vaadin-text-field"));
+    public TextFieldView() {
+        Div message = new Div();
+        VaadinTextField textField = new VaadinTextField();
+        textField.addValueChangeListener(
+                event -> message.setText(
+                        String.format("Old value: '%s'. New value: '%s'.",
+                                event.getOldValue(), event.getValue())));
+        add(textField, message);
     }
 }
