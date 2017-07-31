@@ -94,8 +94,8 @@ import com.vaadin.ui.HasComponents;
  * button after it's been focused using the keyboard | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: paper-button#2.0.0", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: paper-button#2.0.0", "Flow#0.1.16-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
@@ -494,62 +494,63 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	}
 
 	@DomEvent("active-changed")
-	public static class ActiveChangeEvent
+	public static class ActiveChangeEvent<R extends GeneratedPaperButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperButton> {
-		public ActiveChangeEvent(GeneratedPaperButton source, boolean fromClient) {
+				ComponentEvent<R> {
+		public ActiveChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addActiveChangeListener(
-			ComponentEventListener<ActiveChangeEvent> listener) {
-		return addListener(ActiveChangeEvent.class, listener);
+			ComponentEventListener<ActiveChangeEvent<R>> listener) {
+		return addListener(ActiveChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangeEvent
+	public static class FocusedChangeEvent<R extends GeneratedPaperButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperButton> {
-		public FocusedChangeEvent(GeneratedPaperButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public FocusedChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addFocusedChangeListener(
-			ComponentEventListener<FocusedChangeEvent> listener) {
-		return addListener(FocusedChangeEvent.class, listener);
+			ComponentEventListener<FocusedChangeEvent<R>> listener) {
+		return addListener(FocusedChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangeEvent
+	public static class DisabledChangeEvent<R extends GeneratedPaperButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperButton> {
-		public DisabledChangeEvent(GeneratedPaperButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public DisabledChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addDisabledChangeListener(
-			ComponentEventListener<DisabledChangeEvent> listener) {
-		return addListener(DisabledChangeEvent.class, listener);
+			ComponentEventListener<DisabledChangeEvent<R>> listener) {
+		return addListener(DisabledChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("transitionend")
-	public static class TransitionendEvent
+	public static class TransitionendEvent<R extends GeneratedPaperButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperButton> {
-		public TransitionendEvent(GeneratedPaperButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public TransitionendEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addTransitionendListener(
-			ComponentEventListener<TransitionendEvent> listener) {
-		return addListener(TransitionendEvent.class, listener);
+			ComponentEventListener<TransitionendEvent<R>> listener) {
+		return addListener(TransitionendEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	/**

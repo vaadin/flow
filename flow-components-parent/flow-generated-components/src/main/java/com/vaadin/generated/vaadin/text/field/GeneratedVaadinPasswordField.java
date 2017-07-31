@@ -23,8 +23,8 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: PasswordFieldElement#null", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: PasswordFieldElement#null", "Flow#0.1.16-SNAPSHOT"})
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
 public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
