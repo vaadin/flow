@@ -53,6 +53,9 @@ public final class NodeProperties {
      */
     public static final String VALUE = "value";
 
+    /** Key for id property. */
+    public static final String ID = "id";
+
     private NodeProperties() {
     }
 }

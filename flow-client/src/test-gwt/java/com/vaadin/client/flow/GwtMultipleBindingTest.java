@@ -133,7 +133,7 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
         Binder.bind(node, element);
     }
 
-    public void testSynchronizedPopertyDoubleBind() {
+    public void testSynchronizedPropertyDoubleBind() {
         NodeList synchronizedPropertyList = node
                 .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
         NodeList synchronizedPropertyEventsList = node
