@@ -823,12 +823,14 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToDropdownTrigger(com.vaadin.ui.Component... components) {
+	public R addToDropdownTrigger(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "dropdown-trigger");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
@@ -843,12 +845,14 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToDropdownContent(com.vaadin.ui.Component... components) {
+	public R addToDropdownContent(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "dropdown-content");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
