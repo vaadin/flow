@@ -7,10 +7,10 @@
         <artifactId>flow-components-parent</artifactId>
         <version>0.1.16-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-components-demo</artifactId>
+    <artifactId>demo-flow-components</artifactId>
     <name>Flow generated components demo</name>
     <packaging>war</packaging>
-    
+
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -25,7 +25,7 @@
             <artifactId>flow-components</artifactId>
             <version>${flow.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
@@ -281,7 +281,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>local-run</id>
             <activation>
@@ -313,6 +313,6 @@
                 </plugins>
             </build>
         </profile>
-        
+
     </profiles>
 </project>
