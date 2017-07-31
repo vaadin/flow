@@ -50,8 +50,8 @@ import com.vaadin.ui.HasComponents;
  * button is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.16-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
 public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>

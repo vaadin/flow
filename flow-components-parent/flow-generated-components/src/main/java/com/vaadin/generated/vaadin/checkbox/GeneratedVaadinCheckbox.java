@@ -58,8 +58,8 @@ import com.vaadin.ui.HasComponents;
  * when the checkbox is focused.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.16-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
@@ -268,18 +268,18 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	@DomEvent("indeterminate-changed")
-	public static class IndeterminateChangeEvent
+	public static class IndeterminateChangeEvent<R extends GeneratedVaadinCheckbox<R>>
 			extends
-				ComponentEvent<GeneratedVaadinCheckbox> {
-		public IndeterminateChangeEvent(GeneratedVaadinCheckbox source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public IndeterminateChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIndeterminateChangeListener(
-			ComponentEventListener<IndeterminateChangeEvent> listener) {
-		return addListener(IndeterminateChangeEvent.class, listener);
+			ComponentEventListener<IndeterminateChangeEvent<R>> listener) {
+		return addListener(IndeterminateChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	/**

@@ -51,8 +51,8 @@ import com.vaadin.shared.Registration;
  * to style this element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.16-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
@@ -1302,91 +1302,91 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangeEvent
+	public static class FocusedChangeEvent<R extends GeneratedPaperTextarea<R>>
 			extends
-				ComponentEvent<GeneratedPaperTextarea> {
-		public FocusedChangeEvent(GeneratedPaperTextarea source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public FocusedChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addFocusedChangeListener(
-			ComponentEventListener<FocusedChangeEvent> listener) {
-		return addListener(FocusedChangeEvent.class, listener);
+			ComponentEventListener<FocusedChangeEvent<R>> listener) {
+		return addListener(FocusedChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangeEvent
+	public static class DisabledChangeEvent<R extends GeneratedPaperTextarea<R>>
 			extends
-				ComponentEvent<GeneratedPaperTextarea> {
-		public DisabledChangeEvent(GeneratedPaperTextarea source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public DisabledChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addDisabledChangeListener(
-			ComponentEventListener<DisabledChangeEvent> listener) {
-		return addListener(DisabledChangeEvent.class, listener);
+			ComponentEventListener<DisabledChangeEvent<R>> listener) {
+		return addListener(DisabledChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("change")
-	public static class ChangeEvent
+	public static class ChangeEvent<R extends GeneratedPaperTextarea<R>>
 			extends
-				ComponentEvent<GeneratedPaperTextarea> {
-		public ChangeEvent(GeneratedPaperTextarea source, boolean fromClient) {
+				ComponentEvent<R> {
+		public ChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addChangeListener(
-			ComponentEventListener<ChangeEvent> listener) {
-		return addListener(ChangeEvent.class, listener);
+			ComponentEventListener<ChangeEvent<R>> listener) {
+		return addListener(ChangeEvent.class, (ComponentEventListener) listener);
 	}
 
 	@DomEvent("invalid-changed")
-	public static class InvalidChangeEvent
+	public static class InvalidChangeEvent<R extends GeneratedPaperTextarea<R>>
 			extends
-				ComponentEvent<GeneratedPaperTextarea> {
-		public InvalidChangeEvent(GeneratedPaperTextarea source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public InvalidChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addInvalidChangeListener(
-			ComponentEventListener<InvalidChangeEvent> listener) {
-		return addListener(InvalidChangeEvent.class, listener);
+			ComponentEventListener<InvalidChangeEvent<R>> listener) {
+		return addListener(InvalidChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("iron-form-element-register")
-	public static class IronFormElementRegisterEvent
+	public static class IronFormElementRegisterEvent<R extends GeneratedPaperTextarea<R>>
 			extends
-				ComponentEvent<GeneratedPaperTextarea> {
-		public IronFormElementRegisterEvent(GeneratedPaperTextarea source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public IronFormElementRegisterEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronFormElementRegisterListener(
-			ComponentEventListener<IronFormElementRegisterEvent> listener) {
-		return addListener(IronFormElementRegisterEvent.class, listener);
+			ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
+		return addListener(IronFormElementRegisterEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("iron-form-element-unregister")
-	public static class IronFormElementUnregisterEvent
+	public static class IronFormElementUnregisterEvent<R extends GeneratedPaperTextarea<R>>
 			extends
-				ComponentEvent<GeneratedPaperTextarea> {
-		public IronFormElementUnregisterEvent(GeneratedPaperTextarea source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public IronFormElementUnregisterEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronFormElementUnregisterListener(
-			ComponentEventListener<IronFormElementUnregisterEvent> listener) {
-		return addListener(IronFormElementUnregisterEvent.class, listener);
+			ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
+		return addListener(IronFormElementUnregisterEvent.class,
+				(ComponentEventListener) listener);
 	}
 }

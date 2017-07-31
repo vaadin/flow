@@ -73,8 +73,8 @@ import com.vaadin.shared.Registration;
  * paper-menu-button content | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.16-SNAPSHOT"})
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
 public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
@@ -707,108 +707,108 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	}
 
 	@DomEvent("focused-changed")
-	public static class FocusedChangeEvent
+	public static class FocusedChangeEvent<R extends GeneratedPaperMenuButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperMenuButton> {
-		public FocusedChangeEvent(GeneratedPaperMenuButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public FocusedChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addFocusedChangeListener(
-			ComponentEventListener<FocusedChangeEvent> listener) {
-		return addListener(FocusedChangeEvent.class, listener);
+			ComponentEventListener<FocusedChangeEvent<R>> listener) {
+		return addListener(FocusedChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("disabled-changed")
-	public static class DisabledChangeEvent
+	public static class DisabledChangeEvent<R extends GeneratedPaperMenuButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperMenuButton> {
-		public DisabledChangeEvent(GeneratedPaperMenuButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public DisabledChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addDisabledChangeListener(
-			ComponentEventListener<DisabledChangeEvent> listener) {
-		return addListener(DisabledChangeEvent.class, listener);
+			ComponentEventListener<DisabledChangeEvent<R>> listener) {
+		return addListener(DisabledChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("paper-dropdown-close")
-	public static class PaperDropdownCloseEvent
+	public static class PaperDropdownCloseEvent<R extends GeneratedPaperMenuButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperMenuButton> {
-		public PaperDropdownCloseEvent(GeneratedPaperMenuButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public PaperDropdownCloseEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addPaperDropdownCloseListener(
-			ComponentEventListener<PaperDropdownCloseEvent> listener) {
-		return addListener(PaperDropdownCloseEvent.class, listener);
+			ComponentEventListener<PaperDropdownCloseEvent<R>> listener) {
+		return addListener(PaperDropdownCloseEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("paper-dropdown-open")
-	public static class PaperDropdownOpenEvent
+	public static class PaperDropdownOpenEvent<R extends GeneratedPaperMenuButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperMenuButton> {
-		public PaperDropdownOpenEvent(GeneratedPaperMenuButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public PaperDropdownOpenEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addPaperDropdownOpenListener(
-			ComponentEventListener<PaperDropdownOpenEvent> listener) {
-		return addListener(PaperDropdownOpenEvent.class, listener);
+			ComponentEventListener<PaperDropdownOpenEvent<R>> listener) {
+		return addListener(PaperDropdownOpenEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("opened-changed")
-	public static class OpenedChangeEvent
+	public static class OpenedChangeEvent<R extends GeneratedPaperMenuButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperMenuButton> {
-		public OpenedChangeEvent(GeneratedPaperMenuButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public OpenedChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addOpenedChangeListener(
-			ComponentEventListener<OpenedChangeEvent> listener) {
-		return addListener(OpenedChangeEvent.class, listener);
+			ComponentEventListener<OpenedChangeEvent<R>> listener) {
+		return addListener(OpenedChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("horizontal-offset-changed")
-	public static class HorizontalOffsetChangeEvent
+	public static class HorizontalOffsetChangeEvent<R extends GeneratedPaperMenuButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperMenuButton> {
-		public HorizontalOffsetChangeEvent(GeneratedPaperMenuButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public HorizontalOffsetChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addHorizontalOffsetChangeListener(
-			ComponentEventListener<HorizontalOffsetChangeEvent> listener) {
-		return addListener(HorizontalOffsetChangeEvent.class, listener);
+			ComponentEventListener<HorizontalOffsetChangeEvent<R>> listener) {
+		return addListener(HorizontalOffsetChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("vertical-offset-changed")
-	public static class VerticalOffsetChangeEvent
+	public static class VerticalOffsetChangeEvent<R extends GeneratedPaperMenuButton<R>>
 			extends
-				ComponentEvent<GeneratedPaperMenuButton> {
-		public VerticalOffsetChangeEvent(GeneratedPaperMenuButton source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public VerticalOffsetChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addVerticalOffsetChangeListener(
-			ComponentEventListener<VerticalOffsetChangeEvent> listener) {
-		return addListener(VerticalOffsetChangeEvent.class, listener);
+			ComponentEventListener<VerticalOffsetChangeEvent<R>> listener) {
+		return addListener(VerticalOffsetChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	/**

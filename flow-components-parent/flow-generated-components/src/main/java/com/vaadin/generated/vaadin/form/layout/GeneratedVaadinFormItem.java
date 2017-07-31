@@ -112,8 +112,8 @@ import com.vaadin.ui.HasComponents;
  * between the form item elements | {@code 1em}
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: Vaadin.FormItemElement#null", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: Vaadin.FormItemElement#null", "Flow#0.1.16-SNAPSHOT"})
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-item.html")
 public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
