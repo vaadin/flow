@@ -59,8 +59,8 @@ import com.vaadin.shared.Registration;
  * Mixin applied to the color picker icon | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.16-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
@@ -247,32 +247,32 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	@DomEvent("color-picker-selected")
-	public static class ColorPickerSelectedEvent
+	public static class ColorPickerSelectedEvent<R extends GeneratedPaperSwatchPicker<R>>
 			extends
-				ComponentEvent<GeneratedPaperSwatchPicker> {
-		public ColorPickerSelectedEvent(GeneratedPaperSwatchPicker source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public ColorPickerSelectedEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addColorPickerSelectedListener(
-			ComponentEventListener<ColorPickerSelectedEvent> listener) {
-		return addListener(ColorPickerSelectedEvent.class, listener);
+			ComponentEventListener<ColorPickerSelectedEvent<R>> listener) {
+		return addListener(ColorPickerSelectedEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("color-changed")
-	public static class ColorChangeEvent
+	public static class ColorChangeEvent<R extends GeneratedPaperSwatchPicker<R>>
 			extends
-				ComponentEvent<GeneratedPaperSwatchPicker> {
-		public ColorChangeEvent(GeneratedPaperSwatchPicker source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public ColorChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addColorChangeListener(
-			ComponentEventListener<ColorChangeEvent> listener) {
-		return addListener(ColorChangeEvent.class, listener);
+			ComponentEventListener<ColorChangeEvent<R>> listener) {
+		return addListener(ColorChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 }

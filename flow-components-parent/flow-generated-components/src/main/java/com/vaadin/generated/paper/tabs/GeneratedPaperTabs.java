@@ -102,8 +102,8 @@ import com.vaadin.ui.HasComponents;
  * applied to the layout container of tabs | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.16-SNAPSHOT"})
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
 public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
@@ -1039,133 +1039,138 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	@DomEvent("iron-activate")
-	public static class IronActivateEvent
+	public static class IronActivateEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public IronActivateEvent(GeneratedPaperTabs source, boolean fromClient) {
+				ComponentEvent<R> {
+		public IronActivateEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronActivateListener(
-			ComponentEventListener<IronActivateEvent> listener) {
-		return addListener(IronActivateEvent.class, listener);
+			ComponentEventListener<IronActivateEvent<R>> listener) {
+		return addListener(IronActivateEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("iron-deselect")
-	public static class IronDeselectEvent
+	public static class IronDeselectEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public IronDeselectEvent(GeneratedPaperTabs source, boolean fromClient) {
+				ComponentEvent<R> {
+		public IronDeselectEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronDeselectListener(
-			ComponentEventListener<IronDeselectEvent> listener) {
-		return addListener(IronDeselectEvent.class, listener);
+			ComponentEventListener<IronDeselectEvent<R>> listener) {
+		return addListener(IronDeselectEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("iron-items-changed")
-	public static class IronItemsChangeEvent
+	public static class IronItemsChangeEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public IronItemsChangeEvent(GeneratedPaperTabs source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public IronItemsChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronItemsChangeListener(
-			ComponentEventListener<IronItemsChangeEvent> listener) {
-		return addListener(IronItemsChangeEvent.class, listener);
+			ComponentEventListener<IronItemsChangeEvent<R>> listener) {
+		return addListener(IronItemsChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("iron-select")
-	public static class IronSelectEvent
+	public static class IronSelectEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public IronSelectEvent(GeneratedPaperTabs source, boolean fromClient) {
+				ComponentEvent<R> {
+		public IronSelectEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronSelectListener(
-			ComponentEventListener<IronSelectEvent> listener) {
-		return addListener(IronSelectEvent.class, listener);
+			ComponentEventListener<IronSelectEvent<R>> listener) {
+		return addListener(IronSelectEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("selected-changed")
-	public static class SelectedChangeEvent
+	public static class SelectedChangeEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedChangeEvent(GeneratedPaperTabs source, boolean fromClient) {
+				ComponentEvent<R> {
+		public SelectedChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addSelectedChangeListener(
-			ComponentEventListener<SelectedChangeEvent> listener) {
-		return addListener(SelectedChangeEvent.class, listener);
+			ComponentEventListener<SelectedChangeEvent<R>> listener) {
+		return addListener(SelectedChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangeEvent
+	public static class SelectedItemChangeEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedItemChangeEvent(GeneratedPaperTabs source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public SelectedItemChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addSelectedItemChangeListener(
-			ComponentEventListener<SelectedItemChangeEvent> listener) {
-		return addListener(SelectedItemChangeEvent.class, listener);
+			ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
+		return addListener(SelectedItemChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("items-changed")
-	public static class ItemsChangeEvent
+	public static class ItemsChangeEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public ItemsChangeEvent(GeneratedPaperTabs source, boolean fromClient) {
+				ComponentEvent<R> {
+		public ItemsChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addItemsChangeListener(
-			ComponentEventListener<ItemsChangeEvent> listener) {
-		return addListener(ItemsChangeEvent.class, listener);
+			ComponentEventListener<ItemsChangeEvent<R>> listener) {
+		return addListener(ItemsChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("selected-values-changed")
-	public static class SelectedValuesChangeEvent
+	public static class SelectedValuesChangeEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedValuesChangeEvent(GeneratedPaperTabs source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public SelectedValuesChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addSelectedValuesChangeListener(
-			ComponentEventListener<SelectedValuesChangeEvent> listener) {
-		return addListener(SelectedValuesChangeEvent.class, listener);
+			ComponentEventListener<SelectedValuesChangeEvent<R>> listener) {
+		return addListener(SelectedValuesChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("selected-items-changed")
-	public static class SelectedItemsChangeEvent
+	public static class SelectedItemsChangeEvent<R extends GeneratedPaperTabs<R>>
 			extends
-				ComponentEvent<GeneratedPaperTabs> {
-		public SelectedItemsChangeEvent(GeneratedPaperTabs source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public SelectedItemsChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addSelectedItemsChangeListener(
-			ComponentEventListener<SelectedItemsChangeEvent> listener) {
-		return addListener(SelectedItemsChangeEvent.class, listener);
+			ComponentEventListener<SelectedItemsChangeEvent<R>> listener) {
+		return addListener(SelectedItemsChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	/**

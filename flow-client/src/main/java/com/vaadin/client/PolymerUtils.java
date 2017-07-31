@@ -20,6 +20,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -125,7 +126,7 @@ public final class PolymerUtils {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
             } else if (node.hasFeature(NodeFeatures.BASIC_TYPE_VALUE)) {
                 return convertToJson(node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
-                        .getProperty(NodeFeatures.VALUE));
+                        .getProperty(NodeProperties.VALUE));
             }
             assert feature != null : "Don't know how to convert node without map or list features";
 

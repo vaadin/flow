@@ -29,6 +29,7 @@ import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.client.flow.template.TestElementTemplateNode;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -168,7 +169,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testBindWrongTagThrows() {
-        elementData.getProperty(NodeFeatures.TAG).setValue("span");
+        elementData.getProperty(NodeProperties.TAG).setValue("span");
 
         try {
             Binder.bind(node, element);
@@ -178,7 +179,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testBindRightTagOk() {
-        elementData.getProperty(NodeFeatures.TAG).setValue("div");
+        elementData.getProperty(NodeProperties.TAG).setValue("div");
 
         Binder.bind(node, element);
     }
@@ -229,7 +230,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         StateNode childNode = new StateNode(nextId++, node.getTree());
 
         childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue(tag);
+                .getProperty(NodeProperties.TAG).setValue(tag);
         if (id != null) {
             childNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty("id")
                     .setValue(id);
@@ -445,7 +446,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         children.add(0, childNode);
 
         childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("span");
+                .getProperty(NodeProperties.TAG).setValue("span");
 
         // Should not throw
         Reactive.flush();
@@ -543,7 +544,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         StateNode textNode = new StateNode(nextId++, node.getTree());
         MapProperty textProperty = textNode.getMap(NodeFeatures.TEXT_NODE)
-                .getProperty(NodeFeatures.TEXT);
+                .getProperty(NodeProperties.TEXT);
 
         textProperty.setValue("foo");
 
@@ -563,7 +564,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         StateNode textNode = new StateNode(nextId++, node.getTree());
-        textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeFeatures.TEXT)
+        textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeProperties.TEXT)
                 .setValue("foo");
 
         node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, textNode);
@@ -693,12 +694,12 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         StateNode templateStateNode = new StateNode(345, stateTree);
         templateStateNode.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
+                .getProperty(NodeProperties.ROOT_TEMPLATE_ID)
                 .setValue(Double.valueOf(templateId));
 
         StateNode parentElementNode = new StateNode(94, stateTree);
         parentElementNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).setValue("div");
+                .getProperty(NodeProperties.TAG).setValue("div");
         parentElementNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0,
                 templateStateNode);
 
@@ -717,7 +718,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         StateNode childNode = createChildNode("child");
 
         String tag = (String) childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).getValue();
+                .getProperty(NodeProperties.TAG).getValue();
 
         ExistingElementMap existingElementMap = node.getTree().getRegistry()
                 .getExistingElementMap();
@@ -750,7 +751,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
         StateNode shadowRoot = new StateNode(34, tree);
-        map.getProperty(NodeFeatures.SHADOW_ROOT).setValue(shadowRoot);
+        map.getProperty(NodeProperties.SHADOW_ROOT).setValue(shadowRoot);
 
         NodeList virtualChildren = shadowRoot
                 .getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
@@ -761,7 +762,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         StateNode childNode = createChildNode("childElement");
 
         String tag = (String) childNode.getMap(NodeFeatures.ELEMENT_DATA)
-                .getProperty(NodeFeatures.TAG).getValue();
+                .getProperty(NodeProperties.TAG).getValue();
 
         ExistingElementMap existingElementMap = node.getTree().getRegistry()
                 .getExistingElementMap();

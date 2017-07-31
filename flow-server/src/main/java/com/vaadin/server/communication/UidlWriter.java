@@ -45,7 +45,7 @@ import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.SystemMessages;
@@ -316,7 +316,7 @@ public class UidlWriter implements Serializable {
         if (change instanceof MapPutChange) {
             MapPutChange put = (MapPutChange) change;
             if (put.getFeature() == TemplateMap.class
-                    && put.getKey().equals(NodeFeatures.ROOT_TEMPLATE_ID)) {
+                    && put.getKey().equals(NodeProperties.ROOT_TEMPLATE_ID)) {
                 Integer id = (Integer) put.getValue();
                 TemplateNode templateNode = TemplateNode.get(id.intValue());
 

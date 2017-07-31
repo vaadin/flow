@@ -61,8 +61,8 @@ import com.vaadin.annotations.HtmlImport;
  * {@code --paper-spinner-stroke-width} | The width of the spinner stroke | 3px
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: paper-spinner#2.0.0", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: paper-spinner#2.0.0", "Flow#0.1.16-SNAPSHOT"})
 @Tag("paper-spinner")
 @HtmlImport("frontend://bower_components/paper-spinner/paper-spinner.html")
 public class GeneratedPaperSpinner<R extends GeneratedPaperSpinner<R>>
