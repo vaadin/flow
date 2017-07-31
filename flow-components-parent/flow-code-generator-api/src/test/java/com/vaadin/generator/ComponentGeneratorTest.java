@@ -606,13 +606,13 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed1\" method",
-                generatedClass.contains("public void addToNamed1("));
+                generatedClass.contains("public R addToNamed1("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed2\" method",
-                generatedClass.contains("public void addToNamed2("));
+                generatedClass.contains("public R addToNamed2("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamedThree\" method",
-                generatedClass.contains("public void addToNamedThree("));
+                generatedClass.contains("public R addToNamedThree("));
         Assert.assertTrue(
                 "The generated class should contain the \"remove\" method",
                 generatedClass.contains("public void remove("));
@@ -634,13 +634,13 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed1\" method",
-                generatedClass.contains("public void addToNamed1("));
+                generatedClass.contains("public R addToNamed1("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamed2\" method",
-                generatedClass.contains("public void addToNamed2("));
+                generatedClass.contains("public R addToNamed2("));
         Assert.assertTrue(
                 "The generated class should contain the \"addToNamedThree\" method",
-                generatedClass.contains("public void addToNamedThree("));
+                generatedClass.contains("public R addToNamedThree("));
         Assert.assertTrue(
                 "The generated class should contain the \"remove\" method",
                 generatedClass.contains("public void remove("));

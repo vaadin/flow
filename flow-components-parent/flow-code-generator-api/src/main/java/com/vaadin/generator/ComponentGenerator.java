@@ -449,7 +449,7 @@ public class ComponentGenerator {
         String methodName = ComponentGeneratorUtils
                 .generateMethodNameForProperty("addTo", slot);
         MethodSource<JavaClassSource> method = javaClass.addMethod().setPublic()
-                .setReturnTypeVoid().setName(methodName);
+                .setName(methodName);
         method.addParameter(Component.class, "components").setVarArgs(true);
         method.setBody(String.format(
                 "for (Component component : components) {%n component.getElement().setAttribute(\"slot\", \"%s\");%n getElement().appendChild(component.getElement());%n }",
@@ -463,6 +463,7 @@ public class ComponentGenerator {
                         "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
                 .addTagValue(JAVADOC_SEE,
                         "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
+        addFluentReturnToMethod(method);
     }
 
     private void generateRemovers(JavaClassSource javaClass,
@@ -864,7 +865,7 @@ public class ComponentGenerator {
                     "property the property to set");
 
             if (fluentSetters) {
-                addFluentReturnToSetter(method);
+                addFluentReturnToMethod(method);
 
                 if ("value".equals(propertyJavaName)
                         && shouldImplementHasValue(metadata)) {
@@ -902,7 +903,7 @@ public class ComponentGenerator {
                                 setterType.getSimpleName()));
 
                 if (fluentSetters) {
-                    addFluentReturnToSetter(method);
+                    addFluentReturnToMethod(method);
 
                     if ("value".equals(propertyJavaName)
                             && shouldImplementHasValue(metadata)) {
@@ -957,11 +958,11 @@ public class ComponentGenerator {
             overloadMethod.getJavaDoc().addTagValue(JAVADOC_SEE,
                     "#setValue(Double)");
 
-            addFluentReturnToSetter(overloadMethod);
+            addFluentReturnToMethod(overloadMethod);
         }
     }
 
-    private void addFluentReturnToSetter(MethodSource<JavaClassSource> method) {
+    private void addFluentReturnToMethod(MethodSource<JavaClassSource> method) {
         method.setReturnType(GENERIC_TYPE);
         method.setBody(method.getBody() + "return get();");
         method.getJavaDoc().addTagValue("@return",
