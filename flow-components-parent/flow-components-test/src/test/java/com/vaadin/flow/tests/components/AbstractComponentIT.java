@@ -23,8 +23,17 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public abstract class AbstractComponentIT extends ChromeBrowserTest {
 
     @Override
+    public void checkIfServerAvailable() {
+    }
+
+    @Override
     protected String getTestPath() {
-        return "/" + getClass().getSimpleName();
+        String viewName = getClass().getSimpleName();
+        if (viewName.endsWith("Test")) {
+            return "/" + viewName.substring(0,
+                    viewName.length() - "Test".length());
+        }
+        return "/" + viewName;
     }
 
     @Override
