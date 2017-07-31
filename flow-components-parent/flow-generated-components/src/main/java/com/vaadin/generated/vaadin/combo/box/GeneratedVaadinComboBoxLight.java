@@ -66,8 +66,8 @@ import com.vaadin.ui.HasComponents;
  * </vaadin-combo-box-light> {@code }`
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.15-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-light#2.0.0", "Flow#0.1.15-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"WebComponent: vaadin-combo-box-light#2.0.0", "Flow#0.1.16-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
@@ -807,104 +807,104 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	}
 
 	@DomEvent("iron-form-element-register")
-	public static class IronFormElementRegisterEvent
+	public static class IronFormElementRegisterEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public IronFormElementRegisterEvent(
-				GeneratedVaadinComboBoxLight source, boolean fromClient) {
+				ComponentEvent<R> {
+		public IronFormElementRegisterEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronFormElementRegisterListener(
-			ComponentEventListener<IronFormElementRegisterEvent> listener) {
-		return addListener(IronFormElementRegisterEvent.class, listener);
+			ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
+		return addListener(IronFormElementRegisterEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("iron-form-element-unregister")
-	public static class IronFormElementUnregisterEvent
+	public static class IronFormElementUnregisterEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public IronFormElementUnregisterEvent(
-				GeneratedVaadinComboBoxLight source, boolean fromClient) {
+				ComponentEvent<R> {
+		public IronFormElementUnregisterEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addIronFormElementUnregisterListener(
-			ComponentEventListener<IronFormElementUnregisterEvent> listener) {
-		return addListener(IronFormElementUnregisterEvent.class, listener);
+			ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
+		return addListener(IronFormElementUnregisterEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("vaadin-dropdown-closed")
-	public static class VaadinDropdownClosedEvent
+	public static class VaadinDropdownClosedEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public VaadinDropdownClosedEvent(GeneratedVaadinComboBoxLight source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public VaadinDropdownClosedEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addVaadinDropdownClosedListener(
-			ComponentEventListener<VaadinDropdownClosedEvent> listener) {
-		return addListener(VaadinDropdownClosedEvent.class, listener);
+			ComponentEventListener<VaadinDropdownClosedEvent<R>> listener) {
+		return addListener(VaadinDropdownClosedEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("vaadin-dropdown-opened")
-	public static class VaadinDropdownOpenedEvent
+	public static class VaadinDropdownOpenedEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public VaadinDropdownOpenedEvent(GeneratedVaadinComboBoxLight source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public VaadinDropdownOpenedEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addVaadinDropdownOpenedListener(
-			ComponentEventListener<VaadinDropdownOpenedEvent> listener) {
-		return addListener(VaadinDropdownOpenedEvent.class, listener);
+			ComponentEventListener<VaadinDropdownOpenedEvent<R>> listener) {
+		return addListener(VaadinDropdownOpenedEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("opened-changed")
-	public static class OpenedChangeEvent
+	public static class OpenedChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public OpenedChangeEvent(GeneratedVaadinComboBoxLight source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public OpenedChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addOpenedChangeListener(
-			ComponentEventListener<OpenedChangeEvent> listener) {
-		return addListener(OpenedChangeEvent.class, listener);
+			ComponentEventListener<OpenedChangeEvent<R>> listener) {
+		return addListener(OpenedChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("filter-changed")
-	public static class FilterChangeEvent
+	public static class FilterChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public FilterChangeEvent(GeneratedVaadinComboBoxLight source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public FilterChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addFilterChangeListener(
-			ComponentEventListener<FilterChangeEvent> listener) {
-		return addListener(FilterChangeEvent.class, listener);
+			ComponentEventListener<FilterChangeEvent<R>> listener) {
+		return addListener(FilterChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangeEvent
+	public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
+				ComponentEvent<R> {
 		private final JsonObject detail;
 		private final JsonObject detailValue;
 
 		public SelectedItemChangeEvent(
-				GeneratedVaadinComboBoxLight source,
+				R source,
 				boolean fromClient,
 				@EventData("event.detail") elemental.json.JsonObject detail,
 				@EventData("event.detail.value") elemental.json.JsonObject detailValue) {
@@ -923,33 +923,32 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	}
 
 	public Registration addSelectedItemChangeListener(
-			ComponentEventListener<SelectedItemChangeEvent> listener) {
-		return addListener(SelectedItemChangeEvent.class, listener);
+			ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
+		return addListener(SelectedItemChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("change")
-	public static class ChangeEvent
+	public static class ChangeEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
-		public ChangeEvent(GeneratedVaadinComboBoxLight source,
-				boolean fromClient) {
+				ComponentEvent<R> {
+		public ChangeEvent(R source, boolean fromClient) {
 			super(source, fromClient);
 		}
 	}
 
 	public Registration addChangeListener(
-			ComponentEventListener<ChangeEvent> listener) {
-		return addListener(ChangeEvent.class, listener);
+			ComponentEventListener<ChangeEvent<R>> listener) {
+		return addListener(ChangeEvent.class, (ComponentEventListener) listener);
 	}
 
 	@DomEvent("custom-value-set")
-	public static class CustomValueSetEvent
+	public static class CustomValueSetEvent<R extends GeneratedVaadinComboBoxLight<R>>
 			extends
-				ComponentEvent<GeneratedVaadinComboBoxLight> {
+				ComponentEvent<R> {
 		private final String detail;
 
-		public CustomValueSetEvent(GeneratedVaadinComboBoxLight source,
-				boolean fromClient,
+		public CustomValueSetEvent(R source, boolean fromClient,
 				@EventData("event.detail") java.lang.String detail) {
 			super(source, fromClient);
 			this.detail = detail;
@@ -961,8 +960,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	}
 
 	public Registration addCustomValueSetListener(
-			ComponentEventListener<CustomValueSetEvent> listener) {
-		return addListener(CustomValueSetEvent.class, listener);
+			ComponentEventListener<CustomValueSetEvent<R>> listener) {
+		return addListener(CustomValueSetEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	/**

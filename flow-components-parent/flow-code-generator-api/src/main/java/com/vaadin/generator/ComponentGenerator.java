@@ -842,8 +842,7 @@ public class ComponentGenerator {
             // the getter already created the nested pojo, so here we just need
             // to get the name
             String nestedClassName = ComponentGeneratorUtils
-                    .generateValidJavaClassName(
-                            propertyJavaName + "-property");
+                    .generateValidJavaClassName(propertyJavaName + "-property");
 
             MethodSource<JavaClassSource> method = javaClass.addMethod()
                     .setName(ComponentGeneratorUtils
@@ -1075,7 +1074,7 @@ public class ComponentGenerator {
             ComponentMetadata metadata, ComponentEventData event) {
         String eventJavaApiName = getJavaNameForPropertyChangeEvent(metadata,
                 event.getName());
-        
+
         // verify whether the HasValue interface is implemented.
         if ("value-changed".equals(eventJavaApiName)
                 && shouldImplementHasValue(metadata)) {
@@ -1085,7 +1084,7 @@ public class ComponentGenerator {
             }
             return;
         }
-        
+
         eventJavaApiName = ComponentGeneratorUtils
                 .formatStringToValidJavaIdentifier(eventJavaApiName);
 
@@ -1104,11 +1103,11 @@ public class ComponentGenerator {
                 .setName("add"
                         + StringUtils.capitalize(eventJavaApiName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
-        method.addParameter(
-                "ComponentEventListener<" + eventListener.getName() + ">",
-                "listener");
+        method.addParameter("ComponentEventListener<" + eventListener.getName()
+                + "<" + GENERIC_TYPE + ">" + ">", "listener");
 
-        method.setBody(String.format("return addListener(%s.class, listener);",
+        method.setBody(String.format(
+                "return addListener(%s.class, (ComponentEventListener) listener);",
                 eventListener.getName()));
     }
 
@@ -1126,8 +1125,9 @@ public class ComponentGenerator {
             String javaEventName) {
         String eventClassName = StringUtils.capitalize(javaEventName);
         String eventListenerString = String.format(
-                "public static class %sEvent extends ComponentEvent<%s> {}",
-                eventClassName, javaClass.getName());
+                "public static class %sEvent<%s extends %s<%s>> extends ComponentEvent<%s> {}",
+                eventClassName, GENERIC_TYPE, javaClass.getName(), GENERIC_TYPE,
+                GENERIC_TYPE);
 
         JavaClassSource eventListener = Roaster.parse(JavaClassSource.class,
                 eventListenerString);
@@ -1135,7 +1135,7 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> eventConstructor = eventListener
                 .addMethod().setConstructor(true).setPublic()
                 .setBody("super(source, fromClient);");
-        eventConstructor.addParameter(javaClass.getName(), "source");
+        eventConstructor.addParameter(GENERIC_TYPE, "source");
         eventConstructor.addParameter("boolean", "fromClient");
 
         for (ComponentPropertyBaseData property : event.getProperties()) {
@@ -1255,7 +1255,8 @@ public class ComponentGenerator {
         return javaApiName;
     }
 
-    private String getJavaNameForPropertyChangeEvent(ComponentMetadata metadata, String propertyChangeEventName) {
+    private String getJavaNameForPropertyChangeEvent(ComponentMetadata metadata,
+            String propertyChangeEventName) {
         if (!propertyChangeEventName.endsWith(PROPERTY_CHANGE_EVENT_POSTFIX)) {
             // not a property change event, just pass original value through
             return propertyChangeEventName;
