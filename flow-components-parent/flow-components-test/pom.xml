@@ -266,9 +266,11 @@
                         <artifactId>maven-war-plugin</artifactId>
                         <configuration>
                             <webResources>
+                                <!--
                                 <resource>
                                     <directory>${project.basedir}/${webapp.directory}</directory>
                                 </resource>
+                                -->
                                 <resource>
                                     <directory>${frontend.working.directory}</directory>
                                     <excludes>
