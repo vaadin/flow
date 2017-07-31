@@ -66,6 +66,7 @@
             <modules>
                 <module>flow-generated-components</module>
                 <module>demo-flow-components</module>
+                <module>flow-components-test</module>
             </modules>
         </profile>
     </profiles>
