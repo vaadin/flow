@@ -227,7 +227,7 @@ public class VaadinComboBoxView extends DemoView {
                 message.setText("No fruit selected");
             } else {
                 message.setText("Selected fruit: "
-                        + comboBox.getSelectedItem().getName());
+                        + event.getSource().getSelectedItem().getName());
             }
         });
         // end-source-example
