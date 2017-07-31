@@ -327,6 +327,12 @@
                     <artifactId>maven-war-plugin</artifactId>
                     <version>${maven.war.plugin.version}</version>
                     <configuration>
+                        <archive>
+                            <manifestEntries>
+                                <Implementation-Title>${project.name}</Implementation-Title>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                            </manifestEntries>
+                        </archive>
                         <packagingExcludes>**/node_modules/,**/node/,**/etc/,**/bower.json,**/package.json
                         </packagingExcludes>
                     </configuration>
