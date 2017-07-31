@@ -24,6 +24,7 @@ import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.shared.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -176,7 +177,7 @@ public final class ExecuteJavaScriptElementUtils {
         if (existingElement != null && hasTag(existingElement, tagName)) {
             NodeMap map = parent.getMap(NodeFeatures.SHADOW_ROOT_DATA);
             StateNode shadowRootNode = (StateNode) map
-                    .getProperty(NodeFeatures.SHADOW_ROOT).getValue();
+                    .getProperty(NodeProperties.SHADOW_ROOT).getValue();
             NodeList list = shadowRootNode
                     .getList(NodeFeatures.ELEMENT_CHILDREN);
             Integer existingId = null;
