@@ -225,12 +225,14 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToTop(com.vaadin.ui.Component... components) {
+	public R addToTop(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "top");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
@@ -245,12 +247,14 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToMiddle(com.vaadin.ui.Component... components) {
+	public R addToMiddle(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "middle");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
@@ -265,12 +269,14 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToBottom(com.vaadin.ui.Component... components) {
+	public R addToBottom(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "bottom");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
