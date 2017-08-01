@@ -11,7 +11,7 @@
     <name>Flow components parent project</name>
     <description>Modules for Flow components based on code generation</description>
     <packaging>pom</packaging>
-    
+
     <modules>
         <module>flow-components-commons</module>
         <module>flow-code-generator-api</module>
@@ -37,7 +37,7 @@
                 <artifactId>flow-server</artifactId>
                 <version>${flow.version}</version>
             </dependency>
-        </dependencies>        
+        </dependencies>
     </dependencyManagement>
 
 
@@ -48,11 +48,11 @@
             <properties>
                 <build.demos.alone>false</build.demos.alone>
             </properties>
-            
+
             <modules>
                 <module>flow-webcomponent-api-analyzer</module>
                 <module>flow-generated-components</module>
-                <module>flow-components-demo</module>
+                <module>demo-flow-components</module>
             </modules>
         </profile>
 
@@ -65,7 +65,7 @@
             </activation>
             <modules>
                 <module>flow-generated-components</module>
-                <module>flow-components-demo</module>
+                <module>demo-flow-components</module>
             </modules>
         </profile>
     </profiles>

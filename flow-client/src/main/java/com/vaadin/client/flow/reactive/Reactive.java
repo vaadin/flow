@@ -197,7 +197,7 @@ public class Reactive {
      * @return A {@link Computation} object which can be used to control the
      *         evaluation
      */
-    public static Computation runWhenDepedenciesChange(Command command) {
+    public static Computation runWhenDependenciesChange(Command command) {
         return new Computation() {
             @Override
             protected void doRecompute() {

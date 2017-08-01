@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.PolymerUtils;
@@ -49,6 +50,7 @@ import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.dom.ShadowRoot;
 import elemental.events.Event;
 import elemental.events.EventRemover;
 import elemental.json.Json;
@@ -320,11 +322,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
-        Computation computation = Reactive.runWhenDepedenciesChange(
-                () -> stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                        .forEachProperty((property, key) -> bindSubProperty(
-                                stateNode, htmlNode, path, property)));
-        stateNode.addUnregisterListener(event -> computation.stop());
+        Command command = () -> stateNode
+                .getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .forEachProperty((property, key) -> bindSubProperty(stateNode,
+                        htmlNode, path, property));
+        invokeWhenNodeIsConstructed(command, stateNode);
     }
 
     private void bindSubProperty(StateNode stateNode, Element htmlNode,
@@ -399,12 +401,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             if (feature != null) {
                 feature.addPropertyAddListener(event -> {
-                    Computation computation = Reactive.runWhenDepedenciesChange(
-                            () -> PolymerUtils.setListValueByIndex(htmlNode,
-                                    polymerModelPath, subNodeIndex,
-                                    PolymerUtils.convertToJson(
-                                            event.getProperty())));
-                    stateNode.addUnregisterListener(e -> computation.stop());
+                    Command command = () -> PolymerUtils.setListValueByIndex(
+                            htmlNode, polymerModelPath, subNodeIndex,
+                            PolymerUtils.convertToJson(event.getProperty()));
+                    invokeWhenNodeIsConstructed(command, stateNode);
                 });
             }
         }
@@ -440,7 +440,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert !bindings.has(name) : "There's already a binding for " + name;
 
         Computation computation = Reactive
-                .runWhenDepedenciesChange(() -> user.use(property));
+                .runWhenDependenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
     }
@@ -576,8 +576,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
-
-            context.binderContext.bind(childNode, childNode.getDomNode());
+            if (childNode.getDomNode() == null) {
+                invokeWhenNodeIsConstructed(
+                        getBindingCommand(context, childNode), childNode);
+            } else {
+                context.binderContext.bind(childNode, childNode.getDomNode());
+            }
         }
 
         return children.addSpliceListener(e -> {
@@ -589,6 +593,75 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Reactive.addFlushListener(
                     () -> handleVirtualChildrenSplice(e, context));
         });
+    }
+
+    private Command getBindingCommand(BindingContext context,
+            StateNode childNode) {
+        Node parentNode = context.node.getDomNode();
+        if (parentNode instanceof ShadowRoot) {
+            Optional<String> childId = extractNodeId(childNode);
+            if (childId.isPresent()) {
+                return () -> bindElementFromShadowRootById(
+                        context.binderContext, childNode, childId.get(),
+                        (ShadowRoot) parentNode);
+            } else {
+                String childTag = getTag(childNode);
+                if (childTag == null) {
+                    throw new IllegalStateException(
+                            "Received element with no id and tag information, element node id = '"
+                                    + childNode.getId() + "', parent node = " + parentNode);
+                }
+                return () -> bindElementFromShadowRootByTagName(
+                        context.binderContext, childNode, childTag,
+                        (ShadowRoot) parentNode);
+            }
+        } else {
+            throw new IllegalStateException(
+                    "Expected parent element to be a shadow root to bind elements to, but got "
+                            + parentNode);
+        }
+    }
+
+    private static Optional<String> extractNodeId(StateNode node) {
+        if (node.hasFeature(NodeFeatures.ELEMENT_ATTRIBUTES)) {
+            return Optional.ofNullable(node
+                    .getMap(NodeFeatures.ELEMENT_ATTRIBUTES)
+                    .getProperty(NodeProperties.ID).getValueOrDefault(null));
+        }
+        return Optional.empty();
+    }
+
+    private void invokeWhenNodeIsConstructed(Command command, StateNode node) {
+        Computation computation = Reactive.runWhenDependenciesChange(command);
+        node.addUnregisterListener(event -> computation.stop());
+    }
+
+    private static void bindElementFromShadowRootByTagName(
+            BinderContext binderContext, StateNode childNode, String childTag,
+            ShadowRoot shadowRoot) {
+        Node shadowRootElement = PolymerUtils
+                .searchForElementInShadowRoot(shadowRoot, childTag);
+        if (shadowRootElement == null) {
+            throw new IllegalStateException(
+                    "Could not locate element imported with @Id annotation, tag = '"
+                            + childTag
+                            + "', in shadow root of a parent element");
+        }
+        binderContext.bind(childNode, shadowRootElement);
+    }
+
+    private static void bindElementFromShadowRootById(
+            BinderContext binderContext, StateNode childNode, String childId,
+            ShadowRoot shadowRoot) {
+        Node shadowRootElement = PolymerUtils
+                .getElementInShadowRootById(shadowRoot, childId);
+        if (shadowRootElement == null) {
+            throw new IllegalStateException(
+                    "Could not locate element imported with @Id annotation, id = '"
+                            + childId
+                            + "', in shadow root of a parent element");
+        }
+        binderContext.bind(childNode, shadowRootElement);
     }
 
     private void handleChildrenSplice(ListSpliceEvent event,
@@ -607,7 +680,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         JsArray<?> add = event.getAdd();
-        if (add.length() != 0) {
+        if (!add.isEmpty()) {
             addChildren(event.getIndex(), context, add);
         }
     }
@@ -677,7 +750,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         // Actually removing of a virtual element from the dom is not supported.
 
         JsArray<?> add = event.getAdd();
-        if (add.length() != 0) {
+        if (!add.isEmpty()) {
             for (int i = 0; i < add.length(); i++) {
                 StateNode newChild = (StateNode) add.get(i);
 
@@ -731,7 +804,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         String name = eventHandlerProperty.getName();
         assert !context.listenerBindings.has(name);
 
-        Computation computation = Reactive.runWhenDepedenciesChange(() -> {
+        Computation computation = Reactive.runWhenDependenciesChange(() -> {
             boolean hasValue = eventHandlerProperty.hasValue();
             boolean hasListener = context.listenerRemovers.has(name);
 
