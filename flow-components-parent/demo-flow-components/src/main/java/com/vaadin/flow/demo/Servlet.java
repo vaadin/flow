@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.demo;
 
-import javax.servlet.annotation.WebServlet;
 import java.util.List;
+
+import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.demo.Servlet.MyRouterConfigurator;
