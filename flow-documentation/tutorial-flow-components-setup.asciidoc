@@ -61,8 +61,8 @@ server-side, except that the final `war` size will be larger for no reason.
 
 == Demo and code samples
 
-The Flow generated components demo at http://flow.app.fi contains examples of
+The Flow components demo at http://flow.app.fi contains examples of
 the usage of each supported component, with code samples for common use cases.
 
 You can also download the demo project directly from
-https://github.com/vaadin/flow/tree/master/flow-components-parent/flow-components-demo[GitHub]
+https://github.com/vaadin/flow/tree/master/flow-components-parent/demo-flow-components[GitHub]
