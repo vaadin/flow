@@ -970,7 +970,7 @@ public class ComponentGenerator {
 
     private void generateMethodFor(JavaClassSource javaClass,
             ComponentFunctionData function) {
-        List<List<ComponentType>> typeVariants = FunctionParameterVariantCombinator
+        Set<List<ComponentType>> typeVariants = FunctionParameterVariantCombinator
                 .generateVariants(function);
         Map<ComponentObjectType, JavaClassSource> nestedClassesMap = new HashMap<>();
         for (List<ComponentType> typeVariant : typeVariants) {
