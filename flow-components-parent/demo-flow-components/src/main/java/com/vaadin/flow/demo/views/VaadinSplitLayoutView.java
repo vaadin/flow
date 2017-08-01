@@ -61,12 +61,12 @@ public class VaadinSplitLayoutView extends DemoView {
         // @formatter:off
         // begin-source-example
         // source-example-heading: Layout Combination
-        VaadinSplitLayout layout = new VaadinSplitLayout();
-        VaadinSplitLayout nestedLayout = new VaadinSplitLayout().setVertical(true);
-        layout.addToPrimary(new Label("First content component"));
-        nestedLayout.addToPrimary(new Label("Second content component"));
-        nestedLayout.addToSecondary(new Label("Third content component"));
-        layout.addToSecondary(nestedLayout);
+        VaadinSplitLayout layout = new VaadinSplitLayout()
+        .addToPrimary(new Label("First content component"))
+        .addToSecondary(
+                new VaadinSplitLayout().setVertical(true)
+                        .addToPrimary(new Label("Second content component"))
+                        .addToSecondary(new Label("Third content component")));
         // end-source-example
         // @formatter:on
         addCard(new H3("Layout Combination"), layout);

@@ -201,12 +201,14 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToPrimary(com.vaadin.ui.Component... components) {
+	public R addToPrimary(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "primary");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
@@ -221,12 +223,14 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToSecondary(com.vaadin.ui.Component... components) {
+	public R addToSecondary(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "secondary");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
