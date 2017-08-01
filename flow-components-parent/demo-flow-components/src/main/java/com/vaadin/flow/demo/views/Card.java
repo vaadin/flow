@@ -19,7 +19,6 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.html.HtmlContainer;
 import com.vaadin.ui.Component;
 
