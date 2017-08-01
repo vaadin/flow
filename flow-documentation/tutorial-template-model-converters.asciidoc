@@ -128,7 +128,7 @@ and the converter class:
 public class DateToDateBeanConverter implements ModelConverter<Date, DateBean> {
 
     @Override
-    public DateBean toModel(Date modelValue) {
+    public DateBean toPresentation(Date modelValue) {
         if (modelValue == null) {
             return null;
         }
@@ -142,7 +142,7 @@ public class DateToDateBeanConverter implements ModelConverter<Date, DateBean> {
     }
 
     @Override
-    public Date toApplication(DateBean presentationValue) {
+    public Date toModel(DateBean presentationValue) {
         if (presentationValue == null) {
             return null;
         }
