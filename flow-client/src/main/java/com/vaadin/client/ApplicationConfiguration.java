@@ -26,7 +26,6 @@ import com.vaadin.client.bootstrap.ErrorMessage;
  * @author Vaadin Ltd
  */
 public class ApplicationConfiguration {
-
     private String applicationId;
     private String contextRootUrl;
     private String frontendRootUrl;
@@ -37,9 +36,9 @@ public class ApplicationConfiguration {
     private ErrorMessage sessionExpiredError;
     private int heartbeatInterval;
 
-    private boolean widgetsetVersionSent = false;
+    private boolean widgetsetVersionSent;
 
-    private boolean productionMode = false;
+    private boolean productionMode;
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
@@ -289,6 +288,7 @@ public class ApplicationConfiguration {
      */
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
+        Console.setProductionMode(productionMode);
     }
 
     /**
