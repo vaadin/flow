@@ -101,7 +101,7 @@ public class ComputationTest {
 
         TestReactiveEventRouter otherRouter = new TestReactiveEventRouter();
 
-        Reactive.runWhenDepedenciesChange(() -> {
+        Reactive.runWhenDependenciesChange(() -> {
             int count = computeCount.incrementAndGet();
             if (count % 2 == 0) {
                 router.registerRead();
@@ -143,7 +143,7 @@ public class ComputationTest {
 
     @Test
     public void testReactiveListeners() {
-        Reactive.runWhenDepedenciesChange(() -> {
+        Reactive.runWhenDependenciesChange(() -> {
             if (computeCount.get() == 0) {
                 router.addListener(new ReactiveValueChangeListener() {
                     @Override
@@ -182,7 +182,7 @@ public class ComputationTest {
 
     @Test
     public void escapeReactive() {
-        Reactive.runWhenDepedenciesChange(() -> {
+        Reactive.runWhenDependenciesChange(() -> {
             computeCount.incrementAndGet();
             Reactive.runWithComputation(null, router::registerRead);
         });

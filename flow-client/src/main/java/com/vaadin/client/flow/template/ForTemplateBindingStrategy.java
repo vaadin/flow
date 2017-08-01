@@ -187,7 +187,7 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
         ForTemplateNode templateNode = (ForTemplateNode) getTemplateNode(
                 modelNode.getTree(), templateId);
         Computation computation = Reactive
-                .runWhenDepedenciesChange(new ForTemplateNodeUpdate(context,
+                .runWhenDependenciesChange(new ForTemplateNodeUpdate(context,
                         anchor, modelNode, templateNode));
         modelNode.addUnregisterListener(event -> computation.stop());
     }
