@@ -706,12 +706,14 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToPrefix(com.vaadin.ui.Component... components) {
+	public R addToPrefix(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "prefix");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
@@ -726,12 +728,14 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToSuffix(com.vaadin.ui.Component... components) {
+	public R addToSuffix(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "suffix");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	/**
