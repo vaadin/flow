@@ -52,26 +52,22 @@ import elemental.json.JsonArray;
  *
  */
 public class TemplateInitializer {
-
-    private final PolymerTemplate<?> template;
-
-    // id to Element map
-    private final Map<String, Element> registeredCustomElements = new HashMap<>();
-
-    @SuppressWarnings("rawtypes")
-    private static final ReflectionCache<PolymerTemplate, ParserData> CACHE = new ReflectionCache<>(
+    private static final ReflectionCache<PolymerTemplate<?>, ParserData> CACHE = new ReflectionCache<>(
             clazz -> new ParserData());
 
-    private boolean useCache;
+    private final PolymerTemplate<?> template;
+    private final Class<? extends PolymerTemplate<?>> templateClass;
 
-    private ParserData parseData;
+    private final Map<String, Element> registeredElementIdToCustomElement = new HashMap<>();
+    private final boolean useCache;
+    private final ParserData parserData;
 
     private com.vaadin.external.jsoup.nodes.Element contentElement;
 
     private static class SubTemplateData {
-        private String id;
-        private String tag;
-        private JsonArray path;
+        private final String id;
+        private final String tag;
+        private final JsonArray path;
 
         private SubTemplateData(String id, String tag, JsonArray path) {
             this.id = id;
@@ -82,9 +78,7 @@ public class TemplateInitializer {
 
     private static class ParserData
             implements Function<String, Optional<String>> {
-
         private final Map<String, String> tagById = new HashMap<>();
-
         private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
 
         @Override
@@ -121,21 +115,18 @@ public class TemplateInitializer {
     public TemplateInitializer(PolymerTemplate<?> template,
             TemplateParser parser) {
         this.template = template;
+        templateClass = (Class<? extends PolymerTemplate<?>>) template
+                .getClass();
 
         boolean productionMode = VaadinService.getCurrent()
                 .getDeploymentConfiguration().isProductionMode();
-        useCache = CACHE.contains(template.getClass()) && productionMode;
-        if (productionMode) {
-            parseData = CACHE.get(template.getClass());
-        } else {
-            // always initialize parseData to avoid check against null
-            parseData = new ParserData();
-        }
+        useCache = CACHE.contains(templateClass) && productionMode;
+        parserData = productionMode ? CACHE.get(templateClass) : new ParserData();
 
         if (useCache) {
             createSubTemplates();
         } else {
-            contentElement = parser.getTemplateContent(template.getClass(),
+            contentElement = parser.getTemplateContent(templateClass,
                     getElement().getTag());
             parseTemplate();
         }
@@ -145,18 +136,17 @@ public class TemplateInitializer {
      * Initializes child elements.
      */
     public void initChildElements() {
-        mapComponents(template.getClass());
+        mapComponents(templateClass);
     }
 
     private void inspectCustomElements(Node node,
-            com.vaadin.external.jsoup.nodes.Element templateRoot,
-            Map<String, Element> registeredCustomElements) {
+            com.vaadin.external.jsoup.nodes.Element templateRoot) {
         if (node instanceof com.vaadin.external.jsoup.nodes.Element) {
             com.vaadin.external.jsoup.nodes.Element element = (com.vaadin.external.jsoup.nodes.Element) node;
 
             requestAttachCustomElement(element, templateRoot);
-            element.children().forEach(child -> inspectCustomElements(child,
-                    templateRoot, registeredCustomElements));
+            element.children().forEach(
+                    child -> inspectCustomElements(child, templateRoot));
         }
     }
 
@@ -164,8 +154,7 @@ public class TemplateInitializer {
         assert contentElement != null;
         Elements templates = contentElement.getElementsByTag("template");
         if (!templates.isEmpty()) {
-            inspectCustomElements(templates.get(0), templates.get(0),
-                    registeredCustomElements);
+            inspectCustomElements(templates.get(0), templates.get(0));
         }
     }
 
@@ -189,7 +178,7 @@ public class TemplateInitializer {
         if (CustomElementRegistry.getInstance()
                 .isRegisteredCustomElement(tag)) {
             if (isInsideTemplate(element, templateRoot)) {
-                throw new IllegalStateException("Couldn't parse the tempalte: "
+                throw new IllegalStateException("Couldn't parse the template: "
                         + "sub-templates are not supported. Sub-template found: \n"
                         + element);
             }
@@ -197,7 +186,7 @@ public class TemplateInitializer {
             String id = element.hasAttr("id") ? element.attr("id") : null;
             JsonArray path = getPath(element, templateRoot);
             assert !useCache;
-            parseData.addSubTemplate(id, tag, path);
+            parserData.addSubTemplate(id, tag, path);
             doRequestAttachCustomElement(id, tag, path);
         }
     }
@@ -209,7 +198,7 @@ public class TemplateInitializer {
         CustomElementRegistry.getInstance().wrapElementIfNeeded(customElement);
 
         if (id != null) {
-            registeredCustomElements.put(id, customElement);
+            registeredElementIdToCustomElement.put(id, customElement);
         }
 
         // make sure that shadow root is available
@@ -261,8 +250,7 @@ public class TemplateInitializer {
             com.vaadin.external.jsoup.nodes.Element child) {
         Elements children = parent.children();
         int index = -1;
-        for (int i = 0; i < children.size(); i++) {
-            com.vaadin.external.jsoup.nodes.Element nextChild = children.get(i);
+        for (com.vaadin.external.jsoup.nodes.Element nextChild : children) {
             if (!"style".equals(nextChild.tagName())) {
                 index++;
             }
@@ -274,16 +262,8 @@ public class TemplateInitializer {
     }
 
     private ShadowRoot getShadowRoot() {
-        Optional<ShadowRoot> shadowRootOptional = getElement().getShadowRoot();
-
-        ShadowRoot shadowRoot;
-
-        if (shadowRootOptional.isPresent()) {
-            shadowRoot = shadowRootOptional.get();
-        } else {
-            shadowRoot = getElement().attachShadow();
-        }
-        return shadowRoot;
+        return getElement().getShadowRoot()
+                .orElseGet(() -> getElement().attachShadow());
     }
 
     /* Map declared fields marked @Id */
@@ -294,13 +274,9 @@ public class TemplateInitializer {
             mapComponents(cls.getSuperclass());
         }
 
-        Stream<Field> annotatedComponentFields = Stream
-                .of(cls.getDeclaredFields())
-                .filter(field -> !field.isSynthetic());
-
-        annotatedComponentFields
+        Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
                 .forEach(field -> tryMapComponentOrElement(field,
-                        registeredCustomElements));
+                        registeredElementIdToCustomElement));
     }
 
     private void tryMapComponentOrElement(Field field,
@@ -332,13 +308,13 @@ public class TemplateInitializer {
 
     private Optional<String> getTagName(String id) {
         if (useCache) {
-            return parseData.apply(id);
+            return parserData.apply(id);
         } else {
             Optional<String> tag = Optional
                     .ofNullable(contentElement.getElementById(id))
                     .map(com.vaadin.external.jsoup.nodes.Element::tagName);
             if (tag.isPresent()) {
-                parseData.addTag(id, tag.get());
+                parserData.addTag(id, tag.get());
             }
             return tag;
         }
@@ -349,7 +325,7 @@ public class TemplateInitializer {
             throw new IllegalArgumentException(
                     "Cannot map the root element of the template. "
                             + "This is always mapped to the template instance itself ("
-                            + template.getClass().getName() + ")");
+                            + templateClass.getName() + ')');
         } else if (element != null) {
             handleAttach(element, field);
         }
@@ -365,7 +341,7 @@ public class TemplateInitializer {
                     "Class '%s' has field '%s' whose type '%s' is annotated with "
                             + "tag '%s' but the element defined in the HTML "
                             + "template with id '%s' has tag name '%s'",
-                    template.getClass().getName(), field.getName(),
+                    templateClass.getName(), field.getName(),
                     fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
         }
@@ -397,13 +373,13 @@ public class TemplateInitializer {
      *            field to attach {@code Element} or {@code Component} to
      */
     private void attachExistingElementById(String tagName, String id,
-            Field field, Map<String, Element> registeredCustomElementss) {
+            Field field, Map<String, Element> registeredCustomElements) {
         if (tagName == null) {
             throw new IllegalArgumentException(
                     "Tag name parameter cannot be null");
         }
 
-        Element element = registeredCustomElementss.get(id);
+        Element element = registeredCustomElements.get(id);
 
         if (element == null) {
             /*
@@ -455,7 +431,7 @@ public class TemplateInitializer {
                     "The field '%s' in '%s' has an @'%s' "
                             + "annotation but the field type '%s' "
                             + "does not extend neither '%s' nor '%s'",
-                    field.getName(), template.getClass().getName(),
+                    field.getName(), templateClass.getName(),
                     Id.class.getSimpleName(), fieldType.getName(),
                     Component.class.getSimpleName(),
                     Element.class.getSimpleName());
@@ -465,7 +441,7 @@ public class TemplateInitializer {
     }
 
     private void createSubTemplates() {
-        parseData.subTemplates
+        parserData.subTemplates
                 .forEach(data -> doRequestAttachCustomElement(data.id, data.tag,
                         data.path));
     }

@@ -27,7 +27,10 @@ import javax.servlet.ServletContext;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.external.jsoup.Jsoup;
+import com.vaadin.external.jsoup.nodes.Comment;
+import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -48,14 +51,12 @@ import com.vaadin.server.WrappedHttpSession;
  *
  */
 public class DefaultTemplateParser implements TemplateParser {
-
-    private static final ReflectionCache<PolymerTemplate, AtomicBoolean> LOG_CACHE = new ReflectionCache<>(
+    private static final ReflectionCache<PolymerTemplate<?>, AtomicBoolean> LOG_CACHE = new ReflectionCache<>(
             clazz -> new AtomicBoolean());
 
-    @SuppressWarnings("rawtypes")
     @Override
-    public Element getTemplateContent(Class<? extends PolymerTemplate> clazz,
-            String tag) {
+    public Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
+                                      String tag) {
         VaadinRequest request = VaadinService.getCurrentRequest();
         WrappedHttpSession session = (WrappedHttpSession) request
                 .getWrappedSession();
@@ -106,7 +107,7 @@ public class DefaultTemplateParser implements TemplateParser {
                 tag, HtmlImport.class.getSimpleName()));
     }
 
-    private String resolvePath(VaadinRequest request, String path) {
+    private static String resolvePath(VaadinRequest request, String path) {
         VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
                 .getAttribute(VaadinUriResolverFactory.class);
         assert uriResolverFactory != null;
@@ -114,7 +115,7 @@ public class DefaultTemplateParser implements TemplateParser {
         return uriResolverFactory.toServletContextPath(request, path);
     }
 
-    private boolean isTemplateImport(Element contentElement, String tag) {
+    private static boolean isTemplateImport(Element contentElement, String tag) {
         if (contentElement == null) {
             return false;
         }
@@ -122,14 +123,29 @@ public class DefaultTemplateParser implements TemplateParser {
                 .anyMatch(element -> tag.equals(element.attr("id")));
     }
 
-    private Element parseHtmlImport(InputStream content, String path) {
+    private static Element parseHtmlImport(InputStream content, String path) {
         assert content != null;
         try {
-            return Jsoup.parse(content, StandardCharsets.UTF_8.name(), "");
+            Document parsedDocument = Jsoup.parse(content, StandardCharsets.UTF_8.name(), "");
+            removeCommentsRecursively(parsedDocument);
+            return parsedDocument;
         } catch (IOException exception) {
             throw new RuntimeException(String.format(
                     "Can't parse the template declared using '%s' path", path),
                     exception);
+        }
+    }
+
+    private static void removeCommentsRecursively(Node node) {
+        int i = 0;
+        while (i < node.childNodes().size()) {
+            Node child = node.childNode(i);
+            if (child instanceof Comment) {
+                child.remove();
+            } else {
+                removeCommentsRecursively(child);
+                i++;
+            }
         }
     }
 
