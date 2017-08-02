@@ -57,7 +57,7 @@ public class ConvertedModelType<A, M extends Serializable>
         @SuppressWarnings("unchecked")
         M wrappedApplicationValue = (M) wrappedModelType
                 .modelToApplication(modelValue);
-        return converter.toApplication(wrappedApplicationValue);
+        return converter.toModel(wrappedApplicationValue);
     }
 
     @Override
@@ -69,19 +69,19 @@ public class ConvertedModelType<A, M extends Serializable>
     public Serializable applicationToModel(Object applicationValue,
             PropertyFilter filter) {
         @SuppressWarnings("unchecked")
-        M convertedValue = converter.toModel((A) applicationValue);
+        M convertedValue = converter.toPresentation((A) applicationValue);
         return wrappedModelType.applicationToModel(convertedValue, filter);
     }
 
     @Override
     public boolean accepts(Type applicationType) {
-        return converter.getApplicationType()
+        return converter.getModelType()
                 .isAssignableFrom((Class<?>) applicationType);
     }
 
     @Override
     public Type getJavaType() {
-        return converter.getApplicationType();
+        return converter.getModelType();
     }
 
     @Override

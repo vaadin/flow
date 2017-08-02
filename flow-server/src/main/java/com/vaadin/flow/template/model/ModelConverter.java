@@ -30,41 +30,23 @@ import com.vaadin.annotations.Convert;
  * 
  * @author Vaadin Ltd
  *
- * @param <A>
- *            the application code type
  * @param <M>
- *            the type after conversion
+ *            the model type
+ * @param <P>
+ *            the presentation type
  */
-public interface ModelConverter<A, M extends Serializable>
+public interface ModelConverter<M, P extends Serializable>
         extends Serializable {
-
-    /**
-     * Get the application type of this converter.
-     * 
-     * @return the application type
-     */
-    @SuppressWarnings("unchecked")
-    default Class<A> getApplicationType() {
-        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
-                ModelConverter.class.getTypeParameters()[0]);
-        if (type instanceof Class<?>) {
-            return (Class<A>) GenericTypeReflector.erase(type);
-        }
-        throw new InvalidTemplateModelException(String.format(
-                "Could not detect the application type of ModelConverter '%s'. "
-                        + "The method getApplicationType needs to be overridden manually.",
-                this.getClass().getName()));
-    }
 
     /**
      * Get the model type of this converter.
      * 
-     * @return the model type
+     * @return the application type
      */
     @SuppressWarnings("unchecked")
     default Class<M> getModelType() {
         Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
-                ModelConverter.class.getTypeParameters()[1]);
+                ModelConverter.class.getTypeParameters()[0]);
         if (type instanceof Class<?>) {
             return (Class<M>) GenericTypeReflector.erase(type);
         }
@@ -75,20 +57,38 @@ public interface ModelConverter<A, M extends Serializable>
     }
 
     /**
-     * Converts the given value from application type to the model type.
+     * Get the presentation type of this converter.
      * 
-     * @param applicationValue
-     *            the value to convert
-     * @return the converted value
+     * @return the model type
      */
-    M toModel(A applicationValue);
+    @SuppressWarnings("unchecked")
+    default Class<P> getPresentationType() {
+        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
+                ModelConverter.class.getTypeParameters()[1]);
+        if (type instanceof Class<?>) {
+            return (Class<P>) GenericTypeReflector.erase(type);
+        }
+        throw new InvalidTemplateModelException(String.format(
+                "Could not detect the presentation type of ModelConverter '%s'. "
+                        + "The method getPresentationType needs to be overridden manually.",
+                this.getClass().getName()));
+    }
 
     /**
-     * Converts the given value from model type to application type.
+     * Converts the given value from model type to presentation type.
      * 
      * @param modelValue
      *            the value to convert
      * @return the converted value
      */
-    A toApplication(M modelValue);
+    P toPresentation(M modelValue);
+
+    /**
+     * Converts the given value from presentation type to model type.
+     * 
+     * @param presentationValue
+     *            the value to convert
+     * @return the converted value
+     */
+    M toModel(P presentationValue);
 }
