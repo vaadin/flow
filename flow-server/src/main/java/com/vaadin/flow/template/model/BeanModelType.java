@@ -588,7 +588,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     private Map<String, Method> findBeanGetters(Class<?> beanType) {
-        HashMap<String, Method> getters = new HashMap<>();
+        Map<String, Method> getters = new HashMap<>();
         ReflectTools.getGetterMethods(beanType).forEach(getter -> {
             String propertyName = ReflectTools.getPropertyName(getter);
             if (!properties.containsKey(propertyName)) {

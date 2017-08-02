@@ -21,14 +21,13 @@ import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.BrowserInfo;
+import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.shared.ApplicationConstants;
-
-import elemental.client.Browser;
 
 /**
  * Handles bootstrapping of the application.
@@ -56,7 +55,7 @@ public class Bootstrapper implements EntryPoint {
         // Don't run twice if the module has been inherited several times,
         // and don't continue if vaadinBootstrap was not executed.
         if (moduleLoaded || !vaadinBootstrapLoaded()) {
-            Browser.getWindow().getConsole().warn(
+            Console.warn(
                     "vaadinBootstrap.js was not loaded, skipping vaadin application configuration.");
             return;
         }
