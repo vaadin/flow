@@ -15,6 +15,9 @@
  */
 package com.vaadin.ui;
 
+import java.util.Optional;
+
+import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.html.Div;
 import com.vaadin.generated.vaadin.split.layout.GeneratedVaadinSplitLayout;
 
@@ -24,19 +27,22 @@ import com.vaadin.generated.vaadin.split.layout.GeneratedVaadinSplitLayout;
  * @author Vaadin Ltd
  */
 public class VaadinSplitLayout
-        extends GeneratedVaadinSplitLayout<VaadinSplitLayout> {
+        extends GeneratedVaadinSplitLayout<VaadinSplitLayout>
+        implements HasSize {
 
     private Component primaryComponent;
     private Component secondaryComponent;
 
     /**
-     * Default constructor.
+     * Constructs an empty VaadinSplitLayout.
      */
     public VaadinSplitLayout() {
     }
 
     /**
-     *
+     * Constructs a VaadinSplitLayout with the given initial components to set
+     * to the primary and secondary splits.
+     * 
      * @param primaryComponent
      * @param secondaryComponent
      */
@@ -47,44 +53,46 @@ public class VaadinSplitLayout
     }
 
     /**
-     *
-     * @param primaryComponent
-     * @param secondaryComponent
-     * @param initialSplitterPosition
-     */
-    public VaadinSplitLayout(Component primaryComponent,
-            Component secondaryComponent, double initialSplitterPosition) {
-        this(primaryComponent, secondaryComponent);
-        double primaryWidth = Math.min(Math.max(initialSplitterPosition, 0),
-                100);
-        double secondaryWidth = 100 - primaryWidth;
-        primaryComponent.getElement().getStyle().set("width",
-                primaryWidth + "%");
-        secondaryComponent.getElement().getStyle().set("width",
-                secondaryWidth + "%");
-    }
-
-    /**
-     * 
+     * Sets the given components to the primary split of this layout, i.e. the
+     * left split if in horizontal mode and the top split if in vertical mode.
+     * <p>
      * <b>Note:</b> Calling this method with multiple arguments will wrap the
-     * components in a {@code <div>} element.
+     * components inside a {@code <div>} element.
+     * 
+     * @see #setVertical(boolean)
+     * @return this instance, for method chaining
      */
     @Override
     public VaadinSplitLayout addToPrimary(Component... components) {
         if (components.length == 1) {
-            secondaryComponent = components[0];
+            primaryComponent = components[0];
         } else {
             Div container = new Div();
             container.add(components);
-            secondaryComponent = container;
+            primaryComponent = container;
         }
         return setComponents();
     }
 
     /**
-     *
+     * Get the component currently set to the primary split.
+     * 
+     * @return the primary component, may be null
+     */
+    public Component getPrimaryComponent() {
+        return primaryComponent;
+    }
+
+    /**
+     * Sets the given components to the secondary split of this layout, i.e. the
+     * right split if in horizontal mode and the bottom split if in vertical
+     * mode.
+     * <p>
      * <b>Note:</b> Calling this method with multiple arguments will wrap the
-     * components in a {@code <div>} element.
+     * components inside a {@code <div>} element.
+     * 
+     * @see #setVertical(boolean)
+     * @return this instance, for method chaining
      */
     @Override
     public VaadinSplitLayout addToSecondary(Component... components) {
@@ -96,6 +104,66 @@ public class VaadinSplitLayout
             secondaryComponent = container;
         }
         return setComponents();
+    }
+
+    /**
+     * Get the component currently set to the secondary split.
+     * 
+     * @return the primary component, may be null
+     */
+    public Component getSecondaryComponent() {
+        return secondaryComponent;
+    }
+
+    /**
+     * Sets the relative position of the splitter in percentages. The given
+     * value is used to set how much space is given to the primary component
+     * relative to the secondary component. In horizontal mode this is the width
+     * of the component and in vertical mode this is the height. The given value
+     * will automatically be clamped to the range [0, 100].
+     * 
+     * @param position
+     *            the relative position of the splitter, in percentages
+     * @return this instance, for method chaining
+     */
+    public VaadinSplitLayout setSplitterPosition(double position) {
+        double primary = Math.min(Math.max(position, 0), 100);
+        double secondary = 100 - primary;
+        String styleName;
+        if (isVertical()) {
+            styleName = ElementConstants.STYLE_HEIGHT;
+        } else {
+            styleName = ElementConstants.STYLE_WIDTH;
+        }
+        setPrimaryStyle(styleName, primary + "%");
+        setSecondaryStyle(styleName, secondary + "%");
+        return get();
+    }
+
+    /**
+     * Set a style to the component in the primary split.
+     * 
+     * @param styleName
+     *            name of the style to set
+     * @param value
+     *            the value to set
+     * @return this instance, for method chaining
+     */
+    public VaadinSplitLayout setPrimaryStyle(String styleName, String value) {
+        return setInnerComponentStyle(primaryComponent, styleName, value);
+    }
+
+    /**
+     * Set a style to the component in the secondary split.
+     * 
+     * @param styleName
+     *            name of the style to set
+     * @param value
+     *            the value to set
+     * @return this instance, for method chaining
+     */
+    public VaadinSplitLayout setSecondaryStyle(String styleName, String value) {
+        return setInnerComponentStyle(secondaryComponent, styleName, value);
     }
 
     private VaadinSplitLayout setComponents() {
@@ -110,6 +178,13 @@ public class VaadinSplitLayout
         } else {
             super.addToSecondary(secondaryComponent);
         }
+        return get();
+    }
+
+    private VaadinSplitLayout setInnerComponentStyle(Component innerComponent,
+            String styleName, String value) {
+        Optional.ofNullable(innerComponent).ifPresent(component -> component
+                .getElement().getStyle().set(styleName, value));
         return get();
     }
 }

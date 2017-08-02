@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.H3;
 import com.vaadin.flow.html.Label;
@@ -33,6 +35,7 @@ public class VaadinSplitLayoutView extends DemoView {
         addLayoutCombination();
         addResizeNotificationLayout();
         addInitialSplitterPositionLayout();
+        addMinMaxWidthLayout();
     }
 
     private void addHorizontalLayout() {
@@ -60,13 +63,19 @@ public class VaadinSplitLayoutView extends DemoView {
         // begin-source-example
         // source-example-heading: Layout Combination
         VaadinSplitLayout layout = new VaadinSplitLayout()
-        .addToPrimary(new Label("First content component"))
-        .addToSecondary(
-                new VaadinSplitLayout().setVertical(true)
-                        .addToPrimary(new Label("Second content component"))
-                        .addToSecondary(new Label("Third content component")));
+            .addToPrimary(new Label("First content component"))
+            .addToSecondary(
+                    new VaadinSplitLayout().setVertical(true)
+                            .addToPrimary(new Label("Second content component"))
+                            .addToSecondary(new Label("Third content component")));
         // end-source-example
         // @formatter:on
+        layout.getPrimaryComponent().setId("first-component");
+        layout.getSecondaryComponent().setId("nested-layout");
+        ((VaadinSplitLayout) layout.getSecondaryComponent())
+                .getPrimaryComponent().setId("second-component");
+        ((VaadinSplitLayout) layout.getSecondaryComponent())
+                .getSecondaryComponent().setId("third-component");
         addCard(new H3("Layout Combination"), layout);
     }
 
@@ -77,8 +86,11 @@ public class VaadinSplitLayoutView extends DemoView {
                 .addToPrimary(new Label("First content component"))
                 .addToSecondary(new Label("Second content component"));
         Label message = new Label();
-        layout.addIronResizeListener(event -> message.setText("Resized!"));
+        AtomicInteger resizeCounter = new AtomicInteger();
+        layout.addIronResizeListener(event -> message.setText(
+                "Resized " + resizeCounter.getAndIncrement() + " times."));
         // end-source-example
+        message.setId("resize-message");
         addCard(new H3("Resize Events"), layout, message);
     }
 
@@ -87,9 +99,24 @@ public class VaadinSplitLayoutView extends DemoView {
         // source-example-heading: Split Layout with Initial Splitter Position
         VaadinSplitLayout layout = new VaadinSplitLayout(
                 new Label("First content component"),
-                new Label("First content component"), 80.0);
-
+                new Label("Second content component"));
+        layout.setSplitterPosition(80);
         // end-source-example
+        layout.getPrimaryComponent().setId("initial-sp-first-component");
+        layout.getSecondaryComponent().setId("initial-sp-second-component");
         addCard(new H3("Split Layout with Initial Splitter Position"), layout);
+    }
+    
+    private void addMinMaxWidthLayout() {
+        // begin-source-example
+        // source-example-heading: Split Layout with Minimum and Maximum Widths
+        VaadinSplitLayout layout = new VaadinSplitLayout()
+                .addToPrimary(new Label("First content component"))
+                .addToSecondary(new Label("Second content component"))
+                .setPrimaryStyle("minWidth", "100px")
+                .setPrimaryStyle("maxWidth", "150px");
+        // end-source-example
+        layout.getPrimaryComponent().setId("min-max-first-component");
+        addCard(new H3("Split Layout with Minimum and Maximum Widths"), layout);
     }
 }
