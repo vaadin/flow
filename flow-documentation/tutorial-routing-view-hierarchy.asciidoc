@@ -62,5 +62,3 @@ See also:
 
 * <<tutorial-routing-view-parameters#,Using View Parameters>>
 * <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
-
-* <<deprecated/tutorial-routing-template-parent#, *Deprecated* Using a AngularTemplate as a Parent View>>

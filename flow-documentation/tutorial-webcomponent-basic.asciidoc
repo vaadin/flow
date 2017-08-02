@@ -5,7 +5,6 @@ This tutorial covers setting up a basic web component and importing needed resou
 
 * <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
 * <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
-* <<deprecated/tutorial-template-webcomponents#, *Deprecated* Using Web Components in a Template>>
 
 A web component is a reusable client-side component that you can use in the same way as regular HTML elements.
 It has a custom HTML tag name and it's mainly configured by setting HTML attributes or properties.
