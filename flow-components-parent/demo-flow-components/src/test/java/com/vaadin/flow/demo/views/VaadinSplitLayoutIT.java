@@ -16,10 +16,10 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Before;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.AbstractChromeTest;
-import com.vaadin.testbench.By;
 
 /**
  * Integration tests for {@link VaadinSplitLayoutView}.

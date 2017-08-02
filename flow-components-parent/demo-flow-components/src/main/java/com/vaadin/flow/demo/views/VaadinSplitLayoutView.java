@@ -31,10 +31,8 @@ public class VaadinSplitLayoutView extends DemoView {
         addHorizontalLayout();
         addVerticalLayout();
         addLayoutCombination();
-        addHeightLayout();
-        addInitialSplitterPositionLayout();
-        addMinMaxLayout();
         addResizeNotificationLayout();
+        addInitialSplitterPositionLayout();
     }
 
     private void addHorizontalLayout() {
@@ -72,31 +70,26 @@ public class VaadinSplitLayoutView extends DemoView {
         addCard(new H3("Layout Combination"), layout);
     }
 
-    private void addHeightLayout() {
+    private void addResizeNotificationLayout() {
         // begin-source-example
-        // source-example-heading: Split Layout Element Height
-
+        // source-example-heading: Resize Notification for the Nested Elements
+        VaadinSplitLayout layout = new VaadinSplitLayout()
+                .addToPrimary(new Label("First content component"))
+                .addToSecondary(new Label("Second content component"));
+        Label message = new Label();
+        layout.addIronResizeListener(event -> message.setText("Resized!"));
         // end-source-example
+        addCard(new H3("Resize Events"), layout, message);
     }
 
     private void addInitialSplitterPositionLayout() {
         // begin-source-example
-        // source-example-heading: Initial Splitter Position
+        // source-example-heading: Split Layout with Initial Splitter Position
+        VaadinSplitLayout layout = new VaadinSplitLayout(
+                new Label("First content component"),
+                new Label("First content component"), 80.0);
 
         // end-source-example
-    }
-
-    private void addMinMaxLayout() {
-        // begin-source-example
-        // source-example-heading: Specifying Min- and Max- Sizes
-
-        // end-source-example
-    }
-
-    private void addResizeNotificationLayout() {
-        // begin-source-example
-        // source-example-heading: Resize Notification for the Nested Elements
-
-        // end-source-example
+        addCard(new H3("Split Layout with Initial Splitter Position"), layout);
     }
 }
