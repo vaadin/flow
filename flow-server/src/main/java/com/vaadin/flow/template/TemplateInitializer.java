@@ -19,16 +19,17 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
@@ -52,6 +53,9 @@ import elemental.json.JsonArray;
  *
  */
 public class TemplateInitializer {
+    private static final String DOM_IF_NAME = "dom-if";
+    private static final String DOM_REPEAT_NAME = "dom-repeat";
+
     private static final ReflectionCache<PolymerTemplate<?>, ParserData> CACHE = new ReflectionCache<>(
             clazz -> new ParserData());
 
@@ -61,6 +65,8 @@ public class TemplateInitializer {
     private final Map<String, Element> registeredElementIdToCustomElement = new HashMap<>();
     private final boolean useCache;
     private final ParserData parserData;
+    private final Set<String> elementIdsInsideDomIf = new HashSet<>();
+    private final Set<String> elementIdsInsideDomRepeat = new HashSet<>();
 
     private com.vaadin.external.jsoup.nodes.Element contentElement;
 
@@ -120,8 +126,9 @@ public class TemplateInitializer {
 
         boolean productionMode = VaadinService.getCurrent()
                 .getDeploymentConfiguration().isProductionMode();
-        useCache = CACHE.contains(templateClass) && productionMode;
-        parserData = productionMode ? CACHE.get(templateClass) : new ParserData();
+        useCache = productionMode && CACHE.contains(templateClass);
+        parserData = productionMode ? CACHE.get(templateClass)
+                : new ParserData();
 
         if (useCache) {
             createSubTemplates();
@@ -139,26 +146,60 @@ public class TemplateInitializer {
         mapComponents(templateClass);
     }
 
-    private void inspectCustomElements(Node node,
+    private void inspectCustomElements(
+            com.vaadin.external.jsoup.nodes.Element childElement,
             com.vaadin.external.jsoup.nodes.Element templateRoot) {
-        if (node instanceof com.vaadin.external.jsoup.nodes.Element) {
-            com.vaadin.external.jsoup.nodes.Element element = (com.vaadin.external.jsoup.nodes.Element) node;
-
-            requestAttachCustomElement(element, templateRoot);
-            element.children().forEach(
+        if (isDomIfElement(childElement)) {
+            storeDomIfElementsWithIds(childElement);
+        } else if (isDomRepeatElement(childElement)) {
+            storeDomRepeatElementsWithIds(childElement);
+        } else {
+            requestAttachCustomElement(childElement, templateRoot);
+            childElement.children().forEach(
                     child -> inspectCustomElements(child, templateRoot));
         }
     }
 
+    private void storeDomIfElementsWithIds(
+            com.vaadin.external.jsoup.nodes.Element element) {
+        String id = element.id();
+        if (id != null && !id.isEmpty()) {
+            elementIdsInsideDomIf.add(id);
+        }
+        element.children().forEach(this::storeDomIfElementsWithIds);
+    }
+
+    private void storeDomRepeatElementsWithIds(
+            com.vaadin.external.jsoup.nodes.Element element) {
+        String id = element.id();
+        if (id != null && !id.isEmpty()) {
+            elementIdsInsideDomRepeat.add(id);
+        }
+        element.children().forEach(this::storeDomRepeatElementsWithIds);
+    }
+
+    private static boolean isDomIfElement(
+            com.vaadin.external.jsoup.nodes.Element element) {
+        return DOM_IF_NAME.equals(element.tagName())
+                || DOM_IF_NAME.equals(element.attr("is"));
+    }
+
+    private static boolean isDomRepeatElement(
+            com.vaadin.external.jsoup.nodes.Element element) {
+        return DOM_REPEAT_NAME.equals(element.tagName())
+                || DOM_REPEAT_NAME.equals(element.attr("is"));
+    }
+
     private void parseTemplate() {
         assert contentElement != null;
-        Elements templates = contentElement.getElementsByTag("template");
-        if (!templates.isEmpty()) {
-            inspectCustomElements(templates.get(0), templates.get(0));
+        com.vaadin.external.jsoup.nodes.Element templateRoot = contentElement
+                .getElementById(template.getElement().getTag());
+        if (templateRoot != null) {
+            inspectCustomElements(templateRoot, templateRoot);
         }
     }
 
-    private boolean isInsideTemplate(
+    private static boolean isInsideTemplate(
             com.vaadin.external.jsoup.nodes.Element element,
             com.vaadin.external.jsoup.nodes.Element templateRoot) {
         if (element == templateRoot) {
@@ -287,6 +328,7 @@ public class TemplateInitializer {
             return;
         }
         String id = idAnnotation.get().value();
+        throwExceptionIfUnsupportedElementMapped(field, id);
 
         Optional<String> tagName = getTagName(id);
         if (!tagName.isPresent()) {
@@ -303,6 +345,23 @@ public class TemplateInitializer {
                     registeredCustomElements);
         } else {
             injectServerSideElement(element, field);
+        }
+    }
+
+    private void throwExceptionIfUnsupportedElementMapped(Field field, String id) {
+        if (elementIdsInsideDomRepeat.contains(id)) {
+            throw new IllegalStateException(String.format(
+                    "Class '%s' contains field '%s' annotated with @Id('%s') that was found in '%s' template part. "
+                            + "This functionality is unsupported currently.",
+                    templateClass.getName(), field.getName(), id,
+                    DOM_REPEAT_NAME));
+        }
+        if (elementIdsInsideDomIf.contains(id)) {
+            throw new IllegalStateException(String.format(
+                    "Class '%s' contains field '%s' annotated with @Id('%s') that was found in '%s' template part. "
+                            + "This functionality is unsupported currently.",
+                    templateClass.getName(), field.getName(), id,
+                    DOM_IF_NAME));
         }
     }
 
@@ -327,7 +386,7 @@ public class TemplateInitializer {
                             + "This is always mapped to the template instance itself ("
                             + templateClass.getName() + ')');
         } else if (element != null) {
-            handleAttach(element, field);
+            setTemplateClassFieldValue(element, field);
         }
     }
 
@@ -380,36 +439,27 @@ public class TemplateInitializer {
         }
 
         Element element = registeredCustomElements.get(id);
-
         if (element == null) {
-            /*
-             * create a node that should represent the client-side element. This
-             * node won't be available anywhere and will be removed if there is
-             * no appropriate element on the client-side. This node will be used
-             * after client-side roundtrip for the appropriate element.
-             */
             StateNode proposedNode = BasicElementStateProvider
                     .createStateNode(tagName);
             element = Element.get(proposedNode);
-
-            StateNode node = getElement().getNode();
-            node.runWhenAttached(ui -> {
-                node.getFeature(AttachTemplateChildFeature.class)
+            StateNode parentNode = getElement().getNode();
+            parentNode.runWhenAttached(ui -> {
+                parentNode.getFeature(AttachTemplateChildFeature.class)
                         .register(getElement(), proposedNode);
                 ui.getPage().executeJavaScript(
                         "this.attachExistingElementById($0, $1, $2, $3);",
                         getElement(), tagName, proposedNode.getId(), id);
             });
         }
-        handleAttach(element, field);
-
+        setTemplateClassFieldValue(element, field);
     }
 
     private Element getElement() {
         return template.getElement();
     }
 
-    private void handleAttach(Element element, Field field) {
+    private void setTemplateClassFieldValue(Element element, Field field) {
         Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {
             CustomElementRegistry.getInstance().wrapElementIfNeeded(element);
