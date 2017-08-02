@@ -69,20 +69,6 @@ These tutorials show how the different features are used.
 ** <<tutorial-dynamic-content#,Dynamic Content>>
 ** <<tutorial-loading-indicator#,The Loading Indicator>>
 
-=== Deprecated documentation
-* AngularTemplate API
-** <<deprecated/tutorial-template-basic#,*Deprecated* Creating A Simple Component Using the AngularTemplate API>>
-** <<deprecated/tutorial-template-bindings#,*Deprecated* Binding Model Data in a AngularTemplate>>
-** <<deprecated/tutorial-template-model-bean#,*Deprecated* Using Beans with a Template Model>>
-** <<deprecated/tutorial-template-class-name-binding#,*Deprecated* Binding Class Names in a AngularTemplate>>
-** <<deprecated/tutorial-template-components#,*Deprecated* Adding Components to a AngularTemplate>>
-** <<deprecated/tutorial-template-include#,*Deprecated* Including Templates in Templates>>
-** <<deprecated/tutorial-template-webcomponents#,*Deprecated* Using Web Components in a AngularTemplate>>
-** <<deprecated/tutorial-template-for#,*Deprecated* Creating Template Contents Dynamically Based on a List of Items>>
-** <<deprecated/tutorial-template-event-handlers#,*Deprecated* Handling User Events in a AngularTemplate>>
-* Routing and Views
-** <<deprecated/tutorial-routing-template-parent#,*Deprecated* Using a Template as a Parent View>>
-
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 
 == Server-side DOM tree
