@@ -2,7 +2,7 @@
   "name": "paper-swatch-picker",
   "tag": "paper-swatch-picker",
   "baseUrl": "paper-swatch-picker/paper-swatch-picker.html",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "properties": [
     {
       "name": "color",

@@ -15,9 +15,18 @@
  */
 package com.vaadin.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 import org.junit.Assert;
 import org.junit.Test;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonBoolean;
 import elemental.json.JsonNull;
 import elemental.json.JsonNumber;
@@ -225,6 +234,47 @@ public class JsonSerializerTest {
 
         public void setIndex(int index) {
             this.index = index;
+        }
+    }
+
+    public static class ObjectWithBasicCollections {
+        private List<String> listOfStrings;
+        private Set<Integer> setOfIntegers;
+        private LinkedList<Boolean> linkedListOfBooleans;
+        private ArrayList<Double> arrayListOfDoubles;
+
+        public List<String> getListOfStrings() {
+            return listOfStrings;
+        }
+
+        public void setListOfStrings(List<String> listOfStrings) {
+            this.listOfStrings = listOfStrings;
+        }
+
+        public Set<Integer> getSetOfIntegers() {
+            return setOfIntegers;
+        }
+
+        public void setSetOfIntegers(Set<Integer> setOfIntegers) {
+            this.setOfIntegers = setOfIntegers;
+        }
+
+        public LinkedList<Boolean> getLinkedListOfBooleans() {
+            return linkedListOfBooleans;
+        }
+
+        public void setLinkedListOfBooleans(
+                LinkedList<Boolean> linkedListOfBooleans) {
+            this.linkedListOfBooleans = linkedListOfBooleans;
+        }
+
+        public ArrayList<Double> getArrayListOfDoubles() {
+            return arrayListOfDoubles;
+        }
+
+        public void setArrayListOfDoubles(
+                ArrayList<Double> arrayListOfDoubles) {
+            this.arrayListOfDoubles = arrayListOfDoubles;
         }
     }
 
@@ -571,6 +621,97 @@ public class JsonSerializerTest {
         for (int i = 0; i < recursions; i++) {
             Assert.assertEquals(i, bean.getIndex());
             bean = bean.getRecursive();
+        }
+    }
+
+    @Test
+    public void serializeEmptyObjectWithBasicCollections_returnJsonObjectWithNullProperties() {
+        ObjectWithBasicCollections bean = new ObjectWithBasicCollections();
+
+        /*
+         * private List<String> listOfStrings; private Set<Integer>
+         * setOfIntegers; private LinkedList<Boolean> linkedListOfBooleans;
+         * private ArrayList<Double> arrayListOfDoubles;
+         * 
+         */
+
+        JsonValue json = JsonSerializer.toJson(bean);
+
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
+                json instanceof JsonObject);
+
+        JsonObject jsonObject = (JsonObject) json;
+        Assert.assertTrue(jsonObject.hasKey("listOfStrings"));
+        Assert.assertTrue(jsonObject.get("listOfStrings") instanceof JsonNull);
+        Assert.assertTrue(jsonObject.hasKey("setOfIntegers"));
+        Assert.assertTrue(jsonObject.get("setOfIntegers") instanceof JsonNull);
+        Assert.assertTrue(jsonObject.hasKey("linkedListOfBooleans"));
+        Assert.assertTrue(
+                jsonObject.get("linkedListOfBooleans") instanceof JsonNull);
+        Assert.assertTrue(jsonObject.hasKey("arrayListOfDoubles"));
+        Assert.assertTrue(
+                jsonObject.get("arrayListOfDoubles") instanceof JsonNull);
+
+        bean = JsonSerializer.toObject(ObjectWithBasicCollections.class, json);
+
+        Assert.assertNotNull("The deserialized object should not be null",
+                bean);
+        Assert.assertNull(bean.getListOfStrings());
+        Assert.assertNull(bean.getSetOfIntegers());
+        Assert.assertNull(bean.getLinkedListOfBooleans());
+        Assert.assertNull(bean.getArrayListOfDoubles());
+    }
+
+    @Test
+    public void serializeObjectWithCollections_returnJsonObjectWithPopulatedProperties() {
+        ObjectWithBasicCollections bean = new ObjectWithBasicCollections();
+
+        bean.setListOfStrings(Arrays.asList("string1", "string2"));
+        bean.setSetOfIntegers(new LinkedHashSet<>(Arrays.asList(3, 4)));
+        bean.setLinkedListOfBooleans(
+                new LinkedList<>(Arrays.asList(true, false)));
+        bean.setArrayListOfDoubles(new ArrayList<>(Arrays.asList(5.0, 6.0)));
+
+        JsonValue json = JsonSerializer.toJson(bean);
+
+        Assert.assertTrue("The JsonValue should be instanceof JsonObject",
+                json instanceof JsonObject);
+
+        JsonObject jsonObject = (JsonObject) json;
+        JsonArray array = (JsonArray) jsonObject.get("listOfStrings");
+        Assert.assertEquals("string1", array.getString(0));
+        Assert.assertEquals("string2", array.getString(1));
+
+        array = (JsonArray) jsonObject.get("setOfIntegers");
+        Assert.assertEquals(3, array.getNumber(0), PRECISION);
+        Assert.assertEquals(4, array.getNumber(1), PRECISION);
+
+        array = (JsonArray) jsonObject.get("linkedListOfBooleans");
+        Assert.assertEquals(true, array.getBoolean(0));
+        Assert.assertEquals(false, array.getBoolean(1));
+
+        array = (JsonArray) jsonObject.get("arrayListOfDoubles");
+        Assert.assertEquals(5, array.getNumber(0), PRECISION);
+        Assert.assertEquals(6, array.getNumber(1), PRECISION);
+
+        bean = JsonSerializer.toObject(ObjectWithBasicCollections.class, json);
+
+        Assert.assertNotNull("The deserialized object should not be null",
+                bean);
+        assertCollectionItemsAreEqual(bean.getListOfStrings(), "string1",
+                "string2");
+        assertCollectionItemsAreEqual(bean.getSetOfIntegers(), 3, 4);
+        assertCollectionItemsAreEqual(bean.getLinkedListOfBooleans(), true,
+                false);
+        assertCollectionItemsAreEqual(bean.getArrayListOfDoubles(), 5.0, 6.0);
+    }
+
+    private <T> void assertCollectionItemsAreEqual(Collection<T> collection,
+            T... values) {
+        int index = 0;
+        for (T collectionValue : collection) {
+            Assert.assertEquals(collectionValue, values[index]);
+            index++;
         }
     }
 

@@ -60,7 +60,7 @@ import com.vaadin.shared.Registration;
  */
 @Generated({
 		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: paper-swatch-picker#2.0.0", "Flow#0.1.16-SNAPSHOT"})
+		"WebComponent: paper-swatch-picker#2.0.1", "Flow#0.1.16-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
