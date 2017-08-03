@@ -77,13 +77,14 @@ then
 
     # Trigger Sonar analysis
     # Verify build and build javadoc
+
+#        -Dtest.use.hub=true \
+#        -Dcom.vaadin.testbench.Parameters.hubHostname="localhost" \
     echo "Running clean verify $modules -amd"
     mvn -B -e -V \
         -Pvalidation \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
         -Dtest.excludegroup= \
-        -Dtest.use.hub=true \
-        -Dcom.vaadin.testbench.Parameters.hubHostname="localhost" \
         clean \
         org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
     # Get the status for the previous maven command and if not exception then run sonar.
@@ -115,13 +116,14 @@ then
 elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
 then
     # master build
+
+#        -Dtest.use.hub=true \
+#        -Dcom.vaadin.testbench.Parameters.hubHostname="localhost" \
     mvn -B -e -V \
         -Pall-tests \
         -Dmaven.javadoc.skip=false \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
         -Dgatling.skip=true \
-        -Dtest.use.hub=true \
-        -Dcom.vaadin.testbench.Parameters.hubHostname="localhost" \
         clean org.jacoco:jacoco-maven-plugin:prepare-agent install
 
     # Get the status for the previous maven command and if not exception then run sonar.
@@ -151,11 +153,12 @@ then
     fi
 else
     # Something else than a "safe" pull request
+
+    #        -Dtest.use.hub=true \
+    #        -Dcom.vaadin.testbench.Parameters.hubHostname="localhost" \
     mvn -B -e -V \
         -Pall-tests \
         -Dmaven.javadoc.skip=false \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
-        -Dtest.use.hub=true \
-        -Dcom.vaadin.testbench.Parameters.hubHostname="localhost" \
         verify javadoc:javadoc $modules -amd
 fi
