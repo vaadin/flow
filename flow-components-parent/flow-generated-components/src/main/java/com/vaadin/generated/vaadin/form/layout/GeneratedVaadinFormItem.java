@@ -137,12 +137,14 @@ public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
 	 * @see <a
 	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
 	 *      website about slots</a>
+	 * @return this instance, for method chaining
 	 */
-	public void addToLabel(com.vaadin.ui.Component... components) {
+	public R addToLabel(com.vaadin.ui.Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "label");
 			getElement().appendChild(component.getElement());
 		}
+		return get();
 	}
 
 	@Override

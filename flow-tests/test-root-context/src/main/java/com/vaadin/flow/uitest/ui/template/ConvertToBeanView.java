@@ -77,40 +77,30 @@ public class ConvertToBeanView extends
             implements ModelConverter<Date, DateBean> {
 
         @Override
-        public Class<Date> getApplicationType() {
-            return Date.class;
-        }
-
-        @Override
-        public Class<DateBean> getModelType() {
-            return DateBean.class;
-        }
-
-        @Override
-        public DateBean toModel(Date applicationValue) {
-            if (applicationValue == null) {
+        public DateBean toPresentation(Date modelValue) {
+            if (modelValue == null) {
                 return null;
             }
             DateBean bean = new DateBean();
-            bean.setDay(Integer.toString(applicationValue.getDate()));
-            bean.setMonth(Integer.toString(applicationValue.getMonth() + 1));
-            bean.setYear(Integer.toString(applicationValue.getYear() + 1900));
+            bean.setDay(Integer.toString(modelValue.getDate()));
+            bean.setMonth(Integer.toString(modelValue.getMonth() + 1));
+            bean.setYear(Integer.toString(modelValue.getYear() + 1900));
             return bean;
         }
 
         @Override
-        public Date toApplication(DateBean modelValue) {
-            if (modelValue == null) {
+        public Date toModel(DateBean presentationValue) {
+            if (presentationValue == null) {
                 return null;
             }
-            if (modelValue.getYear() == null || modelValue.getDay() == null
-                    || modelValue.getMonth() == null) {
+            if (presentationValue.getYear() == null || presentationValue.getDay() == null
+                    || presentationValue.getMonth() == null) {
                 return null;
             }
 
-            return new Date(Integer.valueOf(modelValue.getYear()) - 1900,
-                    Integer.valueOf(modelValue.getMonth()) - 1,
-                    Integer.valueOf(modelValue.getDay()));
+            return new Date(Integer.valueOf(presentationValue.getYear()) - 1900,
+                    Integer.valueOf(presentationValue.getMonth()) - 1,
+                    Integer.valueOf(presentationValue.getDay()));
         }
 
     }

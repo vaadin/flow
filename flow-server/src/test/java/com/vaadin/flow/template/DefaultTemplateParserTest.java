@@ -15,10 +15,18 @@
  */
 package com.vaadin.flow.template;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,7 +35,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.nodes.Comment;
 import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.template.PolymerTemplateTest.ModelClass;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServletRequest;
@@ -85,10 +95,10 @@ public class DefaultTemplateParserTest {
         Mockito.when(request.getServletPath()).thenReturn("");
 
         Mockito.when(context.getResourceAsStream("/bar.html")).thenReturn(
-                new ByteArrayInputStream(("<dom-module id='bar'></dom-module>")
+                new ByteArrayInputStream("<dom-module id='bar'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
         Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(
-                new ByteArrayInputStream(("<dom-module id='foo'></dom-module>")
+                new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
 
         CurrentInstance.set(VaadinRequest.class, request);
@@ -110,7 +120,7 @@ public class DefaultTemplateParserTest {
                 .thenReturn("/foo.html");
 
         Mockito.when(context.getResourceAsStream("/foo.html")).thenReturn(
-                new ByteArrayInputStream(("<dom-module id='foo'></dom-module>")
+                new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
@@ -147,11 +157,11 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
                 .thenReturn(new ByteArrayInputStream(
-                        ("<dom-module id='bar'></dom-module>")
+                        "<dom-module id='bar'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
         Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
                 .thenReturn(new ByteArrayInputStream(
-                        ("<dom-module id='foo'></dom-module>")
+                        "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
@@ -174,11 +184,11 @@ public class DefaultTemplateParserTest {
 
         Mockito.when(context.getResourceAsStream("/run/./../bar.html"))
                 .thenReturn(new ByteArrayInputStream(
-                        ("<dom-module id='bar'></dom-module>")
+                        "<dom-module id='bar'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
         Mockito.when(context.getResourceAsStream("/run/./../bar1.html"))
                 .thenReturn(new ByteArrayInputStream(
-                        ("<dom-module id='foo'></dom-module>")
+                        "<dom-module id='foo'></dom-module>"
                                 .getBytes(StandardCharsets.UTF_8)));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
@@ -191,6 +201,29 @@ public class DefaultTemplateParserTest {
         // `/run/./..`
         Mockito.verify(context).getResourceAsStream("/run/./../bar.html");
         Mockito.verify(context).getResourceAsStream("/run/./../bar1.html");
+    }
+
+    @Test
+    public void defaultParser_removesComments() {
+        Mockito.when(context.getResourceAsStream("/bar.html"))
+                .thenReturn(new ByteArrayInputStream(
+                        "<!-- comment1 --><dom-module id='foo'><!-- comment2 --></dom-module>"
+                                .getBytes(StandardCharsets.UTF_8)));
+
+        DefaultTemplateParser parser = new DefaultTemplateParser();
+        Element element = parser
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+        Assert.assertTrue(element.getElementById("foo") != null);
+        assertThat("No comments should be present in the parsing result",
+                extractCommentNodes(element), is(empty()));
+    }
+
+    private static List<Node> extractCommentNodes(Node parent) {
+        return parent.childNodes().stream()
+                .flatMap(child -> Stream.concat(Stream.of(child),
+                        extractCommentNodes(child).stream()))
+                .filter(node -> node instanceof Comment)
+                .collect(Collectors.toList());
     }
 
     @Test(expected = IllegalStateException.class)
