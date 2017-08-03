@@ -16,7 +16,7 @@
 
     <build>
         <resources>
-            <!-- Include eclipse formatting settings in the jar to make them available 
+            <!-- Include eclipse formatting settings in the jar to make them available
                 as a dependency for all submodules -->
             <resource>
                 <directory>${project.basedir}/../eclipse</directory>
@@ -25,7 +25,9 @@
         </resources>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
