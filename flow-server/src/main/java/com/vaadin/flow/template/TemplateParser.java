@@ -38,10 +38,9 @@ public interface TemplateParser {
      *            the template class
      * @param tag
      *            the template tag name
-     * 
+     *
      * @return template content as an Element
      */
-    @SuppressWarnings("rawtypes")
-    Element getTemplateContent(Class<? extends PolymerTemplate> clazz,
-            String tag);
+    Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
+                               String tag);
 }
