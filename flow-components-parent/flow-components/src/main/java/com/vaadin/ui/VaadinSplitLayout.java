@@ -58,6 +58,10 @@ public class VaadinSplitLayout
      * <p>
      * <b>Note:</b> Calling this method with multiple arguments will wrap the
      * components inside a {@code <div>} element.
+     * <p>
+     * <b>Note:</b> Removing the primary component through the component API
+     * will move the secondary component to the primary split, causing this
+     * layout to desync with the server. This is a known issue.
      * 
      * @see #setVertical(boolean)
      * @return this instance, for method chaining
