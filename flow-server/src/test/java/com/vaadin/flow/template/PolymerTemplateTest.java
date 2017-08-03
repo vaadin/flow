@@ -17,6 +17,7 @@
 package com.vaadin.flow.template;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -32,7 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -76,7 +76,7 @@ public class PolymerTemplateTest {
 
         @Override
         public Element getTemplateContent(
-                Class<? extends PolymerTemplate> clazz, String tag) {
+                Class<? extends PolymerTemplate<?>> clazz, String tag) {
             callCount++;
             return Jsoup.parse(templateProducer.apply(tag));
         }
@@ -91,10 +91,9 @@ public class PolymerTemplateTest {
     }
 
     private static class TestPage extends Page {
+        private final List<Serializable[]> params = new ArrayList<>();
 
-        private List<Serializable[]> params = new ArrayList<>();
-
-        public TestPage() {
+        private TestPage() {
             super(Mockito.mock(UI.class));
         }
 
@@ -314,7 +313,7 @@ public class PolymerTemplateTest {
         map.put("ffs", TestPolymerTemplate.class);
         CustomElementRegistry.getInstance().setCustomElements(map);
 
-        Assert.assertNull(VaadinService.getCurrent());
+        assertNull(VaadinService.getCurrent());
         VaadinService service = Mockito.mock(VaadinService.class);
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
@@ -400,14 +399,14 @@ public class PolymerTemplateTest {
         // run in the production mode (with caching enabled) for the first time
         IdChildTemplate template = new IdChildTemplate();
         TestTemplateParser parser = template.parser;
-        Assert.assertEquals(1, parser.callCount);
+        assertEquals(1, parser.callCount);
         // check the result for the first run
         doParseTemplate_hasIdChild_childIsRegisteredInFeature(template);
 
         // run in the production mode (with caching enabled) for the second time
         template = new IdChildTemplate(parser);
         // parser shouldn't be called
-        Assert.assertEquals(1, parser.callCount);
+        assertEquals(1, parser.callCount);
         // the result should be the same
         doParseTemplate_hasIdChild_childIsRegisteredInFeature(template);
     }
@@ -448,7 +447,7 @@ public class PolymerTemplateTest {
         TemplateInTemplate template = new TemplateInTemplate();
         TestTemplateParser parser = template.parser;
 
-        Assert.assertEquals(1, parser.callCount);
+        assertEquals(1, parser.callCount);
         // check the result for the first run
         doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
                 template);
@@ -456,7 +455,7 @@ public class PolymerTemplateTest {
         // run in the production mode (with caching enabled) for the second time
         template = new TemplateInTemplate(parser);
         // parser shouldn't be called
-        Assert.assertEquals(1, parser.callCount);
+        assertEquals(1, parser.callCount);
         // the result should be the same
         doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
                 template);
@@ -480,7 +479,7 @@ public class PolymerTemplateTest {
         // run in the production mode (with caching enabled) for the second time
         template = new TextNodesInHtmlTemplate(parser);
         // parser shouldn't be called
-        Assert.assertEquals(1, parser.callCount);
+        assertEquals(1, parser.callCount);
         // the result should be the same
         doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(template);
     }
@@ -509,7 +508,7 @@ public class PolymerTemplateTest {
         // run in the production mode (with caching enabled) for the second time
         template = new TemplateWithDomRepeat(parser);
         // parser shouldn't be called
-        Assert.assertEquals(1, parser.callCount);
+        assertEquals(1, parser.callCount);
         // the result should be the same
         doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
                 template);
@@ -536,17 +535,17 @@ public class PolymerTemplateTest {
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
-        Assert.assertEquals(1, templateNodes.size());
+        assertEquals(1, templateNodes.size());
 
         StateNode child = templateNodes.get(0);
         String tag = child.getFeature(ElementData.class).getTag();
-        Assert.assertEquals("label", tag);
+        assertEquals("label", tag);
 
         // check id in the JS call request
-        Assert.assertEquals("labelId", page.params.get(0)[3]);
+        assertEquals("labelId", page.params.get(0)[3]);
 
-        Assert.assertNotNull(template.label);
-        Assert.assertEquals(child, template.label.getNode());
+        assertNotNull(template.label);
+        assertEquals(child, template.label.getNode());
     }
 
     @Test
@@ -560,10 +559,10 @@ public class PolymerTemplateTest {
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
-        Assert.assertEquals(1, templateNodes.size());
+        assertEquals(1, templateNodes.size());
         StateNode stateNode = templateNodes.get(0);
 
-        Assert.assertEquals(stateNode, template.child.getStateNode());
+        assertEquals(stateNode, template.child.getStateNode());
     }
 
     @Test
@@ -577,25 +576,25 @@ public class PolymerTemplateTest {
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
-        Assert.assertEquals(1, templateNodes.size());
+        assertEquals(1, templateNodes.size());
 
         StateNode child = templateNodes.get(0);
         String tag = child.getFeature(ElementData.class).getTag();
-        Assert.assertEquals("div", tag);
+        assertEquals("div", tag);
 
         // check id in the JS call request
-        Assert.assertEquals("child", page.params.get(0)[3]);
+        assertEquals("child", page.params.get(0)[3]);
 
-        Assert.assertNotNull(template.child);
-        Assert.assertEquals(child, template.child.getElement().getNode());
+        assertNotNull(template.child);
+        assertEquals(child, template.child.getElement().getNode());
 
-        Assert.assertTrue(
+        assertTrue(
                 template.child.getElement().getComponent().isPresent());
 
-        Assert.assertTrue(template.child.getElement().getComponent()
+        assertTrue(template.child.getElement().getComponent()
                 .get() instanceof CustomComponent);
 
-        Assert.assertEquals(template.child,
+        assertEquals(template.child,
                 template.child.getElement().getComponent().get());
     }
 
@@ -608,8 +607,6 @@ public class PolymerTemplateTest {
     }
 
     private TestPage setupUI(PolymerTemplate<?> template) {
-        List<Object[]> args = new ArrayList<>();
-
         TestPage page = new TestPage();
 
         UI ui = new UI() {
@@ -631,7 +628,7 @@ public class PolymerTemplateTest {
                 .getFeature(AttachTemplateChildFeature.class);
         AtomicInteger counter = new AtomicInteger(0);
         feature.forEachChild(child -> counter.incrementAndGet());
-        Assert.assertEquals(1, counter.get());
+        assertEquals(1, counter.get());
     }
 
     private void doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
@@ -643,17 +640,17 @@ public class PolymerTemplateTest {
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
-        Assert.assertEquals(2, templateNodes.size());
+        assertEquals(2, templateNodes.size());
         StateNode child1 = templateNodes.get(0);
         StateNode child2 = templateNodes.get(1);
         String tag = child1.getFeature(ElementData.class).getTag();
         if ("child-template".equals(tag)) {
-            Assert.assertEquals("ffs",
+            assertEquals("ffs",
                     child2.getFeature(ElementData.class).getTag());
         } else {
-            Assert.assertEquals("ffs",
+            assertEquals("ffs",
                     child1.getFeature(ElementData.class).getTag());
-            Assert.assertEquals("child-template",
+            assertEquals("child-template",
                     child2.getFeature(ElementData.class).getTag());
         }
 
@@ -662,8 +659,8 @@ public class PolymerTemplateTest {
         paths.add(convertIntArray((JsonArray) page.params.get(1)[3]));
 
         // check arrays of indices
-        Assert.assertTrue(paths.contains(Arrays.asList(0, 0)));
-        Assert.assertTrue(paths.contains(Arrays.asList(2)));
+        assertTrue(paths.contains(Arrays.asList(0, 0)));
+        assertTrue(paths.contains(Arrays.asList(2)));
     }
 
     private void doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(
@@ -673,8 +670,8 @@ public class PolymerTemplateTest {
         JsonArray path = (JsonArray) page.params.get(0)[3];
 
         // check arrays of indices
-        Assert.assertEquals(1, path.length());
-        Assert.assertEquals(1, (int) path.get(0).asNumber());
+        assertEquals(1, path.length());
+        assertEquals(1, (int) path.get(0).asNumber());
     }
 
     private void doParseTemplte_hasChildTemplateOutsideDomRepeat_elementIsCreated(
@@ -687,6 +684,6 @@ public class PolymerTemplateTest {
         List<StateNode> templateNodes = new ArrayList<>();
         feature.forEachChild(templateNodes::add);
 
-        Assert.assertEquals(1, templateNodes.size());
+        assertEquals(1, templateNodes.size());
     }
 }

@@ -54,8 +54,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            a template parser
      */
     public PolymerTemplate(TemplateParser parser) {
-        TemplateInitializer initializer = new TemplateInitializer(this, parser);
-        initializer.initChildElements();
+        new TemplateInitializer(this, parser).initChildElements();
 
         // This a workaround to propagate model to a Polymer template.
         // Correct implementation will follow in
@@ -97,7 +96,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         return result;
     }
 
-    private boolean checkListType(Class<?> type, ModelType modelType) {
+    private static boolean checkListType(Class<?> type, ModelType modelType) {
         if (type.isAssignableFrom(List.class)) {
             return true;
         }
@@ -155,7 +154,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 descriptor);
     }
 
-    private ModelType getModelTypeForListModel(Type type, ModelType mtype) {
+    private static ModelType getModelTypeForListModel(Type type, ModelType mtype) {
         ModelType modelType = mtype;
         while (modelType instanceof ListModelType) {
             if (type.equals(modelType.getJavaType())) {
