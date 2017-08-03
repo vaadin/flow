@@ -24,7 +24,14 @@ import com.vaadin.ui.VaadinTextField;
  */
 public class TextFieldView extends TestView {
 
+    /**
+     * Constructs a basic layout with a text field.
+     */
     public TextFieldView() {
+        initView();
+    }
+
+    private void initView() {
         Div message = new Div();
         VaadinTextField textField = new VaadinTextField();
         textField.addValueChangeListener(

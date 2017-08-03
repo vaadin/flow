@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.tests.components.textfield;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,6 +35,6 @@ public class TextFieldViewIT extends AbstractComponentIT {
 
     @Test
     public void pass() {
-        isElementPresent(By.tagName("vaadin-text-field"));
+        Assert.assertTrue(isElementPresent(By.tagName("vaadin-text-field")));
     }
 }

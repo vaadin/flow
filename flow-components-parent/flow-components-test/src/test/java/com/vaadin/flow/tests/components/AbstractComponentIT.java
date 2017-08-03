@@ -22,6 +22,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  */
 public abstract class AbstractComponentIT extends ChromeBrowserTest {
 
+    private static final String IT_POSTFIX = "IT";
+
     @Override
     public void checkIfServerAvailable() {
     }
@@ -29,9 +31,9 @@ public abstract class AbstractComponentIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
         String viewName = getClass().getSimpleName();
-        if (viewName.endsWith("Test")) {
+        if (viewName.endsWith(IT_POSTFIX)) {
             return "/" + viewName.substring(0,
-                    viewName.length() - "Test".length());
+                    viewName.length() - IT_POSTFIX.length());
         }
         return "/" + viewName;
     }
