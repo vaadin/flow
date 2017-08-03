@@ -20,10 +20,15 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.parallel.Browser;
 
 /**
@@ -54,6 +59,19 @@ public class ChromeBrowserTest extends ViewOrUITest {
                 System.setProperty(WEBDRIVER_CHROME_DRIVER, driverLocation);
             }
         }
+    }
+
+    @Before
+    @Override
+    public void setup() throws Exception {
+        setDriver(createDriver());
+    }
+
+    private WebDriver createDriver() {
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
+        return TestBench.createDriver(new ChromeDriver(options));
     }
 
     private static String findDriver() {
