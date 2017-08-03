@@ -56,7 +56,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!--Plugins-->
-        <driver.binary.downloader.maven.plugin.version>1.0.12</driver.binary.downloader.maven.plugin.version>
+        <driver.binary.downloader.maven.plugin.version>1.0.14</driver.binary.downloader.maven.plugin.version>
         <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>2.20</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
@@ -288,10 +288,10 @@
                             <directory>${frontend.working.directory}/node_modules</directory>
                         </fileset>
                         <fileset>
-                            <directory>flow-tests/driver_zips</directory>
+                            <directory>${project.rootdir}/driver</directory>
                         </fileset>
                         <fileset>
-                            <directory>flow-tests/driver</directory>
+                            <directory>${project.rootdir}/driver_zips</directory>
                         </fileset>
                     </filesets>
                 </configuration>
@@ -345,7 +345,7 @@
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
                         <parallel>all</parallel>
-                        <threadCount>5</threadCount>
+                        <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse
