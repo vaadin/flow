@@ -33,6 +33,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.webapp.WebInfConfiguration;
 import org.eclipse.jetty.webapp.WebXmlConfiguration;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -47,7 +48,10 @@ import com.vaadin.testbench.parallel.Browser;
  *
  * If you run this from Eclipse it might not produce the correct result as it
  * uses files from the target folder.
+ *
+ * Ignored for now, see https://github.com/vaadin/flow/issues/2119 for details.
  */
+@Ignore
 public class RedeployLeakIT extends AbstractTestBenchTest {
 
     private static final String testClass = "com.vaadin.server.VaadinServlet";
