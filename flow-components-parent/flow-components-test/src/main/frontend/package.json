@@ -1,0 +1,16 @@
+{
+  "name": "polymer-build",
+  "version": "1.0.0",
+  "main": "",
+  "dependencies": {
+    "bower": "~1.8.0",
+    "gulp": "~3.9.1",
+    "polymer-cli": "~1.3.1"
+  },
+  "scripts": {
+    "prodMode": "bower install && polymer build",
+    "devMode": "bower install"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}
