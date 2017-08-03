@@ -20,72 +20,103 @@ import com.google.gwt.core.shared.GWT;
 import elemental.client.Browser;
 
 /**
- * Helper class for using window.console
+ * Helper class for using window.console. Does not log anything to console if
+ * production mode is enabled.
  *
  * @author Vaadin Ltd
  */
-public class Console {
+public final class Console {
+    private static boolean shouldLogToBrowserConsole;
+
+    private Console() {
+    }
 
     /**
-     * Logs the given message to the browser console using the debug log level.
+     * Changes logger behavior, making it skip all browser logging for
+     * production mode.
+     *
+     * @param isProductionMode
+     *            if an application is in the production mode or not
+     */
+    public static void setProductionMode(boolean isProductionMode) {
+        shouldLogToBrowserConsole = !isProductionMode;
+    }
+
+    /**
+     * If not in production mode, logs the given message to the browser console
+     * using the debug log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard output.
+     * If used directly in a JVM, writes the message to standard output
+     * disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
      */
     public static void debug(Object message) {
         if (GWT.isScript()) {
-            Browser.getWindow().getConsole().debug(message);
+            if (shouldLogToBrowserConsole) {
+                Browser.getWindow().getConsole().debug(message);
+            }
         } else {
             System.out.println(message);
         }
     }
 
     /**
-     * Logs the given message to the browser console using the info log level.
+     * If not in production mode, logs the given message to the browser console
+     * using the info log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard output.
+     * If used directly in a JVM, writes the message to standard output
+     * disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
      */
     public static void log(Object message) {
         if (GWT.isScript()) {
-            Browser.getWindow().getConsole().log(message);
+            if (shouldLogToBrowserConsole) {
+                Browser.getWindow().getConsole().log(message);
+            }
         } else {
             System.out.println(message);
         }
     }
 
     /**
-     * Logs the given message to the browser console using the warning log
-     * level.
+     * If not in production mode, logs the given message to the browser console
+     * using the warning log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard error.
+     * If used directly in a JVM, writes the message to standard error
+     * disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
      */
     public static void warn(Object message) {
         if (GWT.isScript()) {
-            Browser.getWindow().getConsole().warn(message);
+            if (shouldLogToBrowserConsole) {
+                Browser.getWindow().getConsole().warn(message);
+            }
         } else {
             System.err.println(message);
         }
     }
 
     /**
-     * Logs the given message to the browser console using the error log level.
+     * If not in production mode, logs the given message to the browser console
+     * using the error log level.
      * <p>
-     * If used directly in a JVM, writes the message to standard error.
+     * If used directly in a JVM, writes the message to standard error
+     * disregarding of the production mode settings.
      *
      * @param message
      *            the message to log
      */
     public static void error(Object message) {
         if (GWT.isScript()) {
-            Browser.getWindow().getConsole().error(message);
+            if (shouldLogToBrowserConsole) {
+                Browser.getWindow().getConsole().error(message);
+            }
         } else {
             System.err.println(message);
         }

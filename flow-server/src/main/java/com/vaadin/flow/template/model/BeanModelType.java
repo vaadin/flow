@@ -276,21 +276,21 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         }
 
         ModelConverter<?, ?> converter = converterOptional.get();
-        if (!converter.getApplicationType().equals(propertyType)) {
+        if (!converter.getModelType().equals(propertyType)) {
             throw new InvalidTemplateModelException(String.format(
                     "Converter '%s' is incompatible with the type '%s'.",
                     converter.getClass().getName(),
                     propertyType.getTypeName()));
         }
 
-        if (isBean(converter.getModelType())) {
+        if (isBean(converter.getPresentationType())) {
             return new ConvertedModelType<>(
-                    new BeanModelType<>(converter.getModelType(),
+                    new BeanModelType<>(converter.getPresentationType(),
                             propertyFilter, converterProvider),
                     converter);
         } else {
             Optional<ModelType> maybeBasicModelType = BasicModelType
-                    .get(converter.getModelType());
+                    .get(converter.getPresentationType());
             if (maybeBasicModelType.isPresent()) {
                 return new ConvertedModelType<>(maybeBasicModelType.get(),
                         converter);
@@ -588,7 +588,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     private Map<String, Method> findBeanGetters(Class<?> beanType) {
-        HashMap<String, Method> getters = new HashMap<>();
+        Map<String, Method> getters = new HashMap<>();
         ReflectTools.getGetterMethods(beanType).forEach(getter -> {
             String propertyName = ReflectTools.getPropertyName(getter);
             if (!properties.containsKey(propertyName)) {

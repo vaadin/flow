@@ -30,7 +30,14 @@ These tutorials show how the different features are used.
 ** <<tutorial-user-input#,Retrieving User Input>>
 ** <<tutorial-dynamic-styling#,Dynamic styling>>
 ** <<tutorial-shadow-root#,Shadow root in server-side Element>>
-* Component API
+* Web components
+** <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+** <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
+** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
+** <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+* Flow components
+** <<tutorial-flow-components-setup#,Setup your project to use Flow components>>
+* Creating your own components
 ** <<tutorial-component-basic#,Creating A Simple Component Using the Element API>>
 ** <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
 ** <<tutorial-component-property-descriptor#,Using API Helpers for Defining Component Properties>>
@@ -38,12 +45,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-component-events#,Using Events with Components>>
 ** <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
 ** <<tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
-* Web Components
-** <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
-** <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
-** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
-** <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
-* Routing and Views
+* Routing and views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
 ** <<tutorial-routing-view-parameters#,Using View Parameters>>
@@ -66,20 +68,6 @@ These tutorials show how the different features are used.
 ** <<tutorial-history-api#,The History API>>
 ** <<tutorial-dynamic-content#,Dynamic Content>>
 ** <<tutorial-loading-indicator#,The Loading Indicator>>
-
-=== Deprecated documentation
-* AngularTemplate API
-** <<deprecated/tutorial-template-basic#,*Deprecated* Creating A Simple Component Using the AngularTemplate API>>
-** <<deprecated/tutorial-template-bindings#,*Deprecated* Binding Model Data in a AngularTemplate>>
-** <<deprecated/tutorial-template-model-bean#,*Deprecated* Using Beans with a Template Model>>
-** <<deprecated/tutorial-template-class-name-binding#,*Deprecated* Binding Class Names in a AngularTemplate>>
-** <<deprecated/tutorial-template-components#,*Deprecated* Adding Components to a AngularTemplate>>
-** <<deprecated/tutorial-template-include#,*Deprecated* Including Templates in Templates>>
-** <<deprecated/tutorial-template-webcomponents#,*Deprecated* Using Web Components in a AngularTemplate>>
-** <<deprecated/tutorial-template-for#,*Deprecated* Creating Template Contents Dynamically Based on a List of Items>>
-** <<deprecated/tutorial-template-event-handlers#,*Deprecated* Handling User Events in a AngularTemplate>>
-* Routing and Views
-** <<deprecated/tutorial-routing-template-parent#,*Deprecated* Using a Template as a Parent View>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 
