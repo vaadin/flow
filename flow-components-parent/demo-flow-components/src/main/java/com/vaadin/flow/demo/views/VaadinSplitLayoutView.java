@@ -28,6 +28,9 @@ import com.vaadin.ui.VaadinSplitLayout;
 @ComponentDemo(name = "Vaadin Split Layout", href = "vaadin-split-layout")
 public class VaadinSplitLayoutView extends DemoView {
 
+    private static final String FIRST_CONTENT_TEXT = "First content component";
+    private static final String SECOND_CONTENT_TEXT = "Second content component";
+
     @Override
     public void initView() {
         addHorizontalLayout();
@@ -39,11 +42,13 @@ public class VaadinSplitLayoutView extends DemoView {
     }
 
     private void addHorizontalLayout() {
+        Label firstLabel = new Label(FIRST_CONTENT_TEXT);
+        Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
         // source-example-heading: Horizontal Split Layout (Default)
         VaadinSplitLayout layout = new VaadinSplitLayout();
-        layout.addToPrimary(new Label("First content component"));
-        layout.addToSecondary(new Label("Second content component"));
+        layout.addToPrimary(firstLabel);
+        layout.addToSecondary(secondLabel);
         // end-source-example
         add(new H3("Horizontal Split Layout (Default)"), layout);
     }
@@ -59,15 +64,18 @@ public class VaadinSplitLayoutView extends DemoView {
     }
 
     private void addLayoutCombination() {
+        Label firstLabel = new Label(FIRST_CONTENT_TEXT);
+        Label secondLabel = new Label(SECOND_CONTENT_TEXT);
+        Label thirdLabel = new Label("Third content component");
         // @formatter:off
         // begin-source-example
         // source-example-heading: Layout Combination
         VaadinSplitLayout layout = new VaadinSplitLayout()
-            .addToPrimary(new Label("First content component"))
+            .addToPrimary(firstLabel)
             .addToSecondary(
                     new VaadinSplitLayout().setVertical(true)
-                            .addToPrimary(new Label("Second content component"))
-                            .addToSecondary(new Label("Third content component")));
+                            .addToPrimary(secondLabel)
+                            .addToSecondary(thirdLabel));
         // end-source-example
         // @formatter:on
         layout.getPrimaryComponent().setId("first-component");
@@ -80,11 +88,12 @@ public class VaadinSplitLayoutView extends DemoView {
     }
 
     private void addResizeNotificationLayout() {
+        Label firstLabel = new Label(FIRST_CONTENT_TEXT);
+        Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
         // source-example-heading: Resize Notification for the Nested Elements
         VaadinSplitLayout layout = new VaadinSplitLayout()
-                .addToPrimary(new Label("First content component"))
-                .addToSecondary(new Label("Second content component"));
+                .addToPrimary(firstLabel).addToSecondary(secondLabel);
         Label message = new Label();
         AtomicInteger resizeCounter = new AtomicInteger();
         layout.addIronResizeListener(event -> message.setText(
@@ -95,24 +104,27 @@ public class VaadinSplitLayoutView extends DemoView {
     }
 
     private void addInitialSplitterPositionLayout() {
+        Label firstLabel = new Label(FIRST_CONTENT_TEXT);
+        Label secondLabel = new Label(SECOND_CONTENT_TEXT);
+        // @formatter:off
         // begin-source-example
         // source-example-heading: Split Layout with Initial Splitter Position
-        VaadinSplitLayout layout = new VaadinSplitLayout(
-                new Label("First content component"),
-                new Label("Second content component"));
+        VaadinSplitLayout layout = new VaadinSplitLayout(firstLabel, secondLabel);
         layout.setSplitterPosition(80);
         // end-source-example
+        // @formatter:on
         layout.getPrimaryComponent().setId("initial-sp-first-component");
         layout.getSecondaryComponent().setId("initial-sp-second-component");
         addCard(new H3("Split Layout with Initial Splitter Position"), layout);
     }
     
     private void addMinMaxWidthLayout() {
+        Label firstLabel = new Label(FIRST_CONTENT_TEXT);
+        Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
         // source-example-heading: Split Layout with Minimum and Maximum Widths
         VaadinSplitLayout layout = new VaadinSplitLayout()
-                .addToPrimary(new Label("First content component"))
-                .addToSecondary(new Label("Second content component"))
+                .addToPrimary(firstLabel).addToSecondary(secondLabel)
                 .setPrimaryStyle("minWidth", "100px")
                 .setPrimaryStyle("maxWidth", "150px");
         // end-source-example
