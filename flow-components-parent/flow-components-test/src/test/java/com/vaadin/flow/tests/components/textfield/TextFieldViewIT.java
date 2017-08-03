@@ -25,7 +25,7 @@ import com.vaadin.ui.VaadinTextField;
 /**
  * Integration tests for {@link VaadinTextField}.
  */
-public class TextFieldViewTest extends AbstractComponentIT {
+public class TextFieldViewIT extends AbstractComponentIT {
 
     @Before
     public void init() {
