@@ -138,7 +138,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -153,7 +153,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -325,8 +325,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Root object from which the path is evaluated. When specified,
 	 *            no notification will occur.
 	 */
-	protected void set(java.lang.String path, elemental.json.JsonObject value,
-			elemental.json.JsonObject root) {
+	protected void set(elemental.json.JsonObject path,
+			elemental.json.JsonObject value, elemental.json.JsonObject root) {
 		getElement().callFunction("set", path, value, root);
 	}
 
@@ -354,8 +354,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Root object from which the path is evaluated. When specified,
 	 *            no notification will occur.
 	 */
-	protected void set(elemental.json.JsonObject path,
-			elemental.json.JsonObject value, elemental.json.JsonObject root) {
+	protected void set(java.lang.String path, elemental.json.JsonObject value,
+			elemental.json.JsonObject root) {
 		getElement().callFunction("set", path, value, root);
 	}
 

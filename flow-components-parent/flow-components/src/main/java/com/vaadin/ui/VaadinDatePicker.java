@@ -35,7 +35,7 @@ import elemental.json.JsonObject;
  * {@code vaadin-date-picker} webcomponent.
  * <p>
  * It allows setting and getting {@link LocalDate} objects, setting minimum and
- * maximum date ranges and had internationalization support through the
+ * maximum date ranges and has internationalization support through the
  * {@link VaadinDatePickerI18n} object.
  *
  */
