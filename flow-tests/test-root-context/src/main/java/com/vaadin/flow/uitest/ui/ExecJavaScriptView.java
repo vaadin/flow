@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Input;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.ui.UI;
@@ -27,18 +27,18 @@ import elemental.json.Json;
 public class ExecJavaScriptView extends AbstractDivView {
     @Override
     protected void onShow() {
-        Button alertButton = createJsButton("Alert", "alertButton",
+        NativeButton alertButton = createJsButton("Alert", "alertButton",
                 "window.alert($0)", "Hello world");
-        Button focusButton = createJsButton("Focus Alert button", "focusButton",
+        NativeButton focusButton = createJsButton("Focus Alert button", "focusButton",
                 "$0.focus()", alertButton);
-        Button swapText = createJsButton("Swap button texts", "swapButton",
+        NativeButton swapText = createJsButton("Swap button texts", "swapButton",
                 "(function() {var t = $0.textContent; $0.textContent = $1.textContent; $1.textContent = t;})()",
                 alertButton, focusButton);
-        Button logButton = createJsButton("Log", "logButton", "console.log($0)",
+        NativeButton logButton = createJsButton("Log", "logButton", "console.log($0)",
                 JsonUtils.createArray(Json.create("Hello world"),
                         Json.create(true)));
 
-        Button createElementButton = new Button("Create and update element",
+        NativeButton createElementButton = new NativeButton("Create and update element",
                 e -> {
                     Input input = new Input();
                     input.addClassName("newInput");
@@ -51,9 +51,9 @@ public class ExecJavaScriptView extends AbstractDivView {
         add(alertButton, focusButton, swapText, logButton, createElementButton);
     }
 
-    private Button createJsButton(String text, String id, String script,
+    private NativeButton createJsButton(String text, String id, String script,
             Serializable... arguments) {
-        Button button = new Button(text, e -> UI.getCurrent().getPage()
+        NativeButton button = new NativeButton(text, e -> UI.getCurrent().getPage()
                 .executeJavaScript(script, arguments));
 
         button.setId(id);

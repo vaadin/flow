@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Label;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
@@ -43,7 +43,7 @@ public class UpgradeElementUI extends UI {
         UpgradeElement template = new UpgradeElement();
         template.setId("template");
 
-        Button button = new Button("Upgrade element",
+        NativeButton button = new NativeButton("Upgrade element",
                 event -> getPage().executeJavaScript(
                         "customElements.define(MyTemplate.is, MyTemplate);"));
         button.setId("upgrade");

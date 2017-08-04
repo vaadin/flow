@@ -18,13 +18,13 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
-import com.vaadin.ui.VaadinCheckbox;
+import com.vaadin.ui.Checkbox;
 
 /**
- * View for {@link VaadinCheckbox} demo.
+ * View for {@link Checkbox} demo.
  */
 @ComponentDemo(name = "Vaadin Checkbox", href = "vaadin-checkbox")
-public class VaadinCheckboxView extends DemoView {
+public class CheckboxView extends DemoView {
 
     @Override
     void initView() {
@@ -38,7 +38,7 @@ public class VaadinCheckboxView extends DemoView {
     private void addDefaultCheckbox() {
         // begin-source-example
         // source-example-heading: Default Checkbox
-        VaadinCheckbox checkbox = new VaadinCheckbox();
+        Checkbox checkbox = new Checkbox();
         checkbox.setLabelText("Default Checkbox");
         // end-source-example
         add(new H3("Default Checkbox"), checkbox);
@@ -48,7 +48,7 @@ public class VaadinCheckboxView extends DemoView {
     private void addDisabledCheckbox() {
         // begin-source-example
         // source-example-heading: Disabled Checkbox
-        VaadinCheckbox disabledCheckbox = new VaadinCheckbox(
+        Checkbox disabledCheckbox = new Checkbox(
                 "Disabled Checkbox").setValue(true).setDisabled(true);
         // end-source-example
         addCard(new H3("Disabled Checkbox"), disabledCheckbox);
@@ -58,7 +58,7 @@ public class VaadinCheckboxView extends DemoView {
     private void addIndeterminateCheckbox() {
         // begin-source-example
         // source-example-heading: Indeterminate Checkbox
-        VaadinCheckbox indeterminateCheckbox = new VaadinCheckbox(
+        Checkbox indeterminateCheckbox = new Checkbox(
                 "Indeterminate Checkbox").setIndeterminate(true);
         // end-source-example
         addCard(new H3("Indeterminate Checkbox"), indeterminateCheckbox);
@@ -68,7 +68,7 @@ public class VaadinCheckboxView extends DemoView {
     private void addValueChangeCheckbox() {
         // begin-source-example
         // source-example-heading: Checkbox with a ValueChangeListener
-        VaadinCheckbox valueChangeCheckbox = new VaadinCheckbox(
+        Checkbox valueChangeCheckbox = new Checkbox(
                 "Checkbox with a ValueChangeListener");
         Div message = new Div();
         valueChangeCheckbox.addValueChangeListener(event -> {
@@ -86,8 +86,8 @@ public class VaadinCheckboxView extends DemoView {
     private void addAccessibleCheckbox() {
         // begin-source-example
         // source-example-heading: Checkbox with Custom Accessible Label
-        VaadinCheckbox accessibleCheckbox =
-                new VaadinCheckbox("Accessible Checkbox")
+        Checkbox accessibleCheckbox =
+                new Checkbox("Accessible Checkbox")
                     .setAriaLabel("Click me");
         // end-source-example
         addCard(new H3("Checkbox with Custom Accessible Label"),

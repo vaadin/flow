@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 
@@ -49,7 +49,7 @@ public class ShadowRootView extends AbstractDivView {
         shadowLabel.setAttribute("id", "shadow-label");
         shadowRoot.appendChild(shadowLabel);
 
-        Button removeChild = new Button(
+        NativeButton removeChild = new NativeButton(
                 "Remove the last child from the shadow root",
                 event -> shadowRoot.removeChild(shadowLabel));
         removeChild.setId("remove");

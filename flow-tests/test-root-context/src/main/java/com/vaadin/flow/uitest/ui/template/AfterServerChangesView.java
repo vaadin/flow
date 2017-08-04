@@ -19,7 +19,7 @@ import java.util.UUID;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
@@ -42,12 +42,12 @@ public class AfterServerChangesView extends AbstractDivView {
 
         add(new OneWayPolymerBindingView());
 
-        Button button = new Button("Remove the second component",
+        NativeButton button = new NativeButton("Remove the second component",
                 event -> remove(component));
         button.setId("remove");
         add(button);
 
-        Button update = new Button("Update components",
+        NativeButton update = new NativeButton("Update components",
                 event -> updateComponents());
         update.setId("update");
         add(update);

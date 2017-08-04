@@ -17,7 +17,7 @@ package com.vaadin.flow.tutorial.misc;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Input;
 import com.vaadin.ui.UI;
 
@@ -31,7 +31,7 @@ public class DynamicContentParameters {
         image.setAttribute("type", "image/svg+xml");
         image.getStyle().set("display", "block");
 
-        Button button = new Button("Generate Image");
+        NativeButton button = new NativeButton("Generate Image");
         button.addClickListener(event -> {
             String url = "image?name=" + name.getValue();
             image.setAttribute("data", url);

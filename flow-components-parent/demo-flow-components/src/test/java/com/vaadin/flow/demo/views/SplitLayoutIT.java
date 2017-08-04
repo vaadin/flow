@@ -26,9 +26,9 @@ import org.openqa.selenium.interactions.Actions;
 import com.vaadin.flow.demo.AbstractChromeTest;
 
 /**
- * Integration tests for {@link VaadinSplitLayoutView}.
+ * Integration tests for {@link SplitLayoutView}.
  */
-public class VaadinSplitLayoutIT extends AbstractChromeTest {
+public class SplitLayoutIT extends AbstractChromeTest {
 
     private static String SPLIT_LAYOUT_TAG = "vaadin-split-layout";
 

@@ -23,12 +23,12 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
-import com.vaadin.ui.VaadinTextField;
+import com.vaadin.ui.TextField;
 
 /**
- * Integration tests for the {@link VaadinTextField}.
+ * Integration tests for the {@link TextField}.
  */
-public class VaadinTextFieldIT extends AbstractChromeTest {
+public class TextFieldIT extends AbstractChromeTest {
 
     private WebElement layout;
 

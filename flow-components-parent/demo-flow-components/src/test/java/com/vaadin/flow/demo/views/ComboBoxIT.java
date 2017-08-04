@@ -24,9 +24,9 @@ import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
 
 /**
- * Integration tests for the {@link VaadinComboBoxView}.
+ * Integration tests for the {@link ComboBoxView}.
  */
-public class VaadinComboBoxIT extends AbstractChromeTest {
+public class ComboBoxIT extends AbstractChromeTest {
 
     private WebElement layout;
 

@@ -26,8 +26,8 @@ import com.vaadin.generated.vaadin.split.layout.GeneratedVaadinSplitLayout;
  * 
  * @author Vaadin Ltd
  */
-public class VaadinSplitLayout
-        extends GeneratedVaadinSplitLayout<VaadinSplitLayout>
+public class SplitLayout
+        extends GeneratedVaadinSplitLayout<SplitLayout>
         implements HasSize {
 
     private Component primaryComponent;
@@ -36,7 +36,7 @@ public class VaadinSplitLayout
     /**
      * Constructs an empty VaadinSplitLayout.
      */
-    public VaadinSplitLayout() {
+    public SplitLayout() {
     }
 
     /**
@@ -46,7 +46,7 @@ public class VaadinSplitLayout
      * @param primaryComponent
      * @param secondaryComponent
      */
-    public VaadinSplitLayout(Component primaryComponent,
+    public SplitLayout(Component primaryComponent,
             Component secondaryComponent) {
         addToPrimary(primaryComponent);
         addToSecondary(secondaryComponent);
@@ -67,7 +67,7 @@ public class VaadinSplitLayout
      * @return this instance, for method chaining
      */
     @Override
-    public VaadinSplitLayout addToPrimary(Component... components) {
+    public SplitLayout addToPrimary(Component... components) {
         if (components.length == 1) {
             primaryComponent = components[0];
         } else {
@@ -99,7 +99,7 @@ public class VaadinSplitLayout
      * @return this instance, for method chaining
      */
     @Override
-    public VaadinSplitLayout addToSecondary(Component... components) {
+    public SplitLayout addToSecondary(Component... components) {
         if (components.length == 1) {
             secondaryComponent = components[0];
         } else {
@@ -130,7 +130,7 @@ public class VaadinSplitLayout
      *            the relative position of the splitter, in percentages
      * @return this instance, for method chaining
      */
-    public VaadinSplitLayout setSplitterPosition(double position) {
+    public SplitLayout setSplitterPosition(double position) {
         double primary = Math.min(Math.max(position, 0), 100);
         double secondary = 100 - primary;
         String styleName;
@@ -153,7 +153,7 @@ public class VaadinSplitLayout
      *            the value to set
      * @return this instance, for method chaining
      */
-    public VaadinSplitLayout setPrimaryStyle(String styleName, String value) {
+    public SplitLayout setPrimaryStyle(String styleName, String value) {
         return setInnerComponentStyle(primaryComponent, styleName, value);
     }
 
@@ -166,11 +166,11 @@ public class VaadinSplitLayout
      *            the value to set
      * @return this instance, for method chaining
      */
-    public VaadinSplitLayout setSecondaryStyle(String styleName, String value) {
+    public SplitLayout setSecondaryStyle(String styleName, String value) {
         return setInnerComponentStyle(secondaryComponent, styleName, value);
     }
 
-    private VaadinSplitLayout setComponents() {
+    private SplitLayout setComponents() {
         removeAll();
         if (primaryComponent == null) {
             super.addToPrimary(new Div());
@@ -185,7 +185,7 @@ public class VaadinSplitLayout
         return get();
     }
 
-    private VaadinSplitLayout setInnerComponentStyle(Component innerComponent,
+    private SplitLayout setInnerComponentStyle(Component innerComponent,
             String styleName, String value) {
         Optional.ofNullable(innerComponent).ifPresent(component -> component
                 .getElement().getStyle().set(styleName, value));

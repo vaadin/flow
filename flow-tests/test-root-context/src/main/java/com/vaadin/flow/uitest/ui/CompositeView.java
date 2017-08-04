@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Hr;
 import com.vaadin.flow.html.Input;
@@ -91,7 +91,7 @@ public class CompositeView extends AbstractDivView {
 
         Input serverInput = new Input();
         serverInput.setId(SERVER_INPUT_ID);
-        Button serverInputButton = new Button("Set", e -> {
+        NativeButton serverInputButton = new NativeButton("Set", e -> {
             nameField.setName(serverInput.getValue());
             serverInput.clear();
         });

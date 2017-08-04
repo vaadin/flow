@@ -18,33 +18,33 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
-import com.vaadin.ui.VaadinFormLayout;
-import com.vaadin.ui.VaadinFormLayout.ResponsiveStep;
-import com.vaadin.ui.VaadinFormLayout.VaadinFormItem;
-import com.vaadin.ui.VaadinTextField;
+import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.FormLayout.ResponsiveStep;
+import com.vaadin.ui.FormLayout.VaadinFormItem;
+import com.vaadin.ui.TextField;
 
 /**
- * Demo view for {@link VaadinFormLayout}.
+ * Demo view for {@link FormLayout}.
  * 
  * @author Vaadin Ltd
  */
 @ComponentDemo(name = "Vaadin Form Layout", href = "vaadin-form-layout")
-public class VaadinFormLayoutView extends DemoView {
+public class FormLayoutView extends DemoView {
 
     @Override
     void initView() {
         // @formatter:off
         // begin-source-example
         // source-example-heading: A form layout with custom responsive layouting
-        VaadinFormLayout nameLayout = new VaadinFormLayout();
+        FormLayout nameLayout = new FormLayout();
 
-        VaadinTextField titleField = new VaadinTextField()
+        TextField titleField = new TextField()
                 .setLabel("Title")
                 .setPlaceholder("Sir");
-        VaadinTextField firstNameField = new VaadinTextField()
+        TextField firstNameField = new TextField()
                 .setLabel("First name")
                 .setPlaceholder("John");
-        VaadinTextField lastNameField = new VaadinTextField()
+        TextField lastNameField = new TextField()
                 .setLabel("Last name")
                 .setPlaceholder("Doe");
 
@@ -59,12 +59,12 @@ public class VaadinFormLayoutView extends DemoView {
 
         // begin-source-example
         // source-example-heading: A form layout with fields wrapped in form items
-        VaadinFormLayout layoutWithFormItems = new VaadinFormLayout();
+        FormLayout layoutWithFormItems = new FormLayout();
 
         VaadinFormItem firstItem = new VaadinFormItem(
-                new VaadinTextField().setPlaceholder("John"));
+                new TextField().setPlaceholder("John"));
         VaadinFormItem secondItem = new VaadinFormItem(
-                new VaadinTextField().setPlaceholder("Doe"));
+                new TextField().setPlaceholder("Doe"));
 
         Div firstItemLabelComponent = new Div();
         firstItemLabelComponent.setText("First name");

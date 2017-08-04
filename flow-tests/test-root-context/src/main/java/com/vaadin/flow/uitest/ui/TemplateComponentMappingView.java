@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.Id;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Input;
 import com.vaadin.flow.html.Span;
@@ -38,7 +38,7 @@ public class TemplateComponentMappingView extends AngularTemplate {
     @Id(SPAN_ID)
     private Span span;
     @Id(BUTTON_ID)
-    private Button button;
+    private NativeButton button;
     @Id(INPUT_ID)
     private Input input;
 

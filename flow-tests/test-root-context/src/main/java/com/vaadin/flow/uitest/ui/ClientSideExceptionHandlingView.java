@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.View;
 
 public class ClientSideExceptionHandlingView extends Div implements View {
 
     static final String CAUSE_EXCEPTION_ID = "causeException";
-    private Button causeException;
+    private NativeButton causeException;
 
     public ClientSideExceptionHandlingView() {
-        causeException = new Button("Cause client side exception", e -> {
+        causeException = new NativeButton("Cause client side exception", e -> {
             getUI().get().getPage().executeJavaScript("null.foo");
         });
         causeException.setId(CAUSE_EXCEPTION_ID);

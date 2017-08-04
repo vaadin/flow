@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.DetachEvent;
 import com.vaadin.ui.UI;
@@ -42,7 +42,7 @@ public class ClientServerCounterUI extends UI {
                 .setAttribute("id", CLIENT_COUNTER_ID);
         getElement().appendChild(lbl);
 
-        Button button = new Button("Increment", e -> {
+        NativeButton button = new NativeButton("Increment", e -> {
             clientCounter++;
             lbl.setText(clientCounter + "");
         });
@@ -61,7 +61,7 @@ public class ClientServerCounterUI extends UI {
         serverCounterElement.setText(serverCounter + "");
         getElement().appendChild(serverCounterElement);
 
-        Button startTimer = new Button("Start timer", e -> {
+        NativeButton startTimer = new NativeButton("Start timer", e -> {
             serverCounter = 0;
             if (task != null) {
                 task.cancel();

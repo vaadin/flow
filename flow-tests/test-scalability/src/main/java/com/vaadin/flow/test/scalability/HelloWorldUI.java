@@ -3,7 +3,7 @@ package com.vaadin.flow.test.scalability;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Text;
@@ -40,7 +40,7 @@ public class HelloWorldUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        Button b = new Button("Hello", e -> {
+        NativeButton b = new NativeButton("Hello", e -> {
             add(new Text("Hello!"));
         });
         add(b);

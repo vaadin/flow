@@ -92,10 +92,10 @@ If you use `@DomEvent`, any additional constructor parameters should have an `@E
 [source,java]
 ----
 @DomEvent("click")
-public class ClickEvent extends ComponentEvent<Button> {
+public class ClickEvent extends ComponentEvent<NativeButton> {
     private final int button;
 
-    public ClickEvent(Button source, boolean fromClient,
+    public ClickEvent(NativeButton source, boolean fromClient,
             @EventData("event.button") int button) {
         super(source, fromClient);
         this.button = button;

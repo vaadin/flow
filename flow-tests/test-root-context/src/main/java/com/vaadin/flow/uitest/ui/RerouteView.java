@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.HtmlContainer;
 import com.vaadin.flow.html.Input;
 import com.vaadin.flow.html.Label;
@@ -31,7 +31,7 @@ public class RerouteView extends AbstractDivView {
     boolean reroute = false;
 
     public RerouteView() {
-        Button button = new Button("Navigate to here");
+        NativeButton button = new NativeButton("Navigate to here");
         button.setId("navigate");
         button.addClickListener(e -> {
             button.getUI().ifPresent(ui -> ui
