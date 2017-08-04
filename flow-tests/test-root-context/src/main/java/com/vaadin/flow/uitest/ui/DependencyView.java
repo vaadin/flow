@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Hr;
 import com.vaadin.server.InputStreamFactory;
@@ -59,14 +59,14 @@ public class DependencyView extends AbstractDivView {
         clickBody.setId("hello");
         add(clickBody);
 
-        Button jsOrder = new Button("Test JS order", e -> {
+        NativeButton jsOrder = new NativeButton("Test JS order", e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
             getPage().addJavaScript("/test-files/js/read-global-var.js", LoadMode.LAZY);
         });
         jsOrder.setId("loadJs");
 
         /* HTML imports */
-        Button htmlOrder = new Button("Test HTML order", e -> {
+        NativeButton htmlOrder = new NativeButton("Test HTML order", e -> {
             getPage().addHtmlImport(htmlImport2.getResourceUri().toString());
 
             // This failure can only be seen in the browser console
@@ -78,18 +78,18 @@ public class DependencyView extends AbstractDivView {
         htmlOrder.setId("loadHtml");
 
         /* HTML & JS order */
-        Button mixedOrder = new Button("Test HTML & JS order", e -> {
+        NativeButton mixedOrder = new NativeButton("Test HTML & JS order", e -> {
             getPage().addHtmlImport("/test-files/html/combinedMixed.html");
         });
         mixedOrder.setId("loadMixed");
 
-        Button allBlue = new Button("Load 'everything blue' stylesheet", e -> {
+        NativeButton allBlue = new NativeButton("Load 'everything blue' stylesheet", e -> {
             getPage().addStyleSheet("/test-files/css/allblueimportant.css");
 
         });
         allBlue.setId("loadBlue");
 
-        Button loadUnavailableResources = new Button(
+        NativeButton loadUnavailableResources = new NativeButton(
                 "Load unavailable resources", e -> {
                     getPage().addStyleSheet("/not-found.css");
                     getPage().addHtmlImport("/not-found.html");

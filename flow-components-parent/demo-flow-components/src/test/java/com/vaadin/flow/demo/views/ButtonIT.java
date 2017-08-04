@@ -25,9 +25,9 @@ import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
 
 /**
- * Integration tests for the {@link VaadinButtonView}.
+ * Integration tests for the {@link ButtonView}.
  */
-public class VaadinButtonIT extends AbstractChromeTest {
+public class ButtonIT extends AbstractChromeTest {
 
     private WebElement layout;
 

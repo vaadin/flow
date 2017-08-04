@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import java.util.concurrent.TimeUnit;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
@@ -33,7 +33,7 @@ public class LongToOpenView extends AbstractDivView {
         Div div = new Div();
         div.setText("I am the long to open view");
 
-        Button back = new Button("Back",
+        NativeButton back = new NativeButton("Back",
                 event -> getPage().getHistory().back());
         back.setId(BACK_BUTTON_ID);
 

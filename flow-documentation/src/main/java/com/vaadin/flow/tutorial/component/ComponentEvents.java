@@ -19,7 +19,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
@@ -51,10 +51,10 @@ public class ComponentEvents {
     }
 
     @DomEvent("click")
-    public class ClickEvent extends ComponentEvent<Button> {
+    public class ClickEvent extends ComponentEvent<NativeButton> {
         private final int button;
 
-        public ClickEvent(Button source, boolean fromClient,
+        public ClickEvent(NativeButton source, boolean fromClient,
                 @EventData("event.button") int button) {
             super(source, fromClient);
             this.button = button;

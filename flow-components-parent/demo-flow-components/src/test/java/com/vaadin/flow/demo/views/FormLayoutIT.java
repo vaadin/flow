@@ -27,9 +27,9 @@ import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
 
 /**
- * Integration tests for the {@link VaadinFormLayoutView}.
+ * Integration tests for the {@link FormLayoutView}.
  */
-public class VaadinFormLayoutIT extends AbstractChromeTest {
+public class FormLayoutIT extends AbstractChromeTest {
 
     private WebElement layout;
 

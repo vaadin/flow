@@ -22,12 +22,12 @@ import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
 /**
  * Server-side component for the <code>vaadin-button</code> element.
  */
-public class VaadinButton extends GeneratedVaadinButton<VaadinButton> {
+public class Button extends GeneratedVaadinButton<Button> {
 
     /**
      * Default constructor. Creates an empty button.
      */
-    public VaadinButton() {
+    public Button() {
     }
 
     /**
@@ -37,7 +37,7 @@ public class VaadinButton extends GeneratedVaadinButton<VaadinButton> {
      *            the text inside the button
      * @see #setText(String)
      */
-    public VaadinButton(String text) {
+    public Button(String text) {
         super(text);
     }
 
@@ -51,8 +51,8 @@ public class VaadinButton extends GeneratedVaadinButton<VaadinButton> {
      * @see #setText(String)
      * @see #addClickListener(ComponentEventListener)
      */
-    public VaadinButton(String text,
-            ComponentEventListener<ClickEvent<VaadinButton>> clickListener) {
+    public Button(String text,
+            ComponentEventListener<ClickEvent<Button>> clickListener) {
         super(text);
         addClickListener(clickListener);
     }
@@ -64,7 +64,7 @@ public class VaadinButton extends GeneratedVaadinButton<VaadinButton> {
      *            the image inside the button
      * @see #add(Component...)
      */
-    public VaadinButton(Image image) {
+    public Button(Image image) {
         add(image);
     }
 
@@ -78,8 +78,8 @@ public class VaadinButton extends GeneratedVaadinButton<VaadinButton> {
      * @see #add(Component...)
      * @see #addClickListener(ComponentEventListener)
      */
-    public VaadinButton(Image image,
-            ComponentEventListener<ClickEvent<VaadinButton>> clickListener) {
+    public Button(Image image,
+            ComponentEventListener<ClickEvent<Button>> clickListener) {
         add(image);
         addClickListener(clickListener);
     }

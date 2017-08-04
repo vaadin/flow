@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
-import com.vaadin.ui.VaadinComboBox;
+import com.vaadin.ui.ComboBox;
 
 /**
- * View for {@link VaadinComboBox} demo.
+ * View for {@link ComboBox} demo.
  */
 @ComponentDemo(name = "Vaadin ComboBox", href = "vaadin-combo-box")
-public class VaadinComboBoxView extends DemoView {
+public class ComboBoxView extends DemoView {
 
     /**
      * Example object.
@@ -117,7 +117,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: String selection
-        VaadinComboBox<String> comboBox = new VaadinComboBox<>("Browsers");
+        ComboBox<String> comboBox = new ComboBox<>("Browsers");
         comboBox.setItems("Google Chrome", "Mozilla Firefox", "Opera",
                 "Apple Safari", "Microsoft Edge");
 
@@ -140,7 +140,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Object selection
-        VaadinComboBox<Song> comboBox = new VaadinComboBox<>();
+        ComboBox<Song> comboBox = new ComboBox<>();
         comboBox.setLabel("Music selection");
         comboBox.setItemLabelPath("name");
 
@@ -169,7 +169,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Value selection from objects
-        VaadinComboBox<Song> comboBox = new VaadinComboBox<>("Artists");
+        ComboBox<Song> comboBox = new ComboBox<>("Artists");
         comboBox.setItemLabelPath("artist");
         comboBox.setItemValuePath("artist");
 
@@ -199,7 +199,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Custom filtering
-        VaadinComboBox<Fruit> comboBox = new VaadinComboBox<>(
+        ComboBox<Fruit> comboBox = new ComboBox<>(
                 "Filter fruits by color (e.g. red, green, yellow...)");
         comboBox.setItemLabelPath("name");
         comboBox.setItemTemplate(

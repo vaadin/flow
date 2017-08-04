@@ -17,10 +17,10 @@ package com.vaadin.flow.components.it.textfield;
 
 import com.vaadin.flow.components.it.TestView;
 import com.vaadin.flow.html.Div;
-import com.vaadin.ui.VaadinTextField;
+import com.vaadin.ui.TextField;
 
 /**
- * Test view for {@link VaadinTextField}.
+ * Test view for {@link TextField}.
  */
 public class TextFieldView extends TestView {
 
@@ -33,7 +33,7 @@ public class TextFieldView extends TestView {
 
     private void initView() {
         Div message = new Div();
-        VaadinTextField textField = new VaadinTextField();
+        TextField textField = new TextField();
         textField.addValueChangeListener(
                 event -> message.setText(
                         String.format("Old value: '%s'. New value: '%s'.",
