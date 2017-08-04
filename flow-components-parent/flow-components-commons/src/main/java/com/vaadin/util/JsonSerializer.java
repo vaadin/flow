@@ -164,11 +164,11 @@ public final class JsonSerializer {
      * @return the deserialized object, or <code>null</code> if the input json
      *         is <code>null</code>
      */
-    @SuppressWarnings("unchecked")
     public static <T> T toObject(Class<T> type, JsonValue json) {
         return toObject(type, null, json);
     }
 
+    @SuppressWarnings("unchecked")
     private static <T> T toObject(Class<T> type, Type genericType,
             JsonValue json) {
         if (json == null || json instanceof JsonNull) {
@@ -181,27 +181,7 @@ public final class JsonSerializer {
         }
 
         if (Collection.class.isAssignableFrom(type)) {
-            if (json.getType() != JsonType.ARRAY) {
-                return null;
-            }
-            if (!(genericType instanceof ParameterizedType)) {
-                throw new IllegalArgumentException(
-                        "Cloud not infer the generic parameterized type of the collection of class: "
-                                + type.getName()
-                                + ". The type is no subclass of ParameterizedType: "
-                                + genericType);
-            }
-            JsonArray array = (JsonArray) json;
-            Collection<?> collection = tryToCreateCollection(type,
-                    array.length());
-            if (array.length() > 0) {
-                ParameterizedType parameterizedType = (ParameterizedType) genericType;
-                Class<?> parameterizedClass = (Class<?>) parameterizedType
-                        .getActualTypeArguments()[0];
-                collection.addAll(
-                        (List) toObjects(parameterizedClass, (JsonArray) json));
-            }
-            return (T) collection;
+            return toCollection(type, genericType, json);
         }
 
         T instance;
@@ -257,6 +237,30 @@ public final class JsonSerializer {
                             + " from JsonValue",
                     e);
         }
+    }
+
+    private static <T> T toCollection(Class<T> type, Type genericType,
+            JsonValue json) {
+        if (json.getType() != JsonType.ARRAY) {
+            return null;
+        }
+        if (!(genericType instanceof ParameterizedType)) {
+            throw new IllegalArgumentException(
+                    "Cloud not infer the generic parameterized type of the collection of class: "
+                            + type.getName()
+                            + ". The type is no subclass of ParameterizedType: "
+                            + genericType);
+        }
+        JsonArray array = (JsonArray) json;
+        Collection<?> collection = tryToCreateCollection(type, array.length());
+        if (array.length() > 0) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+            Class<?> parameterizedClass = (Class<?>) parameterizedType
+                    .getActualTypeArguments()[0];
+            collection.addAll(
+                    (List) toObjects(parameterizedClass, (JsonArray) json));
+        }
+        return (T) collection;
     }
 
     /**
@@ -319,7 +323,7 @@ public final class JsonSerializer {
             return Optional.of(Enum.valueOf((Class<? extends Enum>) type,
                     json.asString()));
         }
-        if (type.isAssignableFrom(JsonValue.class)) {
+        if (JsonValue.class.isAssignableFrom(type)) {
             return Optional.of(json);
         }
         return Optional.empty();
