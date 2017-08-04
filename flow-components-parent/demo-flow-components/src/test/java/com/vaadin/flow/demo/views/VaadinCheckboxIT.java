@@ -18,6 +18,7 @@ package com.vaadin.flow.demo.views;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.AbstractChromeTest;
@@ -38,6 +39,7 @@ public class VaadinCheckboxIT extends AbstractChromeTest {
     @Before
     public void init() {
         open();
+        driver.manage().window().setSize(new Dimension(1500, 1000));
         waitForElementPresent(By.tagName("main-layout"));
         layout = findElement(By.tagName("main-layout"));
     }
