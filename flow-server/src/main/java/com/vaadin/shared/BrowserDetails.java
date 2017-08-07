@@ -25,25 +25,27 @@ import java.io.Serializable;
  * @since 6.3
  */
 public class BrowserDetails implements Serializable {
+    private static final String CHROME = " chrome/";
+    private static final String HEADLESSCHROME = " headlesschrome/";
 
     /**
      * An enum for detected operating systems.
      */
     public enum OperatingSystem {
-        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID;
+        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID
     }
 
-    private boolean isGecko = false;
-    private boolean isWebKit = false;
-    private boolean isPresto = false;
-    private boolean isTrident = false;
+    private boolean isGecko;
+    private boolean isWebKit;
+    private boolean isPresto;
+    private boolean isTrident;
 
-    private boolean isSafari = false;
-    private boolean isChrome = false;
-    private boolean isFirefox = false;
-    private boolean isOpera = false;
-    private boolean isIE = false;
-    private boolean isEdge = false;
+    private boolean isSafari;
+    private boolean isChrome;
+    private boolean isFirefox;
+    private boolean isOpera;
+    private boolean isIE;
+    private boolean isEdge;
 
     private boolean isWindowsPhone;
     private boolean isIPad;
@@ -51,7 +53,7 @@ public class BrowserDetails implements Serializable {
 
     private OperatingSystem os = OperatingSystem.UNKNOWN;
 
-    private float browserEngineVersion = -1;
+    private float browserEngineVersion = -1.0f;
     private int browserMajorVersion = -1;
     private int browserMinorVersion = -1;
 
@@ -68,25 +70,25 @@ public class BrowserDetails implements Serializable {
         userAgent = userAgent.toLowerCase();
 
         // browser engine name
-        isGecko = userAgent.indexOf("gecko") != -1
-                && userAgent.indexOf("webkit") == -1
-                && userAgent.indexOf("trident/") == -1;
-        isPresto = userAgent.indexOf(" presto/") != -1;
-        isTrident = userAgent.indexOf("trident/") != -1;
-        isWebKit = !isTrident && userAgent.indexOf("applewebkit") != -1;
+        isGecko = userAgent.contains("gecko") && !userAgent.contains("webkit")
+                && !userAgent.contains("trident/");
+        isPresto = userAgent.contains(" presto/");
+        isTrident = userAgent.contains("trident/");
+        isWebKit = !isTrident && userAgent.contains("applewebkit");
 
         // browser name
-        isChrome = userAgent.indexOf(" chrome/") != -1
-                || userAgent.indexOf(" crios/") != -1;
-        isOpera = userAgent.indexOf("opera") != -1;
-        isIE = userAgent.indexOf("msie") != -1 && !isOpera
-                && (userAgent.indexOf("webtv") == -1);
+        isChrome = userAgent.contains(CHROME)
+                || userAgent.contains(" crios/")
+                || userAgent.contains(HEADLESSCHROME);
+        isOpera = userAgent.contains("opera");
+        isIE = userAgent.contains("msie") && !isOpera
+                && !userAgent.contains("webtv");
         // IE 11 no longer contains MSIE in the user agent
         isIE = isIE || isTrident;
 
-        isSafari = !isChrome && !isIE && userAgent.indexOf("safari") != -1;
-        isFirefox = userAgent.indexOf(" firefox/") != -1;
-        if (userAgent.indexOf(" edge/") != -1) {
+        isSafari = !isChrome && !isIE && userAgent.contains("safari");
+        isFirefox = userAgent.contains(" firefox/");
+        if (userAgent.contains(" edge/")) {
             isEdge = true;
             isChrome = false;
             isOpera = false;
@@ -130,7 +132,7 @@ public class BrowserDetails implements Serializable {
         // Browser version
         try {
             if (isIE) {
-                if (userAgent.indexOf("msie") == -1) {
+                if (!userAgent.contains("msie")) {
                     // IE 11+
                     int rvPos = userAgent.indexOf("rv:");
                     if (rvPos >= 0) {
@@ -142,21 +144,14 @@ public class BrowserDetails implements Serializable {
                     String ieVersionString = userAgent
                             .substring(userAgent.indexOf("msie ") + 5);
                     ieVersionString = safeSubstring(ieVersionString, 0,
-                            ieVersionString.indexOf(";"));
+                            ieVersionString.indexOf(';'));
                     parseVersionString(ieVersionString);
                 }
             } else if (isFirefox) {
                 int i = userAgent.indexOf(" firefox/") + 9;
                 parseVersionString(safeSubstring(userAgent, i, i + 5));
             } else if (isChrome) {
-                int i = userAgent.indexOf(" crios/");
-                if (i == -1) {
-                    i = userAgent.indexOf(" chrome/") + 8;
-                    parseVersionString(safeSubstring(userAgent, i, i + 5));
-                } else {
-                    i += 7;
-                    parseVersionString(safeSubstring(userAgent, i, i + 6));
-                }
+                parseChromeVersion(userAgent);
             } else if (isSafari) {
                 int i = userAgent.indexOf(" version/");
                 if (i >= 0) {
@@ -211,6 +206,23 @@ public class BrowserDetails implements Serializable {
             } else {
                 os = OperatingSystem.MACOSX;
             }
+        }
+    }
+
+    private void parseChromeVersion(String userAgent) {
+        int i = userAgent.indexOf(" crios/");
+        if (i == -1) {
+            i = userAgent.indexOf(CHROME);
+            if (i == -1) {
+                i = userAgent.indexOf(HEADLESSCHROME)  + HEADLESSCHROME.length();
+            } else {
+                i += CHROME.length();
+            }
+
+            parseVersionString(safeSubstring(userAgent, i, i + 5));
+        } else {
+            i += 7;
+            parseVersionString(safeSubstring(userAgent, i, i + 6));
         }
     }
 
@@ -559,7 +571,6 @@ public class BrowserDetails implements Serializable {
         if (isChrome() && getBrowserMajorVersion() < 47) {
             return true;
         }
-
         return false;
     }
 
@@ -602,7 +613,7 @@ public class BrowserDetails implements Serializable {
         // "Logs" to stdout so the problem can be found but does not prevent
         // using the app. As this class is shared, we do not use
         // java.util.logging
-        System.err.println(error + " " + e.getMessage());
+        System.err.println(error + ' ' + e.getMessage());
     }
 
 }
