@@ -35,13 +35,12 @@ import elemental.json.JsonObject;
  * {@code vaadin-date-picker} webcomponent.
  * <p>
  * It allows setting and getting {@link LocalDate} objects, setting minimum and
- * maximum date ranges and has internationalization support through the
- * {@link VaadinDatePickerI18n} object.
+ * maximum date ranges and has internationalization support by using the
+ * {@link DatePickerI18n} object.
  *
  */
-public class VaadinDatePicker
-        extends GeneratedVaadinDatePicker<VaadinDatePicker>
-        implements HasValue<VaadinDatePicker, LocalDate> {
+public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
+        implements HasValue<DatePicker, LocalDate> {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_DATE;
     private static final String I18N_PROPERTY = "i18n";
@@ -49,7 +48,7 @@ public class VaadinDatePicker
     /**
      * Default constructor.
      */
-    public VaadinDatePicker() {
+    public DatePicker() {
         getElement().synchronizeProperty("value", "value-changed");
     }
 
@@ -60,7 +59,7 @@ public class VaadinDatePicker
      *            the pre-selected date in the picker
      * @see #setValue(LocalDate)
      */
-    public VaadinDatePicker(LocalDate initialDate) {
+    public DatePicker(LocalDate initialDate) {
         this();
         setValue(initialDate);
     }
@@ -73,8 +72,7 @@ public class VaadinDatePicker
      *            the listener to receive value change events
      * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
      */
-    public VaadinDatePicker(
-            ValueChangeListener<VaadinDatePicker, LocalDate> listener) {
+    public DatePicker(ValueChangeListener<DatePicker, LocalDate> listener) {
         this();
         addValueChangeListener(listener);
     }
@@ -90,8 +88,8 @@ public class VaadinDatePicker
      * @see #setValue(LocalDate)
      * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
      */
-    public VaadinDatePicker(LocalDate initialDate,
-            ValueChangeListener<VaadinDatePicker, LocalDate> listener) {
+    public DatePicker(LocalDate initialDate,
+            ValueChangeListener<DatePicker, LocalDate> listener) {
         this();
         setValue(initialDate);
         addValueChangeListener(listener);
@@ -106,7 +104,7 @@ public class VaadinDatePicker
      *            <code>null</code> to remove any minimum constraints
      * @return this instance for method chaining
      */
-    public VaadinDatePicker setMin(LocalDate min) {
+    public DatePicker setMin(LocalDate min) {
         if (min == null) {
             return setMinAsString("");
         }
@@ -133,7 +131,7 @@ public class VaadinDatePicker
      *            <code>null</code> to remove any maximum constraints
      * @return this instance for method chaining
      */
-    public VaadinDatePicker setMax(LocalDate max) {
+    public DatePicker setMax(LocalDate max) {
         if (max == null) {
             return setMaxAsString("");
         }
@@ -159,8 +157,8 @@ public class VaadinDatePicker
      *         the i18n properties weren't set, the internal properties of the
      *         object will be <code>null</code>, but not the object itself.
      */
-    public VaadinDatePickerI18n getI18n() {
-        VaadinDatePickerI18n i18n = new VaadinDatePickerI18n();
+    public DatePickerI18n getI18n() {
+        DatePickerI18n i18n = new DatePickerI18n();
         Element element = getElement();
         i18n.setCalendar(element.getProperty(I18N_PROPERTY + ".calendar"));
         i18n.setCancel(element.getProperty(I18N_PROPERTY + ".cancel"));
@@ -189,7 +187,7 @@ public class VaadinDatePicker
      *            the internationalized properties, not <code>null</code>
      * @return this instance for method chaining
      */
-    public VaadinDatePicker setI18n(VaadinDatePickerI18n i18n) {
+    public DatePicker setI18n(DatePickerI18n i18n) {
         Objects.requireNonNull(i18n,
                 "The I18N properties object should not be null");
         JsonObject json = (JsonObject) JsonSerializer.toJson(i18n);
@@ -201,7 +199,7 @@ public class VaadinDatePicker
     }
 
     @Override
-    public VaadinDatePicker setValue(LocalDate value) {
+    public DatePicker setValue(LocalDate value) {
         if (value == null) {
             setValueAsString("");
         } else {
@@ -217,7 +215,7 @@ public class VaadinDatePicker
 
     @Override
     public Registration addValueChangeListener(
-            ValueChangeListener<VaadinDatePicker, LocalDate> listener) {
+            ValueChangeListener<DatePicker, LocalDate> listener) {
         return getElement().addPropertyChangeListener(
                 getClientValuePropertyName(),
                 event -> listener
@@ -235,9 +233,9 @@ public class VaadinDatePicker
     }
 
     /**
-     * The internationalization properties for {@link VaadinDatePicker}.
+     * The internationalization properties for {@link DatePicker}.
      */
-    public static class VaadinDatePickerI18n implements Serializable {
+    public static class DatePickerI18n implements Serializable {
         private List<String> monthNames;
         private List<String> weekdays;
         private List<String> weekdaysShort;
@@ -265,7 +263,7 @@ public class VaadinDatePicker
          *            the month names
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setMonthNames(List<String> monthNames) {
+        public DatePickerI18n setMonthNames(List<String> monthNames) {
             this.monthNames = monthNames;
             return this;
         }
@@ -287,7 +285,7 @@ public class VaadinDatePicker
          *            the week days names
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setWeekdays(List<String> weekdays) {
+        public DatePickerI18n setWeekdays(List<String> weekdays) {
             this.weekdays = weekdays;
             return this;
         }
@@ -309,8 +307,7 @@ public class VaadinDatePicker
          *            the short names of the week days
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setWeekdaysShort(
-                List<String> weekdaysShort) {
+        public DatePickerI18n setWeekdaysShort(List<String> weekdaysShort) {
             this.weekdaysShort = weekdaysShort;
             return this;
         }
@@ -337,7 +334,7 @@ public class VaadinDatePicker
          *            the index of the first day of the week
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setFirstDayOfWeek(int firstDayOfWeek) {
+        public DatePickerI18n setFirstDayOfWeek(int firstDayOfWeek) {
             this.firstDayOfWeek = firstDayOfWeek;
             return this;
         }
@@ -358,7 +355,7 @@ public class VaadinDatePicker
          *            the translated word for week
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setWeek(String week) {
+        public DatePickerI18n setWeek(String week) {
             this.week = week;
             return this;
         }
@@ -379,7 +376,7 @@ public class VaadinDatePicker
          *            the translated word for calendar
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setCalendar(String calendar) {
+        public DatePickerI18n setCalendar(String calendar) {
             this.calendar = calendar;
             return this;
         }
@@ -400,7 +397,7 @@ public class VaadinDatePicker
          *            the translated word for clear
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setClear(String clear) {
+        public DatePickerI18n setClear(String clear) {
             this.clear = clear;
             return this;
         }
@@ -421,7 +418,7 @@ public class VaadinDatePicker
          *            the translated word for today
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setToday(String today) {
+        public DatePickerI18n setToday(String today) {
             this.today = today;
             return this;
         }
@@ -442,7 +439,7 @@ public class VaadinDatePicker
          *            the translated word for cancel
          * @return this instance for method chaining
          */
-        public VaadinDatePickerI18n setCancel(String cancel) {
+        public DatePickerI18n setCancel(String cancel) {
             this.cancel = cancel;
             return this;
         }

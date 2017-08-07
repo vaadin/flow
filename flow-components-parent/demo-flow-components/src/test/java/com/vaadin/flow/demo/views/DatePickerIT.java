@@ -26,9 +26,9 @@ import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
 
 /**
- * Integration tests for the {@link VaadinDatePickerView}.
+ * Integration tests for the {@link DatePickerView}.
  */
-public class VaadinDatePickerIT extends AbstractChromeTest {
+public class DatePickerIT extends AbstractChromeTest {
 
     private WebElement layout;
 

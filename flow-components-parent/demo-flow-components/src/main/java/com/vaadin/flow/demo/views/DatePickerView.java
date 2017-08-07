@@ -21,14 +21,14 @@ import java.util.Arrays;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
-import com.vaadin.ui.VaadinDatePicker;
-import com.vaadin.ui.VaadinDatePicker.VaadinDatePickerI18n;
+import com.vaadin.ui.DatePicker;
+import com.vaadin.ui.DatePicker.DatePickerI18n;
 
 /**
- * View for {@link VaadinDatePicker} demo.
+ * View for {@link DatePicker} demo.
  */
 @ComponentDemo(name = "Vaadin Date Picker", href = "vaadin-date-picker")
-public class VaadinDatePickerView extends DemoView {
+public class DatePickerView extends DemoView {
 
     @Override
     void initView() {
@@ -43,7 +43,7 @@ public class VaadinDatePickerView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Simple date picker
-        VaadinDatePicker datePicker = new VaadinDatePicker();
+        DatePicker datePicker = new DatePicker();
 
         datePicker.addValueChangeListener(event -> {
             LocalDate selectedDate = event.getValue();
@@ -66,7 +66,7 @@ public class VaadinDatePickerView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Date picker with min and max
-        VaadinDatePicker datePicker = new VaadinDatePicker();
+        DatePicker datePicker = new DatePicker();
         datePicker.setLabel("Select a day within this month")
                 .setPlaceholder("Date within this month");
 
@@ -96,11 +96,11 @@ public class VaadinDatePickerView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Internationalized date picker
-        VaadinDatePicker datePicker = new VaadinDatePicker();
+        DatePicker datePicker = new DatePicker();
         datePicker.setLabel("Finnish date picker")
                 .setPlaceholder("Syntymäpäivä");
 
-        datePicker.setI18n(new VaadinDatePickerI18n().setWeek("viikko")
+        datePicker.setI18n(new DatePickerI18n().setWeek("viikko")
                 .setCalendar("kalenteri").setClear("tyhjennä")
                 .setToday("tänään").setCancel("peruuta").setFirstDayOfWeek(1)
                 .setMonthNames(Arrays.asList("tammiku", "helmikuu", "maaliskuu",
@@ -139,9 +139,8 @@ public class VaadinDatePickerView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Two linked date pickers
-        VaadinDatePicker startDatePicker = new VaadinDatePicker()
-                .setLabel("Start");
-        VaadinDatePicker endDatePicker = new VaadinDatePicker().setLabel("End");
+        DatePicker startDatePicker = new DatePicker().setLabel("Start");
+        DatePicker endDatePicker = new DatePicker().setLabel("End");
 
         startDatePicker.addValueChangeListener(event -> {
             LocalDate selectedDate = event.getValue();
