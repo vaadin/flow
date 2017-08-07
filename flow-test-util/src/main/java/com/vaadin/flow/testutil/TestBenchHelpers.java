@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -152,7 +151,7 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Returns <code>true</code> if a component can be found with given By
      * selector in the shadow DOM of the {@code webComponent}.
-     * 
+     *
      * @param webComponent
      *            the web component owning shadow DOM to start search from
      * @param by
@@ -165,28 +164,25 @@ public class TestBenchHelpers extends ParallelTest {
 
     /**
      * Find the first {@link WebElement} using the given {@link By} selector.
-     * 
+     *
      * @param shadowRootOwner
      *            the web component owning shadow DOM to start search from
      * @param by
      *            the selector used to find element
      * @return an element from shadow root, if located
-     * @throws AssertionError if shadow root is not present or element is
-     *         not found in the shadow root
+     * @throws AssertionError
+     *             if shadow root is not present or element is not found in the
+     *             shadow root
      */
     protected WebElement getInShadowRoot(WebElement shadowRootOwner, By by) {
-        WebElement shadowRoot = (WebElement) getCommandExecutor().executeScript(
-                "return arguments[0].shadowRoot", shadowRootOwner);
-        Assert.assertNotNull("Could not locate shadowRoot in the element",
-                shadowRoot);
-        return shadowRoot.findElements(by).stream().findFirst()
-                .orElseThrow(() -> new AssertionError(
+        return getShadowRoot(shadowRootOwner).findElements(by).stream()
+                .findFirst().orElseThrow(() -> new AssertionError(
                         "Could not find required element in the shadowRoot"));
     }
 
     /**
      * Find all {@link WebElement}s using the given {@link By} selector.
-     * 
+     *
      * @param webComponent
      *            the web component owning shadow DOM to start search from
      * @param by
@@ -195,12 +191,7 @@ public class TestBenchHelpers extends ParallelTest {
      */
     protected List<WebElement> findInShadowRoot(WebElement webComponent,
             By by) {
-        WebElement root = (WebElement) getCommandExecutor()
-                .executeScript("return arguments[0].shadowRoot", webComponent);
-        if (root == null) {
-            return Collections.emptyList();
-        }
-        return root.findElements(by);
+        return getShadowRoot(webComponent).findElements(by);
     }
 
     /**
@@ -228,11 +219,14 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Scrolls the page by given amount of x and y deltas.
-     * Actual scroll values can be different if any delta is bigger then the corresponding document dimension.
+     * Scrolls the page by given amount of x and y deltas. Actual scroll values
+     * can be different if any delta is bigger then the corresponding document
+     * dimension.
      *
-     * @param deltaX the offset in pixels to scroll horizontally
-     * @param deltaY the offset in pixels to scroll vertically
+     * @param deltaX
+     *            the offset in pixels to scroll horizontally
+     * @param deltaY
+     *            the offset in pixels to scroll vertically
      */
     protected void scrollBy(int deltaX, int deltaY) {
         executeScript("window.scrollBy(" + deltaX + ',' + deltaY + ");");
@@ -257,14 +251,25 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Clicks on the element, using JS.
-     * This method is more convenient then Selenium {@code findElement(By.id(urlId)).click()}, because
-     * Selenium method changes scroll position, which is not always needed.
+     * Clicks on the element, using JS. This method is more convenient then
+     * Selenium {@code findElement(By.id(urlId)).click()}, because Selenium
+     * method changes scroll position, which is not always needed.
      *
-     * @param elementId id of the
+     * @param elementId
+     *            id of the
      */
     protected void clickElementWithJs(String elementId) {
         executeScript(String.format("document.getElementById('%s').click();",
                 elementId));
+    }
+
+    private WebElement getShadowRoot(WebElement webComponent) {
+        waitUntil(driver -> getCommandExecutor().executeScript(
+                "return arguments[0].shadowRoot", webComponent) != null);
+        WebElement shadowRoot = (WebElement) getCommandExecutor()
+                .executeScript("return arguments[0].shadowRoot", webComponent);
+        Assert.assertNotNull("Could not locate shadowRoot in the element",
+                shadowRoot);
+        return shadowRoot;
     }
 }
