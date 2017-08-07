@@ -24,8 +24,8 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-item#2.0.0", "Flow#0.1.16-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+		"WebComponent: vaadin-combo-box-item#2.0.0", "Flow#0.1.17-SNAPSHOT"})
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
 public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>

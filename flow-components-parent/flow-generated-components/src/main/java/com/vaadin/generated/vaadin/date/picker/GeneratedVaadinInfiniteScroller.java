@@ -26,8 +26,8 @@ import elemental.json.JsonArray;
 import com.vaadin.components.NotSupported;
 
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: InfiniteScrollerElement#2.0.0", "Flow#0.1.16-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+		"WebComponent: InfiniteScrollerElement#2.0.0", "Flow#0.1.17-SNAPSHOT"})
 @Tag("vaadin-infinite-scroller")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-infinite-scroller.html")
 public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
@@ -153,7 +153,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	public void linkPaths(java.lang.String to, java.lang.String from) {
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -184,7 +184,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -199,7 +199,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	protected void unlinkPaths(elemental.json.JsonObject path) {
+	public void unlinkPaths(java.lang.String path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -214,7 +214,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	public void unlinkPaths(java.lang.String path) {
+	protected void unlinkPaths(elemental.json.JsonObject path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -325,8 +325,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Root object from which the path is evaluated. When specified,
 	 *            no notification will occur.
 	 */
-	protected void set(elemental.json.JsonObject path,
-			elemental.json.JsonObject value, elemental.json.JsonObject root) {
+	protected void set(java.lang.String path, elemental.json.JsonObject value,
+			elemental.json.JsonObject root) {
 		getElement().callFunction("set", path, value, root);
 	}
 
@@ -354,8 +354,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Root object from which the path is evaluated. When specified,
 	 *            no notification will occur.
 	 */
-	protected void set(java.lang.String path, elemental.json.JsonObject value,
-			elemental.json.JsonObject root) {
+	protected void set(elemental.json.JsonObject path,
+			elemental.json.JsonObject value, elemental.json.JsonObject root) {
 		getElement().callFunction("set", path, value, root);
 	}
 

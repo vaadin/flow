@@ -102,8 +102,8 @@ import com.vaadin.ui.HasComponents;
  * applied to the layout container of tabs | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.16-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.17-SNAPSHOT"})
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
 public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>

@@ -50,9 +50,9 @@ import com.vaadin.shared.Registration;
  * value and suffix
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
 		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha3",
-		"Flow#0.1.16-SNAPSHOT"})
+		"Flow#0.1.17-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
