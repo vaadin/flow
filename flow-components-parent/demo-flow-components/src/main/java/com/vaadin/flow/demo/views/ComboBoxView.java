@@ -45,6 +45,16 @@ public class ComboBoxView extends DemoView {
         public Song() {
         }
 
+        /**
+         * Construct a song with the given name, artist and album.
+         * 
+         * @param name
+         *            name of the song
+         * @param artist
+         *            name of the artist
+         * @param album
+         *            name of the album
+         */
         public Song(String name, String artist, String album) {
             this.name = name;
             this.artist = artist;
@@ -89,6 +99,14 @@ public class ComboBoxView extends DemoView {
         public Fruit() {
         }
 
+        /**
+         * Construct a fruit with the given name and color.
+         * 
+         * @param name
+         *            name of the fruit
+         * @param color
+         *            color of the fruit
+         */
         public Fruit(String name, String color) {
             this.name = name;
             this.color = color;
@@ -110,6 +128,8 @@ public class ComboBoxView extends DemoView {
             this.color = color;
         }
     }
+
+    private static final String WIDTH_STRING = "250px";
 
     @Override
     void initView() {
@@ -137,7 +157,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("string-selection-box");
         add(new H3("String selection"), comboBox, message);
     }
@@ -166,7 +186,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("object-selection-box");
         addCard(new H3("Object selection"), comboBox, message);
     }
@@ -196,7 +216,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("value-selection-box");
         addCard(new H3("Value selection from objects"), comboBox, message);
     }
@@ -239,7 +259,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("custom-filter-box");
         addCard(new H3("Custom filtering"), comboBox, message);
     }

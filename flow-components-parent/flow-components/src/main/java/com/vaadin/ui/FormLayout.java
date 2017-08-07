@@ -116,10 +116,6 @@ public class FormLayout
             this.labelsPosition = labelsPosition;
         }
 
-        private ResponsiveStep(JsonObject value) {
-            readJson(value);
-        }
-
         @Override
         public JsonObject toJson() {
             JsonObject json = Json.createObject();
