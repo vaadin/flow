@@ -105,9 +105,9 @@
                         <version>${driver.binary.downloader.maven.plugin.version}</version>
                         <configuration>
                             <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>../driver</rootStandaloneServerDirectory>
-                            <downloadedZipFileDirectory>../driver_zips</downloadedZipFileDirectory>
-                            <customRepositoryMap>../drivers.xml</customRepositoryMap>
+                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
+                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
                         </configuration>
                         <executions>
                             <execution>
