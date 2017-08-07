@@ -52,6 +52,9 @@ import elemental.json.JsonValue;
 public class ComboBox<T>
         extends GeneratedVaadinComboBox<ComboBox<T>> {
 
+    private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
+    private static final String TEMPLATE_TAG_NAME = "template";
+
     private Class<T> itemType;
 
     /**
@@ -60,9 +63,9 @@ public class ComboBox<T>
      * @see #setItemType(Class)
      */
     public ComboBox() {
-        getElement().synchronizeProperty("selectedItem",
+        getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME,
                 "selected-item-changed");
-        getElement().synchronizeProperty("selectedItem", "change");
+        getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME, "change");
         getElement().synchronizeProperty("value", "change");
     }
 
@@ -169,10 +172,11 @@ public class ComboBox<T>
      */
     public ComboBox<T> setItemTemplate(String template) {
         getElement().getChildren()
-                .filter(child -> "template".equals(child.getTag())).findFirst()
+                .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
+                .findFirst()
                 .ifPresent(element -> element.removeFromParent());
 
-        Element templateElement = new Element("template");
+        Element templateElement = new Element(TEMPLATE_TAG_NAME);
         getElement().appendChild(templateElement);
         templateElement.setProperty("innerHTML", template);
         return get();
@@ -185,7 +189,8 @@ public class ComboBox<T>
      */
     public String getItemTemplate() {
         Optional<Element> optionalTemplate = getElement().getChildren()
-                .filter(child -> "template".equals(child.getTag())).findFirst();
+                .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
+                .findFirst();
 
         if (optionalTemplate.isPresent()) {
             return optionalTemplate.get().getProperty("innerHTML");
@@ -293,7 +298,7 @@ public class ComboBox<T>
     public ComboBox<T> setSelectedItem(T item) {
         tryToSetItemTypeIfNeeded(item);
         JsonValue json = JsonSerializer.toJson(item);
-        getElement().setPropertyJson("selectedItem", json);
+        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
         return get();
     }
 
@@ -343,9 +348,10 @@ public class ComboBox<T>
      * not needed to deserialize null objects and empty arrays.
      */
     private <I extends JsonValue> I checkWhetherItemTypeIsSetIfNeeded(I value) {
-        if (itemType != null || value == null || value instanceof JsonNull
-                || (value instanceof JsonArray
-                        && ((JsonArray) value).length() == 0)) {
+        if (itemType != null || value == null || value instanceof JsonNull) {
+            return value;
+        }
+        if (value instanceof JsonArray && ((JsonArray) value).length() == 0) {
             return value;
         }
         throw new IllegalStateException(

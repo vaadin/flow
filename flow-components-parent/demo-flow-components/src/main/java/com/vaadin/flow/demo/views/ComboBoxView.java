@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
 import com.vaadin.ui.ComboBox;
@@ -38,6 +39,9 @@ public class ComboBoxView extends DemoView {
         private String artist;
         private String album;
 
+        /**
+         * Default constructor.
+         */
         public Song() {
         }
 
@@ -79,6 +83,9 @@ public class ComboBoxView extends DemoView {
         private String name;
         private String color;
 
+        /**
+         * Default constructor.
+         */
         public Fruit() {
         }
 
@@ -130,7 +137,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
         comboBox.setId("string-selection-box");
         add(new H3("String selection"), comboBox, message);
     }
@@ -159,7 +166,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
         comboBox.setId("object-selection-box");
         addCard(new H3("Object selection"), comboBox, message);
     }
@@ -189,7 +196,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
         comboBox.setId("value-selection-box");
         addCard(new H3("Value selection from objects"), comboBox, message);
     }
@@ -232,7 +239,7 @@ public class ComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, "250px");
         comboBox.setId("custom-filter-box");
         addCard(new H3("Custom filtering"), comboBox, message);
     }

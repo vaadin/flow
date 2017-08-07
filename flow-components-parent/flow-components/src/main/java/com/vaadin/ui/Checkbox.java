@@ -125,7 +125,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox> {
     @Override
     public Boolean getValue() {
         if (isEmpty()) {
-            return null;
+            return (Boolean) null;
         }
         return super.getValue();
     }
