@@ -94,8 +94,8 @@ import com.vaadin.ui.HasComponents;
  * button after it's been focused using the keyboard | {@code
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: paper-button#2.0.0", "Flow#0.1.16-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+		"WebComponent: paper-button#2.0.0", "Flow#0.1.17-SNAPSHOT"})
 @Tag("paper-button")
 @HtmlImport("frontend://bower_components/paper-button/paper-button.html")
 public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>

@@ -51,8 +51,8 @@ import com.vaadin.shared.Registration;
  * to style this element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.16-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.17-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
