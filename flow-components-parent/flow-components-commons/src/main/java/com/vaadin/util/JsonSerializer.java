@@ -20,12 +20,16 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.components.JsonSerializable;
 
@@ -33,6 +37,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonNull;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -159,8 +164,13 @@ public final class JsonSerializer {
      * @return the deserialized object, or <code>null</code> if the input json
      *         is <code>null</code>
      */
-    @SuppressWarnings("unchecked")
     public static <T> T toObject(Class<T> type, JsonValue json) {
+        return toObject(type, null, json);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T toObject(Class<T> type, Type genericType,
+            JsonValue json) {
         if (json == null || json instanceof JsonNull) {
             return null;
         }
@@ -168,6 +178,10 @@ public final class JsonSerializer {
         Optional<?> simpleType = tryToConvertFromSimpleType(type, json);
         if (simpleType.isPresent()) {
             return (T) simpleType.get();
+        }
+
+        if (Collection.class.isAssignableFrom(type)) {
+            return toCollection(type, genericType, json);
         }
 
         T instance;
@@ -208,7 +222,10 @@ public final class JsonSerializer {
                 Method method = writers.get(key);
                 if (method != null) {
                     Class<?> parameterType = method.getParameterTypes()[0];
-                    Object value = toObject(parameterType, jsonValue);
+                    Type genericParameterType = method
+                            .getGenericParameterTypes()[0];
+                    Object value = toObject(parameterType, genericParameterType,
+                            jsonValue);
                     method.invoke(instance, value);
                 }
             }
@@ -220,7 +237,30 @@ public final class JsonSerializer {
                             + " from JsonValue",
                     e);
         }
+    }
 
+    private static <T> T toCollection(Class<T> type, Type genericType,
+            JsonValue json) {
+        if (json.getType() != JsonType.ARRAY) {
+            return null;
+        }
+        if (!(genericType instanceof ParameterizedType)) {
+            throw new IllegalArgumentException(
+                    "Cloud not infer the generic parameterized type of the collection of class: "
+                            + type.getName()
+                            + ". The type is no subclass of ParameterizedType: "
+                            + genericType);
+        }
+        JsonArray array = (JsonArray) json;
+        Collection<?> collection = tryToCreateCollection(type, array.length());
+        if (array.length() > 0) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+            Class<?> parameterizedClass = (Class<?>) parameterizedType
+                    .getActualTypeArguments()[0];
+            collection.addAll(
+                    (List) toObjects(parameterizedClass, (JsonArray) json));
+        }
+        return (T) collection;
     }
 
     /**
@@ -283,11 +323,36 @@ public final class JsonSerializer {
             return Optional.of(Enum.valueOf((Class<? extends Enum>) type,
                     json.asString()));
         }
-        if (type.isAssignableFrom(JsonValue.class)) {
+        if (JsonValue.class.isAssignableFrom(type)) {
             return Optional.of(json);
         }
         return Optional.empty();
 
+    }
+
+    private static Collection<?> tryToCreateCollection(Class<?> collectionType,
+            int initialCapacity) {
+        if (collectionType.isInterface()) {
+            if (List.class.isAssignableFrom(collectionType)) {
+                return new ArrayList<>(initialCapacity);
+            }
+            if (Set.class.isAssignableFrom(collectionType)) {
+                return new LinkedHashSet<>(initialCapacity);
+            }
+            throw new IllegalArgumentException(
+                    "Collection type not supported: '"
+                            + collectionType.getName()
+                            + "'. Use Lists, Sets or concrete classes that implement java.util.Collection.");
+        }
+        try {
+            return (Collection<?>) collectionType.newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Could not create an instance of the collection of type "
+                            + collectionType
+                            + ". Make sure it contains a default public constructor and the class is accessible.",
+                    e);
+        }
     }
 
 }

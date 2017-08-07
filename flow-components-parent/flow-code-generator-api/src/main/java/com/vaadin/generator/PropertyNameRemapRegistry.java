@@ -32,6 +32,9 @@ public final class PropertyNameRemapRegistry {
     static {
         put("vaadin-checkbox", "value", "postValue");
         put("vaadin-checkbox", "checked", "value");
+        put("vaadin-date-picker", "value", "valueAsString");
+        put("vaadin-date-picker", "min", "minAsString");
+        put("vaadin-date-picker", "max", "maxAsString");
     }
 
     private PropertyNameRemapRegistry() {
@@ -39,8 +42,10 @@ public final class PropertyNameRemapRegistry {
 
     private static void put(String elementIdentifier, String propertyNameToMap,
             String mappedValue) {
-        Objects.requireNonNull(elementIdentifier, "elementIdentifier cannot be null.");
-        Objects.requireNonNull(propertyNameToMap, "propertyNameToMap cannot be null.");
+        Objects.requireNonNull(elementIdentifier,
+                "elementIdentifier cannot be null.");
+        Objects.requireNonNull(propertyNameToMap,
+                "propertyNameToMap cannot be null.");
         Objects.requireNonNull(mappedValue, "mappedValue cannot be null.");
         Map<String, String> map = REGISTRY.getOrDefault(elementIdentifier,
                 new HashMap<>());
@@ -59,8 +64,7 @@ public final class PropertyNameRemapRegistry {
      * @return an optional of the mapping, empty if no mapping exists
      */
     public static Optional<String> getOptionalMappingFor(
-            String elementIdentifier,
-            String propertyName) {
+            String elementIdentifier, String propertyName) {
         if (!REGISTRY.containsKey(elementIdentifier)) {
             return Optional.empty();
         }

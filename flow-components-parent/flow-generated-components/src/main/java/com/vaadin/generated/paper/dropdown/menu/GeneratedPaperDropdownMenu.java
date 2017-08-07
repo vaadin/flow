@@ -84,8 +84,8 @@ import com.vaadin.shared.Registration;
  * internal input and menu button respectively.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: paper-dropdown-menu#2.0.0", "Flow#0.1.16-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+		"WebComponent: paper-dropdown-menu#2.0.0", "Flow#0.1.17-SNAPSHOT"})
 @Tag("paper-dropdown-menu")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu.html")
 public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
