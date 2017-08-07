@@ -286,6 +286,29 @@ public class ComponentGenerator {
         return addLicenseHeaderIfAvailable(javaClass.toString(), licenseNote);
     }
 
+    /**
+     * Generates and returns the Java class based on the JSON file provide.
+     * Doesn't write anything to the disk.
+     *
+     * @param jsonFile
+     *            The webcomponent JSON metadata.
+     * @param basePackage
+     *            The base package to be used for the generated Java class. The
+     *            final package of the class is basePackage plus the
+     *            {@link ComponentMetadata#getBaseUrl()}.
+     * @param licenseNote
+     *            A note to be added on top of the class as a comment. Usually
+     *            used for license headers.
+     * @return The generated Java class in String format.
+     * @throws ComponentGenerationException
+     *             If an error occurs when generating the class.
+     * @see #generateClass(ComponentMetadata, String, String)
+     */
+    public String generateClass(File jsonFile, String basePackage,
+            String licenseNote) {
+        return generateClass(toMetadata(jsonFile), basePackage, licenseNote);
+    }
+
     /*
      * Gets the JavaClassSource object (note, the license is added externally to
      * the source, since JavaClassSource doesn't support adding a comment to the
@@ -971,7 +994,7 @@ public class ComponentGenerator {
 
     private void generateMethodFor(JavaClassSource javaClass,
             ComponentFunctionData function) {
-        List<List<ComponentType>> typeVariants = FunctionParameterVariantCombinator
+        Set<List<ComponentType>> typeVariants = FunctionParameterVariantCombinator
                 .generateVariants(function);
         Map<ComponentObjectType, JavaClassSource> nestedClassesMap = new HashMap<>();
         for (List<ComponentType> typeVariant : typeVariants) {

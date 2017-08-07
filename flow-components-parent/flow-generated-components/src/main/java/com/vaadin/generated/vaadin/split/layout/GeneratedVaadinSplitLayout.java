@@ -139,9 +139,9 @@ import com.vaadin.shared.Registration;
  * vaadin-split-layout
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
 		"WebComponent: Vaadin.SplitLayoutElement#3.0.0-alpha1",
-		"Flow#0.1.16-SNAPSHOT"})
+		"Flow#0.1.17-SNAPSHOT"})
 @Tag("vaadin-split-layout")
 @HtmlImport("frontend://bower_components/vaadin-split-layout/vaadin-split-layout.html")
 public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>

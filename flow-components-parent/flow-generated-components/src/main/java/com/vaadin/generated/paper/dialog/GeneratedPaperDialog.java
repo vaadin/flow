@@ -83,8 +83,8 @@ import com.vaadin.ui.HasComponents;
  * features implemented by this element.
  */
 @Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.16-SNAPSHOT",
-		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.16-SNAPSHOT"})
+		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+		"WebComponent: paper-dialog#2.0.0", "Flow#0.1.17-SNAPSHOT"})
 @Tag("paper-dialog")
 @HtmlImport("frontend://bower_components/paper-dialog/paper-dialog.html")
 public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>

@@ -17,7 +17,10 @@ package com.vaadin.generator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.generator.metadata.ComponentFunctionData;
@@ -31,7 +34,7 @@ import com.vaadin.generator.metadata.ComponentType;
  * @author Vaadin Ltd
  */
 public class FunctionParameterVariantCombinator {
-    
+
     private FunctionParameterVariantCombinator() {
     }
 
@@ -44,30 +47,30 @@ public class FunctionParameterVariantCombinator {
      *            the function to generate parameter variants for
      * @return all the valid combinations of function parameter types
      */
-    public static List<List<ComponentType>> generateVariants(
+    public static Set<List<ComponentType>> generateVariants(
             ComponentFunctionData function) {
         if (function.getParameters() == null
                 || function.getParameters().isEmpty()) {
-            return Arrays.asList(Arrays.asList());
+            return Collections.singleton(Arrays.asList());
         }
         List<ComponentFunctionParameterData> parameterData = new ArrayList<>(
                 function.getParameters());
-        List<List<ComponentType>> paramVariants = generateCombinations(
-                parameterData.remove(0),
-                parameterData);
+        Set<List<ComponentType>> paramVariants = generateCombinations(
+                parameterData.remove(0), parameterData);
         return paramVariants;
     }
 
-    private static List<List<ComponentType>> generateCombinations(
+    private static Set<List<ComponentType>> generateCombinations(
             ComponentFunctionParameterData paramData,
             List<ComponentFunctionParameterData> rest) {
         if (rest.isEmpty()) {
             return getTypeVariants(paramData).stream().map(Arrays::asList)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
         }
         List<ComponentFunctionParameterData> copy = new ArrayList<>(rest);
-        List<List<ComponentType>> ret = new ArrayList<>();
-        for (List<ComponentType> subCombinations : generateCombinations(copy.remove(0), copy)) {
+        Set<List<ComponentType>> ret = new HashSet<>();
+        for (List<ComponentType> subCombinations : generateCombinations(
+                copy.remove(0), copy)) {
             for (ComponentType typeVariants : getTypeVariants(paramData)) {
                 List<ComponentType> tmp = new ArrayList<>(subCombinations);
                 tmp.add(0, typeVariants);
