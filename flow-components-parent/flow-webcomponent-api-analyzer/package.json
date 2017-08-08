@@ -27,7 +27,7 @@
   },
   "scripts": {
     "flow-webcomponent-api-analyzer": "bin/flow-webcomponent-api-analyzer.js",
-    "flow-components": "bin/flow-webcomponent-api-analyzer.js --flow_components"
+    "flow-components": "node bin/flow-webcomponent-api-analyzer.js --flow_components"
   },
   "bin": {
     "flow-webcomponent-api-analyzer": "./bin/flow-webcomponent-api-analyzer.js"
