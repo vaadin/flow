@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.View;
 
@@ -37,7 +37,7 @@ public class PaperSliderView extends Div implements View {
             valueText.setText(text);
         });
         paperSlider.setValue(INITIAL_VALUE);
-        Button changeValueFromServer = new Button(
+        NativeButton changeValueFromServer = new NativeButton(
                 "Set value to " + UPDATED_VALUE,
                 e -> paperSlider.setValue(UPDATED_VALUE));
         changeValueFromServer.setId(CHANGE_VALUE_ID);

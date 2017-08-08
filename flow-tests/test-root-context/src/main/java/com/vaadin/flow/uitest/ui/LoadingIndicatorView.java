@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.function.Consumer;
 
 import com.vaadin.annotations.StyleSheet;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
@@ -45,7 +45,7 @@ public class LoadingIndicatorView extends AbstractDivView {
 
         int[] delays = new int[] { 100, 200, 500, 1000, 2000, 5000, 10000 };
         for (int delay : delays) {
-            Button button = new Button(
+            NativeButton button = new NativeButton(
                     "Trigger event which takes " + delay + "ms",
                     e -> delay(delay));
             button.setId("wait" + delay);

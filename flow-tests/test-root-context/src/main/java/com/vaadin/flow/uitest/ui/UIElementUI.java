@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -25,7 +25,7 @@ public class UIElementUI extends UI {
     protected void init(VaadinRequest request) {
         getPage().executeJavaScript(getJs(), getElement());
 
-        Button attachElement = new Button("Attach Element via JS",
+        NativeButton attachElement = new NativeButton("Attach Element via JS",
                 event -> attachElement());
         add(attachElement);
     }

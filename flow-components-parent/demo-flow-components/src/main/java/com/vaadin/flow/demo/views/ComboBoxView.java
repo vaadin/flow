@@ -20,15 +20,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
-import com.vaadin.ui.VaadinComboBox;
+import com.vaadin.ui.ComboBox;
 
 /**
- * View for {@link VaadinComboBox} demo.
+ * View for {@link ComboBox} demo.
  */
 @ComponentDemo(name = "Vaadin ComboBox", href = "vaadin-combo-box")
-public class VaadinComboBoxView extends DemoView {
+public class ComboBoxView extends DemoView {
 
     /**
      * Example object.
@@ -38,9 +39,22 @@ public class VaadinComboBoxView extends DemoView {
         private String artist;
         private String album;
 
+        /**
+         * Default constructor.
+         */
         public Song() {
         }
 
+        /**
+         * Construct a song with the given name, artist and album.
+         * 
+         * @param name
+         *            name of the song
+         * @param artist
+         *            name of the artist
+         * @param album
+         *            name of the album
+         */
         public Song(String name, String artist, String album) {
             this.name = name;
             this.artist = artist;
@@ -79,9 +93,20 @@ public class VaadinComboBoxView extends DemoView {
         private String name;
         private String color;
 
+        /**
+         * Default constructor.
+         */
         public Fruit() {
         }
 
+        /**
+         * Construct a fruit with the given name and color.
+         * 
+         * @param name
+         *            name of the fruit
+         * @param color
+         *            color of the fruit
+         */
         public Fruit(String name, String color) {
             this.name = name;
             this.color = color;
@@ -104,6 +129,8 @@ public class VaadinComboBoxView extends DemoView {
         }
     }
 
+    private static final String WIDTH_STRING = "250px";
+
     @Override
     void initView() {
         createStringComboBox();
@@ -117,7 +144,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: String selection
-        VaadinComboBox<String> comboBox = new VaadinComboBox<>("Browsers");
+        ComboBox<String> comboBox = new ComboBox<>("Browsers");
         comboBox.setItems("Google Chrome", "Mozilla Firefox", "Opera",
                 "Apple Safari", "Microsoft Edge");
 
@@ -130,7 +157,7 @@ public class VaadinComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("string-selection-box");
         add(new H3("String selection"), comboBox, message);
     }
@@ -140,7 +167,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Object selection
-        VaadinComboBox<Song> comboBox = new VaadinComboBox<>();
+        ComboBox<Song> comboBox = new ComboBox<>();
         comboBox.setLabel("Music selection");
         comboBox.setItemLabelPath("name");
 
@@ -159,7 +186,7 @@ public class VaadinComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("object-selection-box");
         addCard(new H3("Object selection"), comboBox, message);
     }
@@ -169,7 +196,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Value selection from objects
-        VaadinComboBox<Song> comboBox = new VaadinComboBox<>("Artists");
+        ComboBox<Song> comboBox = new ComboBox<>("Artists");
         comboBox.setItemLabelPath("artist");
         comboBox.setItemValuePath("artist");
 
@@ -189,7 +216,7 @@ public class VaadinComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("value-selection-box");
         addCard(new H3("Value selection from objects"), comboBox, message);
     }
@@ -199,7 +226,7 @@ public class VaadinComboBoxView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Custom filtering
-        VaadinComboBox<Fruit> comboBox = new VaadinComboBox<>(
+        ComboBox<Fruit> comboBox = new ComboBox<>(
                 "Filter fruits by color (e.g. red, green, yellow...)");
         comboBox.setItemLabelPath("name");
         comboBox.setItemTemplate(
@@ -232,7 +259,7 @@ public class VaadinComboBoxView extends DemoView {
         });
         // end-source-example
 
-        comboBox.getStyle().set("width", "250px");
+        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("custom-filter-box");
         addCard(new H3("Custom filtering"), comboBox, message);
     }

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.AttachEvent;
@@ -52,7 +52,7 @@ public class TimingInfoReportedView extends Div implements View {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         getUI().get().getPage().executeJavaScript(REPORT_TIMINGS, getElement());
-        Button button = new Button("test request");
+        NativeButton button = new NativeButton("test request");
         button.addClickListener(event -> getUI().get().getPage()
                 .executeJavaScript(REPORT_TIMINGS, getElement()));
         add(button);

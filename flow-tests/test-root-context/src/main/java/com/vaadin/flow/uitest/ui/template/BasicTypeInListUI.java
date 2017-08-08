@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
@@ -53,11 +53,11 @@ public class BasicTypeInListUI extends UI {
         BasicTypeList list = new BasicTypeList();
         list.setId("template");
         add(list);
-        Button add = new Button("Add an item",
+        NativeButton add = new NativeButton("Add an item",
                 event -> list.getModel().getItems().add("newItem"));
         add.setId("add");
         add(add);
-        Button remove = new Button("Remove the first item",
+        NativeButton remove = new NativeButton("Remove the first item",
                 event -> list.getModel().getItems().remove(0));
         remove.setId("remove");
         add(remove);

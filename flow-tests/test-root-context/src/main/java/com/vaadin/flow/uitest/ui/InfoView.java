@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Hr;
 import com.vaadin.flow.router.View;
@@ -54,7 +54,7 @@ public class InfoView extends Div implements View {
         List<String> browser = new ArrayList<>();
 
         removeAll();
-        add(new Button("Refresh", e -> {
+        add(new NativeButton("Refresh", e -> {
             update(ui);
         }));
 

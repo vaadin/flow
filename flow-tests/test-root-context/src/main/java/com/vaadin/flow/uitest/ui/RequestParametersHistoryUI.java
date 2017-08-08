@@ -16,7 +16,7 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Label;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
@@ -33,7 +33,7 @@ public class RequestParametersHistoryUI extends UI {
     private final Label requestParamLabel;
 
     public RequestParametersHistoryUI() {
-        Button backwardButton = new Button("Go back", event -> getPage().getHistory().back());
+        NativeButton backwardButton = new NativeButton("Go back", event -> getPage().getHistory().back());
         backwardButton.setId(BACK_BUTTON_ID);
 
         requestParamLabel = new Label(NO_INPUT_TEXT);

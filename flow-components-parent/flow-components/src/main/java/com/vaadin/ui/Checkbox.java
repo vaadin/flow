@@ -22,12 +22,12 @@ import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
  * 
  * @author Vaadin Ltd
  */
-public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
+public class Checkbox extends GeneratedVaadinCheckbox<Checkbox> {
 
     /**
      * Default constructor.
      */
-    public VaadinCheckbox() {
+    public Checkbox() {
     }
 
     /**
@@ -37,7 +37,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
      * @param labelText
      *            the label text to set
      */
-    public VaadinCheckbox(String labelText) {
+    public Checkbox(String labelText) {
         setLabelText(labelText);
     }
 
@@ -52,8 +52,8 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
      * @param listener
      *            the value change listener to add
      */
-    public VaadinCheckbox(String labelText,
-            ValueChangeListener<VaadinCheckbox, Boolean> listener) {
+    public Checkbox(String labelText,
+            ValueChangeListener<Checkbox, Boolean> listener) {
         this(labelText);
         addValueChangeListener(listener);
     }
@@ -74,7 +74,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
      *            the label text to set
      * @return this instance, for method chaining
      */
-    public VaadinCheckbox setLabelText(String labelText) {
+    public Checkbox setLabelText(String labelText) {
         getElement().setText(labelText);
         return get();
     }
@@ -90,7 +90,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
      *            the accessibility label to set
      * @return this instance, for method chaining
      */
-    public VaadinCheckbox setAriaLabel(String ariaLabel) {
+    public Checkbox setAriaLabel(String ariaLabel) {
         getElement().setAttribute("aria-label", ariaLabel);
         return get();
     }
@@ -105,7 +105,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
      * @return this instance, for method chaining
      */
     @Override
-    public VaadinCheckbox setValue(Boolean value) {
+    public Checkbox setValue(Boolean value) {
         if (value == null) {
             setIndeterminate(true);
             return get();
@@ -125,7 +125,7 @@ public class VaadinCheckbox extends GeneratedVaadinCheckbox<VaadinCheckbox> {
     @Override
     public Boolean getValue() {
         if (isEmpty()) {
-            return null;
+            return (Boolean) null;
         }
         return super.getValue();
     }

@@ -19,7 +19,7 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Hr;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasText;
@@ -70,7 +70,7 @@ public class OrderedDependencyView extends AbstractDivView {
         html2Component.setId("component");
         add(html2Component, new Hr());
 
-        Button scripts = new Button("Add scripts",
+        NativeButton scripts = new NativeButton("Add scripts",
                 event -> add(new Script2Component()));
         scripts.setId("addJs");
         add(scripts);

@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Input;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.UI;
@@ -36,7 +36,7 @@ public class DynamicContent {
         image.setAttribute("type", "image/svg+xml");
         image.getStyle().set("display", "block");
 
-        Button button = new Button("Generate Image");
+        NativeButton button = new NativeButton("Generate Image");
         //@formatter:off - custom line wrapping
         button.addClickListener(event -> {
             StreamResource resource = new StreamResource("image.svg",

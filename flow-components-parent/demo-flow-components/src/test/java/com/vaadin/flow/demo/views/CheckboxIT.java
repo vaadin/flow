@@ -25,9 +25,9 @@ import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
 
 /**
- * Integration tests for the {@link VaadinCheckboxView}.
+ * Integration tests for the {@link CheckboxView}.
  */
-public class VaadinCheckboxIT extends AbstractChromeTest {
+public class CheckboxIT extends AbstractChromeTest {
 
     private WebElement layout;
 

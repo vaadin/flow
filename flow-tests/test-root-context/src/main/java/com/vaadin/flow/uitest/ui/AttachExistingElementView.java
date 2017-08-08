@@ -20,7 +20,7 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H1;
 import com.vaadin.flow.html.Label;
@@ -51,13 +51,13 @@ public class AttachExistingElementView extends AbstractDivView {
     @Override
     protected void onShow() {
         setId("root-div");
-        Button attachLabel = new Button("Attach label",
+        NativeButton attachLabel = new NativeButton("Attach label",
                 event -> getElement().getStateProvider().attachExistingElement(
                         getElement().getNode(), "label", null,
                         this::handleLabel));
         attachLabel.setId("attach-label");
         add(attachLabel);
-        Button attachHeader = new Button("Attach Header",
+        NativeButton attachHeader = new NativeButton("Attach Header",
                 event -> getElement().getStateProvider().attachExistingElement(
                         getElement().getNode(), "h1", null,
                         this::handleHeader));
@@ -68,14 +68,14 @@ public class AttachExistingElementView extends AbstractDivView {
         div.setId("element-with-shadow");
         ShadowRoot shadowRoot = div.getElement().attachShadow();
 
-        Button attachLabelInShadow = new Button("Attach label in shadow",
+        NativeButton attachLabelInShadow = new NativeButton("Attach label in shadow",
                 event -> shadowRoot.getStateProvider().attachExistingElement(
                         shadowRoot.getNode(), "label", null,
                         this::handleLabelInShadow));
         attachLabelInShadow.setId("attach-label-inshadow");
         add(attachLabelInShadow);
 
-        Button attachNonExistingElement = new Button(
+        NativeButton attachNonExistingElement = new NativeButton(
                 "Attach non-existing element",
                 event -> getElement().getStateProvider().attachExistingElement(
                         getElement().getNode(), "image", null,
@@ -97,7 +97,7 @@ public class AttachExistingElementView extends AbstractDivView {
         attachedLabel = Component.from(label, Label.class);
         attachedLabel.setText("Client side label");
         attachedLabel.setId("label");
-        Button attachPopulatedLabel = new Button(
+        NativeButton attachPopulatedLabel = new NativeButton(
                 "Attach the already attached label",
                 event -> getElement().getStateProvider().attachExistingElement(
                         getElement().getNode(), "label", null,
@@ -105,7 +105,7 @@ public class AttachExistingElementView extends AbstractDivView {
         attachPopulatedLabel.setId("attach-populated-label");
         add(attachPopulatedLabel);
 
-        Button removeSelf = new Button("Remove myself on the server side",
+        NativeButton removeSelf = new NativeButton("Remove myself on the server side",
                 event -> event.getSource().getElement().removeFromParent());
         removeSelf.setId("remove-self");
         add(removeSelf);

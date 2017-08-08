@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
@@ -85,7 +85,7 @@ public class EmptyListsUI extends UI {
         template.setId("template");
         add(template);
 
-        Button button = new Button("Set an empty list of items",
+        NativeButton button = new NativeButton("Set an empty list of items",
                 event -> template.getModel().setItems(new ArrayList<>()));
         button.setId("set-empty");
         add(button);

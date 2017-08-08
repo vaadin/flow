@@ -19,7 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.router.View;
@@ -55,7 +55,7 @@ public class PropertyBindingTemplateView extends Div implements View {
     }
 
     public PropertyBindingTemplateView() {
-        Button setValue = new Button();
+        NativeButton setValue = new NativeButton();
         PropertyBindingTemplate input = new PropertyBindingTemplate();
 
         setProperty(input, "name", "Foo");

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.html;
 
-public class ButtonTest extends ComponentTest {
+public class NativeButtonTest extends ComponentTest {
 
     // Actual test methods in super class
 

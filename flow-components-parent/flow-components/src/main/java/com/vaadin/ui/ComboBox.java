@@ -49,8 +49,11 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the type of the items to be inserted in the combo box
  */
-public class VaadinComboBox<T>
-        extends GeneratedVaadinComboBox<VaadinComboBox<T>> {
+public class ComboBox<T>
+        extends GeneratedVaadinComboBox<ComboBox<T>> {
+
+    private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
+    private static final String TEMPLATE_TAG_NAME = "template";
 
     private Class<T> itemType;
 
@@ -59,10 +62,10 @@ public class VaadinComboBox<T>
      * 
      * @see #setItemType(Class)
      */
-    public VaadinComboBox() {
-        getElement().synchronizeProperty("selectedItem",
+    public ComboBox() {
+        getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME,
                 "selected-item-changed");
-        getElement().synchronizeProperty("selectedItem", "change");
+        getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME, "change");
         getElement().synchronizeProperty("value", "change");
     }
 
@@ -73,7 +76,7 @@ public class VaadinComboBox<T>
      *            the label describing the combo box
      * @see #setItemType(Class)
      */
-    public VaadinComboBox(String label) {
+    public ComboBox(String label) {
         this();
         setLabel(label);
     }
@@ -85,7 +88,7 @@ public class VaadinComboBox<T>
      *            the Class of the items. This class definition is used when
      *            deserializing json to Java objects
      */
-    public VaadinComboBox(Class<T> itemType) {
+    public ComboBox(Class<T> itemType) {
         this();
         setItemType(itemType);
     }
@@ -100,7 +103,7 @@ public class VaadinComboBox<T>
      * @param label
      *            the label describing the combo box
      */
-    public VaadinComboBox(Class<T> itemType, String label) {
+    public ComboBox(Class<T> itemType, String label) {
         this();
         setItemType(itemType);
         setLabel(label);
@@ -116,7 +119,7 @@ public class VaadinComboBox<T>
      *            the items to be shown in the list of the combo box
      * @see #setItems(Collection)
      */
-    public VaadinComboBox(String label, Collection<T> items) {
+    public ComboBox(String label, Collection<T> items) {
         this();
         setLabel(label);
         setItems(items);
@@ -133,7 +136,7 @@ public class VaadinComboBox<T>
      * @see #setItems(Object...)
      */
     @SafeVarargs
-    public VaadinComboBox(String label, T... items) {
+    public ComboBox(String label, T... items) {
         this();
         setLabel(label);
         setItems(items);
@@ -167,12 +170,13 @@ public class VaadinComboBox<T>
      *            this combo box
      * @return this instance for method chaining
      */
-    public VaadinComboBox<T> setItemTemplate(String template) {
+    public ComboBox<T> setItemTemplate(String template) {
         getElement().getChildren()
-                .filter(child -> "template".equals(child.getTag())).findFirst()
+                .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
+                .findFirst()
                 .ifPresent(element -> element.removeFromParent());
 
-        Element templateElement = new Element("template");
+        Element templateElement = new Element(TEMPLATE_TAG_NAME);
         getElement().appendChild(templateElement);
         templateElement.setProperty("innerHTML", template);
         return get();
@@ -185,7 +189,8 @@ public class VaadinComboBox<T>
      */
     public String getItemTemplate() {
         Optional<Element> optionalTemplate = getElement().getChildren()
-                .filter(child -> "template".equals(child.getTag())).findFirst();
+                .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
+                .findFirst();
 
         if (optionalTemplate.isPresent()) {
             return optionalTemplate.get().getProperty("innerHTML");
@@ -215,7 +220,7 @@ public class VaadinComboBox<T>
      *            the selectable items in this combo box
      * @return this instance for method chaining
      */
-    public VaadinComboBox<T> setItems(T... items) {
+    public ComboBox<T> setItems(T... items) {
         return setItems(Arrays.asList(items));
     }
 
@@ -227,7 +232,7 @@ public class VaadinComboBox<T>
      *            the selectable items in this combo box
      * @return this instance for method chaining
      */
-    public VaadinComboBox<T> setItems(Collection<T> items) {
+    public ComboBox<T> setItems(Collection<T> items) {
         tryToSetItemTypeIfNeeded(items);
         setItems(JsonSerializer.toJson(items));
         return get();
@@ -265,7 +270,7 @@ public class VaadinComboBox<T>
      *            the type of the items inside the combo box
      * @return this instance for method chaining
      */
-    public VaadinComboBox<T> setItemType(Class<T> itemType) {
+    public ComboBox<T> setItemType(Class<T> itemType) {
         Objects.requireNonNull(itemType, "itemType can not be null");
         this.itemType = itemType;
         return get();
@@ -290,10 +295,10 @@ public class VaadinComboBox<T>
      *            selection
      * @return this instance for method chaining
      */
-    public VaadinComboBox<T> setSelectedItem(T item) {
+    public ComboBox<T> setSelectedItem(T item) {
         tryToSetItemTypeIfNeeded(item);
         JsonValue json = JsonSerializer.toJson(item);
-        getElement().setPropertyJson("selectedItem", json);
+        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
         return get();
     }
 
@@ -319,7 +324,7 @@ public class VaadinComboBox<T>
      *            the items to show in response of a filter input
      * @return this instance for method chaining
      */
-    public VaadinComboBox<T> setFilteredItems(T... filteredItems) {
+    public ComboBox<T> setFilteredItems(T... filteredItems) {
         return setFilteredItems(Arrays.asList(filteredItems));
     }
 
@@ -332,7 +337,7 @@ public class VaadinComboBox<T>
      *            the items to show in response of a filter input
      * @return this instance for method chaining
      */
-    public VaadinComboBox<T> setFilteredItems(Collection<T> filteredItems) {
+    public ComboBox<T> setFilteredItems(Collection<T> filteredItems) {
         tryToSetItemTypeIfNeeded(filteredItems);
         setFilteredItems(JsonSerializer.toJson(filteredItems));
         return get();
@@ -343,9 +348,10 @@ public class VaadinComboBox<T>
      * not needed to deserialize null objects and empty arrays.
      */
     private <I extends JsonValue> I checkWhetherItemTypeIsSetIfNeeded(I value) {
-        if (itemType != null || value == null || value instanceof JsonNull
-                || (value instanceof JsonArray
-                        && ((JsonArray) value).length() == 0)) {
+        if (itemType != null || value == null || value instanceof JsonNull) {
+            return value;
+        }
+        if (value instanceof JsonArray && ((JsonArray) value).length() == 0) {
             return value;
         }
         throw new IllegalStateException(

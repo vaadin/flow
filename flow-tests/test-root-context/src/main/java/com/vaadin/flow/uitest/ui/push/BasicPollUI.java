@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.push;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.server.VaadinRequest;
 
@@ -41,13 +41,13 @@ public class BasicPollUI extends ClientServerCounterUI {
             pollCounter.setText("Polls received: " + (++pollCount));
         });
 
-        Button stopPolling = new Button("Stop polling", e -> {
+        NativeButton stopPolling = new NativeButton("Stop polling", e -> {
             setPollInterval(-1);
             updatePollIntervalText();
         });
         stopPolling.setId(STOP_POLLING_BUTTON);
 
-        Button startPolling = new Button("Start polling", e -> {
+        NativeButton startPolling = new NativeButton("Start polling", e -> {
             setPollInterval(500);
             updatePollIntervalText();
         });

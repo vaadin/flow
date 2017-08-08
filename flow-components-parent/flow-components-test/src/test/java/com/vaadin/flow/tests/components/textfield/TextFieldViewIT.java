@@ -21,10 +21,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.tests.components.AbstractComponentIT;
 import com.vaadin.testbench.By;
-import com.vaadin.ui.VaadinTextField;
+import com.vaadin.ui.TextField;
 
 /**
- * Integration tests for {@link VaadinTextField}.
+ * Integration tests for {@link TextField}.
  */
 public class TextFieldViewIT extends AbstractComponentIT {
 
