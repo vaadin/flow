@@ -18,7 +18,7 @@ package com.vaadin.flow.memoryleaks.ui;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Text;
@@ -34,7 +34,7 @@ public class MemoryLeakUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        Button button = new Button("Hello", e -> add(new Text("Hello")));
+        NativeButton button = new NativeButton("Hello", e -> add(new Text("Hello")));
         button.setId("hello");
         add(button);
     }

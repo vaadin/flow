@@ -49,7 +49,7 @@ Element image = new Element("object");
 image.setAttribute("type", "image/svg+xml");
 image.getStyle().set("display", "block");
 
-Button button = new Button("Generate Image");
+NativeButton button = new NativeButton("Generate Image");
 button.addClickListener(event -> {
     String url = "image?name=" + name.getValue();
     image.setAttribute("data", url);
@@ -73,7 +73,7 @@ Element image = new Element("object");
 image.setAttribute("type", "image/svg+xml");
 image.getStyle().set("display", "block");
 
-Button button = new Button("Generate Image");
+NativeButton button = new NativeButton("Generate Image");
 button.addClickListener(event -> {
     StreamResource resource = new StreamResource("image.svg",
             () -> getImageInputStream(name));

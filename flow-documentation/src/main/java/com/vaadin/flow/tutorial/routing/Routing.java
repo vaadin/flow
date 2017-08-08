@@ -19,7 +19,7 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -57,7 +57,7 @@ public class Routing {
     }
 
     void navigation() {
-        Button button = new Button("Navigate to company");
+        NativeButton button = new NativeButton("Navigate to company");
         button.addClickListener(e -> {
             button.getUI().ifPresent(ui -> ui.navigateTo("company"));
         });

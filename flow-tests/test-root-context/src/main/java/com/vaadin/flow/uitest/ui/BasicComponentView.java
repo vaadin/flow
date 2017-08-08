@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Input;
 import com.vaadin.ui.Text;
@@ -37,7 +37,7 @@ public class BasicComponentView extends AbstractDivView {
         Input input = new Input();
         input.setPlaceholder("Synchronized on change event");
 
-        Button button = new Button(BUTTON_TEXT, e -> {
+        NativeButton button = new NativeButton(BUTTON_TEXT, e -> {
             Div greeting = new Div();
             greeting.addClassName("thankYou");
             String buttonText = e.getSource().getElement().getText();

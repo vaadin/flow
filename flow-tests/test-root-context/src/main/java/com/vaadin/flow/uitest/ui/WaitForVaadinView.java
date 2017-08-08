@@ -15,19 +15,19 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 
 public class WaitForVaadinView extends AbstractDivView {
     private final Div message;
-    private final Button button;
+    private final NativeButton button;
 
     public WaitForVaadinView() {
         message = new Div();
         message.setText("Not updated");
         message.setId("message");
 
-        button = new Button("Click to update", e -> waitAndUpdate());
+        button = new NativeButton("Click to update", e -> waitAndUpdate());
 
         add(message, button);
     }

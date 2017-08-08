@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.HtmlContainer;
 import com.vaadin.flow.html.Label;
@@ -105,8 +105,8 @@ public class ForTemplateView extends Div implements View {
                 () -> modelList.remove(0)));
     }
 
-    private Button createButton(String text, String id, Command action) {
-        Button button = new Button(text);
+    private NativeButton createButton(String text, String id, Command action) {
+        NativeButton button = new NativeButton(text);
         button.addClickListener(e -> action.execute());
         button.setId(id);
         return button;

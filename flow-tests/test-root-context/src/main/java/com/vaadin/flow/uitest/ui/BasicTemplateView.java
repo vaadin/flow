@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Id;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Input;
 import com.vaadin.flow.nodefeature.ModelMap;
@@ -41,7 +41,7 @@ public class BasicTemplateView extends AngularTemplate implements View {
     @Id("container")
     private Div container;
     @Id("clearModel")
-    private Button clearModel;
+    private NativeButton clearModel;
 
     @Id("input")
     private Input input;
@@ -52,12 +52,12 @@ public class BasicTemplateView extends AngularTemplate implements View {
         setModelValue(null);
         setModelValue("foo", null);
 
-        Button button = new Button(
+        NativeButton button = new NativeButton(
                 "Element added to template (click to remove)");
         button.addClickListener(e -> container.remove(button));
         container.add(button);
 
-        Button childSlotContent = new Button(
+        NativeButton childSlotContent = new NativeButton(
                 "Child slot content (click to remove)");
         childSlotContent.addClassName("childSlotContent");
 

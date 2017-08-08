@@ -36,12 +36,12 @@ import elemental.json.JsonValue;
  * 
  * @author Vaadin Ltd
  */
-public class VaadinFormLayout
-        extends GeneratedVaadinFormLayout<VaadinFormLayout> {
+public class FormLayout
+        extends GeneratedVaadinFormLayout<FormLayout> {
 
     /**
      * A class used in describing the responsive layouting behavior of a
-     * {@link VaadinFormLayout}.
+     * {@link FormLayout}.
      * 
      * @author Vaadin Ltd
      */
@@ -49,7 +49,7 @@ public class VaadinFormLayout
 
         /**
          * Enum for describing the position of label components in a
-         * {@link VaadinFormItem}.
+         * {@link FormItem}.
          */
         public enum LabelsPosition {
 
@@ -98,7 +98,7 @@ public class VaadinFormLayout
          * columns and label position.
          * 
          * @see LabelsPosition
-         * @see VaadinFormItem
+         * @see FormItem
          * 
          * @param minWidth
          *            the minimum width as a CSS string value after which this
@@ -107,17 +107,13 @@ public class VaadinFormLayout
          *            the number of columns the layout should have
          * @param labelsPosition
          *            the position where label components are to be displayed in
-         *            {@link VaadinFormItem}s
+         *            {@link FormItem}s
          */
         public ResponsiveStep(String minWidth, int columns,
                 LabelsPosition labelsPosition) {
             this.minWidth = minWidth;
             this.columns = columns;
             this.labelsPosition = labelsPosition;
-        }
-
-        private ResponsiveStep(JsonObject value) {
-            readJson(value);
         }
 
         @Override
@@ -152,37 +148,37 @@ public class VaadinFormLayout
 
     /**
      * Server-side component for the {@code <vaadin-form-item>} element. Used to
-     * wrap components for display in a {@link VaadinFormLayout}.
+     * wrap components for display in a {@link FormLayout}.
      * 
      * @author Vaadin Ltd
      */
-    public static class VaadinFormItem
-            extends GeneratedVaadinFormItem<VaadinFormItem> {
+    public static class FormItem
+            extends GeneratedVaadinFormItem<FormItem> {
 
         /**
-         * Constructs a VaadinFormItem with the given initial components to
-         * wrap. Additional components can be added after construction with
+         * Constructs a FormItem with the given initial components to wrap.
+         * Additional components can be added after construction with
          * {@link #add(Component...)}.
          * 
          * @param components
          *            the initial components to wrap as a form item.
          * @see HasComponents#add(Component...)
          */
-        public VaadinFormItem(com.vaadin.ui.Component... components) {
+        public FormItem(com.vaadin.ui.Component... components) {
             super(components);
         }
     }
 
     /**
-     * Constructs a VaadinFormLayout with the given initial components.
-     * Additional components can be added after construction with
+     * Constructs a FormLayout with the given initial components. Additional
+     * components can be added after construction with
      * {@link #add(Component...)}.
      * 
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public VaadinFormLayout(com.vaadin.ui.Component... components) {
+    public FormLayout(com.vaadin.ui.Component... components) {
         super(components);
     }
 
@@ -212,7 +208,7 @@ public class VaadinFormLayout
      *            list of {@link ResponsiveStep}s to set
      * @return this instance, for method chaining
      */
-    public VaadinFormLayout setResponsiveSteps(List<ResponsiveStep> steps) {
+    public FormLayout setResponsiveSteps(List<ResponsiveStep> steps) {
         AtomicInteger index = new AtomicInteger();
         getElement().setPropertyJson("responsiveSteps",
                 steps.stream().map(ResponsiveStep::toJson).collect(
@@ -237,7 +233,7 @@ public class VaadinFormLayout
      *            the {@link ResponsiveStep}s to set
      * @return this instance, for method chaining
      */
-    public VaadinFormLayout setResponsiveSteps(ResponsiveStep... steps) {
+    public FormLayout setResponsiveSteps(ResponsiveStep... steps) {
         return setResponsiveSteps(Arrays.asList(steps));
     }
 }

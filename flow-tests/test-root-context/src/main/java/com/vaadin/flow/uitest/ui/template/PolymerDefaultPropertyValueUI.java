@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
@@ -69,7 +69,7 @@ public class PolymerDefaultPropertyValueUI extends UI {
         template.setId("template");
         add(template);
 
-        Button button = new Button("Show email value",
+        NativeButton button = new NativeButton("Show email value",
                 event -> createEmailValue(template));
         button.setId("show-email");
         add(button);

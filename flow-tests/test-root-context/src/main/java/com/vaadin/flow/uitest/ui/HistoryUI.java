@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.event.ClickEvent;
 import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
@@ -107,7 +107,7 @@ public class HistoryUI extends UI {
 
     private static Element createButton(String id,
             ComponentEventListener<ClickEvent> listener) {
-        Button button = new Button(id, listener);
+        NativeButton button = new NativeButton(id, listener);
         button.setId(id);
         return button.getElement();
     }

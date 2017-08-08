@@ -19,14 +19,14 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
 import com.vaadin.flow.html.Image;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.HasClickListeners.ClickEvent;
-import com.vaadin.ui.VaadinButton;
 
 /**
- * View for {@link VaadinButton} demo.
+ * View for {@link Button} demo.
  */
 @ComponentDemo(name = "Vaadin Button", href = "vaadin-button")
-public class VaadinButtonView extends DemoView {
+public class ButtonView extends DemoView {
 
     private Div message;
 
@@ -46,7 +46,7 @@ public class VaadinButtonView extends DemoView {
     private void createDefaultButton() {
         // begin-source-example
         // source-example-heading: Default button
-        VaadinButton button = new VaadinButton("Vaadin button");
+        Button button = new Button("Vaadin button");
 
         button.addClickListener(this::showButtonClickedMessage);
         // end-source-example
@@ -58,7 +58,7 @@ public class VaadinButtonView extends DemoView {
     private void createImageButtonWithAutofocus() {
         // begin-source-example
         // source-example-heading: Button with image and autofocus
-        VaadinButton button = new VaadinButton(
+        Button button = new Button(
                 new Image("img/vaadin-logo.svg", "Vaadin logo"));
         button.setAutofocus(true);
 
@@ -72,7 +72,7 @@ public class VaadinButtonView extends DemoView {
     private void createImageButtonWithAccessibleLabel() {
         // begin-source-example
         // source-example-heading: Button with ARIA label
-        VaadinButton button = new VaadinButton("Accessible");
+        Button button = new Button("Accessible");
         button.getElement().setAttribute("aria-label", "Click me");
 
         button.addClickListener(this::showButtonClickedMessage);
@@ -85,15 +85,15 @@ public class VaadinButtonView extends DemoView {
     private void createButtonsWithTabIndex() {
         // begin-source-example
         // source-example-heading: Buttons with custom tabindex
-        VaadinButton button1 = new VaadinButton("1");
+        Button button1 = new Button("1");
         button1.setTabIndex(1);
         button1.addClickListener(this::showButtonClickedMessage);
 
-        VaadinButton button2 = new VaadinButton("2");
+        Button button2 = new Button("2");
         button2.setTabIndex(2);
         button2.addClickListener(this::showButtonClickedMessage);
 
-        VaadinButton button3 = new VaadinButton("3");
+        Button button3 = new Button("3");
         button3.setTabIndex(3);
         button3.addClickListener(this::showButtonClickedMessage);
         // end-source-example
@@ -108,7 +108,7 @@ public class VaadinButtonView extends DemoView {
     private void createDisabledButton() {
         // begin-source-example
         // source-example-heading: Disabled button
-        VaadinButton button = new VaadinButton("Disabled");
+        Button button = new Button("Disabled");
         button.setDisabled(true);
         // end-source-example
 
@@ -119,8 +119,8 @@ public class VaadinButtonView extends DemoView {
         button.setId("disabled-button");
     }
 
-    private void showButtonClickedMessage(ClickEvent<VaadinButton> evt) {
-        VaadinButton source = evt.getSource();
+    private void showButtonClickedMessage(ClickEvent<Button> evt) {
+        Button source = evt.getSource();
         source.getParent().ifPresent(parent -> parent.getElement()
                 .appendChild(message.getElement()));
         if (source.getElement().getChildCount() > 0

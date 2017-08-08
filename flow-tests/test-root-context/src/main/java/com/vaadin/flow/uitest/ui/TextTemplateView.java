@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Label;
 import com.vaadin.flow.router.View;
@@ -32,7 +32,7 @@ public class TextTemplateView extends Div implements View {
     }
 
     public TextTemplateView() {
-        Button button = new Button("Update simple name");
+        NativeButton button = new NativeButton("Update simple name");
         button.setId("set-simple-name");
         InlineTemplate<Model> text = new InlineTemplate<>(
                 "<div id='text'>{{name}}</div>", Model.class);
@@ -44,7 +44,7 @@ public class TextTemplateView extends Div implements View {
                 "<div id='js-expression'>{{name ? 'Hello ' + name: 'No name'}}</div>",
                 Model.class);
         setName(jsExpression, null, "js-text");
-        Button updateJsExpression = new Button("Update JS expression");
+        NativeButton updateJsExpression = new NativeButton("Update JS expression");
         updateJsExpression.setId("set-expression-name");
         updateJsExpression.addClickListener(
                 event -> setName(jsExpression, "Foo", "js-text"));

@@ -26,11 +26,11 @@ import com.vaadin.flow.html.event.ClickNotifier;
  * @author Vaadin Ltd
  */
 @Tag(Tag.BUTTON)
-public class Button extends HtmlContainer implements ClickNotifier {
+public class NativeButton extends HtmlContainer implements ClickNotifier {
     /**
      * Creates a new empty button.
      */
-    public Button() {
+    public NativeButton() {
         super();
     }
 
@@ -40,7 +40,7 @@ public class Button extends HtmlContainer implements ClickNotifier {
      * @param text
      *            the button text
      */
-    public Button(String text) {
+    public NativeButton(String text) {
         setText(text);
     }
 
@@ -52,7 +52,7 @@ public class Button extends HtmlContainer implements ClickNotifier {
      * @param clickListener
      *            the click listener
      */
-    public Button(String text,
+    public NativeButton(String text,
             ComponentEventListener<ClickEvent> clickListener) {
         this(text);
         addClickListener(clickListener);

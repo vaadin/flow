@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,7 +22,7 @@ import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
  * 
  * @author Vaadin Ltd
  */
-public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField> {
+public class TextField extends GeneratedVaadinTextField<TextField> {
 
     /**
      * Constructs an empty {@code VaadinTextField}.
@@ -30,7 +30,7 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField> {
      * Using this constructor, any value previously set at the client-side is
      * cleared.
      */
-    public VaadinTextField() {
+    public TextField() {
         getElement().synchronizeProperty("hasValue", "value-changed");
         clear();
     }
@@ -44,7 +44,7 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField> {
      * @param labelText
      *            the text to set as the label
      */
-    public VaadinTextField(String labelText) {
+    public TextField(String labelText) {
         this();
         setLabel(labelText);
     }
@@ -61,7 +61,7 @@ public class VaadinTextField extends GeneratedVaadinTextField<VaadinTextField> {
      * @param placeholder
      *            the placeholder text to set
      */
-    public VaadinTextField(String labelText, String placeholder) {
+    public TextField(String labelText, String placeholder) {
         this(labelText);
         setPlaceholder(placeholder);
     }

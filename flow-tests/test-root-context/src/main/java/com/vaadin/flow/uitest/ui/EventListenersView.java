@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.html.Button;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Label;
 
 public class EventListenersView extends AbstractDivView {
@@ -25,7 +25,7 @@ public class EventListenersView extends AbstractDivView {
     @Override
     protected void onShow() {
         AtomicInteger count = new AtomicInteger();
-        Button button = new Button("Click me");
+        NativeButton button = new NativeButton("Click me");
         button.setId("click");
         button.addClickListener(evt -> {
             int value = count.incrementAndGet();
