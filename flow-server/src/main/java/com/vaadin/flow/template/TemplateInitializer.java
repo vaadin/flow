@@ -178,14 +178,13 @@ public class TemplateInitializer {
 
     private void parseTemplate() {
         assert parsedTemplateRoot != null;
-        com.vaadin.external.jsoup.nodes.Element templateRoot = parsedTemplateRoot
-                .getElementById(template.getElement().getTag());
-        if (templateRoot != null) {
-            inspectCustomElements(templateRoot, templateRoot);
+        Elements templates = parsedTemplateRoot.getElementsByTag("template");
+        if (!templates.isEmpty()) {
+            inspectCustomElements(templates.get(0), templates.get(0));
         }
     }
 
-    private static boolean isInsideTemplate(
+    private boolean isInsideTemplate(
             com.vaadin.external.jsoup.nodes.Element element,
             com.vaadin.external.jsoup.nodes.Element templateRoot) {
         if (element == templateRoot) {
