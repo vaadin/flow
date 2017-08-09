@@ -314,7 +314,13 @@ public class TemplateInitializer {
             return;
         }
         String id = idAnnotation.get().value();
-        checkIfElementCanBeInjected(field, id);
+        if (notInjectableElementIds.contains(id)) {
+            throw new IllegalStateException(String.format(
+                    "Class '%s' contains field '%s' annotated with @Id('%s'). "
+                            + "Corresponding element was found in the template as a child of one of '%s' elements, which do not support injection",
+                    templateClass.getName(), field.getName(), id,
+                    PROHIBITED_TAG_NAMES));
+        }
 
         Optional<String> tagName = getTagName(id);
         if (!tagName.isPresent()) {
@@ -331,16 +337,6 @@ public class TemplateInitializer {
                     registeredCustomElements);
         } else {
             injectServerSideElement(element, field);
-        }
-    }
-
-    private void checkIfElementCanBeInjected(Field field, String id) {
-        if (notInjectableElementIds.contains(id)) {
-            throw new IllegalStateException(String.format(
-                    "Class '%s' contains field '%s' annotated with @Id('%s'). "
-                            + "Corresponding element was found in the template as a child of one of '%s' elements, which do not support injection",
-                    templateClass.getName(), field.getName(), id,
-                    PROHIBITED_TAG_NAMES));
         }
     }
 
