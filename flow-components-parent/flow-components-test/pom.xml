@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components-parent</artifactId>
-        <version>0.1.17-SNAPSHOT</version>
+        <version>0.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-components-test</artifactId>
     <name>Flow component API integration test module</name>
