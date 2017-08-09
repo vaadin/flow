@@ -141,7 +141,7 @@ public class Router implements Serializable {
         }
 
         if (!handler.isPresent()) {
-            NavigationHandler errorHandler = configuration.getErrorHandler();
+            NavigationHandler errorHandler = currentConfig.getErrorHandler();
             handler = Optional.of(errorHandler);
         }
 
