@@ -73,7 +73,7 @@ IT tests can be run with
 <pre><code>mvn verify</code></pre>
 
 To run IT tests locally, you'll need a [Testbench](https://vaadin.com/testbench) license and a Chrome browser installed (currently this is the only browser that IT tests are run in).
-IT tests are run in parallel, one thread per CPU core with thread limit = 5 (see `maven-failsafe-plugin` configuration in root [pom.xml](./pom.xml) for details).
+IT tests are run in parallel, one thread per CPU core with thread limit = 2 (see `maven-failsafe-plugin` configuration in root [pom.xml](./pom.xml) for details).
 
 When running IT tests locally, by default, local Chrome is used to run tests.
 The other opportunity is to run tests using test hub, to do so, you need to start a hub on a `localhost:4444` address and start tests with `-Dtest.use.hub=true` property.
@@ -81,27 +81,7 @@ The other opportunity is to run tests using test hub, to do so, you need to star
 Currently, when integration tests are run on CI server, they use [Selenoid](https://github.com/aerokube/selenoid) a local hub and target `localhost` as a hub hostname.
 If you want to change hub hostname, this can be done via setting the variable `-Dcom.vaadin.testbench.Parameters.hubHostname="foo"`
 
-Normally, you don't need to run IT tests yourself, Travis can do this for you. See next section for details.
-
-Remote tests execution
---------
-Each pull request requires validation via Travis, so before the pull request is merged
-all the tests are executed remotely by Travis CI server.
-If you want to run the tests remotely for your branch but don't want to create a PR for your patch then you can use
-instructions from [here](https://docs.travis-ci.com/user/triggering-builds).
-There is a script <code>scripts/runTests.sh</code> which you can use to run validation tests with various options.
-To be able to use the script you need:
-1. *nix system or CygWin with <code>curl</code> command installed
-1. Read the link [above](https://docs.travis-ci.com/user/triggering-builds): you need an API token to be able to access to Travis API.
-1. Once you get your API token you can run the script via <code>runTests.sh -branch yourBranch -token yourAPItoken</code>
-
-The command requests Travis to execute validation tests in your branch which has to be specified as a parameter.
-In addition to required parameters you can provide:
-1. A commit message using <code>-message commitMessage</code>. This message will appear in the Travis Job. So you can identify your job using the message.
-1. The parameter <code>-javadoc</code>. The default validation executes only tests without checking javadocs.   <code>-javadoc</code> parameter requests javadoc validation in addition to the tests.
-1. The parameter <code>-all-tests</code>. Some tests are excluded from validation for various reasons (e.g. slow tests, etc.). This parameter requests all tests execution (not only validation).
-1. The parameter <code>-sonar</code>. In addition to validation (running the tests) it requests Sonar Qube sources analysis.
-1. The parameter <code>-sonaronly</code>. This parameter requests Sonar Qube analysis only (without tests).
+Normally, you don't need to run IT tests yourself, Travis can do this for you. 
 
 Building a package
 =====
