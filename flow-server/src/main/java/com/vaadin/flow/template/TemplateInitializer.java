@@ -19,16 +19,17 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
@@ -52,6 +53,12 @@ import elemental.json.JsonArray;
  *
  */
 public class TemplateInitializer {
+    private static final Set<String> PROHIBITED_TAG_NAMES = new HashSet<>();
+    static {
+        PROHIBITED_TAG_NAMES.add("dom-if");
+        PROHIBITED_TAG_NAMES.add("dom-repeat");
+    }
+
     private static final ReflectionCache<PolymerTemplate<?>, ParserData> CACHE = new ReflectionCache<>(
             clazz -> new ParserData());
 
@@ -61,8 +68,9 @@ public class TemplateInitializer {
     private final Map<String, Element> registeredElementIdToCustomElement = new HashMap<>();
     private final boolean useCache;
     private final ParserData parserData;
+    private final Set<String> notInjectableElementIds = new HashSet<>();
 
-    private com.vaadin.external.jsoup.nodes.Element contentElement;
+    private com.vaadin.external.jsoup.nodes.Element parsedTemplateRoot;
 
     private static class SubTemplateData {
         private final String id;
@@ -98,7 +106,7 @@ public class TemplateInitializer {
             }
         }
 
-        private boolean isProduction() {
+        private static boolean isProduction() {
             return VaadinService.getCurrent().getDeploymentConfiguration()
                     .isProductionMode();
         }
@@ -120,13 +128,14 @@ public class TemplateInitializer {
 
         boolean productionMode = VaadinService.getCurrent()
                 .getDeploymentConfiguration().isProductionMode();
-        useCache = CACHE.contains(templateClass) && productionMode;
-        parserData = productionMode ? CACHE.get(templateClass) : new ParserData();
+        useCache = productionMode && CACHE.contains(templateClass);
+        parserData = productionMode ? CACHE.get(templateClass)
+                : new ParserData();
 
         if (useCache) {
             createSubTemplates();
         } else {
-            contentElement = parser.getTemplateContent(templateClass,
+            parsedTemplateRoot = parser.getTemplateContent(templateClass,
                     getElement().getTag());
             parseTemplate();
         }
@@ -139,20 +148,37 @@ public class TemplateInitializer {
         mapComponents(templateClass);
     }
 
-    private void inspectCustomElements(Node node,
+    private void inspectCustomElements(
+            com.vaadin.external.jsoup.nodes.Element childElement,
             com.vaadin.external.jsoup.nodes.Element templateRoot) {
-        if (node instanceof com.vaadin.external.jsoup.nodes.Element) {
-            com.vaadin.external.jsoup.nodes.Element element = (com.vaadin.external.jsoup.nodes.Element) node;
-
-            requestAttachCustomElement(element, templateRoot);
-            element.children().forEach(
+        if (PROHIBITED_TAG_NAMES.stream().anyMatch(
+                tagName -> isProhibitedElement(tagName, childElement))) {
+            storeNotInjectableElementIds(childElement);
+        } else {
+            requestAttachCustomElement(childElement, templateRoot);
+            childElement.children().forEach(
                     child -> inspectCustomElements(child, templateRoot));
         }
     }
 
+    private void storeNotInjectableElementIds(
+            com.vaadin.external.jsoup.nodes.Element element) {
+        String id = element.id();
+        if (id != null && !id.isEmpty()) {
+            notInjectableElementIds.add(id);
+        }
+        element.children().forEach(this::storeNotInjectableElementIds);
+    }
+
+    private static boolean isProhibitedElement(String prohibitedTagName,
+            com.vaadin.external.jsoup.nodes.Element element) {
+        return prohibitedTagName.equals(element.tagName())
+                || prohibitedTagName.equals(element.attr("is"));
+    }
+
     private void parseTemplate() {
-        assert contentElement != null;
-        Elements templates = contentElement.getElementsByTag("template");
+        assert parsedTemplateRoot != null;
+        Elements templates = parsedTemplateRoot.getElementsByTag("template");
         if (!templates.isEmpty()) {
             inspectCustomElements(templates.get(0), templates.get(0));
         }
@@ -287,6 +313,13 @@ public class TemplateInitializer {
             return;
         }
         String id = idAnnotation.get().value();
+        if (notInjectableElementIds.contains(id)) {
+            throw new IllegalStateException(String.format(
+                    "Class '%s' contains field '%s' annotated with @Id('%s'). "
+                            + "Corresponding element was found in the template as a child of one of '%s' elements, which do not support injection",
+                    templateClass.getName(), field.getName(), id,
+                    PROHIBITED_TAG_NAMES));
+        }
 
         Optional<String> tagName = getTagName(id);
         if (!tagName.isPresent()) {
@@ -311,7 +344,7 @@ public class TemplateInitializer {
             return parserData.apply(id);
         } else {
             Optional<String> tag = Optional
-                    .ofNullable(contentElement.getElementById(id))
+                    .ofNullable(parsedTemplateRoot.getElementById(id))
                     .map(com.vaadin.external.jsoup.nodes.Element::tagName);
             if (tag.isPresent()) {
                 parserData.addTag(id, tag.get());
@@ -327,7 +360,7 @@ public class TemplateInitializer {
                             + "This is always mapped to the template instance itself ("
                             + templateClass.getName() + ')');
         } else if (element != null) {
-            handleAttach(element, field);
+            injectTemplateElement(element, field);
         }
     }
 
@@ -380,7 +413,6 @@ public class TemplateInitializer {
         }
 
         Element element = registeredCustomElements.get(id);
-
         if (element == null) {
             /*
              * create a node that should represent the client-side element. This
@@ -391,25 +423,23 @@ public class TemplateInitializer {
             StateNode proposedNode = BasicElementStateProvider
                     .createStateNode(tagName);
             element = Element.get(proposedNode);
-
-            StateNode node = getElement().getNode();
-            node.runWhenAttached(ui -> {
-                node.getFeature(AttachTemplateChildFeature.class)
+            StateNode templateNode = getElement().getNode();
+            templateNode.runWhenAttached(ui -> {
+                templateNode.getFeature(AttachTemplateChildFeature.class)
                         .register(getElement(), proposedNode);
                 ui.getPage().executeJavaScript(
                         "this.attachExistingElementById($0, $1, $2, $3);",
                         getElement(), tagName, proposedNode.getId(), id);
             });
         }
-        handleAttach(element, field);
-
+        injectTemplateElement(element, field);
     }
 
     private Element getElement() {
         return template.getElement();
     }
 
-    private void handleAttach(Element element, Field field) {
+    private void injectTemplateElement(Element element, Field field) {
         Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {
             CustomElementRegistry.getInstance().wrapElementIfNeeded(element);
