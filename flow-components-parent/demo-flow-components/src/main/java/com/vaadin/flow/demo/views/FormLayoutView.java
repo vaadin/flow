@@ -17,10 +17,9 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H3;
 import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.FormLayout.ResponsiveStep;
 import com.vaadin.ui.FormLayout.FormItem;
+import com.vaadin.ui.FormLayout.ResponsiveStep;
 import com.vaadin.ui.TextField;
 
 /**
@@ -58,7 +57,7 @@ public class FormLayoutView extends DemoView {
         // @formatter:on
 
         // begin-source-example
-        // source-example-heading: A form layout with fields wrapped in form items
+        // source-example-heading: A form layout with fields wrapped in items
         FormLayout layoutWithFormItems = new FormLayout();
 
         FormItem firstItem = new FormItem(
@@ -78,9 +77,8 @@ public class FormLayoutView extends DemoView {
         layoutWithFormItems.add(firstItem, secondItem);
         // end-source-example
 
-        add(new H3("A form layout with custom responsive layouting"),
-                nameLayout);
-        add(new H3("A form layout with fields wrapped in form items"),
+        addCard("A form layout with custom responsive layouting", nameLayout);
+        addCard("A form layout with fields wrapped in items",
                 layoutWithFormItems);
     }
 }

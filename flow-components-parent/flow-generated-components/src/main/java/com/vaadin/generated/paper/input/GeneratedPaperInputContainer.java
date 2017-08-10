@@ -140,9 +140,8 @@ import com.vaadin.shared.Registration;
  * This element is {@code display:block} by default, but you can set the
  * {@code inline} attribute to make it {@code display:inline-block}.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-input-container#2.0.1", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-input-container#2.0.1", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
 public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>

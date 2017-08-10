@@ -57,9 +57,8 @@ import com.vaadin.ui.HasComponents;
  * Set when the checkbox is focused using the keyboard. {@code focused} | Set
  * when the checkbox is focused.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>

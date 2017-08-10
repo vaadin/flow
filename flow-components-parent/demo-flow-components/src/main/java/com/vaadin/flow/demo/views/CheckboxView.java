@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H3;
 import com.vaadin.ui.Checkbox;
 
 /**
@@ -41,27 +40,27 @@ public class CheckboxView extends DemoView {
         Checkbox checkbox = new Checkbox();
         checkbox.setLabelText("Default Checkbox");
         // end-source-example
-        add(new H3("Default Checkbox"), checkbox);
+        addCard("Default Checkbox", checkbox);
         checkbox.setId("default-checkbox");
     }
 
     private void addDisabledCheckbox() {
         // begin-source-example
         // source-example-heading: Disabled Checkbox
-        Checkbox disabledCheckbox = new Checkbox(
-                "Disabled Checkbox").setValue(true).setDisabled(true);
+        Checkbox disabledCheckbox = new Checkbox("Disabled Checkbox")
+                .setValue(true).setDisabled(true);
         // end-source-example
-        addCard(new H3("Disabled Checkbox"), disabledCheckbox);
+        addCard("Disabled Checkbox", disabledCheckbox);
         disabledCheckbox.setId("disabled-checkbox");
     }
 
     private void addIndeterminateCheckbox() {
         // begin-source-example
         // source-example-heading: Indeterminate Checkbox
-        Checkbox indeterminateCheckbox = new Checkbox(
-                "Indeterminate Checkbox").setIndeterminate(true);
+        Checkbox indeterminateCheckbox = new Checkbox("Indeterminate Checkbox")
+                .setIndeterminate(true);
         // end-source-example
-        addCard(new H3("Indeterminate Checkbox"), indeterminateCheckbox);
+        addCard("Indeterminate Checkbox", indeterminateCheckbox);
         indeterminateCheckbox.setId("indeterminate-checkbox");
     }
 
@@ -77,8 +76,8 @@ public class CheckboxView extends DemoView {
                             event.getOldValue(), event.getValue()));
         });
         // end-source-example
-        addCard(new H3("Checkbox with a ValueChangeListener"),
-                valueChangeCheckbox, message);
+        addCard("Checkbox with a ValueChangeListener", valueChangeCheckbox,
+                message);
         valueChangeCheckbox.setId("value-change-checkbox");
         message.setId("value-change-checkbox-message");
     }
@@ -86,12 +85,10 @@ public class CheckboxView extends DemoView {
     private void addAccessibleCheckbox() {
         // begin-source-example
         // source-example-heading: Checkbox with Custom Accessible Label
-        Checkbox accessibleCheckbox =
-                new Checkbox("Accessible Checkbox")
-                    .setAriaLabel("Click me");
+        Checkbox accessibleCheckbox = new Checkbox("Accessible Checkbox")
+                .setAriaLabel("Click me");
         // end-source-example
-        addCard(new H3("Checkbox with Custom Accessible Label"),
-                accessibleCheckbox);
+        addCard("Checkbox with Custom Accessible Label", accessibleCheckbox);
         accessibleCheckbox.setId("accessible-checkbox");
     }
 }

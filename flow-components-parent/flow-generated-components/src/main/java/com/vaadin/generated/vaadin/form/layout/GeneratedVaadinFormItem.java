@@ -111,9 +111,8 @@ import com.vaadin.ui.HasComponents;
  * aside | {@code 1em} {@code --vaadin-form-item-row-gap} | Height of the gap
  * between the form item elements | {@code 1em}
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: Vaadin.FormItemElement#null", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: Vaadin.FormItemElement#null", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-form-item")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-item.html")
 public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>

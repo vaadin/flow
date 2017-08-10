@@ -22,15 +22,14 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H3;
 import com.vaadin.ui.ComboBox;
 
 /**
  * View for {@link ComboBox} demo.
  */
 @ComponentDemo(name = "Vaadin ComboBox", href = "vaadin-combo-box")
-public class ComboBoxView extends DemoView {
 
+public class ComboBoxView extends DemoView {
     /**
      * Example object.
      */
@@ -159,7 +158,7 @@ public class ComboBoxView extends DemoView {
 
         comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("string-selection-box");
-        add(new H3("String selection"), comboBox, message);
+        addCard("String selection", comboBox, message);
     }
 
     private void createObjectComboBox() {
@@ -188,7 +187,7 @@ public class ComboBoxView extends DemoView {
 
         comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("object-selection-box");
-        addCard(new H3("Object selection"), comboBox, message);
+        addCard("Object selection", comboBox, message);
     }
 
     private void createComboBoxWithObjectStringSimpleValue() {
@@ -218,7 +217,7 @@ public class ComboBoxView extends DemoView {
 
         comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("value-selection-box");
-        addCard(new H3("Value selection from objects"), comboBox, message);
+        addCard("Value selection from objects", comboBox, message);
     }
 
     private void createComboBoxWithCustomFilter() {
@@ -261,7 +260,7 @@ public class ComboBoxView extends DemoView {
 
         comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
         comboBox.setId("custom-filter-box");
-        addCard(new H3("Custom filtering"), comboBox, message);
+        addCard("Custom filtering", comboBox, message);
     }
 
     private List<Song> createListOfSongs() {

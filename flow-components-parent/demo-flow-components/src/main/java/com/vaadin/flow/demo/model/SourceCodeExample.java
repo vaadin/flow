@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.demo.model;
 
+import java.io.Serializable;
+
 /**
  * Object that defines a source code example to be shown together with a demo.
  * 
  * @author Vaadin Ltd
  */
-public class SourceCodeExample {
+public class SourceCodeExample implements Serializable {
 
     /**
      * Enum that defines which language the source code is in.

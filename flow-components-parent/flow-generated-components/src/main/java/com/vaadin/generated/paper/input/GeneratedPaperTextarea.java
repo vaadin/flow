@@ -50,9 +50,8 @@ import com.vaadin.shared.Registration;
  * See {@code Polymer.PaperInputContainer} for a list of custom properties used
  * to style this element.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-textarea#2.0.1", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-textarea#2.0.1", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>

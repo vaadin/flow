@@ -16,7 +16,6 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Div;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 
@@ -41,18 +40,15 @@ public class PaperButtonView extends DemoView {
     }
 
     private GeneratedPaperButton createButton(String text) {
+        // begin-source-example
+        // source-example-heading: Simple button
         GeneratedPaperButton button = new GeneratedPaperButton(text);
         button.getStyle().set("backgroundColor", "white");
         button.addClickListener(evt -> message.setText(
                 "Button " + evt.getSource().getElement().getText().toUpperCase()
                         + " was clicked."));
-        return button;
-    }
+        // end-source-example
 
-    @Override
-    public void populateSources(SourceContent container) {
-        container.addCode("PaperButton button = new PaperButton();\n"
-                + "button.setRaised(true);\n" + "button.setText(\"Button\");\n"
-                + "layoutComponent.add(button);");
+        return button;
     }
 }

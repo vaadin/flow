@@ -18,7 +18,6 @@ package com.vaadin.flow.demo.views;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.H3;
 import com.vaadin.flow.html.Label;
 import com.vaadin.ui.SplitLayout;
 
@@ -50,7 +49,8 @@ public class SplitLayoutView extends DemoView {
         layout.addToPrimary(firstLabel);
         layout.addToSecondary(secondLabel);
         // end-source-example
-        add(new H3("Horizontal Split Layout (Default)"), layout);
+
+        addCard("Horizontal Split Layout (Default)", layout);
     }
 
     private void addVerticalLayout() {
@@ -60,7 +60,8 @@ public class SplitLayoutView extends DemoView {
         layout.addToPrimary(new Label("Top content component"));
         layout.addToSecondary(new Label("Bottom content component"));
         // end-source-example
-        addCard(new H3("Vertical Split Layout"), layout);
+
+        addCard("Vertical Split Layout", layout);
     }
 
     private void addLayoutCombination() {
@@ -78,13 +79,14 @@ public class SplitLayoutView extends DemoView {
                             .addToSecondary(thirdLabel));
         // end-source-example
         // @formatter:on
+
         layout.getPrimaryComponent().setId("first-component");
         layout.getSecondaryComponent().setId("nested-layout");
-        ((SplitLayout) layout.getSecondaryComponent())
-                .getPrimaryComponent().setId("second-component");
-        ((SplitLayout) layout.getSecondaryComponent())
-                .getSecondaryComponent().setId("third-component");
-        addCard(new H3("Layout Combination"), layout);
+        ((SplitLayout) layout.getSecondaryComponent()).getPrimaryComponent()
+                .setId("second-component");
+        ((SplitLayout) layout.getSecondaryComponent()).getSecondaryComponent()
+                .setId("third-component");
+        addCard("Layout Combination", layout);
     }
 
     private void addResizeNotificationLayout() {
@@ -92,15 +94,16 @@ public class SplitLayoutView extends DemoView {
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
         // source-example-heading: Resize Notification for the Nested Elements
-        SplitLayout layout = new SplitLayout()
-                .addToPrimary(firstLabel).addToSecondary(secondLabel);
+        SplitLayout layout = new SplitLayout().addToPrimary(firstLabel)
+                .addToSecondary(secondLabel);
         Label message = new Label();
         AtomicInteger resizeCounter = new AtomicInteger();
         layout.addIronResizeListener(event -> message.setText(
                 "Resized " + resizeCounter.getAndIncrement() + " times."));
         // end-source-example
+
         message.setId("resize-message");
-        addCard(new H3("Resize Events"), layout, message);
+        addCard("Resize Events", layout, message);
     }
 
     private void addInitialSplitterPositionLayout() {
@@ -112,23 +115,25 @@ public class SplitLayoutView extends DemoView {
         SplitLayout layout = new SplitLayout(firstLabel, secondLabel);
         layout.setSplitterPosition(80);
         // end-source-example
-        // @formatter:on
+        // @formatter:on\
+
         layout.getPrimaryComponent().setId("initial-sp-first-component");
         layout.getSecondaryComponent().setId("initial-sp-second-component");
-        addCard(new H3("Split Layout with Initial Splitter Position"), layout);
+        addCard("Split Layout with Initial Splitter Position", layout);
     }
-    
+
     private void addMinMaxWidthLayout() {
         Label firstLabel = new Label(FIRST_CONTENT_TEXT);
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
         // source-example-heading: Split Layout with Minimum and Maximum Widths
-        SplitLayout layout = new SplitLayout()
-                .addToPrimary(firstLabel).addToSecondary(secondLabel)
+        SplitLayout layout = new SplitLayout().addToPrimary(firstLabel)
+                .addToSecondary(secondLabel)
                 .setPrimaryStyle("minWidth", "100px")
                 .setPrimaryStyle("maxWidth", "150px");
         // end-source-example
+
         layout.getPrimaryComponent().setId("min-max-first-component");
-        addCard(new H3("Split Layout with Minimum and Maximum Widths"), layout);
+        addCard("Split Layout with Minimum and Maximum Widths", layout);
     }
 }

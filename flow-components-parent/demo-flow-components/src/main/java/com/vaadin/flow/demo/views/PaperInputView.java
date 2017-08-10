@@ -16,7 +16,6 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.generated.paper.input.GeneratedPaperInput;
 
 /**
@@ -27,16 +26,13 @@ public class PaperInputView extends DemoView {
 
     @Override
     public void initView() {
+        // begin-source-example
+        // source-example-heading: Basic input
         GeneratedPaperInput input = new GeneratedPaperInput();
-        input.setLabel("Name").setPlaceholder("John Doe");
-        add(input);
-    }
+        input.setLabel("Name");
+        input.setPlaceholder("John Doe");
+        // end-source-example
 
-    @Override
-    public void populateSources(SourceContent container) {
-        container.addCode("PaperInput input = new PaperInput();\n"
-                + "input.setLabel(\"Name\").setPlaceholder(\"John Doe\");\n"
-                + "layoutContainer.add(input);");
+        addCard("Basic input", input);
     }
-
 }

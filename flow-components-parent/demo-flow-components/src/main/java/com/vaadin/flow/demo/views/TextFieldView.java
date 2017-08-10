@@ -30,8 +30,8 @@ public class TextFieldView extends DemoView {
         Div message = new Div();
 
         // begin-source-example
-        TextField textField = new TextField()
-                .setLabel("Text field label")
+        // source-example-heading: Basic text field
+        TextField textField = new TextField().setLabel("Text field label")
                 .setPlaceholder("placeholder text");
         textField.addValueChangeListener(event -> message.setText(
                 String.format("Text field value changed from '%s' to '%s'",
@@ -41,7 +41,6 @@ public class TextFieldView extends DemoView {
         textField.setId("text-field-with-value-change-listener");
         message.setId("text-field-value");
 
-        add(textField);
-        add(message);
+        addCard("Basic text field", textField, message);
     }
 }

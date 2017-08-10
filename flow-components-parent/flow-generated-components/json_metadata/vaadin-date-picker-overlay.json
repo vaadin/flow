@@ -2,7 +2,7 @@
   "name": "DatePickerOverlayElement",
   "tag": "vaadin-date-picker-overlay",
   "baseUrl": "vaadin-date-picker/vaadin-date-picker-overlay.html",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "properties": [
     {
       "name": "selectedDate",

@@ -48,10 +48,9 @@ import com.vaadin.ui.HasComponents;
  * {@code }`html <vaadin-date-picker-light attr-for-value="value"> <paper-input
  * label="Birthday"> </paper-input> </vaadin-date-picker-light> {@code }`
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: Vaadin.DatePickerLightElement#2.0.0",
-		"Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: Vaadin.DatePickerLightElement#2.0.1",
+		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
 public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerLight<R>>

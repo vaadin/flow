@@ -40,6 +40,7 @@ public class PaperDialogView extends DemoView {
         createNestedDialogs();
         createDialogWithActions();
         createAnimatedDialog();
+        createHelperMethodsCard();
 
         message = new Div();
         message.setId("dialogsMessage");
@@ -56,7 +57,8 @@ public class PaperDialogView extends DemoView {
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
-        add(open);
+
+        addCard("Plain dialog", open);
     }
 
     private void createModalDialog() {
@@ -74,7 +76,8 @@ public class PaperDialogView extends DemoView {
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
-        add(open);
+
+        addCard("Modal dialog", open);
     }
 
     private void createNestedDialogs() {
@@ -96,7 +99,8 @@ public class PaperDialogView extends DemoView {
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
-        add(open);
+
+        addCard("Nested dialogs", open);
     }
 
     private void createDialogWithActions() {
@@ -122,7 +126,8 @@ public class PaperDialogView extends DemoView {
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
-        add(open);
+
+        addCard("Dialog with actions", open);
     }
 
     private void createAnimatedDialog() {
@@ -139,7 +144,12 @@ public class PaperDialogView extends DemoView {
         open.setRaised(true);
         open.addClickListener(evt -> addAndOpen(dialog));
         // end-source-example
-        add(open);
+
+        addCard("Animated dialog", open);
+    }
+
+    private void createHelperMethodsCard() {
+        addCard("Helper methods");
     }
 
     // begin-source-example

@@ -72,9 +72,8 @@ import com.vaadin.shared.Registration;
  * dropdown | {@code {@code --paper-menu-button-content} | Mixin applied to the
  * paper-menu-button content | {@code
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: PaperMenuButton#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-menu-button")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button.html")
 public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
