@@ -484,8 +484,7 @@ public class PolymerTemplateTest {
         doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(template);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void parseTemplte_hasChildTemplateInsideDomRepeat_cantParse() {
+    public void parseTemplate_hasChildTemplateInsideDomRepeat_cantParse() {
         new TemplateWithChildInDomRepeat();
     }
 
