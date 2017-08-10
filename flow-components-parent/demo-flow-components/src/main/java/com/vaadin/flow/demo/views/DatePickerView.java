@@ -67,13 +67,13 @@ public class DatePickerView extends DemoView {
         // begin-source-example
         // source-example-heading: Date picker with min and max
         DatePicker datePicker = new DatePicker();
-        datePicker.setLabel("Select a day within this month")
-                .setPlaceholder("Date within this month");
+        datePicker.setLabel("Select a day within this month");
+        datePicker.setPlaceholder("Date within this month");
 
         LocalDate now = LocalDate.now();
 
-        datePicker.setMin(now.withDayOfMonth(1))
-                .setMax(now.withDayOfMonth(now.lengthOfMonth()));
+        datePicker.setMin(now.withDayOfMonth(1));
+        datePicker.setMax(now.withDayOfMonth(now.lengthOfMonth()));
 
         datePicker.addValueChangeListener(event -> {
             LocalDate selectedDate = event.getValue();
@@ -139,8 +139,10 @@ public class DatePickerView extends DemoView {
 
         // begin-source-example
         // source-example-heading: Two linked date pickers
-        DatePicker startDatePicker = new DatePicker().setLabel("Start");
-        DatePicker endDatePicker = new DatePicker().setLabel("End");
+        DatePicker startDatePicker = new DatePicker();
+        startDatePicker.setLabel("Start");
+        DatePicker endDatePicker = new DatePicker();
+        endDatePicker.setLabel("End");
 
         startDatePicker.addValueChangeListener(event -> {
             LocalDate selectedDate = event.getValue();

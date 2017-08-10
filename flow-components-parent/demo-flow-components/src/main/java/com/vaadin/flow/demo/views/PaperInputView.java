@@ -28,14 +28,16 @@ public class PaperInputView extends DemoView {
     @Override
     public void initView() {
         GeneratedPaperInput input = new GeneratedPaperInput();
-        input.setLabel("Name").setPlaceholder("John Doe");
+        input.setLabel("Name");
+        input.setPlaceholder("John Doe");
         add(input);
     }
 
     @Override
     public void populateSources(SourceContent container) {
         container.addCode("PaperInput input = new PaperInput();\n"
-                + "input.setLabel(\"Name\").setPlaceholder(\"John Doe\");\n"
+                + "input.setLabel(\"Name\");\n"
+                + "input.setPlaceholder(\"John Doe\");\n"
                 + "layoutContainer.add(input);");
     }
 
