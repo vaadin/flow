@@ -19,13 +19,13 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H3;
 import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.FormLayout.ResponsiveStep;
 import com.vaadin.ui.FormLayout.FormItem;
+import com.vaadin.ui.FormLayout.ResponsiveStep;
 import com.vaadin.ui.TextField;
 
 /**
  * Demo view for {@link FormLayout}.
- * 
+ *
  * @author Vaadin Ltd
  */
 @ComponentDemo(name = "Vaadin Form Layout", href = "vaadin-form-layout")
@@ -58,13 +58,16 @@ public class FormLayoutView extends DemoView {
         // @formatter:on
 
         // begin-source-example
-        // source-example-heading: A form layout with fields wrapped in form items
+        // source-example-heading: A form layout with fields wrapped in form
+        // items
         FormLayout layoutWithFormItems = new FormLayout();
 
-        FormItem firstItem = new FormItem(
-                new TextField().setPlaceholder("John"));
-        FormItem secondItem = new FormItem(
-                new TextField().setPlaceholder("Doe"));
+        TextField name = new TextField();
+        name.setPlaceholder("John");
+        FormItem firstItem = new FormItem(name);
+        TextField lastName = new TextField();
+        lastName.setPlaceholder("Doe");
+        FormItem secondItem = new FormItem(lastName);
 
         Div firstItemLabelComponent = new Div();
         firstItemLabelComponent.setText("First name");

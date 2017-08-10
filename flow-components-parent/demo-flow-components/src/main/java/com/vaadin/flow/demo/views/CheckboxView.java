@@ -48,8 +48,9 @@ public class CheckboxView extends DemoView {
     private void addDisabledCheckbox() {
         // begin-source-example
         // source-example-heading: Disabled Checkbox
-        Checkbox disabledCheckbox = new Checkbox(
-                "Disabled Checkbox").setValue(true).setDisabled(true);
+        Checkbox disabledCheckbox = new Checkbox("Disabled Checkbox");
+        disabledCheckbox.setValue(true);
+        disabledCheckbox.setDisabled(true);
         // end-source-example
         addCard(new H3("Disabled Checkbox"), disabledCheckbox);
         disabledCheckbox.setId("disabled-checkbox");
@@ -58,8 +59,8 @@ public class CheckboxView extends DemoView {
     private void addIndeterminateCheckbox() {
         // begin-source-example
         // source-example-heading: Indeterminate Checkbox
-        Checkbox indeterminateCheckbox = new Checkbox(
-                "Indeterminate Checkbox").setIndeterminate(true);
+        Checkbox indeterminateCheckbox = new Checkbox("Indeterminate Checkbox")
+                .setIndeterminate(true);
         // end-source-example
         addCard(new H3("Indeterminate Checkbox"), indeterminateCheckbox);
         indeterminateCheckbox.setId("indeterminate-checkbox");
@@ -86,9 +87,8 @@ public class CheckboxView extends DemoView {
     private void addAccessibleCheckbox() {
         // begin-source-example
         // source-example-heading: Checkbox with Custom Accessible Label
-        Checkbox accessibleCheckbox =
-                new Checkbox("Accessible Checkbox")
-                    .setAriaLabel("Click me");
+        Checkbox accessibleCheckbox = new Checkbox("Accessible Checkbox")
+                .setAriaLabel("Click me");
         // end-source-example
         addCard(new H3("Checkbox with Custom Accessible Label"),
                 accessibleCheckbox);
