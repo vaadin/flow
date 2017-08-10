@@ -25,41 +25,78 @@ import com.vaadin.generated.paper.button.GeneratedPaperButton;
 @ComponentDemo(name = "Paper Button", href = "paper-button")
 public class PaperButtonView extends DemoView {
 
-    private Div message;
-
     @Override
     public void initView() {
-        GeneratedPaperButton link = createButton("Link");
+        createRaisedButton();
+        createLinkButton();
+        createToggleButton();
+        createDisabledButton();
+    }
+
+    private void createLinkButton() {
+        Div message = new Div();
+
+        // begin-source-example
+        // source-example-heading: Link button
+        GeneratedPaperButton link = new GeneratedPaperButton("Link");
         link.setRaised(false);
         link.setNoink(true);
-        add(link);
-        GeneratedPaperButton raised = createButton("Raised");
-        raised.setRaised(true);
-        add(raised);
-        GeneratedPaperButton toggles = createButton("Toggles");
-        toggles.setRaised(true);
-        toggles.setToggles(true);
-        add(toggles);
-        GeneratedPaperButton disabled = createButton("Disabled");
-        disabled.setRaised(false);
-        disabled.setDisabled(true);
-        add(disabled);
-
-        message = new Div();
-        message.setId("buttonsMessage");
-        add(message);
-    }
-
-    private GeneratedPaperButton createButton(String text) {
-        // begin-source-example
-        // source-example-heading: Simple button
-        GeneratedPaperButton button = new GeneratedPaperButton(text);
-        button.getStyle().set("backgroundColor", "white");
-        button.addClickListener(evt -> message.setText(
-                "Button " + evt.getSource().getElement().getText().toUpperCase()
-                        + " was clicked."));
+        link.getStyle().set("backgroundColor", "white");
+        link.addClickListener(
+                evt -> message.setText("Button LINK was clicked."));
         // end-source-example
 
-        return button;
+        link.setId("link-button");
+        message.setId("link-button-message");
+        addCard("Link button", link, message);
     }
+
+    private void createRaisedButton() {
+        Div message = new Div();
+
+        // begin-source-example
+        // source-example-heading: Raised button
+        GeneratedPaperButton raised = new GeneratedPaperButton("Raised");
+        raised.setRaised(true);
+        raised.getStyle().set("backgroundColor", "white");
+        raised.addClickListener(
+                evt -> message.setText("Button RAISED was clicked."));
+        // end-source-example
+
+        raised.setId("raised-button");
+        message.setId("raised-button-message");
+        addCard("Raised button", raised, message);
+    }
+
+    private void createToggleButton() {
+        Div message = new Div();
+
+        // begin-source-example
+        // source-example-heading: Toggle button
+        GeneratedPaperButton toggles = new GeneratedPaperButton("Toggles");
+        toggles.setRaised(true);
+        toggles.setToggles(true);
+        toggles.getStyle().set("backgroundColor", "white");
+        toggles.addClickListener(
+                evt -> message.setText("Button TOGGLES was clicked."));
+        // end-source-example
+
+        toggles.setId("toggle-button");
+        message.setId("toggle-button-message");
+        addCard("Toggle button", toggles, message);
+    }
+
+    private void createDisabledButton() {
+        // begin-source-example
+        // source-example-heading: Disabled button
+        GeneratedPaperButton disabled = new GeneratedPaperButton("Disabled");
+        disabled.setRaised(false);
+        disabled.setDisabled(true);
+        disabled.getStyle().set("backgroundColor", "white");
+        // end-source-example
+
+        disabled.setId("disabled-button");
+        addCard("Disabled button", disabled);
+    }
+
 }

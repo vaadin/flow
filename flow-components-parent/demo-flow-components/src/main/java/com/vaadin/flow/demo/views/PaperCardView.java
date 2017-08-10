@@ -38,8 +38,10 @@ public class PaperCardView extends DemoView {
 
         Div cardActions = new Div();
         cardActions.addClassName("card-actions");
+
         Div buttons = new Div();
-        cardActions.addClassName("horizontal justified");
+        cardActions.addClassName("horizontal");
+        cardActions.addClassName("justified");
 
         cardActions.add(buttons);
 

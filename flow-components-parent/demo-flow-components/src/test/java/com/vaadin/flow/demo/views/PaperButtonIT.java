@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
-import java.util.List;
-
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -30,50 +29,63 @@ import com.vaadin.testbench.By;
  */
 public class PaperButtonIT extends AbstractChromeTest {
 
-    @Test
-    public void clickOnButtons_textIsDisaplayed() {
+    private WebElement layout;
+
+    @Before
+    public void init() {
         open();
-
         waitForElementPresent(By.tagName("main-layout"));
-        WebElement layout = findElement(By.tagName("main-layout"));
-        List<WebElement> buttons = layout
-                .findElements(By.tagName("paper-button"));
-        Assert.assertEquals(4, buttons.size());
+        layout = findElement(By.tagName("main-layout"));
+    }
 
-        WebElement message = layout.findElement(By.id("buttonsMessage"));
+    @Test
+    public void clickOnRaisedButton_textIsDisaplayed() {
+        WebElement button = layout.findElement(By.id("raised-button"));
+        WebElement message = layout.findElement(By.id("raised-button-message"));
 
-        int raisedCount = 0;
-        int togglesCount = 0;
-        int activeCount = 0;
-        int disabledCount = 0;
+        Assert.assertTrue("Button should be raised",
+                isAttributeTrue(button, "raised"));
+        button.click();
 
-        for (WebElement button : buttons) {
-            if (isAttributeTrue(button, "raised")) {
-                raisedCount++;
-            }
+        waitUntil(driver -> message.getText()
+                .equals("Button " + button.getText() + " was clicked."));
+    }
 
-            if (isAttributeTrue(button, "toggles")) {
-                togglesCount++;
-            }
+    @Test
+    public void clickOnLinkButton_textIsDisaplayed() {
+        WebElement button = layout.findElement(By.id("link-button"));
+        WebElement message = layout.findElement(By.id("link-button-message"));
 
-            if (button.getAttribute("disabled") == null) {
-                button.click();
-                waitUntil(driver -> message.getText().equals(
-                        "Button " + button.getText() + " was clicked."));
+        Assert.assertTrue("Button should have noink",
+                isAttributeTrue(button, "noink"));
+        button.click();
 
-                if (isAttributeTrue(button, "toggles")
-                        && isAttributeTrue(button, "active")) {
-                    activeCount++;
-                }
-            } else {
-                disabledCount++;
-            }
-        }
+        waitUntil(driver -> message.getText()
+                .equals("Button " + button.getText() + " was clicked."));
+    }
 
-        Assert.assertEquals(2, raisedCount);
-        Assert.assertEquals(1, togglesCount);
-        Assert.assertEquals(1, activeCount);
-        Assert.assertEquals(1, disabledCount);
+    @Test
+    public void clickOnToggleButton_textIsDisaplayed() {
+        WebElement button = layout.findElement(By.id("toggle-button"));
+        WebElement message = layout.findElement(By.id("toggle-button-message"));
+
+        Assert.assertTrue("Button should have toggles",
+                isAttributeTrue(button, "toggles"));
+        Assert.assertTrue("Button should be raised",
+                isAttributeTrue(button, "raised"));
+        button.click();
+
+        waitUntil(driver -> message.getText()
+                .equals("Button " + button.getText() + " was clicked."));
+    }
+
+    @Test
+    public void disableButtonIsShown() {
+        WebElement button = layout.findElement(By.id("disabled-button"));
+
+        Assert.assertTrue("Button should be disabled",
+                isAttributeTrue(button, "disabled"));
+
     }
 
     private boolean isAttributeTrue(WebElement element, String attribute) {

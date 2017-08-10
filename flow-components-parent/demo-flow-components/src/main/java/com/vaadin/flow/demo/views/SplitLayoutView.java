@@ -50,6 +50,7 @@ public class SplitLayoutView extends DemoView {
         layout.addToSecondary(secondLabel);
         // end-source-example
 
+        layout.getStyle().set("minHeight", "100px");
         addCard("Horizontal Split Layout (Default)", layout);
     }
 
@@ -62,6 +63,7 @@ public class SplitLayoutView extends DemoView {
         layout.addToSecondary(new Label("Bottom content component"));
         // end-source-example
 
+        layout.getStyle().set("minHeight", "100px");
         addCard("Vertical Split Layout", layout);
     }
 
@@ -84,6 +86,7 @@ public class SplitLayoutView extends DemoView {
         layout.getSecondaryComponent().setId("nested-layout");
         secondLayout.getPrimaryComponent().setId("second-component");
         secondLayout.getSecondaryComponent().setId("third-component");
+        layout.getStyle().set("minHeight", "100px");
         addCard("Layout Combination", layout);
     }
 
@@ -91,7 +94,7 @@ public class SplitLayoutView extends DemoView {
         Label firstLabel = new Label(FIRST_CONTENT_TEXT);
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
-        // source-example-heading: Resize Notification for the Nested Elements
+        // source-example-heading: Resize Events
         SplitLayout layout = new SplitLayout();
         layout.addToPrimary(firstLabel);
         layout.addToSecondary(secondLabel);
@@ -102,21 +105,23 @@ public class SplitLayoutView extends DemoView {
         // end-source-example
 
         message.setId("resize-message");
+        layout.getStyle().set("minHeight", "100px");
         addCard("Resize Events", layout, message);
     }
 
     private void addInitialSplitterPositionLayout() {
         Label firstLabel = new Label(FIRST_CONTENT_TEXT);
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
-        
+
         // begin-source-example
         // source-example-heading: Split Layout with Initial Splitter Position
         SplitLayout layout = new SplitLayout(firstLabel, secondLabel);
         layout.setSplitterPosition(80);
         // end-source-example
-        
+
         layout.getPrimaryComponent().setId("initial-sp-first-component");
         layout.getSecondaryComponent().setId("initial-sp-second-component");
+        layout.getStyle().set("minHeight", "100px");
         addCard("Split Layout with Initial Splitter Position", layout);
     }
 
@@ -133,6 +138,7 @@ public class SplitLayoutView extends DemoView {
         // end-source-example
 
         layout.getPrimaryComponent().setId("min-max-first-component");
+        layout.getStyle().set("minHeight", "100px");
         addCard("Split Layout with Minimum and Maximum Widths", layout);
     }
 }
