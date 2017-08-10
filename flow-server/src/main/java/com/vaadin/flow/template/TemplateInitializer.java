@@ -154,11 +154,11 @@ public class TemplateInitializer {
         if (PROHIBITED_TAG_NAMES.stream().anyMatch(
                 tagName -> isProhibitedElement(tagName, childElement))) {
             storeNotInjectableElementIds(childElement);
-        } else {
-            requestAttachCustomElement(childElement, templateRoot);
-            childElement.children().forEach(
-                    child -> inspectCustomElements(child, templateRoot));
         }
+
+        requestAttachCustomElement(childElement, templateRoot);
+        childElement.children()
+                .forEach(child -> inspectCustomElements(child, templateRoot));
     }
 
     private void storeNotInjectableElementIds(
