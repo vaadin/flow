@@ -30,9 +30,9 @@ public class TextFieldView extends DemoView {
         Div message = new Div();
 
         // begin-source-example
-        TextField textField = new TextField()
-                .setLabel("Text field label")
-                .setPlaceholder("placeholder text");
+        TextField textField = new TextField();
+        textField.setLabel("Text field label");
+        textField.setPlaceholder("placeholder text");
         textField.addValueChangeListener(event -> message.setText(
                 String.format("Text field value changed from '%s' to '%s'",
                         event.getOldValue(), event.getValue())));
