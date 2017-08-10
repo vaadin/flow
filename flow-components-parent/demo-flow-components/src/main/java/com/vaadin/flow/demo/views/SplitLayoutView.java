@@ -56,7 +56,8 @@ public class SplitLayoutView extends DemoView {
     private void addVerticalLayout() {
         // begin-source-example
         // source-example-heading: Vertical Split Layout
-        SplitLayout layout = new SplitLayout().setVertical(true);
+        SplitLayout layout = new SplitLayout();
+        layout.setVertical(true);
         layout.addToPrimary(new Label("Top content component"));
         layout.addToSecondary(new Label("Bottom content component"));
         // end-source-example
@@ -68,24 +69,21 @@ public class SplitLayoutView extends DemoView {
         Label firstLabel = new Label(FIRST_CONTENT_TEXT);
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         Label thirdLabel = new Label("Third content component");
-        // @formatter:off
         // begin-source-example
         // source-example-heading: Layout Combination
-        SplitLayout layout = new SplitLayout()
-            .addToPrimary(firstLabel)
-            .addToSecondary(
-                    new SplitLayout().setVertical(true)
-                            .addToPrimary(secondLabel)
-                            .addToSecondary(thirdLabel));
+        SplitLayout secondLayout = new SplitLayout();
+        secondLayout.setVertical(true);
+        secondLayout.addToPrimary(secondLabel);
+        secondLayout.addToSecondary(thirdLabel);
+        SplitLayout layout = new SplitLayout();
+        layout.addToPrimary(firstLabel);
+        layout.addToSecondary(secondLayout);
         // end-source-example
-        // @formatter:on
 
         layout.getPrimaryComponent().setId("first-component");
         layout.getSecondaryComponent().setId("nested-layout");
-        ((SplitLayout) layout.getSecondaryComponent()).getPrimaryComponent()
-                .setId("second-component");
-        ((SplitLayout) layout.getSecondaryComponent()).getSecondaryComponent()
-                .setId("third-component");
+        secondLayout.getPrimaryComponent().setId("second-component");
+        secondLayout.getSecondaryComponent().setId("third-component");
         addCard("Layout Combination", layout);
     }
 
@@ -94,8 +92,9 @@ public class SplitLayoutView extends DemoView {
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
         // source-example-heading: Resize Notification for the Nested Elements
-        SplitLayout layout = new SplitLayout().addToPrimary(firstLabel)
-                .addToSecondary(secondLabel);
+        SplitLayout layout = new SplitLayout();
+        layout.addToPrimary(firstLabel);
+        layout.addToSecondary(secondLabel);
         Label message = new Label();
         AtomicInteger resizeCounter = new AtomicInteger();
         layout.addIronResizeListener(event -> message.setText(
@@ -109,14 +108,13 @@ public class SplitLayoutView extends DemoView {
     private void addInitialSplitterPositionLayout() {
         Label firstLabel = new Label(FIRST_CONTENT_TEXT);
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
-        // @formatter:off
+        
         // begin-source-example
         // source-example-heading: Split Layout with Initial Splitter Position
         SplitLayout layout = new SplitLayout(firstLabel, secondLabel);
         layout.setSplitterPosition(80);
         // end-source-example
-        // @formatter:on\
-
+        
         layout.getPrimaryComponent().setId("initial-sp-first-component");
         layout.getSecondaryComponent().setId("initial-sp-second-component");
         addCard("Split Layout with Initial Splitter Position", layout);
@@ -127,10 +125,11 @@ public class SplitLayoutView extends DemoView {
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
         // source-example-heading: Split Layout with Minimum and Maximum Widths
-        SplitLayout layout = new SplitLayout().addToPrimary(firstLabel)
-                .addToSecondary(secondLabel)
-                .setPrimaryStyle("minWidth", "100px")
-                .setPrimaryStyle("maxWidth", "150px");
+        SplitLayout layout = new SplitLayout();
+        layout.addToPrimary(firstLabel);
+        layout.addToSecondary(secondLabel);
+        layout.setPrimaryStyle("minWidth", "100px");
+        layout.setPrimaryStyle("maxWidth", "150px");
         // end-source-example
 
         layout.getPrimaryComponent().setId("min-max-first-component");

@@ -37,15 +37,15 @@ public class FormLayoutView extends DemoView {
         // source-example-heading: A form layout with custom responsive layouting
         FormLayout nameLayout = new FormLayout();
 
-        TextField titleField = new TextField()
-                .setLabel("Title")
-                .setPlaceholder("Sir");
-        TextField firstNameField = new TextField()
-                .setLabel("First name")
-                .setPlaceholder("John");
-        TextField lastNameField = new TextField()
-                .setLabel("Last name")
-                .setPlaceholder("Doe");
+        TextField titleField = new TextField();
+        titleField.setLabel("Title");
+        titleField.setPlaceholder("Sir");
+        TextField firstNameField = new TextField();
+        firstNameField.setLabel("First name");
+        firstNameField.setPlaceholder("John");
+        TextField lastNameField = new TextField();
+        lastNameField.setLabel("Last name");
+        lastNameField.setPlaceholder("Doe");
 
         nameLayout.add(titleField, firstNameField, lastNameField);
 
@@ -60,10 +60,12 @@ public class FormLayoutView extends DemoView {
         // source-example-heading: A form layout with fields wrapped in items
         FormLayout layoutWithFormItems = new FormLayout();
 
-        FormItem firstItem = new FormItem(
-                new TextField().setPlaceholder("John"));
-        FormItem secondItem = new FormItem(
-                new TextField().setPlaceholder("Doe"));
+        TextField name = new TextField();
+        name.setPlaceholder("John");
+        FormItem firstItem = new FormItem(name);
+        TextField lastName = new TextField();
+        lastName.setPlaceholder("Doe");
+        FormItem secondItem = new FormItem(lastName);
 
         Div firstItemLabelComponent = new Div();
         firstItemLabelComponent.setText("First name");
