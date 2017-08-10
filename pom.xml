@@ -405,7 +405,11 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>license-maven-plugin</artifactId>
                     <version>1.13</version>
-              </plugin>
+                    <configuration>
+                        <!-- Default is system -->
+                        <excludedScopes>system,test</excludedScopes>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
