@@ -41,21 +41,21 @@ public class TemplateInitializerTest {
     private TemplateParser templateParser;
 
     @Tag("template-initializer-test")
-    public class DomIfClass extends PolymerTemplate<TemplateModel> {
-        @Id("domIf")
+    public class InTemplateClass extends PolymerTemplate<TemplateModel> {
+        @Id("inTemplate")
         public Element element;
 
-        public DomIfClass() {
+        public InTemplateClass() {
             super(templateParser);
         }
     }
 
     @Tag("template-initializer-test")
-    public class DomRepeatClass extends PolymerTemplate<TemplateModel> {
-        @Id("domRepeat")
+    public class OutsideTemplateClass extends PolymerTemplate<TemplateModel> {
+        @Id("outsideTemplate")
         public Element element;
 
-        public DomRepeatClass() {
+        public OutsideTemplateClass() {
             super(templateParser);
         }
     }
@@ -77,34 +77,36 @@ public class TemplateInitializerTest {
 
     @Before
     public void setUp() throws NoSuchFieldException {
-        String parentTemplateId = DomIfClass.class.getAnnotation(Tag.class)
+        String parentTemplateId = InTemplateClass.class.getAnnotation(Tag.class)
                 .value();
         assertThat("Both classes should have the same '@Tag' annotation",
-                DomRepeatClass.class.getAnnotation(Tag.class).value(),
+                OutsideTemplateClass.class.getAnnotation(Tag.class).value(),
                 is(parentTemplateId));
 
-        String domIfElementId = DomIfClass.class.getField("element")
+        String inTemplateElementId = InTemplateClass.class.getField("element")
                 .getAnnotation(Id.class).value();
-        String domRepeatElementId = DomRepeatClass.class.getField("element")
-                .getAnnotation(Id.class).value();
+        String outsideTemplateElementId = OutsideTemplateClass.class
+                .getField("element").getAnnotation(Id.class).value();
 
-        templateParser = (clazz, tag) -> Jsoup.parse(String.format(
-                "<dom-module id='%s'><template>"
-                        + "    <template is='dom-if'><div id='%s'>Test</div></template>"
-                        + "    <template is='dom-repeat'><div id='%s'>Test</div></template>"
-                        + "</template></dom-module>",
-                parentTemplateId, domIfElementId, domRepeatElementId));
+        templateParser = (clazz,
+                tag) -> Jsoup.parse(String.format(
+                        "<dom-module id='%s'><template>"
+                                + "    <template><div id='%s'>Test</div></template>"
+                                + "    <div id='%s'></div>"
+                                + "</template></dom-module>",
+                        parentTemplateId, inTemplateElementId,
+                        outsideTemplateElementId));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void domIfShouldThrowAnException() {
-        new TemplateInitializer(new DomIfClass(), templateParser)
+    public void inTemplateShouldThrowAnException() {
+        new TemplateInitializer(new InTemplateClass(), templateParser)
                 .initChildElements();
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void domRepeatShouldThrowAnException() {
-        new TemplateInitializer(new DomRepeatClass(), templateParser)
+    @Test
+    public void outsideTemplateShouldNotThrowAnException() {
+        new TemplateInitializer(new OutsideTemplateClass(), templateParser)
                 .initChildElements();
     }
 
