@@ -21,14 +21,15 @@
     </modules>
 
     <properties>
-        <!-- Don't care about coding style for tests -->
+        <!-- Don't care about coding style or licenses for tests -->
         <sonar.skip>true</sonar.skip>
+        <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
+        
         <maven.deploy.skip>true</maven.deploy.skip>
         <!-- Used in the tests, should be overridden for each module to support
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
-        <!-- Don't run screenshot tests by default -->
     </properties>
 
     <dependencies>

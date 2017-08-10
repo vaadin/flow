@@ -11,9 +11,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,16 +30,61 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class LicenseCheckTest {
+    private static final Set<String> whitelist = new HashSet<>();
+    static {
+        whitelist.add("http://www.apache.org/licenses/LICENSE-2.0");
+        whitelist.add("http://www.apache.org/licenses/LICENSE-2.0.txt");
+
+        whitelist.add("http://www.gnu.org/licenses/lgpl.html");
+        whitelist.add("http://www.gnu.org/licenses/lgpl.txt");
+
+        whitelist.add("http://www.mozilla.org/MPL/2.0/");
+
+        whitelist.add("http://opensource.org/licenses/MIT");
+        whitelist.add("http://www.opensource.org/licenses/mit-license.php");
+
+        whitelist.add("http://www.eclipse.org/legal/epl-v10.html");
+
+        whitelist.add("https://glassfish.dev.java.net/public/CDDLv1.0.html");
+        whitelist.add(
+                "https://glassfish.dev.java.net/nonav/public/CDDL+GPL.html");
+
+        whitelist.add(
+                "http://www.w3.org/Consortium/Legal/copyright-software-19980720");
+
+        whitelist.add("http://www.gwtproject.org/terms.html");
+
+        /*
+         * License names used by some projects that define their license to be
+         * something like to http://projectdomain.com/license, for which the
+         * contents might change without notice
+         */
+        whitelist.add("BSD");
+        whitelist.add("The MIT License");
+        whitelist.add("Apache License, Version 2.0");
+        whitelist.add("ICU License");
+    }
+
+    private static final List<String> excludeDirs = Arrays.asList(".git",
+            "bower_components", "node", "node_modules", "src",
+            "generated-sources", "classes", "test-classes");
 
     private static class LicenseFileVisitor extends SimpleFileVisitor<Path> {
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir,
+                BasicFileAttributes attrs) throws IOException {
+            if (excludeDirs.stream().anyMatch(dir::endsWith)) {
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+
+            return super.preVisitDirectory(dir, attrs);
+        }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
                 throws IOException {
             String path = file.toString();
-            if (path.endsWith(".java")) {
-                return FileVisitResult.SKIP_SIBLINGS;
-            }
             if (path.endsWith("licenses.xml")) {
                 checkLicenses(file);
             }
@@ -53,9 +101,9 @@ public class LicenseCheckTest {
                 NodeList licenses = doc.getElementsByTagName("licenses");
                 for (int i = 0; i < licenses.getLength(); i++) {
                     Node license = licenses.item(i);
-                    Map<String, List<String>> restrictive = new HashMap<>();
-                    if (!checkLicenses(license, restrictive)) {
-                        Assert.fail(getErrorMessage(file, restrictive));
+                    Map<String, List<String>> unsupported = new HashMap<>();
+                    if (!checkLicenses(license, unsupported)) {
+                        Assert.fail(getErrorMessage(file, unsupported));
                     }
                 }
             } catch (ParserConfigurationException | SAXException
@@ -65,18 +113,18 @@ public class LicenseCheckTest {
         }
 
         private String getErrorMessage(Path file,
-                Map<String, List<String>> restrictiveLicenses) {
+                Map<String, List<String>> unsupportedLicenses) {
             StringBuilder builder = new StringBuilder("File ");
             builder.append(file).append(
-                    " contains the following dependencies with only restrictive licenses: ");
-            restrictiveLicenses.forEach((dependency, licenses) -> builder
+                    " contains the following dependencies with licenses that have not been whitelisted: ");
+            unsupportedLicenses.forEach((dependency, licenses) -> builder
                     .append("\n dependency '").append(dependency)
                     .append("' has licenses : ").append(licenses));
             return builder.toString();
         }
 
         private boolean checkLicenses(Node licenses,
-                Map<String, List<String>> restrictiveLicenses) {
+                Map<String, List<String>> unsupportedLicenses) {
             NodeList children = licenses.getChildNodes();
             List<String> licenseNames = new ArrayList<>();
             boolean hasLicenses = false;
@@ -90,7 +138,7 @@ public class LicenseCheckTest {
                 Node child = children.item(i);
                 if ("license".equals(child.getNodeName())) {
                     hasLicenses = true;
-                    handleLicense(restrictiveLicenses, licenseNames, dependency,
+                    handleLicense(unsupportedLicenses, licenseNames, dependency,
                             child);
                 }
             }
@@ -98,20 +146,17 @@ public class LicenseCheckTest {
         }
 
         private void handleLicense(
-                Map<String, List<String>> restrictiveLicenses,
+                Map<String, List<String>> unsupportedLicenses,
                 List<String> licenseNames, String dependency, Node child) {
             String name = getTagContent(child, "name");
-            if (isRestrictiveLicense(name)) {
-                List<String> licenses = restrictiveLicenses
+            String url = getTagContent(child, "url");
+            if (!whitelist.contains(url) && !whitelist.contains(name)) {
+                List<String> licenses = unsupportedLicenses
                         .computeIfAbsent(dependency, key -> new ArrayList<>());
-                licenses.add(name);
+                licenses.add(name + ": " + url);
             } else {
                 licenseNames.add(name);
             }
-        }
-
-        private boolean isRestrictiveLicense(String license) {
-            return license.contains("GPL") && !license.contains("CDDL + GPL");
         }
 
         private String getTagContent(Node node, String tag) {
