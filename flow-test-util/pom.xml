@@ -11,6 +11,7 @@
 	<name>Testing utilities for Flow</name>
 	<packaging>jar</packaging>
 	<properties>
+        <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
 	</properties>
 	<dependencies>
 		<dependency>
