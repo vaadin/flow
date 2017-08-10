@@ -127,6 +127,7 @@ then
         -Dtest.excludegroup= \
         $(getDockerParamsIfNeeded) \
         clean \
+        license:download-licenses \
         org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
     # Get the status for the previous maven command and if not exception then run sonar.
     STATUS=$?
@@ -145,7 +146,7 @@ then
         -Dmaven.javadoc.skip=false \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
         $(getDockerParamsIfNeeded) \
-        clean org.jacoco:jacoco-maven-plugin:prepare-agent install
+        clean org.jacoco:jacoco-maven-plugin:prepare-agent license:download-licenses install
 
     # Get the status for the previous maven command and if not exception then run sonar.
     STATUS=$?
@@ -163,5 +164,6 @@ else
         -Dmaven.javadoc.skip=false \
         $(getDockerParamsIfNeeded) \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
+        license:download-licenses \
         verify javadoc:javadoc $modules -amd
 fi

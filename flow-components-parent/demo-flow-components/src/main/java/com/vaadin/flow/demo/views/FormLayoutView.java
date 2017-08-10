@@ -33,29 +33,26 @@ public class FormLayoutView extends DemoView {
 
     @Override
     void initView() {
-        // @formatter:off
         // begin-source-example
-        // source-example-heading: A form layout with custom responsive layouting
+        // source-example-heading: A form layout with custom responsive
+        // layouting
         FormLayout nameLayout = new FormLayout();
 
-        TextField titleField = new TextField()
-                .setLabel("Title")
-                .setPlaceholder("Sir");
-        TextField firstNameField = new TextField()
-                .setLabel("First name")
-                .setPlaceholder("John");
-        TextField lastNameField = new TextField()
-                .setLabel("Last name")
-                .setPlaceholder("Doe");
+        TextField titleField = new TextField();
+        titleField.setLabel("Title");
+        titleField.setPlaceholder("Sir");
+        TextField firstNameField = new TextField();
+        firstNameField.setLabel("First name");
+        firstNameField.setPlaceholder("John");
+        TextField lastNameField = new TextField();
+        lastNameField.setLabel("Last name");
+        lastNameField.setPlaceholder("Doe");
 
         nameLayout.add(titleField, firstNameField, lastNameField);
 
-        nameLayout.setResponsiveSteps(
-                new ResponsiveStep("0", 1),
-                new ResponsiveStep("20em", 2),
-                new ResponsiveStep("22em", 3));
+        nameLayout.setResponsiveSteps(new ResponsiveStep("0", 1),
+                new ResponsiveStep("20em", 2), new ResponsiveStep("22em", 3));
         // end-source-example
-        // @formatter:on
 
         // begin-source-example
         // source-example-heading: A form layout with fields wrapped in form

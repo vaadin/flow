@@ -59,8 +59,8 @@ public class CheckboxView extends DemoView {
     private void addIndeterminateCheckbox() {
         // begin-source-example
         // source-example-heading: Indeterminate Checkbox
-        Checkbox indeterminateCheckbox = new Checkbox("Indeterminate Checkbox")
-                .setIndeterminate(true);
+        Checkbox indeterminateCheckbox = new Checkbox("Indeterminate Checkbox");
+        indeterminateCheckbox.setIndeterminate(true);
         // end-source-example
         addCard(new H3("Indeterminate Checkbox"), indeterminateCheckbox);
         indeterminateCheckbox.setId("indeterminate-checkbox");
@@ -87,8 +87,8 @@ public class CheckboxView extends DemoView {
     private void addAccessibleCheckbox() {
         // begin-source-example
         // source-example-heading: Checkbox with Custom Accessible Label
-        Checkbox accessibleCheckbox = new Checkbox("Accessible Checkbox")
-                .setAriaLabel("Click me");
+        Checkbox accessibleCheckbox = new Checkbox("Accessible Checkbox");
+        accessibleCheckbox.setAriaLabel("Click me");
         // end-source-example
         addCard(new H3("Checkbox with Custom Accessible Label"),
                 accessibleCheckbox);
