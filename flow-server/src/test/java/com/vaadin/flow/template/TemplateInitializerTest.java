@@ -60,6 +60,24 @@ public class TemplateInitializerTest {
         }
     }
 
+    @Tag("template-initializer-test")
+    public class NestedTemplateClass extends PolymerTemplate<TemplateModel> {
+        @Id("nestedTemplate")
+        public Element element;
+
+        public NestedTemplateClass() {
+            super(templateParser);
+        }
+    }
+
+    @Tag("template-initializer-test")
+    public class NoInjectClass extends PolymerTemplate<TemplateModel> {
+
+        public NoInjectClass() {
+            super(templateParser);
+        }
+    }
+
     @BeforeClass
     public static void initVaadinService() {
         VaadinService service = mock(VaadinService.class);
@@ -79,21 +97,30 @@ public class TemplateInitializerTest {
     public void setUp() throws NoSuchFieldException {
         String parentTemplateId = DomIfClass.class.getAnnotation(Tag.class)
                 .value();
-        assertThat("Both classes should have the same '@Tag' annotation",
-                DomRepeatClass.class.getAnnotation(Tag.class).value(),
-                is(parentTemplateId));
+
+        for (Class<?> childClass : getClass().getClasses()) {
+            assertThat(
+                    childClass.getName()
+                            + " should have the same '@Tag' annotation",
+                    childClass.getAnnotation(Tag.class).value(),
+                    is(parentTemplateId));
+        }
 
         String domIfElementId = DomIfClass.class.getField("element")
                 .getAnnotation(Id.class).value();
         String domRepeatElementId = DomRepeatClass.class.getField("element")
                 .getAnnotation(Id.class).value();
+        String nestedTemplateElementId = NestedTemplateClass.class
+                .getField("element").getAnnotation(Id.class).value();
 
         templateParser = (clazz, tag) -> Jsoup.parse(String.format(
                 "<dom-module id='%s'><template>"
-                        + "    <template is='dom-if'><div id='%s'>Test</div></template>"
-                        + "    <template is='dom-repeat'><div id='%s'>Test</div></template>"
+                        + "    <dom-if><div id='%s'>Test</div></dom-if>"
+                        + "    <dom-repeat><div id='%s'>Test</div></dom-repeat>"
+                        + "    <vaadin-combo-box><template><div id='%s'>Test</div></template><vaadin-combo-box>"
                         + "</template></dom-module>",
-                parentTemplateId, domIfElementId, domRepeatElementId));
+                parentTemplateId, domIfElementId, domRepeatElementId,
+                nestedTemplateElementId));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -105,6 +132,18 @@ public class TemplateInitializerTest {
     @Test(expected = IllegalStateException.class)
     public void domRepeatShouldThrowAnException() {
         new TemplateInitializer(new DomRepeatClass(), templateParser)
+                .initChildElements();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void nestedTemplateShouldThrowAnException() {
+        new TemplateInitializer(new NestedTemplateClass(), templateParser)
+                .initChildElements();
+    }
+
+    @Test
+    public void noInjectShouldNotThrow() {
+        new TemplateInitializer(new NoInjectClass(), templateParser)
                 .initChildElements();
     }
 

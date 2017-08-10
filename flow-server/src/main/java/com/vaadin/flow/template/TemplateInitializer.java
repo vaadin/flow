@@ -53,10 +53,10 @@ import elemental.json.JsonArray;
  *
  */
 public class TemplateInitializer {
-    private static final Set<String> PROHIBITED_TAG_NAMES = new HashSet<>();
+    private static final Set<String> TEMPLATE_TAG_NAME = new HashSet<>();
     static {
-        PROHIBITED_TAG_NAMES.add("dom-if");
-        PROHIBITED_TAG_NAMES.add("dom-repeat");
+        TEMPLATE_TAG_NAME.add("dom-if");
+        TEMPLATE_TAG_NAME.add("dom-repeat");
     }
 
     private static final ReflectionCache<PolymerTemplate<?>, ParserData> CACHE = new ReflectionCache<>(
@@ -151,14 +151,26 @@ public class TemplateInitializer {
     private void inspectCustomElements(
             com.vaadin.external.jsoup.nodes.Element childElement,
             com.vaadin.external.jsoup.nodes.Element templateRoot) {
-        if (PROHIBITED_TAG_NAMES.stream().anyMatch(
-                tagName -> isProhibitedElement(tagName, childElement))) {
+        if (isTemplateExtension(childElement)
+                || inNestedTemplate(childElement)) {
             storeNotInjectableElementIds(childElement);
         } else {
             requestAttachCustomElement(childElement, templateRoot);
             childElement.children().forEach(
                     child -> inspectCustomElements(child, templateRoot));
         }
+    }
+
+    private static boolean inNestedTemplate(
+            com.vaadin.external.jsoup.nodes.Element element) {
+        return element.parents().stream()
+                .filter(parent -> parent.tagName().equals("template"))
+                .count() >= 2;
+    }
+
+    private static boolean isTemplateExtension(
+            com.vaadin.external.jsoup.nodes.Element childElement) {
+        return TEMPLATE_TAG_NAME.contains(childElement.tagName());
     }
 
     private void storeNotInjectableElementIds(
@@ -168,12 +180,6 @@ public class TemplateInitializer {
             notInjectableElementIds.add(id);
         }
         element.children().forEach(this::storeNotInjectableElementIds);
-    }
-
-    private static boolean isProhibitedElement(String prohibitedTagName,
-            com.vaadin.external.jsoup.nodes.Element element) {
-        return prohibitedTagName.equals(element.tagName())
-                || prohibitedTagName.equals(element.attr("is"));
     }
 
     private void parseTemplate() {
@@ -316,9 +322,8 @@ public class TemplateInitializer {
         if (notInjectableElementIds.contains(id)) {
             throw new IllegalStateException(String.format(
                     "Class '%s' contains field '%s' annotated with @Id('%s'). "
-                            + "Corresponding element was found in the template as a child of one of '%s' elements, which do not support injection",
-                    templateClass.getName(), field.getName(), id,
-                    PROHIBITED_TAG_NAMES));
+                            + "Corresponding element was found in a sub template, for which injection is not supported",
+                    templateClass.getName(), field.getName(), id));
         }
 
         Optional<String> tagName = getTagName(id);
