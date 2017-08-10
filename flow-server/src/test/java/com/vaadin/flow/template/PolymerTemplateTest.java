@@ -484,6 +484,7 @@ public class PolymerTemplateTest {
         doParseTemplate_hasTextNodesInTemplate_correctRequestIsSent(template);
     }
 
+    @Test(expected = IllegalStateException.class)
     public void parseTemplate_hasChildTemplateInsideDomRepeat_cantParse() {
         new TemplateWithChildInDomRepeat();
     }
@@ -587,8 +588,7 @@ public class PolymerTemplateTest {
         assertNotNull(template.child);
         assertEquals(child, template.child.getElement().getNode());
 
-        assertTrue(
-                template.child.getElement().getComponent().isPresent());
+        assertTrue(template.child.getElement().getComponent().isPresent());
 
         assertTrue(template.child.getElement().getComponent()
                 .get() instanceof CustomComponent);
@@ -644,11 +644,9 @@ public class PolymerTemplateTest {
         StateNode child2 = templateNodes.get(1);
         String tag = child1.getFeature(ElementData.class).getTag();
         if ("child-template".equals(tag)) {
-            assertEquals("ffs",
-                    child2.getFeature(ElementData.class).getTag());
+            assertEquals("ffs", child2.getFeature(ElementData.class).getTag());
         } else {
-            assertEquals("ffs",
-                    child1.getFeature(ElementData.class).getTag());
+            assertEquals("ffs", child1.getFeature(ElementData.class).getTag());
             assertEquals("child-template",
                     child2.getFeature(ElementData.class).getTag());
         }
