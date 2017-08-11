@@ -74,9 +74,8 @@ import com.vaadin.shared.Registration;
  * you should use the [{@code <vaadin-date-picker-light>}
  * ](#vaadin-date-picker-light) element.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: Vaadin.DatePickerElement#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: Vaadin.DatePickerElement#2.0.1", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker.html")
 public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>

@@ -14,6 +14,7 @@
   ],
   "dependencies": {
     "polymer": "~2.0.2",
+    "paper-styles": "~2.0.0",
     "paper-button": "~2.0.0",
     "paper-input": "~2.0.1",
     "paper-spinner": "~2.0.0",

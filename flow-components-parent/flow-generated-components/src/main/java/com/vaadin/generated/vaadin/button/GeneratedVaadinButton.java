@@ -49,9 +49,8 @@ import com.vaadin.ui.HasComponents;
  * when the button is focused using the keyboard. {@code focused} | Set when the
  * button is focused.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: Vaadin.ButtonElement#null", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-button")
 @HtmlImport("frontend://bower_components/vaadin-button/vaadin-button.html")
 public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>

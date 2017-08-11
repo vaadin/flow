@@ -57,9 +57,8 @@ import com.vaadin.ui.HasComponents;
  * {@code Roboto} font to this element, make sure you've imported
  * {@code paper-styles/typography.html}.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-tab#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-tab#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-tab")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tab.html")
 public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>

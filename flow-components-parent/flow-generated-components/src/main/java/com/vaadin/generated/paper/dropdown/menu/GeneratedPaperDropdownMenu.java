@@ -83,9 +83,8 @@ import com.vaadin.shared.Registration;
  * {@code paper-menu-button} style mixins and custom properties to style the
  * internal input and menu button respectively.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-dropdown-menu#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-dropdown-menu#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-dropdown-menu")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu.html")
 public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>

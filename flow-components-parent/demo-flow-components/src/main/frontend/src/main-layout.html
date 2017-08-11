@@ -6,6 +6,7 @@
 <link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
 <link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
 
 <dom-module id="main-layout">
   <template>
@@ -15,6 +16,7 @@
         --app-secondary-color: black;
 
         display: block;
+        @apply --paper-font-common-base;
       }
 
       app-drawer-layout:not([narrow]) [drawer-toggle] {
@@ -76,7 +78,6 @@
           </app-toolbar>
         </app-header>
 
-        <span on-click="showSource">Show source</span>
         <div class="content">
             <slot>
                 <!-- Main content added via server-side -->

@@ -94,9 +94,8 @@ import com.vaadin.ui.HasComponents;
  * {@code --vaadin-form-layout-column-gap} | Length of the gap between columns |
  * {@code 2em}
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: Vaadin.FormLayoutElement#null", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: Vaadin.FormLayoutElement#null", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>

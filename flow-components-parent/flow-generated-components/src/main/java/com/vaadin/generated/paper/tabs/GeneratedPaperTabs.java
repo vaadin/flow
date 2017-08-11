@@ -101,9 +101,8 @@ import com.vaadin.ui.HasComponents;
  * content container of tabs | {@code {@code --paper-tabs-container} | Mixin
  * applied to the layout container of tabs | {@code
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-tabs#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-tabs#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
 public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
@@ -922,7 +921,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(java.lang.String value) {
+	public void select(double value) {
 		getElement().callFunction("select", value);
 	}
 
@@ -936,7 +935,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(double value) {
+	public void select(java.lang.String value) {
 		getElement().callFunction("select", value);
 	}
 

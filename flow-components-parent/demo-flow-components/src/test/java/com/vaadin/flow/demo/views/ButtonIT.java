@@ -18,7 +18,6 @@ package com.vaadin.flow.demo.views;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.AbstractChromeTest;
@@ -34,8 +33,6 @@ public class ButtonIT extends AbstractChromeTest {
     @Before
     public void init() {
         open();
-        driver.manage().window().setSize(new Dimension(1500, 1000));
-
         waitForElementPresent(By.tagName("main-layout"));
         layout = findElement(By.tagName("main-layout"));
     }
@@ -44,7 +41,7 @@ public class ButtonIT extends AbstractChromeTest {
     public void clickOnDefaultButton_textIsDisplayed() {
         WebElement button = layout.findElement(By.id("default-button"));
 
-        button.click();
+        scrollIntoViewAndClick(button);
         waitUntilMessageIsChangedForClickedButton("Vaadin button");
     }
 
@@ -59,7 +56,7 @@ public class ButtonIT extends AbstractChromeTest {
                 img.getAttribute("src"));
         Assert.assertEquals("Vaadin logo", img.getAttribute("alt"));
 
-        button.click();
+        scrollIntoViewAndClick(button);
         waitUntilMessageIsChangedForClickedButton("with image");
     }
 
@@ -68,7 +65,7 @@ public class ButtonIT extends AbstractChromeTest {
         WebElement button = layout.findElement(By.id("accessible-button"));
         Assert.assertEquals("Click me", button.getAttribute("aria-label"));
 
-        button.click();
+        scrollIntoViewAndClick(button);
         waitUntilMessageIsChangedForClickedButton("Accessible");
     }
 
@@ -81,14 +78,14 @@ public class ButtonIT extends AbstractChromeTest {
         WebElement button3 = layout.findElement(By.id("button-tabindex-3"));
         Assert.assertEquals("3", button3.getAttribute("tabindex"));
 
-        button1.click();
-        waitUntilMessageIsChangedForClickedButton("1");
+        scrollIntoViewAndClick(button3);
+        waitUntilMessageIsChangedForClickedButton("3");
 
-        button2.click();
+        scrollIntoViewAndClick(button2);
         waitUntilMessageIsChangedForClickedButton("2");
 
-        button3.click();
-        waitUntilMessageIsChangedForClickedButton("3");
+        scrollIntoViewAndClick(button1);
+        waitUntilMessageIsChangedForClickedButton("1");
     }
 
     @Test
@@ -98,7 +95,7 @@ public class ButtonIT extends AbstractChromeTest {
                 button.getAttribute("disabled").equals("")
                         || button.getAttribute("disabled").equals("true"));
 
-        button.click();
+        scrollIntoViewAndClick(button);
         WebElement message = layout.findElement(By.id("buttonMessage"));
         Assert.assertEquals("", message.getText());
     }

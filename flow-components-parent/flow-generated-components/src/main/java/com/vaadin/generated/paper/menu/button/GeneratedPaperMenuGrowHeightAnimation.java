@@ -23,10 +23,9 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-menu-grow-height-animation#UNKNOWN",
-		"Flow#0.1.17-SNAPSHOT"})
+		"Flow#0.1-SNAPSHOT"})
 @Tag("paper-menu-grow-height-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class GeneratedPaperMenuGrowHeightAnimation<R extends GeneratedPaperMenuGrowHeightAnimation<R>>

@@ -112,9 +112,8 @@ import com.vaadin.annotations.HtmlImport;
  * top toolbar. In v2, the you must set {@code slot="top"} on the default
  * content to distribuite the content to the top toolbar.
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-toolbar#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-toolbar#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-toolbar")
 @HtmlImport("frontend://bower_components/paper-toolbar/paper-toolbar.html")
 public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>

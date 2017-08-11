@@ -16,7 +16,6 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
 
 /**
@@ -27,15 +26,12 @@ public class PaperSpinnerView extends DemoView {
 
     @Override
     public void initView() {
+        // begin-source-example
+        // source-example-heading: Basic spinner
         GeneratedPaperSpinner paperSpinner = new GeneratedPaperSpinner();
         paperSpinner.setActive(true);
-        add(paperSpinner);
-    }
+        // end-source-example
 
-    @Override
-    public void populateSources(SourceContent container) {
-        container.addCode("PaperSpinner paperSpinner = new PaperSpinner();\n"
-                + "paperSpinner.setActive(true);\n"
-                + "parentComponent.add(paperSpinner);");
+        addCard("Basic spinner", paperSpinner);
     }
 }

@@ -37,9 +37,8 @@ import com.vaadin.shared.Registration;
  * lost is=, so the example same template can't be used with iron-input 1.0 and
  * 2.0. Expect some conditional code (especially in the tests).
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-input#2.0.1", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-input#2.0.1", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>

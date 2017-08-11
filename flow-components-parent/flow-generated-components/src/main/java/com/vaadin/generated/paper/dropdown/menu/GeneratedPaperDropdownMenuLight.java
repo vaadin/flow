@@ -100,9 +100,8 @@ import com.vaadin.shared.Registration;
  * --paper-dropdown-menu-input: { border-bottom: 2px dashed lavender; };
  * </style>
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-dropdown-menu-light#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-dropdown-menu-light")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu-light.html")
 public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMenuLight<R>>
