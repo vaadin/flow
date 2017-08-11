@@ -53,12 +53,6 @@ import elemental.json.JsonArray;
  *
  */
 public class TemplateInitializer {
-    private static final Set<String> PROHIBITED_TAG_NAMES = new HashSet<>();
-    static {
-        PROHIBITED_TAG_NAMES.add("dom-if");
-        PROHIBITED_TAG_NAMES.add("dom-repeat");
-    }
-
     private static final ReflectionCache<PolymerTemplate<?>, ParserData> CACHE = new ReflectionCache<>(
             clazz -> new ParserData());
 
@@ -151,9 +145,8 @@ public class TemplateInitializer {
     private void inspectCustomElements(
             com.vaadin.external.jsoup.nodes.Element childElement,
             com.vaadin.external.jsoup.nodes.Element templateRoot) {
-        if (PROHIBITED_TAG_NAMES.stream().anyMatch(
-                tagName -> isProhibitedElement(tagName, childElement))) {
-            storeNotInjectableElementIds(childElement);
+        if (isInsideTemplate(childElement, templateRoot)) {
+            storeNotInjectableElementId(childElement);
         }
 
         requestAttachCustomElement(childElement, templateRoot);
@@ -161,19 +154,12 @@ public class TemplateInitializer {
                 .forEach(child -> inspectCustomElements(child, templateRoot));
     }
 
-    private void storeNotInjectableElementIds(
+    private void storeNotInjectableElementId(
             com.vaadin.external.jsoup.nodes.Element element) {
         String id = element.id();
         if (id != null && !id.isEmpty()) {
             notInjectableElementIds.add(id);
         }
-        element.children().forEach(this::storeNotInjectableElementIds);
-    }
-
-    private static boolean isProhibitedElement(String prohibitedTagName,
-            com.vaadin.external.jsoup.nodes.Element element) {
-        return prohibitedTagName.equals(element.tagName())
-                || prohibitedTagName.equals(element.attr("is"));
     }
 
     private void parseTemplate() {
@@ -316,9 +302,8 @@ public class TemplateInitializer {
         if (notInjectableElementIds.contains(id)) {
             throw new IllegalStateException(String.format(
                     "Class '%s' contains field '%s' annotated with @Id('%s'). "
-                            + "Corresponding element was found in the template as a child of one of '%s' elements, which do not support injection",
-                    templateClass.getName(), field.getName(), id,
-                    PROHIBITED_TAG_NAMES));
+                            + "Corresponding element was found in a sub template, for which injection is not supported",
+                    templateClass.getName(), field.getName(), id));
         }
 
         Optional<String> tagName = getTagName(id);
