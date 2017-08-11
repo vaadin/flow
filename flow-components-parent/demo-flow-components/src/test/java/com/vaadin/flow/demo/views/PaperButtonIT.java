@@ -45,7 +45,7 @@ public class PaperButtonIT extends AbstractChromeTest {
 
         Assert.assertTrue("Button should be raised",
                 isAttributeTrue(button, "raised"));
-        button.click();
+        scrollIntoViewAndClick(button);
 
         waitUntil(driver -> message.getText()
                 .equals("Button " + button.getText() + " was clicked."));
@@ -58,7 +58,7 @@ public class PaperButtonIT extends AbstractChromeTest {
 
         Assert.assertTrue("Button should have noink",
                 isAttributeTrue(button, "noink"));
-        button.click();
+        scrollIntoViewAndClick(button);
 
         waitUntil(driver -> message.getText()
                 .equals("Button " + button.getText() + " was clicked."));
@@ -73,7 +73,7 @@ public class PaperButtonIT extends AbstractChromeTest {
                 isAttributeTrue(button, "toggles"));
         Assert.assertTrue("Button should be raised",
                 isAttributeTrue(button, "raised"));
-        button.click();
+        scrollIntoViewAndClick(button);
 
         waitUntil(driver -> message.getText()
                 .equals("Button " + button.getText() + " was clicked."));

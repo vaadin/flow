@@ -77,7 +77,7 @@ public class PaperDialogIT extends AbstractChromeTest {
     @Test
     public void openAndCloseNestedDialogs() {
         // click on the button to open the dialog
-        getButtonWithText("Nested dialogs").click();
+        scrollIntoViewAndClick(getButtonWithText("Nested dialogs"));
         waitForElementPresent(By.tagName("paper-dialog"));
         assertMessageIsEqualsTo("Nested dialogs was opened");
 
@@ -109,7 +109,7 @@ public class PaperDialogIT extends AbstractChromeTest {
     public void openAndCloseDialogWithActions() {
         // click on the button to open the dialog
         WebElement openButton = getButtonWithText("Dialog with actions");
-        openButton.click();
+        scrollIntoViewAndClick(openButton);
         waitForElementPresent(By.tagName("paper-dialog"));
         assertMessageIsEqualsTo("Dialog with actions was opened");
 
@@ -140,7 +140,7 @@ public class PaperDialogIT extends AbstractChromeTest {
     @Test
     public void openAndCloseAnimatedDialog() {
         // click on the button to open the dialog
-        getButtonWithText("Animated dialog").click();
+        scrollIntoViewAndClick(getButtonWithText("Animated dialog"));
         waitForElementPresent(By.tagName("paper-dialog"));
         assertMessageIsEqualsTo("Animated dialog was opened");
 
