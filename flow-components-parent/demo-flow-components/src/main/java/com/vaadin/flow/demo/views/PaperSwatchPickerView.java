@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
-import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Label;
 import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
 import com.vaadin.generated.paper.swatch.picker.GeneratedPaperSwatchPicker;
@@ -30,21 +29,16 @@ public class PaperSwatchPickerView extends DemoView {
 
     @Override
     public void initView() {
+        // begin-source-example
+        // source-example-heading: Basic color selector
         GeneratedPaperSwatchPicker picker = new GeneratedPaperSwatchPicker();
         picker.setColor("#f4511e");
         final Label color = new Label("Picker color: " + picker.getColor());
 
         picker.addColorChangeListener(
                 event -> color.setText("Picker color: " + picker.getColor()));
+        // end-source-example
 
-        add(picker, color);
-    }
-
-    @Override
-    public void populateSources(SourceContent container) {
-        container
-                .addCode("PaperSwatchPicker picker = new PaperSwatchPicker();\n"
-                        + "picker.setColor(\"#fff\");\n"
-                        + "layoutComponent.add(picker);");
+        addCard("Basic color selector", picker, color);
     }
 }

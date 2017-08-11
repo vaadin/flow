@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.demo.SourceContentResolver;
 import com.vaadin.flow.demo.model.SourceCodeExample;
-import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.html.H3;
 import com.vaadin.flow.router.View;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.UI;
 
 /**
  * Base class for all the Views that demo some component.
@@ -33,16 +38,18 @@ import com.vaadin.ui.HasComponents;
 public abstract class DemoView extends Component
         implements View, HasComponents {
 
-    // Default card. All views need one.
-    private Card container;
+    private Map<String, SourceCodeExample> sourceCodeExamples = new HashMap<>();
 
     protected DemoView() {
         getElement().setAttribute("class", "demo-view");
-        container = new Card();
 
-        getElement().appendChild(container.getElement());
-
+        populateSources();
         initView();
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        UI.getCurrent().getPage().executeJavaScript("Prism.highlightAll();");
     }
 
     /**
@@ -53,50 +60,56 @@ public abstract class DemoView extends Component
     /**
      * When called the view should populate the given SourceContainer with
      * sample source code to be shown.
-     * 
-     * @param container
-     *            sample source code container.
      */
-    public void populateSources(SourceContent container) {
+    public void populateSources() {
         SourceContentResolver.getSourceCodeExamplesForClass(getClass())
-                .forEach(example -> populateSourceExample(container, example));
-    }
-
-    private void populateSourceExample(SourceContent container,
-            SourceCodeExample example) {
-        container.add(ElementFactory.createHeading3(example.getHeading()));
-        String sourceString = example.getSourceCode();
-        switch (example.getSourceType()) {
-        case CSS:
-            container.addCss(sourceString);
-            break;
-        case JAVA:
-            container.addCode(sourceString);
-            break;
-        case UNDEFINED:
-        default:
-            container.addCode(sourceString);
-            break;
-        }
-    }
-
-    @Override
-    public void add(Component... components) {
-        container.add(components);
+                .forEach(example -> sourceCodeExamples.put(example.getHeading(),
+                        example));
     }
 
     /**
-     * Create and add a new component card to the view.
+     * Create and add a new component card to the view. It automatically adds
+     * any source code examples with the same heading to the bottom of the card.
+     * 
+     * @param heading
+     *            the header text of the card, that is added to the layout. If
+     *            <code>null</code> or empty, the header is not added
      * 
      * @param components
-     *            components to add on creation.
+     *            components to add on creation. If <code>null</code> or empty,
+     *            the card is created without the components inside
      * @return created component container card.
      */
-    public Card addCard(Component... components) {
-        Card card = new Card();
-        card.add(components);
+    public Card addCard(String heading, Component... components) {
+        if (heading != null && !heading.isEmpty()) {
+            add(new H3(heading));
+        }
 
-        getElement().appendChild(card.getElement());
+        Card card = new Card();
+        if (components != null && components.length > 0) {
+            card.add(components);
+        }
+
+        SourceCodeExample sourceCodeExample = sourceCodeExamples.get(heading);
+        if (sourceCodeExample != null) {
+            SourceContent content = new SourceContent();
+            String sourceString = sourceCodeExample.getSourceCode();
+            switch (sourceCodeExample.getSourceType()) {
+            case CSS:
+                content.addCss(sourceString);
+                break;
+            case JAVA:
+                content.addCode(sourceString);
+                break;
+            case UNDEFINED:
+            default:
+                content.addCode(sourceString);
+                break;
+            }
+            card.add(content);
+        }
+
+        add(card);
 
         return card;
     }

@@ -32,8 +32,7 @@ public class PaperProgressView extends DemoView {
     public void initView() {
         // begin-source-example
         // source-example-heading: Modified and default indeterminate and static
-        // progress:
-        // source-example-type: JAVA
+        // progress
         GeneratedPaperProgress slowBlue = new GeneratedPaperProgress();
         slowBlue.setIndeterminate(true);
         slowBlue.getElement().setAttribute("class", "slow blue");
@@ -47,15 +46,18 @@ public class PaperProgressView extends DemoView {
         staticGreen.setSecondaryProgress(70);
         // end-source-example
 
-        add(new Label("Indeterminate slow blue"), slowBlue,
+        addCard("Modified and default indeterminate and static progress",
+                new Label("Indeterminate slow blue"), slowBlue,
                 new Label("Indeterminate red"), red,
                 new Label("Static green with 2 states"), staticGreen);
+
+        addCard("Style sheet");
     }
 
     // @formatter:off
     /*
     // begin-source-example
-    // source-example-heading: Style sheet:
+    // source-example-heading: Style sheet
     // source-example-type: CSS
     paper-progress.blue {
         --paper-progress-active-color: var(--paper-light-blue-500);

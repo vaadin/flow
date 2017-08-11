@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H3;
 import com.vaadin.ui.Checkbox;
 
 /**
@@ -41,7 +40,7 @@ public class CheckboxView extends DemoView {
         Checkbox checkbox = new Checkbox();
         checkbox.setLabelText("Default Checkbox");
         // end-source-example
-        add(new H3("Default Checkbox"), checkbox);
+        addCard("Default Checkbox", checkbox);
         checkbox.setId("default-checkbox");
     }
 
@@ -52,7 +51,7 @@ public class CheckboxView extends DemoView {
         disabledCheckbox.setValue(true);
         disabledCheckbox.setDisabled(true);
         // end-source-example
-        addCard(new H3("Disabled Checkbox"), disabledCheckbox);
+        addCard("Disabled Checkbox", disabledCheckbox);
         disabledCheckbox.setId("disabled-checkbox");
     }
 
@@ -62,7 +61,7 @@ public class CheckboxView extends DemoView {
         Checkbox indeterminateCheckbox = new Checkbox("Indeterminate Checkbox");
         indeterminateCheckbox.setIndeterminate(true);
         // end-source-example
-        addCard(new H3("Indeterminate Checkbox"), indeterminateCheckbox);
+        addCard("Indeterminate Checkbox", indeterminateCheckbox);
         indeterminateCheckbox.setId("indeterminate-checkbox");
     }
 
@@ -78,8 +77,8 @@ public class CheckboxView extends DemoView {
                             event.getOldValue(), event.getValue()));
         });
         // end-source-example
-        addCard(new H3("Checkbox with a ValueChangeListener"),
-                valueChangeCheckbox, message);
+        addCard("Checkbox with a ValueChangeListener", valueChangeCheckbox,
+                message);
         valueChangeCheckbox.setId("value-change-checkbox");
         message.setId("value-change-checkbox-message");
     }
@@ -90,8 +89,7 @@ public class CheckboxView extends DemoView {
         Checkbox accessibleCheckbox = new Checkbox("Accessible Checkbox");
         accessibleCheckbox.setAriaLabel("Click me");
         // end-source-example
-        addCard(new H3("Checkbox with Custom Accessible Label"),
-                accessibleCheckbox);
+        addCard("Checkbox with Custom Accessible Label", accessibleCheckbox);
         accessibleCheckbox.setId("accessible-checkbox");
     }
 }

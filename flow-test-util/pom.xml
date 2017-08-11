@@ -1,37 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.vaadin</groupId>
-		<artifactId>flow-project</artifactId>
-		<version>0.1-SNAPSHOT</version>
-	</parent>
-	<artifactId>flow-test-util</artifactId>
-	<name>Testing utilities for Flow</name>
-	<packaging>jar</packaging>
-	<properties>
-		<license.skipDownloadLicenses>true</license.skipDownloadLicenses>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>flow-server</artifactId>
-			<version>0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-testbench</artifactId>
-			<version>5.0.0</version>
-		</dependency>
-		<!-- override scope for junit -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
-	</dependencies>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-project</artifactId>
+        <version>0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-test-util</artifactId>
+    <name>Testing utilities for Flow</name>
+    <packaging>jar</packaging>
+    <properties>
+        <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-testbench</artifactId>
+            <version>5.1.0.alpha1</version>
+        </dependency>
+        <!-- override scope for junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
 
-	<build>
-	</build>
+    <repositories>
+        <repository>
+            <id>vaadin-addons</id>
+            <url>http://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+    </repositories>
+
+    <build>
+    </build>
 
 </project>

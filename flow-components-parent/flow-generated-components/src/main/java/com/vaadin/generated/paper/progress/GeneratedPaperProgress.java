@@ -99,9 +99,8 @@ import com.vaadin.shared.Registration;
  * {@code 4px} {@code --paper-progress-indeterminate-cycle-duration} | Duration
  * of an indeterminate cycle | {@code 2s}
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-progress#2.0.1", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-progress#2.0.1", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-progress")
 @HtmlImport("frontend://bower_components/paper-progress/paper-progress.html")
 public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>

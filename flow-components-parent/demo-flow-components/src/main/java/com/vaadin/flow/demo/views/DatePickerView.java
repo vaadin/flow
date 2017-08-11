@@ -20,7 +20,6 @@ import java.util.Arrays;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H3;
 import com.vaadin.ui.DatePicker;
 import com.vaadin.ui.DatePicker.DatePickerI18n;
 
@@ -58,7 +57,7 @@ public class DatePickerView extends DemoView {
         // end-source-example
 
         datePicker.setId("simple-picker");
-        add(new H3("Simple date picker"), datePicker, message);
+        addCard("Simple date picker", datePicker, message);
     }
 
     private void createMinAndMaxDatePicker() {
@@ -88,7 +87,7 @@ public class DatePickerView extends DemoView {
         // end-source-example
 
         datePicker.setId("min-and-max-picker");
-        addCard(new H3("Date picker with min and max"), datePicker, message);
+        addCard("Date picker with min and max", datePicker, message);
     }
 
     private void createFinnishDatePicker() {
@@ -131,7 +130,7 @@ public class DatePickerView extends DemoView {
         // end-source-example
 
         datePicker.setId("finnish-picker");
-        addCard(new H3("Internationalized date picker"), datePicker, message);
+        addCard("Internationalized date picker", datePicker, message);
     }
 
     private void createStartAndEndDatePickers() {
@@ -188,8 +187,8 @@ public class DatePickerView extends DemoView {
 
         startDatePicker.setId("start-picker");
         endDatePicker.setId("end-picker");
-        addCard(new H3("Two linked date pickers"), startDatePicker,
-                endDatePicker, message);
+        addCard("Two linked date pickers", startDatePicker, endDatePicker,
+                message);
 
     }
 

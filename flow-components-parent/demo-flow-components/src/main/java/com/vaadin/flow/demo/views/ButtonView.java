@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H3;
 import com.vaadin.flow.html.Image;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HasClickListeners.ClickEvent;
@@ -51,7 +50,7 @@ public class ButtonView extends DemoView {
         button.addClickListener(this::showButtonClickedMessage);
         // end-source-example
 
-        add(new H3("Default button"), button);
+        addCard("Default button", button);
         button.setId("default-button");
     }
 
@@ -65,7 +64,7 @@ public class ButtonView extends DemoView {
         button.addClickListener(this::showButtonClickedMessage);
         // end-source-example
 
-        addCard(new H3("Button with image and autofocus"), button);
+        addCard("Button with image and autofocus", button);
         button.setId("image-button");
     }
 
@@ -78,7 +77,7 @@ public class ButtonView extends DemoView {
         button.addClickListener(this::showButtonClickedMessage);
         // end-source-example
 
-        addCard(new H3("Button with ARIA label"), button);
+        addCard("Button with ARIA label", button);
         button.setId("accessible-button");
     }
 
@@ -98,8 +97,7 @@ public class ButtonView extends DemoView {
         button3.addClickListener(this::showButtonClickedMessage);
         // end-source-example
 
-        addCard(new H3("Buttons with custom tabindex"), button3, button2,
-                button1);
+        addCard("Buttons with custom tabindex", button3, button2, button1);
         button1.setId("button-tabindex-1");
         button2.setId("button-tabindex-2");
         button3.setId("button-tabindex-3");
@@ -112,7 +110,7 @@ public class ButtonView extends DemoView {
         button.setDisabled(true);
         // end-source-example
 
-        addCard(new H3("Disabled button"), button);
+        addCard("Disabled button", button);
         button.addClickListener(evt -> message.setText("Button "
                 + evt.getSource().getText()
                 + " was clicked, but the button is disabled and this shouldn't happen!"));
@@ -121,8 +119,10 @@ public class ButtonView extends DemoView {
 
     private void showButtonClickedMessage(ClickEvent<Button> evt) {
         Button source = evt.getSource();
-        source.getParent().ifPresent(parent -> parent.getElement()
-                .appendChild(message.getElement()));
+        source.getParent()
+                .ifPresent(parent -> parent.getElement().insertChild(
+                        parent.getElement().getChildCount() - 2,
+                        message.getElement()));
         if (source.getElement().getChildCount() > 0
                 && !source.getElement().getChild(0).isTextNode()) {
             message.setText("Button with image was clicked.");

@@ -18,8 +18,8 @@ package com.vaadin.flow.demo.views;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.H3;
 import com.vaadin.flow.html.Label;
+import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.SplitLayout;
 
 /**
@@ -50,7 +50,9 @@ public class SplitLayoutView extends DemoView {
         layout.addToPrimary(firstLabel);
         layout.addToSecondary(secondLabel);
         // end-source-example
-        add(new H3("Horizontal Split Layout (Default)"), layout);
+
+        setMinHeightForLayout(layout);
+        addCard("Horizontal Split Layout (Default)", layout);
     }
 
     private void addVerticalLayout() {
@@ -61,7 +63,9 @@ public class SplitLayoutView extends DemoView {
         layout.addToPrimary(new Label("Top content component"));
         layout.addToSecondary(new Label("Bottom content component"));
         // end-source-example
-        addCard(new H3("Vertical Split Layout"), layout);
+
+        setMinHeightForLayout(layout);
+        addCard("Vertical Split Layout", layout);
     }
 
     private void addLayoutCombination() {
@@ -78,18 +82,20 @@ public class SplitLayoutView extends DemoView {
         layout.addToPrimary(firstLabel);
         layout.addToSecondary(secondLayout);
         // end-source-example
+
         layout.getPrimaryComponent().setId("first-component");
         layout.getSecondaryComponent().setId("nested-layout");
         secondLayout.getPrimaryComponent().setId("second-component");
         secondLayout.getSecondaryComponent().setId("third-component");
-        addCard(new H3("Layout Combination"), layout);
+        setMinHeightForLayout(layout);
+        addCard("Layout Combination", layout);
     }
 
     private void addResizeNotificationLayout() {
         Label firstLabel = new Label(FIRST_CONTENT_TEXT);
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
         // begin-source-example
-        // source-example-heading: Resize Notification for the Nested Elements
+        // source-example-heading: Resize Events
         SplitLayout layout = new SplitLayout();
         layout.addToPrimary(firstLabel);
         layout.addToSecondary(secondLabel);
@@ -98,23 +104,26 @@ public class SplitLayoutView extends DemoView {
         layout.addIronResizeListener(event -> message.setText(
                 "Resized " + resizeCounter.getAndIncrement() + " times."));
         // end-source-example
+
         message.setId("resize-message");
-        addCard(new H3("Resize Events"), layout, message);
+        setMinHeightForLayout(layout);
+        addCard("Resize Events", layout, message);
     }
 
     private void addInitialSplitterPositionLayout() {
         Label firstLabel = new Label(FIRST_CONTENT_TEXT);
         Label secondLabel = new Label(SECOND_CONTENT_TEXT);
-        // @formatter:off
+
         // begin-source-example
         // source-example-heading: Split Layout with Initial Splitter Position
         SplitLayout layout = new SplitLayout(firstLabel, secondLabel);
         layout.setSplitterPosition(80);
         // end-source-example
-        // @formatter:on
+
         layout.getPrimaryComponent().setId("initial-sp-first-component");
         layout.getSecondaryComponent().setId("initial-sp-second-component");
-        addCard(new H3("Split Layout with Initial Splitter Position"), layout);
+        setMinHeightForLayout(layout);
+        addCard("Split Layout with Initial Splitter Position", layout);
     }
 
     private void addMinMaxWidthLayout() {
@@ -128,7 +137,13 @@ public class SplitLayoutView extends DemoView {
         layout.setPrimaryStyle("minWidth", "100px");
         layout.setPrimaryStyle("maxWidth", "150px");
         // end-source-example
+
         layout.getPrimaryComponent().setId("min-max-first-component");
-        addCard(new H3("Split Layout with Minimum and Maximum Widths"), layout);
+        setMinHeightForLayout(layout);
+        addCard("Split Layout with Minimum and Maximum Widths", layout);
+    }
+
+    private void setMinHeightForLayout(HasStyle layout) {
+        layout.getStyle().set("minHeight", "100px");
     }
 }

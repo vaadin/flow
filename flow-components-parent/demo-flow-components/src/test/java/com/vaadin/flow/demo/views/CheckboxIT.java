@@ -18,7 +18,6 @@ package com.vaadin.flow.demo.views;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.AbstractChromeTest;
@@ -39,7 +38,6 @@ public class CheckboxIT extends AbstractChromeTest {
     @Before
     public void init() {
         open();
-        driver.manage().window().setSize(new Dimension(1500, 1000));
         waitForElementPresent(By.tagName("main-layout"));
         layout = findElement(By.tagName("main-layout"));
     }
@@ -76,7 +74,8 @@ public class CheckboxIT extends AbstractChromeTest {
                 .findElement(By.id("value-change-checkbox"));
         WebElement message = layout
                 .findElement(By.id("value-change-checkbox-message"));
-        getInShadowRoot(checkbox, By.id("nativeCheckbox")).click();
+        scrollIntoViewAndClick(
+                getInShadowRoot(checkbox, By.id("nativeCheckbox")));
         Assert.assertEquals("Clicking checkbox should update message div",
                 "Checkbox value changed from 'false' to 'true'",
                 message.getText());

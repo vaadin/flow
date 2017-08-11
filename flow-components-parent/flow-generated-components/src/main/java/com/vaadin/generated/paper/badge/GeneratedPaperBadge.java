@@ -67,9 +67,8 @@ import com.vaadin.components.NotSupported;
  * Optional spacing added to the bottom of the badge. | {@code 0px}
  * {@code --paper-badge} | Mixin applied to the badge | {@code
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: paper-badge#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: paper-badge#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-badge")
 @HtmlImport("frontend://bower_components/paper-badge/paper-badge.html")
 public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>

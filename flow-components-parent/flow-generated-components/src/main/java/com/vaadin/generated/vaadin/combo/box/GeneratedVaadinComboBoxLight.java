@@ -65,9 +65,8 @@ import com.vaadin.ui.HasComponents;
  * suffix class="toggle-button">Toggle</paper-button> </paper-input>
  * </vaadin-combo-box-light> {@code }`
  */
-@Generated({
-		"Generator: com.vaadin.generator.ComponentGenerator#0.1.17-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-light#2.0.0", "Flow#0.1.17-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+		"WebComponent: vaadin-combo-box-light#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
