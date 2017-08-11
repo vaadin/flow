@@ -16,6 +16,7 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -29,7 +30,7 @@ import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
 /**
  * Collection view that showcases multiple components on multiple cards.
  */
-@ComponentDemo(href = "collection", name = "Collection")
+@ComponentDemo(href = "collection", name = "Collection", category = DemoCategory.PAPER)
 public class Collection extends DemoView {
 
     @Override

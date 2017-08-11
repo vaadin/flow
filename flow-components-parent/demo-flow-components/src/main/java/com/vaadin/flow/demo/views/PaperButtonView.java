@@ -16,6 +16,8 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
+import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.html.Div;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
@@ -23,7 +25,7 @@ import com.vaadin.generated.paper.button.GeneratedPaperButton;
 /**
  * View for {@link GeneratedPaperButton} demo.
  */
-@ComponentDemo(name = "Paper Button", href = "paper-button")
+@ComponentDemo(name = "Paper Button", href = "paper-button", category = DemoCategory.PAPER)
 public class PaperButtonView extends DemoView {
 
     private Div message;

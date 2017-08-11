@@ -34,6 +34,13 @@ import java.lang.annotation.Target;
 public @interface ComponentDemo {
 
     /**
+     * Enum for describing the category a DemoView belongs in.
+     */
+    public enum DemoCategory {
+        VAADIN, PAPER
+    }
+
+    /**
      * Name of the component demo
      * 
      * @return component demo name
@@ -46,4 +53,12 @@ public @interface ComponentDemo {
      * @return link value
      */
     String href();
+
+    /**
+     * Which category this demo belongs in, default is
+     * {@code DemoCategory.VAADIN}.
+     * 
+     * @return the demo category
+     */
+    DemoCategory category() default DemoCategory.VAADIN;
 }
