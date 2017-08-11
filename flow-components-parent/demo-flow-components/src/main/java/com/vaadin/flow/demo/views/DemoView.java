@@ -60,9 +60,6 @@ public abstract class DemoView extends Component
     /**
      * When called the view should populate the given SourceContainer with
      * sample source code to be shown.
-     * 
-     * @param container
-     *            sample source code container.
      */
     public void populateSources() {
         SourceContentResolver.getSourceCodeExamplesForClass(getClass())
