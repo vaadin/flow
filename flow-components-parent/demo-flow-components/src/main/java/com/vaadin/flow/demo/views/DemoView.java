@@ -71,10 +71,16 @@ public abstract class DemoView extends Component
     }
 
     /**
-     * Create and add a new component card to the view.
+     * Create and add a new component card to the view. It automatically adds
+     * any source code examples with the same heading to the bottom of the card.
+     * 
+     * @param heading
+     *            the header text of the card, that is added to the layout. If
+     *            <code>null</code> or empty, the header is not added
      * 
      * @param components
-     *            components to add on creation.
+     *            components to add on creation. If <code>null</code> or empty,
+     *            the card is created without the components inside
      * @return created component container card.
      */
     public Card addCard(String heading, Component... components) {
