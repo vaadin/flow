@@ -16,16 +16,11 @@
 package com.vaadin.flow.template.model;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.vaadin.annotations.Convert;
 import com.vaadin.annotations.Exclude;
 import com.vaadin.annotations.Include;
 import com.vaadin.flow.StateNode;
@@ -37,7 +32,7 @@ import com.vaadin.flow.nodefeature.ModelList;
  *
  * @author Vaadin Ltd
  */
-public class TemplateModelUtil {
+public final class TemplateModelUtil {
 
     private TemplateModelUtil() {
         // NOOP
@@ -168,35 +163,5 @@ public class TemplateModelUtil {
 
             return true;
         };
-    }
-
-    /**
-     * Inspects a given method for the presence of {@link Convert} annotations
-     * and returns a map containing the converter's path as a key and its class
-     * as a value.
-     * 
-     * @see Convert
-     * @see ModelConverter
-     * 
-     * @param method
-     *            the method to inspect for annotations
-     * @return a mapping from paths to ModelConverters
-     */
-    public static Map<String, Class<? extends ModelConverter<?, ?>>> getModelConverters(
-            Method method) {
-        Convert[] convertAnnotations = method
-                .getAnnotationsByType(Convert.class);
-
-        if (convertAnnotations == null) {
-            return Collections.emptyMap();
-        }
-
-        return Stream.of(convertAnnotations).collect(
-                Collectors.toMap(Convert::path, Convert::value, (u, v) -> {
-                    throw new InvalidTemplateModelException(
-                            "A template model method cannot have multiple "
-                                    + "converters with the same path. Affected method: "
-                                    + method.getName() + ".");
-                }));
     }
 }

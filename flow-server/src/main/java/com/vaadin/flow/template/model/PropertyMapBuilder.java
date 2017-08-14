@@ -1,66 +1,137 @@
 package com.vaadin.flow.template.model;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.vaadin.annotations.Convert;
 import com.vaadin.util.ReflectTools;
 
 /**
+ * Creates a property map builder that extracts all the properties' data from
+ * the class given.
+ *
  * @author Vaadin Ltd.
  */
 class PropertyMapBuilder {
-    private final Map<String, ModelType> properties = new HashMap<>();
-    private final PropertyFilter propertyFilter;
-    private final ModelConverterProvider converterProvider;
+    private final Map<String, ModelType> properties;
 
+    private static class PropertyData {
+        private final String propertyName;
+        private final Type propertyType;
+        private final Class<?> declaringClass;
+        private final Collection<Method> correspondingMethods = new ArrayList<>();
+
+        private PropertyData(Method method) {
+            propertyName = ReflectTools.getPropertyName(method);
+            propertyType = ReflectTools.getPropertyType(method);
+            declaringClass = method.getDeclaringClass();
+            correspondingMethods.add(method);
+        }
+
+        private PropertyData merge(PropertyData newData) {
+            verifyEquality("propertyName", propertyName, newData.propertyName);
+            verifyEquality("propertyType", propertyType, newData.propertyType);
+            verifyEquality("declaringClass", declaringClass,
+                    newData.declaringClass);
+            correspondingMethods.addAll(newData.correspondingMethods);
+            return this;
+        }
+
+        private <T> void verifyEquality(String dataName, T data1, T data2) {
+            if (!Objects.equals(data1, data2)) {
+                throw new IllegalStateException(String.format(
+                        "Mismatching %s data '%s' and '%s' for property named %s",
+                        dataName, data1, data2, propertyName));
+            }
+        }
+
+        private ModelType getModelPropertyType(String propertyName,
+                PropertyFilter propertyFilter,
+                ModelConverterProvider converterProvider) {
+            PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
+                    propertyName, getExcludeFieldsFilter());
+            ModelConverterProvider newConverterProvider = new ModelConverterProvider(
+                    converterProvider, getModelConverters(), innerFilter);
+
+            if (newConverterProvider.apply(innerFilter).isPresent()) {
+                return BeanModelType.getConvertedModelType(propertyType,
+                        innerFilter, propertyName, declaringClass,
+                        newConverterProvider);
+            } else {
+                return BeanModelType.getModelType(propertyType, innerFilter,
+                        propertyName, declaringClass, newConverterProvider);
+            }
+        }
+
+        private Map<String, Class<? extends ModelConverter<?, ?>>> getModelConverters() {
+            return correspondingMethods.stream()
+                    .map(method -> method.getAnnotationsByType(Convert.class))
+                    .flatMap(Stream::of).collect(Collectors.toMap(Convert::path,
+                            Convert::value, (u, v) -> {
+                                throw new InvalidTemplateModelException(
+                                        "A template model method cannot have multiple "
+                                                + "converters with the same path. Affected methods: "
+                                                + correspondingMethods + ".");
+                            }));
+        }
+
+        private Predicate<String> getExcludeFieldsFilter() {
+            return correspondingMethods.stream()
+                    .map(TemplateModelUtil::getFilterFromIncludeExclude)
+                    .reduce(Predicate::and).orElse(fieldName -> true);
+        }
+
+        private String getPropertyName() {
+            return propertyName;
+        }
+    }
+
+    /**
+     * Creates a property map builder that extracts all the properties' data
+     * from the class given.
+     *
+     * @param javaType
+     *            the java type of the bean to extract properties' data from
+     * @param propertyFilter
+     *            the filter that allows to skip some properties by their name
+     * @param converterProvider
+     *            the provided that allows converting model properties with
+     *            special converters
+     */
     PropertyMapBuilder(Class<?> javaType, PropertyFilter propertyFilter,
             ModelConverterProvider converterProvider) {
         assert javaType != null;
         assert propertyFilter != null;
 
-        this.propertyFilter = propertyFilter;
-        this.converterProvider = converterProvider;
-        ReflectTools.getSetterMethods(javaType).forEach(this::addProperty);
-        ReflectTools.getGetterMethods(javaType).forEach(this::addProperty);
+        properties = Stream
+                .concat(ReflectTools.getSetterMethods(javaType),
+                        ReflectTools.getGetterMethods(javaType))
+                .map(PropertyData::new)
+                .filter(data -> propertyFilter.test(data.getPropertyName()))
+                .collect(Collectors.toMap(PropertyData::getPropertyName,
+                        Function.identity(), PropertyData::merge))
+                .entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        entry -> entry.getValue().getModelPropertyType(
+                                entry.getKey(), propertyFilter,
+                                converterProvider)));
     }
 
+    /**
+     * Get extracted properties.
+     *
+     * @return the extracted properties
+     */
     Map<String, ModelType> getProperties() {
-        return Collections.unmodifiableMap(properties);
+        return properties;
     }
 
-    private void addProperty(Method method) {
-        String propertyName = ReflectTools.getPropertyName(method);
-        if (properties.containsKey(propertyName)) {
-            return;
-        }
-
-        if (!propertyFilter.test(propertyName)) {
-            return;
-        }
-
-        PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
-                propertyName,
-                TemplateModelUtil.getFilterFromIncludeExclude(method));
-
-        ModelConverterProvider newConverterProvider = new ModelConverterProvider(
-                converterProvider, TemplateModelUtil.getModelConverters(method),
-                innerFilter);
-
-        ModelType propertyType;
-        if (newConverterProvider.apply(innerFilter).isPresent()) {
-            propertyType = BeanModelType.getConvertedModelType(
-                    ReflectTools.getPropertyType(method), innerFilter,
-                    propertyName, method.getDeclaringClass(),
-                    newConverterProvider);
-        } else {
-            propertyType = BeanModelType.getModelType(
-                    ReflectTools.getPropertyType(method), innerFilter,
-                    propertyName, method.getDeclaringClass(),
-                    newConverterProvider);
-        }
-
-        properties.put(propertyName, propertyType);
-    }
 }
