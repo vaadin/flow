@@ -1,5 +1,7 @@
 package com.vaadin.flow.template.model;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collections;
@@ -24,32 +26,26 @@ public class TemplateModelWithConvertersTest {
             EmptyDivTemplate<TemplateWithConverters.TemplateModelWithConverters> {
 
         public interface TemplateModelWithConverters extends TemplateModel {
-
             @Convert(value = LongToStringConverter.class)
-            public void setLongValue(long longValue);
-
-            public long getLongValue();
+            void setLongValue(long longValue);
+            long getLongValue();
 
             @Convert(value = DateToStringConverter.class)
-            public void setDate(Date date);
-
-            public Date getDate();
+            void setDate(Date date);
+            Date getDate();
 
             @Convert(value = DateToBeanWithStringConverter.class)
-            public void setDateString(Date date);
-
-            public Date getDateString();
+            void setDateString(Date date);
+            Date getDateString();
 
             @Convert(value = StringToBeanWithStringConverter.class)
-            public void setString(String string);
-
-            public String getString();
+            void setString(String string);
+            String getString();
 
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
-            public void setTestBean(TestBean bean);
-
-            public TestBean getTestBean();
+            void setTestBean(TestBean bean);
+            TestBean getTestBean();
         }
 
         @Override
@@ -65,7 +61,7 @@ public class TemplateModelWithConvertersTest {
                 extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class)
-            public void setIntValue(int intValue);
+            void setIntValue(int intValue);
         }
 
         @Override
@@ -81,7 +77,7 @@ public class TemplateModelWithConvertersTest {
                 extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class)
-            public void setList(List<String> list);
+            void setList(List<String> list);
         }
 
         @Override
@@ -98,7 +94,7 @@ public class TemplateModelWithConvertersTest {
 
             @Convert(value = LongToStringConverter.class, path = "same")
             @Convert(value = LongToStringConverter.class, path = "same")
-            public void setLongValue(long longValue);
+            void setLongValue(long longValue);
         }
 
         @Override
@@ -114,9 +110,9 @@ public class TemplateModelWithConvertersTest {
 
             @Convert(value = LongToBeanWithLongConverter.class)
             @Convert(value = LongToStringConverter.class, path = "longValue")
-            public void setLongValue(long longValue);
+            void setLongValue(long longValue);
 
-            public long getLongValue();
+            long getLongValue();
         }
 
         @Override
@@ -131,7 +127,7 @@ public class TemplateModelWithConvertersTest {
                 extends TemplateModel {
 
             @Convert(value = UnsupportedModelConverter.class)
-            public void setString(String string);
+            void setString(String string);
         }
 
         @Override
@@ -140,16 +136,15 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
-
     public static class TemplateWithConvertedReadOnlyBean extends
             EmptyDivTemplate<TemplateWithConvertedReadOnlyBean.TemplateModelWithConvertedReadOnlyBean> {
         public interface TemplateModelWithConvertedReadOnlyBean
                 extends TemplateModel {
 
             @Convert(value = LongToStringConverter.class, path = "id")
-            public void setReadOnlyBean(ReadOnlyBean readOnlyBean);
+            void setReadOnlyBean(ReadOnlyBean readOnlyBean);
 
-            public ReadOnlyBean getReadOnlyBean();
+            ReadOnlyBean getReadOnlyBean();
         }
 
         @Override
@@ -163,8 +158,9 @@ public class TemplateModelWithConvertersTest {
         public interface TemplateModelWithDate extends TemplateModel {
 
             @Convert(value = DateToDateBeanConverter.class)
-            public void setDate(Date date);
-            public Date getDate();
+            void setDate(Date date);
+
+            Date getDate();
         }
 
         @Override
@@ -179,8 +175,9 @@ public class TemplateModelWithConvertersTest {
 
             @Convert(value = LongToStringConverter.class, path = "longValue")
             @Convert(value = DateToStringConverter.class, path = "date")
-            public void setTestBeans(List<TestBean> testBeans);
-            public List<TestBean> getTestBeans();
+            void setTestBeans(List<TestBean> testBeans);
+
+            List<TestBean> getTestBeans();
         }
 
         @Override
@@ -351,7 +348,6 @@ public class TemplateModelWithConvertersTest {
         private Date date;
 
         public TestBean() {
-
         }
 
         public TestBean(long longValue, Date date) {
@@ -433,6 +429,76 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
+    public static class ConvertersOnGetters
+            extends EmptyDivTemplate<ConvertersOnGetters.Model> {
+
+        public interface Model extends TemplateModel {
+            void setLongValue(long longValue);
+            @Convert(value = LongToStringConverter.class)
+            long getLongValue();
+
+            void setDate(Date date);
+            @Convert(value = DateToStringConverter.class)
+            Date getDate();
+
+            void setDateString(Date date);
+            @Convert(value = DateToBeanWithStringConverter.class)
+            Date getDateString();
+
+            void setString(String string);
+            @Convert(value = StringToBeanWithStringConverter.class)
+            String getString();
+
+            void setTestBean(TestBean bean);
+            @Convert(value = LongToStringConverter.class, path = "longValue")
+            @Convert(value = DateToStringConverter.class, path = "date")
+            TestBean getTestBean();
+        }
+
+        @Override
+        protected Model getModel() {
+            return super.getModel();
+        }
+    }
+
+    public static class SameConvertersOnAllMethods
+            extends EmptyDivTemplate<SameConvertersOnAllMethods.Model> {
+
+        public interface Model extends TemplateModel {
+             @Convert(value = LongToStringConverter.class)
+            void setLongValue(long longValue);
+            @Convert(value = LongToStringConverter.class)
+            long getLongValue();
+
+            @Convert(value = DateToStringConverter.class)
+            void setDate(Date date);
+            @Convert(value = DateToStringConverter.class)
+            Date getDate();
+
+            @Convert(value = DateToBeanWithStringConverter.class)
+            void setDateString(Date date);
+            @Convert(value = DateToBeanWithStringConverter.class)
+            Date getDateString();
+
+            @Convert(value = StringToBeanWithStringConverter.class)
+            void setString(String string);
+            @Convert(value = StringToBeanWithStringConverter.class)
+            String getString();
+
+            @Convert(value = LongToStringConverter.class, path = "longValue")
+            @Convert(value = DateToStringConverter.class, path = "date")
+            void setTestBean(TestBean bean);
+            @Convert(value = LongToStringConverter.class, path = "longValue")
+            @Convert(value = DateToStringConverter.class, path = "date")
+            TestBean getTestBean();
+        }
+
+        @Override
+        protected Model getModel() {
+            return super.getModel();
+        }
+    }
+
     @Before
     public void setUp() {
         Assert.assertNull(VaadinService.getCurrent());
@@ -454,7 +520,7 @@ public class TemplateModelWithConvertersTest {
     public void unsupported_primitive_type_to_basic_type_converter() {
         TemplateWithConverters template = new TemplateWithConverters();
         template.getModel().setLongValue(10L);
-        Assert.assertEquals(10L, template.getModel().getLongValue());
+        assertEquals(10L, template.getModel().getLongValue());
     }
 
     @Test
@@ -462,7 +528,7 @@ public class TemplateModelWithConvertersTest {
         TemplateWithConverters template = new TemplateWithConverters();
         Date date = new Date();
         template.getModel().setDate(date);
-        Assert.assertEquals(date, template.getModel().getDate());
+        assertEquals(date, template.getModel().getDate());
     }
 
     @Test
@@ -470,14 +536,14 @@ public class TemplateModelWithConvertersTest {
         TemplateWithConverters template = new TemplateWithConverters();
         Date date = new Date();
         template.getModel().setDateString(date);
-        Assert.assertEquals(date, template.getModel().getDateString());
+        assertEquals(date, template.getModel().getDateString());
     }
 
     @Test
     public void basic_type_to_bean_converter() {
         TemplateWithConverters template = new TemplateWithConverters();
         template.getModel().setString("string to bean");
-        Assert.assertEquals("string to bean", template.getModel().getString());
+        assertEquals("string to bean", template.getModel().getString());
     }
 
     @Test
@@ -486,25 +552,25 @@ public class TemplateModelWithConvertersTest {
         Date date = new Date();
         TestBean bean = new TestBean(10L, date);
         template.getModel().setTestBean(bean);
-        Assert.assertEquals(10L,
-                template.getModel().getTestBean().getLongValue());
-        Assert.assertEquals(date, template.getModel().getTestBean().getDate());
+        assertEquals(10L, template.getModel().getTestBean().getLongValue());
+        assertEquals(date, template.getModel().getTestBean().getDate());
     }
 
     @Test
     public void converter_on_converted_type() {
         TemplateWithConverterOnConvertedType template = new TemplateWithConverterOnConvertedType();
         template.getModel().setLongValue(10L);
-        Assert.assertEquals(10L, template.getModel().getLongValue());
+        assertEquals(10L, template.getModel().getLongValue());
     }
 
     @Test
     public void converter_on_bean_with_read_only_property() {
         TemplateWithConvertedReadOnlyBean template = new TemplateWithConvertedReadOnlyBean();
         template.getModel().setReadOnlyBean(new ReadOnlyBean());
-        Assert.assertEquals(0L, template.getModel().getReadOnlyBean().getId());
+        assertEquals(0L, template.getModel().getReadOnlyBean().getId());
     }
 
+    @Test
     public void convert_date_to_datebean() {
         // DateBean strips time information
         Date date = new Date();
@@ -518,7 +584,7 @@ public class TemplateModelWithConvertersTest {
 
         TemplateWithDate template = new TemplateWithDate();
         template.getModel().setDate(dateWithoutTime);
-        Assert.assertEquals(dateWithoutTime, template.getModel().getDate());
+        assertEquals(dateWithoutTime, template.getModel().getDate());
     }
 
     @Test
@@ -528,10 +594,9 @@ public class TemplateModelWithConvertersTest {
                 .singletonList(new TestBean(0L, date));
         TemplateWithListOfBeans template = new TemplateWithListOfBeans();
         template.getModel().setTestBeans(testBeans);
-        Assert.assertEquals(0L,
+        assertEquals(0L,
                 template.getModel().getTestBeans().get(0).getLongValue());
-        Assert.assertEquals(date,
-                template.getModel().getTestBeans().get(0).getDate());
+        assertEquals(date, template.getModel().getTestBeans().get(0).getDate());
     }
 
     @Test(expected = InvalidTemplateModelException.class)
@@ -560,5 +625,33 @@ public class TemplateModelWithConvertersTest {
 
         Date date = template.getModel().getDateString();
         Assert.assertNull(date);
+    }
+
+    @Test
+    public void convertersOnGetters_noExceptions() {
+        ConvertersOnGetters template = new ConvertersOnGetters();
+        ConvertersOnGetters.Model model = template.getModel();
+
+        model.setLongValue(1L);
+        assertEquals(1L, model.getLongValue());
+
+        model.setString("string");
+        assertEquals("string", model.getString());
+
+        Date date = new Date();
+        model.setDate(date);
+        assertEquals(date, model.getDate());
+        model.setDateString(date);
+        assertEquals(date, model.getDateString());
+
+        TestBean bean = new TestBean(10L, date);
+        template.getModel().setTestBean(bean);
+        assertEquals(bean.getLongValue(), model.getTestBean().getLongValue());
+        assertEquals(bean.getDate(), model.getTestBean().getDate());
+    }
+
+    @Test(expected = InvalidTemplateModelException.class)
+    public void sameConvertersOnAllMethods_notAllowed() {
+        new SameConvertersOnAllMethods();
     }
 }
