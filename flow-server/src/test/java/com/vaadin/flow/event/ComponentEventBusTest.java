@@ -36,7 +36,7 @@ import elemental.json.JsonObject;
 public class ComponentEventBusTest {
 
     private static class EventTracker<T extends ComponentEvent<?>>
-            implements ComponentEventListener<T> {
+    implements ComponentEventListener<T> {
         private AtomicInteger eventHandlerCalled = new AtomicInteger(0);
         private AtomicReference<T> eventObject = new AtomicReference<>(null);
 
@@ -92,8 +92,8 @@ public class ComponentEventBusTest {
             JsonObject eventData) {
         Element e = component.getElement();
         e.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new com.vaadin.flow.dom.DomEvent(e, domEvent,
-                        eventData));
+        .fireEvent(new com.vaadin.flow.dom.DomEvent(e, domEvent,
+                eventData));
 
     }
 
@@ -112,7 +112,7 @@ public class ComponentEventBusTest {
 
         eventTracker.reset();
         component.getEventBus()
-                .fireEvent(new MappedToDomEvent(component, true));
+        .fireEvent(new MappedToDomEvent(component, true));
 
         eventTracker.assertEventCalled(component, true);
         Assert.assertEquals(12, eventTracker.getEvent().getSomeData());
@@ -133,7 +133,7 @@ public class ComponentEventBusTest {
         });
 
         component
-                .fireEvent(new ServerEvent(component, new BigDecimal("12.22")));
+        .fireEvent(new ServerEvent(component, new BigDecimal("12.22")));
 
         Assert.assertEquals(1, eventHandlerCalled.get());
         Assert.assertEquals(new BigDecimal("12.22"), dataValueInEvent.get());
@@ -161,12 +161,15 @@ public class ComponentEventBusTest {
         fireDomEvent(c, "dom-event", Json.createObject());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void mappedDomEvent_fire_missingData() {
         TestComponent c = new TestComponent();
         EventTracker<MappedToDomEvent> eventListener = new EventTracker<>();
         c.addListener(MappedToDomEvent.class, eventListener);
         fireDomEvent(c, "dom-event", createData("event.someData", 2));
+        eventListener.assertEventCalled(c, true);
+        Assert.assertEquals(2, eventListener.getEvent().getSomeData());
+        Assert.assertNull(eventListener.getEvent().getMoreData());
     }
 
     private JsonObject createData(String key, Object value) {
