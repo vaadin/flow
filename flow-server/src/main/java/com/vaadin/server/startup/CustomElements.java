@@ -31,7 +31,7 @@ import com.vaadin.ui.Component;
  * A class to store the data about element
  * name({@link com.vaadin.annotations.Tag} annotation name value) relation to
  * all unique classes with corresponding annotation.
- * 
+ *
  * @author Vaadin Ltd.
  */
 class CustomElements {
@@ -41,8 +41,13 @@ class CustomElements {
             Set<Class<? extends Component>> componentClasses) {
         if (componentClasses.size() > 1) {
             return Optional.of(String.format(
-                    "Components '%s' have the same '@Tag(\"%s\")' annotation, but neither is a super class of the other.",
-                    componentClasses, tagName));
+                    "Several components are declared with the same @Tag(\"%s\") annotation: %s. "
+                            + "Only components that form a hierarchy are allowed "
+                            + "to have the same @Tag annotation. Otherwise it's not possible "
+                            + "to do mapping between a tag name and a template "
+                            + "class in order to instantiate the template when it's defined "
+                            + "inside another template",
+                            tagName, componentClasses));
         }
         if (componentClasses.size() < 1) {
             return Optional.of(String.format(
@@ -56,9 +61,9 @@ class CustomElements {
             Map.Entry<String, Set<Class<? extends Component>>> entry) {
         Set<Class<? extends Component>> componentClasses = entry.getValue();
         validateComponentClasses(entry.getKey(), componentClasses)
-                .ifPresent(exceptionMessage -> {
-                    throw new IllegalStateException(exceptionMessage);
-                });
+        .ifPresent(exceptionMessage -> {
+            throw new IllegalStateException(exceptionMessage);
+        });
 
         return componentClasses.iterator().next();
     }
@@ -66,7 +71,7 @@ class CustomElements {
     /**
      * Maps each present custom element tag name to exactly one corresponding
      * class. Throws exception if the operation is not possible.
-     * 
+     *
      * @return custom element tag name to corresponding class map
      * @throws IllegalStateException
      *             if
@@ -78,7 +83,7 @@ class CustomElements {
 
     /**
      * Adds new custom element tag name to class relation.
-     * 
+     *
      * @param elementName
      *            custom element tag name
      * @param newClass
