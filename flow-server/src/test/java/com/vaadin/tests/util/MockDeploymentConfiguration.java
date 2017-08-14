@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 import com.vaadin.server.AbstractDeploymentConfiguration;
 import com.vaadin.shared.communication.PushMode;
@@ -90,10 +91,9 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public String getApplicationOrSystemProperty(String propertyName,
-            String defaultValue) {
+    public <T> T getProperty(String propertyName, T defaultValue, Function<String, T> converter) {
         if (applicationOrSystemProperty.containsKey(propertyName)) {
-            return applicationOrSystemProperty.get(propertyName);
+            return converter.apply(applicationOrSystemProperty.get(propertyName));
         } else {
             return defaultValue;
         }
