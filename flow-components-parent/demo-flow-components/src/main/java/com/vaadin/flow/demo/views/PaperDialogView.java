@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.H2;
 import com.vaadin.flow.html.HtmlComponent;
@@ -26,7 +27,7 @@ import com.vaadin.generated.paper.dialog.GeneratedPaperDialog;
 /**
  * View for {@link GeneratedPaperDialog} demo.
  */
-@ComponentDemo(name = "Paper Dialog", href = "paper-dialog")
+@ComponentDemo(name = "Paper Dialog", href = "paper-dialog", category = DemoCategory.PAPER)
 @HtmlImport("frontend://bower_components/neon-animation/neon-animations.html")
 @HtmlImport("frontend://bower_components/neon-animation/web-animations.html")
 public class PaperDialogView extends DemoView {

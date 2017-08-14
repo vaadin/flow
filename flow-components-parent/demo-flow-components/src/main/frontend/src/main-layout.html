@@ -8,6 +8,8 @@
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-styles/typography.html">
 
+<link rel="import" href="drawer-item.html">
+
 <dom-module id="main-layout">
   <template>
     <style>
@@ -36,22 +38,6 @@
         background-color: #e0e0e0;
       }
 
-      .drawer-list {
-        margin: 0 20px;
-      }
-
-      .drawer-list a {
-        display: block;
-        padding: 0 16px;
-        text-decoration: none;
-        color: var(--app-secondary-color);
-        line-height: 40px;
-      }
-
-      .drawer-list a.iron-selected {
-        color: black;
-        font-weight: bold;
-      }
       .content {
         margin: 50px 25px;
       }
@@ -59,13 +45,12 @@
 
     <app-drawer-layout fullbleed>
       <!-- Side menu -->
-      <app-drawer id="drawer" slot="drawer">
+      <app-drawer id="drawer" slot="drawer" style="overflow: auto;">
         <app-toolbar>Components</app-toolbar>
-        <iron-selector id="selector" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-            <template is="dom-repeat" items="{{selectors}}">
-                <a href="[[item.href]]" name="[[item.name]]" router-link>[[item.name]]</a>
-            </template>
-        </iron-selector>
+        <div id="samples" class="flex style-scope paper-header-panel">
+        	<drawer-item page="[[page]]" selectors="[[vaadinComponentSelectors]]" category="Vaadin Components"></drawer-item>
+        	<drawer-item page="[[page]]" selectors="[[paperComponentSelectors]]" category="Paper Components"></drawer-item>
+        </div>
       </app-drawer>
 
       <!-- Main area -->
@@ -92,17 +77,6 @@
     class MainLayout extends Polymer.Element {
 
       static get is() { return 'main-layout'; }
-
-      static get properties() {
-          return {
-            page: {
-              type: String,
-              reflectToAttribute: true,
-            },
-            selectors: []
-          };
-        }
-
     }
 
     window.customElements.define(MainLayout.is, MainLayout);
