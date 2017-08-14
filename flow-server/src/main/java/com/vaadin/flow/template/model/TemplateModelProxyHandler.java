@@ -151,8 +151,8 @@ public class TemplateModelProxyHandler implements Serializable {
         if (!modelType.hasProperty(propertyName)) {
             throw new InvalidTemplateModelException(
                     modelType.getProxyType().getName()
-                            + " has no property named " + propertyName
-                            + " (or it has been excluded)");
+                    + " has no property named " + propertyName
+                    + " (or it has been excluded)");
         }
 
         ModelType propertyType = modelType.getPropertyType(propertyName);
@@ -291,19 +291,27 @@ public class TemplateModelProxyHandler implements Serializable {
     private static String getUnsupportedMethodMessage(Method unsupportedMethod,
             Object[] args) {
         return "Template Model does not support: " + unsupportedMethod.getName()
-                + " with return type: "
-                + unsupportedMethod.getReturnType().getName()
-                + (args == null ? " and no parameters"
-                        : " with parameters: " + Stream.of(args)
-                                .map(Object::getClass).map(Class::getName)
-                                .collect(Collectors.joining(", ")));
+        + " with return type: "
+        + unsupportedMethod.getReturnType().getName()
+        + (args == null ? " and no parameters"
+                : " with parameters: " + Stream.of(args)
+                .map(Object::getClass).map(Class::getName)
+                .collect(Collectors.joining(", ")));
     }
 
     private static Object handleGetter(ElementPropertyMap modelMap,
             String propertyName, ModelType propertyType) {
         Serializable modelValue = modelMap.getProperty(propertyName);
 
-        return propertyType.modelToApplication(modelValue);
+        try {
+            return propertyType.modelToApplication(modelValue);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Model property '%s' has an unexpected stored value: %s",
+                            propertyName, exception.getMessage()),
+                    exception);
+        }
     }
 
     private static void handleSetter(ElementPropertyMap modelMap,

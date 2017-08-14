@@ -44,8 +44,11 @@ public interface ModelType extends Serializable {
      * @param modelValue
      *            the model value to convert
      * @return a user-friendly representation of the provided model value
+     * @throws IllegalArgumentException
+     *             if {@code modelValue} cannot be handled by the type
      */
-    Object modelToApplication(Serializable modelValue);
+    Object modelToApplication(Serializable modelValue)
+            throws IllegalArgumentException;
 
     /**
      * Creates a representation of the provided model value that is intended for
@@ -103,7 +106,7 @@ public interface ModelType extends Serializable {
         StringBuilder sb = new StringBuilder();
         sb.append("Supported types are: ");
         BasicModelType.TYPES.keySet()
-                .forEach(type -> sb.append(type.getSimpleName() + ", "));
+        .forEach(type -> sb.append(type.getSimpleName() + ", "));
         sb.append("Beans and Lists of Beans.");
         return sb.toString();
     }
