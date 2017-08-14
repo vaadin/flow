@@ -31,6 +31,7 @@ import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
+import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
@@ -139,7 +140,7 @@ public class ComponentEventBus implements Serializable {
         }
 
         ComponentEventBusUtil.getDomEventType(eventType)
-                .ifPresent(e -> addDomTrigger(eventType, e));
+        .ifPresent(e -> addDomTrigger(eventType, e));
     }
 
     /**
@@ -156,7 +157,7 @@ public class ComponentEventBus implements Serializable {
             String domEventType) {
         assert eventType != null;
         assert !componentEventData.containsKey(eventType)
-                || componentEventData.get(eventType).domEventRemover == null;
+        || componentEventData.get(eventType).domEventRemover == null;
 
         if (domEventType == null || domEventType.isEmpty()) {
             throw new IllegalArgumentException(
@@ -175,11 +176,11 @@ public class ComponentEventBus implements Serializable {
         // https://github.com/vaadin/flow/issues/575
         Registration remover = element.addEventListener(domEventType,
                 new DomEventListener() {
-                    @Override
-                    public void handleEvent(DomEvent e) {
-                        handleDomEvent(eventType, e);
-                    }
-                }, eventData);
+            @Override
+            public void handleEvent(DomEvent e) {
+                handleDomEvent(eventType, e);
+            }
+        }, eventData);
         componentEventData.computeIfAbsent(eventType,
                 t -> new ComponentEventData()).domEventRemover = remover;
     }
@@ -204,9 +205,7 @@ public class ComponentEventBus implements Serializable {
         expressions.forEach((expression, type) -> {
             JsonValue jsonValue = domEvent.getEventData().get(expression);
             if (jsonValue == null) {
-                throw new IllegalArgumentException(
-                        "The DOM event does not contain the expected event data: "
-                                + expression);
+                jsonValue = Json.createNull();
             }
             Object value = JsonCodec.decodeAs(jsonValue, type);
             eventDataObjects.add(value);
@@ -245,7 +244,7 @@ public class ComponentEventBus implements Serializable {
         if (listeners.isEmpty()) {
             // No more listeners for this event type
             ComponentEventBusUtil.getDomEventType(eventType)
-                    .ifPresent(e -> unregisterDomEvent(eventType, e));
+            .ifPresent(e -> unregisterDomEvent(eventType, e));
             componentEventData.remove(eventType);
         }
     }
@@ -333,7 +332,7 @@ public class ComponentEventBus implements Serializable {
             throw new IllegalArgumentException(
                     "Unable to create an event object of type "
                             + eventType.getName(),
-                    e);
+                            e);
         }
     }
 }

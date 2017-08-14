@@ -22,6 +22,7 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
 import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
@@ -57,25 +58,39 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         void setPage(String page);
 
         /**
-         * Sets the options on the menu.
+         * Sets the options on the menu under Vaadin Components.
          * 
          * @param selectors
-         *            The selectable demos in the page menu.
+         *            The selectable Vaadin component demos in the page menu.
          */
-        void setSelectors(List<DemoObject> selectors);
+        void setVaadinComponentSelectors(List<DemoObject> selectors);
+
+        /**
+         * Sets the options on the menu under Paper Components.
+         * 
+         * @param selectors
+         *            The selectable Paper component demos in the page menu.
+         */
+        void setPaperComponentSelectors(List<DemoObject> selectors);
     }
 
     /**
      * Default constructor of the layout.
      */
     public MainLayout() {
-        List<DemoObject> selectors = new ArrayList<>();
+        List<DemoObject> vaadinComponentSelectors = new ArrayList<>();
+        List<DemoObject> paperComponentSelectors = new ArrayList<>();
         for (Class<? extends DemoView> view : ComponentDemoRegister
                 .getAvailableViews()) {
-            selectors.add(
-                    new DemoObject(view.getAnnotation(ComponentDemo.class)));
+            ComponentDemo annotation = view.getAnnotation(ComponentDemo.class);
+            if (annotation.category() == DemoCategory.VAADIN) {
+                vaadinComponentSelectors.add(new DemoObject(annotation));
+            } else if (annotation.category() == DemoCategory.PAPER) {
+                paperComponentSelectors.add(new DemoObject(annotation));
+            }
         }
-        getModel().setSelectors(selectors);
+        getModel().setVaadinComponentSelectors(vaadinComponentSelectors);
+        getModel().setPaperComponentSelectors(paperComponentSelectors);
     }
 
     @Override
