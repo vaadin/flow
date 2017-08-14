@@ -30,7 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -411,8 +410,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         getViewportContent(context.getUI().getClass(), context.getRequest())
                 .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
-                                content));
+                        .attr("name", "viewport")
+                        .attr(CONTENT_ATTRIBUTE, content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -438,14 +437,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         assert webComponentsPolyfillBase.endsWith("/");
 
-        boolean forceShadyDom = getUserDefinedProperty(config,
-                Constants.FORCE_SHADY_DOM, Boolean::parseBoolean,
-                webComponents.isPresent()
+        boolean forceShadyDom = config.getBooleanPropertyWithValidation(
+                Constants.FORCE_SHADY_DOM, webComponents.isPresent()
                         && webComponents.get().forceShadyDom());
 
-        boolean loadEs5Adapter = getUserDefinedProperty(config,
-                Constants.LOAD_ES5_ADAPTER, Boolean::parseBoolean,
-                webComponents.isPresent()
+        boolean loadEs5Adapter = config.getBooleanPropertyWithValidation(
+                Constants.LOAD_ES5_ADAPTER, webComponents.isPresent()
                         && webComponents.get().loadEs5Adapter());
 
         if (loadEs5Adapter) {
@@ -476,28 +473,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return createJavaScriptElement(sourceUrl, true);
     }
 
-    private static <T> T getUserDefinedProperty(DeploymentConfiguration config,
-            String propertyName, Function<String, T> converter,
-            T defaultValue) {
-
-        // application or system properties have priority
-        String value = config.getApplicationOrSystemProperty(propertyName,
-                null);
-
-        // null means that the property wasn't set
-        if (value == null) {
-            return defaultValue;
-        }
-
-        // converts the String to the desired type
-        return converter.apply(value);
-    }
-
     private static Element createDependencyElement(VaadinUriResolver resolver,
             LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
-                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL)
+                ? resolver.resolveVaadinUri(
+                        dependency.getString(Dependency.KEY_URL))
                 : null;
 
         final Element dependencyElement;
@@ -639,20 +620,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         if (productionMode) {
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
-                    session.getConfiguration().getApplicationOrSystemProperty(
+                    session.getConfiguration().getStringProperty(
                             Constants.FRONTEND_URL_ES6,
                             Constants.FRONTEND_URL_ES6_DEFAULT_VALUE));
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
-                    session.getConfiguration().getApplicationOrSystemProperty(
+                    session.getConfiguration().getStringProperty(
                             Constants.FRONTEND_URL_ES5,
                             Constants.FRONTEND_URL_ES5_DEFAULT_VALUE));
         } else {
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES6,
-                    session.getConfiguration().getApplicationOrSystemProperty(
+                    session.getConfiguration().getStringProperty(
                             Constants.FRONTEND_URL_ES6,
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
             appConfig.put(ApplicationConstants.FRONTEND_URL_ES5,
-                    session.getConfiguration().getApplicationOrSystemProperty(
+                    session.getConfiguration().getStringProperty(
                             Constants.FRONTEND_URL_ES5,
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX));
         }

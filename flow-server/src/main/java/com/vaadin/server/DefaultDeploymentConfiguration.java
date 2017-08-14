@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -124,20 +125,18 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public String getApplicationOrSystemProperty(String propertyName,
-            String defaultValue) {
-        String val = null;
-
+    public <T> T getProperty(String propertyName, T defaultValue,
+            Function<String, T> converter) {
         // Try system properties
-        val = getSystemProperty(propertyName);
+        String val = getSystemProperty(propertyName);
         if (val != null) {
-            return val;
+            return converter.apply(val);
         }
 
         // Try application properties
         val = getApplicationProperty(propertyName);
         if (val != null) {
-            return val;
+            return converter.apply(val);
         }
 
         return defaultValue;
@@ -151,8 +150,6 @@ public class DefaultDeploymentConfiguration
      * @return String value or null if not found
      */
     protected String getSystemProperty(String parameterName) {
-        String val = null;
-
         String pkgName;
         final Package pkg = systemPropertyBaseClass.getPackage();
         if (pkg != null) {
@@ -171,7 +168,7 @@ public class DefaultDeploymentConfiguration
         } else {
             pkgName += '.';
         }
-        val = System.getProperty(pkgName + parameterName);
+        String val = System.getProperty(pkgName + parameterName);
         if (val != null) {
             return val;
         }
@@ -295,9 +292,8 @@ public class DefaultDeploymentConfiguration
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode() {
-        productionMode = getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false")
-                        .equals("true");
+        productionMode = getBooleanPropertyWithValidation(
+                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode) {
             getLogger().warning(NOT_PRODUCTION_MODE_INFO);
         }
@@ -307,9 +303,8 @@ public class DefaultDeploymentConfiguration
      * Log a warning if cross-site request forgery protection is disabled.
      */
     private void checkXsrfProtection() {
-        xsrfProtectionEnabled = !getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, "false")
-                        .equals("true");
+        xsrfProtectionEnabled = !getBooleanPropertyWithValidation(
+                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
         if (!xsrfProtectionEnabled) {
             getLogger().warning(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -317,9 +312,9 @@ public class DefaultDeploymentConfiguration
 
     private void checkHeartbeatInterval() {
         try {
-            heartbeatInterval = Integer.parseInt(getApplicationOrSystemProperty(
+            heartbeatInterval = getProperty(
                     Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
-                    Integer.toString(DEFAULT_HEARTBEAT_INTERVAL)));
+                    DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
             getLogger().warning(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
@@ -327,17 +322,16 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkCloseIdleSessions() {
-        closeIdleSessions = getApplicationOrSystemProperty(
+        closeIdleSessions = getBooleanPropertyWithValidation(
                 Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
-                Boolean.toString(DEFAULT_CLOSE_IDLE_SESSIONS)).equals("true");
+                DEFAULT_CLOSE_IDLE_SESSIONS);
     }
 
     private void checkPushMode() {
-        String mode = getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_PUSH_MODE,
-                PushMode.DISABLED.toString());
         try {
-            pushMode = Enum.valueOf(PushMode.class, mode.toUpperCase());
+            pushMode = getProperty(Constants.SERVLET_PARAMETER_PUSH_MODE,
+                    PushMode.DISABLED, stringMode -> Enum
+                            .valueOf(PushMode.class, stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
             getLogger().warning(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -345,16 +339,15 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkSyncIdCheck() {
-        syncIdCheck = getApplicationOrSystemProperty(
+        syncIdCheck = getBooleanPropertyWithValidation(
                 Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
-                Boolean.toString(DEFAULT_SYNC_ID_CHECK)).equals("true");
+                DEFAULT_SYNC_ID_CHECK);
     }
 
     private void checkSendUrlsAsParameters() {
-        sendUrlsAsParameters = getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS,
-                Boolean.toString(DEFAULT_SEND_URLS_AS_PARAMETERS))
-                        .equals("true");
+        sendUrlsAsParameters = getBooleanPropertyWithValidation(
+                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
 
     private Logger getLogger() {
@@ -363,7 +356,7 @@ public class DefaultDeploymentConfiguration
 
     private void checkWebComponentsPolyfillBase(
             BiConsumer<String, Predicate<String>> resourceScanner) {
-        String propertyValue = getApplicationOrSystemProperty(
+        String propertyValue = getStringProperty(
                 Constants.SERVLET_PARAMETER_POLYFILL_BASE, null);
         if (null == propertyValue) {
             propertyValue = resolveDefaultPolyfillUri(resourceScanner);
@@ -441,9 +434,9 @@ public class DefaultDeploymentConfiguration
     }
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {
-        return String.format(
-                "%1$s%n" + "Configure %2$s with an empty value to explicilty disable Web Components polyfill loading.%n"
-                        + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
+        return String.format("%1$s%n"
+                + "Configure %2$s with an empty value to explicilty disable Web Components polyfill loading.%n"
+                + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
                 baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }
 
