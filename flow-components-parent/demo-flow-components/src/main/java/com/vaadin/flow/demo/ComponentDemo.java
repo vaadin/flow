@@ -36,7 +36,7 @@ public @interface ComponentDemo {
     /**
      * Enum for describing the category a DemoView belongs in.
      */
-    public enum DemoCategory {
+    enum DemoCategory {
         VAADIN, PAPER
     }
 

@@ -63,7 +63,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
          * @param selectors
          *            The selectable Vaadin component demos in the page menu.
          */
-        void setVaadinSelectors(List<DemoObject> selectors);
+        void setVaadinComponentSelectors(List<DemoObject> selectors);
 
         /**
          * Sets the options on the menu under Paper Components.
@@ -71,26 +71,26 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
          * @param selectors
          *            The selectable Paper component demos in the page menu.
          */
-        void setPaperSelectors(List<DemoObject> selectors);
+        void setPaperComponentSelectors(List<DemoObject> selectors);
     }
 
     /**
      * Default constructor of the layout.
      */
     public MainLayout() {
-        List<DemoObject> vaadinSelectors = new ArrayList<>();
-        List<DemoObject> paperSelectors = new ArrayList<>();
+        List<DemoObject> vaadinComponentSelectors = new ArrayList<>();
+        List<DemoObject> paperComponentSelectors = new ArrayList<>();
         for (Class<? extends DemoView> view : ComponentDemoRegister
                 .getAvailableViews()) {
             ComponentDemo annotation = view.getAnnotation(ComponentDemo.class);
             if (annotation.category() == DemoCategory.VAADIN) {
-                vaadinSelectors.add(new DemoObject(annotation));
+                vaadinComponentSelectors.add(new DemoObject(annotation));
             } else if (annotation.category() == DemoCategory.PAPER) {
-                paperSelectors.add(new DemoObject(annotation));
+                paperComponentSelectors.add(new DemoObject(annotation));
             }
         }
-        getModel().setVaadinSelectors(vaadinSelectors);
-        getModel().setPaperSelectors(paperSelectors);
+        getModel().setVaadinComponentSelectors(vaadinComponentSelectors);
+        getModel().setPaperComponentSelectors(paperComponentSelectors);
     }
 
     @Override
