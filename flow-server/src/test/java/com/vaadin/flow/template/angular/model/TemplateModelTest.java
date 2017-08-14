@@ -318,7 +318,7 @@ public class TemplateModelTest {
     }
 
     public static class TemplateWithExcludeAndIncludeSubclass
-            extends TemplateWithExcludeAndInclude {
+    extends TemplateWithExcludeAndInclude {
         // Should work exactly the same way as the parent class
     }
 
@@ -337,10 +337,10 @@ public class TemplateModelTest {
     }
 
     public static class TemplateWithExcludeAndIncludeSubclassOverrides
-            extends TemplateWithExcludeAndInclude {
+    extends TemplateWithExcludeAndInclude {
 
         public interface ModelWithExcludeAndIncludeSubclass
-                extends ModelWithExcludeAndInclude {
+        extends ModelWithExcludeAndInclude {
 
             /*
              * Super class has annotations for this method to only include
@@ -414,7 +414,7 @@ public class TemplateModelTest {
     }
 
     public static class TemplateWithIncludeOnListSubBean
-            extends EmptyDivTemplate {
+    extends EmptyDivTemplate {
 
         public interface ModelWithIncludeOnListSubBean extends TemplateModel {
             @Include({ "bean1.intValue", "bean2.booleanValue" })
@@ -534,7 +534,7 @@ public class TemplateModelTest {
         Assert.assertEquals(null, model.getBoolean());
     }
 
-    @Test(expected = ClassCastException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testBooleanParseString() {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
@@ -542,12 +542,12 @@ public class TemplateModelTest {
         Assert.assertEquals(null, model.getBoolean());
 
         template.getElement().getNode().getFeature(ModelMap.class)
-                .setValue("boolean", "True");
+        .setValue("boolean", "True");
 
         model.getBoolean();
     }
 
-    @Test(expected = ClassCastException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testBooleanPrimitiveParseString() {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
@@ -555,7 +555,7 @@ public class TemplateModelTest {
         Assert.assertEquals(Boolean.FALSE, model.isBooleanPrimitive());
 
         template.getElement().getNode().getFeature(ModelMap.class)
-                .setValue("booleanPrimitive", "TRUE");
+        .setValue("booleanPrimitive", "TRUE");
 
         model.getBooleanPrimitive();
     }
@@ -975,15 +975,15 @@ public class TemplateModelTest {
         }
 
         ReflectTools.getSetterMethods(Bean.class)
-                .map(method -> ReflectTools.getPropertyName(method))
-                .forEach(propertyName -> {
-                    if (!excluded.contains(propertyName)) {
-                        Assert.assertTrue(
-                                "Model should contain the property '"
-                                        + propertyName + "'",
+        .map(method -> ReflectTools.getPropertyName(method))
+        .forEach(propertyName -> {
+            if (!excluded.contains(propertyName)) {
+                Assert.assertTrue(
+                        "Model should contain the property '"
+                                + propertyName + "'",
                                 mapKeys.remove(propertyName));
-                    }
-                });
+            }
+        });
         Assert.assertTrue("model should be empty but contains: " + mapKeys,
                 mapKeys.isEmpty());
     }
@@ -1121,7 +1121,7 @@ public class TemplateModelTest {
         TemplateWithIncludeOnListSubBean template = new TemplateWithIncludeOnListSubBean();
         List<BeanContainingBeans> beanContainingBeans = new ArrayList<>();
         beanContainingBeans
-                .add(new BeanContainingBeans(new Bean(11), new Bean(12)));
+        .add(new BeanContainingBeans(new Bean(11), new Bean(12)));
         beanContainingBeans.add(new BeanContainingBeans(null, new Bean(22)));
         template.getModel().setBeanContainingBeans(beanContainingBeans);
 
