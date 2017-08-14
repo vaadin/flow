@@ -17,13 +17,14 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.html.Label;
 import com.vaadin.generated.paper.progress.GeneratedPaperProgress;
 
 /**
  * View for {@link GeneratedPaperProgress} demo.
  */
-@ComponentDemo(name = "Paper Progress", href = "paper-progress")
+@ComponentDemo(name = "Paper Progress", href = "paper-progress", category = DemoCategory.PAPER)
 @StyleSheet("frontend://src/css/progress.css")
 public class PaperProgressView extends DemoView {
 

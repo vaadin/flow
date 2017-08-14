@@ -16,12 +16,13 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.generated.paper.input.GeneratedPaperInput;
 
 /**
  * View for {@link GeneratedPaperInput} demo.
  */
-@ComponentDemo(name = "Paper Input", href = "paper-input")
+@ComponentDemo(name = "Paper Input", href = "paper-input", category = DemoCategory.PAPER)
 public class PaperInputView extends DemoView {
 
     @Override
