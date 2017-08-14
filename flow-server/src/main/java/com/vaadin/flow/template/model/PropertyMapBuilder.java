@@ -27,30 +27,21 @@ class PropertyMapBuilder {
         private final String propertyName;
         private final Type propertyType;
         private final Class<?> declaringClass;
-        private final Collection<Method> correspondingMethods = new ArrayList<>();
+        private final Collection<Method> accessors = new ArrayList<>();
 
         private PropertyData(Method method) {
             propertyName = ReflectTools.getPropertyName(method);
             propertyType = ReflectTools.getPropertyType(method);
             declaringClass = method.getDeclaringClass();
-            correspondingMethods.add(method);
+            accessors.add(method);
         }
 
         private PropertyData merge(PropertyData newData) {
-            verifyEquality("propertyName", propertyName, newData.propertyName);
-            verifyEquality("propertyType", propertyType, newData.propertyType);
-            verifyEquality("declaringClass", declaringClass,
-                    newData.declaringClass);
-            correspondingMethods.addAll(newData.correspondingMethods);
+            assert Objects.equals(propertyName, newData.propertyName) : String
+                    .format("This object is expected to be merged for objects with same 'propertyName' field, but got different ones: '%s' and '%s'",
+                            propertyName, newData.propertyName);
+            accessors.addAll(newData.accessors);
             return this;
-        }
-
-        private <T> void verifyEquality(String dataName, T data1, T data2) {
-            if (!Objects.equals(data1, data2)) {
-                throw new IllegalStateException(String.format(
-                        "Mismatching %s data '%s' and '%s' for property named %s",
-                        dataName, data1, data2, propertyName));
-            }
         }
 
         private ModelType getModelPropertyType(String propertyName,
@@ -72,19 +63,19 @@ class PropertyMapBuilder {
         }
 
         private Map<String, Class<? extends ModelConverter<?, ?>>> getModelConverters() {
-            return correspondingMethods.stream()
+            return accessors.stream()
                     .map(method -> method.getAnnotationsByType(Convert.class))
                     .flatMap(Stream::of).collect(Collectors.toMap(Convert::path,
                             Convert::value, (u, v) -> {
                                 throw new InvalidTemplateModelException(
                                         "A template model method cannot have multiple "
                                                 + "converters with the same path. Affected methods: "
-                                                + correspondingMethods + ".");
+                                                + accessors + ".");
                             }));
         }
 
         private Predicate<String> getExcludeFieldsFilter() {
-            return correspondingMethods.stream()
+            return accessors.stream()
                     .map(TemplateModelUtil::getFilterFromIncludeExclude)
                     .reduce(Predicate::and).orElse(fieldName -> true);
         }
