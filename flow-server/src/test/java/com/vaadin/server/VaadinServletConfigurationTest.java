@@ -66,9 +66,12 @@ public class VaadinServletConfigurationTest {
 
     @Test
     public void testValuesOverriddenForServlet() throws ServletException {
+        final boolean expectedBoolean = false;
+        final int expectedInt = 1111;
+
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty("productionMode", "false");
-        servletInitParams.setProperty("heartbeatInterval", "1111");
+        servletInitParams.setProperty("sendUrlsAsParameters", Boolean.toString(expectedBoolean));
+        servletInitParams.setProperty("heartbeatInterval", Integer.toString(expectedInt));
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));
@@ -76,8 +79,8 @@ public class VaadinServletConfigurationTest {
                 .getDeploymentConfiguration();
 
         // Values from servlet init params take precedence
-        Assert.assertEquals(1111, configuration.getHeartbeatInterval());
-        Assert.assertEquals(false, configuration.isProductionMode());
+        Assert.assertEquals(expectedBoolean, configuration.isSendUrlsAsParameters());
+        Assert.assertEquals(expectedInt, configuration.getHeartbeatInterval());
 
         // Other params are as defined in the annotation
         Assert.assertEquals(true, configuration.isCloseIdleSessions());
