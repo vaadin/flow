@@ -200,9 +200,8 @@ public class VerticalLayoutView extends DemoView {
                 alignment.name());
         button.setId(id);
         button.setRaised(true);
-        button.addClickListener(event -> {
-            layout.setDefaultComponentAlignment(alignment);
-        });
+        button.addClickListener(
+                event -> layout.setDefaultComponentAlignment(alignment));
         return button;
     }
 
@@ -211,9 +210,7 @@ public class VerticalLayoutView extends DemoView {
         GeneratedPaperButton button = new GeneratedPaperButton(spacing.name());
         button.setId(id);
         button.setRaised(true);
-        button.addClickListener(event -> {
-            layout.setSpacingMode(spacing);
-        });
+        button.addClickListener(event -> layout.setSpacingMode(spacing));
         return button;
     }
 

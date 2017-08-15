@@ -5,6 +5,9 @@ import java.util.Iterator;
 /**
  * A component which the children components are ordered, so the index of each
  * child matters for the layout.
+ * 
+ * @param <T>
+ *            the type of the component which implements the interface
  */
 public interface HasOrderedComponents<T extends Component>
         extends HasComponents, ComponentSupplier<T> {

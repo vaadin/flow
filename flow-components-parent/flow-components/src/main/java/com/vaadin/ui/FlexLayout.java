@@ -32,6 +32,11 @@ import com.vaadin.flow.dom.Element;
 public class FlexLayout extends Component
         implements HasOrderedComponents<FlexLayout>, HasStyle, HasSize {
 
+    private static final String JUSTIFY_CONTENT_CSS_PROPERTY = "justifyContent";
+    private static final String FLEX_GROW_CSS_PROPERTY = "flexGrow";
+    private static final String ALIGN_SELF_CSS_PROPERTY = "alignSelf";
+    private static final String ALIGN_ITEMS_CSS_PROPERTY = "alignItems";
+
     /**
      * Enum with the possible values for the component alignment inside the
      * layout. It correlates to the <code>align-items</code> CSS property.
@@ -125,9 +130,9 @@ public class FlexLayout extends Component
      */
     public void setDefaultComponentAlignment(Alignment alignment) {
         if (alignment == null) {
-            getStyle().remove("alignItems");
+            getStyle().remove(ALIGN_ITEMS_CSS_PROPERTY);
         } else {
-            getStyle().set("alignItems", alignment.getFlexValue());
+            getStyle().set(ALIGN_ITEMS_CSS_PROPERTY, alignment.getFlexValue());
         }
     }
 
@@ -140,7 +145,7 @@ public class FlexLayout extends Component
      * @return the general alignment used by the layout, never <code>null</code>
      */
     public Alignment getDefaultComponentAlignment() {
-        return Alignment.toAlignment(getStyle().get("alignItems"),
+        return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
                 Alignment.STRETCH);
     }
 
@@ -162,11 +167,12 @@ public class FlexLayout extends Component
             Component... components) {
         if (alignment == null) {
             for (Component component : components) {
-                component.getElement().getStyle().remove("alignSelf");
+                component.getElement().getStyle()
+                        .remove(ALIGN_SELF_CSS_PROPERTY);
             }
         } else {
             for (Component component : components) {
-                component.getElement().getStyle().set("alignSelf",
+                component.getElement().getStyle().set(ALIGN_SELF_CSS_PROPERTY,
                         alignment.getFlexValue());
             }
         }
@@ -184,7 +190,7 @@ public class FlexLayout extends Component
      */
     public Alignment getComponentAlignment(Component component) {
         return Alignment.toAlignment(
-                component.getElement().getStyle().get("alignSelf"),
+                component.getElement().getStyle().get(ALIGN_SELF_CSS_PROPERTY),
                 Alignment.AUTO);
     }
 
@@ -215,11 +221,12 @@ public class FlexLayout extends Component
         }
         if (ratio == 0) {
             for (Component component : components) {
-                component.getElement().getStyle().remove("flexGrow");
+                component.getElement().getStyle()
+                        .remove(FLEX_GROW_CSS_PROPERTY);
             }
         } else {
             for (Component component : components) {
-                component.getElement().getStyle().set("flexGrow",
+                component.getElement().getStyle().set(FLEX_GROW_CSS_PROPERTY,
                         String.valueOf(ratio));
             }
         }
@@ -233,14 +240,18 @@ public class FlexLayout extends Component
      * @return the expand ratio, or 0 if none was set
      */
     public double getExpandRatio(Component component) {
-        String ratio = component.getElement().getStyle().get("flexGrow");
+        String ratio = component.getElement().getStyle()
+                .get(FLEX_GROW_CSS_PROPERTY);
         if (ratio == null || ratio.isEmpty()) {
             return 0;
         }
         try {
             return Double.parseDouble(ratio);
         } catch (Exception e) {
-            return 0;
+            throw new IllegalStateException(
+                    "The expand ratio of the component is not parseable to double: "
+                            + ratio,
+                    e);
         }
     }
 
@@ -262,10 +273,10 @@ public class FlexLayout extends Component
     public void setSpacing(boolean spacing) {
         this.spacing = spacing;
         if (spacing) {
-            getElement().getStyle().set("justifyContent",
+            getElement().getStyle().set(JUSTIFY_CONTENT_CSS_PROPERTY,
                     spacingMode.getFlexValue());
         } else {
-            getElement().getStyle().remove("justifyContent");
+            getElement().getStyle().remove(JUSTIFY_CONTENT_CSS_PROPERTY);
         }
     }
 
@@ -297,7 +308,7 @@ public class FlexLayout extends Component
         }
         this.spacingMode = spacingMode;
         if (spacing) {
-            getElement().getStyle().set("justifyContent",
+            getElement().getStyle().set(JUSTIFY_CONTENT_CSS_PROPERTY,
                     spacingMode.getFlexValue());
         }
     }
