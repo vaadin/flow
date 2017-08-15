@@ -64,7 +64,14 @@ public class ListModelType<T> implements ComplexModelType<T> {
 
     @Override
     public List<T> modelToApplication(Serializable modelValue) {
-        return new TemplateModelListProxy<>((StateNode) modelValue, itemType);
+        if (modelValue instanceof StateNode) {
+            return new TemplateModelListProxy<>((StateNode) modelValue, itemType);
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "The stored model value '%s' type '%s' "
+                            + "cannot be used as a type for a model list property",
+                            modelValue, modelValue.getClass()));
+        }
     }
 
     @Override
@@ -88,7 +95,7 @@ public class ListModelType<T> implements ComplexModelType<T> {
     @Override
     public <C> ComplexModelType<C> cast(Class<C> proxyType) {
         if (getItemType() instanceof ListModelType<?>
-                && GenericTypeReflector.erase(proxyType).equals(List.class)) {
+        && GenericTypeReflector.erase(proxyType).equals(List.class)) {
             return (ComplexModelType<C>) this;
         }
         throw new IllegalArgumentException(

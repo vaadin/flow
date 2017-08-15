@@ -41,7 +41,7 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  */
 public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
-        implements ComplexModelType<T> {
+implements ComplexModelType<T> {
     @SuppressWarnings("unchecked")
     private static final Map<Class<?>, BasicComplexModelType<?>> TYPES = loadBasicTypes(
             BasicComplexModelType::new);
@@ -74,6 +74,7 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
         return TYPES.keySet().contains(type);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T modelToApplication(Serializable modelValue) {
         assert modelValue instanceof StateNode;
@@ -84,9 +85,21 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
         if (value == null && getJavaType().isPrimitive()) {
             return getJavaType()
                     .cast(ReflectTools.getPrimitiveDefaultValue(getJavaType()));
+        }
+        if (value == null) {
+            return null;
+        }
+        Class<?> boxedType = ReflectTools.convertPrimitiveType(getJavaType());
+        if (boxedType.equals(
+                ReflectTools.convertPrimitiveType(value.getClass()))) {
+            return (T) boxedType.cast(value);
         } else {
-            return (T) ReflectTools.convertPrimitiveType(getJavaType())
-                    .cast(value);
+            throw new IllegalArgumentException(
+                    String.format(
+                            "The stored model value '%s' type '%s' "
+                                    + "cannot be used as a type for a model property with type '%s'",
+                                    value, value.getClass().getName(),
+                                    getJavaType().getName()));
         }
     }
 
@@ -106,7 +119,7 @@ public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
         StateNode stateNode = new StateNode(
                 Collections.singletonList(BasicTypeValue.class));
         stateNode.getFeature(BasicTypeValue.class)
-                .setValue((Serializable) applicationValue);
+        .setValue((Serializable) applicationValue);
         return stateNode;
     }
 
