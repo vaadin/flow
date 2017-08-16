@@ -17,6 +17,8 @@ package com.vaadin.ui;
 
 import java.util.Iterator;
 
+import com.vaadin.flow.dom.Element;
+
 /**
  * A component which the children components are ordered, so the index of each
  * child matters for the layout.
@@ -37,29 +39,36 @@ public interface HasOrderedComponents<T extends Component>
      * care as with add and remove.
      * 
      * @param oldComponent
-     *            the old component that will be replaced
+     *            the old component that will be replaced. Can be
+     *            <code>null</code>, which will make the newComponent to be
+     *            added to the layout without replacing any other
      * 
      * @param newComponent
-     *            the new component to be replaced
+     *            the new component to be replaced. Can be <code>null</code>,
+     *            which will make the oldComponent to be removed from the layout
+     *            without adding any other
      */
     default void replace(Component oldComponent, Component newComponent) {
+        if (oldComponent == null && newComponent == null) {
+            // NO-OP
+            return;
+        }
         if (oldComponent == null) {
-            throw new IllegalArgumentException(
-                    "The 'oldComponent' parameter cannot be null");
-        }
-        if (newComponent == null) {
-            throw new IllegalArgumentException(
-                    "The 'newComponent' parameter cannot be null");
-        }
-        int oldIndex = getElement().indexOfChild(oldComponent.getElement());
-        int newIndex = getElement().indexOfChild(newComponent.getElement());
-        if (oldIndex >= 0 && newIndex >= 0) {
-            getElement().insertChild(oldIndex, newComponent.getElement());
-            getElement().insertChild(newIndex, oldComponent.getElement());
-        } else if (oldIndex >= 0) {
-            getElement().setChild(oldIndex, newComponent.getElement());
-        } else {
             add(newComponent);
+        } else if (newComponent == null) {
+            remove(oldComponent);
+        } else {
+            Element element = getElement();
+            int oldIndex = element.indexOfChild(oldComponent.getElement());
+            int newIndex = element.indexOfChild(newComponent.getElement());
+            if (oldIndex >= 0 && newIndex >= 0) {
+                element.insertChild(oldIndex, newComponent.getElement());
+                element.insertChild(newIndex, oldComponent.getElement());
+            } else if (oldIndex >= 0) {
+                element.setChild(oldIndex, newComponent.getElement());
+            } else {
+                add(newComponent);
+            }
         }
     }
 
@@ -67,8 +76,8 @@ public interface HasOrderedComponents<T extends Component>
      * Returns the index of the given component.
      * 
      * @param component
-     *            The component to look up
-     * @return The index of the component or -1 if the component is not a child
+     *            the component to look up, can not be <code>null</code>
+     * @return the index of the component or -1 if the component is not a child
      */
     default int indexOf(Component component) {
         if (component == null) {
@@ -100,15 +109,16 @@ public interface HasOrderedComponents<T extends Component>
      * Returns the component at the given position.
      * 
      * @param index
-     *            The position of the component
+     *            the position of the component, must be greater than or equals
+     *            to 0 and less than the number of children components
      * @return The component at the given index
      * @throws IllegalArgumentException
-     *             if the index is less than 0 or greater or equals to the
+     *             if the index is less than 0 or greater than or equals to the
      *             number of children components
      * @see #getComponentCount()
      */
     default Component getComponentAt(int index) {
-        if (index == 0) {
+        if (index < 0) {
             throw new IllegalArgumentException(
                     "The 'index' argument should be greater than 0. It was: "
                             + index);
