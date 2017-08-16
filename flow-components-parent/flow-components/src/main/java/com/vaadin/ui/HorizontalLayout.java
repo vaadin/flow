@@ -56,6 +56,7 @@ public class HorizontalLayout extends FlexLayout {
      *            the alignment to apply to the components. Setting
      *            <code>null</code> will reset the alignment to its default
      */
+    @Override
     public void setDefaultComponentAlignment(Alignment alignment) {
         super.setDefaultComponentAlignment(alignment);
     }
@@ -68,6 +69,7 @@ public class HorizontalLayout extends FlexLayout {
      * 
      * @return the general alignment used by the layout, never <code>null</code>
      */
+    @Override
     public Alignment getDefaultComponentAlignment() {
         return super.getDefaultComponentAlignment();
     }
