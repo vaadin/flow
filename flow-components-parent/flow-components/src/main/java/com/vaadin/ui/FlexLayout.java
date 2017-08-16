@@ -130,7 +130,8 @@ public class FlexLayout extends Component
      */
     public void setDefaultComponentAlignment(Alignment alignment) {
         if (alignment == null) {
-            getStyle().remove(ALIGN_ITEMS_CSS_PROPERTY);
+            getStyle().set(ALIGN_ITEMS_CSS_PROPERTY,
+                    getPredefinedDefaultAlignment().getFlexValue());
         } else {
             getStyle().set(ALIGN_ITEMS_CSS_PROPERTY, alignment.getFlexValue());
         }
@@ -146,7 +147,7 @@ public class FlexLayout extends Component
      */
     public Alignment getDefaultComponentAlignment() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
-                Alignment.STRETCH);
+                getPredefinedDefaultAlignment());
     }
 
     /**
@@ -323,6 +324,20 @@ public class FlexLayout extends Component
      */
     public SpacingMode getSpacingMode() {
         return spacingMode;
+    }
+
+    /**
+     * Gets the default CSS align-items property for the layout.
+     * <p>
+     * Subclasses can override this method to return a more suitable alignment.
+     * <p>
+     * The default implementation returns {@link Alignment#STRETCH}.
+     * 
+     * @return the alignment to be used in new, empty layout, or when a
+     *         <code>null</code> alignment is set
+     */
+    protected Alignment getPredefinedDefaultAlignment() {
+        return Alignment.STRETCH;
     }
 
 }
