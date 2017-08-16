@@ -614,8 +614,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         result = result.replace("{{APP_ID}}", context.getAppId());
-        result = result.replace("{{INITIAL_UIDL}}", initialUIDLString);
         result = result.replace("{{CONFIG_JSON}}", appConfigString);
+        result = result.replace("{{INITIAL_UIDL}}", initialUIDLString);
         return result;
     }
 
