@@ -52,8 +52,20 @@ public class BasicModelType extends AbstractBasicModelType {
     public Object modelToApplication(Serializable modelValue) {
         if (modelValue == null && getJavaType().isPrimitive()) {
             return ReflectTools.getPrimitiveDefaultValue(getJavaType());
-        } else {
+        }
+        if (modelValue == null) {
+            return null;
+        }
+        if (ReflectTools.convertPrimitiveType(getJavaType()).equals(
+                ReflectTools.convertPrimitiveType(modelValue.getClass()))) {
             return modelValue;
+        } else {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "The stored model value '%s' type '%s' "
+                                    + "cannot be used as a type for a model property with type '%s'",
+                                    modelValue, modelValue.getClass().getName(),
+                                    getJavaType().getName()));
         }
     }
 
