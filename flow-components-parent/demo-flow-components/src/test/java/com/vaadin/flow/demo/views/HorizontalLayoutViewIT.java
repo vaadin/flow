@@ -129,7 +129,7 @@ public class HorizontalLayoutViewIT extends AbstractChromeTest {
     }
 
     @Test
-    public void layoutWithExpendRatios() {
+    public void layoutWithExpandRatios() {
         WebElement vlayout = layout
                 .findElement(By.id("layout-with-expand-ratios"));
         assertBasicFlexPropertiesAreSet(vlayout);
