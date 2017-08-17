@@ -77,19 +77,12 @@
             },
             category: {
             	type: String
-            },
-            __lastSubcategory: {
-            	type: String,
-            	value: ''
             }
           };
         }
       
       __shouldShowSubcategory(item) {
-    	  if (item.subcategory) {
-    		  return true;
-    	  }
-    	  return false;
+    	  return !!item.subcategory;
       }
       
       toggleCollapse() {
