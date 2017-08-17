@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.text.field;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import com.vaadin.ui.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
@@ -60,6 +61,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 		implements
 			ComponentSupplier<R>,
 			HasStyle,
+			HasSize,
 			Focusable<R>,
 			HasValue<R, String> {
 

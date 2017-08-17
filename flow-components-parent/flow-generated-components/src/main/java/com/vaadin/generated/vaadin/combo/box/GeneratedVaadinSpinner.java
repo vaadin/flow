@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.combo.box;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -28,7 +29,7 @@ import com.vaadin.annotations.HtmlImport;
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
 public class GeneratedVaadinSpinner<R extends GeneratedVaadinSpinner<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+			Component implements ComponentSupplier<R>, HasStyle, HasSize {
 
 	/**
 	 * This property is not synchronized automatically from the client side, so

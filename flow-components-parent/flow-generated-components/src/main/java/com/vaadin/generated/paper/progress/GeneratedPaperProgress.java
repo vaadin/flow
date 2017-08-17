@@ -18,6 +18,7 @@ package com.vaadin.generated.paper.progress;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -109,6 +110,7 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 		implements
 			ComponentSupplier<R>,
 			HasStyle,
+			HasSize,
 			HasValue<R, Double> {
 
 	/**

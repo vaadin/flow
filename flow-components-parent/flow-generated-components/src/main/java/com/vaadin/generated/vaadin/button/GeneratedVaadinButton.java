@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasText;
 import com.vaadin.ui.Focusable;
@@ -59,6 +60,7 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 		implements
 			ComponentSupplier<R>,
 			HasStyle,
+			HasSize,
 			HasClickListeners<R>,
 			HasText,
 			Focusable<R>,

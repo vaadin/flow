@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.checkbox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import com.vaadin.ui.Focusable;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
@@ -67,6 +68,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 		implements
 			ComponentSupplier<R>,
 			HasStyle,
+			HasSize,
 			Focusable<R>,
 			HasValue<R, Boolean>,
 			HasComponents {

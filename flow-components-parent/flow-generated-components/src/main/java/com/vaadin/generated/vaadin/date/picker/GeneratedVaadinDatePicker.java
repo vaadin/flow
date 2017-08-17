@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.date.picker;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
@@ -84,6 +85,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 		implements
 			ComponentSupplier<R>,
 			HasStyle,
+			HasSize,
 			HasClickListeners<R> {
 
 	/**

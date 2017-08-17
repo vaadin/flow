@@ -69,6 +69,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasSize;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasText;
 
@@ -408,6 +409,9 @@ public class ComponentGenerator {
 
         // all components have styles
         javaClass.addInterface(HasStyle.class);
+
+        // all components have size (since they have styles)
+        javaClass.addInterface(HasSize.class);
 
         List<String> classBehaviorsAndMixins = new ArrayList<>();
         classBehaviorsAndMixins.add(metadata.getTag());

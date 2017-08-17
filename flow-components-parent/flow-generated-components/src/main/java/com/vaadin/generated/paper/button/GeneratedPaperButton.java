@@ -18,6 +18,7 @@ package com.vaadin.generated.paper.button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import com.vaadin.ui.HasText;
 import com.vaadin.ui.Focusable;
 import com.vaadin.ui.HasClickListeners;
@@ -103,6 +104,7 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 		implements
 			ComponentSupplier<R>,
 			HasStyle,
+			HasSize,
 			HasText,
 			Focusable<R>,
 			HasClickListeners<R>,
