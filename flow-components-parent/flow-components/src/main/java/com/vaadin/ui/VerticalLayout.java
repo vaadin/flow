@@ -58,7 +58,12 @@ public class VerticalLayout extends FlexLayout {
      */
     @Override
     public void setDefaultComponentAlignment(Alignment alignment) {
-        super.setDefaultComponentAlignment(alignment);
+        if (alignment == null) {
+            getStyle().set(ALIGN_ITEMS_CSS_PROPERTY,
+                    Alignment.START.getFlexValue());
+        } else {
+            getStyle().set(ALIGN_ITEMS_CSS_PROPERTY, alignment.getFlexValue());
+        }
     }
 
     /**
@@ -71,11 +76,7 @@ public class VerticalLayout extends FlexLayout {
      */
     @Override
     public Alignment getDefaultComponentAlignment() {
-        return super.getDefaultComponentAlignment();
-    }
-
-    @Override
-    protected Alignment getPredefinedDefaultAlignment() {
-        return Alignment.START;
+        return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
+                Alignment.START);
     }
 }

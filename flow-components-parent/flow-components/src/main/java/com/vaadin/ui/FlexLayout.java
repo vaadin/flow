@@ -32,10 +32,10 @@ import com.vaadin.flow.dom.Element;
 public class FlexLayout extends Component
         implements HasOrderedComponents<FlexLayout>, HasStyle, HasSize {
 
-    private static final String JUSTIFY_CONTENT_CSS_PROPERTY = "justifyContent";
-    private static final String FLEX_GROW_CSS_PROPERTY = "flexGrow";
-    private static final String ALIGN_SELF_CSS_PROPERTY = "alignSelf";
-    private static final String ALIGN_ITEMS_CSS_PROPERTY = "alignItems";
+    protected static final String JUSTIFY_CONTENT_CSS_PROPERTY = "justifyContent";
+    protected static final String FLEX_GROW_CSS_PROPERTY = "flexGrow";
+    protected static final String ALIGN_SELF_CSS_PROPERTY = "alignSelf";
+    protected static final String ALIGN_ITEMS_CSS_PROPERTY = "alignItems";
 
     /**
      * Enum with the possible values for the component alignment inside the
@@ -130,8 +130,7 @@ public class FlexLayout extends Component
      */
     public void setDefaultComponentAlignment(Alignment alignment) {
         if (alignment == null) {
-            getStyle().set(ALIGN_ITEMS_CSS_PROPERTY,
-                    getPredefinedDefaultAlignment().getFlexValue());
+            getStyle().remove(ALIGN_ITEMS_CSS_PROPERTY);
         } else {
             getStyle().set(ALIGN_ITEMS_CSS_PROPERTY, alignment.getFlexValue());
         }
@@ -147,7 +146,7 @@ public class FlexLayout extends Component
      */
     public Alignment getDefaultComponentAlignment() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
-                getPredefinedDefaultAlignment());
+                Alignment.STRETCH);
     }
 
     /**
@@ -324,20 +323,6 @@ public class FlexLayout extends Component
      */
     public SpacingMode getSpacingMode() {
         return spacingMode;
-    }
-
-    /**
-     * Gets the default CSS align-items property for the layout.
-     * <p>
-     * Subclasses can override this method to return a more suitable alignment.
-     * <p>
-     * The default implementation returns {@link Alignment#STRETCH}.
-     * 
-     * @return the alignment to be used in new, empty layout, or when a
-     *         <code>null</code> alignment is set
-     */
-    protected Alignment getPredefinedDefaultAlignment() {
-        return Alignment.STRETCH;
     }
 
 }

@@ -58,7 +58,12 @@ public class HorizontalLayout extends FlexLayout {
      */
     @Override
     public void setDefaultComponentAlignment(Alignment alignment) {
-        super.setDefaultComponentAlignment(alignment);
+        if (alignment == null) {
+            getStyle().set(ALIGN_ITEMS_CSS_PROPERTY,
+                    Alignment.BASELINE.getFlexValue());
+        } else {
+            getStyle().set(ALIGN_ITEMS_CSS_PROPERTY, alignment.getFlexValue());
+        }
     }
 
     /**
@@ -71,12 +76,8 @@ public class HorizontalLayout extends FlexLayout {
      */
     @Override
     public Alignment getDefaultComponentAlignment() {
-        return super.getDefaultComponentAlignment();
-    }
-
-    @Override
-    protected Alignment getPredefinedDefaultAlignment() {
-        return Alignment.BASELINE;
+        return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
+                Alignment.BASELINE);
     }
 
 }
