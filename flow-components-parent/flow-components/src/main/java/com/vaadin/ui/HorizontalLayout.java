@@ -16,19 +16,19 @@
 package com.vaadin.ui;
 
 /**
- * VerticalLayout is a component container, which shows the subcomponents in the
- * order of their addition (vertically). A vertical layout is by default 100%
- * wide.
+ * HorizontalLayout is a component container, which shows the subcomponents in
+ * the order of their addition (horizontally). A horizontal layout is doesn't
+ * have a predefined size - its size is defined by the components inside it.
  */
-public class VerticalLayout extends FlexLayout {
+public class HorizontalLayout extends FlexLayout {
 
     /**
-     * Default constructor. Creates an empty layout, with 100% width, without
-     * spacing, with items aligned as {@link Alignment#STRETCH}.
+     * Default constructor. Creates an empty layout, without spacing and without
+     * a predefined width. The default alignment is {@link Alignment#BASELINE}.
      */
-    public VerticalLayout() {
-        getStyle().set("flexDirection", "column").set("width", "100%");
-        setDefaultComponentAlignment(Alignment.START);
+    public HorizontalLayout() {
+        getStyle().set("display", "inline-flex").set("flexDirection", "row");
+        setDefaultComponentAlignment(Alignment.BASELINE);
     }
 
     /**
@@ -39,7 +39,7 @@ public class VerticalLayout extends FlexLayout {
      *            the items to add to this layout
      * @see #add(Component...)
      */
-    public VerticalLayout(Component... children) {
+    public HorizontalLayout(Component... children) {
         this();
         add(children);
     }
@@ -50,7 +50,7 @@ public class VerticalLayout extends FlexLayout {
      * aligned by using the
      * {@link #setComponentAlignment(Alignment, Component...)} method.
      * <p>
-     * The default alignment is {@link Alignment#START}.
+     * The default alignment is {@link Alignment#BASELINE}.
      * 
      * @param alignment
      *            the alignment to apply to the components. Setting
@@ -60,7 +60,7 @@ public class VerticalLayout extends FlexLayout {
     public void setDefaultComponentAlignment(Alignment alignment) {
         if (alignment == null) {
             getStyle().set(ALIGN_ITEMS_CSS_PROPERTY,
-                    Alignment.START.getFlexValue());
+                    Alignment.BASELINE.getFlexValue());
         } else {
             getStyle().set(ALIGN_ITEMS_CSS_PROPERTY, alignment.getFlexValue());
         }
@@ -70,13 +70,14 @@ public class VerticalLayout extends FlexLayout {
      * Gets the default alignment used by all components without individual
      * alignments inside the layout.
      * <p>
-     * The default alignment is {@link Alignment#START}.
+     * The default alignment is {@link Alignment#BASELINE}.
      * 
      * @return the general alignment used by the layout, never <code>null</code>
      */
     @Override
     public Alignment getDefaultComponentAlignment() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
-                Alignment.START);
+                Alignment.BASELINE);
     }
+
 }
