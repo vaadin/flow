@@ -36,7 +36,7 @@ import com.vaadin.ui.UI;
  * Annotation for configuring subclasses of {@link VaadinServlet}. For a
  * {@link VaadinServlet} class that has this annotation, the defined values are
  * read during initialization and will be available using
- * {@link DeploymentConfiguration#getProperty(String, Object, Function)}
+ * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
  * as well as from specific methods in {@link DeploymentConfiguration}. Init
  * params defined in <code>web.xml</code> or the <code>@WebServlet</code>
  * annotation take precedence over values defined in this annotation.

@@ -102,8 +102,8 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public <T> T getProperty(String propertyName, T defaultValue,
-                Function<String, T> converter) {
+        public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
+                                                    Function<String, T> converter) {
             return Optional.ofNullable(properties.getProperty(propertyName))
                     .map(converter).orElse(defaultValue);
         }

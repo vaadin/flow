@@ -123,8 +123,8 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public <T> T getProperty(String propertyName, T defaultValue,
-            Function<String, T> converter) {
+    public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
+                                                Function<String, T> converter) {
         // Try system properties
         String val = getSystemProperty(propertyName);
         if (val != null) {
@@ -310,7 +310,7 @@ public class DefaultDeploymentConfiguration
 
     private void checkHeartbeatInterval() {
         try {
-            heartbeatInterval = getProperty(
+            heartbeatInterval = getApplicationOrSystemProperty(
                     Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                     DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
@@ -327,7 +327,7 @@ public class DefaultDeploymentConfiguration
 
     private void checkPushMode() {
         try {
-            pushMode = getProperty(Constants.SERVLET_PARAMETER_PUSH_MODE,
+            pushMode = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_PUSH_MODE,
                     PushMode.DISABLED, stringMode -> Enum
                             .valueOf(PushMode.class, stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {

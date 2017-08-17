@@ -91,7 +91,7 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public <T> T getProperty(String propertyName, T defaultValue, Function<String, T> converter) {
+    public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue, Function<String, T> converter) {
         if (applicationOrSystemProperty.containsKey(propertyName)) {
             return converter.apply(applicationOrSystemProperty.get(propertyName));
         } else {

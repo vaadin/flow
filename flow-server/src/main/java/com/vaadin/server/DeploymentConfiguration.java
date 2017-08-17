@@ -129,13 +129,13 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the property value, or the passed default value if no property
      *         value is found
      */
-    <T> T getProperty(String propertyName, T defaultValue,
+    <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
             Function<String, T> converter);
 
     /**
      * A shorthand of
-     * {@link DeploymentConfiguration#getProperty(String, Object, Function)} for
-     * {@link String} type.
+     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
+     * for {@link String} type.
      *
      * @param propertyName
      *            The simple of the property, in some contexts, lookup might be
@@ -147,13 +147,14 @@ public interface DeploymentConfiguration extends Serializable {
      *         value is found
      */
     default String getStringProperty(String propertyName, String defaultValue) {
-        return getProperty(propertyName, defaultValue, Function.identity());
+        return getApplicationOrSystemProperty(propertyName, defaultValue,
+                Function.identity());
     }
 
     /**
      * A shorthand of
-     * {@link DeploymentConfiguration#getProperty(String, Object, Function)} for
-     * {@link String} type.
+     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
+     * for {@link String} type.
      *
      * Considers {@code ""} to be equal {@code true} in order to consider params
      * like {@code -Dtest.param} as enabled ({@code test.param == true}).
