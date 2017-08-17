@@ -24,15 +24,15 @@ import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
 
 /**
- * Tests for the {@link VerticalLayoutView}.
+ * Tests for the {@link HorizontalLayoutView}.
  */
-public class VerticalLayoutViewIT extends AbstractChromeTest {
+public class HorizontalLayoutViewIT extends AbstractChromeTest {
 
     private WebElement layout;
 
     @Override
     protected String getTestPath() {
-        return "/vertical-layout";
+        return "/horizontal-layout";
     }
 
     @Before
@@ -46,7 +46,7 @@ public class VerticalLayoutViewIT extends AbstractChromeTest {
     public void defaultLayout() {
         WebElement vlayout = layout.findElement(By.id("default-layout"));
         assertBasicFlexPropertiesAreSet(vlayout);
-        Assert.assertEquals("flex-start", vlayout.getCssValue("align-items"));
+        Assert.assertEquals("baseline", vlayout.getCssValue("align-items"));
     }
 
     @Test
@@ -78,7 +78,7 @@ public class VerticalLayoutViewIT extends AbstractChromeTest {
         WebElement vlayout = layout.findElement(By.id("layout-with-alignment"));
         assertBasicFlexPropertiesAreSet(vlayout);
 
-        Assert.assertEquals("stretch", vlayout.getCssValue("align-items"));
+        Assert.assertEquals("center", vlayout.getCssValue("align-items"));
 
         WebElement button = layout.findElement(By.id("align-end-button"));
         scrollIntoViewAndClick(button);
@@ -98,6 +98,11 @@ public class VerticalLayoutViewIT extends AbstractChromeTest {
         button = layout.findElement(By.id("align-start-button"));
         button.click();
         waitUntil(driver -> "flex-start"
+                .equals(vlayout.getCssValue("align-items")));
+
+        button = layout.findElement(By.id("align-baseline-button"));
+        button.click();
+        waitUntil(driver -> "baseline"
                 .equals(vlayout.getCssValue("align-items")));
     }
 
@@ -140,8 +145,8 @@ public class VerticalLayoutViewIT extends AbstractChromeTest {
     }
 
     private void assertBasicFlexPropertiesAreSet(WebElement vlayout) {
-        Assert.assertEquals("flex", vlayout.getCssValue("display"));
-        Assert.assertEquals("column", vlayout.getCssValue("flex-direction"));
+        Assert.assertEquals("inline-flex", vlayout.getCssValue("display"));
+        Assert.assertEquals("row", vlayout.getCssValue("flex-direction"));
     }
 
 }

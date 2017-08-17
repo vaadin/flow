@@ -32,10 +32,10 @@ import com.vaadin.flow.dom.Element;
 public class FlexLayout extends Component
         implements HasOrderedComponents<FlexLayout>, HasStyle, HasSize {
 
-    private static final String JUSTIFY_CONTENT_CSS_PROPERTY = "justifyContent";
-    private static final String FLEX_GROW_CSS_PROPERTY = "flexGrow";
-    private static final String ALIGN_SELF_CSS_PROPERTY = "alignSelf";
-    private static final String ALIGN_ITEMS_CSS_PROPERTY = "alignItems";
+    protected static final String JUSTIFY_CONTENT_CSS_PROPERTY = "justifyContent";
+    protected static final String FLEX_GROW_CSS_PROPERTY = "flexGrow";
+    protected static final String ALIGN_SELF_CSS_PROPERTY = "alignSelf";
+    protected static final String ALIGN_ITEMS_CSS_PROPERTY = "alignItems";
 
     /**
      * Enum with the possible values for the component alignment inside the
