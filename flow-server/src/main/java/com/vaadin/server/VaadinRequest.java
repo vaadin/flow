@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -42,7 +43,7 @@ public interface VaadinRequest {
      * parameter, though other request types might have other ways of
      * representing parameters.
      *
-     * @see javax.servlet.ServletRequest#getParameter(String)
+     * @see ServletRequest#getParameter(String)
      *
      * @param parameter
      *            the name of the parameter
@@ -56,7 +57,7 @@ public interface VaadinRequest {
      *
      * @see #getParameter(String)
      *
-     * @see javax.servlet.ServletRequest#getParameterMap()
+     * @see ServletRequest#getParameterMap()
      *
      * @return A mapping of parameter names to arrays of parameter values
      */
@@ -66,7 +67,7 @@ public interface VaadinRequest {
      * Returns the length of the request content that can be read from the input
      * stream returned by {@link #getInputStream()}.
      *
-     * @see javax.servlet.ServletRequest#getContentLength()
+     * @see ServletRequest#getContentLength()
      *
      * @return content length in bytes
      */
@@ -77,7 +78,7 @@ public interface VaadinRequest {
      * request content length can be obtained with {@link #getContentLength()}
      * without reading the full stream contents.
      *
-     * @see javax.servlet.ServletRequest#getInputStream()
+     * @see ServletRequest#getInputStream()
      *
      * @return the input stream from which the contents of the request can be
      *         read
@@ -94,7 +95,7 @@ public interface VaadinRequest {
      * @return the value of the attribute, or <code>null</code> if there is no
      *         attribute with the given name
      *
-     * @see javax.servlet.ServletRequest#getAttribute(String)
+     * @see ServletRequest#getAttribute(String)
      */
     Object getAttribute(String name);
 
@@ -106,7 +107,7 @@ public interface VaadinRequest {
      * @param value
      *            the attribute value
      *
-     * @see javax.servlet.ServletRequest#setAttribute(String, Object)
+     * @see ServletRequest#setAttribute(String, Object)
      */
     void setAttribute(String name, Object value);
 
@@ -166,7 +167,7 @@ public interface VaadinRequest {
      * @return a string containing the name of the MIME type of the request, or
      *         null if the type is not known
      *
-     * @see javax.servlet.ServletRequest#getContentType()
+     * @see ServletRequest#getContentType()
      *
      */
     String getContentType();
@@ -459,4 +460,12 @@ public interface VaadinRequest {
      */
     Enumeration<String> getHeaders(String name);
 
+    /**
+     * Gets the servlet context to which this ServletRequest was last
+     * dispatched.
+     *
+     * @return the servlet context to which this ServletRequest was last
+     * dispatched
+     */
+    ServletContext getServletContext();
 }

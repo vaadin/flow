@@ -1,0 +1,12 @@
+{
+  "entrypoint": "entry.html",
+  "shell": "shell.html",
+  "sources": [
+   "bower.json"
+  ],
+  "lint": {
+    "rules": [
+      "polymer-2"
+    ]
+  }
+}
