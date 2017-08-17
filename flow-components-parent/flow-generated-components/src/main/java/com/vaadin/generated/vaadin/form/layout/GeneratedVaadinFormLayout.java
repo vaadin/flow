@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.form.layout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -100,7 +101,12 @@ import com.vaadin.ui.HasComponents;
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasSize,
+			HasComponents {
 
 /**
 	 * Description copied from corresponding location in WebComponent:

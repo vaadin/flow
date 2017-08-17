@@ -18,6 +18,7 @@ package com.vaadin.generated.paper.input;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -52,7 +53,12 @@ import com.vaadin.ui.HasComponents;
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
+			Component
+		implements
+			ComponentSupplier<R>,
+			HasStyle,
+			HasSize,
+			HasComponents {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

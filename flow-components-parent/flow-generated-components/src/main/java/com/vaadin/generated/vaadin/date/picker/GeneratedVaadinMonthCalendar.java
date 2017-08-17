@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.date.picker;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -33,7 +34,7 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-month-calendar.html")
 public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+			Component implements ComponentSupplier<R>, HasStyle, HasSize {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

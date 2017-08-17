@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.combo.box;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -75,6 +76,7 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 		implements
 			ComponentSupplier<R>,
 			HasStyle,
+			HasSize,
 			HasValue<R, String>,
 			HasComponents {
 

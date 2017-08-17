@@ -18,6 +18,7 @@ package com.vaadin.generated.paper.icon.button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -38,7 +39,7 @@ import com.vaadin.shared.Registration;
 @HtmlImport("frontend://bower_components/paper-icon-button/paper-icon-button.html")
 public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+			Component implements ComponentSupplier<R>, HasStyle, HasSize {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:

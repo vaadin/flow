@@ -18,6 +18,7 @@ package com.vaadin.generated.vaadin.text.field;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasSize;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -28,7 +29,7 @@ import com.vaadin.annotations.HtmlImport;
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
 public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>
 		extends
-			Component implements ComponentSupplier<R>, HasStyle {
+			Component implements ComponentSupplier<R>, HasStyle, HasSize {
 
 	/**
 	 * Description copied from corresponding location in WebComponent:
