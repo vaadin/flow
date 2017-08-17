@@ -16,6 +16,7 @@
 package com.vaadin.flow.demo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.annotations.HtmlImport;
@@ -89,8 +90,33 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
                 paperComponentSelectors.add(new DemoObject(annotation));
             }
         }
+
+        sortDemos(vaadinComponentSelectors);
+        sortDemos(paperComponentSelectors);
+
         getModel().setVaadinComponentSelectors(vaadinComponentSelectors);
         getModel().setPaperComponentSelectors(paperComponentSelectors);
+    }
+
+    private void sortDemos(List<DemoObject> demos) {
+        Collections.sort(demos, (demo1, demo2) -> {
+            if (demo1.getSubcategory().equals(demo2.getSubcategory())) {
+                return demo1.getName().compareToIgnoreCase(demo2.getName());
+            }
+            return demo1.getSubcategory()
+                    .compareToIgnoreCase(demo2.getSubcategory());
+        });
+
+        // this logic makes sure only the first subcategory of a group is shown
+        // at the client-side
+        String lastSubcategory = "";
+        for (DemoObject demoObject : demos) {
+            if (lastSubcategory.equals(demoObject.getSubcategory())) {
+                demoObject.setSubcategory(null);
+            } else {
+                lastSubcategory = demoObject.getSubcategory();
+            }
+        }
     }
 
     @Override

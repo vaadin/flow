@@ -32,6 +32,13 @@
       	color: #f1f1f1;
       	border-top: solid 1px rgba(245, 245, 245, 0.6);
       }
+      .subcategory {
+        margin-top: 10px;
+        padding-left: 5px;
+        padding-top: 5px;
+        border-top: solid 1px rgba(0,0,0,0.2);
+        color: #4285f4;
+      }
     </style
     
     <template>
@@ -43,6 +50,9 @@
 		<iron-collapse id="collapse">
 			<iron-selector id="selector" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
 				<template is="dom-repeat" items="[[selectors]]">
+                    <template is="dom-if" if="[[__shouldShowSubcategory(item)]]">
+                        <div class="subcategory"><small>[[item.subcategory]]</small></div>
+                    </template>
 					<a href="[[item.href]]" name="[[item.name]]" router-link>[[item.name]]</a>
 				</template>
 			</iron-selector>
@@ -67,9 +77,20 @@
             },
             category: {
             	type: String
+            },
+            __lastSubcategory: {
+            	type: String,
+            	value: ''
             }
           };
         }
+      
+      __shouldShowSubcategory(item) {
+    	  if (item.subcategory) {
+    		  return true;
+    	  }
+    	  return false;
+      }
       
       toggleCollapse() {
     	  this.$.collapse.toggle();
