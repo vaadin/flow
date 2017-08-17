@@ -22,7 +22,8 @@ import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
  * 
  * @author Vaadin Ltd
  */
-public class Checkbox extends GeneratedVaadinCheckbox<Checkbox> {
+public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
+        implements HasSize {
 
     /**
      * Default constructor.

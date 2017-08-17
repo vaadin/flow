@@ -20,7 +20,7 @@ package com.vaadin.ui;
  * the order of their addition (horizontally). A horizontal layout is doesn't
  * have a predefined size - its size is defined by the components inside it.
  */
-public class HorizontalLayout extends FlexLayout {
+public class HorizontalLayout extends FlexLayout implements HasSize {
 
     /**
      * Default constructor. Creates an empty layout, without spacing and without
