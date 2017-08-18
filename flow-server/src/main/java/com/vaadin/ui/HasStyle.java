@@ -15,6 +15,10 @@
  */
 package com.vaadin.ui;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.vaadin.flow.dom.Style;
 
 /**
@@ -61,13 +65,25 @@ public interface HasStyle extends HasElement {
     }
 
     /**
-     * Gets the CSS class names used for this component.
+     * Gets the CSS class names for this component.
      *
      * @return a space-separated string of class names, or <code>null</code> if
      *         there are no class names
      */
     default String getClassName() {
         return getElement().getAttribute("class");
+    }
+
+    /**
+     * Gets the CSS class names for this component.
+     * <p>
+     * Note that classes cannot be added or removed through the returned
+     * collection.
+     * 
+     * @return a set of class names, never <code>null</code>
+     */
+    default Set<String> getClassNames() {
+         return new HashSet<>(getElement().getClassList());
     }
 
     /**
@@ -81,6 +97,18 @@ public interface HasStyle extends HasElement {
      */
     default void setClassName(String className, boolean set) {
         getElement().getClassList().set(className, set);
+    }
+
+    /**
+     * Checks if the component has the given class name.
+     *
+     * @param className
+     *            the class name to check for
+     * @return <code>true</code> if the component has the given class name,
+     *         <code>false</code> otherwise
+     */
+    default boolean hasClassName(String className) {
+        return getElement().getClassList().contains(className);
     }
 
     /**
