@@ -15,10 +15,10 @@
  */
 package com.vaadin.shared.ui;
 
-import java.io.Serializable;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -108,5 +108,29 @@ public class Dependency implements Serializable {
         jsonObject.put(KEY_TYPE, type.name());
         jsonObject.put(KEY_LOAD_MODE, loadMode.name());
         return jsonObject;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Dependency that = (Dependency) o;
+        return type == that.type && Objects.equals(url, that.url)
+                && loadMode == that.loadMode;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, url, loadMode);
+    }
+
+    @Override
+    public String toString() {
+        return "Dependency{" + "type=" + type + ", url='" + url + '\''
+                + ", loadMode=" + loadMode + '}';
     }
 }

@@ -16,6 +16,11 @@
 
 package com.vaadin.server.communication;
 
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.shared.ui.LoadMode;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+import elemental.json.impl.JsonUtil;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,15 +36,7 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.servlet.ServletContext;
-
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.LoadMode;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-import elemental.json.impl.JsonUtil;
 
 /**
  * A class that is responsible for retrieving the application's polymer.json
@@ -86,8 +83,7 @@ class PolymerJsonReader {
 
     private void addDependenciesIfPresent(JsonObject jsonObject,
             String rootUrlPart) {
-        Stream.of(INIT_PAGE_JSON_PROPERTY_NAME,
-                BOOTSTRAP_PAGE_JSON_PROPERTY_NAME)
+        Stream.of(BOOTSTRAP_PAGE_JSON_PROPERTY_NAME, INIT_PAGE_JSON_PROPERTY_NAME)
                 .map(jsonObject::<JsonValue> get).filter(Objects::nonNull)
                 .map(JsonValue::asString)
                 .map(relativeUrlPart -> rootUrlPart + '/' + relativeUrlPart)
