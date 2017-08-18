@@ -91,32 +91,19 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
             }
         }
 
-        sortDemos(vaadinComponentSelectors);
-        sortDemos(paperComponentSelectors);
+        Collections.sort(vaadinComponentSelectors, this::compareDemos);
+        Collections.sort(paperComponentSelectors, this::compareDemos);
 
         getModel().setVaadinComponentSelectors(vaadinComponentSelectors);
         getModel().setPaperComponentSelectors(paperComponentSelectors);
     }
 
-    private void sortDemos(List<DemoObject> demos) {
-        Collections.sort(demos, (demo1, demo2) -> {
-            if (demo1.getSubcategory().equals(demo2.getSubcategory())) {
-                return demo1.getName().compareToIgnoreCase(demo2.getName());
-            }
-            return demo1.getSubcategory()
-                    .compareToIgnoreCase(demo2.getSubcategory());
-        });
-
-        // this logic makes sure only the first subcategory of a group is shown
-        // at the client-side
-        String lastSubcategory = "";
-        for (DemoObject demoObject : demos) {
-            if (lastSubcategory.equals(demoObject.getSubcategory())) {
-                demoObject.setSubcategory(null);
-            } else {
-                lastSubcategory = demoObject.getSubcategory();
-            }
+    private int compareDemos(DemoObject demo1, DemoObject demo2) {
+        if (demo1.getSubcategory().equals(demo2.getSubcategory())) {
+            return demo1.getName().compareToIgnoreCase(demo2.getName());
         }
+        return demo1.getSubcategory()
+                .compareToIgnoreCase(demo2.getSubcategory());
     }
 
     @Override
