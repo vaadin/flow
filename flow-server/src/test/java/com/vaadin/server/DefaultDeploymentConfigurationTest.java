@@ -15,6 +15,7 @@
  */
 package com.vaadin.server;
 
+import java.io.File;
 import java.util.Properties;
 
 import org.junit.Assert;
@@ -68,8 +69,8 @@ public class DefaultDeploymentConfigurationTest {
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
                 .orElseThrow(AssertionError::new);
 
-        Assert.assertEquals("frontend://bower_components/webcomponentsjs/",
-                webComponentsPolyfillBase);
+        Assert.assertEquals("frontend://bower_components" + File.separator
+                + "webcomponentsjs/", webComponentsPolyfillBase);
     }
 
     @Test
