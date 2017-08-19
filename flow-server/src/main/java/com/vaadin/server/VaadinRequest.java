@@ -24,7 +24,6 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
@@ -468,4 +467,11 @@ public interface VaadinRequest {
      * dispatched
      */
     ServletContext getServletContext();
+
+    /**
+     * Gets base url of the request.
+     *
+     * @return request base url
+     */
+    String getBaseUrl();
 }

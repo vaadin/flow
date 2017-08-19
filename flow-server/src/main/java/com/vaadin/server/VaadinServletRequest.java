@@ -76,4 +76,11 @@ public class VaadinServletRequest extends HttpServletRequestWrapper
     public VaadinServletService getService() {
         return vaadinService;
     }
+
+    @Override
+    public String getBaseUrl() {
+        String relativePath = getRequestURI();
+        String fullPath = getRequestURL().toString();
+        return fullPath.replace(relativePath, "");
+    }
 }

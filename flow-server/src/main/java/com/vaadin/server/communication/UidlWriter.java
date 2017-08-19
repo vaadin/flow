@@ -37,8 +37,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.change.MapPutChange;
@@ -166,7 +164,7 @@ public class UidlWriter implements Serializable {
         List<Dependency> allDependencies = new ArrayList<>(
                 new PolymerJsonReader(currentRequest.getCharacterEncoding(),
                         currentRequest.getServletContext(),
-                        getRootUrl((HttpServletRequest) currentRequest))
+                        currentRequest.getBaseUrl())
                                 .getBootstrapDependencies());
         allDependencies.addAll(dependencyList.getPendingSendToClient());
 
@@ -176,13 +174,6 @@ public class UidlWriter implements Serializable {
                             .put(loadMode.name(), dependencies));
             dependencyList.clearPendingSendToClient();
         }
-    }
-
-    // TODO kirill looks weird and requires a cast, fix it
-    private static String getRootUrl(HttpServletRequest currentRequest) {
-        String relativePath = currentRequest.getRequestURI();
-        String fullPath = currentRequest.getRequestURL().toString();
-        return fullPath.replace(relativePath, "");
     }
 
     private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(
