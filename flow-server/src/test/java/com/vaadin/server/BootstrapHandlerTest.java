@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import com.vaadin.annotations.HtmlImport;
@@ -169,7 +171,7 @@ public class BootstrapHandlerTest {
                 .attr("src", "testing.2"));
 
         Mockito.when(service.processBootstrapListeners(Mockito.anyList()))
-                .thenReturn(listeners);
+        .thenReturn(listeners);
 
         initUI(testUI);
 
@@ -282,6 +284,34 @@ public class BootstrapHandlerTest {
     }
 
     @Test
+    public void bootstrapPage_configJsonPatternIsReplacedBeforeInitialUidl() {
+        TestUI anotherUI = new TestUI();
+        initUI(testUI);
+
+        SystemMessages messages = Mockito.mock(SystemMessages.class);
+        Mockito.when(service.getSystemMessages(Matchers.any(Locale.class),
+                Matchers.any(VaadinRequest.class))).thenReturn(messages);
+        Mockito.when(messages.isSessionExpiredNotificationEnabled())
+        .thenReturn(true);
+        Mockito.when(session.getSession())
+        .thenReturn(Mockito.mock(WrappedSession.class));
+
+        String url = "http://{{CONFIG_JSON}}/file";
+        Mockito.when(messages.getSessionExpiredURL())
+        .thenReturn(url);
+
+        anotherUI.getInternals().setSession(session);
+        VaadinRequest vaadinRequest = createVaadinRequest();
+        anotherUI.doInit(vaadinRequest, 0);
+        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
+                null, session, anotherUI);
+
+        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+        Element head = page.head();
+        Assert.assertTrue(head.outerHtml().contains(url));
+    }
+
+    @Test
     public void es6IsSupported_noEs6ScriptInlined() throws IOException {
         Mockito.when(browser.isEs6Supported()).thenReturn(true);
         Assert.assertFalse(hasEs6Inlined());
@@ -314,7 +344,7 @@ public class BootstrapHandlerTest {
         try (InputStream stream = getClass()
                 .getResourceAsStream("es6-collections.js")) {
             IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
-                    .forEach(builder::append);
+            .forEach(builder::append);
 
         }
         boolean hasEs6Inlined = head.getElementsByTag("script").stream()
