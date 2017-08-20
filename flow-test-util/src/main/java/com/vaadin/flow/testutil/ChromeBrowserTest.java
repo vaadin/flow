@@ -91,7 +91,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
 
         try {
-            String path = "../driver/" + osDir + "/googlechrome/" + bitsDir
+            String path = "../../driver/" + osDir + "/googlechrome/" + bitsDir
                     + "/chromedriver";
             File driverLocation = new File(path).getCanonicalFile();
 
@@ -114,6 +114,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
         switch (osArch) {
         case "x86_64":
+        case "amd64":
             return "64bit";
         default:
             return null;
@@ -125,6 +126,8 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
         if (osName.contains("mac")) {
             return "osx";
+        } else if ("linux".equals(osName)) {
+            return osName;
         } else {
             return null;
         }
