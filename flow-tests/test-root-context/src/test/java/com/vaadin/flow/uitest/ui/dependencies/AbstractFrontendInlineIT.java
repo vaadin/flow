@@ -28,7 +28,6 @@ public abstract class AbstractFrontendInlineIT extends ChromeBrowserTest {
     public void inlineDependeciesWithFrontendProtocol() {
         open();
 
-        WebElement body = findElement(By.tagName("body"));
         WebElement template = findElement(By.id("template"));
         WebElement templateElement = getInShadowRoot(template,
                 By.id("frontend-inline"));

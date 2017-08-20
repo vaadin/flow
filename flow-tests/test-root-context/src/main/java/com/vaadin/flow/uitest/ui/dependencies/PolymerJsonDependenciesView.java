@@ -16,8 +16,12 @@
 
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+
 /**
  * @author Vaadin Ltd.
  */
-public class PolymerJsonDependenciesView {
+@HtmlImport("import.html")
+public class PolymerJsonDependenciesView extends AbstractDivView {
 }
