@@ -141,12 +141,12 @@ then
 elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
 then
     # master build
+    # Production mode commented out due to https://github.com/vaadin/flow/issues/2165
+    # -Dvaadin.productionMode=true \
     mvn -B -e -V \
         -Pall-tests \
         -Dmaven.javadoc.skip=false \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
-#        Commented out due to https://github.com/vaadin/flow/issues/2165
-#        -Dvaadin.productionMode=true \
         $(getDockerParamsIfNeeded) \
         clean org.jacoco:jacoco-maven-plugin:prepare-agent license:download-licenses install
 
