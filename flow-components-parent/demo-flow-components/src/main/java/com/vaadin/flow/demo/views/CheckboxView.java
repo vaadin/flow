@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Checkbox;
 
 /**
@@ -61,7 +62,12 @@ public class CheckboxView extends DemoView {
         Checkbox indeterminateCheckbox = new Checkbox("Indeterminate Checkbox");
         indeterminateCheckbox.setIndeterminate(true);
         // end-source-example
-        addCard("Indeterminate Checkbox", indeterminateCheckbox);
+
+        Button button = new Button("Reset",
+                event -> indeterminateCheckbox.setValue(null));
+        button.setId("reset-indeterminate");
+
+        addCard("Indeterminate Checkbox", indeterminateCheckbox, button);
         indeterminateCheckbox.setId("indeterminate-checkbox");
     }
 
