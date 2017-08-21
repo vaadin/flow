@@ -145,7 +145,8 @@ then
         -Pall-tests \
         -Dmaven.javadoc.skip=false \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
-        -Dvaadin.productionMode=true \
+#        Commented out due to https://github.com/vaadin/flow/issues/2165
+#        -Dvaadin.productionMode=true \
         $(getDockerParamsIfNeeded) \
         clean org.jacoco:jacoco-maven-plugin:prepare-agent license:download-licenses install
 

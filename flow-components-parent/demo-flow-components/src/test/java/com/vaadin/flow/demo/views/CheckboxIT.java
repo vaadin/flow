@@ -66,6 +66,14 @@ public class CheckboxIT extends AbstractChromeTest {
         Assert.assertNotNull(
                 "Indeterminate checkbox should have property 'indeterminate'",
                 checkbox.getAttribute("indeterminate"));
+
+        scrollIntoViewAndClick(checkbox);
+        waitUntil(driver -> checkbox.getAttribute("checked") != null);
+
+        WebElement reset = layout.findElement(By.id("reset-indeterminate"));
+        scrollIntoViewAndClick(reset);
+        waitUntil(driver -> checkbox.getAttribute("indeterminate") != null
+                && checkbox.getAttribute("checked") == null);
     }
 
     @Test
