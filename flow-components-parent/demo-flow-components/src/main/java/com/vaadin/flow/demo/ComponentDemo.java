@@ -61,4 +61,12 @@ public @interface ComponentDemo {
      * @return the demo category
      */
     DemoCategory category() default DemoCategory.VAADIN;
+
+    /**
+     * Which subcategory this demo belongs in, default is empty (no
+     * subcategory).
+     * 
+     * @return the demo subcategory
+     */
+    String subcategory() default "";
 }
