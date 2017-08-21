@@ -26,7 +26,7 @@ import com.vaadin.ui.HorizontalLayout;
 /**
  * View for the {@link HorizontalLayout} component.
  */
-@ComponentDemo(name = "Horizontal Layout", href = "horizontal-layout")
+@ComponentDemo(name = "Horizontal Layout", href = "horizontal-layout", subcategory = "Layouts")
 public class HorizontalLayoutView extends DemoView {
 
     @Override

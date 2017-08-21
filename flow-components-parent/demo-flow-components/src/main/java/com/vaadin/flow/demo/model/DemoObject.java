@@ -27,19 +27,32 @@ public class DemoObject implements Serializable {
 
     private String href;
     private String name;
+    private String subcategory;
 
+    /**
+     * Default constructor.
+     */
     public DemoObject() {
 
     }
 
+    /**
+     * Creates a DemoObject taking the values from the {@link ComponentDemo}
+     * annotation.
+     * 
+     * @param componentDemo
+     *            the annotation that contains the href, name and subcategory of
+     *            the demo
+     */
     public DemoObject(ComponentDemo componentDemo) {
-        setHref(componentDemo.href()).setName(componentDemo.name());
+        setHref(componentDemo.href()).setName(componentDemo.name())
+                .setSubcategory(componentDemo.subcategory());
     }
 
     /**
      * Gets the relative URL of the demo page.
      * 
-     * @return the href.
+     * @return the href
      */
     public String getHref() {
         return href;
@@ -49,8 +62,8 @@ public class DemoObject implements Serializable {
      * Sets the relative URL of the demo page.
      * 
      * @param href
-     *            The href of the page.
-     * @return The object instance for method chaining.
+     *            the href of the page
+     * @return the object instance for method chaining
      */
     public DemoObject setHref(String href) {
         this.href = href;
@@ -60,7 +73,7 @@ public class DemoObject implements Serializable {
     /**
      * Gets the name of the demo.
      * 
-     * @return the name.
+     * @return the name
      */
     public String getName() {
         return name;
@@ -70,11 +83,32 @@ public class DemoObject implements Serializable {
      * Sets the name of the demo.
      * 
      * @param name
-     *            The name of the demo.
-     * @return The object instance for method chaining.
+     *            the name of the demo.
+     * @return the object instance for method chaining
      */
     public DemoObject setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    /**
+     * Gets the subcategory of the demo.
+     * 
+     * @return the subcategory to show at the menu of demos
+     */
+    public String getSubcategory() {
+        return subcategory;
+    }
+
+    /**
+     * Sets the subcategory of the demo.
+     * 
+     * @param subcategory
+     *            the subcategory of the demo to show at the menu of demos.
+     * @return the object instance for method chaining
+     */
+    public DemoObject setSubcategory(String subcategory) {
+        this.subcategory = subcategory;
         return this;
     }
 }

@@ -16,8 +16,6 @@
 
 package com.vaadin.server;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -412,9 +410,7 @@ public class DefaultDeploymentConfiguration
         int findCount = foundPolyfills.size();
         if (findCount == 1) {
             String jsName = foundPolyfills.get(0);
-            Path jsDir = Paths.get(jsName).getParent();
-
-            String dirName = jsDir == null ? "" : jsDir.toString();
+            String dirName = jsName.substring(0, jsName.lastIndexOf('/'));
 
             assert !dirName.endsWith("/");
 
