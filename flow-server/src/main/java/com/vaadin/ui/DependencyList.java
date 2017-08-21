@@ -54,7 +54,7 @@ public class DependencyList implements Serializable {
     }
 
     /**
-     * Creates a dependency list, filled with dependencies specified
+     * Creates a dependency list, filled with dependencies specified.
      *
      * @param dependencies
      *            dependencies to add into the list
