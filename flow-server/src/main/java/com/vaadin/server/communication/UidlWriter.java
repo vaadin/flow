@@ -25,7 +25,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
@@ -36,6 +35,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateTree;
@@ -48,8 +49,8 @@ import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.SystemMessages;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinUriResolverFactory;
 import com.vaadin.shared.ApplicationConstants;
@@ -104,8 +105,7 @@ public class UidlWriter implements Serializable {
         getLogger().log(Level.FINE, "* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? uiInternals.getServerSyncId()
-                : -1;
+                ? uiInternals.getServerSyncId() : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         int nextClientToServerMessageId = uiInternals
@@ -156,20 +156,10 @@ public class UidlWriter implements Serializable {
 
     private static void populateDependencies(JsonObject response,
             DependencyList dependencyList) {
-
-        VaadinRequest currentRequest = VaadinService.getCurrentRequest();
-
-        // TODO kirill this code is execured every time a new page dependencies
-        // are loaded. This means that we call in more than 1 time, which is bad
-        List<Dependency> allDependencies = new ArrayList<>(
-                new PolymerJsonReader(currentRequest.getCharacterEncoding(),
-                        currentRequest.getServletContext(),
-                        currentRequest.getBaseUrl())
-                                .getBootstrapDependencies());
-        allDependencies.addAll(dependencyList.getPendingSendToClient());
-
-        if (!allDependencies.isEmpty()) {
-            groupDependenciesByLoadMode(allDependencies)
+        Collection<Dependency> pendingSendToClient = dependencyList
+                .getPendingSendToClient();
+        if (!pendingSendToClient.isEmpty()) {
+            groupDependenciesByLoadMode(pendingSendToClient)
                     .forEach((loadMode, dependencies) -> response
                             .put(loadMode.name(), dependencies));
             dependencyList.clearPendingSendToClient();
@@ -197,13 +187,15 @@ public class UidlWriter implements Serializable {
     }
 
     private static String getDependencyContents(String url) {
+        HttpServletRequest currentRequest = ((VaadinServletRequest) VaadinService
+                .getCurrentRequest()).getHttpServletRequest();
         Charset requestCharset = Optional
-                .ofNullable(VaadinService.getCurrentRequest()
-                        .getCharacterEncoding())
+                .ofNullable(currentRequest.getCharacterEncoding())
                 .filter(string -> !string.isEmpty()).map(Charset::forName)
                 .orElse(StandardCharsets.UTF_8);
 
-        try (InputStream inlineResourceStream = getInlineResourceStream(url);
+        try (InputStream inlineResourceStream = getInlineResourceStream(url,
+                currentRequest);
                 BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(inlineResourceStream,
                                 requestCharset))) {
@@ -215,23 +207,26 @@ public class UidlWriter implements Serializable {
         }
     }
 
-    private static InputStream getInlineResourceStream(String url) {
+    private static InputStream getInlineResourceStream(String url,
+            HttpServletRequest currentRequest) {
         VaadinUriResolverFactory uriResolverFactory = VaadinSession.getCurrent()
                 .getAttribute(VaadinUriResolverFactory.class);
+
         assert uriResolverFactory != null;
 
         String resolvedPath = uriResolverFactory
                 .toServletContextPath(VaadinService.getCurrentRequest(), url);
-        InputStream stream = VaadinService.getCurrentRequest()
-                .getServletContext().getResourceAsStream(resolvedPath);
+        InputStream stream = currentRequest.getServletContext()
+                .getResourceAsStream(resolvedPath);
 
         if (stream == null) {
-            Logger.getLogger(UidlWriter.class.getName()).info(
-                    () -> String.format("The path '%s' for inline resource "
-                            + "has been resolved to '%s'. "
-                            + "But resource is not available via the servlet context. "
-                            + "Trying to load '%s' as a URL", url, resolvedPath,
-                            url));
+            Logger.getLogger(UidlWriter.class.getName())
+                    .info(() -> String.format(
+                            "The path '%s' for inline resource "
+                                    + "has been resolved to '%s'. "
+                                    + "But resource is not available via the servlet context. "
+                                    + "Trying to load '%s' as a URL",
+                            url, resolvedPath, url));
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
@@ -244,9 +239,10 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            Logger.getLogger(UidlWriter.class.getName()).info(
-                    () -> String.format("The path '%s' for inline resource "
-                            + "has been successfully resolved to resource URL '%s'",
+            Logger.getLogger(UidlWriter.class.getName())
+                    .info(() -> String.format(
+                            "The path '%s' for inline resource "
+                                    + "has been sucessfully resolved to resource URL '%s'",
                             url, resolvedPath));
         }
         return stream;

@@ -17,6 +17,7 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,9 +47,20 @@ public class DependencyList implements Serializable {
     private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
 
     /**
-     * Creates a new instance.
+     * Creates an empty dependencies list.
      */
-    protected DependencyList() {
+    DependencyList() {
+        this(Collections.emptyList());
+    }
+
+    /**
+     * Creates a dependency list, filled with dependencies specified
+     *
+     * @param dependencies
+     *            dependencies to add into the list
+     */
+    DependencyList(Collection<Dependency> dependencies) {
+        dependencies.forEach(this::add);
     }
 
     private Logger getLogger() {

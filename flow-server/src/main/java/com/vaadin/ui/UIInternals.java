@@ -15,6 +15,18 @@
  */
 package com.vaadin.ui;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
@@ -31,33 +43,14 @@ import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.TemplateNode;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.Page.ExecutionCanceler;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -117,11 +110,11 @@ public class UIInternals implements Serializable {
      */
     private int lastProcessedClientToServerId = -1;
 
-    private int serverSyncId = 0;
+    private int serverSyncId;
 
     private final StateTree stateTree;
 
-    private PushConnection pushConnection = null;
+    private PushConnection pushConnection;
 
     /**
      * Timestamp for keeping track of the last heartbeat of the related UI.
@@ -150,9 +143,7 @@ public class UIInternals implements Serializable {
      * The Vaadin session to which the related UI belongs.
      */
     private volatile VaadinSession session;
-
-    private final DependencyList dependencyList = new DependencyList();
-
+    private final DependencyList dependencyList = createDependencyList();
     private final ConstantPool constantPool = new ConstantPool();
 
     /**
@@ -164,6 +155,19 @@ public class UIInternals implements Serializable {
     public UIInternals(UI ui) {
         this.ui = ui;
         stateTree = new StateTree(ui, getRootNodeFeatures());
+    }
+
+    private DependencyList createDependencyList() {
+        VaadinRequest currentRequest = VaadinService.getCurrentRequest();
+        if (currentRequest == null || currentRequest.getServletContext() == null) {
+            return new DependencyList();
+        } else {
+            Collection<Dependency> bootstrapDependencies = new PolymerJsonReader(
+                    currentRequest.getCharacterEncoding(),
+                    currentRequest.getServletContext(), currentRequest.getBaseUrl())
+                    .getBootstrapDependencies();
+            return new DependencyList(bootstrapDependencies);
+        }
     }
 
     /**

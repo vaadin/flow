@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.server.communication;
+package com.vaadin.ui;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -24,17 +24,20 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.shared.ui.LoadMode;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import javax.servlet.ServletContext;
+
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.shared.ui.LoadMode;
 
 /**
  * @author Vaadin Ltd.
