@@ -26,7 +26,7 @@ import com.vaadin.ui.VerticalLayout;
 /**
  * View for the {@link VerticalLayout} component.
  */
-@ComponentDemo(name = "Vertical Layout", href = "vertical-layout")
+@ComponentDemo(name = "Vertical Layout", href = "vertical-layout", subcategory = "Layouts")
 public class VerticalLayoutView extends DemoView {
 
     @Override

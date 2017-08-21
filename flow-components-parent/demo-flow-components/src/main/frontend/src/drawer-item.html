@@ -32,22 +32,30 @@
       	color: #f1f1f1;
       	border-top: solid 1px rgba(245, 245, 245, 0.6);
       }
-    </style
+      .subcategory {
+        margin-top: 10px;
+        padding-left: 5px;
+        padding-top: 5px;
+        border-top: solid 1px rgba(0,0,0,0.2);
+        color: #4285f4;
+      }
+    </style>
     
-    <template>
-	    <paper-item on-tap="toggleCollapse" class="drawer-top-level-item">
-			<iron-icon id="topLevelItemIcon" icon="expand-more"></iron-icon>
-			<span>[[category]]</span>
-			<paper-ripple></paper-ripple>
-	 	</paper-item>
-		<iron-collapse id="collapse">
-			<iron-selector id="selector" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-				<template is="dom-repeat" items="[[selectors]]">
-					<a href="[[item.href]]" name="[[item.name]]" router-link>[[item.name]]</a>
-				</template>
-			</iron-selector>
-		</iron-collapse>
-    </template>
+	<paper-item on-tap="toggleCollapse" class="drawer-top-level-item">
+	    <iron-icon id="topLevelItemIcon" icon="expand-more"></iron-icon>
+	    <span>[[category]]</span>
+		<paper-ripple></paper-ripple>
+	 </paper-item>
+	 <iron-collapse id="collapse">
+	     <iron-selector id="selector" selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+		     <template is="dom-repeat" items="[[selectors]]">
+             <template is="dom-if" if="[[__shouldShowSubcategory(index, item)]]">
+                 <div class="subcategory"><small>[[item.subcategory]]</small></div>
+             </template>
+			     <a href="[[item.href]]" name="[[item.name]]" router-link>[[item.name]]</a>
+		     </template>
+		 </iron-selector>
+     </iron-collapse>
   </template>
 
   <script>
@@ -70,6 +78,10 @@
             }
           };
         }
+      
+      __shouldShowSubcategory(index, item) {
+    	  return (index === 0 && item.subcategory) || (index > 0 && item.subcategory !== this.selectors[index - 1].subcategory); 
+      }
       
       toggleCollapse() {
     	  this.$.collapse.toggle();
