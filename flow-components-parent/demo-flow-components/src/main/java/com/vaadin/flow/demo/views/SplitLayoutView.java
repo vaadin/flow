@@ -25,7 +25,7 @@ import com.vaadin.ui.SplitLayout;
 /**
  * View for {@link SplitLayout} demo.
  */
-@ComponentDemo(name = "Vaadin Split Layout", href = "vaadin-split-layout")
+@ComponentDemo(name = "Vaadin Split Layout", href = "vaadin-split-layout", subcategory = "Layouts")
 public class SplitLayoutView extends DemoView {
 
     private static final String FIRST_CONTENT_TEXT = "First content component";
