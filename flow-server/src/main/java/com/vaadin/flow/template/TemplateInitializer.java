@@ -79,7 +79,7 @@ public class TemplateInitializer {
     }
 
     private static class ParserData
-            implements Function<String, Optional<String>> {
+    implements Function<String, Optional<String>> {
         private final Map<String, String> tagById = new HashMap<>();
         private final Collection<SubTemplateData> subTemplates = new ArrayList<>();
 
@@ -151,7 +151,7 @@ public class TemplateInitializer {
 
         requestAttachCustomElement(childElement, templateRoot);
         childElement.children()
-                .forEach(child -> inspectCustomElements(child, templateRoot));
+        .forEach(child -> inspectCustomElements(child, templateRoot));
     }
 
     private void storeNotInjectableElementId(
@@ -165,8 +165,14 @@ public class TemplateInitializer {
     private void parseTemplate() {
         assert parsedTemplateRoot != null;
         Elements templates = parsedTemplateRoot.getElementsByTag("template");
-        if (!templates.isEmpty()) {
-            inspectCustomElements(templates.get(0), templates.get(0));
+        for (com.vaadin.external.jsoup.nodes.Element element : templates) {
+            com.vaadin.external.jsoup.nodes.Element parent = element.parent();
+            if ( parent == null){
+                continue;
+            }
+            if (getElement().getTag().equals(parent.id())) {
+                inspectCustomElements(element, element);
+            }
         }
     }
 
@@ -220,7 +226,7 @@ public class TemplateInitializer {
 
         stateNode.runWhenAttached(ui -> {
             stateNode.getFeature(AttachTemplateChildFeature.class)
-                    .register(getElement(), customNode);
+            .register(getElement(), customNode);
             ui.getPage().executeJavaScript(
                     "this.attachCustomElement($0, $1, $2, $3);", getElement(),
                     tag, customNode.getId(), path);
@@ -287,8 +293,8 @@ public class TemplateInitializer {
         }
 
         Stream.of(cls.getDeclaredFields()).filter(field -> !field.isSynthetic())
-                .forEach(field -> tryMapComponentOrElement(field,
-                        registeredElementIdToCustomElement));
+        .forEach(field -> tryMapComponentOrElement(field,
+                registeredElementIdToCustomElement));
     }
 
     private void tryMapComponentOrElement(Field field,
@@ -303,7 +309,7 @@ public class TemplateInitializer {
             throw new IllegalStateException(String.format(
                     "Class '%s' contains field '%s' annotated with @Id('%s'). "
                             + "Corresponding element was found in a sub template, for which injection is not supported",
-                    templateClass.getName(), field.getName(), id));
+                            templateClass.getName(), field.getName(), id));
         }
 
         Optional<String> tagName = getTagName(id);
@@ -311,7 +317,7 @@ public class TemplateInitializer {
             throw new IllegalStateException(String.format(
                     "There is no element with "
                             + "id='%s' in the template file. Cannot map it using @%s",
-                    id, Id.class.getSimpleName()));
+                            id, Id.class.getSimpleName()));
         }
 
         Element element = getElementById(id).orElse(null);
@@ -359,8 +365,8 @@ public class TemplateInitializer {
                     "Class '%s' has field '%s' whose type '%s' is annotated with "
                             + "tag '%s' but the element defined in the HTML "
                             + "template with id '%s' has tag name '%s'",
-                    templateClass.getName(), field.getName(),
-                    fieldType.getName(), tag.value(), id, tagName);
+                            templateClass.getName(), field.getName(),
+                            fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
         }
         attachExistingElementById(tagName, id, field, registeredCustomElements);
@@ -411,7 +417,7 @@ public class TemplateInitializer {
             StateNode templateNode = getElement().getNode();
             templateNode.runWhenAttached(ui -> {
                 templateNode.getFeature(AttachTemplateChildFeature.class)
-                        .register(getElement(), proposedNode);
+                .register(getElement(), proposedNode);
                 ui.getPage().executeJavaScript(
                         "this.attachExistingElementById($0, $1, $2, $3);",
                         getElement(), tagName, proposedNode.getId(), id);
@@ -446,10 +452,10 @@ public class TemplateInitializer {
                     "The field '%s' in '%s' has an @'%s' "
                             + "annotation but the field type '%s' "
                             + "does not extend neither '%s' nor '%s'",
-                    field.getName(), templateClass.getName(),
-                    Id.class.getSimpleName(), fieldType.getName(),
-                    Component.class.getSimpleName(),
-                    Element.class.getSimpleName());
+                            field.getName(), templateClass.getName(),
+                            Id.class.getSimpleName(), fieldType.getName(),
+                            Component.class.getSimpleName(),
+                            Element.class.getSimpleName());
 
             throw new IllegalArgumentException(msg);
         }
@@ -457,8 +463,8 @@ public class TemplateInitializer {
 
     private void createSubTemplates() {
         parserData.subTemplates
-                .forEach(data -> doRequestAttachCustomElement(data.id, data.tag,
-                        data.path));
+        .forEach(data -> doRequestAttachCustomElement(data.id, data.tag,
+                data.path));
     }
 
 }

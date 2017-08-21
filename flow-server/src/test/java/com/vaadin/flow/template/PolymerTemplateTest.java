@@ -123,7 +123,7 @@ public class PolymerTemplateTest {
 
     @Tag(TAG)
     public static class TestPolymerTemplate
-            extends PolymerTemplate<ModelClass> {
+    extends PolymerTemplate<ModelClass> {
         public TestPolymerTemplate() {
             super(new SimpleTemplateParser());
         }
@@ -158,7 +158,7 @@ public class PolymerTemplateTest {
 
     @Tag("parent-template")
     private static class TemplateInTemplate
-            extends PolymerTemplate<ModelClass> {
+    extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
@@ -175,8 +175,23 @@ public class PolymerTemplateTest {
     }
 
     @Tag("parent-inject-child")
+    private static class BundledTemplateInTemplate
+    extends PolymerTemplate<ModelClass> {
+
+        public BundledTemplateInTemplate() {
+            super((clazz, tag) -> Jsoup
+                    .parse("<dom-module id='child-template'>"
+                            + "<template><ffs></template></dom-module>"
+                            + "<dom-module id='ffs'><template></template></dom-module>"
+                            + "<dom-module id='" + tag
+                            + "'><template><div><ffs></div><span></span><child-template></template></dom-module>"));
+        }
+
+    }
+
+    @Tag("parent-inject-child")
     private static class TemplateInjectTemplate
-            extends PolymerTemplate<ModelClass> {
+    extends PolymerTemplate<ModelClass> {
 
         @Id("child")
         private TemplateChild child;
@@ -190,7 +205,7 @@ public class PolymerTemplateTest {
 
     @Tag("parent-template")
     private static class TemplateWithChildInDomRepeat
-            extends PolymerTemplate<ModelClass> {
+    extends PolymerTemplate<ModelClass> {
 
         public TemplateWithChildInDomRepeat() {
             super((clazz, tag) -> Jsoup
@@ -203,7 +218,7 @@ public class PolymerTemplateTest {
 
     @Tag("parent-template")
     private static class TemplateWithDomRepeat
-            extends PolymerTemplate<ModelClass> {
+    extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
@@ -223,18 +238,18 @@ public class PolymerTemplateTest {
 
     @Tag(TAG)
     private static class TextNodesInHtmlTemplate
-            extends PolymerTemplate<ModelClass> {
+    extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
         // @formatter:off
-        private static String HTML_TEMPLATE = "<template>\n"+
-        "      <style>\n"+
-        "      </style>\n"+
-        "      <label></label>\n"+
-        "      <child-template></child-template>\n"+
-        "      \n"+
-        "      <div class='content-wrap'></div>";
+        private static String HTML_TEMPLATE = "<dom-module id='"+TAG+"'><template>\n"+
+                "      <style>\n"+
+                "      </style>\n"+
+                "      <label></label>\n"+
+                "      <child-template></child-template>\n"+
+                "      \n"+
+                "      <div class='content-wrap'></div><dom-module>";
         // @formatter:on
 
         public TextNodesInHtmlTemplate() {
@@ -293,7 +308,7 @@ public class PolymerTemplateTest {
     }
 
     private static class TemplateWithoutTagAnnotation
-            extends PolymerTemplate<ModelClass> {
+    extends PolymerTemplate<ModelClass> {
     }
 
     @Tag(TAG)
@@ -318,7 +333,7 @@ public class PolymerTemplateTest {
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        .thenReturn(configuration);
         VaadinService.setCurrent(service);
     }
 
@@ -425,6 +440,12 @@ public class PolymerTemplateTest {
     public void parseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
         doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
                 new TemplateInTemplate());
+    }
+
+    @Test
+    public void parseBundledTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent() {
+        doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
+                new BundledTemplateInTemplate());
     }
 
     @Test
@@ -631,7 +652,7 @@ public class PolymerTemplateTest {
     }
 
     private void doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
-            TemplateInTemplate template) {
+            PolymerTemplate<?> template) {
         TestPage page = setupUI(template);
 
         AttachTemplateChildFeature feature = template.getStateNode()
