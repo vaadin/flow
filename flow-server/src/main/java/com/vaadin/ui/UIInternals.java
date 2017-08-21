@@ -15,17 +15,6 @@
  */
 package com.vaadin.ui;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
@@ -42,13 +31,22 @@ import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.TemplateNode;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.Page.ExecutionCanceler;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -63,9 +61,8 @@ public class UIInternals implements Serializable {
      * has not yet been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
-
         private final String expression;
-        private ArrayList<Serializable> parameters = new ArrayList<>();
+        private final List<Serializable> parameters = new ArrayList<>();
 
         /**
          * Creates a new invocation.
@@ -116,15 +113,6 @@ public class UIInternals implements Serializable {
     private PushConnection pushConnection = null;
 
     /**
-     * The id of the related UI, used to find the server side instance of the UI
-     * from which a request originates. A negative value indicates that the UI
-     * id has not yet been assigned.
-     *
-     * @see VaadinSession#getNextUIid()
-     */
-    private int uiId = -1;
-
-    /**
      * Timestamp for keeping track of the last heartbeat of the related UI.
      * Updated to the current time whenever the application receives a heartbeat
      * or UIDL request from the client for the related UI.
@@ -145,16 +133,16 @@ public class UIInternals implements Serializable {
     private Location viewLocation = new Location("");
     private ArrayList<View> viewChain = new ArrayList<>();
 
-    private Set<Integer> sentTemplateIds = new HashSet<>();
+    private final Set<Integer> sentTemplateIds = new HashSet<>();
 
     /**
      * The Vaadin session to which the related UI belongs.
      */
     private volatile VaadinSession session;
 
-    private DependencyList dependencyList = new DependencyList();
+    private final DependencyList dependencyList = new DependencyList();
 
-    private ConstantPool constantPool = new ConstantPool();
+    private final ConstantPool constantPool = new ConstantPool();
 
     /**
      * Creates a new instance for the given UI.
@@ -334,23 +322,6 @@ public class UIInternals implements Serializable {
         if (session != null) {
             ComponentUtil.onComponentAttach(ui, true);
         }
-    }
-
-    /**
-     * Gets the id of the UI, used to identify the related UI within its
-     * application when processing requests. The UI id should be present in
-     * every request to the server that originates from the UI.
-     * {@link VaadinService#findUI(VaadinRequest)} uses this id to find the
-     * route to which the request belongs.
-     * <p>
-     * This method is not intended to be overridden. If it is overridden, care
-     * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return the UI.
-     *
-     * @return the id of the UI
-     */
-    public int getUIId() {
-        return uiId;
     }
 
     /**
@@ -617,7 +588,7 @@ public class UIInternals implements Serializable {
     public boolean isTemplateSent(TemplateNode node) {
         assert node != null;
 
-        return sentTemplateIds.contains(Integer.valueOf(node.getId()));
+        return sentTemplateIds.contains(node.getId());
     }
 
     /**
@@ -632,7 +603,7 @@ public class UIInternals implements Serializable {
         assert node != null;
         assert !isTemplateSent(node);
 
-        sentTemplateIds.add(Integer.valueOf(node.getId()));
+        sentTemplateIds.add(node.getId());
     }
 
     /**
