@@ -22,7 +22,8 @@ import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
  * 
  * @author Vaadin Ltd
  */
-public class TextField extends GeneratedVaadinTextField<TextField> {
+public class TextField extends GeneratedVaadinTextField<TextField>
+        implements HasSize {
 
     /**
      * Constructs an empty {@code VaadinTextField}.
