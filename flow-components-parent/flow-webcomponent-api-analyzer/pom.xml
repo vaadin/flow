@@ -63,7 +63,7 @@
                                 <configuration>
                                     <!-- TODO #1805 need to figure out how to pass command line parameters
                                      from maven calls to this, such as what packages to create
-                                     and what should be the output folder. flow-webcomponent-api-analyzer.jsr.js
+                                     and what should be the output folder. flow-webcomponent-api-analyzer.js
                                      for current defaults. -->
                                     <!-- This argument matches to the "scripts" defined
                                      in package.json file. -->

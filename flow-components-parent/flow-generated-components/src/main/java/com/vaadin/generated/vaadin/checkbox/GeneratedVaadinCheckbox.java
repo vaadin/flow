@@ -19,6 +19,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.Focusable;
+import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -34,7 +35,7 @@ import com.vaadin.ui.HasComponents;
 /**
  * Description copied from corresponding location in WebComponent:
  * 
- * {@code <vaadin-checkbox>} is a Polymer element for customized checkboxes.
+ * {@code <vaadin-checkbox>} is a Polymer 2 element for customized checkboxes.
  * 
  * {@code }`html <vaadin-checkbox> Make my profile visible </vaadin-checkbox>
  * {@code }`
@@ -44,7 +45,7 @@ import com.vaadin.ui.HasComponents;
  * The following shadow DOM parts are exposed for styling:
  * 
  * Part name | Description ------------------|---------------- {@code wrapper} |
- * The {@code <label>} element which wrapps the checkbox and [part="label"]
+ * The {@code <label>} element which wraps the checkbox and [part="label"]
  * {@code native-checkbox} | The {@code <input type="checkbox">} element
  * {@code checkbox} | The {@code <span>} element for a custom graphical check
  * {@code label} | The {@code <span>} element for slotted text/HTML label
@@ -58,7 +59,8 @@ import com.vaadin.ui.HasComponents;
  * when the checkbox is focused.
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha2",
+		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
@@ -68,6 +70,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 			ComponentSupplier<R>,
 			HasStyle,
 			Focusable<R>,
+			HasClickListeners<R>,
 			HasValue<R, Boolean>,
 			HasComponents {
 
