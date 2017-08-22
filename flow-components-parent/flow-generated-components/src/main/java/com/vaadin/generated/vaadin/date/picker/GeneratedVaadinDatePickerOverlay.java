@@ -15,18 +15,20 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.EventData;
+
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.EventData;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: DatePickerOverlayElement#2.0.1", "Flow#0.1-SNAPSHOT"})
@@ -37,21 +39,27 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value for this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetSelectedDate() {
 		return (JsonObject) getElement().getPropertyRaw("selectedDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value for this element.
+	 * </p>
 	 * 
 	 * @param selectedDate
 	 *            the JsonObject value to set
@@ -63,21 +71,27 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Date value which is focused using keyboard.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetFocusedDate() {
 		return (JsonObject) getElement().getPropertyRaw("focusedDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Date value which is focused using keyboard.
+	 * </p>
 	 * 
 	 * @param focusedDate
 	 *            the JsonObject value to set
@@ -89,21 +103,27 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Date which should be visible when there is no value selected.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetInitialPosition() {
 		return (JsonObject) getElement().getPropertyRaw("initialPosition");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Date which should be visible when there is no value selected.
+	 * </p>
 	 * 
 	 * @param initialPosition
 	 *            the JsonObject value to set
@@ -151,23 +171,29 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The earliest date that can be selected. All earlier dates will be
 	 * disabled.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetMinDate() {
 		return (JsonObject) getElement().getPropertyRaw("minDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The earliest date that can be selected. All earlier dates will be
 	 * disabled.
+	 * </p>
 	 * 
 	 * @param minDate
 	 *            the JsonObject value to set
@@ -179,21 +205,27 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The latest date that can be selected. All later dates will be disabled.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetMaxDate() {
 		return (JsonObject) getElement().getPropertyRaw("maxDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The latest date that can be selected. All later dates will be disabled.
+	 * </p>
 	 * 
 	 * @param maxDate
 	 *            the JsonObject value to set
@@ -205,21 +237,27 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Input label
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Input label
+	 * </p>
 	 * 
 	 * @param label
 	 *            the String value to set
@@ -239,18 +277,24 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Focuses the cancel button
+	 * </p>
 	 */
 	public void focusCancel() {
 		getElement().callFunction("focusCancel");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Scrolls the list to the given Date.
+	 * </p>
 	 * 
 	 * @param date
 	 *            Missing documentation!
@@ -263,9 +307,12 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Scrolls the month and year scrollers enough to reveal the given date.
+	 * </p>
 	 * 
 	 * @param date
 	 *            Missing documentation!

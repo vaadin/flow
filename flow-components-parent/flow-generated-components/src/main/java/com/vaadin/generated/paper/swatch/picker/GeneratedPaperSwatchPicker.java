@@ -15,48 +15,79 @@
  */
 package com.vaadin.generated.paper.swatch.picker;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonArray;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonArray;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * This is a simple color picker element that will allow you to choose one of
  * the Material Design colors from a list of available swatches.
- * 
+ * </p>
+ * <p>
  * Example:
+ * </p>
  * 
- * <paper-swatch-picker></paper-swatch-picker>
+ * <pre>
+ * <code>&lt;paper-swatch-picker&gt;&lt;/paper-swatch-picker&gt;
  * 
- * <paper-swatch-picker color="{{selectedColor}}"></paper-swatch-picker>
- * 
+ * &lt;paper-swatch-picker color=&quot;{{selectedColor}}&quot;&gt;&lt;/paper-swatch-picker&gt;
+ * </code>
+ * </pre>
+ * <p>
  * You can configure the color palette being used using the {@code colorList}
  * array and the {@code columnCount} property, which specifies how many
- * "generic" colours (i.e. columns in the picker) you want to display.
+ * &quot;generic&quot; colours (i.e. columns in the picker) you want to display.
+ * </p>
  * 
- * <paper-swatch-picker column-count=5 color-list='["#65a5f2", "#83be54",
- * "#f0d551", "#e5943c", "#a96ddb"]'></paper-swatch-picker>
+ * <pre>
+ * <code>&lt;paper-swatch-picker column-count=5 color-list='[&quot;#65a5f2&quot;, &quot;#83be54&quot;, &quot;#f0d551&quot;, &quot;#e5943c&quot;, &quot;#a96ddb&quot;]'&gt;&lt;/paper-swatch-picker&gt;
+ * </code>
+ * </pre>
  * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * {@code --paper-swatch-picker-color-size} | The size of each of the color
- * boxes | {@code 20px} {@code --paper-swatch-picker-icon-size} | The size of
- * the color picker icon | {@code 24px} {@code --paper-swatch-picker-icon} |
- * Mixin applied to the color picker icon | {@code
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-swatch-picker-color-size}</td>
+ * <td>The size of each of the color boxes</td>
+ * <td>{@code 20px}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-swatch-picker-icon-size}</td>
+ * <td>The size of the color picker icon</td>
+ * <td>{@code 24px}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-swatch-picker-icon}</td>
+ * <td>Mixin applied to the color picker icon</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-swatch-picker#2.0.1", "Flow#0.1-SNAPSHOT"})
@@ -67,12 +98,15 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The selected color, as hex (i.e. #ffffff). value.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'color-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "color", value = "color-changed")
 	public String getColor() {
@@ -80,9 +114,12 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The selected color, as hex (i.e. #ffffff). value.
+	 * </p>
 	 * 
 	 * @param color
 	 *            the String value to set
@@ -94,29 +131,35 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The colors to be displayed. By default, these are the Material Design
-	 * colors. This array is arranged by "generic color", so for example, all
-	 * the reds (from light to dark), then the pinks, then the blues, etc.
-	 * Depending on how many of these generic colors you have, you should update
-	 * the {@code columnCount} property.
+	 * colors. This array is arranged by &quot;generic color&quot;, so for
+	 * example, all the reds (from light to dark), then the pinks, then the
+	 * blues, etc. Depending on how many of these generic colors you have, you
+	 * should update the {@code columnCount} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonArray protectedGetColorList() {
 		return (JsonArray) getElement().getPropertyRaw("colorList");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The colors to be displayed. By default, these are the Material Design
-	 * colors. This array is arranged by "generic color", so for example, all
-	 * the reds (from light to dark), then the pinks, then the blues, etc.
-	 * Depending on how many of these generic colors you have, you should update
-	 * the {@code columnCount} property.
+	 * colors. This array is arranged by &quot;generic color&quot;, so for
+	 * example, all the reds (from light to dark), then the pinks, then the
+	 * blues, etc. Depending on how many of these generic colors you have, you
+	 * should update the {@code columnCount} property.
+	 * </p>
 	 * 
 	 * @param colorList
 	 *            the JsonArray value to set
@@ -128,8 +171,10 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The number of columns to display in the picker. This corresponds to the
 	 * number of generic colors (i.e. not counting the light/dark) variants of a
 	 * specific color) you are using in your {@code colorList}. For example, the
@@ -137,18 +182,22 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getColumnCount() {
 		return getElement().getProperty("columnCount", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The number of columns to display in the picker. This corresponds to the
 	 * number of generic colors (i.e. not counting the light/dark) variants of a
 	 * specific color) you are using in your {@code colorList}. For example, the
 	 * Material Design palette has 18 colors
+	 * </p>
 	 * 
 	 * @param columnCount
 	 *            the double value to set
@@ -160,23 +209,29 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The orientation against which to align the menu dropdown horizontally
 	 * relative to the dropdown trigger.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The orientation against which to align the menu dropdown horizontally
 	 * relative to the dropdown trigger.
+	 * </p>
 	 * 
 	 * @param horizontalAlign
 	 *            the String value to set
@@ -189,23 +244,29 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The orientation against which to align the menu dropdown vertically
 	 * relative to the dropdown trigger.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The orientation against which to align the menu dropdown vertically
 	 * relative to the dropdown trigger.
+	 * </p>
 	 * 
 	 * @param verticalAlign
 	 *            the String value to set
@@ -218,23 +279,29 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the color picker button will not produce a ripple effect when
 	 * interacted with via the pointer.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the color picker button will not produce a ripple effect when
 	 * interacted with via the pointer.
+	 * </p>
 	 * 
 	 * @param noink
 	 *            the boolean value to set

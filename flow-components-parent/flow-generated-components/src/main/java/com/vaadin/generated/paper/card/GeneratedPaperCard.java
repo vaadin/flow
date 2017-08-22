@@ -15,56 +15,115 @@
  */
 package com.vaadin.generated.paper.card;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
- * Material design:
- * [Cards](https://www.google.com/design/spec/components/cards.html)
- * 
+ * </p>
+ * <p>
+ * Material design: <a
+ * href="https://www.google.com/design/spec/components/cards.html">Cards</a>
+ * </p>
+ * <p>
  * {@code paper-card} is a container with a drop shadow.
- * 
+ * </p>
+ * <p>
  * Example:
+ * </p>
  * 
- * <paper-card heading="Card Title"> <div class="card-content">Some
- * content</div> <div class="card-actions"> <paper-button>Some
- * action</paper-button> </div> </paper-card>
- * 
+ * <pre>
+ * <code>&lt;paper-card heading=&quot;Card Title&quot;&gt;
+ *   &lt;div class=&quot;card-content&quot;&gt;Some content&lt;/div&gt;
+ *   &lt;div class=&quot;card-actions&quot;&gt;
+ *     &lt;paper-button&gt;Some action&lt;/paper-button&gt;
+ *   &lt;/div&gt;
+ * &lt;/paper-card&gt;
+ * </code>
+ * </pre>
+ * <p>
  * Example - top card image:
+ * </p>
  * 
- * <paper-card heading="Card Title" image="/path/to/image.png" alt="image"> ...
- * </paper-card>
+ * <pre>
+ * <code>&lt;paper-card heading=&quot;Card Title&quot; image=&quot;/path/to/image.png&quot; alt=&quot;image&quot;&gt;
+ *   ...
+ * &lt;/paper-card&gt;
+ * </code>
+ * </pre>
  * 
- * ### Accessibility
- * 
+ * <h3>Accessibility</h3>
+ * <p>
  * By default, the {@code aria-label} will be set to the value of the
  * {@code heading} attribute.
- * 
- * ### Styling
- * 
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * {@code --paper-card-background-color} | The background color of the card |
- * {@code --primary-background-color} {@code --paper-card-header-color} | The
- * color of the header text | {@code #000} {@code --paper-card-header} | Mixin
- * applied to the card header section | {@code {@code --paper-card-header-text}
- * | Mixin applied to the title in the card header section | {@code
- * {@code --paper-card-header-image} | Mixin applied to the image in the card
- * header section | {@code {@code --paper-card-header-image-text} | Mixin
- * applied to the text overlapping the image in the card header section |
- * {@code {@code --paper-card-content} | Mixin applied to the card content
- * section| {@code {@code --paper-card-actions} | Mixin applied to the card
- * action section | {@code {@code --paper-card} | Mixin applied to the card |
- * {@code
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-card-background-color}</td>
+ * <td>The background color of the card</td>
+ * <td>{@code --primary-background-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card-header-color}</td>
+ * <td>The color of the header text</td>
+ * <td>{@code #000}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card-header}</td>
+ * <td>Mixin applied to the card header section</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card-header-text}</td>
+ * <td>Mixin applied to the title in the card header section</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card-header-image}</td>
+ * <td>Mixin applied to the image in the card header section</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card-header-image-text}</td>
+ * <td>Mixin applied to the text overlapping the image in the card header
+ * section</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card-content}</td>
+ * <td>Mixin applied to the card content section</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card-actions}</td>
+ * <td>Mixin applied to the card action section</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-card}</td>
+ * <td>Mixin applied to the card</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-card#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -75,21 +134,27 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The title of the card.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getHeading() {
 		return getElement().getProperty("heading");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The title of the card.
+	 * </p>
 	 * 
 	 * @param heading
 	 *            the String value to set
@@ -101,21 +166,27 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The url of the title image of the card.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getImage() {
 		return getElement().getProperty("image");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The url of the title image of the card.
+	 * </p>
 	 * 
 	 * @param image
 	 *            the String value to set
@@ -127,21 +198,27 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The text alternative of the card's title image.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The text alternative of the card's title image.
+	 * </p>
 	 * 
 	 * @param alt
 	 *            the String value to set
@@ -153,23 +230,29 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When {@code true}, any change to the image url property will cause the
 	 * {@code placeholder} image to be shown until the image is fully rendered.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPreloadImage() {
 		return getElement().getProperty("preloadImage", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When {@code true}, any change to the image url property will cause the
 	 * {@code placeholder} image to be shown until the image is fully rendered.
+	 * </p>
 	 * 
 	 * @param preloadImage
 	 *            the boolean value to set
@@ -181,23 +264,29 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When {@code preloadImage} is true, setting {@code fadeImage} to true will
 	 * cause the image to fade into place.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isFadeImage() {
 		return getElement().getProperty("fadeImage", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When {@code preloadImage} is true, setting {@code fadeImage} to true will
 	 * cause the image to fade into place.
+	 * </p>
 	 * 
 	 * @param fadeImage
 	 *            the boolean value to set
@@ -209,25 +298,31 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This image will be used as a background/placeholder until the src image
 	 * has loaded. Use of a data-URI for placeholder is encouraged for instant
 	 * rendering.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPlaceholderImage() {
 		return getElement().getProperty("placeholderImage");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This image will be used as a background/placeholder until the src image
 	 * has loaded. Use of a data-URI for placeholder is encouraged for instant
 	 * rendering.
+	 * </p>
 	 * 
 	 * @param placeholderImage
 	 *            the String value to set
@@ -240,21 +335,27 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The z-depth of the card, from 0-5.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getElevation() {
 		return getElement().getProperty("elevation", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The z-depth of the card, from 0-5.
+	 * </p>
 	 * 
 	 * @param elevation
 	 *            the double value to set
@@ -266,23 +367,29 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to true to animate the card shadow when setting a new {@code z}
 	 * value.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAnimatedShadow() {
 		return getElement().getProperty("animatedShadow", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to true to animate the card shadow when setting a new {@code z}
 	 * value.
+	 * </p>
 	 * 
 	 * @param animatedShadow
 	 *            the boolean value to set
@@ -294,13 +401,16 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Read-only property used to pass down the {@code animatedShadow} value to
 	 * the underlying paper-material style (since they have different names).
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAnimated() {
 		return getElement().getProperty("animated", false);
