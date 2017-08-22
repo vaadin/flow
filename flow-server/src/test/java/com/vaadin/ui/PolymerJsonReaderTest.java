@@ -54,25 +54,26 @@ public class PolymerJsonReaderTest {
 
     @Test
     public void fileAbsent_noDependencies() {
-        checkThatJsonIsParsedCorrectly(null, Collections.emptyList());
+        checkThatJsonIsParsedCorrectly(ROOT_URL, null, Collections.emptyList());
     }
 
     @Test
     public void requiredFieldsAbsent_noDependencies() {
-        checkThatJsonIsParsedCorrectly("{}", Collections.emptyList());
+        checkThatJsonIsParsedCorrectly(ROOT_URL, "{}", Collections.emptyList());
     }
 
     @Test
     public void entryPointSpecifiedOnly() {
-        checkThatJsonIsParsedCorrectly("{'entrypoint' : 'index.html'}",
-                Collections
+        checkThatJsonIsParsedCorrectly(ROOT_URL,
+                "{'entrypoint' : 'index.html'}", Collections
                         .singletonList(createExpectedDependency("index.html")));
     }
 
     @Test
     public void shellSpecifiedOnly() {
-        checkThatJsonIsParsedCorrectly("{'shell' : 'shell.html'}", Collections
-                .singletonList(createExpectedDependency("shell.html")));
+        checkThatJsonIsParsedCorrectly(ROOT_URL, "{'shell' : 'shell.html'}",
+                Collections
+                        .singletonList(createExpectedDependency("shell.html")));
     }
 
     @Test
@@ -80,9 +81,21 @@ public class PolymerJsonReaderTest {
         String shellUrl = "bootstrap.html";
         String entryPointUrl = "index.html";
 
-        checkThatJsonIsParsedCorrectly(
+        checkThatJsonIsParsedCorrectly(ROOT_URL + '/',
                 String.format("{'entrypoint' : '%s', 'shell' : '%s'}",
                         entryPointUrl, shellUrl),
+                Arrays.asList(createExpectedDependency(shellUrl),
+                        createExpectedDependency(entryPointUrl)));
+    }
+
+    @Test
+    public void multipleSlashesInPathsShouldBeRemoved() {
+        String shellUrl = "bootstrap.html";
+        String entryPointUrl = "index.html";
+
+        checkThatJsonIsParsedCorrectly(ROOT_URL,
+                String.format("{'entrypoint' : '%s', 'shell' : '%s'}",
+                        '/' + entryPointUrl, '/' + shellUrl),
                 Arrays.asList(createExpectedDependency(shellUrl),
                         createExpectedDependency(entryPointUrl)));
     }
@@ -92,8 +105,8 @@ public class PolymerJsonReaderTest {
                 ROOT_URL + '/' + urlInJsonFile, LoadMode.EAGER);
     }
 
-    private void checkThatJsonIsParsedCorrectly(String jsonString,
-            List<Dependency> expectedDependencies) {
+    private void checkThatJsonIsParsedCorrectly(String rootUrl,
+            String jsonString, List<Dependency> expectedDependencies) {
         final Charset charset = StandardCharsets.UTF_8;
         final String polymerJsonPath = "/polymer.json";
 
@@ -104,7 +117,7 @@ public class PolymerJsonReaderTest {
 
         assertThat(
                 new PolymerJsonReader(charset.name(), servletContextMock,
-                        ROOT_URL).getBootstrapDependencies(),
+                        rootUrl).getBootstrapDependencies(),
                 equalTo(expectedDependencies));
 
         verify(servletContextMock, only()).getResourceAsStream(polymerJsonPath);
