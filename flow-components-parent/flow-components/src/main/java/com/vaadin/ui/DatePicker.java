@@ -40,7 +40,7 @@ import elemental.json.JsonObject;
  *
  */
 public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
-        implements HasValue<DatePicker, LocalDate> {
+        implements HasValue<DatePicker, LocalDate>, HasSize {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_DATE;
     private static final String I18N_PROPERTY = "i18n";
