@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,7 +38,7 @@ import com.vaadin.shared.communication.PushMode;
  * @since 7.0.0
  */
 public class DefaultDeploymentConfiguration
-extends AbstractDeploymentConfiguration {
+        extends AbstractDeploymentConfiguration {
 
     private static final String SEPARATOR = "\n===========================================================";
 
@@ -122,20 +123,18 @@ extends AbstractDeploymentConfiguration {
     }
 
     @Override
-    public String getApplicationOrSystemProperty(String propertyName,
-            String defaultValue) {
-        String val = null;
-
+    public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
+                                                Function<String, T> converter) {
         // Try system properties
-        val = getSystemProperty(propertyName);
+        String val = getSystemProperty(propertyName);
         if (val != null) {
-            return val;
+            return converter.apply(val);
         }
 
         // Try application properties
         val = getApplicationProperty(propertyName);
         if (val != null) {
-            return val;
+            return converter.apply(val);
         }
 
         return defaultValue;
@@ -149,8 +148,6 @@ extends AbstractDeploymentConfiguration {
      * @return String value or null if not found
      */
     protected String getSystemProperty(String parameterName) {
-        String val = null;
-
         String pkgName;
         final Package pkg = systemPropertyBaseClass.getPackage();
         if (pkg != null) {
@@ -169,7 +166,7 @@ extends AbstractDeploymentConfiguration {
         } else {
             pkgName += '.';
         }
-        val = System.getProperty(pkgName + parameterName);
+        String val = System.getProperty(pkgName + parameterName);
         if (val != null) {
             return val;
         }
@@ -293,9 +290,8 @@ extends AbstractDeploymentConfiguration {
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode() {
-        productionMode = getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false")
-                .equals("true");
+        productionMode = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode) {
             getLogger().warning(NOT_PRODUCTION_MODE_INFO);
         }
@@ -305,9 +301,8 @@ extends AbstractDeploymentConfiguration {
      * Log a warning if cross-site request forgery protection is disabled.
      */
     private void checkXsrfProtection() {
-        xsrfProtectionEnabled = !getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, "false")
-                .equals("true");
+        xsrfProtectionEnabled = !getBooleanProperty(
+                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
         if (!xsrfProtectionEnabled) {
             getLogger().warning(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -315,9 +310,9 @@ extends AbstractDeploymentConfiguration {
 
     private void checkHeartbeatInterval() {
         try {
-            heartbeatInterval = Integer.parseInt(getApplicationOrSystemProperty(
+            heartbeatInterval = getApplicationOrSystemProperty(
                     Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
-                    Integer.toString(DEFAULT_HEARTBEAT_INTERVAL)));
+                    DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
             getLogger().warning(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
@@ -325,17 +320,16 @@ extends AbstractDeploymentConfiguration {
     }
 
     private void checkCloseIdleSessions() {
-        closeIdleSessions = getApplicationOrSystemProperty(
+        closeIdleSessions = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
-                Boolean.toString(DEFAULT_CLOSE_IDLE_SESSIONS)).equals("true");
+                DEFAULT_CLOSE_IDLE_SESSIONS);
     }
 
     private void checkPushMode() {
-        String mode = getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_PUSH_MODE,
-                PushMode.DISABLED.toString());
         try {
-            pushMode = Enum.valueOf(PushMode.class, mode.toUpperCase());
+            pushMode = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_PUSH_MODE,
+                    PushMode.DISABLED, stringMode -> Enum
+                            .valueOf(PushMode.class, stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
             getLogger().warning(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -343,16 +337,15 @@ extends AbstractDeploymentConfiguration {
     }
 
     private void checkSyncIdCheck() {
-        syncIdCheck = getApplicationOrSystemProperty(
+        syncIdCheck = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
-                Boolean.toString(DEFAULT_SYNC_ID_CHECK)).equals("true");
+                DEFAULT_SYNC_ID_CHECK);
     }
 
     private void checkSendUrlsAsParameters() {
-        sendUrlsAsParameters = getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS,
-                Boolean.toString(DEFAULT_SEND_URLS_AS_PARAMETERS))
-                .equals("true");
+        sendUrlsAsParameters = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
 
     private Logger getLogger() {
@@ -361,7 +354,7 @@ extends AbstractDeploymentConfiguration {
 
     private void checkWebComponentsPolyfillBase(
             BiConsumer<String, Predicate<String>> resourceScanner) {
-        String propertyValue = getApplicationOrSystemProperty(
+        String propertyValue = getStringProperty(
                 Constants.SERVLET_PARAMETER_POLYFILL_BASE, null);
         if (propertyValue == null) {
             propertyValue = resolveDefaultPolyfillUri(resourceScanner);
@@ -391,11 +384,11 @@ extends AbstractDeploymentConfiguration {
         String scanBase = uriResolver.resolveVaadinUri("frontend://");
         if (!scanBase.startsWith("/")) {
             // Has protocol or isn't relative to the context root -> no can do
-            getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
-                    String.format(
+            getLogger().log(Level.WARNING,
+                    () -> formatDefaultPolyfillMessage(String.format(
                             "Cannot automatically find the webcomponents polyfill because the property "
                                     + "'%s' value is not absolute (doesn't start with '/')",
-                                    Constants.FRONTEND_URL_ES6)));
+                            Constants.FRONTEND_URL_ES6)));
             return null;
         }
 
@@ -469,7 +462,7 @@ extends AbstractDeploymentConfiguration {
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {
         return String.format(
-                "%1$s%n" + "Configure %2$s with an empty value to explicilty disable Web Components polyfill loading.%n"
+                "%1$s%n" + "Configure %2$s with an empty value to explicitly disable Web Components polyfill loading.%n"
                         + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
                         baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }

@@ -30,18 +30,18 @@ public abstract class AbstractDeploymentConfiguration
 
     @Override
     public String getUIClassName() {
-        return getApplicationOrSystemProperty(VaadinSession.UI_PARAMETER,
+        return getStringProperty(VaadinSession.UI_PARAMETER,
                 UI.class.getName());
     }
 
     @Override
     public String getClassLoaderName() {
-        return getApplicationOrSystemProperty("ClassLoader", null);
+        return getStringProperty("ClassLoader", null);
     }
 
     @Override
     public String getRouterConfiguratorClassName() {
-        return getApplicationOrSystemProperty(
+        return getStringProperty(
                 Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR, null);
     }
 }

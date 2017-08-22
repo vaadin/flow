@@ -21,6 +21,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.function.Function;
 
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -35,7 +36,7 @@ import com.vaadin.ui.UI;
  * Annotation for configuring subclasses of {@link VaadinServlet}. For a
  * {@link VaadinServlet} class that has this annotation, the defined values are
  * read during initialization and will be available using
- * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, String)}
+ * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
  * as well as from specific methods in {@link DeploymentConfiguration}. Init
  * params defined in <code>web.xml</code> or the <code>@WebServlet</code>
  * annotation take precedence over values defined in this annotation.
