@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.demo;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -75,8 +74,10 @@ public class SourceContentResolver {
 
         String classFilePath = demoViewClass.getProtectionDomain()
                 .getCodeSource().getLocation().getPath()
-                + demoViewClass.getPackage().getName().replaceAll("\\.",
-                        File.separator);
+                + demoViewClass.getPackage().getName().replaceAll("\\.", "/");
+        if (classFilePath.startsWith("/")) {
+            classFilePath = classFilePath.substring(1);
+        }
         Path sourceFilePath = Paths.get(classFilePath,
                 demoViewClass.getSimpleName() + ".java");
 
