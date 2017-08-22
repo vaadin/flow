@@ -447,27 +447,25 @@ public class DefaultDeploymentConfiguration
             BiConsumer<String, Predicate<String>> resourceScanner) {
         List<String> foundPolyfills = new ArrayList<>();
         resourceScanner.accept("/", name -> {
-            if (name.endsWith("webcomponents-loader.js")) {
+            if (name.endsWith("/webcomponentsjs/")) {
                 foundPolyfills.add(name);
             }
 
             // Don't traverse some potentially huge but pointless directories
-            if (name.startsWith("node/") || name.startsWith("node_modules/")) {
-                return false;
-            } else {
-                return true;
-            }
+            return !(name.startsWith("node/")
+                    || name.startsWith("node_modules/"));
         });
 
-        if (foundPolyfills.size() == 0) {
+        if (foundPolyfills.isEmpty()) {
+            getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
+                    "No webcomponent polyfills discovered in your project's static files!"));
             return null;
         }
-        Path path = Paths.get(foundPolyfills.get(0)).getParent();
-        String dirName = path == null ? "" : path.toString();
-        assert !dirName.endsWith("/");
-        getLogger().log(Level.INFO, () -> formatDefaultPolyfillMessage(
-                "Will use webcomponents polyfill discovered in " + dirName));
-        return "context://" + dirName + '/';
+        getLogger().log(Level.INFO,
+                () -> formatDefaultPolyfillMessage(
+                        "Will use webcomponent polyfills discovered in "
+                                + foundPolyfills.get(0)));
+        return "context://" + foundPolyfills.get(0);
     }
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {
