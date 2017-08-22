@@ -15,10 +15,11 @@
  */
 package com.vaadin.shared.ui;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import java.io.Serializable;
 import java.util.Objects;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -111,14 +112,14 @@ public class Dependency implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        Dependency that = (Dependency) o;
+        Dependency that = (Dependency) obj;
         return type == that.type && Objects.equals(url, that.url)
                 && loadMode == that.loadMode;
     }
