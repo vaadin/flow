@@ -161,7 +161,7 @@ public class DefaultDeploymentConfigurationTest {
                 config.isSendUrlsAsParameters());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void booleanValueRead_exceptionOnNonBooleanValue() {
         Properties initParameters = new Properties();
         initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
