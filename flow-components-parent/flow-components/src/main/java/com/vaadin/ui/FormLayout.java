@@ -36,8 +36,8 @@ import elemental.json.JsonValue;
  * 
  * @author Vaadin Ltd
  */
-public class FormLayout
-        extends GeneratedVaadinFormLayout<FormLayout> {
+public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
+        implements HasSize {
 
     /**
      * A class used in describing the responsive layouting behavior of a
@@ -152,8 +152,7 @@ public class FormLayout
      * 
      * @author Vaadin Ltd
      */
-    public static class FormItem
-            extends GeneratedVaadinFormItem<FormItem> {
+    public static class FormItem extends GeneratedVaadinFormItem<FormItem> {
 
         /**
          * Constructs a FormItem with the given initial components to wrap.

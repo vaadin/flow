@@ -22,7 +22,7 @@ import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
 /**
  * Server-side component for the <code>vaadin-button</code> element.
  */
-public class Button extends GeneratedVaadinButton<Button> {
+public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
     /**
      * Default constructor. Creates an empty button.
