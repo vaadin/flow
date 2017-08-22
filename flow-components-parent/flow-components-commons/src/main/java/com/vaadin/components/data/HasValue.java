@@ -234,7 +234,6 @@ extends ComponentSupplier<C>, Serializable {
     }
 
     /**
-<<<<<<< Upstream, based on master
      * Sets the read-only mode of this {@code HasValue} to given mode. The user
      * can't change the value when in read-only mode.
      * <p>
