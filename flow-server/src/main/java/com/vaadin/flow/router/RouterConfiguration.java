@@ -324,10 +324,10 @@ public class RouterConfiguration
      *            <code>null</code>
      * @return a list of parent view types
      */
-    protected ArrayList<Class<? extends HasChildView>> getParentViewsAsList(
+    protected List<Class<? extends HasChildView>> getParentViewsAsList(
             Class<? extends View> viewType) {
         assert viewType != null;
-        ArrayList<Class<? extends HasChildView>> parentViews = new ArrayList<>();
+        List<Class<? extends HasChildView>> parentViews = new ArrayList<>();
         Class<? extends View> currentType = viewType;
         while (true) {
             Class<? extends HasChildView> parentType = parentViewTypes
