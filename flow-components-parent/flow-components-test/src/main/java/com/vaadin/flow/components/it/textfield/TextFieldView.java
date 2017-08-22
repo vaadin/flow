@@ -17,6 +17,7 @@ package com.vaadin.flow.components.it.textfield;
 
 import com.vaadin.flow.components.it.TestView;
 import com.vaadin.flow.html.Div;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.TextField;
 
 /**
@@ -39,5 +40,12 @@ public class TextFieldView extends TestView {
                         String.format("Old value: '%s'. New value: '%s'.",
                                 event.getOldValue(), event.getValue())));
         add(textField, message);
+
+        Button required = new Button("Set/unset field required property");
+        required.setId("required");
+        required.addClickListener(
+                event -> textField.setRequiredIndicatorVisible(
+                        !textField.isRequiredIndicatorVisible()));
+        add(required);
     }
 }

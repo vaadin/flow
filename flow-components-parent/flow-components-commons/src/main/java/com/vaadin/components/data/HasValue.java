@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2017 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -38,7 +38,7 @@ import com.vaadin.ui.ComponentSupplier;
  *            the value type
  */
 public interface HasValue<C extends Component, V>
-        extends ComponentSupplier<C>, Serializable {
+extends ComponentSupplier<C>, Serializable {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.
@@ -49,7 +49,7 @@ public interface HasValue<C extends Component, V>
      *            the value type
      */
     public class ValueChangeEvent<C extends Component, V>
-            extends ComponentEvent<C> {
+    extends ComponentEvent<C> {
 
         private final V oldValue;
         private final V value;
@@ -106,7 +106,7 @@ public interface HasValue<C extends Component, V>
      */
     @FunctionalInterface
     public interface ValueChangeListener<C extends Component, V> extends
-            ComponentEventListener<ValueChangeEvent<C, V>>, Serializable {
+    ComponentEventListener<ValueChangeEvent<C, V>>, Serializable {
 
         /**
          * Invoked when this listener receives a value change event from an
@@ -115,6 +115,7 @@ public interface HasValue<C extends Component, V>
          * @param event
          *            the received event, not null
          */
+        @Override
         void onComponentEvent(ValueChangeEvent<C, V> event);
     }
 
@@ -214,7 +215,7 @@ public interface HasValue<C extends Component, V>
     /**
      * Get the client-side component's property name for the value this
      * interface is bound to.
-     * 
+     *
      * @return the name of the client-side property this interface is bound to
      */
     default String getClientValuePropertyName() {
@@ -224,11 +225,33 @@ public interface HasValue<C extends Component, V>
     /**
      * Get the name of the client-side change event that is fired when the value
      * property is changed.
-     * 
+     *
      * @return the name of the client-side change event that is fired when the
      *         value changes
      */
     default String getClientPropertyChangeEventName() {
         return getClientValuePropertyName() + "-changed";
+    }
+
+    /**
+     * Sets the required indicator visible or not.
+     * <p>
+     * If set visible, it is visually indicated in the user interface.
+     *
+     * @param requiredIndicatorVisible
+     *            <code>true</code> to make the required indicator visible,
+     *            <code>false</code> if not
+     */
+    default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
+        get().getElement().setProperty("required", requiredIndicatorVisible);
+    }
+
+    /**
+     * Checks whether the required indicator is visible.
+     *
+     * @return <code>true</code> if visible, <code>false</code> if not
+     */
+    default boolean isRequiredIndicatorVisible() {
+        return get().getElement().getProperty("required", false);
     }
 }
