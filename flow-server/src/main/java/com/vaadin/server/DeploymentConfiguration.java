@@ -162,7 +162,7 @@ public interface DeploymentConfiguration extends Serializable {
     Optional<String> getWebComponentsPolyfillBase();
 
     /**
-     * Gets the the URL from which frontend resources should be loaded in ES6
+     * Gets the URL from which frontend resources should be loaded in ES6
      * compatible browsers.
      *
      * @return the ES6 resource URL
@@ -170,7 +170,7 @@ public interface DeploymentConfiguration extends Serializable {
     default String getEs6BuildUrl() {
         String defaultUrl = isProductionMode()
                 ? Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
-                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+                        : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
         return getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
                 defaultUrl);
@@ -185,7 +185,7 @@ public interface DeploymentConfiguration extends Serializable {
     default String getEs5BuildUrl() {
         String defaultUrl = isProductionMode()
                 ? Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
-                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+                        : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
         return getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
                 defaultUrl);

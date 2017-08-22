@@ -17,12 +17,15 @@ package com.vaadin.ui;
 
 import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
 
+import elemental.json.Json;
+
 /**
  * Server-side component for the {@code vaadin-checkbox} element.
  * 
  * @author Vaadin Ltd
  */
-public class Checkbox extends GeneratedVaadinCheckbox<Checkbox> {
+public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
+        implements HasSize {
 
     /**
      * Default constructor.
@@ -108,6 +111,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox> {
     public Checkbox setValue(Boolean value) {
         if (value == null) {
             setIndeterminate(true);
+            getElement().setPropertyJson("checked", Json.createNull());
             return get();
         }
         setIndeterminate(false);

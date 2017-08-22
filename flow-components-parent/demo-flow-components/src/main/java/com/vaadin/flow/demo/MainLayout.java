@@ -16,6 +16,7 @@
 package com.vaadin.flow.demo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.annotations.HtmlImport;
@@ -89,8 +90,20 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
                 paperComponentSelectors.add(new DemoObject(annotation));
             }
         }
+
+        Collections.sort(vaadinComponentSelectors, this::compareDemos);
+        Collections.sort(paperComponentSelectors, this::compareDemos);
+
         getModel().setVaadinComponentSelectors(vaadinComponentSelectors);
         getModel().setPaperComponentSelectors(paperComponentSelectors);
+    }
+
+    private int compareDemos(DemoObject demo1, DemoObject demo2) {
+        if (demo1.getSubcategory().equals(demo2.getSubcategory())) {
+            return demo1.getName().compareToIgnoreCase(demo2.getName());
+        }
+        return demo1.getSubcategory()
+                .compareToIgnoreCase(demo2.getSubcategory());
     }
 
     @Override

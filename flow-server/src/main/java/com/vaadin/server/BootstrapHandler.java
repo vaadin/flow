@@ -268,7 +268,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         List<Element> dependenciesToInlineInBody = setupDocumentHead(head,
                 context);
         dependenciesToInlineInBody
-                .forEach(dependency -> document.body().appendChild(dependency));
+        .forEach(dependency -> document.body().appendChild(dependency));
         setupDocumentBody(document);
 
         document.outputSettings().prettyPrint(false);
@@ -405,14 +405,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupMetaAndTitle(Element head,
             BootstrapContext context) {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
-                .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
+        .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
         head.appendElement("base").attr("href", getServiceUrl(context));
 
         getViewportContent(context.getUI().getClass(), context.getRequest())
-                .ifPresent(content -> head.appendElement(META_TAG)
-                        .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
-                                content));
+        .ifPresent(content -> head.appendElement(META_TAG)
+                .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
+                        content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -441,18 +441,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         boolean forceShadyDom = getUserDefinedProperty(config,
                 Constants.FORCE_SHADY_DOM, Boolean::parseBoolean,
                 webComponents.isPresent()
-                        && webComponents.get().forceShadyDom());
+                && webComponents.get().forceShadyDom());
 
         boolean loadEs5Adapter = getUserDefinedProperty(config,
                 Constants.LOAD_ES5_ADAPTER, Boolean::parseBoolean,
                 webComponents.isPresent()
-                        && webComponents.get().loadEs5Adapter());
+                && webComponents.get().loadEs5Adapter());
 
         if (loadEs5Adapter) {
             head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
-                            .resolveVaadinUri(webComponentsPolyfillBase
-                                    + "custom-elements-es5-adapter.js"),
+                    .resolveVaadinUri(webComponentsPolyfillBase
+                            + "custom-elements-es5-adapter.js"),
                     false));
         }
 
@@ -500,29 +500,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
                 : null;
 
-        final Element dependencyElement;
-        switch (type) {
-        case STYLESHEET:
-            dependencyElement = createStylesheetElement(url);
-            break;
-        case JAVASCRIPT:
-            dependencyElement = createJavaScriptElement(url, !inlineElement);
-            break;
-        case HTML_IMPORT:
-            dependencyElement = createHtmlImportElement(url);
-            break;
-        default:
-            throw new IllegalStateException(
-                    "Unsupported dependency type: " + type);
-        }
+                final Element dependencyElement;
+                switch (type) {
+                case STYLESHEET:
+                    dependencyElement = createStylesheetElement(url);
+                    break;
+                case JAVASCRIPT:
+                    dependencyElement = createJavaScriptElement(url, !inlineElement);
+                    break;
+                case HTML_IMPORT:
+                    dependencyElement = createHtmlImportElement(url);
+                    break;
+                default:
+                    throw new IllegalStateException(
+                            "Unsupported dependency type: " + type);
+                }
 
-        if (inlineElement) {
-            dependencyElement.appendChild(
-                    new DataNode(dependency.getString(Dependency.KEY_CONTENTS),
-                            dependencyElement.baseUri()));
-        }
+                if (inlineElement) {
+                    dependencyElement.appendChild(
+                            new DataNode(dependency.getString(Dependency.KEY_CONTENTS),
+                                    dependencyElement.baseUri()));
+                }
 
-        return dependencyElement;
+                return dependencyElement;
     }
 
     private static Element createHtmlImportElement(String url) {
@@ -615,6 +615,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         result = result.replace("{{APP_ID}}", context.getAppId());
         result = result.replace("{{CONFIG_JSON}}", appConfigString);
+        // {{INITIAL_UIDL}} should be the last replaced so that it may have
+        // other patterns inside it (like {{CONFIG_JSON}})
         result = result.replace("{{INITIAL_UIDL}}", initialUIDLString);
         return result;
     }
@@ -778,7 +780,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         ui.getPushConfiguration().setPushMode(pushMode);
 
         AnnotationReader.getPushTransport(uiClass)
-                .ifPresent(ui.getPushConfiguration()::setTransport);
+        .ifPresent(ui.getPushConfiguration()::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
@@ -893,7 +895,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             + request.getPathInfo()
                             + " cannot find the mapped UI class with name "
                             + uiClassName,
-                    e);
+                            e);
         }
     }
 
@@ -951,13 +953,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // read client engine file name
         try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
                 "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties")) {
+                + "/compile.properties")) {
             // null when running SDM or tests
             if (prop != null) {
                 Properties properties = new Properties();
                 properties.load(prop);
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                        + properties.getProperty("jsFile");
+                + properties.getProperty("jsFile");
             } else {
                 getLogger().warning(
                         "No compile.properties available on initialization, "
