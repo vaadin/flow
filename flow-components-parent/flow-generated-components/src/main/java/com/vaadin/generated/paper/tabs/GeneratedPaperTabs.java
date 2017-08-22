@@ -15,55 +15,81 @@
  */
 package com.vaadin.generated.paper.tabs;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import elemental.json.JsonArray;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
- * Material design:
- * [Tabs](https://www.google.com/design/spec/components/tabs.html)
- * 
+ * </p>
+ * <p>
+ * Material design: <a
+ * href="https://www.google.com/design/spec/components/tabs.html">Tabs</a>
+ * </p>
+ * <p>
  * {@code paper-tabs} makes it easy to explore and switch between different
  * views or functional aspects of an app, or to browse categorized data sets.
- * 
+ * </p>
+ * <p>
  * Use {@code selected} property to get or set the selected tab.
- * 
+ * </p>
+ * <p>
  * Example:
+ * </p>
  * 
- * <paper-tabs selected="0"> <paper-tab>TAB 1</paper-tab> <paper-tab>TAB
- * 2</paper-tab> <paper-tab>TAB 3</paper-tab> </paper-tabs>
- * 
+ * <pre>
+ * <code>&lt;paper-tabs selected=&quot;0&quot;&gt;
+ *   &lt;paper-tab&gt;TAB 1&lt;/paper-tab&gt;
+ *   &lt;paper-tab&gt;TAB 2&lt;/paper-tab&gt;
+ *   &lt;paper-tab&gt;TAB 3&lt;/paper-tab&gt;
+ * &lt;/paper-tabs&gt;
+ * </code>
+ * </pre>
+ * <p>
  * See <a href="?active=paper-tab">paper-tab</a> for more information about
  * {@code paper-tab}.
- * 
+ * </p>
+ * <p>
  * A common usage for {@code paper-tabs} is to use it along with
  * {@code iron-pages} to switch between different views.
+ * </p>
  * 
- * <paper-tabs selected="{{selected}}"> <paper-tab>Tab 1</paper-tab>
- * <paper-tab>Tab 2</paper-tab> <paper-tab>Tab 3</paper-tab> </paper-tabs>
+ * <pre>
+ * <code>&lt;paper-tabs selected=&quot;{{selected}}&quot;&gt;
+ *   &lt;paper-tab&gt;Tab 1&lt;/paper-tab&gt;
+ *   &lt;paper-tab&gt;Tab 2&lt;/paper-tab&gt;
+ *   &lt;paper-tab&gt;Tab 3&lt;/paper-tab&gt;
+ * &lt;/paper-tabs&gt;
  * 
- * <iron-pages selected="{{selected}}"> <div>Page 1</div> <div>Page 2</div>
- * <div>Page 3</div> </iron-pages>
- * 
- * 
+ * &lt;iron-pages selected=&quot;{{selected}}&quot;&gt;
+ *   &lt;div&gt;Page 1&lt;/div&gt;
+ *   &lt;div&gt;Page 2&lt;/div&gt;
+ *   &lt;div&gt;Page 3&lt;/div&gt;
+ * &lt;/iron-pages&gt;
+ * </code>
+ * </pre>
+ * <p>
  * To use links in tabs, add {@code link} attribute to {@code paper-tab} and put
  * an {@code <a>} element in {@code paper-tab} with a {@code tabindex} of -1.
- * 
+ * </p>
+ * <p>
  * Example:
+ * </p>
  * 
  * <pre>
  * <code>
@@ -88,18 +114,45 @@ import com.vaadin.ui.HasComponents;
  * </code>
  * </pre>
  * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * {@code --paper-tabs-selection-bar-color} | Color for the selection bar |
- * {@code --paper-yellow-a100} {@code --paper-tabs-selection-bar} | Mixin
- * applied to the selection bar | {@code {@code --paper-tabs} | Mixin applied
- * to the tabs | {@code {@code --paper-tabs-content} | Mixin applied to the
- * content container of tabs | {@code {@code --paper-tabs-container} | Mixin
- * applied to the layout container of tabs | {@code
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-tabs-selection-bar-color}</td>
+ * <td>Color for the selection bar</td>
+ * <td>{@code --paper-yellow-a100}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tabs-selection-bar}</td>
+ * <td>Mixin applied to the selection bar</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tabs}</td>
+ * <td>Mixin applied to the tabs</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tabs-content}</td>
+ * <td>Mixin applied to the content container of tabs</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tabs-container}</td>
+ * <td>Mixin applied to the layout container of tabs</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-tabs#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -110,35 +163,41 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you want to use an attribute value or property of an element for
 	 * {@code selected} instead of the index, set this to the name of the
 	 * attribute or property. Hyphenated values are converted to camel case when
 	 * used to look up the property of a selectable element. Camel cased values
-	 * are not* converted to hyphenated values for attribute lookup. It's
-	 * recommended that you provide the hyphenated form of the name so that
+	 * are <em>not</em> converted to hyphenated values for attribute lookup.
+	 * It's recommended that you provide the hyphenated form of the name so that
 	 * selection works in both cases. (Use {@code attr-or-property-name} instead
 	 * of {@code attrOrPropertyName}.)
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAttrForSelected() {
 		return getElement().getProperty("attrForSelected");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you want to use an attribute value or property of an element for
 	 * {@code selected} instead of the index, set this to the name of the
 	 * attribute or property. Hyphenated values are converted to camel case when
 	 * used to look up the property of a selectable element. Camel cased values
-	 * are not* converted to hyphenated values for attribute lookup. It's
-	 * recommended that you provide the hyphenated form of the name so that
+	 * are <em>not</em> converted to hyphenated values for attribute lookup.
+	 * It's recommended that you provide the hyphenated form of the name so that
 	 * selection works in both cases. (Use {@code attr-or-property-name} instead
 	 * of {@code attrOrPropertyName}.)
+	 * </p>
 	 * 
 	 * @param attrForSelected
 	 *            the String value to set
@@ -151,13 +210,16 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'selected-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -165,13 +227,16 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'selected-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -179,10 +244,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
+	 * </p>
 	 * 
 	 * @param selected
 	 *            the String value to set
@@ -194,10 +262,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets or sets the selected element. The default is to use the index of the
 	 * item.
+	 * </p>
 	 * 
 	 * @param selected
 	 *            the double value to set
@@ -209,37 +280,46 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the currently selected item.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The event that fires from items when they are selected. Selectable will
 	 * listen for this event from items and update the selection state. Set to
 	 * empty string to listen to no events.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getActivateEvent() {
 		return getElement().getProperty("activateEvent");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The event that fires from items when they are selected. Selectable will
 	 * listen for this event from items and update the selection state. Set to
 	 * empty string to listen to no events.
+	 * </p>
 	 * 
 	 * @param activateEvent
 	 *            the String value to set
@@ -271,21 +351,27 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The class to set on elements when selected.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getSelectedClass() {
 		return getElement().getProperty("selectedClass");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The class to set on elements when selected.
+	 * </p>
 	 * 
 	 * @param selectedClass
 	 *            the String value to set
@@ -298,21 +384,27 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The attribute to set on elements when selected.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getSelectedAttribute() {
 		return getElement().getProperty("selectedAttribute");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The attribute to set on elements when selected.
+	 * </p>
 	 * 
 	 * @param selectedAttribute
 	 *            the String value to set
@@ -325,23 +417,29 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Default fallback if the selection based on selected with
 	 * {@code attrForSelected} is not found.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getFallbackSelection() {
 		return getElement().getProperty("fallbackSelection");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Default fallback if the selection based on selected with
 	 * {@code attrForSelected} is not found.
+	 * </p>
 	 * 
 	 * @param fallbackSelection
 	 *            the String value to set
@@ -354,12 +452,15 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The list of items from which a selection can be made.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'items-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	protected JsonArray protectedGetItems() {
@@ -367,21 +468,27 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, multiple selections are allowed.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isMulti() {
 		return getElement().getProperty("multi", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, multiple selections are allowed.
+	 * </p>
 	 * 
 	 * @param multi
 	 *            the boolean value to set
@@ -393,23 +500,29 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets or sets the selected elements. This is used instead of
 	 * {@code selected} when {@code multi} is true.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonArray protectedGetSelectedValues() {
 		return (JsonArray) getElement().getPropertyRaw("selectedValues");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets or sets the selected elements. This is used instead of
 	 * {@code selected} when {@code multi} is true.
+	 * </p>
 	 * 
 	 * @param selectedValues
 	 *            the JsonArray value to set
@@ -421,35 +534,44 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns an array of currently selected items.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonArray protectedGetSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * </p>
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
@@ -461,23 +583,29 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * </p>
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
@@ -509,37 +637,46 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the currently focused item.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetFocusedItem() {
 		return (JsonObject) getElement().getPropertyRaw("focusedItem");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The attribute to use on menu items to look up the item title. Typing the
 	 * first letter of an item when the menu is open focuses that item. If
 	 * unset, {@code textContent} will be used.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAttrForItemTitle() {
 		return getElement().getProperty("attrForItemTitle");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The attribute to use on menu items to look up the item title. Typing the
 	 * first letter of an item when the menu is open focuses that item. If
 	 * unset, {@code textContent} will be used.
+	 * </p>
 	 * 
 	 * @param attrForItemTitle
 	 *            the String value to set
@@ -570,25 +707,31 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, ink ripple effect is disabled. When this property is changed,
 	 * all descendant {@code <paper-tab>} elements have their {@code noink}
 	 * property changed to the new value as well.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, ink ripple effect is disabled. When this property is changed,
 	 * all descendant {@code <paper-tab>} elements have their {@code noink}
 	 * property changed to the new value as well.
+	 * </p>
 	 * 
 	 * @param noink
 	 *            the boolean value to set
@@ -600,21 +743,27 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the bottom bar to indicate the selected tab will not be shown.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoBar() {
 		return getElement().getProperty("noBar", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the bottom bar to indicate the selected tab will not be shown.
+	 * </p>
 	 * 
 	 * @param noBar
 	 *            the boolean value to set
@@ -626,21 +775,27 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the slide effect for the bottom bar is disabled.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoSlide() {
 		return getElement().getProperty("noSlide", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the slide effect for the bottom bar is disabled.
+	 * </p>
 	 * 
 	 * @param noSlide
 	 *            the boolean value to set
@@ -652,23 +807,29 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, tabs are scrollable and the tab width is based on the label
 	 * width.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isScrollable() {
 		return getElement().getProperty("scrollable", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, tabs are scrollable and the tab width is based on the label
 	 * width.
+	 * </p>
 	 * 
 	 * @param scrollable
 	 *            the boolean value to set
@@ -680,23 +841,29 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, tabs expand to fit their container. This currently only applies
 	 * when scrollable is true.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isFitContainer() {
 		return getElement().getProperty("fitContainer", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, tabs expand to fit their container. This currently only applies
 	 * when scrollable is true.
+	 * </p>
 	 * 
 	 * @param fitContainer
 	 *            the boolean value to set
@@ -708,21 +875,27 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, dragging on the tabs to scroll is disabled.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isDisableDrag() {
 		return getElement().getProperty("disableDrag", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, dragging on the tabs to scroll is disabled.
+	 * </p>
 	 * 
 	 * @param disableDrag
 	 *            the boolean value to set
@@ -734,23 +907,29 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, scroll buttons (left/right arrow) will be hidden for scrollable
 	 * tabs.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isHideScrollButtons() {
 		return getElement().getProperty("hideScrollButtons", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, scroll buttons (left/right arrow) will be hidden for scrollable
 	 * tabs.
+	 * </p>
 	 * 
 	 * @param hideScrollButtons
 	 *            the boolean value to set
@@ -762,23 +941,29 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the tabs are aligned to bottom (the selection bar appears at the
 	 * top).
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAlignBottom() {
 		return getElement().getProperty("alignBottom", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the tabs are aligned to bottom (the selection bar appears at the
 	 * top).
+	 * </p>
 	 * 
 	 * @param alignBottom
 	 *            the boolean value to set
@@ -790,21 +975,27 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, tabs are automatically selected when focused using the keyboard.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAutoselect() {
 		return getElement().getProperty("autoselect", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, tabs are automatically selected when focused using the keyboard.
+	 * </p>
 	 * 
 	 * @param autoselect
 	 *            the boolean value to set
@@ -816,25 +1007,31 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The delay (in milliseconds) between when the user stops interacting with
 	 * the tabs through the keyboard and when the focused item is automatically
 	 * selected (if {@code autoselect} is true).
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getAutoselectDelay() {
 		return getElement().getProperty("autoselectDelay", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The delay (in milliseconds) between when the user stops interacting with
 	 * the tabs through the keyboard and when the focused item is automatically
 	 * selected (if {@code autoselect} is true).
+	 * </p>
 	 * 
 	 * @param autoselectDelay
 	 *            the double value to set
@@ -846,20 +1043,26 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be called to manually notify a resizable and its descendant
 	 * resizables of a resize change.
+	 * </p>
 	 */
 	public void notifyResize() {
 		getElement().callFunction("notifyResize");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Used to assign the closest resizable ancestor to this resizable if the
 	 * ancestor detects a request for notifications.
+	 * </p>
 	 * 
 	 * @param parentResizable
 	 *            Missing documentation!
@@ -870,10 +1073,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Used to remove a resizable descendant from the list of descendants that
 	 * should be notified of a resize change.
+	 * </p>
 	 * 
 	 * @param target
 	 *            Missing documentation!
@@ -883,11 +1089,14 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This method can be overridden to filter nested elements that should or
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
+	 * </p>
 	 * 
 	 * @param element
 	 *            A candidate descendant element that implements
@@ -899,9 +1108,12 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the index of the given item.
+	 * </p>
 	 * 
 	 * @param item
 	 *            Missing documentation!
@@ -912,25 +1124,14 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Selects the given value. If the {@code multi} property is true, then the
 	 * selected state of the {@code value} will be toggled; otherwise the
 	 * {@code value} will be selected.
-	 * 
-	 * @param value
-	 *            the value to select.
-	 */
-	public void select(double value) {
-		getElement().callFunction("select", value);
-	}
-
-	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Selects the given value. If the {@code multi} property is true, then the
-	 * selected state of the {@code value} will be toggled; otherwise the
-	 * {@code value} will be selected.
+	 * </p>
 	 * 
 	 * @param value
 	 *            the value to select.
@@ -940,27 +1141,53 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Selects the given value. If the {@code multi} property is true, then the
+	 * selected state of the {@code value} will be toggled; otherwise the
+	 * {@code value} will be selected.
+	 * </p>
 	 * 
+	 * @param value
+	 *            the value to select.
+	 */
+	public void select(double value) {
+		getElement().callFunction("select", value);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
 	 * Selects the previous item.
+	 * </p>
 	 */
 	public void selectPrevious() {
 		getElement().callFunction("selectPrevious");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Selects the next item.
+	 * </p>
 	 */
 	public void selectNext() {
 		getElement().callFunction("selectNext");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Selects the item at the given index.
+	 * </p>
 	 * 
 	 * @param index
 	 *            Missing documentation!
@@ -970,18 +1197,23 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Force a synchronous update of the {@code items} property.
-	 * 
+	 * </p>
+	 * <p>
 	 * NOTE: Consider listening for the {@code iron-items-changed} event to
 	 * respond to updates to the set of selectable items after updates to the
 	 * DOM list and selection state have been made.
-	 * 
+	 * </p>
+	 * <p>
 	 * WARNING: If you are using this method, you should probably consider an
 	 * alternate approach. Synchronously querying for items is potentially slow
 	 * for many use cases. The {@code items} property will update asynchronously
 	 * on its own to reflect selectable items in the DOM.
+	 * </p>
 	 */
 	public void forceSynchronousItemUpdate() {
 		getElement().callFunction("forceSynchronousItemUpdate");
@@ -996,11 +1228,14 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
 	 * the {@code keyBindings} prototype property.
+	 * </p>
 	 * 
 	 * @param eventString
 	 *            Missing documentation!
@@ -1013,18 +1248,24 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When called, will remove all imperatively-added key bindings.
+	 * </p>
 	 */
 	public void removeOwnKeyBindings() {
 		getElement().callFunction("removeOwnKeyBindings");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
+	 * </p>
 	 * 
 	 * @param event
 	 *            Missing documentation!

@@ -15,67 +15,79 @@
  */
 package com.vaadin.generated.vaadin.form.layout;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasClickListeners;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <vaadin-form-item>} is a Polymer 2 element providing labelled form
  * item wrapper for using inside {@code <vaadin-form-layout>}.
- * 
+ * </p>
+ * <p>
  * {@code <vaadin-form-item>} accepts any number of children as the input
  * content, and also has a separate named {@code label} slot:
- * 
- * {@code }`html <vaadin-form-item> <label slot="label">Label aside</label>
- * <input> </vaadin-form-item> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-form-item&gt; &lt;label slot=&quot;label&quot;&gt;Label aside&lt;/label&gt; &lt;input&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * </p>
+ * <p>
  * Any content can be used. For instance, you can have multiple input elements
  * with surrounding text. The label can be an element of any type:
- * 
- * {@code }`html <vaadin-form-item> <span slot="label">Date of Birth</span>
- * <input placeholder="YYYY" size="4"> - <input placeholder="MM" size="2"> -
- * <input placeholder="DD" size="2"><br>
- * <em>Example: 1900-01-01</em> </vaadin-form-item> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-form-item&gt; &lt;span slot=&quot;label&quot;&gt;Date of Birth&lt;/span&gt; &lt;input placeholder=&quot;YYYY&quot; size=&quot;4&quot;&gt; - &lt;input placeholder=&quot;MM&quot; size=&quot;2&quot;&gt; - &lt;input placeholder=&quot;DD&quot; size=&quot;2&quot;&gt;&lt;br&gt; &lt;em&gt;Example: 1900-01-01&lt;/em&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * </p>
+ * <p>
  * The label is optional and can be omitted:
- * 
- * {@code }`html <vaadin-form-item> <input type="checkbox"> Subscribe to our
- * Newsletter </vaadin-form-item> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-form-item&gt; &lt;input type=&quot;checkbox&quot;&gt; Subscribe to our Newsletter &lt;/vaadin-form-item&gt; {@code }</code>
+ * </p>
+ * <p>
  * By default, the {@code label} slot content is displayed aside of the input
- * content. When {@code label-position="top"} is set, the {@code label} slot
- * content is displayed on top:
- * 
- * {@code }`html <vaadin-form-item label-position="top"> <label
- * slot="label">Label on top</label> <input> </vaadin-form-item> {@code }`
- * 
- ** Note:** Normally, {@code <vaadin-form-item>} is used as a child of a
- * {@code <vaadin-form-layout>} element. Setting {@code label-position} is
- * unnecessary, because the {@code label-position} attribute is triggered
- * automatically by the parent {@code <vaadin-form-layout>}, depending on its
- * width and responsive behavior.
- * 
- * ### Input Width
- * 
+ * content. When {@code label-position=&quot;top&quot;} is set, the
+ * {@code label} slot content is displayed on top:
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-form-item label-position=&quot;top&quot;&gt; &lt;label slot=&quot;label&quot;&gt;Label on top&lt;/label&gt; &lt;input&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * </p>
+ * <p>
+ * <strong>Note:</strong> Normally, {@code <vaadin-form-item>} is used as a
+ * child of a {@code <vaadin-form-layout>} element. Setting
+ * {@code label-position} is unnecessary, because the {@code label-position}
+ * attribute is triggered automatically by the parent
+ * {@code <vaadin-form-layout>}, depending on its width and responsive behavior.
+ * </p>
+ * <h3>Input Width</h3>
+ * <p>
  * By default, {@code <vaadin-form-item>} does not manipulate the width of the
  * slotted input elements. Optionally you can stretch the child input element to
  * fill the available width for the input content by adding the
  * {@code full-width} class:
- * 
- * {@code }`html <vaadin-form-item> <label slot="label">Label</label> <input
- * class="full-width"> </vaadin-form-item> {@code }`
- * 
- * ### Styling
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-form-item&gt; &lt;label slot=&quot;label&quot;&gt;Label&lt;/label&gt; &lt;input class=&quot;full-width&quot;&gt; &lt;/vaadin-form-item&gt; {@code }</code>
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
  * The {@code label-position} host attribute can be used to target the label on
  * top state:
+ * </p>
  * 
  * <pre>
  * <code>
@@ -94,22 +106,53 @@ import com.vaadin.ui.HasComponents;
  * &lt;/dom-module&gt;
  * </code>
  * </pre>
- * 
+ * <p>
  * The following shadow DOM parts are available for styling:
- * 
- * Part name | Description ---|--- label | The label slot container
- * 
- * ### Custom CSS Properties Reference
- * 
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>label</td>
+ * <td>The label slot container</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <h3>Custom CSS Properties Reference</h3>
+ * <p>
  * The following custom CSS properties are available on the
  * {@code <vaadin-form-item>} element:
- * 
- * Custom CSS property | Description | Default ---|---|---
- * {@code --vaadin-form-item-label-width} | Width of the label column when the
- * labels are aside | {@code 8em} {@code --vaadin-form-item-label-gap} | Length
- * of the gap between the label column and the input column when the labels are
- * aside | {@code 1em} {@code --vaadin-form-item-row-gap} | Height of the gap
- * between the form item elements | {@code 1em}
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom CSS property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --vaadin-form-item-label-width}</td>
+ * <td>Width of the label column when the labels are aside</td>
+ * <td>{@code 8em}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --vaadin-form-item-label-gap}</td>
+ * <td>Length of the gap between the label column and the input column when the
+ * labels are aside</td>
+ * <td>{@code 1em}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --vaadin-form-item-row-gap}</td>
+ * <td>Height of the gap between the form item elements</td>
+ * <td>{@code 1em}</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: Vaadin.FormItemElement#null", "Flow#0.1-SNAPSHOT"})

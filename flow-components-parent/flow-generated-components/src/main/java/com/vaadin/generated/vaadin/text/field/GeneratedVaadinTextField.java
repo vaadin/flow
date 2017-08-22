@@ -15,39 +15,65 @@
  */
 package com.vaadin.generated.vaadin.text.field;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.Focusable;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.Focusable;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <vaadin-text-field>} is a Polymer 2 element for text field control in
  * forms.
- * 
- * {@code }`html <vaadin-text-field label="First Name"> </vaadin-text-field>
- * {@code }`
- * 
- * ### Styling
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-text-field label=&quot;First Name&quot;&gt; &lt;/vaadin-text-field&gt; {@code }</code>
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
  * The following shadow DOM parts are available for styling:
- * 
- * Part name | Description ----------------|---------------- {@code label} | The
- * label element {@code value} | The input element {@code error-message} | The
- * error message element {@code input-field} | The element that wraps prefix,
- * value and suffix
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code label}</td>
+ * <td>The label element</td>
+ * </tr>
+ * <tr>
+ * <td>{@code value}</td>
+ * <td>The input element</td>
+ * </tr>
+ * <tr>
+ * <td>{@code error-message}</td>
+ * <td>The error message element</td>
+ * </tr>
+ * <tr>
+ * <td>{@code input-field}</td>
+ * <td>The element that wraps prefix, value and suffix</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha3",
@@ -64,21 +90,27 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 			HasValue<R, String> {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specify that this control should have input focus when the page loads.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specify that this control should have input focus when the page loads.
+	 * </p>
 	 * 
 	 * @param autofocus
 	 *            the boolean value to set
@@ -90,33 +122,42 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
+	 * </p>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
@@ -128,8 +169,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Whether the value of the control can be automatically completed by the
 	 * browser. List of available options at:
 	 * https://developer.mozilla.org/en/docs
@@ -137,18 +180,22 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Whether the value of the control can be automatically completed by the
 	 * browser. List of available options at:
 	 * https://developer.mozilla.org/en/docs
 	 * /Web/HTML/Element/input#attr-autocomplete
+	 * </p>
 	 * 
 	 * @param autocomplete
 	 *            the String value to set
@@ -161,8 +208,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This is a property supported by Safari that is used to control whether
 	 * autocorrection should be enabled when the user is entering/editing the
 	 * text. Possible values are: on: Enable autocorrection. off: Disable
@@ -170,18 +219,22 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This is a property supported by Safari that is used to control whether
 	 * autocorrection should be enabled when the user is entering/editing the
 	 * text. Possible values are: on: Enable autocorrection. off: Disable
 	 * autocorrection.
+	 * </p>
 	 * 
 	 * @param autocorrect
 	 *            the String value to set
@@ -194,21 +247,27 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Error to show when the input value is invalid.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Error to show when the input value is invalid.
+	 * </p>
 	 * 
 	 * @param errorMessage
 	 *            the String value to set
@@ -221,21 +280,27 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * String used for the label element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * String used for the label element.
+	 * </p>
 	 * 
 	 * @param label
 	 *            the String value to set
@@ -247,23 +312,29 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Identifies a list of pre-defined options to suggest to the user. The
 	 * value must be the id of a <datalist> element in the same document.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Identifies a list of pre-defined options to suggest to the user. The
 	 * value must be the id of a <datalist> element in the same document.
+	 * </p>
 	 * 
 	 * @param list
 	 *            the String value to set
@@ -275,23 +346,29 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Maximum number of characters (in Unicode code points) that the user can
 	 * enter.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Maximum number of characters (in Unicode code points) that the user can
 	 * enter.
+	 * </p>
 	 * 
 	 * @param maxlength
 	 *            the double value to set
@@ -303,23 +380,29 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Minimum number of characters (in Unicode code points) that the user can
 	 * enter.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Minimum number of characters (in Unicode code points) that the user can
 	 * enter.
+	 * </p>
 	 * 
 	 * @param minlength
 	 *            the double value to set
@@ -331,21 +414,27 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of the control, which is submitted with the form data.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of the control, which is submitted with the form data.
+	 * </p>
 	 * 
 	 * @param name
 	 *            the String value to set
@@ -357,23 +446,29 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A regular expression that the value is checked against. The pattern must
 	 * match the entire value, not just some subset.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A regular expression that the value is checked against. The pattern must
 	 * match the entire value, not just some subset.
+	 * </p>
 	 * 
 	 * @param pattern
 	 *            the String value to set
@@ -385,21 +480,27 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A hint to the user of what can be entered in the control.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A hint to the user of what can be entered in the control.
+	 * </p>
 	 * 
 	 * @param placeholder
 	 *            the String value to set
@@ -412,23 +513,29 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This attribute indicates that the user cannot modify the value of the
 	 * control.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This attribute indicates that the user cannot modify the value of the
 	 * control.
+	 * </p>
 	 * 
 	 * @param readonly
 	 *            the boolean value to set
@@ -440,21 +547,27 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specifies that the user must fill in a value.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specifies that the user must fill in a value.
+	 * </p>
 	 * 
 	 * @param required
 	 *            the boolean value to set
@@ -466,21 +579,27 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Message to show to the user when validation fails.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getTitle() {
 		return getElement().getProperty("title");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Message to show to the user when validation fails.
+	 * </p>
 	 * 
 	 * @param title
 	 *            the String value to set
@@ -492,13 +611,16 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The initial value of the control. It can be used for two-way data
 	 * binding.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	@Override
@@ -507,10 +629,13 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The initial value of the control. It can be used for two-way data
 	 * binding.
+	 * </p>
 	 * 
 	 * @param value
 	 *            the String value to set
@@ -523,12 +648,15 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This property is set to true when the control value invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -536,9 +664,12 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This property is set to true when the control value invalid.
+	 * </p>
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
@@ -550,36 +681,45 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A read-only property indicating whether this input has a non empty value.
 	 * It can be used for example in styling of the component.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When set to true, user is prevented from typing a value that conflicts
 	 * with the given {@code pattern}.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPreventInvalidInput() {
 		return getElement().getProperty("preventInvalidInput", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When set to true, user is prevented from typing a value that conflicts
 	 * with the given {@code pattern}.
+	 * </p>
 	 * 
 	 * @param preventInvalidInput
 	 *            the boolean value to set
@@ -599,10 +739,13 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if {@code value} is valid. {@code <iron-form>} uses this to
 	 * check the validity or all its elements.
+	 * </p>
 	 * 
 	 * @return It would return a boolean
 	 */
@@ -611,10 +754,13 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if the current input value satisfies all constraints (if
 	 * any)
+	 * </p>
 	 */
 	public void checkValidity() {
 		getElement().callFunction("checkValidity");
