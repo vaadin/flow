@@ -55,6 +55,7 @@ class PolymerJsonReader {
     private static final String POLYMER_JSON_CONTEXT_PATH = "/polymer.json";
     private static final String INIT_PAGE_JSON_PROPERTY_NAME = "entrypoint";
     private static final String BOOTSTRAP_PAGE_JSON_PROPERTY_NAME = "shell";
+    private static final String URL_PATH_SEPARATOR = "/";
 
     private final List<Dependency> bootstrapDependencies = new ArrayList<>(2);
 
@@ -86,14 +87,25 @@ class PolymerJsonReader {
 
     private void addDependenciesIfPresent(JsonObject jsonObject,
             String rootUrlPart) {
-        Stream.of(BOOTSTRAP_PAGE_JSON_PROPERTY_NAME, INIT_PAGE_JSON_PROPERTY_NAME)
-                .map(jsonObject::<JsonValue> get)
-                .filter(Objects::nonNull)
-                .map(JsonValue::asString)
-                .map(relativeUrlPart -> rootUrlPart + '/' + relativeUrlPart)
+        Stream.of(BOOTSTRAP_PAGE_JSON_PROPERTY_NAME,
+                INIT_PAGE_JSON_PROPERTY_NAME).map(jsonObject::<JsonValue> get)
+                .filter(Objects::nonNull).map(JsonValue::asString)
+                .map(relativeUrlPart -> relativeUrlToAbsolute(rootUrlPart,
+                        relativeUrlPart))
                 .map(url -> new Dependency(Dependency.Type.HTML_IMPORT, url,
                         LoadMode.EAGER))
                 .forEach(bootstrapDependencies::add);
+    }
+
+    private String relativeUrlToAbsolute(String rootUrlPart,
+            String relativeUrlPart) {
+        String urlStart = rootUrlPart.endsWith(URL_PATH_SEPARATOR)
+                ? rootUrlPart.substring(0, rootUrlPart.length() - 1)
+                : rootUrlPart;
+        String urlEnd = relativeUrlPart.startsWith(URL_PATH_SEPARATOR)
+                ? relativeUrlPart.substring(1)
+                : relativeUrlPart;
+        return urlStart + URL_PATH_SEPARATOR + urlEnd;
     }
 
     private Optional<JsonObject> getPolymerJsonContents(
