@@ -24,7 +24,8 @@ import elemental.json.Json;
  * 
  * @author Vaadin Ltd
  */
-public class Checkbox extends GeneratedVaadinCheckbox<Checkbox> {
+public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
+        implements HasSize {
 
     /**
      * Default constructor.

@@ -15,14 +15,16 @@
  */
 package com.vaadin.generated.vaadin.combo.box;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: vaadin-combo-box-overlay#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -33,21 +35,27 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The element to position/align the dropdown by.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The element to position/align the dropdown by.
+	 * </p>
 	 * 
 	 * @param positionTarget
 	 *            the JsonObject value to set
@@ -59,21 +67,27 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Vertical offset for the overlay position.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getVerticalOffset() {
 		return getElement().getProperty("verticalOffset", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Vertical offset for the overlay position.
+	 * </p>
 	 * 
 	 * @param verticalOffset
 	 *            the double value to set
@@ -85,21 +99,27 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the device supports touch events.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isTouchDevice() {
 		return getElement().getProperty("touchDevice", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the device supports touch events.
+	 * </p>
 	 * 
 	 * @param touchDevice
 	 *            the boolean value to set
@@ -111,21 +131,27 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * {@code true} when new items are being loaded.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * {@code true} when new items are being loaded.
+	 * </p>
 	 * 
 	 * @param loading
 	 *            the boolean value to set
@@ -137,20 +163,26 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be called to manually notify a resizable and its descendant
 	 * resizables of a resize change.
+	 * </p>
 	 */
 	public void notifyResize() {
 		getElement().callFunction("notifyResize");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Used to assign the closest resizable ancestor to this resizable if the
 	 * ancestor detects a request for notifications.
+	 * </p>
 	 * 
 	 * @param parentResizable
 	 *            Missing documentation!
@@ -161,10 +193,13 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Used to remove a resizable descendant from the list of descendants that
 	 * should be notified of a resize change.
+	 * </p>
 	 * 
 	 * @param target
 	 *            Missing documentation!
@@ -174,11 +209,14 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This method can be overridden to filter nested elements that should or
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
+	 * </p>
 	 * 
 	 * @param element
 	 *            A candidate descendant element that implements
@@ -190,9 +228,12 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets the index of the item with the provided label.
+	 * </p>
 	 * 
 	 * @param label
 	 *            Missing documentation!
@@ -203,9 +244,12 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Gets the label string for the item based on the {@code _itemLabelPath}.
+	 * </p>
 	 * 
 	 * @param item
 	 *            Missing documentation!

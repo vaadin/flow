@@ -15,38 +15,47 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <vaadin-date-picker-light>} is a customizable version of the
  * {@code <vaadin-date-picker>} providing only the scrollable month calendar
  * view and leaving the input field definition to the user.
- * 
+ * </p>
+ * <p>
  * To create a custom input field, you need to add a child element which has a
  * two-way data-bindable property representing the input value. The property
  * name is expected to be {@code bindValue} by default. See the example below
  * for a simplest possible example using an {@code <input>} element extended
  * with {@code iron-input}.
- * 
- * {@code }`html <vaadin-date-picker-light> <iron-input> <input/> </iron-input>
- * </vaadin-date-picker-light> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-date-picker-light&gt; &lt;iron-input&gt; &lt;input/&gt; &lt;/iron-input&gt; &lt;/vaadin-date-picker-light&gt; {@code }</code>
+ * </p>
+ * <p>
  * If you are using other custom input fields like {@code <paper-input>}, you
  * need to define the name of value property using the {@code attrForValue}
  * property.
- * 
- * {@code }`html <vaadin-date-picker-light attr-for-value="value"> <paper-input
- * label="Birthday"> </paper-input> </vaadin-date-picker-light> {@code }`
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-date-picker-light attr-for-value=&quot;value&quot;&gt; &lt;paper-input label=&quot;Birthday&quot;&gt; &lt;/paper-input&gt; &lt;/vaadin-date-picker-light&gt; {@code }</code>
+ * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: Vaadin.DatePickerLightElement#2.0.1",
@@ -58,29 +67,43 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value for this element.
-	 * 
-	 * Supported date formats: - ISO 8601 {@code "YYYY-MM-DD"} (default) -
-	 * 6-digit extended ISO 8601 {@code "+YYYYYY-MM-DD"},
-	 * {@code "-YYYYYY-MM-DD"}
+	 * </p>
+	 * <p>
+	 * Supported date formats:
+	 * </p>
+	 * <ul>
+	 * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
+	 * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
+	 * {@code &quot;-YYYYYY-MM-DD&quot;}
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
+	 * the returned value may not be the same as in client side.</li>
+	 * </ul>
 	 */
 	public String getValue() {
 		return getElement().getProperty("value");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value for this element.
-	 * 
-	 * Supported date formats: - ISO 8601 {@code "YYYY-MM-DD"} (default) -
-	 * 6-digit extended ISO 8601 {@code "+YYYYYY-MM-DD"},
-	 * {@code "-YYYYYY-MM-DD"}
+	 * </p>
+	 * <p>
+	 * Supported date formats:
+	 * </p>
+	 * <ul>
+	 * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
+	 * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
+	 * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
+	 * </ul>
 	 * 
 	 * @param value
 	 *            the String value to set
@@ -92,21 +115,27 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to mark the input as required.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to mark the input as required.
+	 * </p>
 	 * 
 	 * @param required
 	 *            the boolean value to set
@@ -118,21 +147,27 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of this element.
+	 * </p>
 	 * 
 	 * @param name
 	 *            the String value to set
@@ -144,37 +179,48 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Indicates whether this date picker has a value.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Date which should be visible when there is no value selected.
-	 * 
+	 * </p>
+	 * <p>
 	 * The same date formats as for the {@code value} property are supported.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getInitialPosition() {
 		return getElement().getProperty("initialPosition");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Date which should be visible when there is no value selected.
-	 * 
+	 * </p>
+	 * <p>
 	 * The same date formats as for the {@code value} property are supported.
+	 * </p>
 	 * 
 	 * @param initialPosition
 	 *            the String value to set
@@ -187,21 +233,27 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The label for this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The label for this element.
+	 * </p>
 	 * 
 	 * @param label
 	 *            the String value to set
@@ -213,21 +265,27 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set true to open the date selector overlay.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set true to open the date selector overlay.
+	 * </p>
 	 * 
 	 * @param opened
 	 *            the boolean value to set
@@ -239,25 +297,31 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set true to display ISO-8601 week numbers in the calendar. Notice that
 	 * displaying week numbers is only supported when
 	 * {@code i18n.firstDayOfWeek} is 1 (Monday).
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isShowWeekNumbers() {
 		return getElement().getProperty("showWeekNumbers", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set true to display ISO-8601 week numbers in the calendar. Notice that
 	 * displaying week numbers is only supported when
 	 * {@code i18n.firstDayOfWeek} is 1 (Monday).
+	 * </p>
 	 * 
 	 * @param showWeekNumbers
 	 *            the boolean value to set
@@ -269,109 +333,172 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
-	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * The object used to localize this component. To change the default
-	 * localization, replace the entire _i18n_ object or just the property you
-	 * want to modify.
-	 * 
-	 * The object has the following JSON structure and default values:
-	 * 
-	 * { // An array with the full names of months starting // with January.
-	 * monthNames: [ 'January', 'February', 'March', 'April', 'May', 'June',
-	 * 'July', 'August', 'September', 'October', 'November', 'December' ],
-	 * 
-	 * // An array of weekday names starting with Sunday. Used // in screen
-	 * reader announcements. weekdays: [ 'Sunday', 'Monday', 'Tuesday',
-	 * 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
-	 * 
-	 * // An array of short weekday names starting with Sunday. // Displayed in
-	 * the calendar. weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri',
-	 * 'Sat' ],
-	 * 
-	 * // An integer indicating the first day of the week // (0 = Sunday, 1 =
-	 * Monday, etc.). firstDayOfWeek: 0,
-	 * 
-	 * // Used in screen reader announcements along with week // numbers, if
-	 * they are displayed. week: 'Week',
-	 * 
-	 * // Translation of the Calendar icon button title. calendar: 'Calendar',
-	 * 
-	 * // Translation of the Clear icon button title. clear: 'Clear',
-	 * 
-	 * // Translation of the Today shortcut button text. today: 'Today',
-	 * 
-	 * // Translation of the Cancel button text. cancel: 'Cancel',
-	 * 
-	 * // A function to format given {@code Date} object as // date string.
-	 * formatDate: d => { // returns a string representation of the given //
-	 * Date object in 'MM/DD/YYYY' -format },
-	 * 
-	 * // A function to parse the given text to a {@code Date}
-	 * // object. Must properly parse (at least) text // formatted by
-	 * {@code formatDate}. // Setting the property to null will disable //
-	 * keyboard input feature. parseDate: text => { // Parses a string in
-	 * 'MM/DD/YY', 'MM/DD' or 'DD' -format to // a Date object }
-	 * 
-	 * // A function to format given {@code monthName} and // {@code fullYear}
-	 * integer as calendar title string. formatTitle: (monthName, fullYear) => {
-	 * return monthName + ' ' + fullYear; } }
 	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * The object used to localize this component. To change the default
+	 * localization, replace the entire <em>i18n</em> object or just the
+	 * property you want to modify.
+	 * </p>
+	 * <p>
+	 * The object has the following JSON structure and default values:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>        {
+	 * 	          // An array with the full names of months starting
+	 * 	          // with January.
+	 * 	          monthNames: [
+	 * 	            'January', 'February', 'March', 'April', 'May',
+	 * 	            'June', 'July', 'August', 'September',
+	 * 	            'October', 'November', 'December'
+	 * 	          ],
+	 * 
+	 * 	          // An array of weekday names starting with Sunday. Used
+	 * 	          // in screen reader announcements.
+	 * 	          weekdays: [
+	 * 	            'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+	 * 	            'Thursday', 'Friday', 'Saturday'
+	 * 	          ],
+	 * 
+	 * 	          // An array of short weekday names starting with Sunday.
+	 * 	          // Displayed in the calendar.
+	 * 	          weekdaysShort: [
+	 * 	            'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+	 * 	          ],
+	 * 
+	 * 	          // An integer indicating the first day of the week
+	 * 	          // (0 = Sunday, 1 = Monday, etc.).
+	 * 	          firstDayOfWeek: 0,
+	 * 
+	 * 	          // Used in screen reader announcements along with week
+	 * 	          // numbers, if they are displayed.
+	 * 	          week: 'Week',
+	 * 
+	 * 	          // Translation of the Calendar icon button title.
+	 * 	          calendar: 'Calendar',
+	 * 
+	 * 	          // Translation of the Clear icon button title.
+	 * 	          clear: 'Clear',
+	 * 
+	 * 	          // Translation of the Today shortcut button text.
+	 * 	          today: 'Today',
+	 * 
+	 * 	          // Translation of the Cancel button text.
+	 * 	          cancel: 'Cancel',
+	 * 
+	 * 	          // A function to format given {@code Date} object as
+	 * 	          // date string.
+	 * 	          formatDate: d =&gt; {
+	 * 	            // returns a string representation of the given
+	 * 	            // Date object in 'MM/DD/YYYY' -format
+	 * 	          },
+	 * 
+	 * 	          // A function to parse the given text to a {@code Date}
+	 * 	          // object. Must properly parse (at least) text
+	 * 	          // formatted by {@code formatDate}.
+	 * 	          // Setting the property to null will disable
+	 * 	          // keyboard input feature.
+	 * 	          parseDate: text =&gt; {
+	 * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
+	 * 	            // a Date object
+	 * 	          }
+	 * 
+	 * 	          // A function to format given {@code monthName} and
+	 * 	          // {@code fullYear} integer as calendar title string.
+	 * 	          formatTitle: (monthName, fullYear) =&gt; {
+	 * 	            return monthName + ' ' + fullYear;
+	 * 	          }
+	 * 	        }&lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
+	 * 	</code>
+	 * </pre>
 	 */
 	protected JsonObject protectedGetI18n() {
 		return (JsonObject) getElement().getPropertyRaw("i18n");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The object used to localize this component. To change the default
-	 * localization, replace the entire _i18n_ object or just the property you
-	 * want to modify.
-	 * 
+	 * localization, replace the entire <em>i18n</em> object or just the
+	 * property you want to modify.
+	 * </p>
+	 * <p>
 	 * The object has the following JSON structure and default values:
+	 * </p>
 	 * 
-	 * { // An array with the full names of months starting // with January.
-	 * monthNames: [ 'January', 'February', 'March', 'April', 'May', 'June',
-	 * 'July', 'August', 'September', 'October', 'November', 'December' ],
+	 * <pre>
+	 * <code>        {
+	 * 	          // An array with the full names of months starting
+	 * 	          // with January.
+	 * 	          monthNames: [
+	 * 	            'January', 'February', 'March', 'April', 'May',
+	 * 	            'June', 'July', 'August', 'September',
+	 * 	            'October', 'November', 'December'
+	 * 	          ],
 	 * 
-	 * // An array of weekday names starting with Sunday. Used // in screen
-	 * reader announcements. weekdays: [ 'Sunday', 'Monday', 'Tuesday',
-	 * 'Wednesday', 'Thursday', 'Friday', 'Saturday' ],
+	 * 	          // An array of weekday names starting with Sunday. Used
+	 * 	          // in screen reader announcements.
+	 * 	          weekdays: [
+	 * 	            'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+	 * 	            'Thursday', 'Friday', 'Saturday'
+	 * 	          ],
 	 * 
-	 * // An array of short weekday names starting with Sunday. // Displayed in
-	 * the calendar. weekdaysShort: [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri',
-	 * 'Sat' ],
+	 * 	          // An array of short weekday names starting with Sunday.
+	 * 	          // Displayed in the calendar.
+	 * 	          weekdaysShort: [
+	 * 	            'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+	 * 	          ],
 	 * 
-	 * // An integer indicating the first day of the week // (0 = Sunday, 1 =
-	 * Monday, etc.). firstDayOfWeek: 0,
+	 * 	          // An integer indicating the first day of the week
+	 * 	          // (0 = Sunday, 1 = Monday, etc.).
+	 * 	          firstDayOfWeek: 0,
 	 * 
-	 * // Used in screen reader announcements along with week // numbers, if
-	 * they are displayed. week: 'Week',
+	 * 	          // Used in screen reader announcements along with week
+	 * 	          // numbers, if they are displayed.
+	 * 	          week: 'Week',
 	 * 
-	 * // Translation of the Calendar icon button title. calendar: 'Calendar',
+	 * 	          // Translation of the Calendar icon button title.
+	 * 	          calendar: 'Calendar',
 	 * 
-	 * // Translation of the Clear icon button title. clear: 'Clear',
+	 * 	          // Translation of the Clear icon button title.
+	 * 	          clear: 'Clear',
 	 * 
-	 * // Translation of the Today shortcut button text. today: 'Today',
+	 * 	          // Translation of the Today shortcut button text.
+	 * 	          today: 'Today',
 	 * 
-	 * // Translation of the Cancel button text. cancel: 'Cancel',
+	 * 	          // Translation of the Cancel button text.
+	 * 	          cancel: 'Cancel',
 	 * 
-	 * // A function to format given {@code Date} object as // date string.
-	 * formatDate: d => { // returns a string representation of the given //
-	 * Date object in 'MM/DD/YYYY' -format },
+	 * 	          // A function to format given {@code Date} object as
+	 * 	          // date string.
+	 * 	          formatDate: d =&gt; {
+	 * 	            // returns a string representation of the given
+	 * 	            // Date object in 'MM/DD/YYYY' -format
+	 * 	          },
 	 * 
-	 * // A function to parse the given text to a {@code Date}
-	 * // object. Must properly parse (at least) text // formatted by
-	 * {@code formatDate}. // Setting the property to null will disable //
-	 * keyboard input feature. parseDate: text => { // Parses a string in
-	 * 'MM/DD/YY', 'MM/DD' or 'DD' -format to // a Date object }
+	 * 	          // A function to parse the given text to a {@code Date}
+	 * 	          // object. Must properly parse (at least) text
+	 * 	          // formatted by {@code formatDate}.
+	 * 	          // Setting the property to null will disable
+	 * 	          // keyboard input feature.
+	 * 	          parseDate: text =&gt; {
+	 * 	            // Parses a string in 'MM/DD/YY', 'MM/DD' or 'DD' -format to
+	 * 	            // a Date object
+	 * 	          }
 	 * 
-	 * // A function to format given {@code monthName} and // {@code fullYear}
-	 * integer as calendar title string. formatTitle: (monthName, fullYear) => {
-	 * return monthName + ' ' + fullYear; } }
+	 * 	          // A function to format given {@code monthName} and
+	 * 	          // {@code fullYear} integer as calendar title string.
+	 * 	          formatTitle: (monthName, fullYear) =&gt; {
+	 * 	            return monthName + ' ' + fullYear;
+	 * 	          }
+	 * 	        }
+	 * 	</code>
+	 * </pre>
 	 * 
 	 * @param i18n
 	 *            the JsonObject value to set
@@ -383,31 +510,45 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The earliest date that can be selected. All earlier dates will be
 	 * disabled.
-	 * 
-	 * Supported date formats: - ISO 8601 {@code "YYYY-MM-DD"} (default) -
-	 * 6-digit extended ISO 8601 {@code "+YYYYYY-MM-DD"},
-	 * {@code "-YYYYYY-MM-DD"}
+	 * </p>
+	 * <p>
+	 * Supported date formats:
+	 * </p>
+	 * <ul>
+	 * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
+	 * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
+	 * {@code &quot;-YYYYYY-MM-DD&quot;}
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
+	 * the returned value may not be the same as in client side.</li>
+	 * </ul>
 	 */
 	public String getMin() {
 		return getElement().getProperty("min");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The earliest date that can be selected. All earlier dates will be
 	 * disabled.
-	 * 
-	 * Supported date formats: - ISO 8601 {@code "YYYY-MM-DD"} (default) -
-	 * 6-digit extended ISO 8601 {@code "+YYYYYY-MM-DD"},
-	 * {@code "-YYYYYY-MM-DD"}
+	 * </p>
+	 * <p>
+	 * Supported date formats:
+	 * </p>
+	 * <ul>
+	 * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
+	 * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
+	 * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
+	 * </ul>
 	 * 
 	 * @param min
 	 *            the String value to set
@@ -419,29 +560,43 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The latest date that can be selected. All later dates will be disabled.
-	 * 
-	 * Supported date formats: - ISO 8601 {@code "YYYY-MM-DD"} (default) -
-	 * 6-digit extended ISO 8601 {@code "+YYYYYY-MM-DD"},
-	 * {@code "-YYYYYY-MM-DD"}
+	 * </p>
+	 * <p>
+	 * Supported date formats:
+	 * </p>
+	 * <ul>
+	 * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
+	 * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
+	 * {@code &quot;-YYYYYY-MM-DD&quot;}
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
+	 * the returned value may not be the same as in client side.</li>
+	 * </ul>
 	 */
 	public String getMax() {
 		return getElement().getProperty("max");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The latest date that can be selected. All later dates will be disabled.
-	 * 
-	 * Supported date formats: - ISO 8601 {@code "YYYY-MM-DD"} (default) -
-	 * 6-digit extended ISO 8601 {@code "+YYYYYY-MM-DD"},
-	 * {@code "-YYYYYY-MM-DD"}
+	 * </p>
+	 * <p>
+	 * Supported date formats:
+	 * </p>
+	 * <ul>
+	 * <li>ISO 8601 {@code &quot;YYYY-MM-DD&quot;} (default)</li>
+	 * <li>6-digit extended ISO 8601 {@code &quot;+YYYYYY-MM-DD&quot;},
+	 * {@code &quot;-YYYYYY-MM-DD&quot;}</li>
+	 * </ul>
 	 * 
 	 * @param max
 	 *            the String value to set
@@ -453,23 +608,29 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Name of the two-way data-bindable property representing the value of the
 	 * custom input field.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAttrForValue() {
 		return getElement().getProperty("attrForValue");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Name of the two-way data-bindable property representing the value of the
 	 * custom input field.
+	 * </p>
 	 * 
 	 * @param attrForValue
 	 *            the String value to set
@@ -482,28 +643,37 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Opens the dropdown.
+	 * </p>
 	 */
 	public void open() {
 		getElement().callFunction("open");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Closes the dropdown.
+	 * </p>
 	 */
 	public void close() {
 		getElement().callFunction("close");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if {@code value} is valid, and sets the {@code invalid} flag
 	 * appropriatelly.
+	 * </p>
 	 * 
 	 * @param value
 	 *            Missing documentation!
@@ -514,12 +684,16 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if the current input value satisfies all constraints (if
 	 * any)
-	 * 
+	 * </p>
+	 * <p>
 	 * Override the {@code checkValidity} method for custom validations.
+	 * </p>
 	 * 
 	 * @param value
 	 *            Missing documentation!

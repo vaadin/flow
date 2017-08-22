@@ -1053,7 +1053,7 @@ public class Element extends Node<Element> {
      * actually a {@link Set} since the the in-browser return value behaves like
      * a <code>Set</code> in Java.
      *
-     * @return a list of class names
+     * @return a list of class names, never <code>null</code>
      */
     public ClassList getClassList() {
         return getStateProvider().getClassList(getNode());

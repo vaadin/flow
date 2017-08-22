@@ -15,12 +15,14 @@
  */
 package com.vaadin.generated.paper.menu.button;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
@@ -33,21 +35,27 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Defines the animation timing.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Defines the animation timing.
+	 * </p>
 	 * 
 	 * @param animationTiming
 	 *            the JsonObject value to set
@@ -59,21 +67,27 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be used to determine that elements implement this behavior.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNeonAnimation() {
 		return getElement().getProperty("isNeonAnimation", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be used to determine that elements implement this behavior.
+	 * </p>
 	 * 
 	 * @param isNeonAnimation
 	 *            the boolean value to set
@@ -85,10 +99,13 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the animation timing by mixing in properties from {@code config}
 	 * to the defaults defined by the animation.
+	 * </p>
 	 * 
 	 * @param config
 	 *            Missing documentation!
@@ -98,10 +115,13 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Sets {@code transform} and {@code transformOrigin} properties along with
 	 * the prefixed versions.
+	 * </p>
 	 * 
 	 * @param node
 	 *            Missing documentation!
@@ -116,9 +136,12 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Called when the animation finishes.
+	 * </p>
 	 */
 	public void complete() {
 		getElement().callFunction("complete");

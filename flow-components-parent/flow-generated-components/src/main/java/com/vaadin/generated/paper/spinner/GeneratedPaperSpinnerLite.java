@@ -15,43 +15,71 @@
  */
 package com.vaadin.generated.paper.spinner;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
- * Material design: [Progress &
- * activity](https://www.google.com/design/spec/components
- * /progress-activity.html)
- * 
+ * </p>
+ * <p>
+ * Material design: <a
+ * href="https://www.google.com/design/spec/components/progress-activity.html"
+ * >Progress &amp; activity</a>
+ * </p>
+ * <p>
  * Element providing a single color material design circular spinner.
+ * </p>
  * 
- * <paper-spinner-lite active></paper-spinner-lite>
- * 
+ * <pre>
+ * <code>&lt;paper-spinner-lite active&gt;&lt;/paper-spinner-lite&gt;
+ * </code>
+ * </pre>
+ * <p>
  * The default spinner is blue. It can be customized to be a different color.
- * 
- * ### Accessibility
- * 
+ * </p>
+ * <h3>Accessibility</h3>
+ * <p>
  * Alt attribute should be set to provide adequate context for accessibility. If
  * not provided, it defaults to 'loading'. Empty alt can be provided to mark the
  * element as decorative if alternative content is provided in another form
  * (e.g. a text block following the spinner).
+ * </p>
  * 
- * <paper-spinner-lite alt="Loading contacts list" active></paper-spinner-lite>
+ * <pre>
+ * <code>&lt;paper-spinner-lite alt=&quot;Loading contacts list&quot; active&gt;&lt;/paper-spinner-lite&gt;
+ * </code>
+ * </pre>
  * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|---------- {@code --paper-spinner-color} |
- * Color of the spinner | {@code --google-blue-500}
- * {@code --paper-spinner-stroke-width} | The width of the spinner stroke | 3px
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-spinner-color}</td>
+ * <td>Color of the spinner</td>
+ * <td>{@code --google-blue-500}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-spinner-stroke-width}</td>
+ * <td>The width of the spinner stroke</td>
+ * <td>3px</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-spinner-lite#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -62,21 +90,27 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Displays the spinner.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Displays the spinner.
+	 * </p>
 	 * 
 	 * @param active
 	 *            the boolean value to set
@@ -88,25 +122,31 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Alternative text content for accessibility support. If alt is present, it
 	 * will add an aria-label whose content matches alt when active. If alt is
 	 * not present, it will default to 'loading' as the alt value.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Alternative text content for accessibility support. If alt is present, it
 	 * will add an aria-label whose content matches alt when active. If alt is
 	 * not present, it will default to 'loading' as the alt value.
+	 * </p>
 	 * 
 	 * @param alt
 	 *            the String value to set

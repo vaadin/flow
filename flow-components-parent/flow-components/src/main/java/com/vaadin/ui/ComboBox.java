@@ -49,8 +49,8 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the type of the items to be inserted in the combo box
  */
-public class ComboBox<T>
-        extends GeneratedVaadinComboBox<ComboBox<T>> {
+public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
+        implements HasSize {
 
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
@@ -173,8 +173,7 @@ public class ComboBox<T>
     public ComboBox<T> setItemTemplate(String template) {
         getElement().getChildren()
                 .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
-                .findFirst()
-                .ifPresent(element -> element.removeFromParent());
+                .findFirst().ifPresent(element -> element.removeFromParent());
 
         Element templateElement = new Element(TEMPLATE_TAG_NAME);
         getElement().appendChild(templateElement);

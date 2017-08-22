@@ -15,74 +15,122 @@
  */
 package com.vaadin.generated.vaadin.combo.box;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.data.HasValue;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.annotations.EventData;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <vaadin-combo-box>} is a combo box element combining a dropdown list
  * with an input field for filtering the list of items. If you want to replace
- * the default input field with a custom implementation, you should use the [
- * {@code <vaadin-combo-box-light>}](#vaadin-combo-box-light) element.
- * 
+ * the default input field with a custom implementation, you should use the <a
+ * href="#vaadin-combo-box-light">{@code <vaadin-combo-box-light>}</a> element.
+ * </p>
+ * <p>
  * Items in the dropdown list must be provided as a list of {@code String}
  * values. Defining the items is done using the {@code items} property, which
  * can be assigned with data-binding, using an attribute or directly with the
  * JavaScript property.
- * 
- * {@code }`html <vaadin-combo-box label="Fruit" items="[[data]]">
- * </vaadin-combo-box> {@code }`
- * 
- * {@code }`js combobox.items = ['apple', 'orange', 'banana']; {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-combo-box label=&quot;Fruit&quot; items=&quot;[[data]]&quot;&gt; &lt;/vaadin-combo-box&gt; {@code }</code>
+ * </p>
+ * <p>
+ * {@code }
+ * <code>js combobox.items = ['apple', 'orange', 'banana']; {@code }</code>
+ * </p>
+ * <p>
  * When the selected {@code value} is changed, a {@code value-changed} event is
  * triggered.
- * 
+ * </p>
+ * <p>
  * This element is also extended with the {@code IronFormElementBehavior} to
  * enable usage within an {@code iron-form}.
- * 
- * ### Item Template
- * 
+ * </p>
+ * <h3>Item Template</h3>
+ * <p>
  * {@code <vaadin-combo-box>} supports using custom item template provided in
  * the light DOM:
- * 
- * {@code }`html <vaadin-combo-box items='[{"label": "Hydrogen", "value": "H"}]'>
- * <template> [[index]]: [[item.label]] <b>[[item.value]</b> </template>
- * </vaadin-combo-box> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-combo-box items='[{&quot;label&quot;: &quot;Hydrogen&quot;, &quot;value&quot;: &quot;H&quot;}]'&gt; &lt;template&gt; [[index]]: [[item.label]] &lt;b&gt;[[item.value]&lt;/b&gt; &lt;/template&gt; &lt;/vaadin-combo-box&gt; {@code }</code>
+ * </p>
+ * <p>
  * The following properties are available for item template bindings:
- * 
- * Property name | Type | Description --------------|------|------------
- * {@code index}| Number | Index of the item in the {@code items} array
- * {@code item} | String or Object | The item reference {@code selected} |
- * Boolean | True when item is selected {@code focused} | Boolean | True when
- * item is focused
- * 
- * See the [Item Template Live Demos](demo/item-template.html) for more
- * examples.
- * 
- * ### Styling There are custom properties and mixins you can use to style the
- * component:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|-------------
- * {@code --vaadin-combo-box-overlay-max-height} | Property that determines the
- * max height of overlay | {@code 65vh}
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Property name</th>
+ * <th>Type</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code index}</td>
+ * <td>Number</td>
+ * <td>Index of the item in the {@code items} array</td>
+ * </tr>
+ * <tr>
+ * <td>{@code item}</td>
+ * <td>String or Object</td>
+ * <td>The item reference</td>
+ * </tr>
+ * <tr>
+ * <td>{@code selected}</td>
+ * <td>Boolean</td>
+ * <td>True when item is selected</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Boolean</td>
+ * <td>True when item is focused</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * See the <a href="demo/item-template.html">Item Template Live Demos</a> for
+ * more examples.
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * There are custom properties and mixins you can use to style the component:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --vaadin-combo-box-overlay-max-height}</td>
+ * <td>Property that determines the max height of overlay</td>
+ * <td>{@code 65vh}</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: vaadin-combo-box#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -97,21 +145,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 			HasValue<R, String> {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Name of the validator to use.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Name of the validator to use.
+	 * </p>
 	 * 
 	 * @param validator
 	 *            the String value to set
@@ -124,12 +178,15 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the last call to {@code validate} is invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -137,9 +194,12 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the last call to {@code validate} is invalid.
+	 * </p>
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
@@ -169,18 +229,23 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The {@code String} value for the selected item of the combo box. Provides
 	 * the value for {@code iron-form}.
-	 * 
+	 * </p>
+	 * <p>
 	 * When there’s no item selected, the value is an empty string.
-	 * 
+	 * </p>
+	 * <p>
 	 * Use {@code selectedItem} property to get the raw selected item from the
 	 * {@code items} array.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	@Override
@@ -189,15 +254,20 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The {@code String} value for the selected item of the combo box. Provides
 	 * the value for {@code iron-form}.
-	 * 
+	 * </p>
+	 * <p>
 	 * When there’s no item selected, the value is an empty string.
-	 * 
+	 * </p>
+	 * <p>
 	 * Use {@code selectedItem} property to get the raw selected item from the
 	 * {@code items} array.
+	 * </p>
 	 * 
 	 * @param value
 	 *            the String value to set
@@ -210,21 +280,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to mark the input as required.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to mark the input as required.
+	 * </p>
 	 * 
 	 * @param required
 	 *            the boolean value to set
@@ -236,12 +312,15 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the dropdown is open, false otherwise.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'opened-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -249,9 +328,12 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the dropdown is open, false otherwise.
+	 * </p>
 	 * 
 	 * @param opened
 	 *            the boolean value to set
@@ -263,21 +345,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable this input.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable this input.
+	 * </p>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
@@ -307,23 +395,29 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A full set of items to filter the visible options from. The items can be
 	 * of either {@code String} or {@code Object} type.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonArray protectedGetItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A full set of items to filter the visible options from. The items can be
 	 * of either {@code String} or {@code Object} type.
+	 * </p>
 	 * 
 	 * @param items
 	 *            the JsonArray value to set
@@ -335,8 +429,10 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If {@code true}, the user can input a value that is not present in the
 	 * items list. {@code value} property will be set to the input value in this
 	 * case. Also, when {@code value} is set programmatically, the input value
@@ -344,18 +440,22 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAllowCustomValue() {
 		return getElement().getProperty("allowCustomValue", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If {@code true}, the user can input a value that is not present in the
 	 * items list. {@code value} property will be set to the input value in this
 	 * case. Also, when {@code value} is set programmatically, the input value
 	 * will be set to reflect that value.
+	 * </p>
 	 * 
 	 * @param allowCustomValue
 	 *            the boolean value to set
@@ -367,25 +467,31 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A subset of items, filtered based on the user input. Filtered items can
 	 * be assigned directly to omit the internal filtering functionality. The
 	 * items can be of either {@code String} or {@code Object} type.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonArray protectedGetFilteredItems() {
 		return (JsonArray) getElement().getPropertyRaw("filteredItems");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A subset of items, filtered based on the user input. Filtered items can
 	 * be assigned directly to omit the internal filtering functionality. The
 	 * items can be of either {@code String} or {@code Object} type.
+	 * </p>
 	 * 
 	 * @param filteredItems
 	 *            the JsonArray value to set
@@ -397,36 +503,45 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A read-only property indicating whether this combo box has a value
 	 * selected or not. It can be used for example in styling of the component.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When set to {@code true}, a loading spinner is displayed on top of the
 	 * list of options.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When set to {@code true}, a loading spinner is displayed on top of the
 	 * list of options.
+	 * </p>
 	 * 
 	 * @param loading
 	 *            the boolean value to set
@@ -438,12 +553,15 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Filtering string the user has typed into the input field.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'filter-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
@@ -451,9 +569,12 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Filtering string the user has typed into the input field.
+	 * </p>
 	 * 
 	 * @param filter
 	 *            the String value to set
@@ -465,21 +586,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The selected item from the {@code items} array.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The selected item from the {@code items} array.
+	 * </p>
 	 * 
 	 * @param selectedItem
 	 *            the JsonObject value to set
@@ -491,39 +618,49 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Path for label of the item. If {@code items} is an array of objects, the
 	 * {@code itemLabelPath} is used to fetch the displayed string label for
 	 * each item.
-	 * 
+	 * </p>
+	 * <p>
 	 * The item label is also used for matching items when processing user
 	 * input, i.e., for filtering and selecting items.
-	 * 
+	 * </p>
+	 * <p>
 	 * When using item templates, the property is still needed because it is
 	 * used for filtering, and for displaying the selected item value in the
 	 * input box.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getItemLabelPath() {
 		return getElement().getProperty("itemLabelPath");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Path for label of the item. If {@code items} is an array of objects, the
 	 * {@code itemLabelPath} is used to fetch the displayed string label for
 	 * each item.
-	 * 
+	 * </p>
+	 * <p>
 	 * The item label is also used for matching items when processing user
 	 * input, i.e., for filtering and selecting items.
-	 * 
+	 * </p>
+	 * <p>
 	 * When using item templates, the property is still needed because it is
 	 * used for filtering, and for displaying the selected item value in the
 	 * input box.
+	 * </p>
 	 * 
 	 * @param itemLabelPath
 	 *            the String value to set
@@ -536,31 +673,39 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Path for the value of the item. If {@code items} is an array of objects,
 	 * the {@code itemValuePath:} is used to fetch the string value for the
 	 * selected item.
-	 * 
+	 * </p>
+	 * <p>
 	 * The item value is used in the {@code value} property of the combo box, to
 	 * provide the form value.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getItemValuePath() {
 		return getElement().getProperty("itemValuePath");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Path for the value of the item. If {@code items} is an array of objects,
 	 * the {@code itemValuePath:} is used to fetch the string value for the
 	 * selected item.
-	 * 
+	 * </p>
+	 * <p>
 	 * The item value is used in the {@code value} property of the combo box, to
 	 * provide the form value.
+	 * </p>
 	 * 
 	 * @param itemValuePath
 	 *            the String value to set
@@ -573,33 +718,42 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns a reference to the native input element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The label for this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The label for this element.
+	 * </p>
 	 * 
 	 * @param label
 	 *            the String value to set
@@ -611,21 +765,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable the floating label.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable the floating label.
+	 * </p>
 	 * 
 	 * @param noLabelFloat
 	 *            the boolean value to set
@@ -637,21 +797,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to always float the label.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to always float the label.
+	 * </p>
 	 * 
 	 * @param alwaysFloatLabel
 	 *            the boolean value to set
@@ -663,21 +829,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to auto-validate the input value.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to auto-validate the input value.
+	 * </p>
 	 * 
 	 * @param autoValidate
 	 *            the boolean value to set
@@ -689,21 +861,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to prevent the user from entering invalid input.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPreventInvalidInput() {
 		return getElement().getProperty("preventInvalidInput", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to prevent the user from entering invalid input.
+	 * </p>
 	 * 
 	 * @param preventInvalidInput
 	 *            the boolean value to set
@@ -715,21 +893,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
+	 * </p>
 	 * 
 	 * @param allowedPattern
 	 *            the String value to set
@@ -742,21 +926,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A pattern to validate the {@code input} with.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A pattern to validate the {@code input} with.
+	 * </p>
 	 * 
 	 * @param pattern
 	 *            the String value to set
@@ -768,21 +958,27 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The error message to display when the input is invalid.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The error message to display when the input is invalid.
+	 * </p>
 	 * 
 	 * @param errorMessage
 	 *            the String value to set
@@ -832,23 +1028,29 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A placeholder string in addition to the label. If this is set, the label
 	 * will always float.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A placeholder string in addition to the label. If this is set, the label
 	 * will always float.
+	 * </p>
 	 * 
 	 * @param placeholder
 	 *            the String value to set
@@ -879,12 +1081,15 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True when the input field has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -899,11 +1104,14 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if the {@code value} is valid, and updates {@code invalid}.
 	 * If you want your element to have custom validation logic, do not override
 	 * this method; override {@code _getValidity(value)} instead.
+	 * </p>
 	 * 
 	 * @param value
 	 *            Deprecated: The value to be validated. By default, it is
@@ -917,12 +1125,15 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Generates an anonymous {@code TemplateInstance} class (stored as
 	 * {@code this.ctor}) for the provided template. This method should be
 	 * called once per template to prepare an element for stamping the template,
 	 * followed by {@code stamp} to create new instances of the template.
+	 * </p>
 	 * 
 	 * @param template
 	 *            Template to prepare
@@ -937,13 +1148,16 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Creates an instance of the template prepared by {@code templatize}. The
 	 * object returned is an instance of the anonymous class generated by
 	 * {@code templatize} whose {@code root} property is a document fragment
 	 * containing newly cloned template content, and which has property
 	 * accessors corresponding to properties referenced in template bindings.
+	 * </p>
 	 * 
 	 * @param model
 	 *            Object containing initial property values to populate into the
@@ -955,12 +1169,15 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * Returns the template "model" ({@code TemplateInstance}) associated with a
-	 * given element, which serves as the binding scope for the template
-	 * instance the element is contained in. A template model should be used to
-	 * manipulate data associated with this template instance.
+	 * </p>
+	 * <p>
+	 * Returns the template &quot;model&quot; ({@code TemplateInstance})
+	 * associated with a given element, which serves as the binding scope for
+	 * the template instance the element is contained in. A template model
+	 * should be used to manipulate data associated with this template instance.
+	 * </p>
 	 * 
 	 * @param el
 	 *            Element for which to return a template model.
@@ -971,45 +1188,60 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Opens the dropdown list.
+	 * </p>
 	 */
 	public void open() {
 		getElement().callFunction("open");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Closes the dropdown list.
+	 * </p>
 	 */
 	public void close() {
 		getElement().callFunction("close");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Reverts back to original value.
+	 * </p>
 	 */
 	public void cancel() {
 		getElement().callFunction("cancel");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Sets focus on the input field.
+	 * </p>
 	 */
 	public void focus() {
 		getElement().callFunction("focus");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Removes focus from the input field.
+	 * </p>
 	 */
 	public void blur() {
 		getElement().callFunction("blur");

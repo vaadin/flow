@@ -18,6 +18,7 @@ package com.vaadin.flow.tests.components.textfield;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.tests.components.AbstractComponentIT;
 import com.vaadin.testbench.By;
@@ -34,7 +35,19 @@ public class TextFieldViewIT extends AbstractComponentIT {
     }
 
     @Test
-    public void pass() {
-        Assert.assertTrue(isElementPresent(By.tagName("vaadin-text-field")));
+    public void assertReadOnly() {
+        WebElement webComponent = findElement(By.tagName("vaadin-text-field"));
+
+        WebElement textField = getInShadowRoot(webComponent, By.id("input"));
+        Assert.assertNull(textField.getAttribute("readonly"));
+
+        WebElement button = findElement(By.id("read-only"));
+        button.click();
+
+        waitUntil(driver -> textField.getAttribute("readonly"));
+
+        button.click();
+
+        waitUntil(driver -> textField.getAttribute("readonly") == null);
     }
 }

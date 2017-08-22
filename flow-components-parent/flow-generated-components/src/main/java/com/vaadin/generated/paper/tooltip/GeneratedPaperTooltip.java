@@ -15,21 +15,27 @@
  */
 package com.vaadin.generated.paper.tooltip;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
- * Material design:
- * [Tooltips](https://www.google.com/design/spec/components/tooltips.html)
- * 
+ * </p>
+ * <p>
+ * Material design: <a
+ * href="https://www.google.com/design/spec/components/tooltips.html"
+ * >Tooltips</a>
+ * </p>
+ * <p>
  * {@code <paper-tooltip>} is a label that appears on hover and focus when the
  * user hovers over an element with the cursor or with the keyboard. It will be
  * centered to an anchor element specified in the {@code for} attribute, or, if
@@ -37,33 +43,69 @@ import com.vaadin.ui.HasComponents;
  * of {@code paper-tooltip#2.0.0}, you must explicitely include the
  * {@code web-animations} polyfill if you want this element to work on browsers
  * not implementing the WebAnimations spec.
- * 
+ * </p>
+ * <p>
  * Example: // polyfill <link rel="import"
  * href="../../neon-animation/web-animations.html">
+ * </p>
  * 
- * <div style="display:inline-block"> <button>Click me!</button>
- * <paper-tooltip>Tooltip text</paper-tooltip> </div>
+ * <pre>
+ * <code>&lt;div style=&quot;display:inline-block&quot;&gt;
+ *   &lt;button&gt;Click me!&lt;/button&gt;
+ *   &lt;paper-tooltip&gt;Tooltip text&lt;/paper-tooltip&gt;
+ * &lt;/div&gt;
  * 
- * <div> <button id="btn">Click me!</button> <paper-tooltip for="btn">Tooltip
- * text</paper-tooltip> </div>
- * 
+ * &lt;div&gt;
+ *   &lt;button id=&quot;btn&quot;&gt;Click me!&lt;/button&gt;
+ *   &lt;paper-tooltip for=&quot;btn&quot;&gt;Tooltip text&lt;/paper-tooltip&gt;
+ * &lt;/div&gt;
+ * </code>
+ * </pre>
+ * <p>
  * The tooltip can be positioned on the top|bottom|left|right of the anchor
  * using the {@code position} attribute. The default position is bottom.
+ * </p>
  * 
- * <paper-tooltip for="btn" position="left">Tooltip text</paper-tooltip>
- * <paper-tooltip for="btn" position="top">Tooltip text</paper-tooltip>
+ * <pre>
+ * <code>&lt;paper-tooltip for=&quot;btn&quot; position=&quot;left&quot;&gt;Tooltip text&lt;/paper-tooltip&gt;
+ * &lt;paper-tooltip for=&quot;btn&quot; position=&quot;top&quot;&gt;Tooltip text&lt;/paper-tooltip&gt;
+ * </code>
+ * </pre>
  * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|---------- {@code --paper-tooltip-background}
- * | The background color of the tooltip | {@code #616161}
- * {@code --paper-tooltip-opacity} | The opacity of the tooltip | {@code 0.9}
- * {@code --paper-tooltip-text-color} | The text color of the tooltip |
- * {@code white} {@code --paper-tooltip} | Mixin applied to the tooltip |
- * {@code
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-tooltip-background}</td>
+ * <td>The background color of the tooltip</td>
+ * <td>{@code #616161}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tooltip-opacity}</td>
+ * <td>The opacity of the tooltip</td>
+ * <td>{@code 0.9}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tooltip-text-color}</td>
+ * <td>The text color of the tooltip</td>
+ * <td>{@code white}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tooltip}</td>
+ * <td>Mixin applied to the tooltip</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-tooltip#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -74,25 +116,31 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The entry and exit animations that will be played when showing and hiding
 	 * the tooltip. If you want to override this, you must ensure that your
 	 * animationConfig has the exact format below.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The entry and exit animations that will be played when showing and hiding
 	 * the tooltip. If you want to override this, you must ensure that your
 	 * animationConfig has the exact format below.
+	 * </p>
 	 * 
 	 * @param animationConfig
 	 *            the JsonObject value to set
@@ -104,25 +152,31 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Convenience property for setting an 'entry' animation. Do not set
 	 * {@code animationConfig.entry} manually if using this. The animated node
 	 * is set to {@code this} if using this property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getEntryAnimation() {
 		return getElement().getProperty("entryAnimation");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Convenience property for setting an 'entry' animation. Do not set
 	 * {@code animationConfig.entry} manually if using this. The animated node
 	 * is set to {@code this} if using this property.
+	 * </p>
 	 * 
 	 * @param entryAnimation
 	 *            the String value to set
@@ -135,25 +189,31 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Convenience property for setting an 'exit' animation. Do not set
 	 * {@code animationConfig.exit} manually if using this. The animated node is
 	 * set to {@code this} if using this property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getExitAnimation() {
 		return getElement().getProperty("exitAnimation");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Convenience property for setting an 'exit' animation. Do not set
 	 * {@code animationConfig.exit} manually if using this. The animated node is
 	 * set to {@code this} if using this property.
+	 * </p>
 	 * 
 	 * @param exitAnimation
 	 *            the String value to set
@@ -166,23 +226,29 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The id of the element that the tooltip is anchored to. This element must
 	 * be a sibling of the tooltip.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getFor() {
 		return getElement().getProperty("for");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The id of the element that the tooltip is anchored to. This element must
 	 * be a sibling of the tooltip.
+	 * </p>
 	 * 
 	 * @param _for
 	 *            the String value to set
@@ -194,23 +260,29 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to true if you want to manually control when the tooltip is
 	 * shown or hidden.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isManualMode() {
 		return getElement().getProperty("manualMode", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to true if you want to manually control when the tooltip is
 	 * shown or hidden.
+	 * </p>
 	 * 
 	 * @param manualMode
 	 *            the boolean value to set
@@ -222,21 +294,27 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Positions the tooltip to the top, right, bottom, left of its content.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPosition() {
 		return getElement().getProperty("position");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Positions the tooltip to the top, right, bottom, left of its content.
+	 * </p>
 	 * 
 	 * @param position
 	 *            the String value to set
@@ -248,21 +326,27 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, no parts of the tooltip will ever be shown offscreen.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isFitToVisibleBounds() {
 		return getElement().getProperty("fitToVisibleBounds", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, no parts of the tooltip will ever be shown offscreen.
+	 * </p>
 	 * 
 	 * @param fitToVisibleBounds
 	 *            the boolean value to set
@@ -274,23 +358,29 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The spacing between the top of the tooltip and the element it is anchored
 	 * to.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getOffset() {
 		return getElement().getProperty("offset", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The spacing between the top of the tooltip and the element it is anchored
 	 * to.
+	 * </p>
 	 * 
 	 * @param offset
 	 *            the double value to set
@@ -302,25 +392,31 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This property is deprecated, but left over so that it doesn't break
 	 * exiting code. Please use {@code offset} instead. If both {@code offset}
 	 * and {@code marginTop} are provided, {@code marginTop} will be ignored.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getMarginTop() {
 		return getElement().getProperty("marginTop", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This property is deprecated, but left over so that it doesn't break
 	 * exiting code. Please use {@code offset} instead. If both {@code offset}
 	 * and {@code marginTop} are provided, {@code marginTop} will be ignored.
+	 * </p>
 	 * 
 	 * @param marginTop
 	 *            the double value to set
@@ -332,23 +428,29 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The delay that will be applied before the {@code entry} animation is
 	 * played when showing the tooltip.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getAnimationDelay() {
 		return getElement().getProperty("animationDelay", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The delay that will be applied before the {@code entry} animation is
 	 * played when showing the tooltip.
+	 * </p>
 	 * 
 	 * @param animationDelay
 	 *            the double value to set
@@ -360,25 +462,31 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the target element that this tooltip is anchored to. It is either
 	 * the element given by the {@code for} attribute, or the immediate parent
 	 * of the tooltip.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the target element that this tooltip is anchored to. It is either
 	 * the element given by the {@code for} attribute, or the immediate parent
 	 * of the tooltip.
+	 * </p>
 	 * 
 	 * @param target
 	 *            the JsonObject value to set
@@ -390,13 +498,16 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * An element implementing {@code Polymer.NeonAnimationRunnerBehavior} calls
 	 * this method to configure an animation with an optional type. Elements
 	 * implementing {@code Polymer.NeonAnimatableBehavior} should define the
 	 * property {@code animationConfig}, which is either a configuration object
 	 * or a map of animation type to array of configuration objects.
+	 * </p>
 	 * 
 	 * @param type
 	 *            Missing documentation!
@@ -406,9 +517,12 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Plays an animation with an optional {@code type}.
+	 * </p>
 	 * 
 	 * @param type
 	 *            Missing documentation!
@@ -421,9 +535,12 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Cancels the currently running animations.
+	 * </p>
 	 */
 	public void cancelAnimation() {
 		getElement().callFunction("cancelAnimation");
