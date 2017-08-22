@@ -234,6 +234,7 @@ extends ComponentSupplier<C>, Serializable {
     }
 
     /**
+<<<<<<< Upstream, based on master
      * Sets the read-only mode of this {@code HasValue} to given mode. The user
      * can't change the value when in read-only mode.
      * <p>
@@ -257,5 +258,27 @@ extends ComponentSupplier<C>, Serializable {
      */
     default boolean isReadOnly() {
         return get().getElement().getProperty("readonly", false);
+    }
+
+    /**
+     * Sets the required indicator visible or not.
+     * <p>
+     * If set visible, it is visually indicated in the user interface.
+     *
+     * @param requiredIndicatorVisible
+     *            <code>true</code> to make the required indicator visible,
+     *            <code>false</code> if not
+     */
+    default void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
+        get().getElement().setProperty("required", requiredIndicatorVisible);
+    }
+
+    /**
+     * Checks whether the required indicator is visible.
+     *
+     * @return <code>true</code> if visible, <code>false</code> if not
+     */
+    default boolean isRequiredIndicatorVisible() {
+        return get().getElement().getProperty("required", false);
     }
 }
