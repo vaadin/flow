@@ -15,47 +15,84 @@
  */
 package com.vaadin.generated.paper.tabs;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code paper-tab} is styled to look like a tab. It should be used in
  * conjunction with {@code paper-tabs}.
- * 
+ * </p>
+ * <p>
  * Example:
+ * </p>
  * 
- * <paper-tabs selected="0"> <paper-tab>TAB 1</paper-tab> <paper-tab>TAB
- * 2</paper-tab> <paper-tab>TAB 3</paper-tab> </paper-tabs>
+ * <pre>
+ * <code>&lt;paper-tabs selected=&quot;0&quot;&gt;
+ *   &lt;paper-tab&gt;TAB 1&lt;/paper-tab&gt;
+ *   &lt;paper-tab&gt;TAB 2&lt;/paper-tab&gt;
+ *   &lt;paper-tab&gt;TAB 3&lt;/paper-tab&gt;
+ * &lt;/paper-tabs&gt;
+ * </code>
+ * </pre>
  * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|---------- {@code --paper-tab-ink} | Ink color
- * | {@code --paper-yellow-a100} {@code --paper-tab} | Mixin applied to the tab
- * | {@code {@code --paper-tab-content} | Mixin applied to the tab content |
- * {@code {@code --paper-tab-content-unselected} | Mixin applied to the tab
- * content when the tab is not selected | {@code
- * 
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-tab-ink}</td>
+ * <td>Ink color</td>
+ * <td>{@code --paper-yellow-a100}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tab}</td>
+ * <td>Mixin applied to the tab</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tab-content}</td>
+ * <td>Mixin applied to the tab content</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-tab-content-unselected}</td>
+ * <td>Mixin applied to the tab content when the tab is not selected</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
  * This element applies the mixin {@code --paper-font-common-base} but does not
  * import {@code paper-styles/typography.html}. In order to apply the
  * {@code Roboto} font to this element, make sure you've imported
  * {@code paper-styles/typography.html}.
+ * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-tab#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -66,12 +103,15 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -79,12 +119,15 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'disabled-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -92,9 +135,12 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
+	 * </p>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
@@ -106,23 +152,29 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * </p>
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
@@ -134,23 +186,29 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * </p>
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
@@ -182,35 +240,44 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user is currently holding down the button.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPressed() {
 		return getElement().getProperty("pressed", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isToggles() {
 		return getElement().getProperty("toggles", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
+	 * </p>
 	 * 
 	 * @param toggles
 	 *            the boolean value to set
@@ -222,12 +289,15 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button is a toggle and is currently in the active state.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'active-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -235,9 +305,12 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button is a toggle and is currently in the active state.
+	 * </p>
 	 * 
 	 * @param active
 	 *            the boolean value to set
@@ -249,50 +322,62 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the element is currently being pressed by a "pointer," which is
-	 * loosely defined as mouse or touch input (but specifically excluding
-	 * keyboard input).
+	 * </p>
+	 * <p>
+	 * True if the element is currently being pressed by a &quot;pointer,&quot;
+	 * which is loosely defined as mouse or touch input (but specifically
+	 * excluding keyboard input).
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPointerDown() {
 		return getElement().getProperty("pointerDown", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The aria attribute to be set if the button is a toggle and in the active
 	 * state.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAriaActiveAttribute() {
 		return getElement().getProperty("ariaActiveAttribute");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The aria attribute to be set if the button is a toggle and in the active
 	 * state.
+	 * </p>
 	 * 
 	 * @param ariaActiveAttribute
 	 *            the String value to set
@@ -305,23 +390,29 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element will not produce a ripple effect when interacted
 	 * with via the pointer.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element will not produce a ripple effect when interacted
 	 * with via the pointer.
+	 * </p>
 	 * 
 	 * @param noink
 	 *            the boolean value to set
@@ -333,23 +424,29 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the tab will forward keyboard clicks (enter/space) to the first
 	 * anchor element found in its descendants
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isLink() {
 		return getElement().getProperty("link", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the tab will forward keyboard clicks (enter/space) to the first
 	 * anchor element found in its descendants
+	 * </p>
 	 * 
 	 * @param link
 	 *            the boolean value to set
@@ -361,11 +458,14 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
 	 * the {@code keyBindings} prototype property.
+	 * </p>
 	 * 
 	 * @param eventString
 	 *            Missing documentation!
@@ -378,18 +478,24 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When called, will remove all imperatively-added key bindings.
+	 * </p>
 	 */
 	public void removeOwnKeyBindings() {
 		getElement().callFunction("removeOwnKeyBindings");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
+	 * </p>
 	 * 
 	 * @param event
 	 *            Missing documentation!
@@ -403,10 +509,13 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Ensures this element contains a ripple effect. For startup efficiency the
 	 * ripple effect is dynamically on demand when needed.
+	 * </p>
 	 * 
 	 * @param optTriggeringEvent
 	 *            (optional) event that triggered the ripple.
@@ -416,20 +525,26 @@ public class GeneratedPaperTab<R extends GeneratedPaperTab<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the {@code <paper-ripple>} element used by this element to create
 	 * ripple effects. The element's ripple is created on demand, when
 	 * necessary, and calling this method will force the ripple to be created.
+	 * </p>
 	 */
 	public void getRipple() {
 		getElement().callFunction("getRipple");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if this element currently contains a ripple effect.
+	 * </p>
 	 * 
 	 * @return It would return a boolean
 	 */

@@ -15,12 +15,13 @@
  */
 package com.vaadin.generated.vaadin.text.field;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: PasswordFieldElement#1.1.0-alpha3", "Flow#0.1-SNAPSHOT"})
@@ -31,21 +32,27 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to hide the eye icon which toggles the password visibility.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isHideToggleButton() {
 		return getElement().getProperty("hideToggleButton", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to hide the eye icon which toggles the password visibility.
+	 * </p>
 	 * 
 	 * @param hideToggleButton
 	 *            the boolean value to set
@@ -57,12 +64,15 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the password is visible ([type=text]).
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPasswordVisible() {
 		return getElement().getProperty("passwordVisible", false);

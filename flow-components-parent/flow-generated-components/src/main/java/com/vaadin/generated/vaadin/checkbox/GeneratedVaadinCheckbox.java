@@ -15,47 +15,94 @@
  */
 package com.vaadin.generated.vaadin.checkbox;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.Focusable;
+import java.util.Objects;
+
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.data.HasValue;
-import java.util.Objects;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.Focusable;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <vaadin-checkbox>} is a Polymer element for customized checkboxes.
- * 
- * {@code }`html <vaadin-checkbox> Make my profile visible </vaadin-checkbox>
- * {@code }`
- * 
- * ### Styling
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-checkbox&gt; Make my profile visible &lt;/vaadin-checkbox&gt; {@code }</code>
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
  * The following shadow DOM parts are exposed for styling:
- * 
- * Part name | Description ------------------|---------------- {@code wrapper} |
- * The {@code <label>} element which wrapps the checkbox and [part="label"]
- * {@code native-checkbox} | The {@code <input type="checkbox">} element
- * {@code checkbox} | The {@code <span>} element for a custom graphical check
- * {@code label} | The {@code <span>} element for slotted text/HTML label
- * 
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code wrapper}</td>
+ * <td>The {@code <label>} element which wrapps the checkbox and
+ * [part=&quot;label&quot;]</td>
+ * </tr>
+ * <tr>
+ * <td>{@code native-checkbox}</td>
+ * <td>The {@code <input type="checkbox">} element</td>
+ * </tr>
+ * <tr>
+ * <td>{@code checkbox}</td>
+ * <td>The {@code <span>} element for a custom graphical check</td>
+ * </tr>
+ * <tr>
+ * <td>{@code label}</td>
+ * <td>The {@code <span>} element for slotted text/HTML label</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
  * The following attributes are exposed for styling:
- * 
- * Attribute | Description -------------|------------ {@code active} | Set when
- * the checkbox is pressed down, either with mouse, touch or the keyboard.
- * {@code disabled} | Set when the checkbox is disabled. {@code focus-ring} |
- * Set when the checkbox is focused using the keyboard. {@code focused} | Set
- * when the checkbox is focused.
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code active}</td>
+ * <td>Set when the checkbox is pressed down, either with mouse, touch or the
+ * keyboard.</td>
+ * </tr>
+ * <tr>
+ * <td>{@code disabled}</td>
+ * <td>Set when the checkbox is disabled.</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focus-ring}</td>
+ * <td>Set when the checkbox is focused using the keyboard.</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Set when the checkbox is focused.</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1-SNAPSHOT"})
@@ -72,21 +119,27 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 			HasComponents {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specify that this control should have input focus when the page loads.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specify that this control should have input focus when the page loads.
+	 * </p>
 	 * 
 	 * @param autofocus
 	 *            the boolean value to set
@@ -98,33 +151,42 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
+	 * </p>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
@@ -136,12 +198,15 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the checkbox is checked.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'checked-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "checked", value = "checked-changed")
 	@Override
@@ -150,9 +215,12 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the checkbox is checked.
+	 * </p>
 	 * 
 	 * @param value
 	 *            the boolean value to set
@@ -167,8 +235,10 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Indeterminate state of the checkbox when it's neither checked nor
 	 * unchecked, but undetermined.
 	 * https://developer.mozilla.org/en-US/docs/Web/
@@ -176,6 +246,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'indeterminate-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "indeterminate", value = "indeterminate-changed")
 	public boolean isIndeterminate() {
@@ -183,12 +254,15 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Indeterminate state of the checkbox when it's neither checked nor
 	 * unchecked, but undetermined.
 	 * https://developer.mozilla.org/en-US/docs/Web/
 	 * HTML/Element/input/checkbox#Indeterminate_state_checkboxes
+	 * </p>
 	 * 
 	 * @param indeterminate
 	 *            the boolean value to set
@@ -200,21 +274,27 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of the control, which is submitted with the form data.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of the control, which is submitted with the form data.
+	 * </p>
 	 * 
 	 * @param name
 	 *            the String value to set
@@ -226,23 +306,29 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value given to the data submitted with the checkbox's name to the
 	 * server when the control is inside a form.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPostValue() {
 		return getElement().getProperty("value");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value given to the data submitted with the checkbox's name to the
 	 * server when the control is inside a form.
+	 * </p>
 	 * 
 	 * @param postValue
 	 *            the String value to set

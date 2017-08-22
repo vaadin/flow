@@ -15,12 +15,14 @@
  */
 package com.vaadin.generated.vaadin.combo.box;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
@@ -32,21 +34,27 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The index of the item
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getIndex() {
 		return getElement().getProperty("index", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The index of the item
+	 * </p>
 	 * 
 	 * @param index
 	 *            the double value to set
@@ -58,33 +66,42 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The item to render
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getItemString() {
 		return getElement().getProperty("item");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The item to render
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetItemObject() {
 		return (JsonObject) getElement().getPropertyRaw("item");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The item to render
+	 * </p>
 	 * 
 	 * @param item
 	 *            the String value to set
@@ -96,9 +113,12 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The item to render
+	 * </p>
 	 * 
 	 * @param item
 	 *            the JsonObject value to set
@@ -110,21 +130,27 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The text label corresponding to the item
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The text label corresponding to the item
+	 * </p>
 	 * 
 	 * @param label
 	 *            the String value to set
@@ -136,21 +162,27 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True when item is selected
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isSelected() {
 		return getElement().getProperty("selected", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True when item is selected
+	 * </p>
 	 * 
 	 * @param selected
 	 *            the boolean value to set
@@ -162,21 +194,27 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True when item is focused
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True when item is focused
+	 * </p>
 	 * 
 	 * @param focused
 	 *            the boolean value to set

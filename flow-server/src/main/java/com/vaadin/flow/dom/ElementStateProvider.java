@@ -302,7 +302,7 @@ public interface ElementStateProvider extends Serializable {
      *
      * @param node
      *            the node containing the data
-     * @return the class list
+     * @return the class list, never <code>null</code>
      */
     ClassList getClassList(StateNode node);
 

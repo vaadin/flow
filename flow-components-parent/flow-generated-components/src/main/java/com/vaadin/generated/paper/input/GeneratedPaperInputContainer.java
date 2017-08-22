@@ -15,130 +15,236 @@
  */
 package com.vaadin.generated.paper.input;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <paper-input-container>} is a container for a {@code <label>}, an
  * {@code <iron-input>} or {@code <textarea>} and optional add-on elements such
  * as an error message or character counter, used to implement Material Design
  * text fields.
- * 
+ * </p>
+ * <p>
  * For example:
+ * </p>
  * 
- * <paper-input-container> <label slot="label">Your name</label> <iron-input
- * slot="input"> <input> </iron-input> // In Polymer 1.0, you would use
- * {@code <input is="iron-input" slot="input">} instead of the above.
- * </paper-input-container>
- * 
+ * <pre>
+ * <code>&lt;paper-input-container&gt;
+ *   &lt;label slot=&quot;label&quot;&gt;Your name&lt;/label&gt;
+ *   &lt;iron-input slot=&quot;input&quot;&gt;
+ *     &lt;input&gt;
+ *   &lt;/iron-input&gt;
+ *   // In Polymer 1.0, you would use {@code &lt;input is=&quot;iron-input&quot; slot=&quot;input&quot;&gt;} instead of the above.
+ * &lt;/paper-input-container&gt;
+ * </code>
+ * </pre>
+ * <p>
  * You can style the nested <input> however you want; if you want it to look
  * like a Material Design input, you can style it with the
  * --paper-input-container-shared-input-style mixin.
- * 
+ * </p>
+ * <p>
  * Do not wrap {@code <paper-input-container>} around elements that already
  * include it, such as {@code <paper-input>}. Doing so may cause events to
  * bounce infinitely between the container and its contained element.
- * 
- * ### Listening for input changes
- * 
+ * </p>
+ * <h3>Listening for input changes</h3>
+ * <p>
  * By default, it listens for changes on the {@code bind-value} attribute on its
  * children nodes and perform tasks such as auto-validating and label styling
  * when the {@code bind-value} changes. You can configure the attribute it
  * listens to with the {@code attr-for-value} attribute.
- * 
- * ### Using a custom input element
- * 
+ * </p>
+ * <h3>Using a custom input element</h3>
+ * <p>
  * You can use a custom input element in a {@code <paper-input-container>}, for
  * example to implement a compound input field like a social security number
  * input. The custom input element should have the {@code paper-input-input}
  * class, have a {@code notify:true} value property and optionally implements
  * {@code Polymer.IronValidatableBehavior} if it is validatable.
+ * </p>
  * 
- * <paper-input-container attr-for-value="ssn-value"> <label slot="label">Social
- * security number</label> <ssn-input slot="input"
- * class="paper-input-input"></ssn-input> </paper-input-container>
- * 
- * 
+ * <pre>
+ * <code>&lt;paper-input-container attr-for-value=&quot;ssn-value&quot;&gt;
+ *   &lt;label slot=&quot;label&quot;&gt;Social security number&lt;/label&gt;
+ *   &lt;ssn-input slot=&quot;input&quot; class=&quot;paper-input-input&quot;&gt;&lt;/ssn-input&gt;
+ * &lt;/paper-input-container&gt;
+ * </code>
+ * </pre>
+ * <p>
  * If you're using a {@code <paper-input-container>} imperatively, it's
  * important to make sure that you attach its children (the {@code iron-input}
  * and the optional {@code label}) before you attach the
  * {@code <paper-input-container>} itself, so that it can be set up correctly.
- * 
- * ### Validation
- * 
+ * </p>
+ * <h3>Validation</h3>
+ * <p>
  * If the {@code auto-validate} attribute is set, the input container will
  * validate the input and update the container styling when the input value
  * changes.
- * 
- * ### Add-ons
- * 
+ * </p>
+ * <h3>Add-ons</h3>
+ * <p>
  * Add-ons are child elements of a {@code <paper-input-container>} with the
  * {@code add-on} attribute and implements the
  * {@code Polymer.PaperInputAddonBehavior} behavior. They are notified when the
  * input value or validity changes, and may implement functionality such as
  * error messages or character counters. They appear at the bottom of the input.
+ * </p>
+ * <h3>Prefixes and suffixes</h3>
+ * <p>
+ * These are child elements of a {@code <paper-input-container>} with the
+ * {@code prefix} or {@code suffix} attribute, and are displayed inline with the
+ * input, before or after.
+ * </p>
  * 
- * ### Prefixes and suffixes These are child elements of a
- * {@code <paper-input-container>} with the {@code prefix} or {@code suffix}
- * attribute, and are displayed inline with the input, before or after.
+ * <pre>
+ * <code>&lt;paper-input-container&gt;
+ *   &lt;div slot=&quot;prefix&quot;&gt;$&lt;/div&gt;
+ *   &lt;label slot=&quot;label&quot;&gt;Total&lt;/label&gt;
+ *   &lt;iron-input slot=&quot;input&quot;&gt;
+ *     &lt;input&gt;
+ *   &lt;/iron-input&gt;
+ *   // In Polymer 1.0, you would use {@code &lt;input is=&quot;iron-input&quot; slot=&quot;input&quot;&gt;} instead of the above.
+ *   &lt;paper-icon-button slot=&quot;suffix&quot; icon=&quot;clear&quot;&gt;&lt;/paper-icon-button&gt;
+ * &lt;/paper-input-container&gt;
+ * </code>
+ * </pre>
  * 
- * <paper-input-container> <div slot="prefix">$</div> <label
- * slot="label">Total</label> <iron-input slot="input"> <input> </iron-input> //
- * In Polymer 1.0, you would use {@code <input is="iron-input" slot="input">}
- * instead of the above. <paper-icon-button slot="suffix"
- * icon="clear"></paper-icon-button> </paper-input-container>
- * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * {@code --paper-input-container-color} | Label and underline color when the
- * input is not focused | {@code --secondary-text-color}
- * {@code --paper-input-container-focus-color} | Label and underline color when
- * the input is focused | {@code --primary-color}
- * {@code --paper-input-container-invalid-color} | Label and underline color
- * when the input is is invalid | {@code --error-color}
- * {@code --paper-input-container-input-color} | Input foreground color |
- * {@code --primary-text-color} {@code --paper-input-container} | Mixin applied
- * to the container | {@code {@code --paper-input-container-disabled} | Mixin
- * applied to the container when it's disabled | {@code
- * {@code --paper-input-container-label} | Mixin applied to the label | {@code
- * {@code --paper-input-container-label-focus} | Mixin applied to the label when
- * the input is focused | {@code {@code --paper-input-container-label-floating}
- * | Mixin applied to the label when floating | {@code
- * {@code --paper-input-container-input} | Mixin applied to the input | {@code
- * {@code --paper-input-container-input-focus} | Mixin applied to the input when
- * focused | {@code {@code --paper-input-container-input-invalid} | Mixin
- * applied to the input when invalid | {@code
- * {@code --paper-input-container-input-webkit-spinner} | Mixin applied to the
- * webkit spinner | {@code {@code --paper-input-container-input-webkit-clear} |
- * Mixin applied to the webkit clear button | {@code
- * {@code --paper-input-container-ms-clear} | Mixin applied to the Internet
- * Explorer clear button | {@code {@code --paper-input-container-underline} |
- * Mixin applied to the underline | {@code
- * {@code --paper-input-container-underline-focus} | Mixin applied to the
- * underline when the input is focused | {@code
- * {@code --paper-input-container-underline-disabled} | Mixin applied to the
- * underline when the input is disabled | {@code {@code --paper-input-prefix} |
- * Mixin applied to the input prefix | {@code {@code --paper-input-suffix} |
- * Mixin applied to the input suffix | {@code
- * 
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-input-container-color}</td>
+ * <td>Label and underline color when the input is not focused</td>
+ * <td>{@code --secondary-text-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-focus-color}</td>
+ * <td>Label and underline color when the input is focused</td>
+ * <td>{@code --primary-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-invalid-color}</td>
+ * <td>Label and underline color when the input is is invalid</td>
+ * <td>{@code --error-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-input-color}</td>
+ * <td>Input foreground color</td>
+ * <td>{@code --primary-text-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container}</td>
+ * <td>Mixin applied to the container</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-disabled}</td>
+ * <td>Mixin applied to the container when it's disabled</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-label}</td>
+ * <td>Mixin applied to the label</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-label-focus}</td>
+ * <td>Mixin applied to the label when the input is focused</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-label-floating}</td>
+ * <td>Mixin applied to the label when floating</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-input}</td>
+ * <td>Mixin applied to the input</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-input-focus}</td>
+ * <td>Mixin applied to the input when focused</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-input-invalid}</td>
+ * <td>Mixin applied to the input when invalid</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-input-webkit-spinner}</td>
+ * <td>Mixin applied to the webkit spinner</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-input-webkit-clear}</td>
+ * <td>Mixin applied to the webkit clear button</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-ms-clear}</td>
+ * <td>Mixin applied to the Internet Explorer clear button</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-underline}</td>
+ * <td>Mixin applied to the underline</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-underline-focus}</td>
+ * <td>Mixin applied to the underline when the input is focused</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-container-underline-disabled}</td>
+ * <td>Mixin applied to the underline when the input is disabled</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-prefix}</td>
+ * <td>Mixin applied to the input prefix</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-suffix}</td>
+ * <td>Mixin applied to the input suffix</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
  * This element is {@code display:block} by default, but you can set the
  * {@code inline} attribute to make it {@code display:inline-block}.
+ * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-input-container#2.0.1", "Flow#0.1-SNAPSHOT"})
@@ -149,23 +255,29 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable the floating label. The label disappears when the
 	 * input value is not null.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable the floating label. The label disappears when the
 	 * input value is not null.
+	 * </p>
 	 * 
 	 * @param noLabelFloat
 	 *            the boolean value to set
@@ -177,21 +289,27 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to always float the floating label.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to always float the floating label.
+	 * </p>
 	 * 
 	 * @param alwaysFloatLabel
 	 *            the boolean value to set
@@ -203,21 +321,27 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The attribute to listen for value changes on.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAttrForValue() {
 		return getElement().getProperty("attrForValue");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The attribute to listen for value changes on.
+	 * </p>
 	 * 
 	 * @param attrForValue
 	 *            the String value to set
@@ -230,21 +354,27 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to auto-validate the input value when it changes.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to auto-validate the input value when it changes.
+	 * </p>
 	 * 
 	 * @param autoValidate
 	 *            the boolean value to set
@@ -256,25 +386,31 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the input is invalid. This property is set automatically when the
 	 * input value changes if auto-validating, or when the
 	 * {@code iron-input-validate} event is heard from a child.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the input is invalid. This property is set automatically when the
 	 * input value changes if auto-validating, or when the
 	 * {@code iron-input-validate} event is heard from a child.
+	 * </p>
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
@@ -286,12 +422,15 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the input has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -299,9 +438,12 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Call this to update the state of add-ons.
+	 * </p>
 	 * 
 	 * @param state
 	 *            Add-on state.
