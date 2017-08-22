@@ -37,7 +37,7 @@ import com.vaadin.shared.communication.PushMode;
  * @since 7.0.0
  */
 public class DefaultDeploymentConfiguration
-        extends AbstractDeploymentConfiguration {
+extends AbstractDeploymentConfiguration {
 
     private static final String SEPARATOR = "\n===========================================================";
 
@@ -295,7 +295,7 @@ public class DefaultDeploymentConfiguration
     private void checkProductionMode() {
         productionMode = getApplicationOrSystemProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "false")
-                        .equals("true");
+                .equals("true");
         if (!productionMode) {
             getLogger().warning(NOT_PRODUCTION_MODE_INFO);
         }
@@ -307,7 +307,7 @@ public class DefaultDeploymentConfiguration
     private void checkXsrfProtection() {
         xsrfProtectionEnabled = !getApplicationOrSystemProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, "false")
-                        .equals("true");
+                .equals("true");
         if (!xsrfProtectionEnabled) {
             getLogger().warning(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -352,7 +352,7 @@ public class DefaultDeploymentConfiguration
         sendUrlsAsParameters = getApplicationOrSystemProperty(
                 Constants.SERVLET_PARAMETER_SENDURLSASPARAMETERS,
                 Boolean.toString(DEFAULT_SEND_URLS_AS_PARAMETERS))
-                        .equals("true");
+                .equals("true");
     }
 
     private Logger getLogger() {
@@ -392,7 +392,10 @@ public class DefaultDeploymentConfiguration
         if (!scanBase.startsWith("/")) {
             // Has protocol or isn't relative to the context root -> no can do
             getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
-                    "Cannot automatically find the webcomponents polyfill because frontend:// isn't relative to the context root"));
+                    String.format(
+                            "Cannot automatically find the webcomponents polyfill because the property "
+                                    + "'%s' value is not absolute (doesn't start with '/')",
+                                    Constants.FRONTEND_URL_ES6)));
             return null;
         }
 
@@ -468,7 +471,7 @@ public class DefaultDeploymentConfiguration
         return String.format(
                 "%1$s%n" + "Configure %2$s with an empty value to explicilty disable Web Components polyfill loading.%n"
                         + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
-                baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
+                        baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }
 
 }
