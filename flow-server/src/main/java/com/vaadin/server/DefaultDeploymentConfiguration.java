@@ -290,7 +290,7 @@ public class DefaultDeploymentConfiguration
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode() {
-        productionMode = getBooleanPropertyWithValidation(
+        productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (!productionMode) {
             getLogger().warning(NOT_PRODUCTION_MODE_INFO);
@@ -301,7 +301,7 @@ public class DefaultDeploymentConfiguration
      * Log a warning if cross-site request forgery protection is disabled.
      */
     private void checkXsrfProtection() {
-        xsrfProtectionEnabled = !getBooleanPropertyWithValidation(
+        xsrfProtectionEnabled = !getBooleanProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
         if (!xsrfProtectionEnabled) {
             getLogger().warning(WARNING_XSRF_PROTECTION_DISABLED);
@@ -320,7 +320,7 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkCloseIdleSessions() {
-        closeIdleSessions = getBooleanPropertyWithValidation(
+        closeIdleSessions = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
                 DEFAULT_CLOSE_IDLE_SESSIONS);
     }
@@ -337,13 +337,13 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkSyncIdCheck() {
-        syncIdCheck = getBooleanPropertyWithValidation(
+        syncIdCheck = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
                 DEFAULT_SYNC_ID_CHECK);
     }
 
     private void checkSendUrlsAsParameters() {
-        sendUrlsAsParameters = getBooleanPropertyWithValidation(
+        sendUrlsAsParameters = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }

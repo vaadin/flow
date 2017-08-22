@@ -156,7 +156,7 @@ public interface DeploymentConfiguration extends Serializable {
      * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
      * for {@link String} type.
      *
-     * Considers {@code ""} to be equal {@code true} in order to consider params
+     * Considers {@code ""} to be equal {@code true} in order to treat params
      * like {@code -Dtest.param} as enabled ({@code test.param == true}).
      *
      * Additionally validates the property value, requiring non-empty strings to
@@ -172,11 +172,11 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the property value, or the passed default value if no property
      *         value is found
      *
-     * @throws IllegalStateException
-     *             in property value string is not a boolean value
+     * @throws IllegalArgumentException
+     *             if property value string is not a boolean value
      */
-    default boolean getBooleanPropertyWithValidation(String propertyName,
-            boolean defaultValue) {
+    default boolean getBooleanProperty(String propertyName,
+                                       boolean defaultValue) throws IllegalArgumentException {
         String booleanString = getStringProperty(propertyName, null);
         if (booleanString == null) {
             return defaultValue;
@@ -188,7 +188,7 @@ public interface DeploymentConfiguration extends Serializable {
                     .equalsIgnoreCase(booleanString)) {
                 return parsedBoolean;
             } else {
-                throw new IllegalStateException(String.format(
+                throw new IllegalArgumentException(String.format(
                         "Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
                         propertyName, booleanString, parsedBoolean));
             }

@@ -437,11 +437,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         assert webComponentsPolyfillBase.endsWith("/");
 
-        boolean forceShadyDom = config.getBooleanPropertyWithValidation(
+        boolean forceShadyDom = config.getBooleanProperty(
                 Constants.FORCE_SHADY_DOM, webComponents.isPresent()
                         && webComponents.get().forceShadyDom());
 
-        boolean loadEs5Adapter = config.getBooleanPropertyWithValidation(
+        boolean loadEs5Adapter = config.getBooleanProperty(
                 Constants.LOAD_ES5_ADAPTER, webComponents.isPresent()
                         && webComponents.get().loadEs5Adapter());
 
