@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -72,13 +73,10 @@ public class SourceContentResolver {
     private static List<SourceCodeExample> parseSourceCodeExamplesForClass(
             Class<? extends DemoView> demoViewClass) {
 
-        String classFilePath = demoViewClass.getProtectionDomain()
-                .getCodeSource().getLocation().getPath()
-                + demoViewClass.getPackage().getName().replaceAll("\\.", "/");
-        if (classFilePath.startsWith("/")) {
-            classFilePath = classFilePath.substring(1);
-        }
-        Path sourceFilePath = Paths.get(classFilePath,
+        Path sourceFilePath = Paths.get(
+                new File(demoViewClass.getProtectionDomain().getCodeSource()
+                        .getLocation().getPath()).getPath(),
+                demoViewClass.getPackage().getName().replaceAll("\\.", "/"),
                 demoViewClass.getSimpleName() + ".java");
 
         try {
