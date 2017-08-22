@@ -15,33 +15,54 @@
  */
 package com.vaadin.generated.paper.input;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
-import com.vaadin.components.JsonSerializable;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <paper-input-char-counter>} is a character counter for use with
  * {@code <paper-input-container>}. It shows the number of characters entered in
  * the input and the max length if it is specified.
+ * </p>
  * 
- * <paper-input-container> <input maxlength="20">
- * <paper-input-char-counter></paper-input-char-counter>
- * </paper-input-container>
+ * <pre>
+ * <code>&lt;paper-input-container&gt;
+ *   &lt;input maxlength=&quot;20&quot;&gt;
+ *   &lt;paper-input-char-counter&gt;&lt;/paper-input-char-counter&gt;
+ * &lt;/paper-input-container&gt;
+ * </code>
+ * </pre>
  * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following mixin is available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|---------- {@code --paper-input-char-counter}
- * | Mixin applied to the element | {@code
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-input-char-counter}</td>
+ * <td>Mixin applied to the element</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-input-char-counter#2.0.1", "Flow#0.1-SNAPSHOT"})
@@ -52,9 +73,12 @@ public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCou
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This overrides the update function in PaperInputAddonBehavior.
+	 * </p>
 	 * 
 	 * @see UpdateState
 	 * @param state

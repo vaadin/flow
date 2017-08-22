@@ -46,6 +46,7 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
@@ -101,6 +102,8 @@ public class ComponentGenerator {
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
     private boolean fluentSetters = true;
+
+    private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
     /**
      * Converts the JSON file to {@link ComponentMetadata}.
@@ -724,7 +727,7 @@ public class ComponentGenerator {
      *            the method which visibility should be set
      * @param type
      *            the type of objects used by in the method signature
-     * @see #isUnsupportedObjectType(ComponentType)
+     * @see #isSupportedObjectType(ComponentType)
      */
     private void setMethodVisibility(MethodSource<JavaClassSource> method,
             ComponentType type) {
@@ -848,7 +851,7 @@ public class ComponentGenerator {
                 nl, nl, documentation.replaceAll("```(.*?)```", "{@code $1}")
                         .replaceAll("`(.*?)`", "{@code $1}"));
         try {
-            javaDoc.setFullText(text);
+            javaDoc.setFullText(javaDocFormatter.formatJavaDoc(text));
         } catch (IllegalArgumentException ile) {
             logger.log(Level.WARNING,
                     "Javadoc exception for file " + jsonFile.getName(), ile);

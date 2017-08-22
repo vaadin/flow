@@ -15,36 +15,60 @@
  */
 package com.vaadin.generated.paper.input;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <paper-input-error>} is an error message for use with
  * {@code <paper-input-container>}. The error is displayed when the
  * {@code <paper-input-container>} is {@code invalid}.
+ * </p>
  * 
- * <paper-input-container> <input pattern="[0-9]*"> <paper-input-error
- * slot="add-on">Only numbers are allowed!</paper-input-error>
- * </paper-input-container>
+ * <pre>
+ * <code>&lt;paper-input-container&gt;
+ *   &lt;input pattern=&quot;[0-9]*&quot;&gt;
+ *   &lt;paper-input-error slot=&quot;add-on&quot;&gt;Only numbers are allowed!&lt;/paper-input-error&gt;
+ * &lt;/paper-input-container&gt;
+ * </code>
+ * </pre>
  * 
- * ### Styling
- * 
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * {@code --paper-input-container-invalid-color} | The foreground color of the
- * error | {@code --error-color} {@code --paper-input-error} | Mixin applied to
- * the error | {@code
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-input-container-invalid-color}</td>
+ * <td>The foreground color of the error</td>
+ * <td>{@code --error-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-input-error}</td>
+ * <td>Mixin applied to the error</td>
+ * <td>{@code</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-input-error#2.0.1", "Flow#0.1-SNAPSHOT"})
@@ -55,21 +79,27 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
 			Component implements ComponentSupplier<R>, HasStyle, HasComponents {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the error is showing.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * This overrides the update function in PaperInputAddonBehavior.
+	 * </p>
 	 * 
 	 * @see UpdateState
 	 * @param state

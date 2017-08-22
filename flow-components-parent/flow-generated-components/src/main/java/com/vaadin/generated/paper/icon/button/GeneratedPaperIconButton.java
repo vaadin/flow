@@ -15,19 +15,21 @@
  */
 package com.vaadin.generated.paper.icon.button;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.NotSupported;
+
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * 
@@ -41,23 +43,29 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * </p>
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
@@ -69,23 +77,29 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * </p>
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
@@ -117,35 +131,44 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user is currently holding down the button.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPressed() {
 		return getElement().getProperty("pressed", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isToggles() {
 		return getElement().getProperty("toggles", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button toggles the active state with each tap or press of
 	 * the spacebar.
+	 * </p>
 	 * 
 	 * @param toggles
 	 *            the boolean value to set
@@ -157,12 +180,15 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button is a toggle and is currently in the active state.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'active-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -170,9 +196,12 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the button is a toggle and is currently in the active state.
+	 * </p>
 	 * 
 	 * @param active
 	 *            the boolean value to set
@@ -184,50 +213,62 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
-	 * True if the element is currently being pressed by a "pointer," which is
-	 * loosely defined as mouse or touch input (but specifically excluding
-	 * keyboard input).
+	 * </p>
+	 * <p>
+	 * True if the element is currently being pressed by a &quot;pointer,&quot;
+	 * which is loosely defined as mouse or touch input (but specifically
+	 * excluding keyboard input).
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isPointerDown() {
 		return getElement().getProperty("pointerDown", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * True if the input device that caused the element to receive focus was a
 	 * keyboard.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The aria attribute to be set if the button is a toggle and in the active
 	 * state.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAriaActiveAttribute() {
 		return getElement().getProperty("ariaActiveAttribute");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The aria attribute to be set if the button is a toggle and in the active
 	 * state.
+	 * </p>
 	 * 
 	 * @param ariaActiveAttribute
 	 *            the String value to set
@@ -240,12 +281,15 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -253,12 +297,15 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'disabled-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -266,9 +313,12 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the user cannot interact with this element.
+	 * </p>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
@@ -280,23 +330,29 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element will not produce a ripple effect when interacted
 	 * with via the pointer.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element will not produce a ripple effect when interacted
 	 * with via the pointer.
+	 * </p>
 	 * 
 	 * @param noink
 	 *            the boolean value to set
@@ -308,23 +364,29 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The URL of an image for the icon. If the src property is specified, the
 	 * icon property should not be.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getSrc() {
 		return getElement().getProperty("src");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The URL of an image for the icon. If the src property is specified, the
 	 * icon property should not be.
+	 * </p>
 	 * 
 	 * @param src
 	 *            the String value to set
@@ -336,25 +398,31 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specifies the icon name or index in the set of icons available in the
 	 * icon's icon set. If the icon property is specified, the src property
 	 * should not be.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getIcon() {
 		return getElement().getProperty("icon");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specifies the icon name or index in the set of icons available in the
 	 * icon's icon set. If the icon property is specified, the src property
 	 * should not be.
+	 * </p>
 	 * 
 	 * @param icon
 	 *            the String value to set
@@ -366,21 +434,27 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specifies the alternate text for the button, for accessibility.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Specifies the alternate text for the button, for accessibility.
+	 * </p>
 	 * 
 	 * @param alt
 	 *            the String value to set
@@ -392,11 +466,14 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
 	 * the {@code keyBindings} prototype property.
+	 * </p>
 	 * 
 	 * @param eventString
 	 *            Missing documentation!
@@ -409,18 +486,24 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When called, will remove all imperatively-added key bindings.
+	 * </p>
 	 */
 	public void removeOwnKeyBindings() {
 		getElement().callFunction("removeOwnKeyBindings");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
+	 * </p>
 	 * 
 	 * @param event
 	 *            Missing documentation!
@@ -434,10 +517,13 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Ensures this element contains a ripple effect. For startup efficiency the
 	 * ripple effect is dynamically on demand when needed.
+	 * </p>
 	 * 
 	 * @param optTriggeringEvent
 	 *            (optional) event that triggered the ripple.
@@ -447,20 +533,26 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns the {@code <paper-ripple>} element used by this element to create
 	 * ripple effects. The element's ripple is created on demand, when
 	 * necessary, and calling this method will force the ripple to be created.
+	 * </p>
 	 */
 	public void getRipple() {
 		getElement().callFunction("getRipple");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if this element currently contains a ripple effect.
+	 * </p>
 	 * 
 	 * @return It would return a boolean
 	 */
