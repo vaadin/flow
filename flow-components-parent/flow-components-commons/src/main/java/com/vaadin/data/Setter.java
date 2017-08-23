@@ -19,13 +19,12 @@ import java.io.Serializable;
 import java.util.function.BiConsumer;
 
 import com.vaadin.components.data.HasValue;
-import com.vaadin.server.SerializableFunction;
 
 /**
  * The function to write the field value to the bean property
  *
  * @see BiConsumer
- * @see Binder#bind(HasValue, SerializableFunction, Setter)
+ * @see Binder#bind(HasValue, ValueProvider, Setter)
  * @param <BEAN>
  *            the type of the target bean
  * @param <FIELDVALUE>

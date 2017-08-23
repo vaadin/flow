@@ -103,7 +103,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
     }
 
     private abstract static class AbstractBeanPropertyDefinition<T, V>
-            implements PropertyDefinition<T, V> {
+    implements PropertyDefinition<T, V> {
         private final PropertyDescriptor descriptor;
         private final BeanPropertySet<T> propertySet;
         private final Class<?> propertyHolderType;
@@ -155,7 +155,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
     }
 
     private static class BeanPropertyDefinition<T, V>
-            extends AbstractBeanPropertyDefinition<T, V> {
+    extends AbstractBeanPropertyDefinition<T, V> {
 
         public BeanPropertyDefinition(BeanPropertySet<T> propertySet,
                 Class<T> propertyHolderType, PropertyDescriptor descriptor) {
@@ -210,7 +210,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
      *            the value type returned by the getter and set by the setter
      */
     public static class NestedBeanPropertyDefinition<T, V>
-            extends AbstractBeanPropertyDefinition<T, V> {
+    extends AbstractBeanPropertyDefinition<T, V> {
 
         private final PropertyDefinition<T, ?> parent;
 
@@ -289,7 +289,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
             throw new IllegalArgumentException(
                     "Cannot find property descriptors for "
                             + beanType.getName(),
-                    e);
+                            e);
         }
     }
 
@@ -299,6 +299,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
      * @param beanType
      *            the bean type to get a property set for, not <code>null</code>
      * @return the bean property set, not <code>null</code>
+     * @param <T>
+     *            the type of the bean
      */
     @SuppressWarnings("unchecked")
     public static <T> PropertySet<T> get(Class<? extends T> beanType) {
@@ -327,7 +329,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                 if (!parent.isPresent()) {
                     throw new IllegalArgumentException(
                             "Cannot find property descriptor [" + parentName
-                                    + "] for " + beanType.getName());
+                            + "] for " + beanType.getName());
                 }
 
                 Optional<PropertyDescriptor> descriptor = Optional.ofNullable(
@@ -340,14 +342,14 @@ public class BeanPropertySet<T> implements PropertySet<T> {
                 } else {
                     throw new IllegalArgumentException(
                             "Cannot find property descriptor [" + name
-                                    + "] for " + beanType.getName());
+                            + "] for " + beanType.getName());
                 }
 
             } catch (IntrospectionException e) {
                 throw new IllegalArgumentException(
                         "Cannot find property descriptors for "
                                 + beanType.getName(),
-                        e);
+                                e);
             }
         }
         return definition;
