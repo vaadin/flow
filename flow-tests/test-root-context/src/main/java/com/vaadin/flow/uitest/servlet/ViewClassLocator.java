@@ -43,7 +43,7 @@ public class ViewClassLocator {
             File testFolder;
             try {
                 testFolder = new File(url.toURI());
-            } catch (URISyntaxException e) {
+            } catch (URISyntaxException | IllegalArgumentException e) {
                 throw new IllegalArgumentException(String.format(
                         "Was not able to resolve URL '%s' in local file system",
                         url), e);

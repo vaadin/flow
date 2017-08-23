@@ -75,17 +75,17 @@ public class SourceContentResolver {
     private static List<SourceCodeExample> parseSourceCodeExamplesForClass(
             Class<? extends DemoView> demoViewClass) {
 
-        URL fileLocation = demoViewClass.getProtectionDomain()
-                .getCodeSource().getLocation();
+        URL fileLocation = demoViewClass.getProtectionDomain().getCodeSource()
+                .getLocation();
         Path sourceFilePath;
         try {
             sourceFilePath = Paths.get(new File(fileLocation.toURI()).getPath(),
                     demoViewClass.getPackage().getName().replaceAll("\\.", "/"),
                     demoViewClass.getSimpleName() + ".java");
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            throw new IllegalStateException(String.format(
                     "Could not resolve the path of the class '%s' with URL '%s' in local file system",
-                    e);
+                    demoViewClass, fileLocation), e);
         }
 
         try {
