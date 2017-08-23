@@ -15,21 +15,19 @@
  */
 package com.vaadin.generated.paper.progress;
 
-import java.util.Objects;
-
-import javax.annotation.Generated;
-
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Tag;
-import com.vaadin.components.data.HasValue;
-import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
+import com.vaadin.components.data.HasValue;
+import java.util.Objects;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
 /**
  * <p>

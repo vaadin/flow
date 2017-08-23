@@ -15,30 +15,29 @@
  */
 package com.vaadin.generated.vaadin.checkbox;
 
-import java.util.Objects;
-
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.Focusable;
+import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
-
-import com.vaadin.annotations.DomEvent;
+import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Tag;
 import com.vaadin.components.data.HasValue;
+import java.util.Objects;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.Focusable;
 import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HasStyle;
 
 /**
  * <p>
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-checkbox>} is a Polymer element for customized checkboxes.
+ * {@code <vaadin-checkbox>} is a Polymer 2 element for customized checkboxes.
  * </p>
  * <p>
  * {@code }
@@ -57,7 +56,7 @@ import com.vaadin.ui.HasStyle;
  * </thead> <tbody>
  * <tr>
  * <td>{@code wrapper}</td>
- * <td>The {@code <label>} element which wrapps the checkbox and
+ * <td>The {@code <label>} element which wraps the checkbox and
  * [part=&quot;label&quot;]</td>
  * </tr>
  * <tr>
@@ -105,7 +104,8 @@ import com.vaadin.ui.HasStyle;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#null", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha2",
+		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
@@ -115,6 +115,7 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 			ComponentSupplier<R>,
 			HasStyle,
 			Focusable<R>,
+			HasClickListeners<R>,
 			HasValue<R, Boolean>,
 			HasComponents {
 
