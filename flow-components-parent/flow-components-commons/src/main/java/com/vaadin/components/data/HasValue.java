@@ -291,7 +291,6 @@ extends ComponentSupplier<C>, Serializable {
      *
      * @since 8.1
      * @return internal state validator
-     * @see Binder#validate()
      */
     public default Validator<V> getDefaultValidator() {
         return Validator.alwaysPass();

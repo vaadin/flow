@@ -29,8 +29,8 @@ import com.vaadin.server.SerializableSupplier;
  * conversion. A result may contain either a value, signifying a successful
  * operation, or an error message in case of a failure.
  * <p>
- * Result instances are created using the factory methods {@link #ok(R)} and
- * {@link #error(String)}, denoting success and failure respectively.
+ * Result instances are created using the factory methods {@link #ok(Object)}
+ * and {@link #error(String)}, denoting success and failure respectively.
  * <p>
  * Unless otherwise specified, {@code Result} method arguments cannot be null.
  *

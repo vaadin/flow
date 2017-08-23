@@ -26,7 +26,7 @@ import com.vaadin.server.SerializableFunction;
  *
  * @param <R>
  *            the result value type
- * 
+ *
  * @since 8.0
  */
 class SimpleResult<R> implements Result<R> {
@@ -101,7 +101,7 @@ class SimpleResult<R> implements Result<R> {
     @Override
     public <X extends Throwable> R getOrThrow(
             SerializableFunction<String, ? extends X> exceptionSupplier)
-            throws X {
+                    throws X {
         Objects.requireNonNull(exceptionSupplier,
                 "Exception supplier cannot be null");
         if (isError()) {

@@ -153,7 +153,7 @@ public class Binder<BEAN> implements Serializable {
          * update the field value from the property and to store the field value
          * to the property, respectively.
          * <p>
-         * When a bean is bound with {@link Binder#setBean(BEAN)}, the field
+         * When a bean is bound with {@link Binder#setBean(Object)}, the field
          * value is set to the return value of the given getter. The property
          * value is then updated via the given setter whenever the field value
          * changes. The setter may be null; in that case the property value is
@@ -414,17 +414,10 @@ public class Binder<BEAN> implements Serializable {
          * fails.
          * <p>
          * The validation state of each field is updated whenever the user
-         * modifies the value of that field. The validation state is by default
-         * shown using {@link AbstractComponent#setComponentError} which is used
-         * by the layout that the field is shown in. Most built-in layouts will
-         * show this as a red exclamation mark icon next to the component, so
-         * that hovering or tapping the icon shows a tooltip with the message
-         * text.
+         * modifies the value of that field.
          * <p>
          * This method allows to customize the way a binder displays error
-         * messages to get more flexibility than what
-         * {@link AbstractComponent#setComponentError} provides (it replaces the
-         * default behavior).
+         * messages.
          * <p>
          * This is just a shorthand for
          * {@link #withValidationStatusHandler(BindingValidationStatusHandler)}
@@ -455,17 +448,10 @@ public class Binder<BEAN> implements Serializable {
          * status changes.
          * <p>
          * The validation state of each field is updated whenever the user
-         * modifies the value of that field. The validation state is by default
-         * shown using {@link AbstractComponent#setComponentError} which is used
-         * by the layout that the field is shown in. Most built-in layouts will
-         * show this as a red exclamation mark icon next to the component, so
-         * that hovering or tapping the icon shows a tooltip with the message
-         * text.
+         * modifies the value of that field.
          * <p>
          * This method allows to customize the way a binder displays error
-         * messages to get more flexibility than what
-         * {@link AbstractComponent#setComponentError} provides (it replaces the
-         * default behavior).
+         * messages.
          * <p>
          * The method may be called only once. It means there is no chain unlike
          * {@link #withValidator(Validator)} or
@@ -487,8 +473,7 @@ public class Binder<BEAN> implements Serializable {
          * <li>the required indicator is visible</li>
          * <li>the field value is validated for not being empty*</li>
          * </ol>
-         * For localizing the error message, use
-         * {@link #asRequired(ErrorMessageProvider)}.
+         * For localizing the error message, use {@link #asRequired(Provider)}.
          * <p>
          * *Value not being the equal to what {@link HasValue#getEmptyValue()}
          * returns.
@@ -1138,6 +1123,8 @@ public class Binder<BEAN> implements Serializable {
      *
      * @param propertySet
      *            the property set implementation to use, not <code>null</code>.
+     * @param <BEAN>
+     *            the bean type
      * @return a new binder using the provided property set, not
      *         <code>null</code>
      */
@@ -1228,7 +1215,7 @@ public class Binder<BEAN> implements Serializable {
      * {@link #forField(HasValue)} and
      * {@link BindingBuilder#withNullRepresentation(Object)}.
      * <p>
-     * When a bean is bound with {@link Binder#setBean(BEAN)}, the field value
+     * When a bean is bound with {@link Binder#setBean(Object)}, the field value
      * is set to the return value of the given getter. The property value is
      * then updated via the given setter whenever the field value changes. The
      * setter may be null; in that case the property value is never updated and
@@ -1363,7 +1350,7 @@ public class Binder<BEAN> implements Serializable {
      * <p>
      * The bean is not otherwise associated with this binder; in particular its
      * property values are not bound to the field value changes. To achieve
-     * that, use {@link #setBean(BEAN)}.
+     * that, use {@link #setBean(Object)}.
      *
      * @see #setBean(Object)
      * @see #writeBeanIfValid(Object)
@@ -1941,7 +1928,7 @@ public class Binder<BEAN> implements Serializable {
      *
      * <p>
      *
-     * <table>
+     * <table summary="Return values">
      * <tr>
      * <td></td>
      * <td>After readBean, setBean or removeBean</td>

@@ -241,7 +241,7 @@ public final class BeanUtil implements Serializable {
                         "A JSR-303 bean validation implementation not found on the classpath or could not be initialized. "
                                 + BeanValidator.class.getSimpleName()
                                 + " cannot be used.",
-                        e);
+                                e);
                 return false;
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 throw new RuntimeException(
