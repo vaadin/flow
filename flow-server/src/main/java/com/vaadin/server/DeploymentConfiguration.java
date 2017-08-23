@@ -19,6 +19,7 @@ package com.vaadin.server;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.shared.ApplicationConstants;
@@ -121,11 +122,78 @@ public interface DeploymentConfiguration extends Serializable {
      * @param defaultValue
      *            the default value that should be used if no value has been
      *            defined
+     * @param converter
+     *            the way string should be converted into the required property
+     * @param <T>
+     *            type of a property
      * @return the property value, or the passed default value if no property
      *         value is found
      */
-    String getApplicationOrSystemProperty(String propertyName,
-            String defaultValue);
+    <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
+            Function<String, T> converter);
+
+    /**
+     * A shorthand of
+     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
+     * for {@link String} type.
+     *
+     * @param propertyName
+     *            The simple of the property, in some contexts, lookup might be
+     *            performed using variations of the provided name.
+     * @param defaultValue
+     *            the default value that should be used if no value has been
+     *            defined
+     * @return the property value, or the passed default value if no property
+     *         value is found
+     */
+    default String getStringProperty(String propertyName, String defaultValue) {
+        return getApplicationOrSystemProperty(propertyName, defaultValue,
+                Function.identity());
+    }
+
+    /**
+     * A shorthand of
+     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
+     * for {@link String} type.
+     *
+     * Considers {@code ""} to be equal {@code true} in order to treat params
+     * like {@code -Dtest.param} as enabled ({@code test.param == true}).
+     *
+     * Additionally validates the property value, requiring non-empty strings to
+     * be equal to boolean string representation. An exception thrown if it's
+     * not true.
+     *
+     * @param propertyName
+     *            The simple of the property, in some contexts, lookup might be
+     *            performed using variations of the provided name.
+     * @param defaultValue
+     *            the default value that should be used if no value has been
+     *            defined
+     * @return the property value, or the passed default value if no property
+     *         value is found
+     *
+     * @throws IllegalArgumentException
+     *             if property value string is not a boolean value
+     */
+    default boolean getBooleanProperty(String propertyName,
+                                       boolean defaultValue) throws IllegalArgumentException {
+        String booleanString = getStringProperty(propertyName, null);
+        if (booleanString == null) {
+            return defaultValue;
+        } else if (booleanString.isEmpty()) {
+            return true;
+        } else {
+            boolean parsedBoolean = Boolean.parseBoolean(booleanString);
+            if (Boolean.toString(parsedBoolean)
+                    .equalsIgnoreCase(booleanString)) {
+                return parsedBoolean;
+            } else {
+                throw new IllegalArgumentException(String.format(
+                        "Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
+                        propertyName, booleanString, parsedBoolean));
+            }
+        }
+    }
 
     /**
      * Gets UI class configuration option value.
@@ -172,8 +240,7 @@ public interface DeploymentConfiguration extends Serializable {
                 ? Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
                         : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
-        return getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
-                defaultUrl);
+        return getStringProperty(Constants.FRONTEND_URL_ES6, defaultUrl);
     }
 
     /**
@@ -187,8 +254,7 @@ public interface DeploymentConfiguration extends Serializable {
                 ? Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
                         : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
-        return getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
-                defaultUrl);
+        return getStringProperty(Constants.FRONTEND_URL_ES5, defaultUrl);
     }
 
 }

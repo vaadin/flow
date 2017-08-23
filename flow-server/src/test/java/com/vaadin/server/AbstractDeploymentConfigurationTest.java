@@ -18,6 +18,7 @@ package com.vaadin.server;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.function.Function;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -101,9 +102,10 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public String getApplicationOrSystemProperty(String propertyName,
-                String defaultValue) {
-            return properties.getProperty(propertyName, defaultValue);
+        public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
+                                                    Function<String, T> converter) {
+            return Optional.ofNullable(properties.getProperty(propertyName))
+                    .map(converter).orElse(defaultValue);
         }
 
         @Override

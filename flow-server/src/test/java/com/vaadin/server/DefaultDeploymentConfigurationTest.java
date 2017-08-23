@@ -15,9 +15,12 @@
  */
 package com.vaadin.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Properties;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -27,7 +30,6 @@ import org.junit.Test;
  * @since 7.2
  */
 public class DefaultDeploymentConfigurationTest {
-
     @Test
     public void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {
@@ -38,7 +40,7 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 clazz, new Properties(), (base, consumer) -> {
                 });
-        Assert.assertEquals(value, config.getSystemProperty(prop));
+        assertEquals(value, config.getSystemProperty(prop));
     }
 
     @Test
@@ -53,7 +55,7 @@ public class DefaultDeploymentConfigurationTest {
                 DefaultDeploymentConfigurationTest.class, new Properties(),
                 (base, consumer) -> {
                 });
-        Assert.assertEquals(value, config.getSystemProperty(prop));
+        assertEquals(value, config.getSystemProperty(prop));
     }
 
     @Test
@@ -68,7 +70,7 @@ public class DefaultDeploymentConfigurationTest {
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
                 .orElseThrow(AssertionError::new);
 
-        Assert.assertEquals("frontend://bower_components/webcomponentsjs/",
+        assertEquals("frontend://bower_components/webcomponentsjs/",
                 webComponentsPolyfillBase);
     }
 
@@ -79,7 +81,7 @@ public class DefaultDeploymentConfigurationTest {
                 (base, consumer) -> {
                 });
 
-        Assert.assertFalse(config.getWebComponentsPolyfillBase().isPresent());
+        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
     }
 
     @Test
@@ -91,7 +93,7 @@ public class DefaultDeploymentConfigurationTest {
                     consumer.test("bar/webcomponents-lite.js");
                 });
 
-        Assert.assertFalse(config.getWebComponentsPolyfillBase().isPresent());
+        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
     }
 
     @Test
@@ -99,16 +101,13 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties();
         initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "foo");
 
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, initParameters,
-                (base, consumer) -> {
-                    throw new AssertionError("Should never be called");
-                });
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
 
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
                 .orElseThrow(AssertionError::new);
 
-        Assert.assertEquals("foo", webComponentsPolyfillBase);
+        assertEquals("foo", webComponentsPolyfillBase);
     }
 
     @Test
@@ -116,13 +115,66 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties();
         initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "");
 
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, initParameters,
-                (base, consumer) -> {
-                    throw new AssertionError("Should never be called");
-                });
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
 
-        Assert.assertFalse(config.getWebComponentsPolyfillBase().isPresent());
+        assertFalse(config.getWebComponentsPolyfillBase().isPresent());
     }
 
+    @Test
+    public void booleanValueReadIgnoreTheCase_true() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "tRUe");
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertTrue(
+                "Boolean value equal to 'true' ignoring case should be interpreted as 'true'",
+                config.isSendUrlsAsParameters());
+    }
+
+    @Test
+    public void booleanValueReadIgnoreTheCase_false() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "FaLsE");
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+
+        assertFalse(
+                "Boolean value equal to 'false' ignoring case should be interpreted as 'false'",
+                config.isSendUrlsAsParameters());
+    }
+
+    @Test
+    public void booleanValueRead_emptyIsTrue() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "");
+
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+
+        assertTrue("Empty boolean value should be interpreted as 'true'",
+                config.isSendUrlsAsParameters());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void booleanValueRead_exceptionOnNonBooleanValue() {
+        Properties initParameters = new Properties();
+        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "incorrectValue");
+
+        createDeploymentConfig(initParameters);
+    }
+
+    private DefaultDeploymentConfiguration createDeploymentConfig(
+            Properties initParameters) {
+        return new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, initParameters,
+                (base, consumer) -> {
+                });
+    }
 }
