@@ -307,7 +307,7 @@ public class RouterConfiguration
     }
 
     @Override
-    public Stream<Class<? extends HasChildView>> getParentViews(
+    public Stream<Class<? extends HasChildView>> getParentViewsAscending(
             Class<? extends View> viewType) {
         return getParentViewsAsList(viewType).stream();
     }

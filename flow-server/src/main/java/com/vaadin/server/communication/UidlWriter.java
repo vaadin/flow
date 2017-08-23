@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -294,10 +295,8 @@ public class UidlWriter implements Serializable {
                 // Send to client if it's a new template
                 if (!uiInternals.isTemplateSent(templateNode)) {
                     uiInternals.setTemplateSent(templateNode);
-
-                    JsonObject json = templateNode.toJson(this);
-
-                    templates.put(Integer.toString(templateNode.getId()), json);
+                    templates.put(Integer.toString(templateNode.getId()),
+                            templateNode.toJson(this));
                 }
             }
         };
@@ -341,24 +340,14 @@ public class UidlWriter implements Serializable {
         if (!ui.getRouter().isPresent() || !(component instanceof View)) {
             return Collections.emptyList();
         }
-        return ui.getRouter().get().getConfiguration()
-                .getParentViews(component.getClass().asSubclass(View.class))
+        List<Class<? extends HasChildView>> parentViewsAscending = ui.getRouter().get().getConfiguration()
+                .getParentViewsAscending(component.getClass().asSubclass(View.class))
                 .filter(Component.class::isAssignableFrom)
-                .sorted(this::superClassesComeFirstComparator)
-                .collect(Collectors.toList());
-    }
-
-    private int superClassesComeFirstComparator(Class<?> class1,
-            Class<?> class2) {
-        if (class1.isAssignableFrom(class2)) {
-            return -1;
-        } else if (class2.isAssignableFrom(class1)) {
-            return 1;
-        } else {
-            throw new IllegalArgumentException(String.format(
-                    "Neither of the classes is super to the other, incomparable classes: `%s` and `%s`",
-                    class1, class2));
+                .collect(Collectors.toCollection(ArrayList::new));
+        if (parentViewsAscending.size() > 1) {
+            Collections.reverse(parentViewsAscending);
         }
+        return parentViewsAscending;
     }
 
     private static void runIfNewTemplateChange(NodeChange change,
