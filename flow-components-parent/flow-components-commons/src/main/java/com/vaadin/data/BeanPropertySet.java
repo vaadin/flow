@@ -214,6 +214,16 @@ public class BeanPropertySet<T> implements PropertySet<T> {
 
         private final PropertyDefinition<T, ?> parent;
 
+        /**
+         * Creates a new instance of a nested property definition.
+         *
+         * @param propertySet
+         *            the {@link PropertySet} that this property belongs to
+         * @param parent
+         *            the parent property definition
+         * @param descriptor
+         *            the property descriptor
+         */
         public NestedBeanPropertyDefinition(BeanPropertySet<T> propertySet,
                 PropertyDefinition<T, ?> parent,
                 PropertyDescriptor descriptor) {

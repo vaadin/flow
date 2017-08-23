@@ -39,7 +39,7 @@ public interface Setter<BEAN, FIELDVALUE>
 extends BiConsumer<BEAN, FIELDVALUE>, Serializable {
 
     /**
-     * Save value to the bean property
+     * Save value to the bean property.
      *
      * @param bean
      *            the target bean

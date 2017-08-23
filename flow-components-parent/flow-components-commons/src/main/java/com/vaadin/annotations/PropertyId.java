@@ -59,5 +59,11 @@ import com.vaadin.data.Binder;
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PropertyId {
+
+    /**
+     * Returns the name of the property.
+     * 
+     * @return the proeprty name
+     */
     String value();
 }

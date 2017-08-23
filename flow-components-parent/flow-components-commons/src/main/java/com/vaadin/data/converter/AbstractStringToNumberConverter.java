@@ -34,6 +34,9 @@ import com.vaadin.data.ValueContext;
  * Override and overwrite {@link #getFormat(Locale)} to use a different format.
  * </p>
  *
+ * @param <T>
+ *            the converter number type
+ *
  * @author Vaadin Ltd
  * @since 8.0
  */

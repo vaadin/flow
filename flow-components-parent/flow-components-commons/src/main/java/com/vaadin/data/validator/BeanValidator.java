@@ -191,11 +191,11 @@ public class BeanValidator implements Validator<Object> {
     private static class LazyFactoryInitializer implements Serializable {
         private static final ValidatorFactory FACTORY = getFactory();
 
-        private static ValidatorFactory getFactory() {
-            return Validation.buildDefaultValidatorFactory();
+        private LazyFactoryInitializer() {
         }
 
-        private LazyFactoryInitializer() {
+        private static ValidatorFactory getFactory() {
+            return Validation.buildDefaultValidatorFactory();
         }
     }
 }

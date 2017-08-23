@@ -34,7 +34,7 @@ import com.vaadin.tests.data.bean.Address;
 import com.vaadin.tests.data.bean.Country;
 import com.vaadin.tests.data.bean.FatherAndSon;
 import com.vaadin.tests.data.bean.Sex;
-import com.vaadin.tests.server.ClassesSerializableTest;
+import com.vaadin.tests.server.ClassesSerializableUtils;
 
 public class BeanPropertySetTest {
     @Test
@@ -42,7 +42,7 @@ public class BeanPropertySetTest {
         PropertySet<Person> originalPropertySet = BeanPropertySet
                 .get(Person.class);
 
-        PropertySet<Person> deserializedPropertySet = ClassesSerializableTest
+        PropertySet<Person> deserializedPropertySet = ClassesSerializableUtils
                 .serializeAndDeserialize(originalPropertySet);
 
         Assert.assertSame(
@@ -88,7 +88,7 @@ public class BeanPropertySetTest {
                 .get(Person.class).getProperty("born")
                 .orElseThrow(RuntimeException::new);
 
-        PropertyDefinition<Person, ?> deserializedDefinition = ClassesSerializableTest
+        PropertyDefinition<Person, ?> deserializedDefinition = ClassesSerializableUtils
                 .serializeAndDeserialize(definition);
 
         ValueProvider<Person, ?> getter = deserializedDefinition.getGetter();
@@ -113,7 +113,7 @@ public class BeanPropertySetTest {
                 .getProperty("address.postalCode")
                 .orElseThrow(RuntimeException::new);
 
-        PropertyDefinition<com.vaadin.tests.data.bean.Person, ?> deserializedDefinition = ClassesSerializableTest
+        PropertyDefinition<com.vaadin.tests.data.bean.Person, ?> deserializedDefinition = ClassesSerializableUtils
                 .serializeAndDeserialize(definition);
 
         ValueProvider<com.vaadin.tests.data.bean.Person, ?> getter = deserializedDefinition

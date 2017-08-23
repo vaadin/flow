@@ -171,28 +171,36 @@ public final class BeanUtil implements Serializable {
         List<PropertyDescriptor> result = new ArrayList<>(descriptors.length);
         for (PropertyDescriptor descriptor : descriptors) {
             try {
-                Method readMethod = getMethodFromBridge(
-                        descriptor.getReadMethod());
-                if (readMethod != null) {
-                    Method writeMethod = getMethodFromBridge(
-                            descriptor.getWriteMethod(),
-                            readMethod.getReturnType());
-                    if (writeMethod == null) {
-                        writeMethod = descriptor.getWriteMethod();
-                    }
-                    PropertyDescriptor descr = new PropertyDescriptor(
-                            descriptor.getName(), readMethod, writeMethod);
-                    result.add(descr);
-                } else {
-                    result.add(descriptor);
-                }
-            } catch (SecurityException ignore) {
+                result.add(fixPropertyDescriptor(descriptor));
+            } catch (SecurityException exception) {
+                Logger.getLogger(BeanUtil.class.getName()).log(Level.INFO, null,
+                        exception);
                 // handle next descriptor
             } catch (IntrospectionException e) {
+                Logger.getLogger(BeanUtil.class.getName()).log(Level.INFO, null,
+                        e);
                 result.add(descriptor);
             }
         }
         return result;
+    }
+
+    private static PropertyDescriptor fixPropertyDescriptor(
+            PropertyDescriptor descriptor) throws IntrospectionException {
+        Method readMethod = getMethodFromBridge(
+                descriptor.getReadMethod());
+        if (readMethod != null) {
+            Method writeMethod = getMethodFromBridge(
+                    descriptor.getWriteMethod(),
+                    readMethod.getReturnType());
+            if (writeMethod == null) {
+                writeMethod = descriptor.getWriteMethod();
+            }
+            return new PropertyDescriptor(
+                    descriptor.getName(), readMethod, writeMethod);
+        } else {
+            return descriptor;
+        }
     }
 
     /**
@@ -229,6 +237,9 @@ public final class BeanUtil implements Serializable {
     private static class LazyValidationAvailability implements Serializable {
         private static final boolean BEAN_VALIDATION_AVAILABLE = isAvailable();
 
+        private LazyValidationAvailability() {
+        }
+
         private static boolean isAvailable() {
             try {
                 Class<?> clazz = Class.forName("javax.validation.Validation");
@@ -248,9 +259,6 @@ public final class BeanUtil implements Serializable {
                         "Unable to invoke javax.validation.Validation.buildDefaultValidatorFactory()",
                         e);
             }
-        }
-
-        private LazyValidationAvailability() {
         }
     }
 }

@@ -75,22 +75,6 @@ public class BindingValidationStatus<TARGET> implements Serializable {
     private final Binding<?, TARGET> binding;
 
     /**
-     * Convenience method for creating a {@link Status#UNRESOLVED} validation
-     * status for the given binding.
-     *
-     * @param source
-     *            the source binding
-     * @return unresolved validation status
-     * @param <TARGET>
-     *            the target data type of the binding for which the validation
-     *            status was reset
-     */
-    public static <TARGET> BindingValidationStatus<TARGET> createUnresolvedStatus(
-            Binding<?, TARGET> source) {
-        return new BindingValidationStatus<>(source, Status.UNRESOLVED, null);
-    }
-
-    /**
      * Creates a new validation status for the given binding and validation
      * result.
      *
@@ -132,6 +116,22 @@ public class BindingValidationStatus<TARGET> implements Serializable {
         binding = source;
         this.status = status;
         this.result = result;
+    }
+
+    /**
+     * Convenience method for creating a {@link Status#UNRESOLVED} validation
+     * status for the given binding.
+     *
+     * @param source
+     *            the source binding
+     * @return unresolved validation status
+     * @param <TARGET>
+     *            the target data type of the binding for which the validation
+     *            status was reset
+     */
+    public static <TARGET> BindingValidationStatus<TARGET> createUnresolvedStatus(
+            Binding<?, TARGET> source) {
+        return new BindingValidationStatus<>(source, Status.UNRESOLVED, null);
     }
 
     /**

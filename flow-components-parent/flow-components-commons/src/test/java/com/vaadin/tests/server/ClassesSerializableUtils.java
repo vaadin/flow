@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class ClassesSerializableTest {
+public class ClassesSerializableUtils {
 
     public static <T> T serializeAndDeserialize(T instance)
             throws IOException, ClassNotFoundException {

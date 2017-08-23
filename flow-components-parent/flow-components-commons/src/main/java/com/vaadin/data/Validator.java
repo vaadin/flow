@@ -19,6 +19,8 @@ package com.vaadin.data;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.server.SerializablePredicate;
 
@@ -134,6 +136,8 @@ extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
                             .error(errorMessageProvider.apply(context));
                 }
             } catch (Exception e) {
+                Logger.getLogger(Validator.class.getName()).log(Level.INFO,
+                        "An exception is thrown during validation", e);
                 return ValidationResult
                         .error(errorMessageProvider.apply(context));
             }

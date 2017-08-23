@@ -32,6 +32,12 @@ import java.util.Objects;
  */
 public interface ValidationResult extends Serializable {
 
+    /**
+     * Simple validation result implementation.
+     * 
+     * @author Vaadin Ltd
+     *
+     */
     class SimpleValidationResult implements ValidationResult {
 
         private final String error;
