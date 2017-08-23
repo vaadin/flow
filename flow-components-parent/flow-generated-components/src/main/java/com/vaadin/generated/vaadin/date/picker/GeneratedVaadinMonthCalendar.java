@@ -15,22 +15,20 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
-import javax.annotation.Generated;
-
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: MonthCalendarElement#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: MonthCalendarElement#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-month-calendar")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-month-calendar.html")
 public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar<R>>

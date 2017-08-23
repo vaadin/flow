@@ -15,22 +15,20 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
-
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
+import elemental.json.JsonObject;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.NotSupported;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasClickListeners;
-import com.vaadin.ui.HasStyle;
-
-import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -185,7 +183,7 @@ import elemental.json.JsonObject;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.DatePickerElement#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: Vaadin.DatePickerElement#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker.html")
 public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
