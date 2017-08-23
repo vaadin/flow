@@ -105,13 +105,16 @@ public class BindingValidationStatus<TARGET> implements Serializable {
             ValidationResult result) {
         Objects.requireNonNull(source, "Event source may not be null");
         Objects.requireNonNull(status, "Status may not be null");
-        if (Objects.equals(status, Status.OK) && result.isError()
-                || Objects.equals(status, Status.ERROR) && !result.isError()
+        boolean resultErrorWithOkStatus = Objects.equals(status, Status.OK)
+                && result.isError();
+        boolean statusErrorWithOkResult = Objects.equals(status, Status.ERROR)
+                && !result.isError();
+        if (resultErrorWithOkStatus || statusErrorWithOkResult
                 || Objects.equals(status, Status.UNRESOLVED)
                 && result != null) {
             throw new IllegalStateException(
                     "Invalid validation status " + status + " for given result "
-                            + (result == null ? "null" : result.toString()));
+                            + result.toString());
         }
         binding = source;
         this.status = status;
