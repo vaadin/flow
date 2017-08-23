@@ -50,4 +50,19 @@ public class TextFieldViewIT extends AbstractComponentIT {
 
         waitUntil(driver -> textField.getAttribute("readonly") == null);
     }
+
+    @Test
+    public void assertRequired() {
+        WebElement webComponent = findElement(By.tagName("vaadin-text-field"));
+
+        WebElement textField = getInShadowRoot(webComponent, By.id("input"));
+        Assert.assertNull(textField.getAttribute("required"));
+
+        WebElement button = findElement(By.id("required"));
+        button.click();
+        waitUntil(driver -> textField.getAttribute("required"));
+
+        button.click();
+        waitUntil(driver -> textField.getAttribute("required") == null);
+    }
 }
