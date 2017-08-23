@@ -73,11 +73,10 @@ public class SourceContentResolver {
     private static List<SourceCodeExample> parseSourceCodeExamplesForClass(
             Class<? extends DemoView> demoViewClass) {
 
-        String classFilePath = demoViewClass.getProtectionDomain()
-                .getCodeSource().getLocation().getPath()
-                + demoViewClass.getPackage().getName().replaceAll("\\.",
-                        File.separator);
-        Path sourceFilePath = Paths.get(classFilePath,
+        Path sourceFilePath = Paths.get(
+                new File(demoViewClass.getProtectionDomain().getCodeSource()
+                        .getLocation().getPath()).getPath(),
+                demoViewClass.getPackage().getName().replaceAll("\\.", "/"),
                 demoViewClass.getSimpleName() + ".java");
 
         try {
