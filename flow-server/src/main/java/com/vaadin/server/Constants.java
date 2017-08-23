@@ -40,7 +40,7 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
     public static final String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
-    public static final String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
+    public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
     public static final String SERVLET_PARAMETER_ROUTER_CONFIGURATOR = "routerConfigurator";
     public static final String SERVLET_PARAMETER_POLYFILL_BASE = "polyfillBase";

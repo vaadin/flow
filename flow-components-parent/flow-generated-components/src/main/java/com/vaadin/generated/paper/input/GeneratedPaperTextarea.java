@@ -15,40 +15,49 @@
  */
 package com.vaadin.generated.paper.input;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
+ * </p>
+ * <p>
  * {@code <paper-textarea>} is a multi-line text field with Material Design
  * styling.
+ * </p>
  * 
- * <paper-textarea label="Textarea label"></paper-textarea>
- * 
+ * <pre>
+ * <code>&lt;paper-textarea label=&quot;Textarea label&quot;&gt;&lt;/paper-textarea&gt;
+ * </code>
+ * </pre>
+ * <p>
  * See {@code Polymer.PaperInputBehavior} for more API docs.
- * 
- * ### Validation
- * 
+ * </p>
+ * <h3>Validation</h3>
+ * <p>
  * Currently only {@code required} and {@code maxlength} validation is
  * supported.
- * 
- * ### Styling
- * 
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
  * See {@code Polymer.PaperInputContainer} for a list of custom properties used
  * to style this element.
+ * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-textarea#2.0.1", "Flow#0.1-SNAPSHOT"})
@@ -63,12 +72,15 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 			HasValue<R, String> {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, the element currently has focus.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -76,8 +88,10 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable this input. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to both the
 	 * {@code <paper-input-container>}'s and the input's {@code disabled}
@@ -85,6 +99,7 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'disabled-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -92,12 +107,15 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable this input. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to both the
 	 * {@code <paper-input-container>}'s and the input's {@code disabled}
 	 * property.
+	 * </p>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
@@ -109,23 +127,29 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The EventTarget that will be firing relevant KeyboardEvents. Set it to
 	 * {@code null} to disable the listeners.
+	 * </p>
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
@@ -137,23 +161,29 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If true, this property will cause the implementing element to
 	 * automatically stop propagation on any handled KeyboardEvents.
+	 * </p>
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
@@ -185,29 +215,35 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The label for this input. If you're using PaperInputBehavior to implement
 	 * your own paper-input-like element, bind this to {@code <label>}'s content
 	 * and {@code hidden} property, e.g.
-	 * {@code <label hidden$="[[!label]]">[[label]]</label>} in your
-	 * {@code template}
+	 * {@code &lt;label hidden$=&quot;[[!label]]&quot;&gt;[[label]]</label>} in
+	 * your {@code template}
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The label for this input. If you're using PaperInputBehavior to implement
 	 * your own paper-input-like element, bind this to {@code <label>}'s content
 	 * and {@code hidden} property, e.g.
-	 * {@code <label hidden$="[[!label]]">[[label]]</label>} in your
-	 * {@code template}
+	 * {@code &lt;label hidden$=&quot;[[!label]]&quot;&gt;[[label]]</label>} in
+	 * your {@code template}
+	 * </p>
 	 * 
 	 * @param label
 	 *            the String value to set
@@ -219,12 +255,15 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value for this element.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	@Override
@@ -233,9 +272,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The value for this element.
+	 * </p>
 	 * 
 	 * @param value
 	 *            the String value to set
@@ -248,18 +290,22 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if the value is invalid. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to both the
 	 * {@code <paper-input-container>}'s and the input's {@code invalid}
 	 * property.
-	 * 
+	 * </p>
+	 * <p>
 	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
+	 * </p>
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -267,15 +313,19 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if the value is invalid. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to both the
 	 * {@code <paper-input-container>}'s and the input's {@code invalid}
 	 * property.
-	 * 
+	 * </p>
+	 * <p>
 	 * If {@code autoValidate} is true, the {@code invalid} attribute is managed
 	 * automatically, which can clobber attempts to manage it manually.
+	 * </p>
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
@@ -287,8 +337,10 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
@@ -296,18 +348,22 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set this to specify the pattern allowed by {@code preventInvalidInput}.
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code allowedPattern} property.
+	 * </p>
 	 * 
 	 * @param allowedPattern
 	 *            the String value to set
@@ -320,8 +376,10 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The type of the input. The supported types are {@code text},
 	 * {@code number} and {@code password}. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
@@ -329,18 +387,22 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getType() {
 		return getElement().getProperty("type");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The type of the input. The supported types are {@code text},
 	 * {@code number} and {@code password}. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * </p>
 	 * 
 	 * @param type
 	 *            the String value to set
@@ -352,8 +414,10 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The datalist of the input (if any). This should match the id of an
 	 * existing {@code <datalist>}. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to the
@@ -361,18 +425,22 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The datalist of the input (if any). This should match the id of an
 	 * existing {@code <datalist>}. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code list} property.
+	 * </p>
 	 * 
 	 * @param list
 	 *            the String value to set
@@ -384,25 +452,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A pattern to validate the {@code input} with. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A pattern to validate the {@code input} with. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code pattern} property.
+	 * </p>
 	 * 
 	 * @param pattern
 	 *            the String value to set
@@ -414,8 +488,10 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to mark the input as required. If used in a form, a custom
 	 * element that uses this behavior should also use
 	 * Polymer.IronValidatableBehavior and define a custom validation method.
@@ -425,20 +501,24 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to mark the input as required. If used in a form, a custom
 	 * element that uses this behavior should also use
 	 * Polymer.IronValidatableBehavior and define a custom validation method.
 	 * Otherwise, a {@code required} element will always be considered valid.
 	 * It's also strongly recommended to provide a visual style for the element
 	 * when its value is invalid.
+	 * </p>
 	 * 
 	 * @param required
 	 *            the boolean value to set
@@ -450,25 +530,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The error message to display when the input is invalid. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-error>}'s content, if using.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The error message to display when the input is invalid. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-error>}'s content, if using.
+	 * </p>
 	 * 
 	 * @param errorMessage
 	 *            the String value to set
@@ -481,21 +567,27 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to show a character counter.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isCharCounter() {
 		return getElement().getProperty("charCounter", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to show a character counter.
+	 * </p>
 	 * 
 	 * @param charCounter
 	 *            the boolean value to set
@@ -507,8 +599,10 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable the floating label. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
@@ -516,18 +610,22 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to disable the floating label. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-container>}'s {@code noLabelFloat}
 	 * property.
+	 * </p>
 	 * 
 	 * @param noLabelFloat
 	 *            the boolean value to set
@@ -539,25 +637,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to always float the label. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to always float the label. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <paper-input-container>}'s {@code alwaysFloatLabel} property.
+	 * </p>
 	 * 
 	 * @param alwaysFloatLabel
 	 *            the boolean value to set
@@ -569,8 +673,10 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to auto-validate the input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-container>}'s {@code autoValidate}
@@ -578,18 +684,22 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Set to true to auto-validate the input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <paper-input-container>}'s {@code autoValidate}
 	 * property.
+	 * </p>
 	 * 
 	 * @param autoValidate
 	 *            the boolean value to set
@@ -601,25 +711,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Name of the validator to use. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code validator} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Name of the validator to use. If you're using PaperInputBehavior to
 	 * implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code validator} property.
+	 * </p>
 	 * 
 	 * @param validator
 	 *            the String value to set
@@ -632,25 +748,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocomplete} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocomplete} property.
+	 * </p>
 	 * 
 	 * @param autocomplete
 	 *            the String value to set
@@ -663,25 +785,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autofocus} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autofocus} property.
+	 * </p>
 	 * 
 	 * @param autofocus
 	 *            the boolean value to set
@@ -693,25 +821,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code inputmode} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code inputmode} property.
+	 * </p>
 	 * 
 	 * @param inputmode
 	 *            the String value to set
@@ -724,25 +858,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The minimum length of the input value. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code minlength} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The minimum length of the input value. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code minlength} property.
+	 * </p>
 	 * 
 	 * @param minlength
 	 *            the double value to set
@@ -754,25 +894,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The maximum length of the input value. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code maxlength} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The maximum length of the input value. If you're using PaperInputBehavior
 	 * to implement your own paper-input-like element, bind this to the
 	 * {@code <input is="iron-input">}'s {@code maxlength} property.
+	 * </p>
 	 * 
 	 * @param maxlength
 	 *            the double value to set
@@ -784,25 +930,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The minimum (numeric or date-time) input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code min} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getMin() {
 		return getElement().getProperty("min");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The minimum (numeric or date-time) input value. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code min} property.
+	 * </p>
 	 * 
 	 * @param min
 	 *            the String value to set
@@ -814,27 +966,33 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The maximum (numeric or date-time) input value. Can be a String (e.g.
-	 * {@code "2000-01-01"}) or a Number (e.g. {@code 2}). If you're using
-	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the {@code <input is="iron-input">}'s {@code max} property.
+	 * {@code &quot;2000-01-01&quot;}) or a Number (e.g. {@code 2}). If you're
+	 * using PaperInputBehavior to implement your own paper-input-like element,
+	 * bind this to the {@code <input is="iron-input">}'s {@code max} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getMax() {
 		return getElement().getProperty("max");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The maximum (numeric or date-time) input value. Can be a String (e.g.
-	 * {@code "2000-01-01"}) or a Number (e.g. {@code 2}). If you're using
-	 * PaperInputBehavior to implement your own paper-input-like element, bind
-	 * this to the {@code <input is="iron-input">}'s {@code max} property.
+	 * {@code &quot;2000-01-01&quot;}) or a Number (e.g. {@code 2}). If you're
+	 * using PaperInputBehavior to implement your own paper-input-like element,
+	 * bind this to the {@code <input is="iron-input">}'s {@code max} property.
+	 * </p>
 	 * 
 	 * @param max
 	 *            the String value to set
@@ -846,25 +1004,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Limits the numeric or date-time increments. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code step} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getStep() {
 		return getElement().getProperty("step");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Limits the numeric or date-time increments. If you're using
 	 * PaperInputBehavior to implement your own paper-input-like element, bind
 	 * this to the {@code <input is="iron-input">}'s {@code step} property.
+	 * </p>
 	 * 
 	 * @param step
 	 *            the String value to set
@@ -876,21 +1040,27 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The name of this element.
+	 * </p>
 	 * 
 	 * @param name
 	 *            the String value to set
@@ -902,23 +1072,29 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A placeholder string in addition to the label. If this is set, the label
 	 * will always float.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A placeholder string in addition to the label. If this is set, the label
 	 * will always float.
+	 * </p>
 	 * 
 	 * @param placeholder
 	 *            the String value to set
@@ -931,25 +1107,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code readonly} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code readonly} property.
+	 * </p>
 	 * 
 	 * @param readonly
 	 *            the boolean value to set
@@ -961,25 +1143,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s {@code size}
 	 * property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s {@code size}
 	 * property.
+	 * </p>
 	 * 
 	 * @param size
 	 *            the double value to set
@@ -991,25 +1179,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocapitalize} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAutocapitalize() {
 		return getElement().getProperty("autocapitalize");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocapitalize} property.
+	 * </p>
 	 * 
 	 * @param autocapitalize
 	 *            the String value to set
@@ -1022,25 +1216,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocorrect} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autocorrect} property.
+	 * </p>
 	 * 
 	 * @param autocorrect
 	 *            the String value to set
@@ -1053,25 +1253,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autosave} property, used with type=search.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAutosave() {
 		return getElement().getProperty("autosave");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code autosave} property, used with type=search.
+	 * </p>
 	 * 
 	 * @param autosave
 	 *            the String value to set
@@ -1083,25 +1289,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code results} property, used with type=search.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getResults() {
 		return getElement().getProperty("results", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code results} property, used with type=search.
+	 * </p>
 	 * 
 	 * @param results
 	 *            the double value to set
@@ -1113,25 +1325,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code accept} property, used with type=file.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getAccept() {
 		return getElement().getProperty("accept");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the {@code <input is="iron-input">}'s
 	 * {@code accept} property, used with type=file.
+	 * </p>
 	 * 
 	 * @param accept
 	 *            the String value to set
@@ -1143,25 +1361,31 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the{@code <input is="iron-input">}'s
 	 * {@code multiple} property, used with type=file.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isMultiple() {
 		return getElement().getProperty("multiple", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * If you're using PaperInputBehavior to implement your own paper-input-like
 	 * element, bind this to the{@code <input is="iron-input">}'s
 	 * {@code multiple} property, used with type=file.
+	 * </p>
 	 * 
 	 * @param multiple
 	 *            the boolean value to set
@@ -1173,21 +1397,27 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The initial number of rows.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getRows() {
 		return getElement().getProperty("rows", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The initial number of rows.
+	 * </p>
 	 * 
 	 * @param rows
 	 *            the double value to set
@@ -1199,23 +1429,29 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The maximum number of rows this element can grow to until it scrolls. 0
 	 * means no maximum.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public double getMaxRows() {
 		return getElement().getProperty("maxRows", 0.0);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The maximum number of rows this element can grow to until it scrolls. 0
 	 * means no maximum.
+	 * </p>
 	 * 
 	 * @param maxRows
 	 *            the double value to set
@@ -1227,11 +1463,14 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Can be used to imperatively add a key binding to the implementing
 	 * element. This is the imperative equivalent of declaring a keybinding in
 	 * the {@code keyBindings} prototype property.
+	 * </p>
 	 * 
 	 * @param eventString
 	 *            Missing documentation!
@@ -1244,18 +1483,24 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * When called, will remove all imperatively-added key bindings.
+	 * </p>
 	 */
 	public void removeOwnKeyBindings() {
 		getElement().callFunction("removeOwnKeyBindings");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
+	 * </p>
 	 * 
 	 * @param event
 	 *            Missing documentation!
@@ -1269,18 +1514,24 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Returns a reference to the input element.
+	 * </p>
 	 */
 	public void inputElement() {
 		getElement().callFunction("inputElement");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Validates the input element and sets an error style if needed.
+	 * </p>
 	 * 
 	 * @return It would return a boolean
 	 */
@@ -1289,9 +1540,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Restores the cursor to its original position after updating the value.
+	 * </p>
 	 * 
 	 * @param newValue
 	 *            The value that should be saved.

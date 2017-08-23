@@ -15,17 +15,19 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
+
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: MonthCalendarElement#2.0.1", "Flow#0.1-SNAPSHOT"})
@@ -36,23 +38,29 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A {@code Date} object defining the month to be displayed. Only year and
 	 * month properties are actually used.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetMonth() {
 		return (JsonObject) getElement().getPropertyRaw("month");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A {@code Date} object defining the month to be displayed. Only year and
 	 * month properties are actually used.
+	 * </p>
 	 * 
 	 * @param month
 	 *            the JsonObject value to set
@@ -64,21 +72,27 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A {@code Date} object for the currently selected date.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetSelectedDate() {
 		return (JsonObject) getElement().getPropertyRaw("selectedDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A {@code Date} object for the currently selected date.
+	 * </p>
 	 * 
 	 * @param selectedDate
 	 *            the JsonObject value to set
@@ -90,21 +104,27 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A {@code Date} object for the currently focused date.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetFocusedDate() {
 		return (JsonObject) getElement().getPropertyRaw("focusedDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * A {@code Date} object for the currently focused date.
+	 * </p>
 	 * 
 	 * @param focusedDate
 	 *            the JsonObject value to set
@@ -152,21 +172,27 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Flag stating whether taps on the component should be ignored.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public boolean isIgnoreTaps() {
 		return getElement().getProperty("ignoreTaps", false);
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Flag stating whether taps on the component should be ignored.
+	 * </p>
 	 * 
 	 * @param ignoreTaps
 	 *            the boolean value to set
@@ -178,23 +204,29 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The earliest date that can be selected. All earlier dates will be
 	 * disabled.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetMinDate() {
 		return (JsonObject) getElement().getPropertyRaw("minDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The earliest date that can be selected. All earlier dates will be
 	 * disabled.
+	 * </p>
 	 * 
 	 * @param minDate
 	 *            the JsonObject value to set
@@ -206,21 +238,27 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The latest date that can be selected. All later dates will be disabled.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	protected JsonObject protectedGetMaxDate() {
 		return (JsonObject) getElement().getPropertyRaw("maxDate");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * The latest date that can be selected. All later dates will be disabled.
+	 * </p>
 	 * 
 	 * @param maxDate
 	 *            the JsonObject value to set

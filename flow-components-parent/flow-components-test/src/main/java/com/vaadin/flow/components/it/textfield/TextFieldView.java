@@ -46,5 +46,12 @@ public class TextFieldView extends TestView {
         button.addClickListener(
                 event -> textField.setReadOnly(!textField.isReadOnly()));
         add(button);
+
+        Button required = new Button("Set/unset field required property");
+        required.setId("required");
+        required.addClickListener(
+                event -> textField.setRequiredIndicatorVisible(
+                        !textField.isRequiredIndicatorVisible()));
+        add(required);
     }
 }

@@ -15,102 +15,166 @@
  */
 package com.vaadin.generated.paper.toolbar;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
 
 /**
+ * <p>
  * Description copied from corresponding location in WebComponent:
- * 
- * This element has been deprecated in favor of
- * [app-layout](https://github.com/PolymerElements/app-layout).**
- * 
- * Material design:
- * [Toolbars](https://www.google.com/design/spec/components/toolbars.html)
- * 
+ * </p>
+ * <p>
+ * <em>This element has been deprecated in favor of <a href="https://github.com/PolymerElements/app-layout">app-layout</a>.</em>
+ * </p>
+ * <p>
+ * Material design: <a
+ * href="https://www.google.com/design/spec/components/toolbars.html"
+ * >Toolbars</a>
+ * </p>
+ * <p>
  * {@code paper-toolbar} is a horizontal bar containing items that can be used
  * for label, navigation, search and actions. The items placed inside the
  * {@code paper-toolbar} are projected into a
- * {@code class="horizontal center layout"} container inside of
+ * {@code class=&quot;horizontal center layout&quot;} container inside of
  * {@code paper-toolbar}'s Shadow DOM. You can use flex attributes to control
  * the items' sizing.
- * 
+ * </p>
+ * <p>
  * Example:
- * 
+ * </p>
+ * <p>
  * {@code }`html <paper-toolbar> <paper-icon-button icon="menu"
- * on-tap="menuAction"></paper-icon-button> <div class="title">Title</div>
- * <paper-icon-button icon="more-vert" on-tap="moreAction"></paper-icon-button>
- * </paper-toolbar> {@code }`
- * 
+ * on-tap="menuAction"></paper-icon-button>
+ * </p>
+ * <div class="title">Title</div> <paper-icon-button icon="more-vert"
+ * on-tap="moreAction"></paper-icon-button> </paper-toolbar> {@code }`
+ * <p>
  * {@code paper-toolbar} has a standard height, but can made be taller by
  * setting {@code tall} class on the {@code paper-toolbar}. This will make the
  * toolbar 3x the normal height.
- * 
- * {@code }`html <paper-toolbar class="tall"> <paper-icon-button
- * icon="menu"></paper-icon-button> </paper-toolbar> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;paper-toolbar class=&quot;tall&quot;&gt; &lt;paper-icon-button icon=&quot;menu&quot;&gt;&lt;/paper-icon-button&gt; &lt;/paper-toolbar&gt; {@code }</code>
+ * </p>
+ * <p>
  * Apply {@code medium-tall} class to make the toolbar medium tall. This will
  * make the toolbar 2x the normal height.
- * 
- * {@code }`html <paper-toolbar class="medium-tall"> <paper-icon-button
- * icon="menu"></paper-icon-button> </paper-toolbar> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;paper-toolbar class=&quot;medium-tall&quot;&gt; &lt;paper-icon-button icon=&quot;menu&quot;&gt;&lt;/paper-icon-button&gt; &lt;/paper-toolbar&gt; {@code }</code>
+ * </p>
+ * <p>
  * When {@code tall}, items can pin to either the top (default), middle or
  * bottom. Use {@code middle} slot for middle content and {@code bottom} slot
  * for bottom content.
- * 
+ * </p>
+ * <p>
  * {@code }`html <paper-toolbar class="tall"> <paper-icon-button
- * icon="menu"></paper-icon-button> <div slot="middle" class="title">Middle
- * Title</div> <div slot="bottom" class="title">Bottom Title</div>
- * </paper-toolbar> {@code }`
- * 
+ * icon="menu"></paper-icon-button>
+ * </p>
+ * <div slot="middle" class="title">Middle Title</div> <div slot="bottom"
+ * class="title">Bottom Title</div> </paper-toolbar> {@code }`
+ * <p>
  * For {@code medium-tall} toolbar, the middle and bottom contents overlap and
  * are pinned to the bottom. But {@code middleJustify} and {@code bottomJustify}
  * attributes are still honored separately.
- * 
+ * </p>
+ * <p>
  * To make an element completely fit at the bottom of the toolbar, use
  * {@code fit} along with {@code bottom}.
- * 
- * {@code }`html <paper-toolbar class="tall"> <div id="progressBar" slot="bottom"
- * class="fit"></div> </paper-toolbar> {@code }`
- * 
+ * </p>
+ * <p>
+ * {@code }`html <paper-toolbar class="tall">
+ * </p>
+ * <div id="progressBar" slot="bottom" class="fit"></div> </paper-toolbar>
+ * {@code }`
+ * <p>
  * When inside a {@code paper-header-panel} element with
- * {@code mode="waterfall-tall"}, the class {@code .animate} is toggled to
- * animate the height change in the toolbar.
- * 
- * ### Styling
- * 
+ * {@code mode=&quot;waterfall-tall&quot;}, the class {@code .animate} is
+ * toggled to animate the height change in the toolbar.
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
  * The following custom properties and mixins are available for styling:
- * 
- * Custom property | Description | Default
- * ----------------|-------------|---------- {@code --paper-toolbar-title} |
- * Mixin applied to the title of the toolbar | {@code
- * {@code --paper-toolbar-background} | Toolbar background color |
- * {@code --primary-color} {@code --paper-toolbar-color} | Toolbar foreground
- * color | {@code --dark-theme-text-color} {@code --paper-toolbar-height} |
- * Custom height for toolbar | {@code 64px} {@code --paper-toolbar-sm-height} |
- * Custom height for small screen toolbar | {@code 56px} {@code --paper-toolbar}
- * | Mixin applied to the toolbar | {@code {@code --paper-toolbar-content} |
- * Mixin applied to the content section of the toolbar | {@code
- * {@code --paper-toolbar-medium} | Mixin applied to medium height toolbar |
- * {@code {@code --paper-toolbar-tall} | Mixin applied to tall height toolbar |
- * {@code {@code --paper-toolbar-transition} | Transition applied to the
- * {@code .animate} class | {@code height 0.18s ease-in}
- * 
- * ### Accessibility
- * 
- * {@code <paper-toolbar>} has {@code role="toolbar"} by default. Any elements
- * with the class {@code title} will be used as the label of the toolbar via
- * {@code aria-labelledby}.
- * 
- * ### Breaking change in 2.0
- * 
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Custom property</th>
+ * <th>Description</th>
+ * <th>Default</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code --paper-toolbar-title}</td>
+ * <td>Mixin applied to the title of the toolbar</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-background}</td>
+ * <td>Toolbar background color</td>
+ * <td>{@code --primary-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-color}</td>
+ * <td>Toolbar foreground color</td>
+ * <td>{@code --dark-theme-text-color}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-height}</td>
+ * <td>Custom height for toolbar</td>
+ * <td>{@code 64px}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-sm-height}</td>
+ * <td>Custom height for small screen toolbar</td>
+ * <td>{@code 56px}</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar}</td>
+ * <td>Mixin applied to the toolbar</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-content}</td>
+ * <td>Mixin applied to the content section of the toolbar</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-medium}</td>
+ * <td>Mixin applied to medium height toolbar</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-tall}</td>
+ * <td>Mixin applied to tall height toolbar</td>
+ * <td>{@code</td>
+ * </tr>
+ * <tr>
+ * <td>{@code --paper-toolbar-transition}</td>
+ * <td>Transition applied to the {@code .animate} class</td>
+ * <td>{@code height 0.18s ease-in}</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <h3>Accessibility</h3>
+ * <p>
+ * {@code <paper-toolbar>} has {@code role=&quot;toolbar&quot;} by default. Any
+ * elements with the class {@code title} will be used as the label of the
+ * toolbar via {@code aria-labelledby}.
+ * </p>
+ * <h3>Breaking change in 2.0</h3>
+ * <p>
  * In Polymer 1.x, default content used to be distribuited automatically to the
- * top toolbar. In v2, the you must set {@code slot="top"} on the default
- * content to distribuite the content to the top toolbar.
+ * top toolbar. In v2, the you must set {@code slot=&quot;top&quot;} on the
+ * default content to distribuite the content to the top toolbar.
+ * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: paper-toolbar#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -121,25 +185,31 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Controls how the items are aligned horizontally when they are placed at
 	 * the bottom. Options are {@code start}, {@code center}, {@code end},
 	 * {@code justified} and {@code around}.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getBottomJustify() {
 		return getElement().getProperty("bottomJustify");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Controls how the items are aligned horizontally when they are placed at
 	 * the bottom. Options are {@code start}, {@code center}, {@code end},
 	 * {@code justified} and {@code around}.
+	 * </p>
 	 * 
 	 * @param bottomJustify
 	 *            the String value to set
@@ -152,25 +222,31 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Controls how the items are aligned horizontally. Options are
 	 * {@code start}, {@code center}, {@code end}, {@code justified} and
 	 * {@code around}.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getJustify() {
 		return getElement().getProperty("justify");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Controls how the items are aligned horizontally. Options are
 	 * {@code start}, {@code center}, {@code end}, {@code justified} and
 	 * {@code around}.
+	 * </p>
 	 * 
 	 * @param justify
 	 *            the String value to set
@@ -182,25 +258,31 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Controls how the items are aligned horizontally when they are placed in
 	 * the middle. Options are {@code start}, {@code center}, {@code end},
 	 * {@code justified} and {@code around}.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * </p>
 	 */
 	public String getMiddleJustify() {
 		return getElement().getProperty("middleJustify");
 	}
 
 	/**
+	 * <p>
 	 * Description copied from corresponding location in WebComponent:
-	 * 
+	 * </p>
+	 * <p>
 	 * Controls how the items are aligned horizontally when they are placed in
 	 * the middle. Options are {@code start}, {@code center}, {@code end},
 	 * {@code justified} and {@code around}.
+	 * </p>
 	 * 
 	 * @param middleJustify
 	 *            the String value to set
