@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -32,20 +33,26 @@ import java.util.logging.Logger;
 import com.vaadin.flow.router.View;
 
 public class ViewClassLocator {
-    private LinkedHashMap<String, Class<? extends View>> views = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Class<? extends View>> views = new LinkedHashMap<>();
     private final ClassLoader classLoader;
 
     public ViewClassLocator(ClassLoader classLoader) {
         this.classLoader = classLoader;
         URL url = classLoader.getResource(".");
         if ("file".equals(url.getProtocol())) {
-            String path = url.getPath();
-            File testFolder = new File(path);
+            File testFolder;
+            try {
+                testFolder = new File(url.toURI());
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(String.format(
+                        "Was not able to resolve URL '%s' in local file system",
+                        url), e);
+            }
 
             // This scans parts of the classpath. If it becomes slow, we have to
             // remove this or make the scanning lazy
             try {
-                findViews(testFolder, views);
+                findViews(testFolder);
                 getLogger().info("Found " + views.size() + " views");
             } catch (IOException exception) {
                 throw new RuntimeException(
@@ -58,8 +65,7 @@ public class ViewClassLocator {
         }
     }
 
-    private void findViews(File parent,
-            LinkedHashMap<String, Class<? extends View>> packages)
+    private void findViews(File parent)
             throws IOException {
         Path root = parent.toPath();
         Files.walkFileTree(parent.toPath(), new SimpleFileVisitor<Path>() {

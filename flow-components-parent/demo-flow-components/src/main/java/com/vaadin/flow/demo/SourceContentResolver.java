@@ -17,6 +17,8 @@ package com.vaadin.flow.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,11 +75,18 @@ public class SourceContentResolver {
     private static List<SourceCodeExample> parseSourceCodeExamplesForClass(
             Class<? extends DemoView> demoViewClass) {
 
-        Path sourceFilePath = Paths.get(
-                new File(demoViewClass.getProtectionDomain().getCodeSource()
-                        .getLocation().getPath()).getPath(),
-                demoViewClass.getPackage().getName().replaceAll("\\.", "/"),
-                demoViewClass.getSimpleName() + ".java");
+        URL fileLocation = demoViewClass.getProtectionDomain()
+                .getCodeSource().getLocation();
+        Path sourceFilePath;
+        try {
+            sourceFilePath = Paths.get(new File(fileLocation.toURI()).getPath(),
+                    demoViewClass.getPackage().getName().replaceAll("\\.", "/"),
+                    demoViewClass.getSimpleName() + ".java");
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(
+                    "Could not resolve the path of the class '%s' with URL '%s' in local file system",
+                    e);
+        }
 
         try {
             return Collections.unmodifiableList(parseSourceCodeExamples(
@@ -168,7 +177,7 @@ public class SourceContentResolver {
         }
         return trimmed;
     }
-    
+
     private static int getWhitespaceCountAtStart(String line) {
         int indent = 0;
         for (int i = 0; i < line.length(); i++) {
