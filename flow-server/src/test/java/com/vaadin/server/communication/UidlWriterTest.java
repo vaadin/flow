@@ -72,10 +72,16 @@ import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class UidlWriterTest {
-
     private static final String FRONTEND = "frontend://";
+    private static final String JS_TYPE_NAME = Dependency.Type.JAVASCRIPT
+            .name();
+    private static final String HTML_TYPE_NAME = Dependency.Type.HTML_IMPORT
+            .name();
+    private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET
+            .name();
 
     @JavaScript("UI-parent-JAVASCRIPT")
     private static class ParentUI extends UI {
@@ -237,29 +243,29 @@ public class UidlWriterTest {
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
 
         assertEquals(12, dependenciesMap.size());
-        assertDependency("childinterface1-", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("childinterface1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface2-", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("childinterface2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child1-", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("child1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child2-", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("child2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface1-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("childinterface1-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface2-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("childinterface2-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child1-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("child1-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child2-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("child2-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface1-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface2-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("childinterface2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
-        assertDependency("child1-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("child1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
-        assertDependency("child2-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("child2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
     }
 
@@ -373,36 +379,27 @@ public class UidlWriterTest {
                 response.hasKey(LoadMode.EAGER.name()));
 
         JsonArray eagerDependencies = response.getArray(LoadMode.EAGER.name());
-        assertEquals("Expected to have exactly 3 eager dependencies in uidl",
+        assertEquals(
+                "Expected to have exactly 3 eager dependencies in uidl, actual: %d",
                 eagerDependencies.length(), 3);
 
-        HtmlImport superParentImport = SuperParentClass.class
-                .getAnnotation(HtmlImport.class);
-        assertTrue(
-                "First dependency should belong to the most parent view in the hierarchy: "
-                        + SuperParentClass.class,
-                eagerDependencies.get(0)
-                        .jsEquals(new Dependency(Dependency.Type.HTML_IMPORT,
-                                superParentImport.value(),
-                                superParentImport.loadMode()).toJson()));
-        HtmlImport parentImport = ParentClass.class
-                .getAnnotation(HtmlImport.class);
-        assertTrue(
-                "Second dependency should belong to parent view: "
-                        + ParentClass.class,
-                eagerDependencies.get(1)
-                        .jsEquals(new Dependency(Dependency.Type.HTML_IMPORT,
-                                parentImport.value(), parentImport.loadMode())
-                                        .toJson()));
+        List<Class<?>> expectedClassOrder = Arrays.asList(
+                SuperParentClass.class, ParentClass.class, BaseClass.class);
 
-        HtmlImport baseImport = BaseClass.class.getAnnotation(HtmlImport.class);
-        assertTrue(
-                "Last dependency should belong to base class in the view hierarchy: "
-                        + BaseClass.class,
-                eagerDependencies.get(2)
-                        .jsEquals(new Dependency(Dependency.Type.HTML_IMPORT,
-                                baseImport.value(), baseImport.loadMode())
-                                        .toJson()));
+        for (int i = 0; i < expectedClassOrder.size(); i++) {
+            Class<?> expectedClass = expectedClassOrder.get(i);
+            HtmlImport htmlImport = expectedClass
+                    .getAnnotation(HtmlImport.class);
+
+            JsonValue actualDependency = eagerDependencies.get(i);
+            JsonObject expectedDependency = new Dependency(
+                    Dependency.Type.HTML_IMPORT, htmlImport.value(),
+                    htmlImport.loadMode()).toJson();
+            assertTrue(String.format(
+                    "Unexpected dependency. Expected: '%s', actual: '%s', class: '%s'",
+                    expectedDependency, actualDependency, expectedClass),
+                    expectedDependency.jsEquals(actualDependency));
+        }
     }
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies) {
@@ -472,44 +469,42 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        assertEquals(14, dependenciesMap.size());
+        assertEquals(15, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
-        assertDependency("UI-parent-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("UI-parent-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("UI-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("UI-" + JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
+
+        assertDependency("super-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("anotherinterface-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("interface-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                dependenciesMap);
+        assertDependency(HTML_TYPE_NAME, HTML_TYPE_NAME, dependenciesMap);
+
+        assertDependency("super-" + JS_TYPE_NAME, JS_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("anotherinterface-" + JS_TYPE_NAME, JS_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("interface-" + JS_TYPE_NAME, JS_TYPE_NAME,
+                dependenciesMap);
+        assertDependency(JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
+
+        assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
-        assertDependency("super-", Dependency.Type.HTML_IMPORT.name(),
-                dependenciesMap);
-        assertDependency("anotherinterface-",
-                Dependency.Type.HTML_IMPORT.name(), dependenciesMap);
-        assertDependency("interface-", Dependency.Type.HTML_IMPORT.name(),
-                dependenciesMap);
-        assertDependency("", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("anotherinterface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
-        assertDependency("super-", Dependency.Type.JAVASCRIPT.name(),
-                dependenciesMap);
-        assertDependency("anotherinterface-", Dependency.Type.JAVASCRIPT.name(),
-                dependenciesMap);
-        assertDependency("interface-", Dependency.Type.JAVASCRIPT.name(),
-                dependenciesMap);
-        assertDependency("", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("interface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
-        assertDependency("super-", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
+        assertDependency(CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
 
-        assertDependency("anotherinterface-", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
-
-        assertDependency("interface-", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
-
-        assertDependency("", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
+        assertDependency("0.html", HTML_TYPE_NAME, dependenciesMap);
     }
 
     private Map<String, JsonObject> getDependenciesMap(JsonObject response) {
@@ -521,15 +516,13 @@ public class UidlWriterTest {
                         Function.identity()));
     }
 
-    private void assertDependency(String level, String type,
+    private void assertDependency(String url, String type,
             Map<String, JsonObject> dependenciesMap) {
-        String url = level + type;
         JsonObject jsonValue = dependenciesMap.get(url);
         assertNotNull(
                 "Expected dependencies map to have dependency with key=" + url,
                 jsonValue);
-        assertEquals(level + type,
-                jsonValue.get(Dependency.KEY_URL).asString());
+        assertEquals(url, jsonValue.get(Dependency.KEY_URL).asString());
         assertEquals(type, jsonValue.get(Dependency.KEY_TYPE).asString());
     }
 
