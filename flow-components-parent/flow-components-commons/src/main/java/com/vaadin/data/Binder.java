@@ -473,7 +473,8 @@ public class Binder<BEAN> implements Serializable {
          * <li>the required indicator is visible</li>
          * <li>the field value is validated for not being empty*</li>
          * </ol>
-         * For localizing the error message, use {@link #asRequired(Provider)}.
+         * For localizing the error message, use
+         * {@link #asRequired(ErrorMessageProvider)}.
          * <p>
          * *Value not being the equal to what {@link HasValue#getEmptyValue()}
          * returns.

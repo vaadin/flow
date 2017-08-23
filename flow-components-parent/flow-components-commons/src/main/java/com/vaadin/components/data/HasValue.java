@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
