@@ -67,9 +67,10 @@ public interface ImmutableRouterConfiguration {
             Class<? extends View> viewType);
 
     /**
-     * Gets the parent types configured for the given view type.
+     * Gets the parent types configured for the given view type, starting from the most close to the view and
+     * ending with the topmost in the hierarchy.
      * <p>
-     * The returned stream includes the parent view as returned by
+     * The returned stream is ordered, includes the parent view as returned by
      * {@link #getParentView(Class)} and recursively up until a view which does
      * not have a parent view.
      *
@@ -78,7 +79,7 @@ public interface ImmutableRouterConfiguration {
      *            <code>null</code>
      * @return a stream of parent view types
      */
-    Stream<Class<? extends HasChildView>> getParentViews(
+    Stream<Class<? extends HasChildView>> getParentViewsAscending(
             Class<? extends View> viewType);
 
     /**

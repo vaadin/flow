@@ -18,6 +18,7 @@ package com.vaadin.generator;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
@@ -30,6 +31,15 @@ import org.commonmark.renderer.html.HtmlRenderer;
  * @author Vaadin Ltd.
  */
 class JavaDocFormatter {
+    private static final String JAVA_DOC_CODE_SECTION = "{@code $1}";
+    private static final String JAVA_DOC_CLOSE_ESCAPED = "&#42;&#47;";
+
+    private static final Pattern MULTI_LINE_CODE_PARTS = Pattern
+            .compile("```(.*?)```");
+    private static final Pattern SINGLE_LINE_CODE_PARTS = Pattern
+            .compile("`(.*?)`");
+    private static final Pattern JAVA_DOC_CLOSE = Pattern.compile("\\*/");
+
     private final HtmlRenderer renderer;
     private final Parser parser;
 
@@ -53,7 +63,33 @@ class JavaDocFormatter {
      * @return formatter javadoc string
      */
     String formatJavaDoc(String javaDoc) {
-        return renderer.render(parser.parse(javaDoc));
+        return postFormat(renderer.render(parser.parse(preFormat(javaDoc))));
     }
 
+    private String preFormat(String javaDoc) {
+        return String.format("%s%n%n%s",
+                "Description copied from corresponding location in WebComponent:",
+                replaceCodeParts(javaDoc));
+    }
+
+    private String postFormat(String javaDoc) {
+        return escapeCommentCloseSign(javaDoc);
+    }
+
+    private String replaceCodeParts(String documentation) {
+        return replaceByPattern(
+                replaceByPattern(documentation, MULTI_LINE_CODE_PARTS,
+                        JAVA_DOC_CODE_SECTION),
+                SINGLE_LINE_CODE_PARTS, JAVA_DOC_CODE_SECTION);
+    }
+
+    private String escapeCommentCloseSign(String documentation) {
+        return replaceByPattern(documentation, JAVA_DOC_CLOSE,
+                JAVA_DOC_CLOSE_ESCAPED);
+    }
+
+    private String replaceByPattern(String original, Pattern pattern,
+            String replacement) {
+        return pattern.matcher(original).replaceAll(replacement);
+    }
 }

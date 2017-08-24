@@ -57,7 +57,7 @@ public class StaticViewRenderer extends ViewRenderer {
     public List<Class<? extends HasChildView>> getParentViewTypes(
             NavigationEvent event, Class<? extends View> viewType) {
         assert viewType == this.viewType;
-        return event.getSource().getConfiguration().getParentViews(viewType)
+        return event.getSource().getConfiguration().getParentViewsAscending(viewType)
                 .collect(Collectors.toList());
     }
 
