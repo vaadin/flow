@@ -15,17 +15,15 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
-import javax.annotation.Generated;
-
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.components.NotSupported;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-
-import elemental.json.JsonArray;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import elemental.json.JsonArray;
+import com.vaadin.components.NotSupported;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: InfiniteScrollerElement#2.0.2", "Flow#0.1-SNAPSHOT"})
@@ -156,7 +154,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -193,7 +191,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -321,7 +319,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
+	protected void get(elemental.json.JsonObject path,
+			elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -350,41 +349,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Convenience method for setting a value to a path and notifying any
-	 * elements bound to the same path.
-	 * </p>
-	 * <p>
-	 * Note, if any part in the path except for the last is undefined, this
-	 * method does nothing (this method does not throw when dereferencing
-	 * undefined paths).
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to the value to write. The path may be specified as a
-	 *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
-	 *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-	 *            supported; string-based path parts must* be separated by dots.
-	 *            Note that when dereferencing array indices, the index may be
-	 *            used as a dotted part directly (e.g. `'users.12.name'` or
-	 *            `['users', 12, 'name']`).
-	 * @param value
-	 *            Value to set at the specified path.
-	 * @param root
-	 *            Root object from which the path is evaluated. When specified,
-	 *            no notification will occur.
-	 */
-	protected void set(elemental.json.JsonObject path,
-			elemental.json.JsonObject value, elemental.json.JsonObject root) {
-		getElement().callFunction("set", path, value, root);
+	protected void get(java.lang.String path, elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -417,6 +382,39 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 */
 	protected void set(java.lang.String path, elemental.json.JsonObject value,
 			elemental.json.JsonObject root) {
+		getElement().callFunction("set", path, value, root);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Convenience method for setting a value to a path and notifying any
+	 * elements bound to the same path.
+	 * </p>
+	 * <p>
+	 * Note, if any part in the path except for the last is undefined, this
+	 * method does nothing (this method does not throw when dereferencing
+	 * undefined paths).
+	 * </p>
+	 * 
+	 * @param path
+	 *            Path to the value to write. The path may be specified as a
+	 *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
+	 *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
+	 *            supported; string-based path parts must* be separated by dots.
+	 *            Note that when dereferencing array indices, the index may be
+	 *            used as a dotted part directly (e.g. `'users.12.name'` or
+	 *            `['users', 12, 'name']`).
+	 * @param value
+	 *            Value to set at the specified path.
+	 * @param root
+	 *            Root object from which the path is evaluated. When specified,
+	 *            no notification will occur.
+	 */
+	protected void set(elemental.json.JsonObject path,
+			elemental.json.JsonObject value, elemental.json.JsonObject root) {
 		getElement().callFunction("set", path, value, root);
 	}
 

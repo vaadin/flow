@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import javax.annotation.Generated;
 
@@ -92,12 +91,6 @@ public class ComponentGenerator {
     private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
-
-    private static final Pattern MULTI_LINE_CODE_PARTS = Pattern
-            .compile("```(.*?)```");
-    private static final Pattern SINGLE_LINE_CODE_PARTS = Pattern
-            .compile("`(.*?)`");
-    private static final Pattern JAVADOC_CLOSE = Pattern.compile("\\*/");
 
     private ObjectMapper mapper;
     private File jsonFile;
@@ -850,21 +843,7 @@ public class ComponentGenerator {
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
-        String text = String.format("%s%n%n%s",
-                "Description copied from corresponding location in WebComponent:",
-                formatCodeParts(documentation));
-        javaDoc.setFullText(
-                escapeCommentCloseSign(javaDocFormatter.formatJavaDoc(text)));
-    }
-
-    private String formatCodeParts(String documentation) {
-        return SINGLE_LINE_CODE_PARTS.matcher(MULTI_LINE_CODE_PARTS
-                .matcher(documentation).replaceAll("{@code $1}"))
-                .replaceAll("{@code $1}");
-    }
-
-    private String escapeCommentCloseSign(String documentation) {
-        return JAVADOC_CLOSE.matcher(documentation).replaceAll("&#42;&#47;");
+        javaDoc.setFullText(javaDocFormatter.formatJavaDoc(documentation));
     }
 
     private void generateSetterFor(JavaClassSource javaClass,
