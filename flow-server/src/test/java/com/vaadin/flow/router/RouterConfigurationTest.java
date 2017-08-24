@@ -468,7 +468,7 @@ public class RouterConfigurationTest {
             Class<? extends View> viewType,
             Class<? extends HasChildView>... expected) {
         Assert.assertArrayEquals(expected,
-                router.getConfiguration().getParentViews(viewType)
+                router.getConfiguration().getParentViewsAscending(viewType)
                         .collect(Collectors.toList()).toArray());
 
     }

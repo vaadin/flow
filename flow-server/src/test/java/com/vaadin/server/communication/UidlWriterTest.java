@@ -18,8 +18,14 @@ package com.vaadin.server.communication;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,9 +43,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
@@ -47,6 +51,8 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.HasChildView;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinResponse;
@@ -66,10 +72,16 @@ import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class UidlWriterTest {
-
     private static final String FRONTEND = "frontend://";
+    private static final String JS_TYPE_NAME = Dependency.Type.JAVASCRIPT
+            .name();
+    private static final String HTML_TYPE_NAME = Dependency.Type.HTML_IMPORT
+            .name();
+    private static final String CSS_STYLE_NAME = Dependency.Type.STYLESHEET
+            .name();
 
     @JavaScript("UI-parent-JAVASCRIPT")
     private static class ParentUI extends UI {
@@ -151,6 +163,28 @@ public class UidlWriterTest {
     public static class ComponentWithFrontendProtocol extends Component {
     }
 
+    @Tag("base")
+    @HtmlImport("2.html")
+    public static class BaseClass extends Component implements View {
+    }
+
+    @Tag("parent")
+    @HtmlImport("1.html")
+    public static class ParentClass extends Component implements HasChildView {
+        @Override
+        public void setChildView(View childView) {
+        }
+    }
+
+    @Tag("super-parent")
+    @HtmlImport("0.html")
+    public static class SuperParentClass extends Component
+            implements HasChildView {
+        @Override
+        public void setChildView(View childView) {
+        }
+    }
+
     private VaadinUriResolverFactory factory;
 
     @After
@@ -172,32 +206,31 @@ public class UidlWriterTest {
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
 
-        JsonArray expectedJson = JsonUtils.createArray(
-                JsonUtils.createArray(
-                        // Null since element is not attached
-                        Json.createNull(), Json.create("$0.focus()")),
+        JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
+                // Null since element is not attached
+                Json.createNull(), Json.create("$0.focus()")),
                 JsonUtils.createArray(Json.create("Lives remaining:"),
                         Json.create(3), Json.create("console.log($0, $1)")));
 
-        Assert.assertTrue(JsonUtils.jsonEquals(expectedJson, json));
+        assertTrue(JsonUtils.jsonEquals(expectedJson, json));
     }
 
     @Test
     public void testComponentDependencies() {
-        UI ui = initializeUIForDependenciesTest();
+        UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
 
         // no dependencies should be resent in next response
         JsonObject response = uidlWriter.createUidl(ui, false);
-        Assert.assertFalse(response.hasKey(LoadMode.EAGER.name()));
-        Assert.assertFalse(response.hasKey(LoadMode.INLINE.name()));
-        Assert.assertFalse(response.hasKey(LoadMode.LAZY.name()));
+        assertFalse(response.hasKey(LoadMode.EAGER.name()));
+        assertFalse(response.hasKey(LoadMode.INLINE.name()));
+        assertFalse(response.hasKey(LoadMode.LAZY.name()));
     }
 
     @Test
     public void testComponentInterfaceDependencies() {
-        UI ui = initializeUIForDependenciesTest();
+        UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
 
         addInitialComponentDependencies(ui, uidlWriter);
@@ -209,36 +242,36 @@ public class UidlWriterTest {
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
 
-        Assert.assertEquals(12, dependenciesMap.size());
-        assertDependency("childinterface1-", Dependency.Type.HTML_IMPORT.name(),
+        assertEquals(12, dependenciesMap.size());
+        assertDependency("childinterface1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface2-", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("childinterface2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child1-", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("child1-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child2-", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("child2-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface1-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("childinterface1-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface2-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("childinterface2-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child1-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("child1-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("child2-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("child2-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface1-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("childinterface1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
-        assertDependency("childinterface2-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("childinterface2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
-        assertDependency("child1-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("child1-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
-        assertDependency("child2-", Dependency.Type.STYLESHEET.name(),
+        assertDependency("child2-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
     }
 
     @Test
     public void checkAllTypesOfDependencies() {
-        UI ui = initializeUIForDependenciesTest();
+        UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
 
@@ -308,19 +341,18 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void checkAllTypesOfDependencies_uriResolverResolvesFrontentProtocol() {
-        UI ui = initializeUIForDependenciesTest();
+    public void checkAllTypesOfDependencies_uriResolverResolvesFrontendProtocol() {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
         addInitialComponentDependencies(ui, uidlWriter);
 
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             String path = (String) invocation.getArguments()[1];
             if (path.startsWith(FRONTEND)) {
                 return path.substring(FRONTEND.length());
             }
             return path;
-        }).when(factory).toServletContextPath(Mockito.any(),
-                Mockito.anyString());
+        }).when(factory).toServletContextPath(any(), anyString());
 
         ui.add(new ComponentWithFrontendProtocol());
         JsonObject response = uidlWriter.createUidl(ui, false);
@@ -329,6 +361,45 @@ public class UidlWriterTest {
                 .collect(Collectors.toList());
 
         assertInlineDependencies(inlineDependencies);
+    }
+
+    @Test
+    public void parentViewDependenciesAreAddedFirst() {
+        UI ui = initializeUIForDependenciesTest(new UI());
+        UidlWriter uidlWriter = new UidlWriter();
+        ui.add(new BaseClass());
+
+        JsonObject response = uidlWriter.createUidl(ui, false);
+
+        assertFalse("Did not expect to have lazy dependencies in uidl",
+                response.hasKey(LoadMode.LAZY.name()));
+        assertFalse("Did not expect to have inline dependencies in uidl",
+                response.hasKey(LoadMode.INLINE.name()));
+        assertTrue("Expected to have eager dependencies in uidl",
+                response.hasKey(LoadMode.EAGER.name()));
+
+        JsonArray eagerDependencies = response.getArray(LoadMode.EAGER.name());
+        assertEquals(
+                "Expected to have exactly 3 eager dependencies in uidl, actual: %d",
+                eagerDependencies.length(), 3);
+
+        List<Class<?>> expectedClassOrder = Arrays.asList(
+                SuperParentClass.class, ParentClass.class, BaseClass.class);
+
+        for (int i = 0; i < expectedClassOrder.size(); i++) {
+            Class<?> expectedClass = expectedClassOrder.get(i);
+            HtmlImport htmlImport = expectedClass
+                    .getAnnotation(HtmlImport.class);
+
+            JsonValue actualDependency = eagerDependencies.get(i);
+            JsonObject expectedDependency = new Dependency(
+                    Dependency.Type.HTML_IMPORT, htmlImport.value(),
+                    htmlImport.loadMode()).toJson();
+            assertTrue(String.format(
+                    "Unexpected dependency. Expected: '%s', actual: '%s', class: '%s'",
+                    expectedDependency, actualDependency, expectedClass),
+                    expectedDependency.jsEquals(actualDependency));
+        }
     }
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies) {
@@ -352,10 +423,14 @@ public class UidlWriterTest {
                 containsInAnyOrder(Dependency.Type.values()));
     }
 
-    private UI initializeUIForDependenciesTest() {
-        UI ui = new TestUI();
+    private UI initializeUIForDependenciesTest(UI ui) {
         VaadinServletService service = new VaadinServletService(
                 new VaadinServlet(), new MockDeploymentConfiguration());
+        service.getRouter().reconfigure(conf -> {
+            conf.setRoute("", BaseClass.class);
+            conf.setParentView(BaseClass.class, ParentClass.class);
+            conf.setParentView(ParentClass.class, SuperParentClass.class);
+        });
         MockVaadinSession session = new MockVaadinSession(service);
         session.lock();
         ui.getInternals().setSession(session);
@@ -378,10 +453,9 @@ public class UidlWriterTest {
                 mock(VaadinResponse.class));
         ui.doInit(vaadinRequestMock, 1);
 
-        factory = Mockito.mock(VaadinUriResolverFactory.class);
-        Mockito.doAnswer(invocation -> invocation.getArguments()[1])
-                .when(factory)
-                .toServletContextPath(Mockito.any(), Mockito.anyString());
+        factory = mock(VaadinUriResolverFactory.class);
+        doAnswer(invocation -> invocation.getArguments()[1]).when(factory)
+                .toServletContextPath(any(), anyString());
 
         session.setAttribute(VaadinUriResolverFactory.class, factory);
 
@@ -395,44 +469,42 @@ public class UidlWriterTest {
 
         JsonObject response = uidlWriter.createUidl(ui, false);
         Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
-        Assert.assertEquals(14, dependenciesMap.size());
+        assertEquals(15, dependenciesMap.size());
 
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
-        assertDependency("UI-parent-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("UI-parent-" + JS_TYPE_NAME, JS_TYPE_NAME,
                 dependenciesMap);
-        assertDependency("UI-", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("UI-" + JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
+
+        assertDependency("super-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("anotherinterface-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("interface-" + HTML_TYPE_NAME, HTML_TYPE_NAME,
+                dependenciesMap);
+        assertDependency(HTML_TYPE_NAME, HTML_TYPE_NAME, dependenciesMap);
+
+        assertDependency("super-" + JS_TYPE_NAME, JS_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("anotherinterface-" + JS_TYPE_NAME, JS_TYPE_NAME,
+                dependenciesMap);
+        assertDependency("interface-" + JS_TYPE_NAME, JS_TYPE_NAME,
+                dependenciesMap);
+        assertDependency(JS_TYPE_NAME, JS_TYPE_NAME, dependenciesMap);
+
+        assertDependency("super-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
-        assertDependency("super-", Dependency.Type.HTML_IMPORT.name(),
-                dependenciesMap);
-        assertDependency("anotherinterface-",
-                Dependency.Type.HTML_IMPORT.name(), dependenciesMap);
-        assertDependency("interface-", Dependency.Type.HTML_IMPORT.name(),
-                dependenciesMap);
-        assertDependency("", Dependency.Type.HTML_IMPORT.name(),
+        assertDependency("anotherinterface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
-        assertDependency("super-", Dependency.Type.JAVASCRIPT.name(),
-                dependenciesMap);
-        assertDependency("anotherinterface-", Dependency.Type.JAVASCRIPT.name(),
-                dependenciesMap);
-        assertDependency("interface-", Dependency.Type.JAVASCRIPT.name(),
-                dependenciesMap);
-        assertDependency("", Dependency.Type.JAVASCRIPT.name(),
+        assertDependency("interface-" + CSS_STYLE_NAME, CSS_STYLE_NAME,
                 dependenciesMap);
 
-        assertDependency("super-", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
+        assertDependency(CSS_STYLE_NAME, CSS_STYLE_NAME, dependenciesMap);
 
-        assertDependency("anotherinterface-", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
-
-        assertDependency("interface-", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
-
-        assertDependency("", Dependency.Type.STYLESHEET.name(),
-                dependenciesMap);
+        assertDependency("0.html", HTML_TYPE_NAME, dependenciesMap);
     }
 
     private Map<String, JsonObject> getDependenciesMap(JsonObject response) {
@@ -444,17 +516,14 @@ public class UidlWriterTest {
                         Function.identity()));
     }
 
-    private void assertDependency(String level, String type,
+    private void assertDependency(String url, String type,
             Map<String, JsonObject> dependenciesMap) {
-        String url = level + type;
         JsonObject jsonValue = dependenciesMap.get(url);
-        Assert.assertNotNull(
+        assertNotNull(
                 "Expected dependencies map to have dependency with key=" + url,
                 jsonValue);
-        Assert.assertEquals(level + type,
-                jsonValue.get(Dependency.KEY_URL).asString());
-        Assert.assertEquals(type,
-                jsonValue.get(Dependency.KEY_TYPE).asString());
+        assertEquals(url, jsonValue.get(Dependency.KEY_URL).asString());
+        assertEquals(type, jsonValue.get(Dependency.KEY_TYPE).asString());
     }
 
 }
