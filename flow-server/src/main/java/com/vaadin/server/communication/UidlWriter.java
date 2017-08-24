@@ -330,8 +330,9 @@ public class UidlWriter implements Serializable {
     private void addComponentHierarchy(UI ui,
             Set<Class<? extends Component>> hierarchyStorage,
             Component component) {
-        getParentViews(ui, component).forEach(newClass -> hierarchyStorage
-                .add(newClass.asSubclass(Component.class)));
+        getParentViews(ui, component).stream()
+                .map(newClass -> newClass.asSubclass(Component.class))
+                .forEach(hierarchyStorage::add);
         hierarchyStorage.add(component.getClass());
     }
 
