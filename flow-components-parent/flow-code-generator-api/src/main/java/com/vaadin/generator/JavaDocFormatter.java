@@ -78,11 +78,10 @@ class JavaDocFormatter {
     }
 
     private String replaceCodeParts(String documentation) {
-        return Stream.of(SINGLE_LINE_CODE_PARTS, MULTI_LINE_CODE_PARTS).reduce(
-                documentation,
-                (string, pattern) -> replaceByPattern(string, pattern,
+        return replaceByPattern(
+                replaceByPattern(documentation, MULTI_LINE_CODE_PARTS,
                         JAVA_DOC_CODE_SECTION),
-                (oldString, newString) -> newString);
+                SINGLE_LINE_CODE_PARTS, JAVA_DOC_CODE_SECTION);
     }
 
     private String escapeCommentCloseSign(String documentation) {
