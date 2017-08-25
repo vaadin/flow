@@ -15,9 +15,9 @@
  */
 package com.vaadin.data;
 
-import java.beans.BeanDescriptor;
-
+import javax.validation.metadata.BeanDescriptor;
 import javax.validation.metadata.ConstraintDescriptor;
+import javax.validation.metadata.PropertyDescriptor;
 
 import com.vaadin.components.data.HasValue;
 import com.vaadin.data.BeanPropertySet.NestedBeanPropertyDefinition;
