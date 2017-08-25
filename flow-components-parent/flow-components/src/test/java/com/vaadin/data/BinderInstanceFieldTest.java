@@ -15,26 +15,26 @@
  */
 package com.vaadin.data;
 
-import java.awt.TextField;
 import java.time.LocalDate;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.PropertyId;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.AbstractField;
-import com.vaadin.ui.AbstractTextField;
-import com.vaadin.ui.DateField;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.DatePicker;
 import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.TextField;
 
 public class BinderInstanceFieldTest {
 
     public static class BindAllFields extends FormLayout {
         private TextField firstName;
-        private DateField birthDate;
+        private DatePicker birthDate;
     }
 
     public static class BindFieldsUsingAnnotation extends FormLayout {
@@ -42,7 +42,7 @@ public class BinderInstanceFieldTest {
         private TextField nameField;
 
         @PropertyId("birthDate")
-        private DateField birthDateField;
+        private DatePicker birthDateField;
     }
 
     public static class BindOnlyOneField extends FormLayout {
@@ -52,13 +52,13 @@ public class BinderInstanceFieldTest {
 
     public static class BindWithNoFieldInPerson extends FormLayout {
         private TextField firstName;
-        private DateField birthDate;
+        private DatePicker birthDate;
         private TextField noFieldInPerson;
     }
 
     public static class BindFieldHasWrongType extends FormLayout {
         private String firstName;
-        private DateField birthDate;
+        private DatePicker birthDate;
     }
 
     public static class BindGenericField extends FormLayout {
@@ -84,6 +84,11 @@ public class BinderInstanceFieldTest {
 
     public static class BindRaw extends FormLayout {
         private CustomField firstName;
+    }
+
+    public static abstract class AbstractTextField extends Component
+    implements HasValue<AbstractTextField, String> {
+
     }
 
     public static class BindAbstract extends FormLayout {
@@ -119,7 +124,7 @@ public class BinderInstanceFieldTest {
 
     }
 
-    public static class CustomField<T> extends AbstractField<T> {
+    public static class CustomField<T> extends Component implements HasValue<CustomField<T>, T> {
 
         private T value;
 
@@ -129,8 +134,9 @@ public class BinderInstanceFieldTest {
         }
 
         @Override
-        protected void doSetValue(T value) {
+        public CustomField<T> setValue(T value) {
             this.value = value;
+            return this;
         }
 
     }
