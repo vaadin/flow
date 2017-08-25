@@ -16,13 +16,18 @@
 
 package com.vaadin.flow;
 
+import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.NodeFeature;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 
 /**
@@ -56,9 +61,48 @@ public class StateTree implements NodeOwner {
         }
     }
 
+    private final class StateNodeOnBeforeClientResponse
+            implements Serializable {
+        private WeakReference<StateNode> stateNodeReference;
+        private Runnable runnable;
+
+        public StateNodeOnBeforeClientResponse(StateNode stateNode,
+                Runnable runnable) {
+            stateNodeReference = new WeakReference<>(stateNode);
+            this.runnable = runnable;
+        }
+
+        public boolean isStateNodeAttached() {
+            StateNode stateNode = stateNodeReference.get();
+            return stateNode != null && stateNode.isAttached();
+        }
+
+        public boolean isAvailable() {
+            return stateNodeReference.get() != null;
+        }
+
+        public void setUnavailable() {
+            stateNodeReference.clear();
+        }
+
+        public Runnable getRunnable() {
+            return runnable;
+        }
+    }
+
+    @FunctionalInterface
+    public static interface ExecutionRegistration extends Registration {
+        /**
+         * Removes the associated listener from the event source.
+         */
+        void remove();
+    }
+
     private LinkedHashSet<StateNode> dirtyNodes = new LinkedHashSet<>();
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
+    private List<StateNodeOnBeforeClientResponse> executionsToBeProcessedBeforeClientResponse = new LinkedList<>();
+
     private int nextId = 1;
 
     private final StateNode rootNode;
@@ -193,5 +237,32 @@ public class StateTree implements NodeOwner {
      */
     public UI getUI() {
         return ui;
+    }
+
+    public ExecutionRegistration beforeClientResponse(StateNode context,
+            Runnable execution) {
+
+        StateNodeOnBeforeClientResponse reference = new StateNodeOnBeforeClientResponse(
+                context, execution);
+        executionsToBeProcessedBeforeClientResponse.add(reference);
+        return () -> reference.setUnavailable();
+    }
+
+    public void runExecutionsBeforeClientResponse() {
+        List<StateNodeOnBeforeClientResponse> currentList = executionsToBeProcessedBeforeClientResponse;
+        if (currentList.isEmpty()) {
+            return;
+        }
+        executionsToBeProcessedBeforeClientResponse = new LinkedList<>();
+        currentList.forEach(reference -> {
+            if (!reference.isAvailable()) {
+                return;
+            }
+            if (!reference.isStateNodeAttached()) {
+                executionsToBeProcessedBeforeClientResponse.add(reference);
+                return;
+            }
+            reference.getRunnable().run();
+        });
     }
 }

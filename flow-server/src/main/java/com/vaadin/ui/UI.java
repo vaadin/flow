@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.StateTree.ExecutionRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
@@ -698,6 +699,13 @@ public class UI extends Component
      */
     public Optional<Router> getRouter() {
         return Optional.ofNullable(router);
+    }
+
+    public ExecutionRegistration beforeClientResponse(Component component,
+            Runnable execution) {
+
+        return internals.getStateTree().beforeClientResponse(
+                component.getElement().getNode(), execution);
     }
 
     /**

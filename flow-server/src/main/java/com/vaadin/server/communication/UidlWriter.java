@@ -105,7 +105,8 @@ public class UidlWriter implements Serializable {
         getLogger().log(Level.FINE, "* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? uiInternals.getServerSyncId() : -1;
+                ? uiInternals.getServerSyncId()
+                : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
         int nextClientToServerMessageId = uiInternals
@@ -220,13 +221,12 @@ public class UidlWriter implements Serializable {
                 .getResourceAsStream(resolvedPath);
 
         if (stream == null) {
-            Logger.getLogger(UidlWriter.class.getName())
-                    .info(() -> String.format(
-                            "The path '%s' for inline resource "
-                                    + "has been resolved to '%s'. "
-                                    + "But resource is not available via the servlet context. "
-                                    + "Trying to load '%s' as a URL",
-                            url, resolvedPath, url));
+            Logger.getLogger(UidlWriter.class.getName()).info(
+                    () -> String.format("The path '%s' for inline resource "
+                            + "has been resolved to '%s'. "
+                            + "But resource is not available via the servlet context. "
+                            + "Trying to load '%s' as a URL", url, resolvedPath,
+                            url));
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
@@ -239,10 +239,9 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            Logger.getLogger(UidlWriter.class.getName())
-                    .info(() -> String.format(
-                            "The path '%s' for inline resource "
-                                    + "has been sucessfully resolved to resource URL '%s'",
+            Logger.getLogger(UidlWriter.class.getName()).info(
+                    () -> String.format("The path '%s' for inline resource "
+                            + "has been sucessfully resolved to resource URL '%s'",
                             url, resolvedPath));
         }
         return stream;
@@ -283,6 +282,8 @@ public class UidlWriter implements Serializable {
             JsonObject templates) {
         UIInternals uiInternals = ui.getInternals();
         StateTree stateTree = uiInternals.getStateTree();
+
+        stateTree.runExecutionsBeforeClientResponse();
 
         Consumer<TemplateNode> templateEncoder = new Consumer<TemplateNode>() {
             @Override
