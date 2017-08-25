@@ -39,8 +39,8 @@ public class ValidatorTestBase {
                 return locale;
             }
         };
+        UI.setCurrent(ui);
         localeContext = new Label();
-        ui.add(localeContext);
     }
 
     protected <T> void assertPasses(T value, Validator<? super T> validator) {
