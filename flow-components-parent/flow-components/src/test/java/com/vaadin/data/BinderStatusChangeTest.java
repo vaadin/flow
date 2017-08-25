@@ -17,12 +17,11 @@ package com.vaadin.data;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.xml.bind.ValidationException;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.tests.data.bean.Person;
