@@ -188,9 +188,12 @@ public class RangeValidator<T> extends AbstractValidator<T> {
     public String toString() {
         T min = getMinValue();
         T max = getMaxValue();
+        char openBracket = isMinValueIncluded() ? '[' : '(';
+        char closeBracket = isMaxValueIncluded() ? ']' : ')';
+        Object minValue = min != null ? min : "-∞";
+        Object maxValue = max != null ? max : "∞";
         return String.format("%s %c%s, %s%c", getClass().getSimpleName(),
-                isMinValueIncluded() ? '[' : '(', min != null ? min : "-∞",
-                        max != null ? max : "∞", isMaxValueIncluded() ? ']' : ')');
+                openBracket, minValue, maxValue, closeBracket);
     }
 
     /**
