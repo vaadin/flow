@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,7 +39,7 @@ import com.vaadin.data.ValueContext;
  * @since 8.0
  */
 public class StringToBigIntegerConverter
-        extends AbstractStringToNumberConverter<BigInteger> {
+extends AbstractStringToNumberConverter<BigInteger> {
 
     /**
      * Creates a new converter instance with the given error message. Empty
