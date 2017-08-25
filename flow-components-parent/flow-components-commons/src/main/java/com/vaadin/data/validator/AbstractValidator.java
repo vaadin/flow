@@ -61,7 +61,7 @@ public abstract class AbstractValidator<T> implements Validator<T> {
      * A helper method for creating a {@code Result} from a value and a validity
      * flag. If the flag is true, returns {@code Result.ok}, otherwise yields
      * {@code Result.error} bearing the error message returned by
-     * {@link #getMessage(T)}.
+     * {@link #getMessage(Object)}.
      * <p>
      * For instance, the following {@code apply} method only accepts even
      * numbers:
