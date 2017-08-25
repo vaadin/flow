@@ -23,31 +23,42 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.awt.TextField;
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import javax.xml.bind.ValidationException;
-
-import org.easymock.internal.ErrorMessage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.components.data.HasValue;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToDoubleConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
+import com.vaadin.ui.TextField;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
+    private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
+
     @Before
     public void setUp() {
-        binder = new Binder<>();
+        binder = new Binder<Person>() {
+            @Override
+            protected void handleError(HasValue<?, ?> field, String error) {
+                componentErrors.put(field, error);
+            }
+
+            @Override
+            protected void clearError(HasValue<?, ?> field) {
+                componentErrors.remove(field);
+            }
+        };
         item = new Person();
         item.setFirstName("Johannes");
         item.setAge(32);
@@ -451,9 +462,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertNull(textField.getErrorMessage());
 
         textField.setValue(textField.getEmptyValue());
-        ErrorMessage errorMessage = textField.getErrorMessage();
-        Assert.assertNotNull(errorMessage);
-        Assert.assertEquals("foobar", errorMessage.getFormattedHtmlMessage());
+        Assert.assertEquals("foobar", componentErrors.get(textField));
 
         textField.setValue("value");
         Assert.assertNull(textField.getErrorMessage());
@@ -483,7 +492,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void setRequired_withErrorMessageProvider_fieldGetsRequiredIndicatorAndValidator() {
         TextField textField = new TextField();
-        textField.setLocale(Locale.CANADA);
         assertFalse(textField.isRequiredIndicatorVisible());
 
         BindingBuilder<Person, String> binding = binder.forField(textField);
@@ -492,7 +500,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binding.asRequired(context -> {
             invokes.incrementAndGet();
-            Assert.assertSame(Locale.CANADA, context.getLocale().get());
             return "foobar";
         });
         assertTrue(textField.isRequiredIndicatorVisible());
@@ -503,9 +510,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals(0, invokes.get());
 
         textField.setValue(textField.getEmptyValue());
-        ErrorMessage errorMessage = textField.getErrorMessage();
-        Assert.assertNotNull(errorMessage);
-        Assert.assertEquals("foobar", errorMessage.getFormattedHtmlMessage());
+        Assert.assertEquals("foobar", componentErrors.get(textField));
         // validation is run twice, once for the field, then for all the fields
         // for cross field validation...
         Assert.assertEquals(2, invokes.get());
