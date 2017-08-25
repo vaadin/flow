@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,13 +24,10 @@ import java.util.Objects;
 import com.vaadin.data.Converter;
 import com.vaadin.data.Result;
 import com.vaadin.data.ValueContext;
-import com.vaadin.ui.DateField;
-import com.vaadin.ui.InlineDateField;
 
 /**
  * A converter that converts between <code>LocalDate</code> and
- * <code>Date</code>. This is used when a {@link DateField} or
- * {@link InlineDateField} is bound to a {@link Date} property.
+ * <code>Date</code>.
  *
  * @author Vaadin Ltd
  * @since 8.0
