@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandler;
+import com.vaadin.shared.Registration;
 
 /**
  * <code>EventRouter</code> class implementing the inheritable event listening
@@ -48,11 +49,13 @@ public class EventRouter implements MethodEventSource {
      * use the default documentation from implemented interface.
      */
     @Override
-    public void addListener(Class<?> eventType, Object object, Method method) {
+    public Registration addListener(Class<?> eventType, Object object,
+            Method method) {
         if (listenerList == null) {
             listenerList = new LinkedHashSet<>();
         }
         listenerList.add(new ListenerMethod(eventType, object, method));
+        return () -> removeListener(eventType, object, method);
     }
 
     /*
