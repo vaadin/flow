@@ -29,6 +29,9 @@ import com.vaadin.data.validator.BeanValidator;
  * @see Binder
  * @see HasValue
  *
+ * @param <BEAN>
+ *            the bean type
+ *
  * @since 8.0
  */
 public class BeanValidationBinder<BEAN> extends Binder<BEAN> {

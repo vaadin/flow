@@ -68,6 +68,13 @@ extends SerializablePredicate<Annotation> {
             public RequiredFieldConfigurator DEFAULT = NOT_NULL.chain(NOT_EMPTY)
                     .chain(SIZE);
 
+            /**
+             * Returns a configurator that chains together this configurator with the
+             * given configurator.
+             *
+             * @param configurator the configurator to chain, , not null
+             * @return a chained configurator
+             */
             public default RequiredFieldConfigurator chain(
                     RequiredFieldConfigurator configurator) {
                 return descriptor -> test(descriptor) || configurator.test(descriptor);
