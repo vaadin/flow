@@ -19,6 +19,8 @@ package com.vaadin.event;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+import com.vaadin.shared.Registration;
+
 /**
  * <p>
  * Interface for classes supporting registration of methods as event receivers.
@@ -57,8 +59,9 @@ public interface MethodEventSource extends Serializable {
      * @throws java.lang.IllegalArgumentException
      *             unless <code>method</code> has exactly one match in
      *             <code>object</code>
+     * @return a handle that can be used for removing the listener
      */
-    void addListener(Class<?> eventType, Object object, Method method);
+    Registration addListener(Class<?> eventType, Object object, Method method);
 
     /**
      * Removes all registered listeners matching the given parameters. Since
