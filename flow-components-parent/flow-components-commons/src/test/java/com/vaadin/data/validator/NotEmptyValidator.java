@@ -17,11 +17,10 @@ package com.vaadin.data.validator;
 
 import java.util.Objects;
 
-import javax.xml.bind.Validator;
-
 import com.vaadin.components.data.HasValue;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.ValidationResult;
+import com.vaadin.data.Validator;
 import com.vaadin.data.ValueContext;
 
 /**

@@ -21,16 +21,26 @@ import org.junit.Assert;
 import org.junit.Before;
 
 import com.vaadin.data.ValidationResult;
+import com.vaadin.data.Validator;
 import com.vaadin.data.ValueContext;
+import com.vaadin.flow.html.Label;
+import com.vaadin.ui.UI;
 
 public class ValidatorTestBase {
 
     private Label localeContext;
+    private Locale locale = Locale.US;
 
     @Before
     public void setUp() {
+        UI ui = new UI(){
+            @Override
+            public Locale getLocale() {
+                return locale;
+            }
+        };
         localeContext = new Label();
-        setLocale(Locale.US);
+        ui.add(localeContext);
     }
 
     protected <T> void assertPasses(T value, Validator<? super T> validator) {
@@ -54,6 +64,6 @@ public class ValidatorTestBase {
     }
 
     protected void setLocale(Locale locale) {
-        localeContext.setLocale(locale);
+        this.locale = locale;
     }
 }
