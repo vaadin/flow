@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,8 @@
  */
 package com.vaadin.data;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -22,8 +24,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.components.data.HasValue;
+import com.vaadin.components.data.HasValue.ValueChangeEvent;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.ui.TextField;
 
@@ -32,20 +36,25 @@ import com.vaadin.ui.TextField;
  *
  */
 public class BinderValueChangeTest
-        extends BinderTestBase<Binder<Person>, Person> {
+extends BinderTestBase<Binder<Person>, Person> {
 
-    private AtomicReference<ValueChangeEvent<?>> event;
+    private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
-    private static class TestTextField extends TextField {
-        @Override
-        protected boolean setValue(String value, boolean userOriginated) {
-            return super.setValue(value, userOriginated);
-        }
-    }
+    private AtomicReference<ValueChangeEvent<?, ?>> event;
 
     @Before
     public void setUp() {
-        binder = new Binder<>();
+        binder = new Binder<Person>() {
+            @Override
+            protected void handleError(HasValue<?, ?> field, String error) {
+                componentErrors.put(field, error);
+            }
+
+            @Override
+            protected void clearError(HasValue<?, ?> field) {
+                componentErrors.remove(field);
+            }
+        };
         item = new Person();
         event = new AtomicReference<>();
     }
@@ -90,8 +99,8 @@ public class BinderValueChangeTest
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        .withConverter(new StringToIntegerConverter(""))
+        .bind(Person::getAge, Person::setAge);
 
         binder.addValueChangeListener(this::statusChanged);
 
@@ -105,8 +114,8 @@ public class BinderValueChangeTest
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        .withConverter(new StringToIntegerConverter(""))
+        .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         binder.addValueChangeListener(this::statusChanged);
@@ -118,17 +127,18 @@ public class BinderValueChangeTest
 
     @Test
     public void userOriginatedUpdate_unbound_singleEventOnSetValue() {
-        TestTextField field = new TestTextField();
+        TextField field = new TextField();
 
         binder.forField(field).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        .withConverter(new StringToIntegerConverter(""))
+        .bind(Person::getAge, Person::setAge);
 
         binder.addValueChangeListener(this::statusChanged);
 
         Assert.assertNull(event.get());
-        field.setValue("foo", true);
+        field.getElement().getNode().getFeature(ElementPropertyMap.class)
+                .setProperty("name", "foo");
         verifyEvent(field, true);
     }
 
@@ -139,8 +149,8 @@ public class BinderValueChangeTest
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.forField(ageField)
-                .withConverter(new StringToIntegerConverter(""))
-                .bind(Person::getAge, Person::setAge);
+        .withConverter(new StringToIntegerConverter(""))
+        .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
 
         Assert.assertNull(event.get());
@@ -148,19 +158,18 @@ public class BinderValueChangeTest
         verifyEvent(ageField);
     }
 
-    private void verifyEvent(HasValue<?> field) {
+    private void verifyEvent(HasValue<?, ?> field) {
         verifyEvent(field, false);
     }
 
-    private void verifyEvent(HasValue<?> field, boolean isUserOriginated) {
-        ValueChangeEvent<?> changeEvent = event.get();
+    private void verifyEvent(HasValue<?, ?> field, boolean isUserOriginated) {
+        ValueChangeEvent<?, ?> changeEvent = event.get();
         Assert.assertNotNull(changeEvent);
         Assert.assertEquals(field, changeEvent.getSource());
-        Assert.assertEquals(field, changeEvent.getComponent());
-        Assert.assertEquals(isUserOriginated, changeEvent.isUserOriginated());
+        Assert.assertEquals(isUserOriginated, changeEvent.isFromClient());
     }
 
-    private void statusChanged(ValueChangeEvent<?> evt) {
+    private void statusChanged(ValueChangeEvent<?, ?> evt) {
         Assert.assertNull(event.get());
         event.set(evt);
     }
