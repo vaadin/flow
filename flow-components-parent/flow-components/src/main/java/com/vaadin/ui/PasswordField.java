@@ -13,56 +13,57 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.ui;
 
-import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
+import com.vaadin.generated.vaadin.text.field.GeneratedPasswordFieldExtended;
 
 /**
- * Server-side component for the {@code vaadin-text-field} element.
- * 
- * @author Vaadin Ltd
+ * Server-side component for the {@code vaadin-password-field} element.
+ *
+ * @author Vaadin Ltd.
  */
-public class TextField extends GeneratedVaadinTextField<TextField>
+public class PasswordField extends GeneratedPasswordFieldExtended<PasswordField>
         implements HasSize {
 
     /**
-     * Constructs an empty {@code TextField}.
+     * Constructs an empty {@code PasswordField}.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
      */
-    public TextField() {
+    public PasswordField() {
         getElement().synchronizeProperty("hasValue", "value-changed");
         clear();
     }
 
     /**
-     * Constructs an empty {@code TextField} with the given label.
+     * Constructs an empty {@code PasswordField} with the given label.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
-     * 
+     *
      * @param labelText
      *            the text to set as the label
      */
-    public TextField(String labelText) {
+    public PasswordField(String labelText) {
         this();
         setLabel(labelText);
     }
 
     /**
-     * Constructs an empty {@code TextField} with the given label and
+     * Constructs an empty {@code PasswordField} with the given label and
      * placeholder text.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
-     * 
+     *
      * @param labelText
      *            the text to set as the label
      * @param placeholder
      *            the placeholder text to set
      */
-    public TextField(String labelText, String placeholder) {
+    public PasswordField(String labelText, String placeholder) {
         this(labelText);
         setPlaceholder(placeholder);
     }
