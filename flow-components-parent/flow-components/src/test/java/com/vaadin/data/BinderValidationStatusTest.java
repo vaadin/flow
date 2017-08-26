@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,7 @@ import com.vaadin.data.BindingValidationStatus.Status;
 import com.vaadin.tests.data.bean.Person;
 
 public class BinderValidationStatusTest
-        extends BinderTestBase<Binder<Person>, Person> {
+extends BinderTestBase<Binder<Person>, Person> {
 
     protected final static BindingValidationStatusHandler NOOP = event -> {
     };
@@ -207,15 +207,15 @@ public class BinderValidationStatusTest
     public void binderWithStatusHandler_fieldValidationNoBeanValidation_handlerGetsStatusUpdates() {
         AtomicReference<BinderValidationStatus<?>> statusCapture = new AtomicReference<>();
         binder.forField(nameField).withValidator(notEmpty)
-                .withValidationStatusHandler(evt -> {
-                    Assert.fail(
-                            "Using a custom status change handler so no change should end up here");
-                }).bind(Person::getFirstName, Person::setFirstName);
+        .withValidationStatusHandler(evt -> {
+            Assert.fail(
+                    "Using a custom status change handler so no change should end up here");
+        }).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField).withConverter(stringToInteger)
-                .withValidator(notNegative).withValidationStatusHandler(evt -> {
-                    Assert.fail(
-                            "Using a custom status change handler so no change should end up here");
-                }).bind(Person::getAge, Person::setAge);
+        .withValidator(notNegative).withValidationStatusHandler(evt -> {
+            Assert.fail(
+                    "Using a custom status change handler so no change should end up here");
+        }).bind(Person::getAge, Person::setAge);
 
         binder.setValidationStatusHandler(r -> {
             statusCapture.set(r);
@@ -297,15 +297,15 @@ public class BinderValidationStatusTest
     public void binderWithStatusHandler_fieldAndBeanLevelValidation_handlerGetsStatusUpdates() {
         AtomicReference<BinderValidationStatus<?>> statusCapture = new AtomicReference<>();
         binder.forField(nameField).withValidator(notEmpty)
-                .withValidationStatusHandler(evt -> {
-                    Assert.fail(
-                            "Using a custom status change handler so no change should end up here");
-                }).bind(Person::getFirstName, Person::setFirstName);
+        .withValidationStatusHandler(evt -> {
+            Assert.fail(
+                    "Using a custom status change handler so no change should end up here");
+        }).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField).withConverter(stringToInteger)
-                .withValidator(notNegative).withValidationStatusHandler(evt -> {
-                    Assert.fail(
-                            "Using a custom status change handler so no change should end up here");
-                }).bind(Person::getAge, Person::setAge);
+        .withValidator(notNegative).withValidationStatusHandler(evt -> {
+            Assert.fail(
+                    "Using a custom status change handler so no change should end up here");
+        }).bind(Person::getAge, Person::setAge);
         binder.withValidator(
                 bean -> !bean.getFirstName().isEmpty() && bean.getAge() > 0,
                 "Need first name and age");
