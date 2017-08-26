@@ -23,7 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.CheckBox;
+import com.vaadin.ui.DatePicker;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 
@@ -35,7 +35,7 @@ public class ValueContextTest extends UI {
 
     @Test
     public void locale_from_component() {
-        textField.setLocale(COMPONENT_LOCALE);
+        setLocale(COMPONENT_LOCALE);
         ValueContext fromComponent = new ValueContext(textField);
         Locale locale = fromComponent.getLocale().orElse(null);
         Objects.requireNonNull(locale);
@@ -72,14 +72,16 @@ public class ValueContextTest extends UI {
     @Test
     public void testHasValue2() {
         setLocale(null);
-        ValueContext fromComponent = new ValueContext(new CheckBox(), textField);
+        ValueContext fromComponent = new ValueContext(new DatePicker(),
+                textField);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
     }
 
     @Test
     public void testHasValue3() {
         setLocale(null);
-        ValueContext fromComponent = new ValueContext(new CheckBox(), textField, Locale.CANADA);
+        ValueContext fromComponent = new ValueContext(new DatePicker(),
+                textField, Locale.CANADA);
         Assert.assertEquals(textField, fromComponent.getHasValue().get());
         Assert.assertEquals(Locale.CANADA, fromComponent.getLocale().get());
     }
@@ -87,8 +89,9 @@ public class ValueContextTest extends UI {
     @Before
     public void setUp() {
         setLocale(UI_LOCALE);
+        UI.setCurrent(this);
         textField = new TextField();
-        setContent(textField);
+        add(textField);
     }
 
     @Override
