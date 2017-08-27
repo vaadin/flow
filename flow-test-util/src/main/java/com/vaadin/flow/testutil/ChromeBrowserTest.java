@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -50,6 +55,8 @@ import com.vaadin.testbench.parallel.Browser;
 public class ChromeBrowserTest extends ViewOrUITest {
     private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
     private static final String CHROMEDRIVER_NAME_PART = "chromedriver";
+    // examples: driver\windows\googlechrome\64bit\chromedriver.exe
+    private static final int MAX_DRIVER_SEARCH_DEPTH = 4;
 
     static {
         if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null) {
@@ -76,55 +83,45 @@ public class ChromeBrowserTest extends ViewOrUITest {
     }
 
     private static String findDriver() {
-        String osDir = findOsDir();
-        String bitsDir = findBitsDir();
-
-        if (osDir == null || bitsDir == null) {
-            System.out.println("Could not determine " + CHROMEDRIVER_NAME_PART + " location.\n"
-                    + "  Set the system property " + WEBDRIVER_CHROME_DRIVER
-                    + " or update code in" + ChromeBrowserTest.class.getName()
-                    + " to recognize your operating system.");
+        Path driverDirectory = Paths.get("../../driver/");
+        if (!Files.isDirectory(driverDirectory)) {
+            System.out.println(String.format(
+                    "Could not find driver directory: %s", driverDirectory));
             return null;
         }
 
+        List<Path> driverPaths;
         try {
-            String path = "../../driver/" + osDir + "/googlechrome/" + bitsDir
-                    + "/" + CHROMEDRIVER_NAME_PART;
-            File driverLocation = new File(path).getCanonicalFile();
-
-            if (driverLocation.exists()) {
-                return driverLocation.getPath();
-            } else {
-                System.out.println("No " + CHROMEDRIVER_NAME_PART + " found at \""
-                        + driverLocation + "\"\n"
-                        + "  Verify that the path is correct and that driver-binary-downloader-maven-plugin has been run at least once.");
-                return null;
-            }
+            driverPaths = Files
+                    .find(driverDirectory, MAX_DRIVER_SEARCH_DEPTH,
+                            ChromeBrowserTest::isChromeDriver)
+                    .collect(Collectors.toList());
         } catch (IOException e) {
-            throw new UncheckedIOException(
-                    "Error trying to locate " + CHROMEDRIVER_NAME_PART + " binary", e);
+            throw new UncheckedIOException("Error trying to locate "
+                    + CHROMEDRIVER_NAME_PART + " binary", e);
         }
-    }
 
-    private static String findBitsDir() {
-        switch (System.getProperty("os.arch", "")) {
-        case "x86_64":
-        case "amd64":
-            return "64bit";
-        default:
+        if (driverPaths.isEmpty()) {
+            System.out.println("No " + CHROMEDRIVER_NAME_PART + " found at \""
+                    + driverDirectory.toAbsolutePath() + "\"\n"
+                    + "  Verify that the path is correct and that driver-binary-downloader-maven-plugin has been run at least once.");
             return null;
         }
+
+        if (driverPaths.size() > 1) {
+            System.out.println(String.format(
+                    "Have found multiple driver paths, using the first one from the list: %s",
+                    driverPaths));
+        }
+        return driverPaths.get(0).toAbsolutePath().toString();
+
     }
 
-    private static String findOsDir() {
-        String osName = System.getProperty("os.name", "").toLowerCase();
-        if (osName.contains("mac")) {
-            return "osx";
-        } else if ("linux".equals(osName)) {
-            return osName;
-        } else {
-            return null;
-        }
+    private static boolean isChromeDriver(Path path,
+            BasicFileAttributes attributes) {
+        return attributes.isRegularFile()
+                && path.toString().toLowerCase(Locale.getDefault())
+                        .contains(CHROMEDRIVER_NAME_PART);
     }
 
     @Override
