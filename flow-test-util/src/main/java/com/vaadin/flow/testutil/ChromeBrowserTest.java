@@ -15,18 +15,10 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -53,16 +45,10 @@ import com.vaadin.testbench.parallel.Browser;
  */
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
-    private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
-    private static final String CHROMEDRIVER_NAME_PART = "chromedriver";
-    // examples: driver\windows\googlechrome\64bit\chromedriver.exe
-    private static final int MAX_DRIVER_SEARCH_DEPTH = 4;
 
-    static {
-        if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null) {
-            Optional.ofNullable(findDriver()).ifPresent(driverLocation -> System
-                    .setProperty(WEBDRIVER_CHROME_DRIVER, driverLocation));
-        }
+    @BeforeClass
+    public static void setChromeDriverPath() {
+        ChromeDriverLocator.fillEnvironmentProperty();
     }
 
     @Before
@@ -80,48 +66,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
         options.addArguments("--headless");
         options.addArguments("--disable-gpu");
         return TestBench.createDriver(new ChromeDriver(options));
-    }
-
-    private static String findDriver() {
-        Path driverDirectory = Paths.get("../../driver/");
-        if (!Files.isDirectory(driverDirectory)) {
-            System.out.println(String.format(
-                    "Could not find driver directory: %s", driverDirectory));
-            return null;
-        }
-
-        List<Path> driverPaths;
-        try {
-            driverPaths = Files
-                    .find(driverDirectory, MAX_DRIVER_SEARCH_DEPTH,
-                            ChromeBrowserTest::isChromeDriver)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Error trying to locate "
-                    + CHROMEDRIVER_NAME_PART + " binary", e);
-        }
-
-        if (driverPaths.isEmpty()) {
-            System.out.println("No " + CHROMEDRIVER_NAME_PART + " found at \""
-                    + driverDirectory.toAbsolutePath() + "\"\n"
-                    + "  Verify that the path is correct and that driver-binary-downloader-maven-plugin has been run at least once.");
-            return null;
-        }
-
-        if (driverPaths.size() > 1) {
-            System.out.println(String.format(
-                    "Have found multiple driver paths, using the first one from the list: %s",
-                    driverPaths));
-        }
-        return driverPaths.get(0).toAbsolutePath().toString();
-
-    }
-
-    private static boolean isChromeDriver(Path path,
-            BasicFileAttributes attributes) {
-        return attributes.isRegularFile()
-                && path.toString().toLowerCase(Locale.getDefault())
-                        .contains(CHROMEDRIVER_NAME_PART);
     }
 
     @Override
