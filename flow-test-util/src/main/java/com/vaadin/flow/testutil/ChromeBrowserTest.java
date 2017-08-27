@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -47,17 +48,13 @@ import com.vaadin.testbench.parallel.Browser;
  */
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
-
     private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
+    private static final String CHROMEDRIVER_NAME_PART = "chromedriver";
 
     static {
-        String driverLocation = System.getProperty(WEBDRIVER_CHROME_DRIVER);
-        if (driverLocation == null) {
-            driverLocation = findDriver();
-
-            if (driverLocation != null) {
-                System.setProperty(WEBDRIVER_CHROME_DRIVER, driverLocation);
-            }
+        if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null) {
+            Optional.ofNullable(findDriver()).ifPresent(driverLocation -> System
+                    .setProperty(WEBDRIVER_CHROME_DRIVER, driverLocation));
         }
     }
 
@@ -83,7 +80,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
         String bitsDir = findBitsDir();
 
         if (osDir == null || bitsDir == null) {
-            System.out.println("Could not determine chromedriver location.\n"
+            System.out.println("Could not determine " + CHROMEDRIVER_NAME_PART + " location.\n"
                     + "  Set the system property " + WEBDRIVER_CHROME_DRIVER
                     + " or update code in" + ChromeBrowserTest.class.getName()
                     + " to recognize your operating system.");
@@ -92,27 +89,25 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
         try {
             String path = "../../driver/" + osDir + "/googlechrome/" + bitsDir
-                    + "/chromedriver";
+                    + "/" + CHROMEDRIVER_NAME_PART;
             File driverLocation = new File(path).getCanonicalFile();
 
             if (driverLocation.exists()) {
                 return driverLocation.getPath();
             } else {
-                System.out.println("No chromedriver found at \""
-                        + driverLocation.toString() + "\"\n"
+                System.out.println("No " + CHROMEDRIVER_NAME_PART + " found at \""
+                        + driverLocation + "\"\n"
                         + "  Verify that the path is correct and that driver-binary-downloader-maven-plugin has been run at least once.");
                 return null;
             }
         } catch (IOException e) {
             throw new UncheckedIOException(
-                    "Error trying to locate chromedriver binary", e);
+                    "Error trying to locate " + CHROMEDRIVER_NAME_PART + " binary", e);
         }
     }
 
     private static String findBitsDir() {
-        String osArch = System.getProperty("os.arch", "");
-
-        switch (osArch) {
+        switch (System.getProperty("os.arch", "")) {
         case "x86_64":
         case "amd64":
             return "64bit";
@@ -123,7 +118,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     private static String findOsDir() {
         String osName = System.getProperty("os.name", "").toLowerCase();
-
         if (osName.contains("mac")) {
             return "osx";
         } else if ("linux".equals(osName)) {
@@ -135,10 +129,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     @Override
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
-        /*
-         * Let's use only Chrome browser for now: FF version does not exit
-         * correctly after test being run.
-         */
         return getBrowserCapabilities(Browser.CHROME);
     }
 }
