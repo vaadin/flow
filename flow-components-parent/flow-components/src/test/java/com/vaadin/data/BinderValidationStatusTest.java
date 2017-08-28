@@ -15,27 +15,43 @@
  */
 package com.vaadin.data;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.components.data.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.BindingValidationStatus.Status;
+import com.vaadin.flow.html.Label;
 import com.vaadin.tests.data.bean.Person;
 
 public class BinderValidationStatusTest
 extends BinderTestBase<Binder<Person>, Person> {
+
+    private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
     protected final static BindingValidationStatusHandler NOOP = event -> {
     };
 
     @Before
     public void setUp() {
-        binder = new Binder<>();
+        binder = new Binder<Person>() {
+            @Override
+            protected void handleError(HasValue<?, ?> field, String error) {
+                componentErrors.put(field, error);
+            }
+
+            @Override
+            protected void clearError(HasValue<?, ?> field) {
+                componentErrors.remove(field);
+            }
+        };
         item = new Person();
         item.setFirstName("Johannes");
         item.setAge(32);
@@ -88,7 +104,7 @@ extends BinderTestBase<Binder<Person>, Person> {
                 .withValidator(notEmpty).withValidationStatusHandler(evt -> {
                 }).bind(Person::getFirstName, Person::setFirstName);
 
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         nameField.setValue("");
 
@@ -97,7 +113,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         binding.validate();
 
         // default behavior should update component error for the nameField
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
     }
 
     @Test
@@ -114,8 +130,8 @@ extends BinderTestBase<Binder<Person>, Person> {
         // message
         binding.validate();
 
-        Assert.assertTrue(label.isVisible());
-        Assert.assertEquals(EMPTY_ERROR_MESSAGE, label.getValue());
+        assertVisible(label, true);
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE, label.getText());
 
         nameField.setValue("foo");
 
@@ -123,9 +139,10 @@ extends BinderTestBase<Binder<Person>, Person> {
         // no message
         binding.validate();
 
-        Assert.assertFalse(label.isVisible());
-        Assert.assertEquals("", label.getValue());
+        assertVisible(label, false);
+        Assert.assertEquals("", label.getText());
     }
+
 
     @Test
     public void bindingWithStatusLabel_defaultStatusHandlerIsReplaced() {
@@ -135,7 +152,7 @@ extends BinderTestBase<Binder<Person>, Person> {
                 .withValidator(notEmpty).withStatusLabel(label)
                 .bind(Person::getFirstName, Person::setFirstName);
 
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         nameField.setValue("");
 
@@ -144,7 +161,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         binding.validate();
 
         // default behavior should update component error for the nameField
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -221,7 +238,7 @@ extends BinderTestBase<Binder<Person>, Person> {
             statusCapture.set(r);
         });
         binder.setBean(item);
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         nameField.setValue("");
         ageField.setValue("5");
@@ -232,7 +249,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         BinderValidationStatus<?> status = statusCapture.get();
         Assert.assertSame(status2, status);
 
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         List<BindingValidationStatus<?>> bindingStatuses = status
                 .getFieldValidationStatuses();
@@ -314,7 +331,7 @@ extends BinderTestBase<Binder<Person>, Person> {
             statusCapture.set(r);
         });
         binder.setBean(item);
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         nameField.setValue("");
         ageField.setValue("5");
@@ -325,7 +342,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         BinderValidationStatus<?> status = statusCapture.get();
         Assert.assertSame(status2, status);
 
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         List<BindingValidationStatus<?>> bindingStatuses = status
                 .getFieldValidationStatuses();
@@ -395,7 +412,7 @@ extends BinderTestBase<Binder<Person>, Person> {
                 .withValidator(notEmpty).withValidationStatusHandler(evt -> {
                 }).bind(Person::getFirstName, Person::setFirstName);
 
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         nameField.setValue("");
 
@@ -404,7 +421,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         binding.validate();
 
         // no component error since default handler is replaced
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
     }
 
     @Test
@@ -415,7 +432,7 @@ extends BinderTestBase<Binder<Person>, Person> {
                 .withValidator(notEmpty).withStatusLabel(label)
                 .bind(Person::getFirstName, Person::setFirstName);
 
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
 
         nameField.setValue("");
 
@@ -424,7 +441,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         binding.validate();
 
         // default behavior should update component error for the nameField
-        Assert.assertNull(nameField.getComponentError());
+        Assert.assertNull(componentErrors.get(nameField));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -502,4 +519,13 @@ extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals(1, results.size());
         Assert.assertFalse(results.get(0).isError());
     }
+
+    private void assertVisible(Label label, boolean visible) {
+        if (visible) {
+            Assert.assertNull(label.getStyle().get("display"));
+        } else {
+            Assert.assertEquals("none", label.getStyle().get("display"));
+        }
+    }
+
 }
