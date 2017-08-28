@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -48,17 +46,12 @@ import com.vaadin.testbench.parallel.Browser;
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
 
-    private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
-
-    static {
-        String driverLocation = System.getProperty(WEBDRIVER_CHROME_DRIVER);
-        if (driverLocation == null) {
-            driverLocation = findDriver();
-
-            if (driverLocation != null) {
-                System.setProperty(WEBDRIVER_CHROME_DRIVER, driverLocation);
-            }
-        }
+    /**
+     * A method that sets up the chrome driver path in a system variable.
+     */
+    @BeforeClass
+    public static void setChromeDriverPath() {
+        ChromeDriverLocator.fillEnvironmentProperty();
     }
 
     @Before
@@ -78,67 +71,8 @@ public class ChromeBrowserTest extends ViewOrUITest {
         return TestBench.createDriver(new ChromeDriver(options));
     }
 
-    private static String findDriver() {
-        String osDir = findOsDir();
-        String bitsDir = findBitsDir();
-
-        if (osDir == null || bitsDir == null) {
-            System.out.println("Could not determine chromedriver location.\n"
-                    + "  Set the system property " + WEBDRIVER_CHROME_DRIVER
-                    + " or update code in" + ChromeBrowserTest.class.getName()
-                    + " to recognize your operating system.");
-            return null;
-        }
-
-        try {
-            String path = "../../driver/" + osDir + "/googlechrome/" + bitsDir
-                    + "/chromedriver";
-            File driverLocation = new File(path).getCanonicalFile();
-
-            if (driverLocation.exists()) {
-                return driverLocation.getPath();
-            } else {
-                System.out.println("No chromedriver found at \""
-                        + driverLocation.toString() + "\"\n"
-                        + "  Verify that the path is correct and that driver-binary-downloader-maven-plugin has been run at least once.");
-                return null;
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(
-                    "Error trying to locate chromedriver binary", e);
-        }
-    }
-
-    private static String findBitsDir() {
-        String osArch = System.getProperty("os.arch", "");
-
-        switch (osArch) {
-        case "x86_64":
-        case "amd64":
-            return "64bit";
-        default:
-            return null;
-        }
-    }
-
-    private static String findOsDir() {
-        String osName = System.getProperty("os.name", "").toLowerCase();
-
-        if (osName.contains("mac")) {
-            return "osx";
-        } else if ("linux".equals(osName)) {
-            return osName;
-        } else {
-            return null;
-        }
-    }
-
     @Override
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
-        /*
-         * Let's use only Chrome browser for now: FF version does not exit
-         * correctly after test being run.
-         */
         return getBrowserCapabilities(Browser.CHROME);
     }
 }
