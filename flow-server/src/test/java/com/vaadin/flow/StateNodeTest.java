@@ -276,7 +276,7 @@ public class StateNodeTest {
 
     @Test
     public void testAttachListener_onSetParent_listenerTriggered() {
-        TestStateNode root = new RootStateNode();
+        StateNode root = createRootNode();
         TestStateNode child = new TestStateNode();
 
         Assert.assertFalse(child.isAttached());
@@ -291,7 +291,7 @@ public class StateNodeTest {
 
     @Test
     public void testAttachListener_listenerRemoved_listenerNotTriggered() {
-        TestStateNode root = new RootStateNode();
+        StateNode root = createRootNode();
         TestStateNode child = new TestStateNode();
 
         Assert.assertFalse(child.isAttached());
@@ -308,7 +308,7 @@ public class StateNodeTest {
 
     @Test
     public void testDetachListener_onSetParent_listenerTriggered() {
-        TestStateNode root = new RootStateNode();
+        StateNode root = createRootNode();
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
@@ -325,7 +325,7 @@ public class StateNodeTest {
 
     @Test
     public void testDetachListener_listenerRemoved_listenerNotTriggered() {
-        TestStateNode root = new RootStateNode();
+        StateNode root = createRootNode();
         TestStateNode child = new TestStateNode();
 
         setParent(child, root);
@@ -350,6 +350,10 @@ public class StateNodeTest {
 
     public static StateNode createParentNode(String toString) {
         return createTestNode(toString, ElementChildrenList.class);
+    }
+
+    public static StateNode createRootNode() {
+        return new RootStateNode();
     }
 
     @SafeVarargs

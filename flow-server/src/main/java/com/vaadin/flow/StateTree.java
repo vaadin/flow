@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.change.NodeChange;
@@ -239,8 +240,27 @@ public class StateTree implements NodeOwner {
         return ui;
     }
 
+    /**
+     * Registers a {@link Runnable} to be executed before the response is sent
+     * to the client. The runnables are executed in order of registration. A
+     * runnable can safely register more runnables to be executed, if needed.
+     * <p>
+     * If the {@link StateNode} related to the runnable is not attached to the
+     * document by the time the runnable is evaluated, the execution is
+     * postponed to before the next response.
+     * 
+     * @param context
+     *            the StateNode relevant for the execution. Can not be
+     *            <code>null</code>
+     * @param execution
+     *            the Runnable to be executed. Can not be <code>null</code>
+     * @return a registration that can be used to cancel the execution of the
+     *         runnable
+     */
     public ExecutionRegistration beforeClientResponse(StateNode context,
             Runnable execution) {
+        assert context != null : "The 'context' parameter can not be null";
+        assert execution != null : "The 'execution' parameter can not be null";
 
         StateNodeOnBeforeClientResponse reference = new StateNodeOnBeforeClientResponse(
                 context, execution);
@@ -248,21 +268,36 @@ public class StateTree implements NodeOwner {
         return () -> reference.setUnavailable();
     }
 
+    /**
+     * Called internally by the framework before the response is sent to the
+     * client. All runnables registered at
+     * {@link #beforeClientResponse(StateNode, Runnable)} are evaluated and
+     * executed if able.
+     */
     public void runExecutionsBeforeClientResponse() {
-        List<StateNodeOnBeforeClientResponse> currentList = executionsToBeProcessedBeforeClientResponse;
-        if (currentList.isEmpty()) {
-            return;
+        AtomicBoolean keepIterating = new AtomicBoolean(true);
+        while (keepIterating.get()) {
+            List<StateNodeOnBeforeClientResponse> currentList = executionsToBeProcessedBeforeClientResponse;
+            if (currentList.isEmpty()) {
+                break;
+            }
+            keepIterating.set(false);
+            executionsToBeProcessedBeforeClientResponse = new LinkedList<>();
+            currentList.forEach(reference -> {
+                // the node no longer exists, so we can ignore it
+                if (!reference.isAvailable()) {
+                    return;
+                }
+                // the node is not attached yet, so the execution is postponed
+                if (!reference.isStateNodeAttached()) {
+                    executionsToBeProcessedBeforeClientResponse.add(reference);
+                    return;
+                }
+                reference.getRunnable().run();
+                // A task can add new tasks to be executed, or change nodes to
+                // be attached, so we need to keep iterating
+                keepIterating.set(true);
+            });
         }
-        executionsToBeProcessedBeforeClientResponse = new LinkedList<>();
-        currentList.forEach(reference -> {
-            if (!reference.isAvailable()) {
-                return;
-            }
-            if (!reference.isStateNodeAttached()) {
-                executionsToBeProcessedBeforeClientResponse.add(reference);
-                return;
-            }
-            reference.getRunnable().run();
-        });
     }
 }

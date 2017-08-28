@@ -701,8 +701,36 @@ public class UI extends Component
         return Optional.ofNullable(router);
     }
 
+    /**
+     * Registers a {@link Runnable} to be executed before the response is sent
+     * to the client. The runnables are executed in order of registration. A
+     * runnable can safely register more runnables to be executed, if needed.
+     * <p>
+     * If the {@link Component} related to the runnable is not attached to the
+     * document by the time the runnable is evaluated, the execution is
+     * postponed to before the next response.
+     * 
+     * @param component
+     *            the Component relevant for the execution. Can not be
+     *            <code>null</code>
+     * 
+     * @param execution
+     *            the Runnable to be executed. Can not be <code>null</code>
+     * 
+     * @return a registration that can be used to cancel the execution of the
+     *         runnable
+     */
     public ExecutionRegistration beforeClientResponse(Component component,
             Runnable execution) {
+
+        if (component == null) {
+            throw new IllegalArgumentException(
+                    "The 'component' parameter may not be null");
+        }
+        if (execution == null) {
+            throw new IllegalArgumentException(
+                    "The 'execution' parameter may not be null");
+        }
 
         return internals.getStateTree().beforeClientResponse(
                 component.getElement().getNode(), execution);

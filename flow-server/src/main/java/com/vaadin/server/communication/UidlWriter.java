@@ -269,7 +269,10 @@ public class UidlWriter implements Serializable {
     }
 
     /**
-     * Encodes the state tree changes of the given UI.
+     * Encodes the state tree changes of the given UI. The runnables registered
+     * at
+     * {@link StateTree#beforeClientResponse(com.vaadin.flow.StateNode, Runnable)}
+     * at evaluated before the changes are encoded.
      *
      * @param ui
      *            the UI
@@ -277,6 +280,7 @@ public class UidlWriter implements Serializable {
      *            a JSON array to put state changes into
      * @param templates
      *            a JSON object to put new template nodes into
+     * @see StateTree#runExecutionsBeforeClientResponse()
      */
     private void encodeChanges(UI ui, JsonArray stateChanges,
             JsonObject templates) {
