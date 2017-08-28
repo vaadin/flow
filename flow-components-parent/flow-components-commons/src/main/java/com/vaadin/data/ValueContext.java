@@ -116,14 +116,14 @@ public class ValueContext implements Serializable {
     }
 
     private Locale findLocale() {
-        Locale l = null;
-        if (l == null && UI.getCurrent() != null) {
-            l = UI.getCurrent().getLocale();
+        Locale locale = null;
+        if (UI.getCurrent() != null) {
+            locale = UI.getCurrent().getLocale();
         }
-        if (l == null) {
-            l = Locale.getDefault();
+        if (locale == null) {
+            locale = Locale.getDefault();
         }
-        return l;
+        return locale;
     }
 
     /**
