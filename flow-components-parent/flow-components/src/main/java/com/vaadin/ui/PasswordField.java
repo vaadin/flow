@@ -43,6 +43,7 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      */
     public PasswordField() {
         getElement().synchronizeProperty("hasValue", "value-changed");
+        getElement().synchronizeProperty("passwordVisible", "password-visible-changed");
         clear();
     }
 
