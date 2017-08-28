@@ -87,6 +87,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return whether the element should have input focus when the page loads
      */
     public boolean isAutofocus() {
         return getElement().getProperty("autofocus", false);
@@ -119,6 +121,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return whether an element has focus
      */
     public boolean isFocused() {
         return getElement().getProperty("focused", false);
@@ -134,6 +138,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return whether an element is disabled
      */
     public boolean isDisabled() {
         return getElement().getProperty("disabled", false);
@@ -166,6 +172,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return error message from the component, if any.
      */
     public String getErrorMessage() {
         return getElement().getProperty("errorMessage");
@@ -199,6 +207,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return component label value
      */
     public String getLabel() {
         return getElement().getProperty("label");
@@ -227,11 +237,13 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * </p>
      * <p>
      * Identifies a list of pre-defined options to suggest to the user. The
-     * value must be the id of a <datalist> element in the same document.
+     * value must be the id of a datalist element in the same document.
      * <p>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return list of pre defined options
      */
     public String getList() {
         return getElement().getProperty("list");
@@ -243,7 +255,7 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * </p>
      * <p>
      * Identifies a list of pre-defined options to suggest to the user. The
-     * value must be the id of a <datalist> element in the same document.
+     * value must be the id of a datalist element in the same document.
      * </p>
      *
      * @param list
@@ -266,6 +278,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return max number of characters to be entered
      */
     public double getMaxlength() {
         return getElement().getProperty("maxlength", 0.0);
@@ -300,6 +314,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return minimum number of characters to be entered
      */
     public double getMinlength() {
         return getElement().getProperty("minlength", 0.0);
@@ -333,6 +349,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return the name of the control, which is submitted with the form data.
      */
     public String getName() {
         return getElement().getProperty("name");
@@ -366,6 +384,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return the regex patten that input is checked against
      */
     public String getPattern() {
         return getElement().getProperty("pattern");
@@ -399,6 +419,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return the hint to the user of what can be entered in the control.
      */
     public String getPlaceholder() {
         return getElement().getProperty("placeholder");
@@ -433,6 +455,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return whether the element cannot be modified or not
      */
     public boolean isReadonly() {
         return getElement().getProperty("readonly", false);
@@ -466,6 +490,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     * 
+     * @return whether the user is required to fill the value of the component
      */
     public boolean isRequired() {
         return getElement().getProperty("required", false);
@@ -498,6 +524,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     *
+     * @return message to show to the user when validation fails
      */
     public String getTitle() {
         return getElement().getProperty("title");
@@ -567,6 +595,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is synchronized automatically from client side when a
      * 'invalid-changed' event happens.
      * </p>
+     *
+     * @return whether the user input is invalid or not
      */
     @Synchronize(property = "invalid", value = "invalid-changed")
     public boolean isInvalid() {
@@ -601,6 +631,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     *
+     * @return whether a non empty value was input
      */
     public boolean hasValue() {
         return getElement().getProperty("hasValue", false);
@@ -617,6 +649,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * This property is not synchronized automatically from the client side, so
      * the returned value may not be the same as in client side.
      * </p>
+     *
+     * @return whether user can enter invalid text into a component
      */
     public boolean isPreventInvalidInput() {
         return getElement().getProperty("preventInvalidInput", false);
@@ -656,8 +690,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * Returns true if {@code value} is valid. {@code <iron-form>} uses this to
      * check the validity or all its elements.
      * </p>
-     *
-     * @return It would return a boolean
      */
     @NotSupported
     protected void validate() {

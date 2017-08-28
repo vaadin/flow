@@ -149,9 +149,8 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * <p>
      * For example, if you have an object with the properties "name" and "id",
      * you can create a template like this:
-     * <p>
      * <blockquote>
-     * 
+     *
      * <pre>
      * comboBox.setItemTemplate("Name: [[item.name]]<br>Id: [[item.id]]");
      * </pre>
