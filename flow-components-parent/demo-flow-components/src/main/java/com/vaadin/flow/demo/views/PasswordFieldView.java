@@ -38,12 +38,13 @@ public class PasswordFieldView extends DemoView {
         passwordField.addValueChangeListener(event -> message.setText(
                 String.format("Password field value changed from '%s' to '%s'",
                         event.getOldValue(), event.getValue())));
+        Button button = new Button("Toggle show/hide password icon", event -> passwordField
+                .setHideToggleButton(!passwordField.isHideToggleButton()));
         // end-source-example
 
         passwordField.setId("password-field-with-value-change-listener");
         message.setId("password-field-value");
-        Button button = new Button("Toggle icon", event -> passwordField
-                .setHideToggleButton(!passwordField.isHideToggleButton()));
+        button.setId("toggle-button");
 
         addCard("Basic password field", button, passwordField, message);
     }
