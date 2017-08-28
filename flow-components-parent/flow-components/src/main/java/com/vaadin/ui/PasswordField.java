@@ -236,42 +236,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * Description copied from corresponding location in WebComponent:
      * </p>
      * <p>
-     * Identifies a list of pre-defined options to suggest to the user. The
-     * value must be the id of a datalist element in the same document.
-     * <p>
-     * This property is not synchronized automatically from the client side, so
-     * the returned value may not be the same as in client side.
-     * </p>
-     * 
-     * @return list of pre defined options
-     */
-    public String getList() {
-        return getElement().getProperty("list");
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Identifies a list of pre-defined options to suggest to the user. The
-     * value must be the id of a datalist element in the same document.
-     * </p>
-     *
-     * @param list
-     *            the String value to set
-     * @return this instance, for method chaining
-     */
-    public PasswordField setList(String list) {
-        getElement().setProperty("list", list == null ? "" : list);
-        return get();
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
      * Maximum number of characters (in Unicode code points) that the user can
      * enter.
      * <p>
@@ -674,14 +638,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
         return get();
     }
 
-    public void connectedCallback() {
-        getElement().callFunction("connectedCallback");
-    }
-
-    public void disconnectedCallback() {
-        getElement().callFunction("disconnectedCallback");
-    }
-
     /**
      * <p>
      * Description copied from corresponding location in WebComponent:
@@ -693,19 +649,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      */
     @NotSupported
     protected void validate() {
-    }
-
-    /**
-     * <p>
-     * Description copied from corresponding location in WebComponent:
-     * </p>
-     * <p>
-     * Returns true if the current input value satisfies all constraints (if
-     * any)
-     * </p>
-     */
-    public void checkValidity() {
-        getElement().callFunction("checkValidity");
     }
 
     /**
@@ -770,12 +713,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
         public HasValueChangeEvent(R source, boolean fromClient) {
             super(source, fromClient);
         }
-    }
-
-    public Registration addHasValueChangeListener(
-            ComponentEventListener<HasValueChangeEvent<PasswordField>> listener) {
-        return addListener(HasValueChangeEvent.class,
-                (ComponentEventListener) listener);
     }
 
     /**
