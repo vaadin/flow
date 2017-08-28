@@ -29,10 +29,6 @@ public class PasswordFieldView extends TestView {
      * Constructs a basic layout with a text field.
      */
     public PasswordFieldView() {
-        initView();
-    }
-
-    private void initView() {
         Div message = new Div();
         PasswordField passwordField = new PasswordField();
         passwordField.addValueChangeListener(
