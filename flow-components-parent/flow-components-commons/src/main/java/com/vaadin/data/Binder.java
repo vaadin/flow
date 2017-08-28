@@ -793,14 +793,14 @@ public class Binder<BEAN> implements Serializable {
          * @return the found locale, not null
          */
         protected Locale findLocale() {
-            Locale l = null;
-            if (l == null && UI.getCurrent() != null) {
-                l = UI.getCurrent().getLocale();
+            Locale locale = null;
+            if (UI.getCurrent() != null) {
+                locale = UI.getCurrent().getLocale();
             }
-            if (l == null) {
-                l = Locale.getDefault();
+            if (locale == null) {
+                locale = Locale.getDefault();
             }
-            return l;
+            return locale;
         }
 
         @Override
