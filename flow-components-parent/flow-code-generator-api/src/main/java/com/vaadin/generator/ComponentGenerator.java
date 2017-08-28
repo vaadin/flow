@@ -92,8 +92,6 @@ public class ComponentGenerator {
     private static final String GENERIC_TYPE = "R";
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
 
-    private static final Logger logger = Logger.getLogger("ComponentGenerator");
-
     private ObjectMapper mapper;
     private File jsonFile;
     private File targetPath;
@@ -845,18 +843,7 @@ public class ComponentGenerator {
     }
 
     private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
-        String nl = System.getProperty("line.separator");
-        String text = String.format("%s%s%s%s",
-                "Description copied from corresponding location in WebComponent:",
-                nl, nl, documentation.replaceAll("```(.*?)```", "{@code $1}")
-                        .replaceAll("`(.*?)`", "{@code $1}"));
-        try {
-            javaDoc.setFullText(javaDocFormatter.formatJavaDoc(text));
-        } catch (IllegalArgumentException ile) {
-            logger.log(Level.WARNING,
-                    "Javadoc exception for file " + jsonFile.getName(), ile);
-            logger.warning("Failed to set javadoc: " + text);
-        }
+        javaDoc.setFullText(javaDocFormatter.formatJavaDoc(documentation));
     }
 
     private void generateSetterFor(JavaClassSource javaClass,

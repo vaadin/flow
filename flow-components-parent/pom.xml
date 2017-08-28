@@ -37,6 +37,11 @@
                 <artifactId>flow-server</artifactId>
                 <version>${flow.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-html-components</artifactId>
+                <version>${flow.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

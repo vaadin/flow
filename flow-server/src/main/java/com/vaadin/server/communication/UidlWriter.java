@@ -25,11 +25,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,6 +49,8 @@ import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.TemplateMap;
+import com.vaadin.flow.router.HasChildView;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
@@ -295,25 +301,60 @@ public class UidlWriter implements Serializable {
                 // Send to client if it's a new template
                 if (!uiInternals.isTemplateSent(templateNode)) {
                     uiInternals.setTemplateSent(templateNode);
-
-                    JsonObject json = templateNode.toJson(this);
-
-                    templates.put(Integer.toString(templateNode.getId()), json);
+                    templates.put(Integer.toString(templateNode.getId()),
+                            templateNode.toJson(this));
                 }
             }
         };
+
+        Set<Class<? extends Component>> componentsWithDependencies = new LinkedHashSet<>();
         stateTree.collectChanges(change -> {
             // Ensure new templates are sent to the client
             runIfNewTemplateChange(change, templateEncoder);
 
-            // send components' @StyleSheet and @JavaScript dependencies
-            runIfComponentAttachChange(change,
-                    c -> uiInternals.addComponentDependencies(c.getClass()));
+            if (attachesComponent(change)) {
+                change.getNode().getFeature(ComponentMapping.class)
+                        .getComponent()
+                        .ifPresent(component -> addComponentHierarchy(ui,
+                                componentsWithDependencies, component));
+            }
 
             // Encode the actual change
             stateChanges.set(stateChanges.length(),
                     change.toJson(uiInternals.getConstantPool()));
         });
+
+        componentsWithDependencies
+                .forEach(uiInternals::addComponentDependencies);
+    }
+
+    private static boolean attachesComponent(NodeChange change) {
+        return change instanceof NodeAttachChange
+                && change.getNode().hasFeature(ComponentMapping.class);
+    }
+
+    private void addComponentHierarchy(UI ui,
+            Set<Class<? extends Component>> hierarchyStorage,
+            Component component) {
+        getParentViews(ui, component).stream()
+                .map(newClass -> newClass.asSubclass(Component.class))
+                .forEach(hierarchyStorage::add);
+        hierarchyStorage.add(component.getClass());
+    }
+
+    private List<Class<? extends HasChildView>> getParentViews(UI ui,
+            Component component) {
+        if (!ui.getRouter().isPresent() || !(component instanceof View)) {
+            return Collections.emptyList();
+        }
+        List<Class<? extends HasChildView>> parentViewsAscending = ui.getRouter().get().getConfiguration()
+                .getParentViewsAscending(component.getClass().asSubclass(View.class))
+                .filter(Component.class::isAssignableFrom)
+                .collect(Collectors.toCollection(ArrayList::new));
+        if (parentViewsAscending.size() > 1) {
+            Collections.reverse(parentViewsAscending);
+        }
+        return parentViewsAscending;
     }
 
     private static void runIfNewTemplateChange(NodeChange change,
@@ -327,16 +368,6 @@ public class UidlWriter implements Serializable {
 
                 consumer.accept(templateNode);
             }
-        }
-    }
-
-    private static void runIfComponentAttachChange(NodeChange change,
-            Consumer<Component> consumer) {
-        if (change instanceof NodeAttachChange
-                && change.getNode().hasFeature(ComponentMapping.class)) {
-            Optional<Component> component = change.getNode()
-                    .getFeature(ComponentMapping.class).getComponent();
-            component.ifPresent(consumer);
         }
     }
 
