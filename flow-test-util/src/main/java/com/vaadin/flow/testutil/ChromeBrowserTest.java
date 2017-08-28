@@ -46,6 +46,9 @@ import com.vaadin.testbench.parallel.Browser;
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
 
+    /**
+     * A method that sets up the chrome driver path in a system variable.
+     */
     @BeforeClass
     public static void setChromeDriverPath() {
         ChromeDriverLocator.fillEnvironmentProperty();

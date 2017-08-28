@@ -34,11 +34,13 @@ import java.util.stream.Collectors;
  *
  * @author Vaadin Ltd.
  */
-class ChromeDriverLocator {
+final class ChromeDriverLocator {
     private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
     private static final String CHROMEDRIVER_NAME_PART = "chromedriver";
     // examples: driver\windows\googlechrome\64bit\chromedriver.exe
     private static final int MAX_DRIVER_SEARCH_DEPTH = 4;
+
+    private ChromeDriverLocator() {}
 
     /**
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property
@@ -59,7 +61,7 @@ class ChromeDriverLocator {
 
     private static String getDriverLocation() {
         Path driverDirectory = Paths.get("../../driver/");
-        if (!Files.isDirectory(driverDirectory)) {
+        if (!driverDirectory.toFile().isDirectory()) {
             System.out.println(String.format(
                     "Could not find driver directory: %s", driverDirectory));
             return null;
