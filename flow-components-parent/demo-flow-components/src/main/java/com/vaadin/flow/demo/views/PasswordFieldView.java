@@ -31,15 +31,20 @@ public class PasswordFieldView extends DemoView {
         Div message = new Div();
 
         // begin-source-example
-        // source-example-heading: Basic password d
+        // source-example-heading: Basic password field
         PasswordField passwordField = new PasswordField();
         passwordField.setLabel("Password field label");
         passwordField.setPlaceholder("placeholder text");
         passwordField.addValueChangeListener(event -> message.setText(
                 String.format("Password field value changed from '%s' to '%s'",
                         event.getOldValue(), event.getValue())));
-        Button button = new Button("Toggle show/hide password icon", event -> passwordField
-                .setHideToggleButton(!passwordField.isHideToggleButton()));
+        Button button = new Button("Toggle eye icon if password is hidden",
+                event -> {
+                    if (!passwordField.isPasswordVisible()) {
+                        passwordField.setHideToggleButton(
+                                !passwordField.isHideToggleButton());
+                    }
+                });
         // end-source-example
 
         passwordField.setId("password-field-with-value-change-listener");
