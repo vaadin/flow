@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.Element;
  * 
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Using_CSS_flexible_boxes">Using
- *      CSS Flexible boxes</a> on MDN
+ *      CSS Flexible boxes on MDN</a>
  */
 public class FlexLayout extends Component
         implements HasOrderedComponents<FlexLayout>, HasStyle, HasSize {
