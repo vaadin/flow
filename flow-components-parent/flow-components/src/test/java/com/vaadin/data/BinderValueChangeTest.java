@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.components.data.HasValue;
@@ -126,6 +127,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    @Ignore
     public void userOriginatedUpdate_unbound_singleEventOnSetValue() {
         TextField field = new TextField();
 
@@ -138,7 +140,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         Assert.assertNull(event.get());
         field.getElement().getNode().getFeature(ElementPropertyMap.class)
-                .setProperty("name", "foo");
+        .setProperty("name", "foo");
         verifyEvent(field, true);
     }
 

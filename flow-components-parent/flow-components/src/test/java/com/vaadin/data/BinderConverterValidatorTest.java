@@ -624,7 +624,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         // load should also clear error
         binder.readBean(person);
-        Assert.assertTrue(componentErrors.containsKey(nameField));
+        Assert.assertFalse(componentErrors.containsKey(nameField));
 
         // bind a new field that has invalid value in bean
         TextField lastNameField = new TextField();
@@ -687,18 +687,18 @@ extends BinderTestBase<Binder<Person>, Person> {
                 Person person = new Person();
                 binder.setBean(person);
 
-        Assert.assertFalse(componentErrors.containsKey(nameField));
-        Assert.assertFalse(componentErrors.containsKey(lastNameField));
+                Assert.assertFalse(componentErrors.containsKey(nameField));
+                Assert.assertFalse(componentErrors.containsKey(lastNameField));
 
                 nameField.setValue("x");
 
-        Assert.assertTrue(componentErrors.containsKey(nameField));
-        Assert.assertTrue(componentErrors.containsKey(lastNameField));
+                Assert.assertTrue(componentErrors.containsKey(nameField));
+                Assert.assertTrue(componentErrors.containsKey(lastNameField));
 
                 binder.setBean(person);
 
-        Assert.assertFalse(componentErrors.containsKey(nameField));
-        Assert.assertFalse(componentErrors.containsKey(lastNameField));
+                Assert.assertFalse(componentErrors.containsKey(nameField));
+                Assert.assertFalse(componentErrors.containsKey(lastNameField));
     }
 
     protected void bindName() {

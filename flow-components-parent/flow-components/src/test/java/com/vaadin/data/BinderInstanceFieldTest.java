@@ -18,6 +18,7 @@ package com.vaadin.data;
 import java.time.LocalDate;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.annotations.PropertyId;
@@ -142,6 +143,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_bindAllFields() {
         BindAllFields form = new BindAllFields();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -171,6 +173,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_bindOnlyOneFields() {
         BindOnlyOneField form = new BindOnlyOneField();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -191,6 +194,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_bindNotHasValueField_fieldIsNull() {
         BindFieldHasWrongType form = new BindFieldHasWrongType();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -205,6 +209,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_genericField() {
         BindGenericField form = new BindGenericField();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -265,6 +270,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_complexGenericHierarchy() {
         BindComplextHierarchyGenericType form = new BindComplextHierarchyGenericType();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -299,6 +305,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_bindAllFieldsUsingAnnotations() {
         BindFieldsUsingAnnotation form = new BindFieldsUsingAnnotation();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -323,6 +330,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_bindNotBoundFieldsOnly_customBindingIsNotReplaced() {
         BindAllFields form = new BindAllFields();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -358,6 +366,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_fieldsAreConfigured_customBindingIsNotReplaced() {
         BindWithNoFieldInPerson form = new BindWithNoFieldInPerson();
         Binder<Person> binder = new Binder<>(Person.class);
@@ -403,6 +412,7 @@ public class BinderInstanceFieldTest {
     }
 
     @Test
+    @Ignore
     public void bindInstanceFields_preconfiguredFieldNotBoundToPropertyPreserved() {
         BindOneFieldRequiresConverter form = new BindOneFieldRequiresConverter();
         form.age = new TextField();

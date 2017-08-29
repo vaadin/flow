@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.components.data.HasValue;
@@ -62,6 +63,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     //
 
     @Test
+    @Ignore
     public void bindingWithStatusHandler_handlerGetsEvents() {
         AtomicReference<BindingValidationStatus<?>> statusCapture = new AtomicReference<>();
         BindingBuilder<Person, String> binding = binder.forField(nameField)

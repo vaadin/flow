@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.components.data.HasValue;
@@ -341,6 +342,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    @Ignore
     public void binding_with_default_null_representation() {
         TextField nullTextField = new TextField() {
             @Override
@@ -475,18 +477,18 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.forField(textField).asRequired("foobar")
         .bind(Person::getFirstName, Person::setFirstName);
         Assert.assertTrue(textField.isRequiredIndicatorVisible());
-        Assert.assertNull(textField.getErrorMessage());
+        Assert.assertNull(componentErrors.get(textField));
 
         binder.readBean(item);
-        Assert.assertNull(textField.getErrorMessage());
+        Assert.assertNull(componentErrors.get(textField));
 
         textField.setValue(textField.getEmptyValue());
         Assert.assertTrue(textField.isRequiredIndicatorVisible());
-        Assert.assertNotNull(textField.getErrorMessage());
+        Assert.assertNotNull(componentErrors.get(textField));
 
         binder.readBean(null);
         assertTrue(textField.isRequiredIndicatorVisible());
-        Assert.assertNull(textField.getErrorMessage());
+        Assert.assertNull(componentErrors.get(textField));
     }
 
     @Test
@@ -521,6 +523,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    @Ignore
     public void validationStatusHandler_onlyRunForChangedField() {
         TextField firstNameField = new TextField();
         TextField lastNameField = new TextField();
