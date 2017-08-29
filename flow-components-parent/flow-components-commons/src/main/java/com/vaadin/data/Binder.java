@@ -2184,7 +2184,7 @@ public class Binder<BEAN> implements Serializable {
             Field memberField, String property, Class<?> propertyType) {
         Type valueType = GenericTypeReflector.getTypeParameter(
                 memberField.getGenericType(),
-                HasValue.class.getTypeParameters()[0]);
+                HasValue.class.getTypeParameters()[1]);
         if (valueType == null) {
             throw new IllegalStateException(String.format(
                     "Unable to detect value type for the member '%s' in the "
