@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.apache.commons.io.IOUtils;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Assert;
 import org.junit.Test;
 
