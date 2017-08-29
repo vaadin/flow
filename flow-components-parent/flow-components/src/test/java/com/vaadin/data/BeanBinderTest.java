@@ -25,10 +25,10 @@ import java.util.Set;
 
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Max;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +38,6 @@ import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubConstraint;
 import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubSubConstraint;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.tests.data.bean.BeanToValidate;
-import com.vaadin.ui.CheckBoxGroup;
 import com.vaadin.ui.TextField;
 
 public class BeanBinderTest
@@ -48,7 +47,6 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
     }
 
     private class TestClass {
-        private CheckBoxGroup<TestEnum> enums;
         private TextField number = new TextField();
     }
 
@@ -187,34 +185,6 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         item = new BeanToValidate();
         item.setFirstname("Johannes");
         item.setAge(32);
-    }
-
-    @Test
-    public void bindInstanceFields_parameters_type_erased() {
-        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
-        TestClass testClass = new TestClass();
-        otherBinder.forField(testClass.number)
-        .withConverter(new StringToIntegerConverter("")).bind("number");
-
-        // Should correctly bind the enum field without throwing
-        otherBinder.bindInstanceFields(testClass);
-        testSerialization(otherBinder);
-    }
-
-    @Test
-    public void bindInstanceFields_automatically_binds_incomplete_forMemberField_bindings() {
-        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
-        TestClass testClass = new TestClass();
-
-        otherBinder.forMemberField(testClass.number)
-        .withConverter(new StringToIntegerConverter(""));
-        otherBinder.bindInstanceFields(testClass);
-
-        TestBean bean = new TestBean();
-        otherBinder.setBean(bean);
-        testClass.number.setValue("50");
-        assertEquals(50, bean.number);
-        testSerialization(otherBinder);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -522,7 +492,7 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         Assert.assertTrue(binder.validate().isOk());
     }
 
-    private void assertInvalid(HasValue<?> field, String message) {
+    private void assertInvalid(HasValue<?, ?> field, String message) {
         BinderValidationStatus<?> status = binder.validate();
         List<BindingValidationStatus<?>> errors = status
                 .getFieldValidationErrors();
