@@ -16,7 +16,6 @@
 
 package com.vaadin.flow;
 
-import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -62,39 +61,49 @@ public class StateTree implements NodeOwner {
         }
     }
 
-    private final class StateNodeOnBeforeClientResponse
-            implements Serializable {
+    /**
+     * Object that holds a {@link Runnable} to be executed before the client
+     * response, using a {@link StateNode} as context.
+     * 
+     * @see StateTree#beforeClientResponse(StateNode, Runnable) See
+     *      {@link StateTree#runExecutionsBeforeClientResponse()}
+     */
+    private final static class StateNodeOnBeforeClientResponse {
         private WeakReference<StateNode> stateNodeReference;
         private Runnable runnable;
 
-        public StateNodeOnBeforeClientResponse(StateNode stateNode,
+        StateNodeOnBeforeClientResponse(StateNode stateNode,
                 Runnable runnable) {
             stateNodeReference = new WeakReference<>(stateNode);
             this.runnable = runnable;
         }
 
-        public boolean isStateNodeAttached() {
+        boolean isStateNodeAttached() {
             StateNode stateNode = stateNodeReference.get();
             return stateNode != null && stateNode.isAttached();
         }
 
-        public boolean isAvailable() {
+        boolean isAvailable() {
             return stateNodeReference.get() != null;
         }
 
-        public void setUnavailable() {
+        void setUnavailable() {
             stateNodeReference.clear();
         }
 
-        public Runnable getRunnable() {
+        Runnable getRunnable() {
             return runnable;
         }
     }
 
+    /**
+     * A registration object for removing a runnable registered for execution
+     * before the client response.
+     */
     @FunctionalInterface
-    public static interface ExecutionRegistration extends Registration {
+    public interface ExecutionRegistration extends Registration {
         /**
-         * Removes the associated listener from the event source.
+         * Removes the associated runnable from the execution queue.
          */
         void remove();
     }
@@ -102,7 +111,7 @@ public class StateTree implements NodeOwner {
     private LinkedHashSet<StateNode> dirtyNodes = new LinkedHashSet<>();
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
-    private List<StateNodeOnBeforeClientResponse> executionsToBeProcessedBeforeClientResponse = new LinkedList<>();
+    private List<StateNodeOnBeforeClientResponse> executionsToProcessBeforeResponse = new LinkedList<>();
 
     private int nextId = 1;
 
@@ -264,8 +273,8 @@ public class StateTree implements NodeOwner {
 
         StateNodeOnBeforeClientResponse reference = new StateNodeOnBeforeClientResponse(
                 context, execution);
-        executionsToBeProcessedBeforeClientResponse.add(reference);
-        return () -> reference.setUnavailable();
+        executionsToProcessBeforeResponse.add(reference);
+        return reference::setUnavailable;
     }
 
     /**
@@ -277,12 +286,12 @@ public class StateTree implements NodeOwner {
     public void runExecutionsBeforeClientResponse() {
         AtomicBoolean keepIterating = new AtomicBoolean(true);
         while (keepIterating.get()) {
-            List<StateNodeOnBeforeClientResponse> currentList = executionsToBeProcessedBeforeClientResponse;
+            List<StateNodeOnBeforeClientResponse> currentList = executionsToProcessBeforeResponse;
             if (currentList.isEmpty()) {
                 break;
             }
             keepIterating.set(false);
-            executionsToBeProcessedBeforeClientResponse = new LinkedList<>();
+            executionsToProcessBeforeResponse = new LinkedList<>();
             currentList.forEach(reference -> {
                 // the node no longer exists, so we can ignore it
                 if (!reference.isAvailable()) {
@@ -290,7 +299,7 @@ public class StateTree implements NodeOwner {
                 }
                 // the node is not attached yet, so the execution is postponed
                 if (!reference.isStateNodeAttached()) {
-                    executionsToBeProcessedBeforeClientResponse.add(reference);
+                    executionsToProcessBeforeResponse.add(reference);
                     return;
                 }
                 reference.getRunnable().run();

@@ -420,16 +420,16 @@ public class StateTreeTest {
         tree.beforeClientResponse(rootNode, () -> results.add(3));
 
         tree.runExecutionsBeforeClientResponse();
-        Assert.assertTrue("There should be 2 results in the list",
+        Assert.assertTrue("There should be 4 results in the list",
                 results.size() == 4);
 
-        Assert.assertEquals("The result at index '0' should be " + 1, 1,
+        Assert.assertEquals("The result at index '0' should be 1", 1,
                 results.get(0).intValue());
-        Assert.assertEquals("The result at index '1' should be " + 3, 3,
+        Assert.assertEquals("The result at index '1' should be 3", 3,
                 results.get(1).intValue());
-        Assert.assertEquals("The result at index '2' should be " + 0, 0,
+        Assert.assertEquals("The result at index '2' should be 0", 0,
                 results.get(2).intValue());
-        Assert.assertEquals("The result at index '3' should be " + 2, 2,
+        Assert.assertEquals("The result at index '3' should be 2", 2,
                 results.get(3).intValue());
     }
 
