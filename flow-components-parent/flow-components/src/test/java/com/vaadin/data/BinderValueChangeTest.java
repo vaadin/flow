@@ -96,6 +96,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    @Ignore
     public void setValue_unbound_singleEventOnSetValue() {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
@@ -111,6 +112,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    @Ignore
     public void setValue_bound_singleEventOnSetValue() {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
@@ -145,6 +147,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    @Ignore
     public void addListenerFirst_bound_singleEventOnSetValue() {
         binder.addValueChangeListener(this::statusChanged);
 
