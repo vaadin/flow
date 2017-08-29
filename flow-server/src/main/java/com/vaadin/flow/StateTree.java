@@ -22,7 +22,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.change.NodeChange;
@@ -284,29 +283,50 @@ public class StateTree implements NodeOwner {
      * executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
-        AtomicBoolean keepIterating = new AtomicBoolean(true);
-        while (keepIterating.get()) {
+        boolean keepIterating = false;
+        do {
             List<StateNodeOnBeforeClientResponse> currentList = executionsToProcessBeforeResponse;
             if (currentList.isEmpty()) {
                 break;
             }
-            keepIterating.set(false);
+            keepIterating = false;
             executionsToProcessBeforeResponse = new LinkedList<>();
-            currentList.forEach(reference -> {
-                // the node no longer exists, so we can ignore it
-                if (!reference.isAvailable()) {
-                    return;
-                }
-                // the node is not attached yet, so the execution is postponed
-                if (!reference.isStateNodeAttached()) {
-                    executionsToProcessBeforeResponse.add(reference);
-                    return;
-                }
-                reference.getRunnable().run();
-                // A task can add new tasks to be executed, or change nodes to
-                // be attached, so we need to keep iterating
-                keepIterating.set(true);
-            });
+            for (StateNodeOnBeforeClientResponse reference : currentList) {
+                keepIterating = executeRunnableIfAble(reference)
+                        || keepIterating;
+            }
+        } while (keepIterating);
+    }
+
+    /**
+     * Verifies whether the runnable is able to be executed, by analyzing two
+     * scenarios:
+     * <ol>
+     * <li>If the StateNode associated with the Runnable was garbage collected,
+     * the runnable is not considered able to be executed, and is
+     * discarded.</li>
+     * <li>If the StateNode is present but not attached to the document, the
+     * runnable is not considered able to be executed, and it is saved be to
+     * executed later. It is evaluated again before the next client
+     * response.</li>
+     * </ol>
+     * 
+     * @param reference
+     *            the StateNodeOnBeforeClientResponse object containing the
+     *            StateNode and the Runnable
+     * @return <code>true</code> if the runnable was executed right away,
+     *         <code>false</code> otherwise
+     */
+    private boolean executeRunnableIfAble(
+            StateNodeOnBeforeClientResponse reference) {
+        if (!reference.isAvailable()) {
+            return false;
         }
+        if (!reference.isStateNodeAttached()) {
+            executionsToProcessBeforeResponse.add(reference);
+            return false;
+        }
+        reference.getRunnable().run();
+        return true;
     }
 }
