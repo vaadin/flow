@@ -65,17 +65,23 @@
                 <configuration>
                     <nodeVersion>${node.version}</nodeVersion>
                     <npmVersion>${npm.version}</npmVersion>
+                    <workingDirectory>${frontend.working.directory}</workingDirectory>
                 </configuration>
                 <executions>
                     <execution>
                         <id>install-node-and-npm</id>
                         <goals>
                             <goal>install-node-and-npm</goal>
-                            <goal>npm</goal> <!-- runs 'install' by default -->
-                            <goal>bower</goal> <!-- runs 'install' by default -->
+                            <goal>npm</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>npm run</id>
+                        <goals>
+                            <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>${frontend.working.directory}</workingDirectory>
+                            <arguments>${npm.build.goal}</arguments>
                         </configuration>
                     </execution>
                 </executions>
@@ -179,7 +185,7 @@
             </activation>
 
             <properties>
-                <yarn.build.goal>run prodMode</yarn.build.goal>
+                <npm.build.goal>run prodMode</npm.build.goal>
                 <jetty.extra.resource.base>${project.build.directory}/jetty-extra-resources</jetty.extra.resource.base>
             </properties>
 
@@ -245,7 +251,7 @@
             </activation>
 
             <properties>
-                <yarn.build.goal>run devMode</yarn.build.goal>
+                <npm.build.goal>run devMode</npm.build.goal>
                 <jetty.extra.resource.base>${project.basedir}/${frontend.working.directory}</jetty.extra.resource.base>
             </properties>
 
