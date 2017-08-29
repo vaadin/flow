@@ -67,7 +67,7 @@ public class StateTree implements NodeOwner {
      * @see StateTree#beforeClientResponse(StateNode, Runnable) See
      *      {@link StateTree#runExecutionsBeforeClientResponse()}
      */
-    private final static class StateNodeOnBeforeClientResponse {
+    private static final class StateNodeOnBeforeClientResponse {
         private WeakReference<StateNode> stateNodeReference;
         private Runnable runnable;
 
