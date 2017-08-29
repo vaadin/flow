@@ -703,8 +703,13 @@ public class UI extends Component
 
     /**
      * Registers a {@link Runnable} to be executed before the response is sent
-     * to the client. The runnables are executed in order of registration. A
-     * runnable can safely register more runnables to be executed, if needed.
+     * to the client. The runnables are executed in order of registration. If
+     * runnables register more runnables, they are executed after all already
+     * registered executions for the moment.
+     * <p>
+     * Example: three tasks are submitted, {@code A}, {@code B} and {@code C},
+     * where {@code B} produces two more tasks during execution, {@code D} and
+     * {@code E}. The resulting execution would be {@code ABCDE}.
      * <p>
      * If the {@link Component} related to the runnable is not attached to the
      * document by the time the runnable is evaluated, the execution is

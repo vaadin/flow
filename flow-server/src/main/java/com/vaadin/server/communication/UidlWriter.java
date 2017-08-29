@@ -336,8 +336,8 @@ public class UidlWriter implements Serializable {
     private void addComponentHierarchy(UI ui,
             Set<Class<? extends Component>> hierarchyStorage,
             Component component) {
-        getParentViews(ui, component).stream()
-                .map(newClass -> newClass.asSubclass(Component.class))
+        getParentViews(ui, component).stream().map(
+                newClass -> newClass.<Component> asSubclass(Component.class))
                 .forEach(hierarchyStorage::add);
         hierarchyStorage.add(component.getClass());
     }
@@ -347,8 +347,10 @@ public class UidlWriter implements Serializable {
         if (!ui.getRouter().isPresent() || !(component instanceof View)) {
             return Collections.emptyList();
         }
-        List<Class<? extends HasChildView>> parentViewsAscending = ui.getRouter().get().getConfiguration()
-                .getParentViewsAscending(component.getClass().asSubclass(View.class))
+        List<Class<? extends HasChildView>> parentViewsAscending = ui
+                .getRouter().get().getConfiguration()
+                .getParentViewsAscending(
+                        component.getClass().asSubclass(View.class))
                 .filter(Component.class::isAssignableFrom)
                 .collect(Collectors.toCollection(ArrayList::new));
         if (parentViewsAscending.size() > 1) {

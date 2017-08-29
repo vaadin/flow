@@ -17,6 +17,7 @@
 package com.vaadin.flow;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -250,8 +251,13 @@ public class StateTree implements NodeOwner {
 
     /**
      * Registers a {@link Runnable} to be executed before the response is sent
-     * to the client. The runnables are executed in order of registration. A
-     * runnable can safely register more runnables to be executed, if needed.
+     * to the client. The runnables are executed in order of registration. If
+     * runnables register more runnables, they are executed after all already
+     * registered executions for the moment.
+     * <p>
+     * Example: three tasks are submitted, {@code A}, {@code B} and {@code C},
+     * where {@code B} produces two more tasks during execution, {@code D} and
+     * {@code E}. The resulting execution would be {@code ABCDE}.
      * <p>
      * If the {@link StateNode} related to the runnable is not attached to the
      * document by the time the runnable is evaluated, the execution is
@@ -283,19 +289,14 @@ public class StateTree implements NodeOwner {
      * executed if able.
      */
     public void runExecutionsBeforeClientResponse() {
-        boolean keepIterating = false;
+        boolean newTasksPossiblyAddedOrNodesAttached = false;
         do {
-            List<StateNodeOnBeforeClientResponse> currentList = executionsToProcessBeforeResponse;
-            if (currentList.isEmpty()) {
-                break;
+            newTasksPossiblyAddedOrNodesAttached = false;
+            for (StateNodeOnBeforeClientResponse reference : flushCallbacks()) {
+                newTasksPossiblyAddedOrNodesAttached = executeRunnableIfAble(
+                        reference) || newTasksPossiblyAddedOrNodesAttached;
             }
-            keepIterating = false;
-            executionsToProcessBeforeResponse = new LinkedList<>();
-            for (StateNodeOnBeforeClientResponse reference : currentList) {
-                keepIterating = executeRunnableIfAble(reference)
-                        || keepIterating;
-            }
-        } while (keepIterating);
+        } while (newTasksPossiblyAddedOrNodesAttached);
     }
 
     /**
@@ -328,5 +329,14 @@ public class StateTree implements NodeOwner {
         }
         reference.getRunnable().run();
         return true;
+    }
+
+    private List<StateNodeOnBeforeClientResponse> flushCallbacks() {
+        if (executionsToProcessBeforeResponse.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<StateNodeOnBeforeClientResponse> flushed = executionsToProcessBeforeResponse;
+        executionsToProcessBeforeResponse = new LinkedList<>();
+        return flushed;
     }
 }

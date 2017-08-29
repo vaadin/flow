@@ -47,9 +47,16 @@ import com.vaadin.ui.UI;
 public class StateTreeTest {
     private StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
-    private static class AttachableNode extends StateNode {
+    public static class AttachableNode extends StateNode {
 
         private boolean attached;
+
+        public AttachableNode() {
+        }
+
+        public AttachableNode(boolean attached) {
+            this.attached = attached;
+        }
 
         public void setAttached(boolean attached) {
             this.attached = attached;
@@ -333,8 +340,8 @@ public class StateTreeTest {
     }
 
     @Test
-    public void testBeforeClientResponse_regularOrder() {
-        StateNode rootNode = StateNodeTest.createRootNode();
+    public void beforeClientResponse_regularOrder() {
+        StateNode rootNode = new AttachableNode(true);
 
         List<Integer> results = new ArrayList<>();
 
@@ -354,8 +361,8 @@ public class StateTreeTest {
     }
 
     @Test
-    public void testBeforeClientResponse_withInnerRunnables() {
-        StateNode rootNode = StateNodeTest.createRootNode();
+    public void beforeClientResponse_withInnerRunnables() {
+        StateNode rootNode = new AttachableNode(true);
 
         List<Integer> results = new ArrayList<>();
 
@@ -379,9 +386,9 @@ public class StateTreeTest {
     }
 
     @Test
-    public void testBeforeClientResponse_withUnattachedNodes() {
-        StateNode rootNode = StateNodeTest.createRootNode();
-        StateNode emptyNode = StateNodeTest.createEmptyNode();
+    public void beforeClientResponse_withUnattachedNodes() {
+        StateNode rootNode = new AttachableNode(true);
+        StateNode emptyNode = new AttachableNode();
 
         List<Integer> results = new ArrayList<>();
 
@@ -401,8 +408,8 @@ public class StateTreeTest {
     }
 
     @Test
-    public void testBeforeClientResponse_withAttachedNodesDuringExecution() {
-        StateNode rootNode = StateNodeTest.createRootNode();
+    public void beforeClientResponse_withAttachedNodesDuringExecution() {
+        StateNode rootNode = new AttachableNode(true);
         AttachableNode emptyNode1 = new AttachableNode();
         AttachableNode emptyNode2 = new AttachableNode();
 
