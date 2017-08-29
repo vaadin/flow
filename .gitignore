@@ -21,10 +21,11 @@
 # Python
 scripts/*.pyc
 
+# Frontend
 bower_components
 node
 node_modules
-yarn.lock
+build
 
 # Intellij Idea files
 .idea
