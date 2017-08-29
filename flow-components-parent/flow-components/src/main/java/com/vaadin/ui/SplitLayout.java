@@ -26,8 +26,7 @@ import com.vaadin.generated.vaadin.split.layout.GeneratedVaadinSplitLayout;
  * 
  * @author Vaadin Ltd
  */
-public class SplitLayout
-        extends GeneratedVaadinSplitLayout<SplitLayout>
+public class SplitLayout extends GeneratedVaadinSplitLayout<SplitLayout>
         implements HasSize {
 
     private Component primaryComponent;
@@ -44,7 +43,9 @@ public class SplitLayout
      * to the primary and secondary splits.
      * 
      * @param primaryComponent
+     *            the component set to the primary split
      * @param secondaryComponent
+     *            the component set to the secondary split
      */
     public SplitLayout(Component primaryComponent,
             Component secondaryComponent) {

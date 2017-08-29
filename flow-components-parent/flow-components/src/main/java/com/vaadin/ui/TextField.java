@@ -26,7 +26,7 @@ public class TextField extends GeneratedVaadinTextField<TextField>
         implements HasSize {
 
     /**
-     * Constructs an empty {@code VaadinTextField}.
+     * Constructs an empty {@code TextField}.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
@@ -37,7 +37,7 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     }
 
     /**
-     * Constructs an empty {@code VaadinTextField} with the given label.
+     * Constructs an empty {@code TextField} with the given label.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
@@ -51,7 +51,7 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     }
 
     /**
-     * Constructs an empty {@code VaadinTextField} with the given label and
+     * Constructs an empty {@code TextField} with the given label and
      * placeholder text.
      * <p>
      * Using this constructor, any value previously set at the client-side is
