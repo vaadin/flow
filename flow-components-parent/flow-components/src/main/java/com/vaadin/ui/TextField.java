@@ -44,12 +44,12 @@ implements HasSize {
      * Using this constructor, any value previously set at the client-side is
      * cleared.
      *
-     * @param labelText
+     * @param label
      *            the text to set as the label
      */
-    public TextField(String labelText) {
+    public TextField(String label) {
         this();
-        setLabel(labelText);
+        setLabel(label);
     }
 
     /**
@@ -59,13 +59,13 @@ implements HasSize {
      * Using this constructor, any value previously set at the client-side is
      * cleared.
      *
-     * @param labelText
+     * @param label
      *            the text to set as the label
      * @param placeholder
      *            the placeholder text to set
      */
-    public TextField(String labelText, String placeholder) {
-        this(labelText);
+    public TextField(String label, String placeholder) {
+        this(label);
         setPlaceholder(placeholder);
     }
 
