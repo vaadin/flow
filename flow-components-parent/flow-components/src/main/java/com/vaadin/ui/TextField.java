@@ -75,11 +75,6 @@ implements HasSize {
     }
 
     @Override
-    public boolean isEmpty() {
-        return !hasValue();
-    }
-
-    @Override
     public TextField setValue(String value) {
         if (!Objects.equals(value, getValue())) {
             return super.setValue(value);
