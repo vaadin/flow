@@ -1,8 +1,8 @@
-[[datamodel.forms.beans]]
+ifdef::env-github[:outfilesuffix: .asciidoc]
 == Binding Beans to Forms
 
 The business objects used in an application are in most cases implemented as Java beans or POJOs.
-There is special support for that kind of business object in [classname]#Binder#.
+There is special support for that kind of business object in `Binder`.
 It can use reflection based on bean property names to bind values.
 This reduces the amount of code you have to write when binding to fields in the bean.
 
@@ -25,8 +25,8 @@ binder.forField(yearOfBirthField)
 Code using strings to identify properties will cause exceptions during runtime if the string contains a typo or if the name of the setter and getter methods have been changed without also updating the string.
 
 If you have a Bean Validation implementation available in your classpath and 
-want to use JSR 303 Bean Validation annotations then a [classname]#BeanValidationBinder# should be used.
-[classname]#BeanValidationBinder# extends [classname]#Binder# class so it has the same API but its implementation 
+want to use JSR 303 Bean Validation annotations then a `BeanValidationBinder` should be used.
+`BeanValidationBinder` extends  `Binder` class so it has the same API but its implementation 
 automatically adds a bean validator which takes care of JSR 303 constraints.
 Constraints defined for properties in the bean will work in the same way as if configured when the binding is created.
 
@@ -58,18 +58,16 @@ binder.forField(yearOfBirthField)
 
 Constraint annotations can also be defined on the bean level instead of being defined for any specific property.
 
-There are some number of predefined constraint annotations that mark a bound field as required using 
-[classname]#BeanValidationBinder#.[methodname]#setRequiredIndicatorVisible#. By default [classname]#@NotNull#,
-[classname]#@NotEmpty# and [classname]#@Size# (if [methodname]#min()# value is greater than 0) 
+There are some number of predefined constraint annotations that mark a bound field as required using `BeanValidationBinder.setRequiredIndicatorVisible`. By default `@NotNull`, `@NotEmpty` and `@Size` (if `min()` value is greater than 0) 
 configures the field as required. It's possible to change this behavior using 
-the [classname]#BeanValidationBinder#.[methodname]#setRequiredConfigurator# method.
+the `BeanValidationBinder.setRequiredConfigurator` method.
 
 [NOTE]
 Bean level validation can only be performed once the bean has been updated. This means that this functionality can only be used together with `setBean`. You need to trigger validation manually if using `readBean` and `writeBean`.
 
-Validation errors caused by that bean level validation might not be directly associated with any field component shown in the user interface, so [classname]#Binder# cannot know where such messages should be displayed.
+Validation errors caused by that bean level validation might not be directly associated with any field component shown in the user interface, so `Binder` cannot know where such messages should be displayed.
 
-Similarly to how the [methodname]#withStatusLabel# method can be used for defining where messages for a specific binding should be showed, we can also define a [classname]#Label# that is used for showing status messages that are not related to any specific field.
+Similarly to how the `withStatusLabel` method can be used for defining where messages for a specific binding should be showed, we can also define a `Label` that is used for showing status messages that are not related to any specific field.
 
 [source, java]
 ----
@@ -86,10 +84,6 @@ We can also define our own status handler to provide a custom way of handling st
 
 [source, java]
 ----
-// We will first set the status label's content mode to HTML
-// in order to display generated error messages separated by a <br> tag
-formStatusLabel.setContentMode(ContentMode.HTML);
-
 BinderValidationStatusHandler defaultHandler = binder.getValidationStatusHandler();
 
 binder.setValidationStatusHandler(status -> {
@@ -106,80 +100,10 @@ binder.setValidationStatusHandler(status -> {
         .collect(Collectors.joining("<br>"));
 
     // finally, display all bean level validation errors in a single label
-    formStatusLabel.setValue(errorMessage);
-    formStatusLabel.setVisible(!errorMessage.isEmpty());
+    formStatusLabel.setText(errorMessage);
+    setVisible(formStatusLabel,!errorMessage.isEmpty());
 
     // Let the default handler show messages for each field
     defaultHandler.accept(status);
 });
-----
-
-== Using Binder with Declarative Layouts
-We can use [classname]#Binder# to connect data to a form that is defined in the declarative format.
-
-This is the design HTML file that we can create using Vaadin Designer:
-[source, html]
-----
-<vaadin-form-layout size-full>
-  <vaadin-text-field _id="name"
-    caption="Name"></vaadin-text-field>
-  <vaadin-text-field _id="yearOfBirth"
-    caption="Year of birth"></vaadin-text-field>
-  <vaadin-button _id="save">
-    Save
-  </vaadin-button>
-</vaadin-form-layout>
-----
-
-This is the companion Java file that Vaadin Designer creates for us based on the design.
-[source, java]
-----
-@DesignRoot
-@AutoGenerated
-public class PersonFormDesign extends FormLayout {
-    protected TextField name;
-    protected TextField yearOfBirth;
-    protected Button save;
-
-    public PersonFormDesign() {
-        Design.read(this);
-    }
-}
-----
-
-Based on those files, we can create a subclass of the design that uses a [classname]#Binder# to automatically connect bean properties to field instances.
-This will look at all instance fields that are of a Field type in the class and try to find a bean property with the same name.
-
-[source, java]
-----
-public class PersonForm extends PersonFormDesign {
-  private Binder<Person> binder
-    = new Binder<>(Person.class);
-
-  public PersonForm(Person person) {
-    binder.bindInstanceFields(this);
-
-    binder.readBean(person);
-
-    save.addClickListener(event -> {
-      if (binder.writeBeanIfValid(person)) {
-        MyBackend.updatePersonInDatabase(person);
-      }
-    });
-  }
-
-}
-----
-
-We can also bind some of the fields before calling [methodname]#bindInstanceFields#.
-In this way, fields that require special configuration can still be configured manually while regular fields can be configured automatically.
-
-[source,java]
-----
-binder.forField(yearOfBirth)
-  .withConverter(
-    new StringToIntegerConverter("Please enter a number"))
-  .bind(Person::getYearOfBirth, Person::setYearOfBirth));
-
-binder.bindInstanceFields(this);
 ----
