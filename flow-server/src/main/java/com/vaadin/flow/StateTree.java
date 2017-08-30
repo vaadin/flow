@@ -111,7 +111,8 @@ public class StateTree implements NodeOwner {
     private LinkedHashSet<StateNode> dirtyNodes = new LinkedHashSet<>();
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
-    private List<StateNodeOnBeforeClientResponse> executionsToProcessBeforeResponse = new LinkedList<>();
+
+    private LinkedList<StateNodeOnBeforeClientResponse> executionsToProcessBeforeResponse = new LinkedList<>();
 
     private int nextId = 1;
 
