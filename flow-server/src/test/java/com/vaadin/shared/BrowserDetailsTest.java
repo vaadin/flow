@@ -451,6 +451,17 @@ public class BrowserDetailsTest extends TestCase {
         assertMacOSX(bd);
     }
 
+    public void testHeadlessChrome() {
+        String userAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/60.0.3112.101 Safari/537.36";
+        BrowserDetails bd = new BrowserDetails(userAgent);
+        assertWebKit(bd);
+        assertChrome(bd);
+        assertBrowserMajorVersion(bd, 60);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 537.36f);
+        assertLinux(bd);
+    }
+
     /*
      * Helper methods below
      */

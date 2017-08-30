@@ -15,18 +15,20 @@
  */
 package com.vaadin.ui;
 
+import java.util.Objects;
+
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
 
 /**
  * Server-side component for the {@code vaadin-text-field} element.
- * 
+ *
  * @author Vaadin Ltd
  */
 public class TextField extends GeneratedVaadinTextField<TextField>
-        implements HasSize {
+implements HasSize {
 
     /**
-     * Constructs an empty {@code VaadinTextField}.
+     * Constructs an empty {@code TextField}.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
@@ -37,11 +39,11 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     }
 
     /**
-     * Constructs an empty {@code VaadinTextField} with the given label.
+     * Constructs an empty {@code TextField} with the given label.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
-     * 
+     *
      * @param labelText
      *            the text to set as the label
      */
@@ -51,12 +53,12 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     }
 
     /**
-     * Constructs an empty {@code VaadinTextField} with the given label and
+     * Constructs an empty {@code TextField} with the given label and
      * placeholder text.
      * <p>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
-     * 
+     *
      * @param labelText
      *            the text to set as the label
      * @param placeholder
@@ -73,7 +75,10 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     }
 
     @Override
-    public boolean isEmpty() {
-        return !hasValue();
+    public TextField setValue(String value) {
+        if (!Objects.equals(value, getValue())) {
+            return super.setValue(value);
+        }
+        return this;
     }
 }
