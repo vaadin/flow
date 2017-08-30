@@ -26,7 +26,7 @@ import com.vaadin.generated.vaadin.text.field.GeneratedVaadinPasswordField;
  * @author Vaadin Ltd.
  */
 public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
-        implements HasSize {
+        implements HasSize, HasValidation {
 
     /**
      * Constructs an empty {@code PasswordField}.

@@ -2024,8 +2024,7 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private void fireStatusChangeEvent(boolean hasValidationErrors) {
-        getEventRouter()
-        .fireEvent(new StatusChangeEvent(this, hasValidationErrors));
+        getEventRouter().fireEvent(new StatusChangeEvent(this, hasValidationErrors));
     }
 
     private <FIELDVALUE> Converter<FIELDVALUE, FIELDVALUE> createNullRepresentationAdapter(
