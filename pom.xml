@@ -47,7 +47,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <gwt.version>2.8.1</gwt.version>
         <jsinterop.version>1.0.0.snapshot20160419</jsinterop.version>
         <sonar.java.source>8</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
@@ -56,7 +55,11 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
-        <!--Plugins-->
+        <!-- Dependencies -->
+        <gwt.version>2.8.1</gwt.version>
+        <hibernate.validator.version>6.0.1.Final</hibernate.validator.version>
+
+        <!-- Plugins -->
         <driver.binary.downloader.maven.plugin.version>1.0.14</driver.binary.downloader.maven.plugin.version>
         <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>2.20</maven.failsafe.plugin.version>
@@ -65,7 +68,7 @@
         <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already in use' -->
         <jetty.version>9.3.7.v20160115</jetty.version>
 
-        <!--Frontend-->
+        <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
         <node.version>v7.10.1</node.version>
         <npm.version>5.3.0</npm.version>
