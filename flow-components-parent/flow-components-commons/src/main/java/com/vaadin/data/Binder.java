@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.annotations.PropertyId;
 import com.vaadin.components.data.HasValue;
 import com.vaadin.components.data.HasValue.ValueChangeEvent;
@@ -2023,8 +2024,7 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private void fireStatusChangeEvent(boolean hasValidationErrors) {
-        getEventRouter()
-        .fireEvent(new StatusChangeEvent(this, hasValidationErrors));
+        getEventRouter().fireEvent(new StatusChangeEvent(this, hasValidationErrors));
     }
 
     private <FIELDVALUE> Converter<FIELDVALUE, FIELDVALUE> createNullRepresentationAdapter(

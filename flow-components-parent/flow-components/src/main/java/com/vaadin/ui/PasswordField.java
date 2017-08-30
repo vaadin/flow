@@ -32,7 +32,7 @@ import elemental.json.JsonObject;
  */
 public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
         implements HasSize, Focusable<PasswordField>,
-        HasValue<PasswordField, String> {
+        HasValue<PasswordField, String>, HasValidation {
 
     /**
      * Constructs an empty {@code PasswordField}.
@@ -749,5 +749,15 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     @Override
     public boolean isEmpty() {
         return !hasValue();
+    }
+
+    @Override
+    public void setErrorMessageNew(String errorMessage) {
+        setErrorMessage(errorMessage);
+    }
+
+    @Override
+    public void setInvalidNew(boolean invalid) {
+        setInvalid(invalid);
     }
 }
