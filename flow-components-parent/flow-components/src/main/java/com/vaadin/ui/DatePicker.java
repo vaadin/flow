@@ -40,7 +40,7 @@ import elemental.json.JsonObject;
  *
  */
 public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
-        implements HasValue<DatePicker, LocalDate>, HasSize {
+        implements HasValue<DatePicker, LocalDate>, HasSize, HasValidation {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_DATE;
     private static final String I18N_PROPERTY = "i18n";
@@ -54,7 +54,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
     /**
      * Convenience constructor to create a date picker with a pre-selected date.
-     * 
+     *
      * @param initialDate
      *            the pre-selected date in the picker
      * @see #setValue(LocalDate)
@@ -67,7 +67,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     /**
      * Convenience constructor to create a date picker with a
      * {@link ValueChangeListener}.
-     * 
+     *
      * @param listener
      *            the listener to receive value change events
      * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
@@ -80,7 +80,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     /**
      * Convenience constructor to create a date picker with a pre-selected date
      * and a {@link ValueChangeListener}.
-     * 
+     *
      * @param initialDate
      *            the pre-selected date in the picker
      * @param listener
@@ -98,7 +98,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     /**
      * Sets the minimum date in the date picker. Dates before that will be
      * disabled in the popup.
-     * 
+     *
      * @param min
      *            the minimum date that is allowed to be selected, or
      *            <code>null</code> to remove any minimum constraints
@@ -114,7 +114,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     /**
      * Gets the minimum date in the date picker. Dates before that will be
      * disabled in the popup.
-     * 
+     *
      * @return the the minimum date that is allowed to be selected, or
      *         <code>null</code> if there's no minimum
      */
@@ -125,7 +125,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     /**
      * Sets the maximum date in the date picker. Dates after that will be
      * disabled in the popup.
-     * 
+     *
      * @param max
      *            the maximum date that is allowed to be selected, or
      *            <code>null</code> to remove any maximum constraints
@@ -141,7 +141,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     /**
      * Gets the maximum date in the date picker. Dates after that will be
      * disabled in the popup.
-     * 
+     *
      * @return the the maximum date that is allowed to be selected, or
      *         <code>null</code> if there's no maximum
      */
@@ -152,7 +152,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     /**
      * Gets the internationalization properties previously set for this
      * component.
-     * 
+     *
      * @return the object with the i18n properties, never <code>null</code>. If
      *         the i18n properties weren't set, the internal properties of the
      *         object will be <code>null</code>, but not the object itself.
@@ -182,7 +182,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
     /**
      * Sets the internationalization properties for this component.
-     * 
+     *
      * @param i18n
      *            the internationalized properties, not <code>null</code>
      * @return this instance for method chaining
@@ -225,6 +225,16 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
                                 event.isUserOriginated())));
     }
 
+    @Override
+    public void setErrorMessageNew(String errorMessage) {
+        setErrorMessage(errorMessage);
+    }
+
+    @Override
+    public void setInvalidNew(boolean invalid) {
+        setInvalid(invalid);
+    }
+
     private LocalDate convertDateFromString(String value) {
         if (value == null || value.isEmpty()) {
             return null;
@@ -248,7 +258,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the name of the months.
-         * 
+         *
          * @return the month names
          */
         public List<String> getMonthNames() {
@@ -258,7 +268,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
         /**
          * Sets the name of the months, starting from January and ending on
          * December.
-         * 
+         *
          * @param monthNames
          *            the month names
          * @return this instance for method chaining
@@ -270,7 +280,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the name of the week days.
-         * 
+         *
          * @return the week days
          */
         public List<String> getWeekdays() {
@@ -280,7 +290,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
         /**
          * Sets the name of the week days, starting from {@code Sunday} and
          * ending on {@code Saturday}.
-         * 
+         *
          * @param weekdays
          *            the week days names
          * @return this instance for method chaining
@@ -292,7 +302,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the short names of the week days.
-         * 
+         *
          * @return the the short names of the week days
          */
         public List<String> getWeekdaysShort() {
@@ -302,7 +312,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
         /**
          * Sets the short names of the week days, starting from {@code sun} and
          * ending on {@code sat}.
-         * 
+         *
          * @param weekdaysShort
          *            the short names of the week days
          * @return this instance for method chaining
@@ -317,7 +327,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
          * <p>
          * 0 for Sunday, 1 for Monday, 2 for Tuesday, 3 for Wednesday, 4 for
          * Thursday, 5 for Friday, 6 for Saturday.
-         * 
+         *
          * @return the index of the first day of the week
          */
         public int getFirstDayOfWeek() {
@@ -329,7 +339,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
          * <p>
          * 0 for Sunday, 1 for Monday, 2 for Tuesday, 3 for Wednesday, 4 for
          * Thursday, 5 for Friday, 6 for Saturday.
-         * 
+         *
          * @param firstDayOfWeek
          *            the index of the first day of the week
          * @return this instance for method chaining
@@ -341,7 +351,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the translated word for {@code week}.
-         * 
+         *
          * @return the translated word for week
          */
         public String getWeek() {
@@ -350,7 +360,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Sets the translated word for {@code week}.
-         * 
+         *
          * @param week
          *            the translated word for week
          * @return this instance for method chaining
@@ -362,7 +372,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the translated word for {@code calendar}.
-         * 
+         *
          * @return the translated word for calendar
          */
         public String getCalendar() {
@@ -371,7 +381,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Sets the translated word for {@code calendar}.
-         * 
+         *
          * @param calendar
          *            the translated word for calendar
          * @return this instance for method chaining
@@ -383,7 +393,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the translated word for {@code clear}.
-         * 
+         *
          * @return the translated word for clear
          */
         public String getClear() {
@@ -392,7 +402,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Sets the translated word for {@code clear}.
-         * 
+         *
          * @param clear
          *            the translated word for clear
          * @return this instance for method chaining
@@ -404,7 +414,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the translated word for {@code today}.
-         * 
+         *
          * @return the translated word for today
          */
         public String getToday() {
@@ -413,7 +423,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Sets the translated word for {@code today}.
-         * 
+         *
          * @param today
          *            the translated word for today
          * @return this instance for method chaining
@@ -425,7 +435,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Gets the translated word for {@code cancel}.
-         * 
+         *
          * @return the translated word for cancel
          */
         public String getCancel() {
@@ -434,7 +444,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
 
         /**
          * Sets the translated word for {@code cancel}.
-         * 
+         *
          * @param cancel
          *            the translated word for cancel
          * @return this instance for method chaining
