@@ -453,10 +453,11 @@ public class DefaultDeploymentConfiguration
                     "No webcomponent polyfills discovered in your project's static files!"));
             return null;
         }
-        getLogger().log(Level.INFO,
-                () -> formatDefaultPolyfillMessage(
-                        "Will use webcomponent polyfills discovered in "
-                                + foundPolyfills.get(0)));
+        getLogger().log(Level.WARNING,
+                () -> formatDefaultPolyfillMessage(String.format(
+                        "Will use webcomponent polyfills discovered in unexpected location '%s'. "
+                                + "Please verify that your project has been set up correctly.",
+                        foundPolyfills.get(0))));
         return "context://" + foundPolyfills.get(0);
     }
 
