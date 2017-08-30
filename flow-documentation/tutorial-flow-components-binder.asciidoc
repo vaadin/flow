@@ -1,14 +1,14 @@
-[[datamodel.forms]]
+ifdef::env-github[:outfilesuffix: .asciidoc]
 = Binding Data to Forms
 
 A typical application lets the user fill out structured data and maybe also browse previously entered data.
-The data that is being entered is typically represented in code as an instance of a business object (bean), for instance a [classname]#Person# in an HR application.
+The data that is being entered is typically represented in code as an instance of a business object (bean), for instance aPerson# in an HR application.
 
-Vaadin Framework provides a [classname]#Binder# class that the developer can use to define how the values in a business object should be bound to the fields shown in the user interface.
-[classname]#Binder# takes care of reading values from the business object and converting the user's data between the format expected by the business object and the format expected by the field.
+Flow provides a `Binder` class that the developer can use to define how the values in a business object should be bound to the fields shown in the user interface.
+`Binder` takes care of reading values from the business object and converting the user's data between the format expected by the business object and the format expected by the field.
 The input entered by the user can also be validated, and the current validation status can be presented to the user in different ways.
 
-The first step to binding fields for a form is to create a [classname]#Binder# and bind some input fields. There is only one [classname]#Binder# instance for each form and it is used for all fields in that form.
+The first step to binding fields for a form is to create a `Binder` and bind some input fields. There is only one `Binder` instance for each form and it is used for all fields in that form.
 
 [source, java]
 ----
@@ -49,7 +49,7 @@ Button saveButton = new Button("Save",
       // A real application would also save the updated person
       // using the application's backend
     } catch (ValidationException e) {
-      Notification.show("Person could not be saved, " +
+      notifyValidationError("Person could not be saved, " +
         "please check error messages for each field.");
     }
 });
