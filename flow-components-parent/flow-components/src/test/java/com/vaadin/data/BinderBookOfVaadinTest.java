@@ -30,12 +30,14 @@ import org.junit.Test;
 
 import com.vaadin.components.data.HasValue;
 import com.vaadin.data.Binder.Binding;
+import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.BindingValidationStatus.Status;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.html.Label;
 import com.vaadin.ui.Button;
+import com.vaadin.ui.Checkbox;
 import com.vaadin.ui.DatePicker;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
@@ -49,14 +51,24 @@ import com.vaadin.ui.UI;
 public class BinderBookOfVaadinTest {
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
+    private enum Gender {
+        MALE, FEMALE;
+    }
+
     private static class BookPerson {
         private String lastName;
         private String email, phone, title;
         private int yearOfBirth, salaryLevel;
+        private Gender gender = Gender.MALE;
 
         public BookPerson(int yearOfBirth, int salaryLevel) {
             this.yearOfBirth = yearOfBirth;
             this.salaryLevel = salaryLevel;
+        }
+
+        public BookPerson(int yearOfBirth, Gender gender) {
+            this.yearOfBirth = yearOfBirth;
+            this.gender = gender;
         }
 
         public BookPerson(BookPerson origin) {
@@ -65,6 +77,7 @@ public class BinderBookOfVaadinTest {
             email = origin.email;
             phone = origin.phone;
             title = origin.title;
+            gender = origin.gender;
         }
 
         public BookPerson(String name, int yearOfBirth) {
@@ -118,6 +131,14 @@ public class BinderBookOfVaadinTest {
 
         public void setTitle(String title) {
             this.title = title;
+        }
+
+        public Gender getGender() {
+            return gender;
+        }
+
+        public void setGender(Gender gender) {
+            this.gender = gender;
         }
 
     }
@@ -266,44 +287,43 @@ public class BinderBookOfVaadinTest {
         Assert.assertNull(field.getErrorMessage());
     }
 
-    // @Test
-    // public void converterBookOfVaadinExample1() {
-    // TextField yearOfBirthField = new TextField();
-    // yearOfBirthField.setLocale(Locale.US);
-    // // Slider for integers between 1 and 10
-    // Slider salaryLevelField = new Slider("Salary level", 1, 10);
-    //
-    // BindingBuilder<BookPerson, String> b1 = binder
-    // .forField(yearOfBirthField);
-    // BindingBuilder<BookPerson, Integer> b2 = b1.withConverter(
-    // new StringToIntegerConverter("Must enter a number"));
-    // b2.bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
-    //
-    // BindingBuilder<BookPerson, Double> salaryBinding1 = binder
-    // .forField(salaryLevelField);
-    // BindingBuilder<BookPerson, Integer> salaryBinding2 = salaryBinding1
-    // .withConverter(Double::intValue, Integer::doubleValue);
-    // salaryBinding2.bind(BookPerson::getSalaryLevel,
-    // BookPerson::setSalaryLevel);
-    //
-    // // Test that the book code works
-    // BookPerson bookPerson = new BookPerson(1972, 4);
-    // binder.setBean(bookPerson);
-    // Assert.assertEquals(4.0, salaryLevelField.getValue().doubleValue(), 0);
-    // Assert.assertEquals("1,972", yearOfBirthField.getValue());
-    //
-    // bookPerson.setSalaryLevel(8);
-    // binder.readBean(bookPerson);
-    // Assert.assertEquals(8.0, salaryLevelField.getValue().doubleValue(), 0);
-    // bookPerson.setYearOfBirth(123);
-    // binder.readBean(bookPerson);
-    // Assert.assertEquals("123", yearOfBirthField.getValue());
-    //
-    // yearOfBirthField.setValue("2016");
-    // salaryLevelField.setValue(1.0);
-    // Assert.assertEquals(2016, bookPerson.getYearOfBirth());
-    // Assert.assertEquals(1, bookPerson.getSalaryLevel());
-    // }
+    @Test
+    public void converterBookOfVaadinExample1() {
+        TextField yearOfBirthField = new TextField();
+        // Use CheckBox for gender (false is male, true is female).
+        Checkbox genderField = new Checkbox("Gdner");
+
+        BindingBuilder<BookPerson, String> b1 = binder
+                .forField(yearOfBirthField);
+        BindingBuilder<BookPerson, Integer> b2 = b1.withConverter(
+                new StringToIntegerConverter("Must enter a number"));
+        b2.bind(BookPerson::getYearOfBirth, BookPerson::setYearOfBirth);
+
+        BindingBuilder<BookPerson, Boolean> genderBinding1 = binder
+                .forField(genderField);
+        BindingBuilder<BookPerson, Gender> genderBinding2 = genderBinding1
+                .withConverter(gender -> gender ? Gender.FEMALE : Gender.MALE,
+                        gender -> Gender.FEMALE.equals(gender));
+        genderBinding2.bind(BookPerson::getGender, BookPerson::setGender);
+
+        // Test that the book code works
+        BookPerson bookPerson = new BookPerson(1972, Gender.FEMALE);
+        binder.setBean(bookPerson);
+        Assert.assertTrue(genderField.getValue());
+        Assert.assertEquals("1,972", yearOfBirthField.getValue());
+
+        bookPerson.setGender(Gender.MALE);
+        binder.readBean(bookPerson);
+        Assert.assertFalse(genderField.getValue());
+        bookPerson.setYearOfBirth(123);
+        binder.readBean(bookPerson);
+        Assert.assertEquals("123", yearOfBirthField.getValue());
+
+        yearOfBirthField.setValue("2016");
+        genderField.setValue(true);
+        Assert.assertEquals(2016, bookPerson.getYearOfBirth());
+        Assert.assertEquals(Gender.FEMALE, bookPerson.getGender());
+    }
 
     @Test
     public void converterBookOfVaadinExample2() {
@@ -410,7 +430,7 @@ public class BinderBookOfVaadinTest {
         Binding<Trip, LocalDate> returnBinding = binder.forField(returning)
                 .withValidator(
                         returnDate -> returnDate == null
-                                || !returnDate
+                        || !returnDate
                         .isBefore(departing.getValue()),
                         "Cannot return before departing")
                 .bind(Trip::getReturnDate, Trip::setReturnDate);
