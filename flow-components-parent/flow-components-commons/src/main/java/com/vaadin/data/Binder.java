@@ -2380,7 +2380,7 @@ public class Binder<BEAN> implements Serializable {
                         && !method.isDefault())
                 .collect(Collectors.toList());
         assert filteredMethods.size() == 1;
-        return methods[0];
+        return filteredMethods.get(0);
     }
 
 }
