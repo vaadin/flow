@@ -21,7 +21,18 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-components-commons</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
             <version>${flow.version}</version>
+        </dependency>
+         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
