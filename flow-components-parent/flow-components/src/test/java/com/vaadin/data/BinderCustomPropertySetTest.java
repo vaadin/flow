@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.ui.TextField;
@@ -123,7 +122,6 @@ public class BinderCustomPropertySetTest {
     }
 
     @Test
-    @Ignore
     public void testBindInstanceFields() {
         Map<String, String> map = new HashMap<>();
         Binder<Map<String, String>> binder = Binder
