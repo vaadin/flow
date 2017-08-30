@@ -47,6 +47,27 @@ import com.vaadin.ui.UI;
 public class StateTreeTest {
     private StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
+    public static class AttachableNode extends StateNode {
+
+        private boolean attached;
+
+        public AttachableNode() {
+        }
+
+        public AttachableNode(boolean attached) {
+            this.attached = attached;
+        }
+
+        public void setAttached(boolean attached) {
+            this.attached = attached;
+        }
+
+        @Override
+        public boolean isAttached() {
+            return attached;
+        }
+    }
+
     @Test
     public void testRootNodeState() {
         StateNode rootNode = tree.getRootNode();
@@ -316,6 +337,107 @@ public class StateTreeTest {
 
         Assert.assertTrue(TestUtil.isGarbageCollected(childRef));
         Assert.assertTrue(TestUtil.isGarbageCollected(grandChildRef));
+    }
+
+    @Test
+    public void beforeClientResponse_regularOrder() {
+        StateNode rootNode = new AttachableNode(true);
+
+        List<Integer> results = new ArrayList<>();
+
+        tree.beforeClientResponse(rootNode, () -> results.add(0));
+        tree.beforeClientResponse(rootNode, () -> results.add(1));
+        tree.beforeClientResponse(rootNode, () -> results.add(2));
+
+        tree.runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 3 results in the list",
+                results.size() == 3);
+
+        for (int i = 0; i < results.size(); i++) {
+            Assert.assertEquals(
+                    "The result at index '" + i + "' should be " + i, i,
+                    results.get(i).intValue());
+        }
+    }
+
+    @Test
+    public void beforeClientResponse_withInnerRunnables() {
+        StateNode rootNode = new AttachableNode(true);
+
+        List<Integer> results = new ArrayList<>();
+
+        tree.beforeClientResponse(rootNode, () -> results.add(0));
+        tree.beforeClientResponse(rootNode, () -> {
+            results.add(1);
+            tree.beforeClientResponse(rootNode, () -> results.add(3));
+            tree.beforeClientResponse(rootNode, () -> results.add(4));
+        });
+        tree.beforeClientResponse(rootNode, () -> results.add(2));
+
+        tree.runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 5 results in the list",
+                results.size() == 5);
+
+        for (int i = 0; i < results.size(); i++) {
+            Assert.assertEquals(
+                    "The result at index '" + i + "' should be " + i, i,
+                    results.get(i).intValue());
+        }
+    }
+
+    @Test
+    public void beforeClientResponse_withUnattachedNodes() {
+        StateNode rootNode = new AttachableNode(true);
+        StateNode emptyNode = new AttachableNode();
+
+        List<Integer> results = new ArrayList<>();
+
+        tree.beforeClientResponse(emptyNode, () -> results.add(0));
+        tree.beforeClientResponse(rootNode, () -> results.add(1));
+        tree.beforeClientResponse(emptyNode, () -> results.add(2));
+        tree.beforeClientResponse(rootNode, () -> results.add(3));
+
+        tree.runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 2 results in the list",
+                results.size() == 2);
+
+        Assert.assertEquals("The result at index '0' should be " + 1, 1,
+                results.get(0).intValue());
+        Assert.assertEquals("The result at index '1' should be " + 3, 3,
+                results.get(1).intValue());
+    }
+
+    @Test
+    public void beforeClientResponse_withAttachedNodesDuringExecution() {
+        StateNode rootNode = new AttachableNode(true);
+        AttachableNode emptyNode1 = new AttachableNode();
+        AttachableNode emptyNode2 = new AttachableNode();
+
+        List<Integer> results = new ArrayList<>();
+
+        tree.beforeClientResponse(emptyNode1, () -> {
+            results.add(0);
+            emptyNode2.setAttached(true);
+        });
+        tree.beforeClientResponse(rootNode, () -> {
+            results.add(1);
+            emptyNode1.setAttached(true);
+        });
+        tree.beforeClientResponse(emptyNode2, () -> results.add(2));
+        tree.beforeClientResponse(rootNode, () -> results.add(3));
+
+        tree.runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 4 results in the list",
+                results.size() == 4);
+
+        Assert.assertEquals("The result at index '0' should be 1", 1,
+                results.get(0).intValue());
+        Assert.assertEquals("The result at index '1' should be 3", 3,
+                results.get(1).intValue());
+        Assert.assertEquals("The result at index '2' should be 0", 0,
+                results.get(2).intValue());
+        Assert.assertEquals("The result at index '3' should be 2", 2,
+                results.get(3).intValue());
     }
 
 }

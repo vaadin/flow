@@ -36,28 +36,28 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
     /**
      * Constructs a VaadinCheckbox with the initial label text.
      * 
-     * @see #setLabelText(String)
+     * @see #setLabel(String)
      * @param labelText
      *            the label text to set
      */
     public Checkbox(String labelText) {
-        setLabelText(labelText);
+        setLabel(labelText);
     }
 
     /**
      * Constructs a VaadinCheckbox with the initial label text and value change
      * listener.
      * 
-     * @see #setLabelText(String)
+     * @see #setLabel(String)
      * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
-     * @param labelText
+     * @param label
      *            the label text to set
      * @param listener
      *            the value change listener to add
      */
-    public Checkbox(String labelText,
+    public Checkbox(String label,
             ValueChangeListener<Checkbox, Boolean> listener) {
-        this(labelText);
+        this(label);
         addValueChangeListener(listener);
     }
 
@@ -66,19 +66,19 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
      * 
      * @return the current label text
      */
-    public String getLabelText() {
+    public String getLabel() {
         return getElement().getText();
     }
 
     /**
      * Set the current label text of this checkbox.
      * 
-     * @param labelText
+     * @param label
      *            the label text to set
      * @return this instance, for method chaining
      */
-    public Checkbox setLabelText(String labelText) {
-        getElement().setText(labelText);
+    public Checkbox setLabel(String label) {
+        getElement().setText(label);
         return get();
     }
 

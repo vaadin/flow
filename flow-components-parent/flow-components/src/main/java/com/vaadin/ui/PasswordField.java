@@ -52,12 +52,12 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
      *
-     * @param labelText
+     * @param label
      *            the text to set as the label
      */
-    public PasswordField(String labelText) {
+    public PasswordField(String label) {
         this();
-        setLabel(labelText);
+        setLabel(label);
     }
 
     /**
@@ -67,13 +67,13 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * Using this constructor, any value previously set at the client-side is
      * cleared.
      *
-     * @param labelText
+     * @param label
      *            the text to set as the label
      * @param placeholder
      *            the placeholder text to set
      */
-    public PasswordField(String labelText, String placeholder) {
-        this(labelText);
+    public PasswordField(String label, String placeholder) {
+        this(label);
         setPlaceholder(placeholder);
     }
 

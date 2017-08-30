@@ -16,13 +16,18 @@
 
 package com.vaadin.flow;
 
+import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.NodeFeature;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 
 /**
@@ -56,9 +61,59 @@ public class StateTree implements NodeOwner {
         }
     }
 
+    /**
+     * Object that holds a {@link Runnable} to be executed before the client
+     * response, using a {@link StateNode} as context.
+     * 
+     * @see StateTree#beforeClientResponse(StateNode, Runnable) See
+     *      {@link StateTree#runExecutionsBeforeClientResponse()}
+     */
+    private static final class StateNodeOnBeforeClientResponse {
+        private WeakReference<StateNode> stateNodeReference;
+        private Runnable runnable;
+
+        StateNodeOnBeforeClientResponse(StateNode stateNode,
+                Runnable runnable) {
+            stateNodeReference = new WeakReference<>(stateNode);
+            this.runnable = runnable;
+        }
+
+        boolean isStateNodeAttached() {
+            StateNode stateNode = stateNodeReference.get();
+            return stateNode != null && stateNode.isAttached();
+        }
+
+        boolean isAvailable() {
+            return stateNodeReference.get() != null;
+        }
+
+        void setUnavailable() {
+            stateNodeReference.clear();
+        }
+
+        Runnable getRunnable() {
+            return runnable;
+        }
+    }
+
+    /**
+     * A registration object for removing a runnable registered for execution
+     * before the client response.
+     */
+    @FunctionalInterface
+    public interface ExecutionRegistration extends Registration {
+        /**
+         * Removes the associated runnable from the execution queue.
+         */
+        void remove();
+    }
+
     private LinkedHashSet<StateNode> dirtyNodes = new LinkedHashSet<>();
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
+
+    private LinkedList<StateNodeOnBeforeClientResponse> executionsToProcessBeforeResponse = new LinkedList<>();
+
     private int nextId = 1;
 
     private final StateNode rootNode;
@@ -193,5 +248,96 @@ public class StateTree implements NodeOwner {
      */
     public UI getUI() {
         return ui;
+    }
+
+    /**
+     * Registers a {@link Runnable} to be executed before the response is sent
+     * to the client. The runnables are executed in order of registration. If
+     * runnables register more runnables, they are executed after all already
+     * registered executions for the moment.
+     * <p>
+     * Example: three tasks are submitted, {@code A}, {@code B} and {@code C},
+     * where {@code B} produces two more tasks during execution, {@code D} and
+     * {@code E}. The resulting execution would be {@code ABCDE}.
+     * <p>
+     * If the {@link StateNode} related to the runnable is not attached to the
+     * document by the time the runnable is evaluated, the execution is
+     * postponed to before the next response.
+     * 
+     * @param context
+     *            the StateNode relevant for the execution. Can not be
+     *            <code>null</code>
+     * @param execution
+     *            the Runnable to be executed. Can not be <code>null</code>
+     * @return a registration that can be used to cancel the execution of the
+     *         runnable
+     */
+    public ExecutionRegistration beforeClientResponse(StateNode context,
+            Runnable execution) {
+        assert context != null : "The 'context' parameter can not be null";
+        assert execution != null : "The 'execution' parameter can not be null";
+
+        StateNodeOnBeforeClientResponse reference = new StateNodeOnBeforeClientResponse(
+                context, execution);
+        executionsToProcessBeforeResponse.add(reference);
+        return reference::setUnavailable;
+    }
+
+    /**
+     * Called internally by the framework before the response is sent to the
+     * client. All runnables registered at
+     * {@link #beforeClientResponse(StateNode, Runnable)} are evaluated and
+     * executed if able.
+     */
+    public void runExecutionsBeforeClientResponse() {
+        boolean newTasksPossiblyAddedOrNodesAttached = false;
+        do {
+            newTasksPossiblyAddedOrNodesAttached = false;
+            for (StateNodeOnBeforeClientResponse reference : flushCallbacks()) {
+                newTasksPossiblyAddedOrNodesAttached = executeRunnableIfAble(
+                        reference) || newTasksPossiblyAddedOrNodesAttached;
+            }
+        } while (newTasksPossiblyAddedOrNodesAttached);
+    }
+
+    /**
+     * Verifies whether the runnable is able to be executed, by analyzing two
+     * scenarios:
+     * <ol>
+     * <li>If the StateNode associated with the Runnable was garbage collected,
+     * the runnable is not considered able to be executed, and is
+     * discarded.</li>
+     * <li>If the StateNode is present but not attached to the document, the
+     * runnable is not considered able to be executed, and it is saved be to
+     * executed later. It is evaluated again before the next client
+     * response.</li>
+     * </ol>
+     * 
+     * @param reference
+     *            the StateNodeOnBeforeClientResponse object containing the
+     *            StateNode and the Runnable
+     * @return <code>true</code> if the runnable was executed right away,
+     *         <code>false</code> otherwise
+     */
+    private boolean executeRunnableIfAble(
+            StateNodeOnBeforeClientResponse reference) {
+        if (!reference.isAvailable()) {
+            return false;
+        }
+        if (!reference.isStateNodeAttached()) {
+            executionsToProcessBeforeResponse.add(reference);
+            return false;
+        }
+        reference.getRunnable().run();
+        return true;
+    }
+
+    private List<StateNodeOnBeforeClientResponse> flushCallbacks() {
+        if (executionsToProcessBeforeResponse.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<StateNodeOnBeforeClientResponse> flushed = executionsToProcessBeforeResponse;
+        executionsToProcessBeforeResponse = new LinkedList<>();
+        return flushed;
     }
 }
