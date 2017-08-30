@@ -18,6 +18,8 @@ package com.vaadin.data;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1768,7 +1770,7 @@ public class Binder<BEAN> implements Serializable {
      */
     public Registration addStatusChangeListener(StatusChangeListener listener) {
         return getEventRouter().addListener(StatusChangeEvent.class, listener,
-                StatusChangeListener.class.getDeclaredMethods()[0]);
+                getListenerMethod(StatusChangeListener.class));
     }
 
     /**
@@ -1791,7 +1793,7 @@ public class Binder<BEAN> implements Serializable {
     public Registration addValueChangeListener(
             ValueChangeListener<?, ?> listener) {
         return getEventRouter().addListener(ValueChangeEvent.class, listener,
-                ValueChangeListener.class.getDeclaredMethods()[0]);
+                getListenerMethod(ValueChangeListener.class));
     }
 
     /**
@@ -2365,6 +2367,20 @@ public class Binder<BEAN> implements Serializable {
         } else {
             label.getElement().getStyle().set("display", "none");
         }
+    }
+
+    private Method getListenerMethod(Class<?> listenerClass) {
+        assert listenerClass.getAnnotation(FunctionalInterface.class) != null;
+        Method[] methods = listenerClass.getMethods();
+        if (methods.length == 1) {
+            return methods[0];
+        }
+        List<Method> filteredMethods = Stream.of(methods)
+                .filter(method -> !Modifier.isStatic(method.getModifiers())
+                        && !method.isDefault())
+                .collect(Collectors.toList());
+        assert filteredMethods.size() == 1;
+        return methods[0];
     }
 
 }
