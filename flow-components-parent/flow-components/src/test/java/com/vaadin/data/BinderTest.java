@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.components.data.HasValue;
@@ -342,7 +341,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    @Ignore
     public void binding_with_default_null_representation() {
         TextField nullTextField = new TextField() {
             @Override
@@ -523,7 +521,6 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
-    @Ignore
     public void validationStatusHandler_onlyRunForChangedField() {
         TextField firstNameField = new TextField();
         TextField lastNameField = new TextField();
