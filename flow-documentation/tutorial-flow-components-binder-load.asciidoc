@@ -1,3 +1,4 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
 == Loading from and Saving to Business Objects
 
 Once all bindings have been set up, you are ready to actually fill the bound UI components with data from your business object. Changes can be written to the business object automatically or manually.
@@ -26,8 +27,7 @@ Even if the user has not edited a field, all validation errors will be shown if 
 BinderValidationStatus<Person> status = binder.validate();
 
 if (status.hasErrors()) {
-  Notification.show("Validation error count: "
-    + status.getValidationErrors().size());
+  notifyValidationErrors(status.getValidationErrors());
 }
 ----
 
@@ -43,8 +43,7 @@ try {
   binder.writeBean(person);
   MyBackend.updatePersonInDatabase(person);
 } catch (ValidationException e) {
-  Notification.show("Validation error count: "
-    + e.getValidationErrors().size());
+  notifyValidationErrors(e.getValidationErrors());
 }
 ----
 --
@@ -58,8 +57,7 @@ boolean saved = binder.writeBeanIfValid(person);
 if (saved) {
   MyBackend.updatePersonInDatabase(person);
 } else {
-  Notification.show("Validation error count: "
-    + binder.validate().getValidationErrors().size());
+  notifyValidationErrors(binder.validate().getValidationErrors();
 }
 ----
 --
@@ -74,8 +72,8 @@ binder.addStatusChangeListener(event -> {
   boolean isValid = event.getBinder().isValid();
   boolean hasChanges = event.getBinder().hasChanges();
 
-  saveButton.setEnabled(hasChanges && isValid);
-  resetButton.setEnabled(hasChanges);
+  saveButton.setDisabled(!hasChanges || !isValid);
+  resetButton.setDisabled(!hasChanges);
 });
 ----
 
