@@ -1,17 +1,18 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
 == Validating and Converting User Input
 
 `Binder` supports checking the validity of the user's input and converting the values between the type used in business objects and the bound UI components.
 These to concepts go hand in hand since validation can be based on a converted value, and being able to convert a value is a kind of validation.
 
-[[datamodel.forms.validation]]
 === Validation
 
 An application typically has some restrictions on exactly what kinds of values the user is allowed to enter into different fields.
-[classname]#Binder# lets us define validators for each field that we are binding.
+`Binder` lets us define validators for each field that we are binding.
 The validator is by default run whenever the user changes the value of a field, and the validation status is also checked again when saving.
 
-Validators for a field are defined between the [methodname]#forField# and [methodname]#bind# steps when a binding is created.
-A validator can be defined using a [classname]#Validator# instance or inline using a lambda expression.
+Validators for a field are defined between the `forField` and `bind` steps when a binding is created.
+A validator can be defined using `Validator` instance or inline using a lambda expression.
 
 [source, java]
 ----
@@ -35,13 +36,12 @@ binder.forField(titleField)
 ----
 
 [NOTE]
-[classname]#Binder#.[methodname]#forField# works like a builder where [methodname]#forField# starts the process, is followed by various configuration calls for the field and [methodname]#bind# acts as the finalizing method which applies the configuration.
+`Binder.forField` works like a builder where `forField starts the process, is followed by various configuration calls for the field and `bind` acts as the finalizing method which applies the configuration.
 
 The validation state of each field is updated whenever the user modifies the value of that field.
-The validation state is by default shown using [classname]#AbstractComponent#.[methodname]#setComponentError# which is used by the layout that the field is shown in. Whenever an error is set, the component will also get a `v-<component>-error` class name, e.g. `v-textfield-error`. This error class will by default add a red border on the component. The component will also get a tooltip that shows the error message text.
 
-We can also customize the way a binder displays error messages to get more flexibility than what  [methodname]#setComponentError# provides.
-The easiest way of customizing this is to configure each binding to use its own [classname]#Label# that is used to show the status for each field.
+We can also customize the way a binder displays error messages to get more flexibility than what  `setComponentError provides.
+The easiest way of customizing this is to configure each binding to use its own `Label that is used to show the status for each field.
 
 [NOTE]
 The status label is not only used for validation errors but also for showing confirmation and helper messages.
@@ -93,8 +93,10 @@ We can save the binding to a local variable and trigger a revalidation when anot
 [source, java]
 ----
 Binder<Trip> binder = new Binder<>();
-DateField departing = new DateField("Departing");
-DateField returning = new DateField("Returning");
+DateField departing = new DateField();
+departing.setLabel("Departing");
+DateField returning = new DateField();
+returning.setLabel("Returning");
 
 // Store return date binding so we can revalidate it later
 Binder.BindingBuilder<Trip, LocalDate> returnBindingBuilder = binder.forField(returning)
@@ -106,13 +108,12 @@ Binder.Binding<Trip, LocalDate> returnBinder = returnBindingBuilder.bind(Trip::g
 departing.addValueChangeListener(event -> returnBinder.validate());
 ----
 
-[[datamodel.forms.conversion]]
 === Conversion
 
 You can also bind application data to a UI field component even though the types do not match.
-In some cases, there might be types specific for the application, such as custom type that encapsulates a postal code that the user enters through a [classname]#TextField#.
-Another quite typical case is for entering integer numbers using a [classname]#TextField# or a [classname]#Slider#.
-Similarly to validators, we can define a converter using a [classname]#Converter# instance or inline using lambda expressions. We can optionally specify also an error message.
+In some cases, there might be types specific for the application, such as custom type that encapsulates a postal code that the user enters through a `TextField.
+Another quite typical case is for entering integer numbers using a `TextField` or enumeration values (`Checkbox` is used as an example).
+Similarly to validators, we can define a converter using  `Converter` instance or inline using lambda expressions. We can optionally specify also an error message.
 
 [source, java]
 ----
@@ -123,12 +124,13 @@ binder.forField(yearOfBirthField)
     new StringToIntegerConverter("Must enter a number"))
   .bind(Person::getYearOfBirth, Person::setYearOfBirth);
 
-// Slider for integers between 1 and 10
-Slider salaryLevelField = new Slider("Salary level", 1, 10);
+// Checkbox for gender
+CheckBox genderField = new CheckBox("Gender");
 
-binder.forField(salaryLevelField)
-  .withConverter(Double::intValue, Integer::doubleValue)
-  .bind(Person::getSalaryLevel, Person::setSalaryLevel);
+binder.forField(genderField)
+  .withConverter(gender -> gender ? Gender.FEMALE : Gender.MALE,
+    gender -> Gender.FEMALE.equals(gender)).
+   bind(BookPerson::getGender, BookPerson::setGender);
 
 ----
 
@@ -207,3 +209,4 @@ binder.forField(yearOfBirthField)
 ----
 
 The provided `ValueContext` can be used for finding `Locale` to be used for the conversion.
+
