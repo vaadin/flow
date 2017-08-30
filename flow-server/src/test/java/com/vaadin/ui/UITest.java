@@ -17,6 +17,10 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
@@ -30,6 +34,35 @@ import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.util.CurrentInstance;
 
 public class UITest {
+
+    private static class AttachableComponent extends Component {
+        public AttachableComponent() {
+            super(new Element("div"));
+        }
+    }
+
+    private static class AttachedElementStateProvider
+            extends AbstractTextElementStateProvider {
+
+        @Override
+        public boolean supports(StateNode node) {
+            return true;
+        }
+
+        @Override
+        public Node getParent(StateNode node) {
+            return null;
+        }
+
+        @Override
+        public String getTextContent(StateNode node) {
+            return null;
+        }
+
+        @Override
+        public void setTextContent(StateNode node, String textContent) {
+        }
+    }
 
     @After
     public void tearDown() {
@@ -236,5 +269,114 @@ public class UITest {
         ui.getSession().access(() -> ui.getInternals().setSession(null));
         assertEquals(1, events.size());
         assertEquals(ui, events.get(0).getSource());
+    }
+
+    @Test
+    public void beforeClientResponse_regularOrder() {
+        UI ui = createAndInitTestUI("");
+        Component rootComponent = new AttachableComponent();
+        ui.add(rootComponent);
+
+        List<Integer> results = new ArrayList<>();
+
+        ui.beforeClientResponse(rootComponent, () -> results.add(0));
+        ui.beforeClientResponse(rootComponent, () -> results.add(1));
+        ui.beforeClientResponse(rootComponent, () -> results.add(2));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 3 results in the list",
+                results.size() == 3);
+
+        for (int i = 0; i < results.size(); i++) {
+            Assert.assertEquals(
+                    "The result at index '" + i + "' should be " + i, i,
+                    results.get(i).intValue());
+        }
+    }
+
+    @Test
+    public void beforeClientResponse_withInnerRunnables() {
+        UI ui = createAndInitTestUI("");
+        Component rootComponent = new AttachableComponent();
+        ui.add(rootComponent);
+
+        List<Integer> results = new ArrayList<>();
+
+        ui.beforeClientResponse(rootComponent, () -> results.add(0));
+        ui.beforeClientResponse(rootComponent, () -> {
+            results.add(1);
+            ui.beforeClientResponse(rootComponent, () -> results.add(3));
+            ui.beforeClientResponse(rootComponent, () -> results.add(4));
+        });
+        ui.beforeClientResponse(rootComponent, () -> results.add(2));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 5 results in the list",
+                results.size() == 5);
+
+        for (int i = 0; i < results.size(); i++) {
+            Assert.assertEquals(
+                    "The result at index '" + i + "' should be " + i, i,
+                    results.get(i).intValue());
+        }
+    }
+
+    @Test
+    public void beforeClientResponse_withUnattachedNodes() {
+        UI ui = createAndInitTestUI("");
+        Component rootComponent = new AttachableComponent();
+        ui.add(rootComponent);
+        Component emptyComponent = new AttachableComponent();
+
+        List<Integer> results = new ArrayList<>();
+
+        ui.beforeClientResponse(emptyComponent, () -> results.add(0));
+        ui.beforeClientResponse(rootComponent, () -> results.add(1));
+        ui.beforeClientResponse(emptyComponent, () -> results.add(2));
+        ui.beforeClientResponse(rootComponent, () -> results.add(3));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 2 results in the list",
+                results.size() == 2);
+
+        Assert.assertEquals("The result at index '0' should be " + 1, 1,
+                results.get(0).intValue());
+        Assert.assertEquals("The result at index '1' should be " + 3, 3,
+                results.get(1).intValue());
+    }
+
+    @Test
+    public void beforeClientResponse_withAttachedNodesDuringExecution() {
+        UI ui = createAndInitTestUI("");
+        Component rootComponent = new AttachableComponent();
+        ui.add(rootComponent);
+        AttachableComponent emptyComponent1 = new AttachableComponent();
+        AttachableComponent emptyComponent2 = new AttachableComponent();
+
+        List<Integer> results = new ArrayList<>();
+
+        ui.beforeClientResponse(emptyComponent1, () -> {
+            results.add(0);
+            ui.add(emptyComponent2);
+        });
+        ui.beforeClientResponse(rootComponent, () -> {
+            results.add(1);
+            ui.add(emptyComponent1);
+        });
+        ui.beforeClientResponse(emptyComponent2, () -> results.add(2));
+        ui.beforeClientResponse(rootComponent, () -> results.add(3));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        Assert.assertTrue("There should be 4 results in the list",
+                results.size() == 4);
+
+        Assert.assertEquals("The result at index '0' should be 1", 1,
+                results.get(0).intValue());
+        Assert.assertEquals("The result at index '1' should be 3", 3,
+                results.get(1).intValue());
+        Assert.assertEquals("The result at index '2' should be 0", 0,
+                results.get(2).intValue());
+        Assert.assertEquals("The result at index '3' should be 2", 2,
+                results.get(3).intValue());
     }
 }
