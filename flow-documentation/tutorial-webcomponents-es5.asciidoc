@@ -182,7 +182,7 @@ public class MyRouterConfigurator implements RouterConfigurator {
 
 ----
 
-In this file you only add your own dependencies, using HTML imports:
+In the `index.html` file you only add your own dependencies, using HTML imports:
 
 [source,xml]
 ----
@@ -192,8 +192,8 @@ In this file you only add your own dependencies, using HTML imports:
 ----
 
 [WARNING]
-When creating a new component, don't forget to declare its dependencies at the
-`bower.json` file and the component location at the `index.html`.
+When creating a new component, don't forget to declare its dependencies in the
+`bower.json` file and the component location in the `index.html` file.
 
 In summary, the distribution of files inside `src/main/frontend` should be:
 
@@ -215,7 +215,7 @@ directly to your `pom.xml`.
 
 [TIP]
 This configuration also prepares your project to properly run with the Maven
-Jetty Plugin, by using the `mvn jetty:run` command.
+Jetty Plugin by using the `mvn jetty:run` command.
 
 [source,xml]
 ----
@@ -411,7 +411,7 @@ Jetty Plugin, by using the `mvn jetty:run` command.
 <2> Configures the frontend plugin to compile the web components source
 <3> Configures the Jetty plugin to use the right resource path when running in
 either production or debug modes
-<4> Makes the package runs in production mode when deployed, without the need
+<4> Makes the package run in production mode when deployed, without the need
 of setting extra properties on the server
 <5> Copies the files compiled by Polymer to a directory from where it can be
 served (root of the WAR) when in production mode
