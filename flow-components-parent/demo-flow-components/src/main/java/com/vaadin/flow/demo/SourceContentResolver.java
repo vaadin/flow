@@ -16,7 +16,9 @@
 package com.vaadin.flow.demo;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,11 +75,27 @@ public class SourceContentResolver {
         String resourcePath = "/"
                 + demoViewClass.getPackage().getName().replaceAll("\\.", "/")
                 + "/" + demoViewClass.getSimpleName() + ".java";
-        List<String> lines = new BufferedReader(
-                new InputStreamReader(SourceContentResolver.class
-                        .getClassLoader().getResourceAsStream(resourcePath)))
-                                .lines().collect(Collectors.toList());
-        return Collections.unmodifiableList(parseSourceCodeExamples(lines));
+
+        try (BufferedReader reader = new BufferedReader(
+                getUTF8StreamReader(resourcePath))) {
+
+            List<String> lines = reader.lines().collect(Collectors.toList());
+            return Collections.unmodifiableList(parseSourceCodeExamples(lines));
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Error reading source examples for class " + demoViewClass,
+                    e);
+        }
+    }
+
+    private static InputStreamReader getUTF8StreamReader(String resourcePath) {
+        try {
+            return new InputStreamReader(SourceContentResolver.class
+                    .getClassLoader().getResourceAsStream(resourcePath),
+                    "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static List<SourceCodeExample> parseSourceCodeExamples(
