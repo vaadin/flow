@@ -36,12 +36,11 @@ binder.forField(titleField)
 ----
 
 [NOTE]
-`Binder.forField` works like a builder where `forField starts the process, is followed by various configuration calls for the field and `bind` acts as the finalizing method which applies the configuration.
+`Binder.forField` works like a builder where `forField` starts the process, is followed by various configuration calls for the field and `bind` acts as the finalizing method which applies the configuration.
 
 The validation state of each field is updated whenever the user modifies the value of that field.
 
-We can also customize the way a binder displays error messages to get more flexibility than what  `setComponentError provides.
-The easiest way of customizing this is to configure each binding to use its own `Label that is used to show the status for each field.
+To customize the way a binder displays error messages is to configure each binding to use its own `Label` that is used to show the status for each field.
 
 [NOTE]
 The status label is not only used for validation errors but also for showing confirmation and helper messages.
@@ -66,8 +65,8 @@ binder.forField(nameField)
     "Full name must contain at least three characters")
   // Define how the validation status is displayed
   .withValidationStatusHandler(status -> {
-      nameStatus.setValue(status.getMessage().orElse(""));
-      nameStatus.setVisible(status.isError());
+      nameStatus.setText(status.getMessage().orElse(""));
+      setVisible(nameStatus, status.isError());
     })
   // Finalize the binding
   .bind(Person::getName, Person::setName);
@@ -93,16 +92,19 @@ We can save the binding to a local variable and trigger a revalidation when anot
 [source, java]
 ----
 Binder<Trip> binder = new Binder<>();
-DateField departing = new DateField();
+DatePicker departing = new DatePicker();
 departing.setLabel("Departing");
-DateField returning = new DateField();
+DatePicker returning = new DatePicker();
 returning.setLabel("Returning");
 
 // Store return date binding so we can revalidate it later
-Binder.BindingBuilder<Trip, LocalDate> returnBindingBuilder = binder.forField(returning)
-  .withValidator(returnDate -> !returnDate.isBefore(departing.getValue()),
-  "Cannot return before departing");
-Binder.Binding<Trip, LocalDate> returnBinder = returnBindingBuilder.bind(Trip::getReturnDate, Trip::setReturnDate);
+Binder.BindingBuilder<Trip, LocalDate> returnBindingBuilder = binder
+        .forField(returning).withValidator(
+                returnDate -> !returnDate
+                .isBefore(departing.getValue()),
+                "Cannot return before departing");
+Binder.Binding<Trip, LocalDate> returnBinder = returnBindingBuilder
+        .bind(Trip::getReturnDate, Trip::setReturnDate);
 
 // Revalidate return date when departure date changes
 departing.addValueChangeListener(event -> returnBinder.validate());
@@ -120,18 +122,17 @@ Similarly to validators, we can define a converter using  `Converter` instance o
 TextField yearOfBirthField = new TextField("Year of birth");
 
 binder.forField(yearOfBirthField)
-  .withConverter(
-    new StringToIntegerConverter("Must enter a number"))
-  .bind(Person::getYearOfBirth, Person::setYearOfBirth);
+.withConverter(
+        new StringToIntegerConverter("Must enter a number"))
+.bind(Person::getYearOfBirth, Person::setYearOfBirth);
 
 // Checkbox for gender
-CheckBox genderField = new CheckBox("Gender");
+Checkbox genderField = new Checkbox("Gender");
 
 binder.forField(genderField)
-  .withConverter(gender -> gender ? Gender.FEMALE : Gender.MALE,
-    gender -> Gender.FEMALE.equals(gender)).
-   bind(BookPerson::getGender, BookPerson::setGender);
-
+.withConverter(gender -> gender ? Gender.FEMALE : Gender.MALE,
+        gender -> Gender.FEMALE.equals(gender))
+        .bind(Person::getGender, Person::setGender);
 ----
 
 Multiple validators and converters can be used for building one binding.
