@@ -30,28 +30,30 @@ import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 /**
- * Locates chromedriver binary in the project and sets its valu
+ * Locates Chrome driver binary in the project and sets its value into the
+ * {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} environment variable.
  *
  * @author Vaadin Ltd.
  */
-final class ChromeDriverLocator {
+public final class ChromeDriverLocator {
     private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
     private static final String CHROMEDRIVER_NAME_PART = "chromedriver";
     // examples: driver\windows\googlechrome\64bit\chromedriver.exe
     private static final int MAX_DRIVER_SEARCH_DEPTH = 4;
 
-    private ChromeDriverLocator() {}
+    private ChromeDriverLocator() {
+    }
 
     /**
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property
      * with chromedriver path, does not override already existing value.
-     * 
+     *
      * @throws UncheckedIOException
      *             on io exceptions of the
      *             {@link Files#find(Path, int, BiPredicate, FileVisitOption...)}
      *             method
      */
-    static void fillEnvironmentProperty() {
+    public static void fillEnvironmentProperty() {
         if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null) {
             Optional.ofNullable(getDriverLocation())
                     .ifPresent(driverLocation -> System.setProperty(
