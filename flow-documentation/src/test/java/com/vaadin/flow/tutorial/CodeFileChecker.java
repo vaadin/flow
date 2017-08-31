@@ -28,16 +28,21 @@ class CodeFileChecker implements TutorialLineChecker {
     @Override
     public Collection<String> verifyTutorialLine(Path tutorialPath,
             String tutorialName, String line) {
+        line = line.trim();
         Optional<String> validationResult = Optional.empty();
         if (blockStarted) {
             validationResult = validateBlockStart(tutorialName, line);
         } else if (inBlock) {
             validationResult = validateBlockLine(tutorialName, line);
-        } else if (codeBlockIdentifier.equals(line)) {
+        } else if (isCodeBlockIdentifier(line)) {
             blockStarted = true;
         }
         return validationResult.map(Collections::singletonList)
                 .orElse(Collections.emptyList());
+    }
+
+    private boolean isCodeBlockIdentifier(String line){
+        return codeBlockIdentifier.equals(line.replace(" ", ""));
     }
 
     private Optional<String> validateBlockLine(String tutorialName,
