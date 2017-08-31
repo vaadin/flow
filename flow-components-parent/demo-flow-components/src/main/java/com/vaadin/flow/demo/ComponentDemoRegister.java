@@ -69,7 +69,7 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
     public static Optional<Class<? extends DemoView>> getViewFor(
             String componentName) {
         return availableViews.stream()
-                .filter(v -> v.getAnnotation(ComponentDemo.class).href()
+                .filter(view -> view.getAnnotation(ComponentDemo.class).href()
                         .equals(componentName))
                 .findFirst();
     }
