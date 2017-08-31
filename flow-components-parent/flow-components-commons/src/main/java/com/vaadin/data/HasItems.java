@@ -27,6 +27,7 @@ import java.util.stream.Stream;
  * @param <T>
  *            the type of the displayed item
  */
+@FunctionalInterface
 public interface HasItems<T> extends Serializable {
 
     /**
@@ -41,7 +42,7 @@ public interface HasItems<T> extends Serializable {
      *            the data items to display, not {@code null}
      *
      */
-    public void setItems(Collection<T> items);
+    void setItems(Collection<T> items);
 
     /**
      * Sets the data items of this listing.
@@ -51,7 +52,7 @@ public interface HasItems<T> extends Serializable {
      * @param items
      *            the data items to display, the array must not be {@code null}
      */
-    public default void setItems(@SuppressWarnings("unchecked") T... items) {
+    default void setItems(@SuppressWarnings("unchecked") T... items) {
         setItems(Arrays.asList(items));
     }
 
@@ -67,7 +68,7 @@ public interface HasItems<T> extends Serializable {
      * @param streamOfItems
      *            the stream of data items to display, not {@code null}
      */
-    public default void setItems(Stream<T> streamOfItems) {
+    default void setItems(Stream<T> streamOfItems) {
         setItems(streamOfItems.collect(Collectors.toList()));
     }
 
