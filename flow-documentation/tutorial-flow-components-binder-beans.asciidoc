@@ -41,7 +41,6 @@ public class Person {
   private String name;
 
   // + other fields, constructors, setters, and getters
-  ...
 }
 ----
 
@@ -84,26 +83,31 @@ We can also define our own status handler to provide a custom way of handling st
 
 [source, java]
 ----
-BinderValidationStatusHandler defaultHandler = binder.getValidationStatusHandler();
+BinderValidationStatusHandler<Person> defaultHandler = binder
+                .getValidationStatusHandler();
 
 binder.setValidationStatusHandler(status -> {
     // create an error message on failed bean level validations
-    List<Result<?>> errors = status.getBeanValidationErrors();
+    List<ValidationResult> errors = status
+            .getBeanValidationErrors();
 
     // collect all bean level error messages into a single string,
     // separating each message with a <br> tag
-    String errorMessage = errors.stream().map(Result::getMessage)
-        .map(o -> o.get())
-        // sanitize the individual error strings to avoid code injection
-        // since we are displaying the resulting string as HTML
-        .map(errorString -> Jsoup.clean(errorString, Whitelist.simpleText()))
-        .collect(Collectors.joining("<br>"));
+    String errorMessage = errors.stream()
+            .map(ValidationResult::getErrorMessage)
+            // sanitize the individual error strings to avoid code
+            // injection
+            // since we are displaying the resulting string as HTML
+            .map(errorString -> Jsoup.clean(errorString,
+                    Whitelist.simpleText()))
+            .collect(Collectors.joining("<br>"));
 
-    // finally, display all bean level validation errors in a single label
-    formStatusLabel.setText(errorMessage);
-    setVisible(formStatusLabel,!errorMessage.isEmpty());
+    // finally, display all bean level validation errors in a single
+    // label
+    formStatusLabel.getElement().setProperty("innerHTML", errorMessage);
+    setVisible(formStatusLabel, !errorMessage.isEmpty());
 
     // Let the default handler show messages for each field
-    defaultHandler.accept(status);
+    defaultHandler.statusChange(status);
 });
 ----
