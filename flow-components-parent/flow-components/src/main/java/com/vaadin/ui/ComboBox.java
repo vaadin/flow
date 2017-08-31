@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.annotations.Id;
+import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
 import com.vaadin.util.JsonSerializer;
@@ -50,7 +51,7 @@ import elemental.json.JsonValue;
  *            the type of the items to be inserted in the combo box
  */
 public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
-        implements HasSize {
+        implements HasSize, HasItems<T> {
 
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
@@ -148,8 +149,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * properties of the item.
      * <p>
      * For example, if you have an object with the properties "name" and "id",
-     * you can create a template like this:
-     * <blockquote>
+     * you can create a template like this: <blockquote>
      *
      * <pre>
      * comboBox.setItemTemplate("Name: [[item.name]]<br>Id: [[item.id]]");
@@ -210,30 +210,16 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     }
 
     /**
-     * Convenience method for the {@link #setItems(Collection)}. It sets the
-     * selectable items in this combo box. Objects are serialized to json using
-     * the {@link JsonSerializer#toJson(Collection)}.
-     * 
-     * @param items
-     *            the selectable items in this combo box
-     * @return this instance for method chaining
-     */
-    public ComboBox<T> setItems(T... items) {
-        return setItems(Arrays.asList(items));
-    }
-
-    /**
      * Sets the selectable items in this combo box. Objects are serialized to
      * json using the {@link JsonSerializer#toJson(Collection)}.
      * 
      * @param items
      *            the selectable items in this combo box
-     * @return this instance for method chaining
      */
-    public ComboBox<T> setItems(Collection<T> items) {
+    @Override
+    public void setItems(Collection<T> items) {
         tryToSetItemTypeIfNeeded(items);
         setItems(JsonSerializer.toJson(items));
-        return get();
     }
 
     /**
