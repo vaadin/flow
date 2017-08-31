@@ -15,13 +15,8 @@
  */
 package com.vaadin.flow.demo;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +25,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.demo.model.SourceCodeExample;
 import com.vaadin.flow.demo.model.SourceCodeExample.SourceType;
@@ -37,14 +33,13 @@ import com.vaadin.flow.demo.views.DemoView;
 
 /**
  * Utility class for obtaining {@link SourceCodeExample}s for classes.
- * 
+ *
  * @author Vaadin Ltd
  */
 public class SourceContentResolver {
 
     // @formatter::off
-    private static final ConcurrentHashMap<Class<? extends DemoView>, List<SourceCodeExample>>
-        CACHED_SOURCE_EXAMPLES = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<? extends DemoView>, List<SourceCodeExample>> CACHED_SOURCE_EXAMPLES = new ConcurrentHashMap<>();
     // @formatter::on
 
     private static final Pattern SOURCE_CODE_EXAMPLE_BEGIN_PATTERN = Pattern
@@ -61,7 +56,7 @@ public class SourceContentResolver {
 
     /**
      * Get all {@link SourceCodeExample}s from a given class.
-     * 
+     *
      * @param demoViewClass
      *            the class to retrieve source code examples for
      * @return an unmodifiable list of source code examples
@@ -75,31 +70,14 @@ public class SourceContentResolver {
     private static List<SourceCodeExample> parseSourceCodeExamplesForClass(
             Class<? extends DemoView> demoViewClass) {
 
-        URL fileLocation = demoViewClass.getProtectionDomain().getCodeSource()
-                .getLocation();
-        Path sourceFilePath;
-        try {
-            sourceFilePath = Paths.get(new File(fileLocation.toURI()).getPath(),
-                    demoViewClass.getPackage().getName().replaceAll("\\.", "/"),
-                    demoViewClass.getSimpleName() + ".java");
-        } catch (URISyntaxException | IllegalArgumentException e) {
-            throw new IllegalStateException(String.format(
-                    "Could not resolve the path of the class '%s' with URL '%s' in local file system",
-                    demoViewClass, fileLocation), e);
-        }
-
-        try {
-            return Collections.unmodifiableList(parseSourceCodeExamples(
-                    Files.readAllLines(sourceFilePath)));
-        } catch (IOException ioe) {
-            throw new RuntimeException(String.format(
-                    "IO exception when trying to read sources for class '%s' from path '%s'.",
-                    demoViewClass.getName(), sourceFilePath), ioe);
-        } catch (SecurityException se) {
-            throw new RuntimeException(String.format(
-                    "Security exception when reading source file for class '%s' from path '%s', check read permissions",
-                    demoViewClass.getName(), sourceFilePath), se);
-        }
+        String resourcePath = "/"
+                + demoViewClass.getPackage().getName().replaceAll("\\.", "/")
+                + "/" + demoViewClass.getSimpleName() + ".java";
+        List<String> lines = new BufferedReader(
+                new InputStreamReader(SourceContentResolver.class
+                        .getClassLoader().getResourceAsStream(resourcePath)))
+                                .lines().collect(Collectors.toList());
+        return Collections.unmodifiableList(parseSourceCodeExamples(lines));
     }
 
     private static List<SourceCodeExample> parseSourceCodeExamples(
@@ -143,8 +121,9 @@ public class SourceContentResolver {
         return example;
     }
 
-    private static <T> T parseValueFromPattern(List<String> sourceLines, Pattern pattern,
-            Function<String, T> valueProvider, Supplier<T> nullValueProvider) {
+    private static <T> T parseValueFromPattern(List<String> sourceLines,
+            Pattern pattern, Function<String, T> valueProvider,
+            Supplier<T> nullValueProvider) {
         for (int i = 0; i < sourceLines.size(); i++) {
             Matcher matcher = pattern.matcher(sourceLines.get(i));
             if (matcher.matches()) {
