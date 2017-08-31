@@ -57,7 +57,7 @@ boolean saved = binder.writeBeanIfValid(person);
 if (saved) {
   MyBackend.updatePersonInDatabase(person);
 } else {
-  notifyValidationErrors(binder.validate().getValidationErrors();
+  notifyValidationErrors(binder.validate().getValidationErrors());
 }
 ----
 --
