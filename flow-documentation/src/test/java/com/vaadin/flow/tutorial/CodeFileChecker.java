@@ -23,6 +23,7 @@ class CodeFileChecker implements TutorialLineChecker {
             Map<String, Set<String>> allowedLinesMap) {
         this.codeBlockIdentifier = codeBlockIdentifier;
         this.allowedLinesMap = allowedLinesMap;
+        System.out.println(allowedLinesMap.keySet());
     }
 
     @Override
@@ -53,8 +54,10 @@ class CodeFileChecker implements TutorialLineChecker {
             Set<String> allowedLines = allowedLinesMap.get(tutorialName);
             if (allowedLines == null) {
                 return Optional.of(String.format(
-                        "Tutorial %s has the code block, but has no corresponding code files",
-                        tutorialName));
+                        "Tutorial %s has the code block, but has no "
+                                + "corresponding code files for code block "
+                                + codeBlockIdentifier,
+                                tutorialName));
             }
 
             if (!allowedLines
