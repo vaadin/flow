@@ -32,7 +32,7 @@ import com.vaadin.flow.html.Label;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.TextField;
 
-@CodeFor("tutorial-flow-components-beans.asciidoc")
+@CodeFor("tutorial-flow-components-binder-beans.asciidoc")
 public class BinderBeans {
 
     private TextField streetAddressField;
@@ -65,14 +65,15 @@ public class BinderBeans {
     }
 
     public void beanBinder() {
-        BeanValidationBinder<Person> binder = new BeanValidationBinder<>(
-                Person.class);
+        // @formatter:off
+        BeanValidationBinder<Person> binder = new BeanValidationBinder<>(Person.class);
 
         binder.bind(nameField, "name");
         binder.forField(yearOfBirthField)
         .withConverter(
                 new StringToIntegerConverter("Please enter a number"))
         .bind("yearOfBirth");
+        // @formatter:on
     }
 
     public void statusLabel() {
@@ -86,16 +87,16 @@ public class BinderBeans {
     }
 
     public void statusHandler() {
-        BeanValidationBinder<Person> binder = new BeanValidationBinder<>(
-                Person.class);
         Label formStatusLabel = new Label();
-
+        Binder<Person> binder = new Binder<>(Person.class);
+        // @formatter:off
         BinderValidationStatusHandler<Person> defaultHandler = binder
                 .getValidationStatusHandler();
 
         binder.setValidationStatusHandler(status -> {
             // create an error message on failed bean level validations
-            List<ValidationResult> errors = status.getBeanValidationErrors();
+            List<ValidationResult> errors = status
+                    .getBeanValidationErrors();
 
             // collect all bean level error messages into a single string,
             // separating each message with a <br> tag
@@ -116,9 +117,10 @@ public class BinderBeans {
             // Let the default handler show messages for each field
             defaultHandler.statusChange(status);
         });
+        // @formatter:on
     }
-    
+
     private void setVisible(Label label , boolean visible){
-        
+
     }
 }

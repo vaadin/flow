@@ -23,7 +23,7 @@ binder.forField(titleField)
     // Callback that loads the title from a person instance
     Person::getTitle,
     // Callback that saves the title in a person instance
-    Person::setTitle));
+    Person::setTitle);
 
 TextField nameField = new TextField();
 
@@ -49,8 +49,7 @@ Button saveButton = new Button("Save",
       // A real application would also save the updated person
       // using the application's backend
     } catch (ValidationException e) {
-      notifyValidationError("Person could not be saved, " +
-        "please check error messages for each field.");
+      notifyValidationException(e);
     }
 });
 

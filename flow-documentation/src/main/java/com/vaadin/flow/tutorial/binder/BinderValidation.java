@@ -39,10 +39,10 @@ public class BinderValidation {
     private TextField yearOfBirthField;
     private Binder<Person> binder = new Binder<>();
 
+    // @formatter:off
     class MyConverter implements Converter<String, Integer> {
         @Override
-        public Result<Integer> convertToModel(String fieldValue,
-                ValueContext context) {
+        public Result<Integer> convertToModel(String fieldValue, ValueContext context) {
             // Produces a converted value or an error
             try {
                 // ok is a static helper method that creates a Result
@@ -54,16 +54,16 @@ public class BinderValidation {
         }
 
         @Override
-        public String convertToPresentation(Integer integer,
-                ValueContext context) {
+        public String convertToPresentation(Integer integer, ValueContext context) {
             // Converting to the field type should always succeed,
             // so there is no support for returning an error Result.
             return String.valueOf(integer);
         }
     }
+    // @formatter:on
 
     public void bindFields() {
-
+        // @formatter:off
         binder.forField(emailField)
         // Explicit validator instance
         .withValidator(new EmailValidator(
@@ -72,7 +72,8 @@ public class BinderValidation {
 
         binder.forField(nameField)
         // Validator defined based on a lambda and an error message
-        .withValidator(name -> name.length() >= 3,
+        .withValidator(
+                name -> name.length() >= 3,
                 "Full name must contain at least three characters")
         .bind(Person::getName, Person::setName);
 
@@ -80,6 +81,7 @@ public class BinderValidation {
         // Shorthand for requiring the field to be non-empty
         .asRequired("Every employee must have a title")
         .bind(Person::getTitle, Person::setTitle);
+        // @formatter:on
     }
 
     public void statusLabel() {
@@ -108,12 +110,15 @@ public class BinderValidation {
     }
 
     public void validateEmail() {
+        // @formatter:off
         binder.forField(emailField)
         .withValidator(new EmailValidator(
                 "This doesn't look like a valid email address"))
-        .withValidator(email -> email.endsWith("@acme.com"),
+        .withValidator(
+                email -> email.endsWith("@acme.com"),
                 "Only acme.com email addresses are allowed")
         .bind(Person::getEmail, Person::setEmail);
+        // @formatter:on
     }
 
     public void crossFieldValidation() {
@@ -168,18 +173,24 @@ public class BinderValidation {
     }
 
     public void callBackConverters() {
+        // @formatter:off
         binder.forField(yearOfBirthField)
-        .withConverter(Integer::valueOf, String::valueOf,
-                // Text to use instead of the NumberFormatException
-                // message
+        .withConverter(
+                Integer::valueOf,
+                String::valueOf,
+                // Text to use instead of the NumberFormatException message
                 "Please enter a number")
         .bind(Person::getYearOfBirth, Person::setYearOfBirth);
+        // @formatter:on
     }
 
     public void useMyConverter() {
         // Using the converter
-        binder.forField(yearOfBirthField).withConverter(new MyConverter())
+        // @formatter:off
+        binder.forField(yearOfBirthField)
+        .withConverter(new MyConverter())
         .bind(Person::getYearOfBirth, Person::setYearOfBirth);
+        // @formatter:on
     }
 
     private void setVisible(Label label, boolean visible) {
