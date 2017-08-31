@@ -27,7 +27,6 @@ import java.util.stream.Stream;
  * @param <T>
  *            the type of the displayed item
  */
-@FunctionalInterface
 public interface HasItems<T> extends Serializable {
 
     /**
