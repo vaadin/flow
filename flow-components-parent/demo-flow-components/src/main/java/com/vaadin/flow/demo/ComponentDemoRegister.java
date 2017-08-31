@@ -16,9 +16,11 @@
 package com.vaadin.flow.demo;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -38,16 +40,37 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        set.forEach(clazz -> {
-            if (DemoView.class.isAssignableFrom(clazz)) {
-                availableViews.add((Class<? extends DemoView>) clazz);
-            }
-        });
-        Collections.sort(availableViews,
-                (o1, o2) -> o1.getName().compareTo(o2.getName()));
+        if (availableViews.isEmpty()) {
+            availableViews = set.stream()
+                    .filter(DemoView.class::isAssignableFrom)
+                    .map(clazz -> (Class<? extends DemoView>) clazz)
+                    .sorted(Comparator.comparing(Class::getName))
+                    .collect(Collectors.toList());
+        }
     }
 
+    /**
+     * Gets all registered views available for the application.
+     * 
+     * @return a safe-to-change list of views, never <code>null</code>
+     */
     public static List<Class<? extends DemoView>> getAvailableViews() {
         return new ArrayList<>(availableViews);
+    }
+
+    /**
+     * Gets a specific view based on the {@link ComponentDemo#href()} of the
+     * demo.
+     * 
+     * @param componentName
+     *            the href of the demo
+     * @return an optional with the view, or empty if the view wasn't found
+     */
+    public static Optional<Class<? extends DemoView>> getViewFor(
+            String componentName) {
+        return availableViews.stream()
+                .filter(view -> view.getAnnotation(ComponentDemo.class).href()
+                        .equals(componentName))
+                .findFirst();
     }
 }
