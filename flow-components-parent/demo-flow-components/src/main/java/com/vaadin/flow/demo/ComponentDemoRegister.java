@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.demo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContainerInitializer;
@@ -36,8 +40,7 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        availableViews = set.stream()
-                .filter(DemoView.class::isAssignableFrom)
+        availableViews = set.stream().filter(DemoView.class::isAssignableFrom)
                 .map(clazz -> (Class<? extends DemoView>) clazz)
                 .sorted(Comparator.comparing(Class::getName))
                 .collect(Collectors.toList());
@@ -47,9 +50,11 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
         return new ArrayList<>(availableViews);
     }
 
-    public static Optional<Class<? extends DemoView>> getViewFor(String componentName){
+    public static Optional<Class<? extends DemoView>> getViewFor(
+            String componentName) {
         return availableViews.stream()
-                .filter(v -> v.getAnnotation(ComponentDemo.class).href().equals(componentName))
+                .filter(v -> v.getAnnotation(ComponentDemo.class).href()
+                        .equals(componentName))
                 .findFirst();
     }
 }
