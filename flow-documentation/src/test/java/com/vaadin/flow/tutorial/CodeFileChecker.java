@@ -23,13 +23,11 @@ class CodeFileChecker implements TutorialLineChecker {
             Map<String, Set<String>> allowedLinesMap) {
         this.codeBlockIdentifier = codeBlockIdentifier;
         this.allowedLinesMap = allowedLinesMap;
-        System.out.println(allowedLinesMap.keySet());
     }
 
     @Override
     public Collection<String> verifyTutorialLine(Path tutorialPath,
             String tutorialName, String line) {
-        line = line.trim();
         Optional<String> validationResult = Optional.empty();
         if (blockStarted) {
             validationResult = validateBlockStart(tutorialName, line);
