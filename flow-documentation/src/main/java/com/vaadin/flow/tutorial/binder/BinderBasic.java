@@ -59,38 +59,46 @@ public class BinderBasic {
         // Updates the value in each bound field component
         binder.readBean(person);
 
-        Button saveButton = new Button("Save", event -> {
-            try {
-                binder.writeBean(person);
-                // A real application would also save the updated person
-                // using the application's backend
-            } catch (ValidationException e) {
-                notifyValidationException(e);
-            }
-        });
+        // @formatter:off
+        Button saveButton = new Button("Save",
+                event -> {
+                    try {
+                        binder.writeBean(person);
+                        // A real application would also save the updated person
+                        // using the application's backend
+                    } catch (ValidationException e) {
+                        notifyValidationException(e);
+                    }
+                });
 
         // Updates the fields again with the previously saved values
         Button resetButton = new Button("Reset",
                 event -> binder.readBean(person));
+        //@formatter:on
     }
 
     public void lambdaCllbacks() {
+        // @formatter:off
         // With lambda expressions
-        binder.bind(titleField, person -> person.getTitle(),
+        binder.bind(titleField,
+                person -> person.getTitle(),
                 (person, title) -> person.setTitle(title));
 
         // With explicit callback interface instances
-        binder.bind(nameField, new ValueProvider<Person, String>() {
+        binder.bind(nameField,
+                new ValueProvider<Person, String>() {
             @Override
             public String apply(Person person) {
                 return person.getName();
             }
-        }, new Setter<Person, String>() {
+        },
+                new Setter<Person, String>() {
             @Override
             public void accept(Person person, String name) {
                 person.setName(name);
             }
         });
+        //@formatter:on
     }
 
     private void notifyValidationException(ValidationException exception) {

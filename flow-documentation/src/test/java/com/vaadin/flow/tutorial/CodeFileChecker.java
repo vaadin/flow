@@ -33,11 +33,15 @@ class CodeFileChecker implements TutorialLineChecker {
             validationResult = validateBlockStart(tutorialName, line);
         } else if (inBlock) {
             validationResult = validateBlockLine(tutorialName, line);
-        } else if (codeBlockIdentifier.equals(line)) {
+        } else if (isCodeBlockIdentifier(line)) {
             blockStarted = true;
         }
         return validationResult.map(Collections::singletonList)
                 .orElse(Collections.emptyList());
+    }
+
+    private boolean isCodeBlockIdentifier(String line){
+        return codeBlockIdentifier.equals(line.replace(" ", ""));
     }
 
     private Optional<String> validateBlockLine(String tutorialName,
@@ -48,8 +52,10 @@ class CodeFileChecker implements TutorialLineChecker {
             Set<String> allowedLines = allowedLinesMap.get(tutorialName);
             if (allowedLines == null) {
                 return Optional.of(String.format(
-                        "Tutorial %s has the code block, but has no corresponding code files",
-                        tutorialName));
+                        "Tutorial %s has the code block, but has no "
+                                + "corresponding code files for code block "
+                                + codeBlockIdentifier,
+                                tutorialName));
             }
 
             if (!allowedLines
