@@ -514,7 +514,7 @@ public class Element extends Node<Element> {
      * type.
      * <p>
      * When an event is fired in the browser, custom JavaScript expressions
-     * defined in the <code>evendDataDefinitions</code> parameter are evaluated
+     * defined in the <code>eventDataExpressions</code> parameter are evaluated
      * to extract data that is sent back to the server. The expression is
      * evaluated in a context where <code>element</code> refers to this element
      * and <code>event</code> refers to the fired event. The result of the
