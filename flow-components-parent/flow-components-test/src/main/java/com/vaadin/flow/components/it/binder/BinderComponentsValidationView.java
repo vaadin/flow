@@ -26,12 +26,10 @@ import com.vaadin.ui.TextField;
  */
 public class BinderComponentsValidationView extends TestView {
     public static final String VALIDATION_ERROR_MESSAGE = "Text should not start with 2";
-
     public static final String TEXT_FIELD_ID = "textField";
-    public static final String CHANGE_BUTTON_ID = "changeFromServer";
-
+    public static final String CHANGE_CORRECT_BUTTON_ID = "changeCorrect";
     public static final String INITIAL_TEXT = "one";
-    public static final String UPDATED_TEXT = "two";
+    public static final String CORRECT_TEXT = "two";
 
     public static class TestBean {
         private String text;
@@ -60,10 +58,10 @@ public class BinderComponentsValidationView extends TestView {
                 .bind("text");
         binder.setBean(new TestBean(INITIAL_TEXT));
 
-        Button changeFromServer = new Button("Change from server",
-                event -> binder.setBean(new TestBean(UPDATED_TEXT)));
-        changeFromServer.setId(CHANGE_BUTTON_ID);
+        Button setCorrectText = new Button("Set correct text into input",
+                event -> binder.setBean(new TestBean(CORRECT_TEXT)));
+        setCorrectText.setId(CHANGE_CORRECT_BUTTON_ID);
 
-        add(field, changeFromServer);
+        add(field, setCorrectText);
     }
 }
