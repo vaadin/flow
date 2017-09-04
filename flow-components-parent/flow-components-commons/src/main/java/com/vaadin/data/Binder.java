@@ -34,7 +34,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -758,7 +757,7 @@ public class Binder<BEAN> implements Serializable {
         private final Binder<BEAN> binder;
 
         private final HasValue<?, FIELDVALUE> field;
-        private final Consumer<BindingValidationStatus<TARGET>> fieldValidationUpdater;
+        private final HasValidation fieldValidator;
         private final BindingValidationStatusHandler statusHandler;
 
         private final SerializableFunction<BEAN, TARGET> getter;
@@ -778,7 +777,7 @@ public class Binder<BEAN> implements Serializable {
                 Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
-            fieldValidationUpdater = getValidationUpdater(builder.field);
+            fieldValidator = getValidationApi(builder.field);
             statusHandler = builder.statusHandler;
             converterValidatorChain = builder.converterValidatorChain;
 
@@ -789,15 +788,11 @@ public class Binder<BEAN> implements Serializable {
             this.setter = setter;
         }
 
-        private Consumer<BindingValidationStatus<TARGET>> getValidationUpdater(HasValue<?, FIELDVALUE> field) {
+        private HasValidation getValidationApi(HasValue<?, FIELDVALUE> field) {
             if (field instanceof HasValidation) {
-                HasValidation fieldWithValidation = (HasValidation) field;
-                return status -> {
-                    fieldWithValidation.setInvalidNew(status.isError());
-                    fieldWithValidation.setErrorMessageNew(status.getMessage().orElse(null));
-                };
+                return (HasValidation) field;
             }
-            return status -> {};
+            return null;
         }
 
         @Override
@@ -826,7 +821,7 @@ public class Binder<BEAN> implements Serializable {
             BindingValidationStatus<TARGET> status = doValidation();
             getBinder().getValidationStatusHandler()
             .statusChange(new BinderValidationStatus<>(getBinder(),
-                    Arrays.asList(status), Collections.emptyList()));
+                    Collections.singletonList(status), Collections.emptyList()));
             getBinder().fireStatusChangeEvent(status.isError());
             return status;
         }
@@ -861,8 +856,15 @@ public class Binder<BEAN> implements Serializable {
          */
         private BindingValidationStatus<TARGET> doValidation() {
             BindingValidationStatus<TARGET> status = toValidationStatus(doConversion());
-            fieldValidationUpdater.accept(status);
+            updateValidationStatus(status);
             return status;
+        }
+
+        private void updateValidationStatus(BindingValidationStatus<TARGET> status) {
+            if (fieldValidator != null) {
+                fieldValidator.setInvalidNew(status.isError());
+                fieldValidator.setErrorMessageNew(status.getMessage().orElse(""));
+            }
         }
 
         /**
@@ -892,6 +894,7 @@ public class Binder<BEAN> implements Serializable {
             onValueChange.remove();
             try {
                 getField().setValue(convertDataToFieldType(bean));
+                doValidation();
             } finally {
                 onValueChange = getField()
                         .addValueChangeListener(this::handleFieldValueChange);
@@ -917,12 +920,12 @@ public class Binder<BEAN> implements Serializable {
             if (getBinder().getBean() != null) {
                 BEAN bean = getBinder().getBean();
                 fieldValidationStatus = writeFieldValue(bean);
-                if (!getBinder().bindings.stream()
+                if (getBinder().bindings.stream()
                         .map(BindingImpl::doValidation)
-                        .anyMatch(BindingValidationStatus::isError)) {
+                        .noneMatch(BindingValidationStatus::isError)) {
                     binderValidationResults = getBinder().validateBean(bean);
-                    if (!binderValidationResults.stream()
-                            .anyMatch(ValidationResult::isError)) {
+                    if (binderValidationResults.stream()
+                            .noneMatch(ValidationResult::isError)) {
                         getBinder().setHasChanges(false);
                     }
                 }
@@ -930,7 +933,7 @@ public class Binder<BEAN> implements Serializable {
                 fieldValidationStatus = doValidation();
             }
             BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(
-                    getBinder(), Arrays.asList(fieldValidationStatus),
+                    getBinder(), Collections.singletonList(fieldValidationStatus),
                     binderValidationResults);
             getBinder().getValidationStatusHandler().statusChange(status);
             getBinder().fireStatusChangeEvent(status.hasErrors());
