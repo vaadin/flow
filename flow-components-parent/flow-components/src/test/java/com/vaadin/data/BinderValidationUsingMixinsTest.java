@@ -16,6 +16,10 @@
 
 package com.vaadin.data;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Test;
 
 import com.vaadin.ui.TextField;
@@ -24,39 +28,91 @@ import com.vaadin.ui.TextField;
  * @author Vaadin Ltd.
  */
 public class BinderValidationUsingMixinsTest {
-    private final TextField firstNameField = new TextField();
+    private static final String VALIDATION_ERROR_MESSAGE = "Text should not be empty";
+
+    private final TextField textField = new TextField();
 
     private static class TestBean {
-        private String firstName;
+        private String text;
 
-        private TestBean(String firstName) {
-            this.firstName = firstName;
+        private TestBean(String text) {
+            this.text = text;
         }
 
-        public String getFirstName() {
-            return firstName;
+        public String getText() {
+            return text;
         }
 
-        public void setFirstName(String firstName) {
-            this.firstName = firstName;
+        public void setText(String text) {
+            this.text = text;
+        }
+    }
+
+    private Binder<TestBean> getTestBeanBinder() {
+        Binder<TestBean> binder = new Binder<>(TestBean.class);
+        binder.forField(textField)
+                .withValidator(text -> text == null || !text.startsWith("2"),
+                        VALIDATION_ERROR_MESSAGE)
+                .bind("text");
+        return binder;
+    }
+
+    private void assertBean(Binder<TestBean> binder,
+            boolean valid) {
+        assertThat("Unexpected binder state", binder.isValid(), is(valid));
+        assertThat("Unexpected field state", textField.isInvalid(), is(!valid));
+        if (valid) {
+            assertThat("Expected web component to have no error message",
+                    textField.getErrorMessage(), isEmptyOrNullString());
+        } else {
+            assertThat(
+                    "Expected web component to have predefined error message",
+                    textField.getErrorMessage(), is(VALIDATION_ERROR_MESSAGE));
         }
     }
 
     @Test
-    public void poc() {
-        Binder<TestBean> binder = new Binder<>(TestBean.class);
-        binder.forField(firstNameField)
-                .withValidator(
-                        firstName -> firstName != null && !firstName.isEmpty()
-                                && firstName.toLowerCase().equals(firstName),
-                        "First name should not be empty")
-                .bind("firstName");
+    public void setValidValue() {
+        Binder<TestBean> binder = getTestBeanBinder();
 
-        TestBean testBean = new TestBean("one");
-        binder.setBean(testBean);
-        System.out.println("binder.validate().isOk()         = " + binder.validate().isOk());
-        System.out.println("firstNameField.getValue()        = " + firstNameField.getValue());
-        System.out.println("firstNameField.getErrorMessage() = " + firstNameField.getErrorMessage());
-        System.out.println("firstNameField.isInvalid()       = " + firstNameField.isInvalid());
+        binder.setBean(new TestBean("one"));
+
+        assertBean(binder, true);
+    }
+
+    @Test
+    public void setInvalidValue() {
+        Binder<TestBean> binder = getTestBeanBinder();
+
+        binder.setBean(new TestBean("2"));
+
+        assertBean(binder, false);
+    }
+
+    @Test
+    public void switchValidation() {
+        Binder<TestBean> binder = getTestBeanBinder();
+        TestBean validBean = new TestBean("one");
+        TestBean invalidBean = new TestBean("2");
+
+        binder.setBean(validBean);
+        assertBean(binder, true);
+
+        binder.setBean(invalidBean);
+        assertBean(binder, false);
+
+        binder.setBean(validBean);
+        assertBean(binder, true);
+    }
+
+    @Test
+    public void nullBeanShouldClearValidation() {
+        Binder<TestBean> binder = getTestBeanBinder();
+        binder.setBean(new TestBean("2"));
+        assertBean(binder, false);
+
+        binder.setBean(null);
+
+        assertBean(binder, true);
     }
 }
