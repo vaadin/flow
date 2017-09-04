@@ -3,7 +3,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 == Validating and Converting User Input
 
 `Binder` supports checking the validity of the user's input and converting the values between the type used in business objects and the bound UI components.
-These to concepts go hand in hand since validation can be based on a converted value, and being able to convert a value is a kind of validation.
+These two concepts go hand in hand since validation can be based on a converted value, and being able to convert a value is a kind of validation.
 
 === Validation
 
@@ -113,7 +113,7 @@ departing.addValueChangeListener(event -> returnBinder.validate());
 === Conversion
 
 You can also bind application data to a UI field component even though the types do not match.
-In some cases, there might be types specific for the application, such as custom type that encapsulates a postal code that the user enters through a `TextField.
+In some cases, there might be types specific for the application, such as custom type that encapsulates a postal code that the user enters through a `TextField`.
 Another quite typical case is for entering integer numbers using a `TextField` or enumeration values (`Checkbox` is used as an example).
 Similarly to validators, we can define a converter using  `Converter` instance or inline using lambda expressions. We can optionally specify also an error message.
 
