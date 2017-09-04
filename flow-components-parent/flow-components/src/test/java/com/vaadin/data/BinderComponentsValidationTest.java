@@ -27,8 +27,8 @@ import com.vaadin.ui.TextField;
 /**
  * @author Vaadin Ltd.
  */
-public class BinderValidationUsingMixinsTest {
-    private static final String VALIDATION_ERROR_MESSAGE = "Text should not be empty";
+public class BinderComponentsValidationTest {
+    private static final String VALIDATION_ERROR_MESSAGE = "Text should not start with 2";
 
     private final TextField textField = new TextField();
 
