@@ -356,8 +356,11 @@ public class DefaultDeploymentConfiguration
             BiConsumer<String, Predicate<String>> resourceScanner) {
         String propertyValue = getStringProperty(
                 Constants.SERVLET_PARAMETER_POLYFILL_BASE, null);
-        if (null == propertyValue) {
+        if (propertyValue == null) {
             propertyValue = resolveDefaultPolyfillUri(resourceScanner);
+            if (propertyValue == null) {
+                propertyValue = resolveFallbackPolyfillUri(resourceScanner);
+            }
         } else if (propertyValue.trim().isEmpty()) {
             propertyValue = null;
         }
@@ -430,6 +433,32 @@ public class DefaultDeploymentConfiguration
             }
             return null;
         }
+    }
+
+    private String resolveFallbackPolyfillUri(
+            BiConsumer<String, Predicate<String>> resourceScanner) {
+        List<String> foundPolyfills = new ArrayList<>();
+        resourceScanner.accept("/", name -> {
+            if (name.endsWith("/webcomponentsjs/")) {
+                foundPolyfills.add(name);
+            }
+
+            // Don't traverse some potentially huge but pointless directories
+            return !(name.startsWith("node/")
+                    || name.startsWith("node_modules/"));
+        });
+
+        if (foundPolyfills.isEmpty()) {
+            getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
+                    "No webcomponent polyfills discovered in your project's static files!"));
+            return null;
+        }
+        getLogger().log(Level.WARNING,
+                () -> formatDefaultPolyfillMessage(String.format(
+                        "Will use webcomponent polyfills discovered in unexpected location '%s'. "
+                                + "Please verify that your project has been set up correctly.",
+                        foundPolyfills.get(0))));
+        return "context://" + foundPolyfills.get(0);
     }
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {

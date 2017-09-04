@@ -38,6 +38,14 @@ public class WebComponentsIT extends ChromeBrowserTest {
                 "/bower_components/webcomponentsjs/webcomponents-loader.js");
     }
 
+    @Test
+    public void testPolyfillLoadedInProductionMode() {
+        openProduction();
+
+        assertScriptLoadedWithoutErrors(driver,
+                "/bower_components/webcomponentsjs/webcomponents-loader.js");
+    }
+
     public static void assertScriptLoadedWithoutErrors(WebDriver driver,
             String scriptSrcContents) {
         Assert.assertTrue(driver.findElements(By.tagName("script")).stream()
