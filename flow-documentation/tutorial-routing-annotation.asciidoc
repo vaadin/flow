@@ -6,7 +6,7 @@ The `@Route` annotation allows you to define an arbitrary component as a route t
 [source,java]
 ----
 @Route("")
-public void HelloWorld extends Div {
+public class HelloWorld extends Div {
   public HelloWorld() {
     setText("Hello world");
   }
@@ -17,7 +17,7 @@ This defines the `HelloWorld` component as the default route target for the appl
 [source,java]
 ----
 @Route("some/path")
-public void SomePathComponent extends Div {
+public class SomePathComponent extends Div {
   public SomePathComponent() {
     setText("Hello @Route!");
   }

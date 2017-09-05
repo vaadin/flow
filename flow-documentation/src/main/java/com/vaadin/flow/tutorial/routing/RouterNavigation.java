@@ -13,29 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.tutorial.router;
+package com.vaadin.flow.tutorial.routing;
 
+import com.vaadin.flow.html.Div;
+import com.vaadin.flow.html.NativeButton;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.CompanyView;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.HomeView;
-import com.vaadin.flow.router.RouterConfiguration;
-import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.ui.AngularTemplate;
 
-@Deprecated
-@CodeFor("deprecated/tutorial-routing-template-parent.asciidoc")
-public class TemplateParentView {
-    public class MainLayout extends AngularTemplate {
-        // Nothing needed here
+@CodeFor("tutorial-routing-navigation.asciidoc")
+public class RouterNavigation {
+
+    void navigation() {
+        NativeButton button = new NativeButton("Navigate to company");
+        button.addClickListener(e -> {
+            button.getUI().ifPresent(ui -> ui.navigateTo("company"));
+        });
+
     }
 
-    public class MyRouterConfigurator implements RouterConfigurator {
-        @Override
-        public void configure(RouterConfiguration configuration) {
-            //@formatter:off - custom line wrapping
-            configuration.setRoute("", HomeView.class, MainLayout.class);
-            configuration.setRoute("company", CompanyView.class, MainLayout.class);
-            //@formatter:on
-        }
+    void routerLink() {
+        Div menu = new Div();
+        menu.add(new RouterLink("Home", HomeView.class));
+        menu.add(new RouterLink("Company", CompanyView.class));
     }
+
 }
