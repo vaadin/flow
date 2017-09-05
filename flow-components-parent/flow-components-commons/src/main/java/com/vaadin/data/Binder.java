@@ -757,7 +757,7 @@ public class Binder<BEAN> implements Serializable {
         private final Binder<BEAN> binder;
 
         private final HasValue<?, FIELDVALUE> field;
-        private final HasValidation fieldValidator;
+        private final HasValidation validationTarget;
         private final BindingValidationStatusHandler statusHandler;
 
         private final SerializableFunction<BEAN, TARGET> getter;
@@ -777,7 +777,7 @@ public class Binder<BEAN> implements Serializable {
                 Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
-            fieldValidator = getValidationApi(builder.field);
+            validationTarget = getValidationTarget(builder.field);
             statusHandler = builder.statusHandler;
             converterValidatorChain = builder.converterValidatorChain;
 
@@ -788,7 +788,7 @@ public class Binder<BEAN> implements Serializable {
             this.setter = setter;
         }
 
-        private HasValidation getValidationApi(HasValue<?, FIELDVALUE> field) {
+        private HasValidation getValidationTarget(HasValue<?, FIELDVALUE> field) {
             if (field instanceof HasValidation) {
                 return (HasValidation) field;
             }
@@ -856,14 +856,14 @@ public class Binder<BEAN> implements Serializable {
          */
         private BindingValidationStatus<TARGET> doValidation() {
             BindingValidationStatus<TARGET> status = toValidationStatus(doConversion());
-            updateValidationStatus(status);
+            updateValidationTarget(status);
             return status;
         }
 
-        private void updateValidationStatus(BindingValidationStatus<TARGET> status) {
-            if (fieldValidator != null) {
-                fieldValidator.setInvalidNew(status.isError());
-                fieldValidator.setErrorMessageNew(status.getMessage().orElse(""));
+        private void updateValidationTarget(BindingValidationStatus<TARGET> status) {
+            if (validationTarget != null) {
+                validationTarget.setInvalidNew(status.isError());
+                validationTarget.setErrorMessageNew(status.getMessage().orElse(""));
             }
         }
 
@@ -1648,7 +1648,8 @@ public class Binder<BEAN> implements Serializable {
     private List<BindingValidationStatus<?>> validateBindings() {
         return bindings.stream()
                 .map(BindingImpl::doValidation)
-                .collect(Collectors.toList());
+                .collect(Collectors.collectingAndThen(Collectors.toList(),
+                        Collections::unmodifiableList));
     }
 
     /**
@@ -1668,7 +1669,8 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
         return validators.stream()
                 .map(validator -> validator.apply(bean, new ValueContext()))
-                .collect(Collectors.toList());
+                .collect(Collectors.collectingAndThen(Collectors.toList(),
+                        Collections::unmodifiableList));
     }
 
     /**
