@@ -229,10 +229,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         var originalFunction = element._propertiesChanged;
         if (originalFunction) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
-                originalFunction.apply(this, arguments);
                 $entry(function () {
                     self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
                 })();
+                originalFunction.apply(this, arguments);
             };
         }
     }-*/;
