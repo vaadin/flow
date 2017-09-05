@@ -1,1 +1,2 @@
 com.vaadin.server.startup.CustomElementRegistryInitializer
+com.vaadin.server.startup.RouteRegistryInitializer
