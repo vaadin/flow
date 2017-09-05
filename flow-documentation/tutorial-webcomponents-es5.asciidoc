@@ -346,7 +346,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
             <!--6-->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>${maven.resources.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>copy-resources</id>
