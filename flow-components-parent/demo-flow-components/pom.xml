@@ -37,28 +37,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${frontend.working.directory}/bower_components</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/build</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node_modules</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
                 <version>${frontend.maven.plugin.version}</version>
@@ -143,7 +121,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>${maven.resources.plugin.version}</version>
                 <executions>
                     <execution>
                         <id>copy-source-code</id>
@@ -158,6 +136,22 @@
                                 <resource>
                                     <directory>${project.basedir}/src/main/java</directory>
                                 </resource>
+                                <resource>
+                                    <directory>${frontend.working.directory}</directory>
+                                    <targetPath>META-INF/resources</targetPath>
+                                    <excludes>
+                                        <exclude>node/**</exclude>
+                                        <exclude>node_modules/**</exclude>
+                                        <exclude>etc/**</exclude>
+                                        <exclude>bower_components/**</exclude>
+                                        <exclude>build/**</exclude>
+                                        <exclude>package-lock.json</exclude>
+                                    </excludes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/${webapp.directory}</directory>
+                                    <targetPath>META-INF/resources</targetPath>
+                                </resource>
                             </resources>
                         </configuration>
                     </execution>
@@ -166,10 +160,18 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${maven.deploy.plugin.version}</version>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>compose-jar-for-vaadin-com</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
-                    <skip>true</skip>
+                    <excludes>**/Servlet.*</excludes>
                 </configuration>
             </plugin>
         </plugins>
@@ -218,7 +220,7 @@
 
                     <plugin>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <version>3.0.2</version>
+                        <version>${maven.resources.plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>copy-resources</id>
@@ -232,6 +234,22 @@
                                     <resources>
                                         <resource>
                                             <directory>${project.basedir}/${frontend.working.directory}/build</directory>
+                                        </resource>
+                                        <resource>
+                                            <directory>${frontend.working.directory}</directory>
+                                            <targetPath>META-INF/resources</targetPath>
+                                            <excludes>
+                                                <exclude>node/**</exclude>
+                                                <exclude>node_modules/**</exclude>
+                                                <exclude>etc/**</exclude>
+                                                <exclude>bower_components/**</exclude>
+                                                <exclude>build/**</exclude>
+                                                <exclude>package-lock.json</exclude>
+                                            </excludes>
+                                        </resource>
+                                        <resource>
+                                            <directory>${project.basedir}/${webapp.directory}</directory>
+                                            <targetPath>META-INF/resources</targetPath>
                                         </resource>
                                     </resources>
                                 </configuration>
