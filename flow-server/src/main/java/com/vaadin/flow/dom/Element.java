@@ -40,12 +40,15 @@ import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
+import com.vaadin.server.Command;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Page;
+import com.vaadin.ui.Page.ExecutionCanceler;
+import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -105,7 +108,7 @@ public class Element extends Node<Element> {
     /**
      * Create an element using tag name, but only create component for custom
      * element tag if autocreate.
-     * 
+     *
      * @param tag
      *            tag name of the element. Must be a non-empty string and can
      *            contain letters, numbers and dashes ({@literal -})
@@ -120,7 +123,7 @@ public class Element extends Node<Element> {
 
         if (autocreate) {
             CustomElementRegistry.getInstance()
-                    .wrapElementIfNeeded(Element.this);
+            .wrapElementIfNeeded(Element.this);
         }
     }
 
@@ -212,7 +215,7 @@ public class Element extends Node<Element> {
      * If property "innerHTML" has been set explicitly then its value (the new
      * element structure) won't be populated on the server side and this method
      * returns an empty stream.
-     * 
+     *
      * @see #setProperty(String, String)
      *
      * @return a stream of children
@@ -447,9 +450,9 @@ public class Element extends Node<Element> {
      */
     public Stream<String> getAttributeNames() {
         assert getStateProvider().getAttributeNames(getNode())
-                .map(CustomAttribute::get).filter(Optional::isPresent)
-                .filter(attr -> attr.get().hasAttribute(this))
-                .count() == 0 : "Overlap between stored attributes and existing custom attributes";
+        .map(CustomAttribute::get).filter(Optional::isPresent)
+        .filter(attr -> attr.get().hasAttribute(this))
+        .count() == 0 : "Overlap between stored attributes and existing custom attributes";
 
         Stream<String> regularNames = getStateProvider()
                 .getAttributeNames(getNode());
@@ -576,7 +579,7 @@ public class Element extends Node<Element> {
      * <p>
      * The method may return {@code null} if the parent is not an element but a
      * {@link Node}.
-     * 
+     *
      * @see #getParentNode()
      *
      * @return the parent element or null if this element does not have a parent
@@ -706,7 +709,7 @@ public class Element extends Node<Element> {
      * <p>
      * Use either two way Polymer binding or synchronize property explicitly to
      * be able to get property change events from the client.
-     * 
+     *
      * @see #synchronizeProperty(String, String)
      * @param name
      *            the property name to add the listener for
@@ -1040,7 +1043,7 @@ public class Element extends Node<Element> {
             builder.append(getText());
         } else {
             getChildren().filter(childFilter)
-                    .forEach(e -> e.appendTextContent(builder, childFilter));
+            .forEach(e -> e.appendTextContent(builder, childFilter));
         }
     }
 
@@ -1131,7 +1134,7 @@ public class Element extends Node<Element> {
     public Element addSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
-                .add(eventType);
+        .add(eventType);
         return this;
     }
 
@@ -1148,7 +1151,7 @@ public class Element extends Node<Element> {
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
         getStateProvider().getSynchronizedProperties(getNode())
-                .remove(property);
+        .remove(property);
         return this;
     }
 
@@ -1166,7 +1169,7 @@ public class Element extends Node<Element> {
     public Element removeSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
-                .remove(eventType);
+        .remove(eventType);
         return this;
     }
 
@@ -1342,27 +1345,45 @@ public class Element extends Node<Element> {
     public void callFunction(String functionName, Serializable... arguments) {
         assert functionName != null;
         assert !functionName
-                .startsWith(".") : "Function name should not start with a dot";
+        .startsWith(".") : "Function name should not start with a dot";
 
-        getNode().runWhenAttached(ui -> {
-            // $0.method($1,$2,$3)
-            String paramPlaceholderString = IntStream
-                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
-                    .collect(Collectors.joining(","));
-            Serializable[] jsParameters = Stream
-                    .concat(Stream.of(this), Stream.of(arguments))
-                    .toArray(size -> new Serializable[size]);
+        getNode()
+        .runWhenAttached(
+                ui -> doCallFunction(ui, functionName, arguments));
 
-            ui.getPage().executeJavaScript(
-                    "$0." + functionName + "(" + paramPlaceholderString + ")",
-                    jsParameters);
-        });
+    }
 
+    private void doCallFunction(UI ui, String functionName,
+            Serializable... arguments) {
+        // $0.method($1,$2,$3)
+        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
+                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
+        Serializable[] jsParameters = Stream
+                .concat(Stream.of(this), Stream.of(arguments))
+                .toArray(size -> new Serializable[size]);
+
+        ExecutionCanceler executeCanceler = ui.getPage().executeJavaScript(
+                "$0." + functionName + "(" + paramPlaceholderString + ")",
+                jsParameters);
+
+        class DetachCommand implements Command {
+
+            private Registration remover;
+
+            @Override
+            public void execute() {
+                executeCanceler.cancelExecution();
+                remover.remove();
+            }
+
+        }
+        DetachCommand command = new DetachCommand();
+        command.remover = getNode().addDetachListener(command);
     }
 
     /**
      * Attaches shadow root node.
-     * 
+     *
      * @return the attached shadow root
      */
     public ShadowRoot attachShadow() {
