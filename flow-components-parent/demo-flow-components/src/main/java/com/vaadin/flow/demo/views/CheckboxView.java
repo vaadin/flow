@@ -23,7 +23,7 @@ import com.vaadin.ui.Checkbox;
 /**
  * View for {@link Checkbox} demo.
  */
-@ComponentDemo(name = "Vaadin Checkbox", href = "vaadin-checkbox")
+@ComponentDemo(name = "Checkbox", href = "vaadin-checkbox")
 public class CheckboxView extends DemoView {
 
     @Override
