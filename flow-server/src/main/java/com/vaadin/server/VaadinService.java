@@ -47,6 +47,8 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.router.NEW_Router;
+import com.vaadin.flow.router.NEW_RouterInterface;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
@@ -167,7 +169,7 @@ public abstract class VaadinService implements Serializable {
      */
     private boolean initialized = false;
 
-    private final Router router = new Router();
+    private NEW_RouterInterface router = new Router();
 
     /**
      * Creates a new vaadin service based on a deployment configuration.
@@ -241,6 +243,8 @@ public abstract class VaadinService implements Serializable {
             // Configure router if we have a non-default configurator type
 
             configureRouter(routerConfiguratorClassName);
+        } else {
+            router = new NEW_Router();
         }
 
         initialized = true;
@@ -2036,7 +2040,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the router, not <code>null</code>
      */
-    public Router getRouter() {
+    public NEW_RouterInterface getRouter() {
         return router;
     }
 }
