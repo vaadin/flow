@@ -24,6 +24,7 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.shared.NodeFeatures;
 import com.vaadin.flow.shared.NodeProperties;
 
@@ -135,9 +136,9 @@ public final class ExecuteJavaScriptElementUtils {
     public static void attachExistingElementById(StateNode parent,
             String tagName, int serverSideId, String id) {
         if (parent.getDomNode() == null) {
-            Scheduler.get()
+            Reactive.addPostFlushListener(() -> Scheduler.get()
                     .scheduleDeferred(() -> attachExistingElementById(parent,
-                            tagName, serverSideId, id));
+                            tagName, serverSideId, id)));
         } else {
             Element existingElement = getDomElementById(
                     (Element) parent.getDomNode(), id);
