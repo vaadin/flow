@@ -1,8 +1,12 @@
 package com.vaadin.flow.router;
 
+import java.util.Optional;
+
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.startup.RouteRegistry;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
@@ -51,40 +55,19 @@ public class NEW_Router implements NEW_RouterInterface {
         assert location != null;
         assert trigger != null;
 
-        /*
-        // Read volatile field only once per navigation
-        ImmutableRouterConfiguration currentConfig = configuration;
-        assert currentConfig.isConfigured();
+        Optional<Class<? extends Component>> navigationTarget = RouteRegistry
+                .getInstance().getNavigationTarget(location);
+        if (navigationTarget.isPresent()) {
 
-        NavigationEvent navigationEvent = new NavigationEvent(this, location,
-                ui, trigger);
+            NavigationEvent navigationEvent = new NavigationEvent(this,
+                    location, ui, trigger);
 
-        Optional<NavigationHandler> handler = currentConfig.getResolver()
-                .resolve(navigationEvent);
-
-        if (!handler.isPresent()) {
-            handler = currentConfig.resolveRoute(location);
+            NEW_StaticRouteTargetRenderer handler = new NEW_StaticRouteTargetRenderer(
+                    navigationTarget.get(), location.getPath());
+            return handler.handle(navigationEvent);
         }
 
-        // Redirect foo/bar <-> foo/bar/ if there is no mapping for the given
-        // location but there is a mapping for the other
-        if (!handler.isPresent() && !location.getPath().isEmpty()) {
-            Location toggledLocation = location.toggleTrailingSlash();
-            Optional<NavigationHandler> toggledHandler = currentConfig
-                    .resolveRoute(toggledLocation);
-            if (toggledHandler.isPresent()) {
-                handler = Optional
-                        .of(new InternalRedirectHandler(toggledLocation));
-            }
-        }
-
-        if (!handler.isPresent()) {
-            NavigationHandler errorHandler = currentConfig.getErrorHandler();
-            handler = Optional.of(errorHandler);
-        }
-        */
-        
-        return 500;
+        return 404;
     }
 
     @Override

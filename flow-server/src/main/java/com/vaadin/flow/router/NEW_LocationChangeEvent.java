@@ -39,7 +39,7 @@ public class NEW_LocationChangeEvent extends EventObject {
      *            a map containing actual path segment values used for
      *            placeholders in the used route mapping, not {@code null}
      */
-    public NEW_LocationChangeEvent(Router router, UI ui,
+    public NEW_LocationChangeEvent(NEW_RouterInterface router, UI ui,
             NavigationTrigger trigger, Location location,
             List<Component> viewChain, Map<String, String> routePlaceholders) {
         super(router);
@@ -162,8 +162,8 @@ public class NEW_LocationChangeEvent extends EventObject {
     }
 
     @Override
-    public Router getSource() {
-        return (Router) super.getSource();
+    public NEW_RouterInterface getSource() {
+        return (NEW_RouterInterface) super.getSource();
     }
 
     /**
@@ -218,16 +218,11 @@ public class NEW_LocationChangeEvent extends EventObject {
      * Reroutes the navigation to show the given view instead of the view that
      * is currently about to be displayed.
      *
-     * <p>
-     * Calling this method outside
-     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
-     * effect.
-     *
-     * @param viewType
-     *            the view type to display, not {@code null}
+     * @param routeTargetType
+     *            the route target type to display, not {@code null}
      */
-    public void rerouteTo(Class<? extends View> viewType) {
-        rerouteTo(new StaticViewRenderer(viewType, null));
+    public void rerouteTo(Class<? extends Component> routeTargetType) {
+        rerouteTo(new NEW_StaticRouteTargetRenderer(routeTargetType, null));
     }
 
 }
