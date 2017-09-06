@@ -2020,6 +2020,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("noArgsMethod");
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.noArgsMethod()", element);
     }
@@ -2030,6 +2031,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
         element.callFunction("noArgsMethod");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.noArgsMethod()", element);
     }
@@ -2041,10 +2043,27 @@ public class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         element.callFunction("noArgsMethod");
         ui.getElement().removeAllChildren();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         List<JavaScriptInvocation> invocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         Assert.assertTrue(invocations.isEmpty());
+    }
+
+    @Test
+    public void callFunctionBeforeReAttach() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.callFunction("noArgsMethod");
+
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+        div.appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertPendingJs(ui, "$0.noArgsMethod()", element);
     }
 
     @Test
@@ -2054,6 +2073,7 @@ public class ElementTest extends AbstractNodeTest {
         element.callFunction("method", "foo");
         ui.getElement().appendChild(element);
 
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         assertPendingJs(ui, "$0.method($1)", element, "foo");
 
     }
@@ -2064,6 +2084,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("method", "foo", 123);
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.method($1,$2)", element, "foo", 123);
     }
@@ -2074,6 +2095,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("property.method");
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.property.method()", element);
     }
@@ -2084,6 +2106,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("property.other.method");
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.property.other.method()", element);
     }

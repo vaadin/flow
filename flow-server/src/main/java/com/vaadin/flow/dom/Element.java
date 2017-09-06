@@ -40,14 +40,12 @@ import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
-import com.vaadin.server.Command;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Page;
-import com.vaadin.ui.Page.ExecutionCanceler;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -1355,30 +1353,18 @@ public class Element extends Node<Element> {
 
     private void doCallFunction(UI ui, String functionName,
             Serializable... arguments) {
-        // $0.method($1,$2,$3)
-        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
-                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
-        Serializable[] jsParameters = Stream
-                .concat(Stream.of(this), Stream.of(arguments))
-                .toArray(size -> new Serializable[size]);
+        ui.getInternals().getStateTree().beforeClientResponse(getNode(), () ->{
+            // $0.method($1,$2,$3)
+            String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
+                    .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
+            Serializable[] jsParameters = Stream
+                    .concat(Stream.of(this), Stream.of(arguments))
+                    .toArray(size -> new Serializable[size]);
 
-        ExecutionCanceler executeCanceler = ui.getPage().executeJavaScript(
-                "$0." + functionName + "(" + paramPlaceholderString + ")",
-                jsParameters);
-
-        class DetachCommand implements Command {
-
-            private Registration remover;
-
-            @Override
-            public void execute() {
-                executeCanceler.cancelExecution();
-                remover.remove();
-            }
-
-        }
-        DetachCommand command = new DetachCommand();
-        command.remover = getNode().addDetachListener(command);
+            ui.getPage().executeJavaScript(
+                    "$0." + functionName + "(" + paramPlaceholderString + ")",
+                    jsParameters);
+        });
     }
 
     /**
