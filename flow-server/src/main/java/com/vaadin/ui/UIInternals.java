@@ -539,6 +539,18 @@ public class UIInternals implements Serializable {
         }
     }
 
+    public void showRouteTarget(Location viewLocation, Component target) {
+        assert target != null;
+        assert viewLocation != null;
+
+        this.viewLocation = viewLocation;
+
+        Element uiElement = ui.getElement();
+
+        uiElement.removeAllChildren();
+        uiElement.appendChild(target.getElement());
+    }
+
     /**
      * Gets the currently active view and parent views.
      *
