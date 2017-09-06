@@ -56,7 +56,7 @@ public class CustomElementRegistryInitializerTest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        .thenReturn(configuration);
         VaadinService.setCurrent(service);
         customElementRegistryInitializer = new CustomElementRegistryInitializer();
     }
@@ -64,6 +64,13 @@ public class CustomElementRegistryInitializerTest {
     @After
     public void tearDown() {
         VaadinService.setCurrent(null);
+    }
+
+    @Test
+    public void registryInitializerAcceptsNull() throws ServletException {
+        // doesn't throw
+        customElementRegistryInitializer.onStartup(null, null);
+        Assert.assertTrue(CustomElementRegistry.getInstance().initialized);
     }
 
     @Test
@@ -91,14 +98,14 @@ public class CustomElementRegistryInitializerTest {
             throws ServletException {
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class, ValidExtendingElement.class)
-                        .collect(Collectors.toSet()),
+                .collect(Collectors.toSet()),
                 null);
 
         Assert.assertTrue(CustomElementRegistry.getInstance()
                 .isRegisteredCustomElement("custom-element"));
         Assert.assertEquals("Stored element was not the super class",
                 ValidCustomElement.class, CustomElementRegistry.getInstance()
-                        .getRegisteredCustomElement("custom-element"));
+                .getRegisteredCustomElement("custom-element"));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -134,7 +141,7 @@ public class CustomElementRegistryInitializerTest {
 
         Assert.assertTrue("Element got unexpected Component",
                 polymerElement.getComponent().get().getClass()
-                        .equals(CustomPolymerElement.class));
+                .equals(CustomPolymerElement.class));
     }
 
     @Test
@@ -152,7 +159,7 @@ public class CustomElementRegistryInitializerTest {
 
         Assert.assertTrue("Element got unexpected Component",
                 element.getComponent().get().getClass()
-                        .equals(ValidCustomElement.class));
+                .equals(ValidCustomElement.class));
     }
 
     @Test
@@ -197,12 +204,12 @@ public class CustomElementRegistryInitializerTest {
 
         Assert.assertTrue("Element got unexpected Component",
                 element.getComponent().get().getClass()
-                        .equals(ValidCustomElement.class));
+                .equals(ValidCustomElement.class));
     }
 
     @Tag("custom-element")
     public static class ValidCustomElement
-            extends PolymerTemplate<TemplateModel> {
+    extends PolymerTemplate<TemplateModel> {
 
         public ValidCustomElement() {
             super(TEST_PARSER);
@@ -224,7 +231,7 @@ public class CustomElementRegistryInitializerTest {
 
     @Tag("-invalid")
     private static class InvalidCustomElement
-            extends PolymerTemplate<TemplateModel> {
+    extends PolymerTemplate<TemplateModel> {
 
         public InvalidCustomElement() {
             super(TEST_PARSER);
@@ -233,7 +240,7 @@ public class CustomElementRegistryInitializerTest {
 
     @Tag("custom-element")
     private static class InvalidExtendingElement
-            extends PolymerTemplate<TemplateModel> {
+    extends PolymerTemplate<TemplateModel> {
 
         public InvalidExtendingElement() {
             super(TEST_PARSER);
@@ -242,7 +249,7 @@ public class CustomElementRegistryInitializerTest {
 
     @Tag("custom-polymer-element")
     public static class CustomPolymerElement
-            extends PolymerTemplate<TemplateModel> {
+    extends PolymerTemplate<TemplateModel> {
 
         public CustomPolymerElement() {
             super(TEST_PARSER);
