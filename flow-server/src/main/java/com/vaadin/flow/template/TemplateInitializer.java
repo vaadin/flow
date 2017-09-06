@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
+import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
@@ -411,6 +412,7 @@ public class TemplateInitializer {
             StateNode proposedNode = BasicElementStateProvider
                     .createStateNode(tagName);
             element = Element.get(proposedNode);
+            element.setAttribute(NodeProperties.ID, id);
             StateNode templateNode = getElement().getNode();
             templateNode.runWhenAttached(ui -> {
                 templateNode.getFeature(AttachTemplateChildFeature.class)

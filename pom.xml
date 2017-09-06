@@ -43,6 +43,9 @@
     </scm>
 
     <properties>
+        <flow.snapshot.repo.url>https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/</flow.snapshot.repo.url>
+        <flow.release.repo.url>https://repo.vaadin.com/nexus/content/repositories/flow/</flow.release.repo.url>
+
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -83,11 +86,11 @@
     <repositories>
         <repository>
             <id>flow</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/flow/</url>
+            <url>${flow.release.repo.url}</url>
         </repository>
         <repository>
             <id>flow-snapshots</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/</url>
+            <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -101,11 +104,11 @@
     <pluginRepositories>
         <pluginRepository>
             <id>flow</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/flow/</url>
+            <url>${flow.release.repo.url}</url>
         </pluginRepository>
         <pluginRepository>
             <id>flow-snapshots</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/</url>
+            <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
