@@ -78,7 +78,7 @@ public class PublishedServerEventHandlerRpcHandler
         }
         if (args.getType() != JsonType.ARRAY) {
             throw new IllegalArgumentException(
-                    "Incorrect type for method arguments :" + args.getClass());
+                    "Incorrect type for method arguments: " + args.getClass());
         }
         assert node.hasFeature(ComponentMapping.class);
         Optional<Component> component = node.getFeature(ComponentMapping.class)
@@ -86,7 +86,7 @@ public class PublishedServerEventHandlerRpcHandler
         if (!component.isPresent()) {
             throw new IllegalStateException(
                     "Unable to handle RPC template event JSON message: "
-                            + "there is no component available for the target node.");
+                            + "there is no component available for the target node");
         }
 
         invokeMethod(component.get(), component.get().getClass(), methodName,
@@ -161,7 +161,7 @@ public class PublishedServerEventHandlerRpcHandler
                 String msg = String.format(
                         "The number of received values (%d) is not equal "
                                 + "to the number of arguments (%d) in the method '%s' "
-                                + "' declared in '%s'",
+                                + "declared in '%s'",
                         argsFromClient.length(), method.getParameterCount(),
                         method.getName(), method.getDeclaringClass().getName());
                 throw new IllegalArgumentException(msg);
@@ -209,9 +209,9 @@ public class PublishedServerEventHandlerRpcHandler
         if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
             String msg = String.format(
                     "Null values are not allowed for primitive types but "
-                            + "a 'null' value was received for parameter %d"
+                            + "a 'null' value was received for parameter %d "
                             + "which refers to primitive type '%s' "
-                            + " in the method '%s' defined in the class '%s'",
+                            + "in the method '%s' defined in the class '%s'",
                     index, type.getName(), method.getName(),
                     method.getDeclaringClass().getName());
             throw new IllegalArgumentException(msg);
@@ -228,8 +228,8 @@ public class PublishedServerEventHandlerRpcHandler
 
             if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
                 String msg = String.format(
-                        "Class '%s' has the method '%s'"
-                                + " whose parameter %d refers to unsupported type '%s'",
+                        "Class '%s' has the method '%s' "
+                                + "whose parameter %d refers to unsupported type '%s'",
                         method.getDeclaringClass().getName(), method.getName(),
                         index, type.getName());
                 throw new IllegalArgumentException(msg);
@@ -261,8 +261,8 @@ public class PublishedServerEventHandlerRpcHandler
             JsonValue argValue) {
         if (argValue.getType() != JsonType.ARRAY) {
             String msg = String.format(
-                    "Class '%s' has the method '%s'"
-                            + " whose parameter %d refers to the array type '%s'"
+                    "Class '%s' has the method '%s' "
+                            + "whose parameter %d refers to the array type '%s' "
                             + "but received value is not an array, its type is '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName(), argValue.getType().name());

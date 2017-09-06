@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -39,7 +38,7 @@ public class PushStateScrollIT extends ChromeBrowserTest {
 
         WebElement button = findElement(By.id(buttonId));
 
-        scrollIntoView(button);
+        scrollToElement(button);
 
         int scrollBeforeClick = getScrollY();
 
@@ -51,10 +50,5 @@ public class PushStateScrollIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Scroll position should not have changed",
                 scrollBeforeClick, getScrollY());
-    }
-
-    private void scrollIntoView(WebElement element) {
-        new Actions(getCommandExecutor().getWrappedDriver())
-                .moveToElement(element).perform();
     }
 }

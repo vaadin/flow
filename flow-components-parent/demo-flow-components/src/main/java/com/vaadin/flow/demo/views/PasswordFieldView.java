@@ -24,7 +24,7 @@ import com.vaadin.ui.PasswordField;
 /**
  * View for {@link GeneratedVaadinPasswordField} demo.
  */
-@ComponentDemo(name = "Vaadin Password Field", href = "vaadin-password-field")
+@ComponentDemo(name = "Password Field", href = "vaadin-password-field")
 public class PasswordFieldView extends DemoView {
     @Override
     void initView() {
