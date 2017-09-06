@@ -22,12 +22,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.router.RouteLocation.RouteSegmentVisitor;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
+/**
+ * Handles navigation events by rendering a component of a specific type in the
+ * target UI.
+ * 
+ * @see Route
+ */
 public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
 
     /**
@@ -94,7 +101,7 @@ public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
     }
 
     /**
-     * Updates the page title according to the currently opened views.
+     * Updates the page title according to the currently visible component.
      * <p>
      * Uses the {@link Title} to resolve the title.
      *

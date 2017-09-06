@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.router;
 
 import java.util.Collections;
@@ -11,6 +26,11 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
+/**
+ * Event created when the location changes by any of the reasons defined at
+ * {@link NavigationTrigger}.
+ * 
+ */
 public class NEW_LocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
@@ -33,27 +53,28 @@ public class NEW_LocationChangeEvent extends EventObject {
      *            not <code>null</code>
      * @param location
      *            the new location, not {@code null}
-     * @param viewChain
-     *            the view chain that will be used, not {@code null}
+     * @param routeTargetChain
+     *            the component chain that will be used, not {@code null}
      * @param routePlaceholders
      *            a map containing actual path segment values used for
      *            placeholders in the used route mapping, not {@code null}
      */
     public NEW_LocationChangeEvent(NEW_RouterInterface router, UI ui,
             NavigationTrigger trigger, Location location,
-            List<Component> viewChain, Map<String, String> routePlaceholders) {
+            List<Component> routeTargetChain,
+            Map<String, String> routePlaceholders) {
         super(router);
 
         assert ui != null;
         assert trigger != null;
         assert location != null;
-        assert viewChain != null;
+        assert routeTargetChain != null;
         assert routePlaceholders != null;
 
         this.ui = ui;
         this.trigger = trigger;
         this.location = location;
-        this.routeTargetChain = Collections.unmodifiableList(viewChain);
+        this.routeTargetChain = Collections.unmodifiableList(routeTargetChain);
         this.routePlaceholders = Collections.unmodifiableMap(routePlaceholders);
     }
 
@@ -67,21 +88,22 @@ public class NEW_LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Gets the view which is being shown.
+     * Gets the component which is being shown.
      * <p>
-     * This is the same as the most deeply nested view in the view chain.
+     * This is the same as the most deeply nested component in the route target
+     * chain.
      *
-     * @return the view being shown, not {@code null}
+     * @return the component being shown, not {@code null}
      */
     public Component getRouteTarget() {
         return routeTargetChain.get(0);
     }
 
     /**
-     * Gets the chain of views that will be nested inside the UI, starting from
-     * the most deeply nested view.
+     * Gets the chain of component that will be nested inside the UI, starting
+     * from the most deeply nested component.
      *
-     * @return the view chain, not {@code null}
+     * @return an unmodifiable list with the component chain, not {@code null}
      */
     public List<Component> getRouteTargetChain() {
         return routeTargetChain;
@@ -201,10 +223,6 @@ public class NEW_LocationChangeEvent extends EventObject {
     /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
-     * <p>
-     * Calling this method outside
-     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
-     * effect.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -215,11 +233,11 @@ public class NEW_LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Reroutes the navigation to show the given view instead of the view that
-     * is currently about to be displayed.
+     * Reroutes the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
      *
      * @param routeTargetType
-     *            the route target type to display, not {@code null}
+     *            the component type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends Component> routeTargetType) {
         rerouteTo(new NEW_StaticRouteTargetRenderer(routeTargetType, null));

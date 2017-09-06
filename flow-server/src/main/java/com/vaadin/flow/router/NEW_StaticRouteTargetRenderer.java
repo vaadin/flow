@@ -17,6 +17,10 @@ package com.vaadin.flow.router;
 
 import com.vaadin.ui.Component;
 
+/**
+ * A simple route target renderer that always uses the given view type and route
+ * configured for it.
+ */
 public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
 
     private final String route;
