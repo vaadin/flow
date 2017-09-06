@@ -192,6 +192,7 @@
                         </goals>
                         <configuration>
                             <packaging>jar</packaging>
+                            <repositoryId>${flow.repo.id}</repositoryId>
                             <url>${flow.snapshot.repo.url}</url>
                             <artifactId>${project.artifactId}</artifactId>
                             <groupId>${project.groupId}</groupId>
