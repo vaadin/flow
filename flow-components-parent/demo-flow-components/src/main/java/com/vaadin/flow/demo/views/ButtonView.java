@@ -24,7 +24,7 @@ import com.vaadin.ui.HasClickListeners.ClickEvent;
 /**
  * View for {@link Button} demo.
  */
-@ComponentDemo(name = "Vaadin Button", href = "vaadin-button")
+@ComponentDemo(name = "Button", href = "vaadin-button")
 public class ButtonView extends DemoView {
 
     private Div message;
