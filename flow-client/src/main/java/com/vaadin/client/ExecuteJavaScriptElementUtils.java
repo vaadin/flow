@@ -15,6 +15,7 @@
  */
 package com.vaadin.client;
 
+import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
@@ -23,6 +24,7 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
+import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.shared.NodeFeatures;
 import com.vaadin.flow.shared.NodeProperties;
 
@@ -133,11 +135,17 @@ public final class ExecuteJavaScriptElementUtils {
      */
     public static void attachExistingElementById(StateNode parent,
             String tagName, int serverSideId, String id) {
-        Element existingElement = getDomElementById(
-                (Element) parent.getDomNode(), id);
+        if (parent.getDomNode() == null) {
+            Reactive.addPostFlushListener(() -> Scheduler.get()
+                    .scheduleDeferred(() -> attachExistingElementById(parent,
+                            tagName, serverSideId, id)));
+        } else {
+            Element existingElement = getDomElementById(
+                    (Element) parent.getDomNode(), id);
 
-        respondExistingElement(parent, tagName, serverSideId, id,
-                existingElement);
+            respondExistingElement(parent, tagName, serverSideId, id,
+                    existingElement);
+        }
     }
 
     /**
