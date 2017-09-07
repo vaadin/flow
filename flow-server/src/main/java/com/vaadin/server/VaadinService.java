@@ -153,6 +153,8 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<BootstrapListener> bootstrapListeners;
 
+    private Iterable<DependencyFilter> dependencyFilters;
+
     private boolean atmosphereAvailable = checkAtmosphereSupport();
 
     /**
@@ -224,6 +226,8 @@ public abstract class VaadinService implements Serializable {
         Collections.reverse(handlers);
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
+        dependencyFilters = Collections
+                .unmodifiableCollection(event.getAddedDependencyFilters());
 
         List<BootstrapListener> bootstrapListenersList = processBootstrapListeners(
                 new ArrayList<>(event.getAddedBootstrapListeners()));
@@ -1263,7 +1267,8 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval() : -1;
+                ? session.getSession().getMaxInactiveInterval()
+                : -1;
     }
 
     /**
@@ -1380,6 +1385,17 @@ public abstract class VaadinService implements Serializable {
      */
     public Iterable<RequestHandler> getRequestHandlers() {
         return requestHandlers;
+    }
+
+    /**
+     * Gets the filters which all resource dependencies are passed through
+     * before being sent to the client for loading.
+     *
+     * @return the dependency filters to pass resources dependencies through
+     *         before loading
+     */
+    public Iterable<DependencyFilter> getDependencyFilters() {
+        return dependencyFilters;
     }
 
     /**
