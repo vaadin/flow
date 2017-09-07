@@ -36,6 +36,7 @@ import com.vaadin.flow.router.NEW_RouterInterface;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingCommand;
@@ -70,7 +71,7 @@ import com.vaadin.util.CurrentInstance;
  * @since 7.0
  */
 public class UI extends Component
-        implements Serializable, PollNotifier, HasComponents {
+        implements Serializable, PollNotifier, HasComponents, RouterLayout {
 
     /**
      * The id of this UI, used to find the server side instance of the UI form
@@ -715,14 +716,14 @@ public class UI extends Component
      * If the {@link Component} related to the runnable is not attached to the
      * document by the time the runnable is evaluated, the execution is
      * postponed to before the next response.
-     * 
+     *
      * @param component
      *            the Component relevant for the execution. Can not be
      *            <code>null</code>
-     * 
+     *
      * @param execution
      *            the Runnable to be executed. Can not be <code>null</code>
-     * 
+     *
      * @return a registration that can be used to cancel the execution of the
      *         runnable
      */
