@@ -50,12 +50,12 @@ public class CustomElementRegistryInitializerTest {
     @Before
     public void setup() {
         CustomElementRegistryAccess.resetRegistry();
+        Assert.assertNull(VaadinService.getCurrent());
         setVaadinServiceMock();
         customElementRegistryInitializer = new CustomElementRegistryInitializer();
     }
 
     private void setVaadinServiceMock() {
-        Assert.assertNull(VaadinService.getCurrent());
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
