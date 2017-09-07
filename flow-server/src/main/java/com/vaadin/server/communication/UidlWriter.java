@@ -169,22 +169,20 @@ public class UidlWriter implements Serializable {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
 
-        if (!pendingSendToClient.isEmpty()) {
-            FilterContext context = new FilterContext(session);
+        FilterContext context = new FilterContext(session);
 
-            for (DependencyFilter filter : session.getService()
-                    .getDependencyFilters()) {
-                pendingSendToClient = filter
-                        .filter(new ArrayList<>(pendingSendToClient), context);
-            }
-
-            if (!pendingSendToClient.isEmpty()) {
-                groupDependenciesByLoadMode(pendingSendToClient)
-                        .forEach((loadMode, dependencies) -> response
-                                .put(loadMode.name(), dependencies));
-            }
-            dependencyList.clearPendingSendToClient();
+        for (DependencyFilter filter : session.getService()
+                .getDependencyFilters()) {
+            pendingSendToClient = filter
+                    .filter(new ArrayList<>(pendingSendToClient), context);
         }
+
+        if (!pendingSendToClient.isEmpty()) {
+            groupDependenciesByLoadMode(pendingSendToClient)
+                    .forEach((loadMode, dependencies) -> response
+                            .put(loadMode.name(), dependencies));
+        }
+        dependencyList.clearPendingSendToClient();
     }
 
     private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(

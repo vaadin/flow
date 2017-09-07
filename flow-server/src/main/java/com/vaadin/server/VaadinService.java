@@ -56,6 +56,7 @@ import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
+import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Registration;
@@ -226,14 +227,16 @@ public abstract class VaadinService implements Serializable {
         Collections.reverse(handlers);
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
-        dependencyFilters = Collections
-                .unmodifiableCollection(event.getAddedDependencyFilters());
+
+        List<DependencyFilter> dependencyFiltersList = processDependencyFilters(
+                new ArrayList<>(event.getAddedDependencyFilters()));
 
         List<BootstrapListener> bootstrapListenersList = processBootstrapListeners(
                 new ArrayList<>(event.getAddedBootstrapListeners()));
 
         // the assigned list is a new instance to ensure it is iterable
         // without chances of raising ConcurrentModificationExceptions
+        dependencyFilters = new ArrayList<>(dependencyFiltersList);
         bootstrapListeners = new ArrayList<>(bootstrapListenersList);
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
@@ -346,6 +349,32 @@ public abstract class VaadinService implements Serializable {
             List<BootstrapListener> defaultListeners) {
         assert defaultListeners != null;
         return defaultListeners;
+    }
+
+    /**
+     * Processes the available dependency filters. A custom Vaadin service
+     * implementation can override this method to discover dependency filters in
+     * some other way in addition to the default implementation that uses
+     * {@link ServiceLoader}. This could for example be used to allow defining
+     * an dependency filter as an OSGi service or as a Spring bean.
+     * <p>
+     * The default implementation just returns the same filters received as
+     * parameter.
+     * <p>
+     * The order of the filters inside the list defines the order of the
+     * execution of those filter at the
+     * {@link UidlWriter#createUidl(UI, boolean)} method.
+     *
+     * @param defaultFilters
+     *            A list with the filters loaded by the ServiceLoader mechanism.
+     *            This list is safe to be changed and returned if needed.
+     *
+     * @return the list of all available dependency filters.
+     */
+    protected List<DependencyFilter> processDependencyFilters(
+            List<DependencyFilter> defaultFilters) {
+        assert defaultFilters != null;
+        return defaultFilters;
     }
 
     /**

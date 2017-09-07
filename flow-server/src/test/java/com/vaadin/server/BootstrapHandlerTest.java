@@ -31,6 +31,7 @@ import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
+import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Html;
@@ -171,7 +172,7 @@ public class BootstrapHandlerTest {
                 .attr("src", "testing.2"));
 
         Mockito.when(service.processBootstrapListeners(Mockito.anyList()))
-        .thenReturn(listeners);
+                .thenReturn(listeners);
 
         initUI(testUI);
 
@@ -188,6 +189,78 @@ public class BootstrapHandlerTest {
         Assert.assertEquals(bootstrapContext.getUriResolver(), resolver.get());
 
         Mockito.verify(service).processBootstrapListeners(Mockito.anyList());
+    }
+
+    @Test
+    public void useDependencyFilters_removeDependenciesAndAddNewOnes() {
+        List<DependencyFilter> filters = new ArrayList<>(5);
+        filters.add((list, context) -> {
+            list.clear(); // remove everything
+            return list;
+        });
+        filters.add((list, context) -> {
+            list.add(new Dependency(Dependency.Type.HTML_IMPORT,
+                    "imported-by-filter.html", LoadMode.EAGER));
+            return list;
+        });
+        filters.add((list, context) -> {
+            list.add(new Dependency(Dependency.Type.JAVASCRIPT,
+                    "imported-by-filter.js", LoadMode.EAGER));
+            list.add(new Dependency(Dependency.Type.JAVASCRIPT,
+                    "imported-by-filter2.js", LoadMode.EAGER));
+            return list;
+        });
+        filters.add((list, context) -> {
+            list.remove(2); // removes the imported-by-filter2.js
+            return list;
+        });
+        filters.add((list, context) -> {
+            list.add(new Dependency(Dependency.Type.STYLESHEET,
+                    "imported-by-filter.css", LoadMode.EAGER));
+            return list;
+        });
+
+        Mockito.when(service.processDependencyFilters(Mockito.anyList()))
+                .thenReturn(filters);
+
+        initUI(testUI);
+
+        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
+                session, testUI);
+        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+
+        Elements scripts = page.head().getElementsByTag("script");
+        boolean found = scripts.stream().anyMatch(
+                element -> element.attr("src").equals("imported-by-filter.js"));
+        Assert.assertTrue(
+                "imported-by-filter.js should be in the head of the page",
+                found);
+
+        found = scripts.stream().anyMatch(element -> element.attr("src")
+                .equals("imported-by-filter2.js"));
+        Assert.assertFalse(
+                "imported-by-filter2.js shouldn't be in the head of the page",
+                found);
+
+        found = scripts.stream()
+                .anyMatch(element -> element.attr("src").equals("eager.js"));
+        Assert.assertFalse("eager.js shouldn't be in the head of the page",
+                found);
+
+        Elements links = page.head().getElementsByTag("link");
+        found = links.stream().anyMatch(element -> element.attr("href")
+                .equals("imported-by-filter.css"));
+        Assert.assertTrue(
+                "imported-by-filter.css should be in the head of the page",
+                found);
+
+        found = links.stream().anyMatch(element -> element.attr("href")
+                .equals("imported-by-filter.html"));
+        Assert.assertTrue(
+                "imported-by-filter.html should be in the head of the page",
+                found);
+
+        Mockito.verify(service).processDependencyFilters(Mockito.anyList());
     }
 
     @Test
@@ -292,13 +365,12 @@ public class BootstrapHandlerTest {
         Mockito.when(service.getSystemMessages(Matchers.any(Locale.class),
                 Matchers.any(VaadinRequest.class))).thenReturn(messages);
         Mockito.when(messages.isSessionExpiredNotificationEnabled())
-        .thenReturn(true);
+                .thenReturn(true);
         Mockito.when(session.getSession())
-        .thenReturn(Mockito.mock(WrappedSession.class));
+                .thenReturn(Mockito.mock(WrappedSession.class));
 
         String url = "http://{{CONFIG_JSON}}/file";
-        Mockito.when(messages.getSessionExpiredURL())
-        .thenReturn(url);
+        Mockito.when(messages.getSessionExpiredURL()).thenReturn(url);
 
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
@@ -344,7 +416,7 @@ public class BootstrapHandlerTest {
         try (InputStream stream = getClass()
                 .getResourceAsStream("es6-collections.js")) {
             IOUtils.readLines(stream, StandardCharsets.UTF_8).stream()
-            .forEach(builder::append);
+                    .forEach(builder::append);
 
         }
         boolean hasEs6Inlined = head.getElementsByTag("script").stream()
