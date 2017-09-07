@@ -47,30 +47,30 @@ function runSonar {
         echo "SKIP_SONAR env variable is set to 'true', skipping sonar."
     fi
 }
-
-if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
-then
-    # Pull request with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available
-    echo "Running clean verify"
-    mvn -B -e -V \
-        -Pvalidation \
-        -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
-        -Dtest.excludegroup= \
-        $(getDockerParamsIfNeeded) \
-        clean \
-        license:download-licenses \
-        org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc
-
-    STATUS=$?
-    if [ $STATUS -eq 0 ]
-    then
-        runSonar
-    else
-        echo "Build failed, skipping sonar."
-        exit 1
-    fi
-elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
-then
+#
+#if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
+#then
+#    # Pull request with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available
+#    echo "Running clean verify"
+#    mvn -B -e -V \
+#        -Pvalidation \
+#        -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
+#        -Dtest.excludegroup= \
+#        $(getDockerParamsIfNeeded) \
+#        clean \
+#        license:download-licenses \
+#        org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc
+#
+#    STATUS=$?
+#    if [ $STATUS -eq 0 ]
+#    then
+#        runSonar
+#    else
+#        echo "Build failed, skipping sonar."
+#        exit 1
+#    fi
+#elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]
+#then
     # Master build with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available
     # Production mode commented out due to https://github.com/vaadin/flow/issues/2165
     # -Dvaadin.productionMode=true \
@@ -89,11 +89,11 @@ then
         echo "Build failed, skipping sonar."
         exit 1
     fi
-else
-    # Something else than a "safe" pull request, without any secure vars available, no sonar possible
-    mvn -B -e -V \
-        -Pall-tests \
-        -Dmaven.javadoc.skip=false \
-        $(getDockerParamsIfNeeded) \
-        clean license:download-licenses verify javadoc:javadoc
-fi
+#else
+#    # Something else than a "safe" pull request, without any secure vars available, no sonar possible
+#    mvn -B -e -V \
+#        -Pall-tests \
+#        -Dmaven.javadoc.skip=false \
+#        $(getDockerParamsIfNeeded) \
+#        clean license:download-licenses verify javadoc:javadoc
+#fi
