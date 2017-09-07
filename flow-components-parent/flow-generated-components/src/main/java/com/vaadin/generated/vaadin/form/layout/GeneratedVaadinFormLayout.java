@@ -196,10 +196,6 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 		return get();
 	}
 
-	public void connectedCallback() {
-		getElement().callFunction("connectedCallback");
-	}
-
 	/**
 	 * <p>
 	 * Description copied from corresponding location in WebComponent:
