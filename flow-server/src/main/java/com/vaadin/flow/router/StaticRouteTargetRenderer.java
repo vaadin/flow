@@ -15,9 +15,15 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
+import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.Route;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 
 /**
  * A simple route target renderer that always uses the given view type and route
@@ -46,4 +52,17 @@ public class StaticRouteTargetRenderer extends RouteTargetRenderer {
             NavigationEvent event) {
         return routeTargetType;
     }
+
+    @Override
+    public List<Class<? extends RouterLayout>> getParentTargetTypes(
+            NavigationEvent event, Class<? extends Component> targetType) {
+        assert targetType == routeTargetType;
+        Optional<Route> router = AnnotationReader.getAnnotationFor(targetType,
+                Route.class);
+        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
+            return Collections.singletonList(router.get().layout());
+        }
+        return Collections.emptyList();
+    }
+
 }

@@ -22,6 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.ui.UI;
+
 /**
  * Defines the route for components that function as navigation targets in
  * routing.
@@ -34,8 +37,18 @@ public @interface Route {
 
     /**
      * Gets the route path value of the annotated class.
-     * 
+     *
      * @return the path value of this route
      */
     String value();
+
+    /**
+     * Sets the parent component for the route target component.
+     * <p>
+     * When navigating between components that use the same layout, the same
+     * component instance is reused.
+     *
+     * @return
+     */
+    Class<? extends RouterLayout> layout() default UI.class;
 }
