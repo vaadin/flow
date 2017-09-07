@@ -36,6 +36,9 @@ public class TestViewRegistry implements ServletContainerInitializer {
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
+        if (set == null) {
+            return;
+        }
         set.forEach(clazz -> {
             if (TestView.class.isAssignableFrom(clazz)) {
                 availableViews.add((Class<? extends TestView>) clazz);

@@ -40,7 +40,7 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        if (availableViews.isEmpty()) {
+        if (availableViews.isEmpty() && set != null) {
             availableViews = set.stream()
                     .filter(DemoView.class::isAssignableFrom)
                     .map(clazz -> (Class<? extends DemoView>) clazz)
@@ -51,7 +51,7 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
 
     /**
      * Gets all registered views available for the application.
-     * 
+     *
      * @return a safe-to-change list of views, never <code>null</code>
      */
     public static List<Class<? extends DemoView>> getAvailableViews() {
@@ -61,7 +61,7 @@ public class ComponentDemoRegister implements ServletContainerInitializer {
     /**
      * Gets a specific view based on the {@link ComponentDemo#href()} of the
      * demo.
-     * 
+     *
      * @param componentName
      *            the href of the demo
      * @return an optional with the view, or empty if the view wasn't found
