@@ -16,6 +16,7 @@
 package com.vaadin.flow.testutil;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -230,6 +231,18 @@ public class TestBenchHelpers extends ParallelTest {
      */
     protected void scrollBy(int deltaX, int deltaY) {
         executeScript("window.scrollBy(" + deltaX + ',' + deltaY + ");");
+    }
+
+    /**
+     * Scrolls the page to the element given using javascript.
+     *
+     * Standard Selenium api does not work for current newest Chrome and ChromeDriver.
+     *
+     * @param element the element to scroll to, not {@code null}
+     */
+    protected void scrollToElement(WebElement element) {
+        Objects.requireNonNull(element, "The element to scroll to should not be null");
+        getCommandExecutor().executeScript("arguments[0].scrollIntoView(true);", element);
     }
 
     /**

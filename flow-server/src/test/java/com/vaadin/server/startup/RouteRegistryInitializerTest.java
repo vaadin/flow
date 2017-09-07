@@ -40,6 +40,7 @@ public class RouteRegistryInitializerTest {
     @Before
     public void init() {
         routeRegistryInitializer = new RouteRegistryInitializer();
+        RouteRegistry.getInstance().initialized = false;
     }
 
     @Test
@@ -62,6 +63,16 @@ public class RouteRegistryInitializerTest {
                         .getNavigationTarget(new Location("bar")).get());
     }
 
+    @Test
+    public void onStartUp_no_exception_with_null_arguments() {
+        try {
+            routeRegistryInitializer.onStartup(null, null);
+        } catch (Exception e) {
+            Assert.fail(
+                    "RouteRegistryInitializer.onStartup should not throw with null arguments");
+        }
+    }
+
     @Test(expected = ServletException.class)
     public void onStartUp_duplicate_routes_throws() throws ServletException {
         routeRegistryInitializer.onStartup(
@@ -73,7 +84,6 @@ public class RouteRegistryInitializerTest {
     @Test(expected = InvalidRouteConfigurationException.class)
     public void routeRegistry_routes_can_only_be_set_once()
             throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().initialized = false;
         Assert.assertFalse("RouteRegistry should not be initialized",
                 RouteRegistry.getInstance().isInitialized());
         RouteRegistry.getInstance().setNavigationTargets(new HashSet<>());
@@ -90,7 +100,7 @@ public class RouteRegistryInitializerTest {
     private static class NavigationTargetFoo extends Component {
     }
 
-    @Route("foo2")
+    @Route("foo")
     private static class NavigationTargetFoo2 extends Component {
     }
 

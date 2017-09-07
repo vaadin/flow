@@ -17,6 +17,7 @@ package com.vaadin.client.flow.nodefeature;
 
 import java.util.function.Function;
 
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -177,7 +178,10 @@ public class NodeList extends NodeFeature implements ReactiveValue {
 
         for (int i = 0; i < values.length(); i++) {
             Object value = values.get(i);
-            json.set(json.length(), converter.apply(value));
+            // Crazy cast since otherwise SDM fails
+            // for primitives values since primitives are not a JSO
+            json.set(json.length(),
+                    WidgetUtil.crazyJsoCast(converter.apply(value)));
         }
 
         return json;

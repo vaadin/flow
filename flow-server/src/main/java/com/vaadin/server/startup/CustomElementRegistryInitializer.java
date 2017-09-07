@@ -34,7 +34,7 @@ import com.vaadin.util.CustomElementNameValidator;
  */
 @HandlesTypes(Tag.class)
 public class CustomElementRegistryInitializer
-        implements ServletContainerInitializer {
+implements ServletContainerInitializer {
 
     private CustomElements customElements;
 
@@ -45,9 +45,11 @@ public class CustomElementRegistryInitializer
                 .getInstance();
 
         customElements = new CustomElements();
-        classSet.stream()
-                .filter(CustomElementRegistryInitializer::isApplicableClass)
-                .forEach(this::processComponentClass);
+        if (classSet != null) {
+            classSet.stream()
+            .filter(CustomElementRegistryInitializer::isApplicableClass)
+            .forEach(this::processComponentClass);
+        }
 
         if (!elementRegistry.isInitialized()) {
             elementRegistry.setCustomElements(customElements.computeTagToElementRelation());
