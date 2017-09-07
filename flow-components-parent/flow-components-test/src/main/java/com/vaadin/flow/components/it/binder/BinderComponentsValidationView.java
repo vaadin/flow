@@ -31,6 +31,9 @@ public class BinderComponentsValidationView extends TestView {
     public static final String INITIAL_TEXT = "one";
     public static final String CORRECT_TEXT = "two";
 
+    /**
+     * A bean that is used to test a binder.
+     */
     public static class TestBean {
         private String text;
 
@@ -47,6 +50,9 @@ public class BinderComponentsValidationView extends TestView {
         }
     }
 
+    /**
+     * Creates a view with a binder that has a verification rule.
+     */
     public BinderComponentsValidationView() {
         Binder<TestBean> binder = new Binder<>(TestBean.class);
         TextField field = new TextField();
