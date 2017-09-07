@@ -92,7 +92,7 @@ public class ComponentGenerator {
     private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
-    private static final Set<String> CALLBACKS = createCallbacks();
+    private static final Set<String> LIFECYCLE_CALLBACKS = createCallbacks();
 
     private ObjectMapper mapper;
     private File jsonFile;
@@ -986,7 +986,7 @@ public class ComponentGenerator {
 
     private void generateMethodFor(JavaClassSource javaClass,
             ComponentFunctionData function) {
-        if (CALLBACKS.contains(function.getName())) {
+        if (LIFECYCLE_CALLBACKS.contains(function.getName())) {
             return;
         }
         Set<List<ComponentType>> typeVariants = FunctionParameterVariantCombinator
