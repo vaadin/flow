@@ -3,6 +3,7 @@ package com.vaadin.flow.tutorial.webcomponent.compilation;
 import java.util.Optional;
 
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.flow.router.NEW_RouterInterface;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -32,7 +33,7 @@ public class MyUI extends UI {
     }
 
     @Override
-    public Optional<Router> getRouter() {
+    public Optional<NEW_RouterInterface> getRouter() {
         return Optional.ofNullable(router);
     }
 }
