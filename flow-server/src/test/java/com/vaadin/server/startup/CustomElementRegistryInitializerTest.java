@@ -58,12 +58,14 @@ public class CustomElementRegistryInitializerTest {
         Mockito.when(service.getDeploymentConfiguration())
         .thenReturn(configuration);
         VaadinService.setCurrent(service);
+        System.out.println("1111===============================");
         customElementRegistryInitializer = new CustomElementRegistryInitializer();
     }
 
     @After
     public void tearDown() {
         VaadinService.setCurrent(null);
+        System.out.println("3333===============================");
     }
 
     @Test
@@ -165,6 +167,7 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void creatingElementsWhenMultipleRegisteredCustomTagNamesInRegistryGetCorrectComponentWired()
             throws ServletException {
+        System.out.println("2222===============================");
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class, ValidExtendingElement.class,
                         CustomPolymerElement.class).collect(Collectors.toSet()),
