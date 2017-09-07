@@ -236,15 +236,17 @@ public abstract class VaadinService implements Serializable {
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
-        String routerConfiguratorClassName = deploymentConf
-                .getRouterConfiguratorClassName();
-        if (routerConfiguratorClassName != null && !RouterConfigurator.class
-                .getName().equals(routerConfiguratorClassName)) {
-            // Configure router if we have a non-default configurator type
-
-            configureRouter(routerConfiguratorClassName);
-        } else {
+        if (deploymentConf.isUsingNewRouting()) {
             router = new NEW_Router();
+        } else {
+            String routerConfiguratorClassName = deploymentConf
+                    .getRouterConfiguratorClassName();
+            if (routerConfiguratorClassName != null && !RouterConfigurator.class
+                    .getName().equals(routerConfiguratorClassName)) {
+                // Configure router if we have a non-default configurator type
+
+                configureRouter(routerConfiguratorClassName);
+            }
         }
 
         initialized = true;

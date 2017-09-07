@@ -257,4 +257,7 @@ public interface DeploymentConfiguration extends Serializable {
         return getStringProperty(Constants.FRONTEND_URL_ES5, defaultUrl);
     }
 
+    default boolean isUsingNewRouting() {
+        return false;
+    }
 }

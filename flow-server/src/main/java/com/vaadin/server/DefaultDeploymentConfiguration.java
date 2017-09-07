@@ -90,6 +90,7 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private String webComponentsPolyfillBase;
+    private boolean usingNewRouting;
 
     /**
      * Create a new deployment configuration instance.
@@ -120,6 +121,7 @@ public class DefaultDeploymentConfiguration
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
         checkWebComponentsPolyfillBase(resourceScanner);
+        checkUsingNewRouting();
     }
 
     @Override
@@ -286,6 +288,11 @@ public class DefaultDeploymentConfiguration
         return initParameters;
     }
 
+    @Override
+    public boolean isUsingNewRouting() {
+        return usingNewRouting;
+    }
+
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
@@ -346,6 +353,12 @@ public class DefaultDeploymentConfiguration
         sendUrlsAsParameters = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
+    }
+
+    private void checkUsingNewRouting() {
+        usingNewRouting = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
+                false);
     }
 
     private Logger getLogger() {
