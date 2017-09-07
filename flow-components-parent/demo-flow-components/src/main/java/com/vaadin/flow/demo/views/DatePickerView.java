@@ -26,7 +26,7 @@ import com.vaadin.ui.DatePicker.DatePickerI18n;
 /**
  * View for {@link DatePicker} demo.
  */
-@ComponentDemo(name = "Vaadin Date Picker", href = "vaadin-date-picker")
+@ComponentDemo(name = "Date Picker", href = "vaadin-date-picker")
 public class DatePickerView extends DemoView {
 
     @Override

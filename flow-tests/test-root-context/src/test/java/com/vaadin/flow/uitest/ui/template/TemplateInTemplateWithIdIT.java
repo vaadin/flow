@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.scroll;
+package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,33 +22,16 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class PushStateScrollIT extends ChromeBrowserTest {
-    @Test
-    public void pushNoScroll() {
-        testNoScrolling("push");
-    }
+public class TemplateInTemplateWithIdIT extends ChromeBrowserTest {
 
     @Test
-    public void replaceNoScroll() {
-        testNoScrolling("replace");
-    }
-
-    private void testNoScrolling(String buttonId) {
+    public void childTemplateInstanceHandlesEvent() {
         open();
 
-        WebElement button = findElement(By.id(buttonId));
+        WebElement template = findElement(By.id("template"));
+        WebElement child = getInShadowRoot(template, By.id("child"));
 
-        scrollToElement(button);
-
-        int scrollBeforeClick = getScrollY();
-
-        // Sanity check
-        Assert.assertNotEquals("Should be scrolled down before clicking", 0,
-                scrollBeforeClick);
-
-        button.click();
-
-        Assert.assertEquals("Scroll position should not have changed",
-                scrollBeforeClick, getScrollY());
+        WebElement text = getInShadowRoot(child, By.id("text"));
+        Assert.assertEquals("@Id injected!", text.getText());
     }
 }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.startup;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,11 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         try {
+            if (classSet == null) {
+                RouteRegistry.getInstance()
+                        .setNavigationTargets(Collections.emptySet());
+                return;
+            }
             RouteRegistry.getInstance()
                     .setNavigationTargets(classSet.stream()
                             .filter(RouteRegistryInitializer::isApplicableClass)

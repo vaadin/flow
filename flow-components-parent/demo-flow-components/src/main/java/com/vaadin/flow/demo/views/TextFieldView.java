@@ -23,7 +23,7 @@ import com.vaadin.ui.TextField;
 /**
  * View for {@link GeneratedVaadinTextField} demo.
  */
-@ComponentDemo(name = "Vaadin Text Field", href = "vaadin-text-field")
+@ComponentDemo(name = "Text Field", href = "vaadin-text-field")
 public class TextFieldView extends DemoView {
     @Override
     void initView() {

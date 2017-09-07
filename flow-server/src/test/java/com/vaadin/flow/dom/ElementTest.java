@@ -352,7 +352,7 @@ public class ElementTest extends AbstractNodeTest {
         e.addEventListener("click", myListener);
         Assert.assertEquals(0, listenerCalls.get());
         e.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        .fireEvent(new DomEvent(e, "click", Json.createObject()));
         Assert.assertEquals(1, listenerCalls.get());
     }
 
@@ -720,7 +720,7 @@ public class ElementTest extends AbstractNodeTest {
 
         Assert.assertNull("class should not be stored as a regular attribute",
                 element.getNode().getFeature(ElementAttributeMap.class)
-                        .get("class"));
+                .get("class"));
     }
 
     @Test
@@ -911,7 +911,7 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertTrue(e.hasAttribute("style"));
         assertEqualsOne(
                 new String[] { "border:1px solid black;margin:1em",
-                        "margin:1em;border:1px solid black" },
+                "margin:1em;border:1px solid black" },
                 e.getAttribute("style"));
     }
 
@@ -1159,8 +1159,8 @@ public class ElementTest extends AbstractNodeTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getFeature(SynchronizedPropertiesList.class)
-                .collectChanges(change -> i.addAndGet(
-                        ((ListAddChange<?>) change).getNewItems().size()));
+        .collectChanges(change -> i.addAndGet(
+                ((ListAddChange<?>) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
 
@@ -1201,7 +1201,7 @@ public class ElementTest extends AbstractNodeTest {
     public void setSameSynchronizedEventManyTimes() {
         Element e = ElementFactory.createDiv();
         e.addSynchronizedPropertyEvent("foo")
-                .addSynchronizedPropertyEvent("foo");
+        .addSynchronizedPropertyEvent("foo");
         String[] expected = new String[] { "foo" };
 
         Assert.assertArrayEquals(expected,
@@ -1209,8 +1209,8 @@ public class ElementTest extends AbstractNodeTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getFeature(SynchronizedPropertyEventsList.class)
-                .collectChanges(change -> i.addAndGet(
-                        ((ListAddChange<?>) change).getNewItems().size()));
+        .collectChanges(change -> i.addAndGet(
+                ((ListAddChange<?>) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
 
@@ -1230,7 +1230,7 @@ public class ElementTest extends AbstractNodeTest {
     public void getSetSynchronizedEvent() {
         Element e = ElementFactory.createDiv();
         e.addSynchronizedPropertyEvent("foo")
-                .addSynchronizedPropertyEvent("bar");
+        .addSynchronizedPropertyEvent("bar");
         Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
 
         List<String> list = e.getSynchronizedPropertyEvents()
@@ -2011,7 +2011,7 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(
                 "<div style=\"background:green\">\n"
                         + " <span><button>hello</button></span>\n" + "</div>",
-                html.getElement().getOuterHTML());
+                        html.getElement().getOuterHTML());
     }
 
     @Test
@@ -2020,9 +2020,9 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("noArgsMethod");
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.noArgsMethod()", element);
-
     }
 
     @Test
@@ -2031,9 +2031,39 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
         element.callFunction("noArgsMethod");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.noArgsMethod()", element);
+    }
 
+    @Test
+    public void callFunctionBeforeDetach() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.callFunction("noArgsMethod");
+        ui.getElement().removeAllChildren();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<JavaScriptInvocation> invocations = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertTrue(invocations.isEmpty());
+    }
+
+    @Test
+    public void callFunctionBeforeReAttach() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.callFunction("noArgsMethod");
+
+        Element div = ElementFactory.createDiv();
+        ui.getElement().appendChild(div);
+        div.appendChild(element);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertPendingJs(ui, "$0.noArgsMethod()", element);
     }
 
     @Test
@@ -2043,6 +2073,7 @@ public class ElementTest extends AbstractNodeTest {
         element.callFunction("method", "foo");
         ui.getElement().appendChild(element);
 
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         assertPendingJs(ui, "$0.method($1)", element, "foo");
 
     }
@@ -2053,6 +2084,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("method", "foo", 123);
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.method($1,$2)", element, "foo", 123);
     }
@@ -2063,6 +2095,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("property.method");
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.property.method()", element);
     }
@@ -2073,6 +2106,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         element.callFunction("property.other.method");
         ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "$0.property.other.method()", element);
     }

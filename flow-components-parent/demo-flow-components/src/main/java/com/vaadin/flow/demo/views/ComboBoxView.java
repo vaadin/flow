@@ -27,8 +27,7 @@ import com.vaadin.ui.ComboBox;
 /**
  * View for {@link ComboBox} demo.
  */
-@ComponentDemo(name = "Vaadin ComboBox", href = "vaadin-combo-box")
-
+@ComponentDemo(name = "ComboBox", href = "vaadin-combo-box")
 public class ComboBoxView extends DemoView {
     /**
      * Example object.
