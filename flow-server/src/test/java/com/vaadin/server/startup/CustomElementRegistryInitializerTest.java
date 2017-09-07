@@ -50,6 +50,11 @@ public class CustomElementRegistryInitializerTest {
     @Before
     public void setup() {
         CustomElementRegistryAccess.resetRegistry();
+        setVaadinServiceMock();
+        customElementRegistryInitializer = new CustomElementRegistryInitializer();
+    }
+
+    private void setVaadinServiceMock() {
         Assert.assertNull(VaadinService.getCurrent());
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
@@ -58,7 +63,6 @@ public class CustomElementRegistryInitializerTest {
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
         VaadinService.setCurrent(service);
-        customElementRegistryInitializer = new CustomElementRegistryInitializer();
     }
 
     @After
@@ -123,6 +127,7 @@ public class CustomElementRegistryInitializerTest {
     @Test
     public void creatingElementWithRegisteredCustomTagNameWiresComponentForElement()
             throws ServletException {
+        setVaadinServiceMock();
         customElementRegistryInitializer.onStartup(Stream
                 .of(CustomPolymerElement.class).collect(Collectors.toSet()),
                 null);
