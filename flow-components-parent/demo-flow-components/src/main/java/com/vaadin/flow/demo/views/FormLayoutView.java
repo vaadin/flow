@@ -27,7 +27,7 @@ import com.vaadin.ui.TextField;
  * 
  * @author Vaadin Ltd
  */
-@ComponentDemo(name = "Vaadin Form Layout", href = "vaadin-form-layout", subcategory = "Layouts")
+@ComponentDemo(name = "Form Layout", href = "vaadin-form-layout", subcategory = "Layouts")
 public class FormLayoutView extends DemoView {
 
     @Override

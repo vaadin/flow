@@ -30,9 +30,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -45,6 +47,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
@@ -567,6 +570,9 @@ public class PolymerTemplateTest {
 
         assertNotNull(template.label);
         assertEquals(child, template.label.getNode());
+
+        Assert.assertEquals("labelId",
+                template.label.getAttribute(NodeProperties.ID));
     }
 
     @Test
@@ -647,8 +653,16 @@ public class PolymerTemplateTest {
         AttachTemplateChildFeature feature = template.getElement().getNode()
                 .getFeature(AttachTemplateChildFeature.class);
         AtomicInteger counter = new AtomicInteger(0);
-        feature.forEachChild(child -> counter.incrementAndGet());
+        AtomicReference<StateNode> injected = new AtomicReference<>();
+        feature.forEachChild(child -> {
+            counter.incrementAndGet();
+            injected.set(child);
+        });
         assertEquals(1, counter.get());
+
+        Assert.assertEquals("child", com.vaadin.flow.dom.Element
+                .get(injected.get())
+                .getAttribute(NodeProperties.ID));
     }
 
     private void doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
