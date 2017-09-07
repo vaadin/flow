@@ -35,8 +35,6 @@ public class NEW_LocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private final Location location;
-    private final List<Component> routeTargetChain;
-    private final Map<String, String> routePlaceholders;
 
     private int statusCode = HttpServletResponse.SC_OK;
     private NavigationHandler rerouteTarget;
@@ -53,29 +51,18 @@ public class NEW_LocationChangeEvent extends EventObject {
      *            not <code>null</code>
      * @param location
      *            the new location, not {@code null}
-     * @param routeTargetChain
-     *            the component chain that will be used, not {@code null}
-     * @param routePlaceholders
-     *            a map containing actual path segment values used for
-     *            placeholders in the used route mapping, not {@code null}
      */
     public NEW_LocationChangeEvent(NEW_RouterInterface router, UI ui,
-            NavigationTrigger trigger, Location location,
-            List<Component> routeTargetChain,
-            Map<String, String> routePlaceholders) {
+            NavigationTrigger trigger, Location location) {
         super(router);
 
         assert ui != null;
         assert trigger != null;
         assert location != null;
-        assert routeTargetChain != null;
-        assert routePlaceholders != null;
 
         this.ui = ui;
         this.trigger = trigger;
         this.location = location;
-        this.routeTargetChain = Collections.unmodifiableList(routeTargetChain);
-        this.routePlaceholders = Collections.unmodifiableMap(routePlaceholders);
     }
 
     /**
@@ -85,28 +72,6 @@ public class NEW_LocationChangeEvent extends EventObject {
      */
     public Location getLocation() {
         return location;
-    }
-
-    /**
-     * Gets the component which is being shown.
-     * <p>
-     * This is the same as the most deeply nested component in the route target
-     * chain.
-     *
-     * @return the component being shown, not {@code null}
-     */
-    public Component getRouteTarget() {
-        return routeTargetChain.get(0);
-    }
-
-    /**
-     * Gets the chain of component that will be nested inside the UI, starting
-     * from the most deeply nested component.
-     *
-     * @return an unmodifiable list with the component chain, not {@code null}
-     */
-    public List<Component> getRouteTargetChain() {
-        return routeTargetChain;
     }
 
     /**
@@ -126,33 +91,6 @@ public class NEW_LocationChangeEvent extends EventObject {
      */
     public NavigationTrigger getTrigger() {
         return trigger;
-    }
-
-    /**
-     * Gets the part of the location that matched the <code>*</code> part of the
-     * route.
-     *
-     * @return the wildcard part of the path, or {@code null} if not using a
-     *         wildcard route
-     */
-    public String getPathWildcard() {
-        return getPathParameter("*");
-    }
-
-    /**
-     * Gets the part of the location that matched <code>{placeholderName}</code>
-     * of the route.
-     *
-     * @param placeholderName
-     *            the name of the placeholder, not {@code null}
-     * @return the placeholder value, or {@code null} if the placeholder name
-     *         was not present in the route
-     */
-    public String getPathParameter(String placeholderName) {
-        assert placeholderName != null;
-        assert !placeholderName.contains("{") && !placeholderName.contains("}");
-
-        return routePlaceholders.get(placeholderName);
     }
 
     /**
@@ -240,7 +178,6 @@ public class NEW_LocationChangeEvent extends EventObject {
      *            the component type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends Component> routeTargetType) {
-        rerouteTo(new NEW_StaticRouteTargetRenderer(routeTargetType, null));
+        rerouteTo(new NEW_StaticRouteTargetRenderer(routeTargetType));
     }
-
 }

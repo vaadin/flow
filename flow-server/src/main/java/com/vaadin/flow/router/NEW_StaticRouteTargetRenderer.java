@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.Objects;
+
 import com.vaadin.ui.Component;
 
 /**
@@ -23,7 +25,6 @@ import com.vaadin.ui.Component;
  */
 public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
 
-    private final String route;
     private final Class<? extends Component> routeTargetType;
 
     /**
@@ -32,19 +33,11 @@ public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
      *
      * @param viewType
      *            the component type to show, not <code>null</code>
-     * @param route
-     *            the route to use when evaluating path parameters for the
-     *            component, or <code>null</code> if the route target should not
-     *            get any path parameters
      */
     public NEW_StaticRouteTargetRenderer(
-            Class<? extends Component> routeTargetType, String route) {
-        if (routeTargetType == null) {
-            throw new IllegalArgumentException(
-                    "routeTargetType cannot be null");
-        }
-
-        this.route = route;
+            Class<? extends Component> routeTargetType) {
+        Objects.requireNonNull(routeTargetType,
+                "routeTargetType cannot be null");
         this.routeTargetType = routeTargetType;
     }
 
@@ -53,10 +46,4 @@ public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
             NavigationEvent event) {
         return routeTargetType;
     }
-
-    @Override
-    protected String getRoute() {
-        return route;
-    }
-
 }

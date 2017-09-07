@@ -83,7 +83,7 @@ public class NEW_Router implements NEW_RouterInterface {
                     location, ui, trigger);
 
             NavigationHandler handler = new NEW_StaticRouteTargetRenderer(
-                    navigationTarget.get(), location.getPath());
+                    navigationTarget.get());
             return handler.handle(navigationEvent);
         }
 
