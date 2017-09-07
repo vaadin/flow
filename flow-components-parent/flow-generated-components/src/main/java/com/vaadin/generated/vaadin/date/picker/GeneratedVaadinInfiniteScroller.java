@@ -92,33 +92,6 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Provides a default implementation of the standard Custom Elements
-	 * {@code attributeChangedCallback}.
-	 * </p>
-	 * <p>
-	 * By default, attributes declared in {@code properties} metadata are
-	 * deserialized using their {@code type} information to properties of the
-	 * same name. &quot;Dash-cased&quot; attributes are deserialzed to
-	 * &quot;camelCase&quot; properties.
-	 * </p>
-	 * 
-	 * @param name
-	 *            Name of attribute.
-	 * @param old
-	 *            Old value of attribute.
-	 * @param value
-	 *            Current value of attribute.
-	 */
-	protected void attributeChangedCallback(java.lang.String name,
-			JsonObject old, elemental.json.JsonObject value) {
-		getElement().callFunction("attributeChangedCallback", name, old, value);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * Sets a bag of property changes to this instance, and synchronously
 	 * processes all effects of the properties as a batch.
 	 * </p>
@@ -135,46 +108,9 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            default, `setProperties` will not set `readOnly: true` root
 	 *            properties.
 	 */
-	protected void setProperties(elemental.json.JsonObject props,
+	protected void setProperties(JsonObject props,
 			elemental.json.JsonObject setReadOnly) {
 		getElement().callFunction("setProperties", props, setReadOnly);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	protected void linkPaths(elemental.json.JsonObject to,
-			elemental.json.JsonObject from) {
-		getElement().callFunction("linkPaths", to, from);
 	}
 
 	/**
@@ -209,7 +145,44 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
 	public void linkPaths(java.lang.String to, java.lang.String from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
+	protected void linkPaths(elemental.json.JsonObject to,
+			elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -319,8 +292,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
+	protected void get(java.lang.String path, elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -349,7 +321,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
+	protected void get(elemental.json.JsonObject path,
+			elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -573,37 +546,6 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	protected void notifyPath(java.lang.String path,
 			elemental.json.JsonObject value) {
 		getElement().callFunction("notifyPath", path, value);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Provides a default implementation of the standard Custom Elements
-	 * {@code connectedCallback}.
-	 * </p>
-	 * <p>
-	 * The default implementation enables the property effects system and
-	 * flushes any pending properties, and updates shimmed CSS properties when
-	 * using the ShadyCSS scoping/custom properties polyfill.
-	 * </p>
-	 */
-	public void connectedCallback() {
-		getElement().callFunction("connectedCallback");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Provides a default implementation of the standard Custom Elements
-	 * {@code disconnectedCallback}.
-	 * </p>
-	 */
-	public void disconnectedCallback() {
-		getElement().callFunction("disconnectedCallback");
 	}
 
 	/**

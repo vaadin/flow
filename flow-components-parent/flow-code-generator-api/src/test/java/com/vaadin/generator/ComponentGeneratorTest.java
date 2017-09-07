@@ -57,7 +57,7 @@ public class ComponentGeneratorTest {
         componentMetadata.setBaseUrl("my-component/my-component.html");
         componentMetadata.setVersion("0.0.1");
         componentMetadata
-                .setDescription("Test java doc creation for class file");
+        .setDescription("Test java doc creation for class file");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("Generated class didn't contain class JavaDoc",
                 generatedClass
-                        .contains("* " + componentMetadata.getDescription()));
+                .contains("* " + componentMetadata.getDescription()));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class ComponentGeneratorTest {
                     "Generated HtmlImport did not match expectation.",
                     "@HtmlImport(\"frontend://test-directory/"
                             + componentMetadata.getBaseUrl() + "\")",
-                    matcher.group(0));
+                            matcher.group(0));
         } else {
             Assert.fail(
                     "@HtmlImport annotation was not found for generated class.");
@@ -131,6 +131,13 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("Generated class name was faulty",
                 generatedClass.contains("public class MyComponent"));
+    }
+
+    @Test
+    public void generateClassWithMethod_callBackMethod_methodIsNotGenerated() {
+        assertCallBackMethodIsNotGenerated("connectedCallback");
+        assertCallBackMethodIsNotGenerated("disconnectedCallback");
+        assertCallBackMethodIsNotGenerated("attributeChangedCallback");
     }
 
     @Test
@@ -175,7 +182,7 @@ public class ComponentGeneratorTest {
         propertyData.setName("name");
         propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
-                .setDescription("This is the name property of the component.");
+        .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
@@ -199,7 +206,7 @@ public class ComponentGeneratorTest {
         propertyData.setName("name");
         propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
-                .setDescription("This is the name property of the component.");
+        .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
@@ -227,7 +234,7 @@ public class ComponentGeneratorTest {
         propertyData.setName("name");
         propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
-                .setDescription("This is the name property of the component.");
+        .setDescription("This is the name property of the component.");
         propertyData.setReadOnly(true);
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
@@ -330,7 +337,7 @@ public class ComponentGeneratorTest {
                         "import com.vaadin.flow.event.ComponentEventListener;"));
         Assert.assertFalse("EventData imported even without events",
                 generatedClass
-                        .contains("import com.vaadin.annotations.EventData;"));
+                .contains("import com.vaadin.annotations.EventData;"));
     }
 
     @Test
@@ -413,7 +420,7 @@ public class ComponentGeneratorTest {
         propertyData.setName("name");
         propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
-                .setDescription("This is the name property of the component.");
+        .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
@@ -433,7 +440,7 @@ public class ComponentGeneratorTest {
         propertyData.setName("name");
         propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         propertyData
-                .setDescription("This is the name property of the component.");
+        .setDescription("This is the name property of the component.");
         componentMetadata.setProperties(Arrays.asList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
@@ -496,10 +503,10 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Wrong generated package. It should be com.my.test.some.directory",
                 generatedClass
-                        .startsWith("package com.my.test.some.directory;"));
+                .startsWith("package com.my.test.some.directory;"));
 
         componentMetadata
-                .setBaseUrl("\\Some\\Other\\Directory\\some-component.html");
+        .setBaseUrl("\\Some\\Other\\Directory\\some-component.html");
         generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
@@ -530,7 +537,7 @@ public class ComponentGeneratorTest {
     @Test
     public void generateClassWithClickableBehavior_classImplementsHasClickListeners() {
         componentMetadata
-                .setBehaviors(Arrays.asList("Polymer.GestureEventListeners"));
+        .setBehaviors(Arrays.asList("Polymer.GestureEventListeners"));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -595,7 +602,7 @@ public class ComponentGeneratorTest {
     @Test
     public void classContainsOnlyNamedSlots_generatedClassContainsAdders() {
         componentMetadata
-                .setSlots(Arrays.asList("named1", "named-2", "named-three"));
+        .setSlots(Arrays.asList("named1", "named-2", "named-three"));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -680,7 +687,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated class should contain the getSomething method",
                 generatedClass
-                        .contains("public SomethingProperty getSomething()"));
+                .contains("public SomethingProperty getSomething()"));
 
         Assert.assertTrue(
                 "Generated class should contain the setSomething method",
@@ -815,11 +822,11 @@ public class ComponentGeneratorTest {
         ComponentObjectTypeInnerType stringObjectTypeInnerType = new ComponentObjectTypeInnerType();
         stringObjectTypeInnerType.setName("internalString");
         stringObjectTypeInnerType
-                .setType(Arrays.asList(ComponentBasicType.STRING));
+        .setType(Arrays.asList(ComponentBasicType.STRING));
 
         ComponentObjectType stringObjectType = new ComponentObjectType();
         stringObjectType
-                .setInnerTypes(Arrays.asList(stringObjectTypeInnerType));
+        .setInnerTypes(Arrays.asList(stringObjectTypeInnerType));
 
         ComponentFunctionParameterData firstParameter = new ComponentFunctionParameterData();
         firstParameter.setName("firstParam");
@@ -966,7 +973,7 @@ public class ComponentGeneratorTest {
         ComponentFunctionData function2 = new ComponentFunctionData();
         function2.setName("callSomethingWithObjectAndString");
         function2
-                .setParameters(Arrays.asList(objectParameter, stringParameter));
+        .setParameters(Arrays.asList(objectParameter, stringParameter));
 
         ComponentFunctionParameterData multiParameter = new ComponentFunctionParameterData();
         multiParameter.setName("multiParam");
@@ -979,7 +986,7 @@ public class ComponentGeneratorTest {
         function3.setParameters(Arrays.asList(multiParameter));
 
         componentMetadata
-                .setMethods(Arrays.asList(function1, function2, function3));
+        .setMethods(Arrays.asList(function1, function2, function3));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -999,5 +1006,17 @@ public class ComponentGeneratorTest {
                 "protected void callSomethingWithMultiTypes(JsonArray multiParam)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomethingWithMultiTypes(JsonValue multiParam)"));
+    }
+
+    private void assertCallBackMethodIsNotGenerated(String callback) {
+        ComponentFunctionData functionData = new ComponentFunctionData();
+        functionData.setName(callback);
+        componentMetadata.setMethods(Arrays.asList(functionData));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        Assert.assertFalse("Callback methods are generated",
+                generatedClass.contains(callback));
     }
 }
