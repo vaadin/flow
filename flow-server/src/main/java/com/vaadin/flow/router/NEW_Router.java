@@ -33,7 +33,7 @@ import com.vaadin.ui.UI;
  */
 public class NEW_Router implements NEW_RouterInterface {
 
-    private volatile RouterConfiguration configuration = new RouterConfiguration() {
+    private final RouterConfiguration configuration = new RouterConfiguration() {
         @Override
         public boolean isConfigured() {
             return true;
