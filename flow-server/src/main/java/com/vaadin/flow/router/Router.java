@@ -117,10 +117,6 @@ public class Router implements NEW_RouterInterface {
 
         // Read volatile field only once per navigation
         ImmutableRouterConfiguration currentConfig = configuration;
-        if (currentConfig == null) {
-
-            return 12312;
-        }
         assert currentConfig.isConfigured();
 
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
