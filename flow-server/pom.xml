@@ -127,6 +127,7 @@
 				<configuration>
 					<excludedGroups>${test.excludegroup}</excludedGroups>
 					<enableAssertions>true</enableAssertions>
+					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
 
