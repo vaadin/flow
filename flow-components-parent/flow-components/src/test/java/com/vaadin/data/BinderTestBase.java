@@ -21,8 +21,10 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 
+import com.vaadin.ui.HasValidation;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 
@@ -63,6 +65,20 @@ implements Serializable {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    void assertInvalidField(String expectedErrorMessage, HasValidation field) {
+        Assert.assertEquals(
+                "The field should contain same error message as binder",
+                expectedErrorMessage, field.getErrorMessage());
+        Assert.assertTrue("The field should be invalid", field.isInvalid());
+    }
+
+    void assertValidField(HasValidation field) {
+        Assert.assertEquals(
+                "The field should contain no error message",
+                "", field.getErrorMessage());
+        Assert.assertFalse("The field should be valid", field.isInvalid());
     }
 
     @Before
