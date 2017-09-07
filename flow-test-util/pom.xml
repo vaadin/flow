@@ -7,9 +7,11 @@
         <artifactId>flow-project</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
+
     <artifactId>flow-test-util</artifactId>
     <name>Testing utilities for Flow</name>
     <packaging>jar</packaging>
+
     <properties>
         <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
     </properties>
