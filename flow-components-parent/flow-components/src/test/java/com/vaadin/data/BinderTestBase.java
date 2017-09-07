@@ -15,6 +15,9 @@
  */
 package com.vaadin.data;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -36,7 +39,7 @@ import com.vaadin.ui.UI;
  * @since 8.0
  */
 public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
-implements Serializable {
+        implements Serializable {
 
     protected static final String NEGATIVE_ERROR_MESSAGE = "Value must be non-negative";
 
@@ -75,15 +78,14 @@ implements Serializable {
     }
 
     void assertValidField(HasValidation field) {
-        Assert.assertEquals(
-                "The field should contain no error message",
-                "", field.getErrorMessage());
+        assertThat("The field should contain no error message",
+                field.getErrorMessage(), isEmptyOrNullString());
         Assert.assertFalse("The field should be valid", field.isInvalid());
     }
 
     @Before
     public void setUpBase() {
-        UI ui = new UI(){
+        UI ui = new UI() {
             @Override
             public Locale getLocale() {
                 return Locale.US;

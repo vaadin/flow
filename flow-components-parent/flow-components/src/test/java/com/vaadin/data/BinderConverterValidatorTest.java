@@ -217,7 +217,6 @@ public class BinderConverterValidatorTest
         binder.getBean().setAge(-12);
         binder.readBean(binder.getBean());
         assertEquals("-12", ageField.getValue());
-        assertInvalidField(NEGATIVE_ERROR_MESSAGE, ageField);
     }
 
     @Test(expected = IllegalArgumentException.class)
