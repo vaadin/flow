@@ -28,6 +28,11 @@ public class RouterIT extends ChromeBrowserTest {
         openRouteUrl("foo");
         Assert.assertEquals(FooNavigationTarget.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
+
+        // Test that url with trailing slash also works
+        openRouteUrl("foo/");
+        Assert.assertEquals(FooNavigationTarget.class.getSimpleName(),
+                findElement(By.id("name-div")).getText());
     }
 
     @Test

@@ -40,7 +40,7 @@ public class InternalRedirectHandler implements NavigationHandler {
     @Override
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
-        Router router = (Router) event.getSource();
+        NEW_RouterInterface router = event.getSource();
 
         ui.getPage().getHistory().replaceState(null, target);
 

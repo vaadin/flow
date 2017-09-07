@@ -76,13 +76,26 @@ public class NEW_Router implements NEW_RouterInterface {
 
         Optional<Class<? extends Component>> navigationTarget = RouteRegistry
                 .getInstance().getNavigationTarget(location);
+
         if (navigationTarget.isPresent()) {
 
             NavigationEvent navigationEvent = new NavigationEvent(this,
                     location, ui, trigger);
 
-            NEW_StaticRouteTargetRenderer handler = new NEW_StaticRouteTargetRenderer(
+            NavigationHandler handler = new NEW_StaticRouteTargetRenderer(
                     navigationTarget.get(), location.getPath());
+            return handler.handle(navigationEvent);
+        }
+
+        Location slashToggledLocation = location.toggleTrailingSlash();
+
+        if (RouteRegistry.getInstance()
+                .getNavigationTarget(slashToggledLocation).isPresent()) {
+            NavigationEvent navigationEvent = new NavigationEvent(this,
+                    slashToggledLocation, ui, trigger);
+
+            NavigationHandler handler = new InternalRedirectHandler(
+                    slashToggledLocation);
             return handler.handle(navigationEvent);
         }
 
