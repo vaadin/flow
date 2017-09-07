@@ -353,8 +353,6 @@
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
-                        <parallel>all</parallel>
-                        <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse

@@ -93,6 +93,7 @@
 						<exclude>**/Gwt*.java</exclude>
 					</excludes>
 					<enableAssertions>true</enableAssertions>
+					<trimStackTrace>false</trimStackTrace>
 				</configuration>
 			</plugin>
 			<plugin>
