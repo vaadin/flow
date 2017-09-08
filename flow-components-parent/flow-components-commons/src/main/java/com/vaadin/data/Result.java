@@ -50,7 +50,7 @@ public interface Result<R> extends Serializable {
      *            the result value, can be null
      * @return a successful result
      */
-    public static <R> Result<R> ok(R value) {
+    static <R> Result<R> ok(R value) {
         return new SimpleResult<>(value, null);
     }
 
@@ -63,7 +63,7 @@ public interface Result<R> extends Serializable {
      *            the error message
      * @return a failure result
      */
-    public static <R> Result<R> error(String message) {
+    static <R> Result<R> error(String message) {
         Objects.requireNonNull(message, "message cannot be null");
         return new SimpleResult<>(null, message);
     }
@@ -82,8 +82,8 @@ public interface Result<R> extends Serializable {
      *            the function to provide the error message
      * @return the result of invoking the supplier
      */
-    public static <R> Result<R> of(SerializableSupplier<R> supplier,
-            SerializableFunction<Exception, String> onError) {
+    static <R> Result<R> of(SerializableSupplier<R> supplier,
+                            SerializableFunction<Exception, String> onError) {
         Objects.requireNonNull(supplier, "supplier cannot be null");
         Objects.requireNonNull(onError, "onError cannot be null");
 
@@ -106,7 +106,7 @@ public interface Result<R> extends Serializable {
      *            the mapping function
      * @return the mapped result
      */
-    public default <S> Result<S> map(SerializableFunction<R, S> mapper) {
+    default <S> Result<S> map(SerializableFunction<R, S> mapper) {
         return flatMap(value -> ok(mapper.apply(value)));
     }
 
@@ -122,7 +122,7 @@ public interface Result<R> extends Serializable {
      *            the mapping function
      * @return the mapped result
      */
-    public <S> Result<S> flatMap(SerializableFunction<R, Result<S>> mapper);
+    <S> Result<S> flatMap(SerializableFunction<R, Result<S>> mapper);
 
     /**
      * Invokes either the first callback or the second one, depending on whether
@@ -133,8 +133,8 @@ public interface Result<R> extends Serializable {
      * @param ifError
      *            the function to call if failure
      */
-    public void handle(SerializableConsumer<R> ifOk,
-            SerializableConsumer<String> ifError);
+    void handle(SerializableConsumer<R> ifOk,
+                SerializableConsumer<String> ifError);
 
     /**
      * Applies the {@code consumer} if result is not an error.
@@ -142,7 +142,7 @@ public interface Result<R> extends Serializable {
      * @param consumer
      *            consumer to apply in case it's not an error
      */
-    public default void ifOk(SerializableConsumer<R> consumer) {
+    default void ifOk(SerializableConsumer<R> consumer) {
         handle(consumer, error -> {
         });
     }
@@ -153,7 +153,7 @@ public interface Result<R> extends Serializable {
      * @param consumer
      *            consumer to apply in case it's an error
      */
-    public default void ifError(SerializableConsumer<String> consumer) {
+    default void ifError(SerializableConsumer<String> consumer) {
         handle(value -> {
         }, consumer);
     }
@@ -164,14 +164,14 @@ public interface Result<R> extends Serializable {
      * @return <code>true</code> if the result denotes an error,
      *         <code>false</code> otherwise
      */
-    public boolean isError();
+    boolean isError();
 
     /**
      * Returns an Optional of the result message, or an empty Optional if none.
      *
      * @return the optional message
      */
-    public Optional<String> getMessage();
+    Optional<String> getMessage();
 
     /**
      * Return the value, if the result denotes success, otherwise throw an
@@ -186,7 +186,7 @@ public interface Result<R> extends Serializable {
      * @throws X
      *             if this result denotes an error
      */
-    public <X extends Throwable> R getOrThrow(
+    <X extends Throwable> R getOrThrow(
             SerializableFunction<String, ? extends X> exceptionProvider)
                     throws X;
 }

@@ -41,7 +41,7 @@ public interface JsMap<K, V> {
      */
     @FunctionalInterface
     @JsFunction
-    public interface ForEachCallback<K, V> {
+    interface ForEachCallback<K, V> {
         /**
          * Receives one key-value pair.
          *

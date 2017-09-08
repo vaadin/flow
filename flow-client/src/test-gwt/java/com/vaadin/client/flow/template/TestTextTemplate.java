@@ -22,10 +22,10 @@ import jsinterop.annotations.JsType;
 @JsType(isNative = true)
 public interface TestTextTemplate extends TestTemplateNode, TextTemplateNode {
     @JsProperty(name = "binding")
-    public void setTextBinding(Binding binding);
+    void setTextBinding(Binding binding);
 
     @JsOverlay
-    public static TestTextTemplate create(Binding binding) {
+    static TestTextTemplate create(Binding binding) {
         TestTextTemplate template = TestTemplateNode.create("text");
         template.setTextBinding(binding);
         return template;

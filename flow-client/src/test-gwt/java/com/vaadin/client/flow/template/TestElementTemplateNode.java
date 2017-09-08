@@ -17,6 +17,7 @@ package com.vaadin.client.flow.template;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -26,22 +27,22 @@ public interface TestElementTemplateNode
         extends ElementTemplateNode, TestTemplateNode {
 
     @JsProperty
-    public void setTag(String tag);
+    void setTag(String tag);
 
     @JsProperty
-    public void setProperties(JsonObject properties);
+    void setProperties(JsonObject properties);
 
     @JsProperty
-    public void setAttributes(JsonObject attributes);
+    void setAttributes(JsonObject attributes);
 
     @JsProperty
-    public void setClassNames(JsonObject classNames);
+    void setClassNames(JsonObject classNames);
 
     @JsProperty
-    public void setEventHandlers(JsonObject handlers);
+    void setEventHandlers(JsonObject handlers);
 
     @JsOverlay
-    public static TestElementTemplateNode create(String tag) {
+    static TestElementTemplateNode create(String tag) {
         TestElementTemplateNode templateNode = TestTemplateNode
                 .create("element");
         templateNode.setTag(tag);
@@ -50,34 +51,34 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
-    public default void addProperty(String name, String staticValue) {
+    default void addProperty(String name, String staticValue) {
         doGetProperties().put(name,
                 TestBinding.createStatic(staticValue).asJson());
     }
 
     @JsOverlay
-    public default void addProperty(String name, TestBinding binding) {
+    default void addProperty(String name, TestBinding binding) {
         doGetProperties().put(name, binding.asJson());
     }
 
     @JsOverlay
-    public default void addAttribute(String name, TestBinding binding) {
+    default void addAttribute(String name, TestBinding binding) {
         doGetAttributes().put(name, binding.asJson());
     }
 
     @JsOverlay
-    public default void addClassName(String name, String staticValue) {
+    default void addClassName(String name, String staticValue) {
         doGetClassNames().put(name,
                 TestBinding.createStatic(staticValue).asJson());
     }
 
     @JsOverlay
-    public default void addClassName(String name, TestBinding binding) {
+    default void addClassName(String name, TestBinding binding) {
         doGetClassNames().put(name, binding.asJson());
     }
 
     @JsOverlay
-    public default void addEventHandler(String name, String handler) {
+    default void addEventHandler(String name, String handler) {
         JsonObject eventHandlers = getEventHandlers();
         if (eventHandlers == null) {
             eventHandlers = Json.createObject();
@@ -87,7 +88,7 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
-    public default JsonObject doGetProperties() {
+    default JsonObject doGetProperties() {
         JsonObject properties = getProperties();
         if (properties == null) {
             properties = Json.createObject();
@@ -97,7 +98,7 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
-    public default JsonObject doGetClassNames() {
+    default JsonObject doGetClassNames() {
         JsonObject classNames = getClassNames();
         if (classNames == null) {
             classNames = Json.createObject();
@@ -107,7 +108,7 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
-    public default JsonObject doGetAttributes() {
+    default JsonObject doGetAttributes() {
         JsonObject attributes = getAttributes();
         if (attributes == null) {
             attributes = Json.createObject();
@@ -117,7 +118,7 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
-    public default void addAttribute(String name, String staticValue) {
+    default void addAttribute(String name, String staticValue) {
         doGetAttributes().put(name,
                 TestBinding.createStatic(staticValue).asJson());
     }

@@ -61,7 +61,7 @@ public class PushHandler {
      * corresponding UI properly locked.
      */
     private interface PushEventCallback {
-        public void run(AtmosphereResource resource, UI ui) throws IOException;
+        void run(AtmosphereResource resource, UI ui) throws IOException;
     }
 
     /**
