@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -172,7 +172,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <excludes>**/Servlet.*</excludes>
+                    <excludes>
+                        <exclude>**/*Servlet*</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
@@ -257,11 +259,14 @@
                                     <goal>copy-resources</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>${project.build.directory}/jetty-extra-resources/${vaadin.frontend.path}</outputDirectory>
+                                    <outputDirectory>
+                                        ${project.build.directory}/jetty-extra-resources/${vaadin.frontend.path}
+                                    </outputDirectory>
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>
-                                            <directory>${project.basedir}/${frontend.working.directory}/build</directory>
+                                            <directory>${project.basedir}/${frontend.working.directory}/build
+                                            </directory>
                                         </resource>
                                         <resource>
                                             <directory>${frontend.working.directory}</directory>
