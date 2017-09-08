@@ -65,11 +65,13 @@ public class BinderConverterValidatorTest
         binder = new Binder<Person>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };

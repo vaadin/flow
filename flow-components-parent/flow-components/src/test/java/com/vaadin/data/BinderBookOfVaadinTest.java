@@ -169,11 +169,13 @@ public class BinderBookOfVaadinTest {
         binder = new Binder<BookPerson>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
@@ -351,11 +353,13 @@ public class BinderBookOfVaadinTest {
         Binder<Trip> binder = new Binder<Trip>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
@@ -417,11 +421,13 @@ public class BinderBookOfVaadinTest {
         Binder<Trip> binder = new Binder<Trip>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
