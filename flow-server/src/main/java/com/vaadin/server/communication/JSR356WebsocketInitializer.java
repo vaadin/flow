@@ -149,6 +149,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * @param servletRegistration
      *            The servlet registration info for the servlet
      * @param servletContext
+     *            The servlet context
      */
     public static void initAtmosphereForVaadinServlet(
             ServletRegistration servletRegistration,

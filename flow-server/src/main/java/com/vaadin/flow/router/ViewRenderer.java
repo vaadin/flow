@@ -71,6 +71,8 @@ public abstract class ViewRenderer implements NavigationHandler {
      * <p>
      * By default reuses any currently used view instances if possible.
      *
+     * @param <T>
+     *            the type of the view
      * @param viewType
      *            the type of the view
      * @param event

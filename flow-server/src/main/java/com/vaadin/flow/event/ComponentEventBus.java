@@ -74,6 +74,8 @@ public class ComponentEventBus implements Serializable {
     /**
      * Adds a listener for the given event type.
      *
+     * @param <T>
+     *            the event type
      * @param eventType
      *            the event type for which to call the listener
      * @param listener

@@ -62,7 +62,9 @@ public class Attributes implements Serializable {
      *
      * @see #getAttribute(Class)
      * @see #setAttribute(String, Object)
-     *
+     * 
+     * @param <T>
+     *            the attribute type
      * @param type
      *            the type that the stored value represents, can not be null
      * @param value
@@ -110,7 +112,9 @@ public class Attributes implements Serializable {
      *
      * @see #setAttribute(Class, Object)
      * @see #getAttribute(String)
-     *
+     * 
+     * @param <T>
+     *            the attribute type
      * @param type
      *            the type of the value to get, can not be <code>null</code>.
      * @return the value, or <code>null</code> if no value has been stored or if

@@ -35,6 +35,8 @@ public interface ComplexModelType<T> extends ModelType {
      * Checks that this type uses the provided proxy type and returns this type
      * as a model type with that proxy type.
      *
+     * @param <C>
+     *            the proxy type
      * @param proxyType
      *            the proxy type to cast to
      * @return this model type

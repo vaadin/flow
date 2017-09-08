@@ -176,6 +176,8 @@ public class TemplateModelProxyHandler implements Serializable {
      * Creates a proxy object for the given {@code modelType} type for the given
      * state node.
      *
+     * @param <T>
+     *            the proxy type
      * @param stateNode
      *            the state node, not <code>null</code>
      * @param modelType

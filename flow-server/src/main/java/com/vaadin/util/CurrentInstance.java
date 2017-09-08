@@ -67,6 +67,8 @@ public class CurrentInstance implements Serializable {
     /**
      * Gets the current instance of a specific type if available.
      *
+     * @param <T>
+     *            the instance type
      * @param type
      *            the class to get an instance of
      * @return the current instance or the provided type, or <code>null</code>
@@ -128,6 +130,8 @@ public class CurrentInstance implements Serializable {
      *
      * @see ThreadLocal
      *
+     * @param <T>
+     *            the instance type
      * @param type
      *            the class that should be used when getting the current
      *            instance back
