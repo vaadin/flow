@@ -35,8 +35,6 @@ public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
     /**
      * Gets the route target type to show.
      *
-     * @param <T>
-     *            the route target type
      * @param event
      *            the event which triggered showing of the route target
      *
