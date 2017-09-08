@@ -1,7 +1,7 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Modifying how dependencies are loaded with DependencyFilters
 
-As seem on the tutorials about using `@JavaScript`, `@HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>), you can use annotations or an imperative API to add resources (or dependencies) to your application when needed. But in some cases, a more fine control is needed: for example, when bundling resources into multiple different bundles, you may want to control the application to import the right bundle when some specific resource is requested.
+As seen on the tutorials about using `@JavaScript`, `@HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>), you can use annotations or an imperative API to add resources (or dependencies) to your application when needed. But in some cases, a more fine control is needed: for example, when bundling resources into multiple different bundles, you may want to control the application to import the right bundle when some specific resource is requested.
 
 To control how the dependencies are loaded, and which files are effectively added or removed from the loading process, you can use DependencyFilters.
 
@@ -29,26 +29,4 @@ public class BundleFilter implements DependencyFilter {
 [WARNING]
 DependencyFilters allow you to change, add and remove any dependencies. You may leave your application in a broken state if you remove a required dependency for your project without providing a suitable replacement. With great power comes great responsibility.
 
-With your DependencyFilter in place, you need to add it to the `ServiceInitEvent` instance available
-in a `VaadinServiceInitListener`:
-
-[source,java]
-----
-public class ApplicationServiceInitListener
-    implements VaadinServiceInitListener {
-
-    @Override
-    public void serviceInit(ServiceInitEvent event) {
-        event.addDependencyFilter(new BundleFilter());
-    }
-
-}
-----
-
-This listener should be registered as a provider via Java SPI loading facility. To do this you should create
-`META-INF/services` resource directory and a provider configuration file with the name `com.vaadin.server.VaadinServiceInitListener`.
-This is the text file and its content should be one line which is the fully qualified binary name of the `ApplicationServiceInitListener` class.
-It allows to discover the  `ApplicationServiceInitListener` class, instantiate it and register as a service init listener for the application.
-
-[TIP]
-See https://docs.oracle.com/javase/tutorial/ext/basics/spi.html#register-service-providers and https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html for details about Java SPI loading.
+With your DependencyFilter in place, you need to add it to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. Take a look on the <<tutorial-service-init-listener#,ServiceInitListener tutorial>> on how to configure it.
