@@ -125,6 +125,8 @@ public class AnnotationReader {
     /**
      * Helper to get an annotation for a field.
      *
+     * @param <T>
+     *            the annotation type
      * @param field
      *            the field to check
      * @param annotationType
@@ -143,6 +145,8 @@ public class AnnotationReader {
      * on the target class, its super classes and implemented interfaces are
      * also searched for the annotation.
      *
+     * @param <T>
+     *            the annotation type
      * @param clazz
      *            the class from which the annotation should be found
      * @param annotationType
@@ -186,6 +190,8 @@ public class AnnotationReader {
      * <p>
      * NOTE: the list may contain annotations with the same values.
      *
+     * @param <T>
+     *            the annotation type
      * @param clazz
      *            the class from which the annotation should be found
      * @param annotationType

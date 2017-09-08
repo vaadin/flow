@@ -65,7 +65,7 @@ extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
      * @return the validation result
      */
     @Override
-    public ValidationResult apply(T value, ValueContext context);
+    ValidationResult apply(T value, ValueContext context);
 
     /**
      * Returns a validator that passes any value.
@@ -74,7 +74,7 @@ extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
      *            the value type
      * @return an always-passing validator
      */
-    public static <T> Validator<T> alwaysPass() {
+    static <T> Validator<T> alwaysPass() {
         return (value, context) -> ValidationResult.ok();
     }
 
@@ -101,8 +101,8 @@ extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
      *            the message returned if validation fails, not null
      * @return the new validator using the function
      */
-    public static <T> Validator<T> from(SerializablePredicate<T> guard,
-            String errorMessage) {
+    static <T> Validator<T> from(SerializablePredicate<T> guard,
+                                 String errorMessage) {
         Objects.requireNonNull(guard, "guard cannot be null");
         Objects.requireNonNull(errorMessage, "errorMessage cannot be null");
         return from(guard, ctx -> errorMessage);
@@ -122,8 +122,8 @@ extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
      *            the provider to generate error messages, not null
      * @return the new validator using the function
      */
-    public static <T> Validator<T> from(SerializablePredicate<T> guard,
-            ErrorMessageProvider errorMessageProvider) {
+    static <T> Validator<T> from(SerializablePredicate<T> guard,
+                                 ErrorMessageProvider errorMessageProvider) {
         Objects.requireNonNull(guard, "guard cannot be null");
         Objects.requireNonNull(errorMessageProvider,
                 "errorMessageProvider cannot be null");

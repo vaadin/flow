@@ -107,7 +107,7 @@ public class ServletHelper implements Serializable {
      * @param request
      *            the request that is searched for locale or <code>null</code>
      *            if not available
-     * @return
+     * @return the found locale
      */
     public static Locale findLocale(VaadinSession session,
             VaadinRequest request) {

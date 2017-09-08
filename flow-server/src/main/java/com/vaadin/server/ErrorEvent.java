@@ -38,7 +38,7 @@ public class ErrorEvent implements Serializable {
     /**
      * Gets the contained throwable, the cause of the error.
      *
-     * @return
+     * @return the throwable that caused the error
      */
     public Throwable getThrowable() {
         return throwable;

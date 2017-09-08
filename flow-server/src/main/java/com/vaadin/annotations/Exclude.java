@@ -51,7 +51,8 @@ public @interface Exclude {
      * <p>
      * By default no properties are excluded.
      *
-     * @return
+     * @return the properties to exclude from a bean when importing into a
+     *         template model
      */
     String[] value();
 }

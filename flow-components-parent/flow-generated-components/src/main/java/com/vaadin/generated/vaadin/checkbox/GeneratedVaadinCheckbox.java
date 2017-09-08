@@ -340,14 +340,6 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 		return get();
 	}
 
-	public void connectedCallback() {
-		getElement().callFunction("connectedCallback");
-	}
-
-	public void disconnectedCallback() {
-		getElement().callFunction("disconnectedCallback");
-	}
-
 	@Override
 	public String getClientValuePropertyName() {
 		return "checked";

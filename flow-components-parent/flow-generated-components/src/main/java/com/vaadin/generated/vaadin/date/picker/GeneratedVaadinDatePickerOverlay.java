@@ -266,10 +266,6 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 		return get();
 	}
 
-	public void connectedCallback() {
-		getElement().callFunction("connectedCallback");
-	}
-
 	public void announceFocusedDate() {
 		getElement().callFunction("announceFocusedDate");
 	}

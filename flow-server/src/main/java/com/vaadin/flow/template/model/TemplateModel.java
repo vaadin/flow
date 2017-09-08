@@ -19,10 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.vaadin.flow.template.model.PropertyFilter;
-import com.vaadin.flow.template.model.TemplateModelListProxy;
-import com.vaadin.flow.template.model.TemplateModelUtil;
-
 /**
  * Interface for a template model. Extending this interface and adding getters
  * and setters makes it possible to easily bind data to a template.
@@ -98,6 +94,8 @@ public interface TemplateModel extends Serializable {
      * </code>
      * </pre>
      *
+     * @param <T>
+     *            the proxy type
      * @param modelPath
      *            a dot separated path describing the location of the bean in
      *            the model
@@ -124,6 +122,8 @@ public interface TemplateModel extends Serializable {
      * is "" and the path "persons" represents what {@code List
      * <Person> getPersons()} would return.
      *
+     * @param <T>
+     *            the proxy type
      * @param modelPath
      *            a dot separated path describing the location of the list in
      *            the model
