@@ -5,16 +5,14 @@ sed -i "s/activeByDefault>true</activeByDefault>false</g"  ~/.m2/settings.xml
 
 if [ "$USE_SELENOID" == "true" ]
 then
-    # Get fresh Docker version
+    # Get fresh Docker and jq
     sudo apt-get update
-    sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
+    sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine jq
 
-    # Generate browser config + download docker images for browsers that will be launched on hub lately
-    mkdir -p `pwd`/target/selenoid/
-    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aerokube/cm:1.0.0 selenoid \
-      --last-versions 1 --tmpfs 256 --pull > `pwd`/target/selenoid/browsers.json
+    # Parse browser config using jq and download all docker images
+    cat ./browsers.json | jq -r '..|.image?|strings' | xargs -I{} docker pull {}
 
     # Run Selenoid (https://github.com/aerokube/selenoid)
-    docker run --name selenoid -d -p 4444:4444 -v `pwd`/target/selenoid:/etc/selenoid:ro \
-          -v /var/run/docker.sock:/var/run/docker.sock aerokube/selenoid -limit 10
+    docker run -d -p 4444:4444 -v `pwd`:/etc/selenoid:ro \
+          -v /var/run/docker.sock:/var/run/docker.sock aerokube/selenoid:1.3.6 -limit 10
 fi
