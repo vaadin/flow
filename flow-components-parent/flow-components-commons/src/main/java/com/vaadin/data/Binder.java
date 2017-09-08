@@ -855,16 +855,7 @@ public class Binder<BEAN> implements Serializable {
          * @return the validation status
          */
         private BindingValidationStatus<TARGET> doValidation() {
-            BindingValidationStatus<TARGET> status = toValidationStatus(doConversion());
-            updateValidationTarget(status);
-            return status;
-        }
-
-        private void updateValidationTarget(BindingValidationStatus<TARGET> status) {
-            if (validationTarget != null) {
-                validationTarget.setInvalid(status.isError());
-                validationTarget.setErrorMessage(status.getMessage().orElse(""));
-            }
+            return toValidationStatus(doConversion());
         }
 
         /**
@@ -894,7 +885,6 @@ public class Binder<BEAN> implements Serializable {
             onValueChange.remove();
             try {
                 getField().setValue(convertDataToFieldType(bean));
-                doValidation();
             } finally {
                 onValueChange = getField()
                         .addValueChangeListener(this::handleFieldValueChange);
@@ -1857,7 +1847,11 @@ public class Binder<BEAN> implements Serializable {
      *            the error message to set
      */
     protected void handleError(HasValue<?, ?> field, String error) {
-        // Not implemented now
+        if (field instanceof HasValidation) {
+            HasValidation fieldWithValidation = (HasValidation) field;
+            fieldWithValidation.setInvalid(true);
+            fieldWithValidation.setErrorMessage(error);
+        }
     }
 
     /**
@@ -1867,7 +1861,11 @@ public class Binder<BEAN> implements Serializable {
      *            the field with an invalid value
      */
     protected void clearError(HasValue<?, ?> field) {
-        // Not implemented now
+        if (field instanceof HasValidation) {
+            HasValidation fieldWithValidation = (HasValidation) field;
+            fieldWithValidation.setInvalid(false);
+            fieldWithValidation.setErrorMessage(null);
+        }
     }
 
     /**
