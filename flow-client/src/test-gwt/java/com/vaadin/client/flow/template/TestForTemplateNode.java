@@ -22,9 +22,9 @@ import jsinterop.annotations.JsType;
 public interface TestForTemplateNode extends ForTemplateNode, TestTemplateNode {
 
     @JsProperty
-    public void setLoopVariable(String variable);
+    void setLoopVariable(String variable);
 
     @JsProperty
-    public void setCollectionVariable(String variable);
+    void setCollectionVariable(String variable);
 
 }

@@ -50,7 +50,7 @@ extends ComponentSupplier<C>, Serializable {
      * @param <V>
      *            the value type
      */
-    public class ValueChangeEvent<C extends Component, V>
+    class ValueChangeEvent<C extends Component, V>
     extends ComponentEvent<C> {
 
         private final V oldValue;
@@ -107,7 +107,7 @@ extends ComponentSupplier<C>, Serializable {
      * @see Registration
      */
     @FunctionalInterface
-    public interface ValueChangeListener<C extends Component, V> extends
+    interface ValueChangeListener<C extends Component, V> extends
     ComponentEventListener<ValueChangeEvent<C, V>>, Serializable {
 
         /**
@@ -293,7 +293,7 @@ extends ComponentSupplier<C>, Serializable {
      * @since 8.1
      * @return internal state validator
      */
-    public default Validator<V> getDefaultValidator() {
+    default Validator<V> getDefaultValidator() {
         return Validator.alwaysPass();
     }
 }

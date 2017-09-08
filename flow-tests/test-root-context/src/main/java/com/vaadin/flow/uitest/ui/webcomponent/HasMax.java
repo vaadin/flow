@@ -26,7 +26,7 @@ import com.vaadin.ui.PropertyDescriptors;
  */
 public interface HasMax extends HasElement {
 
-    static class Descriptors {
+    class Descriptors {
         // Hides descriptors
         static final PropertyDescriptor<Integer, Integer> maxProperty = PropertyDescriptors
                 .propertyWithDefault("max", 100);

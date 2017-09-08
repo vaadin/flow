@@ -39,7 +39,7 @@ public class ConvertToBeanView extends
         @Convert(DateToBeanConverter.class)
         void setDate(Date date);
 
-        public void setMessage(String message);
+        void setMessage(String message);
     }
 
     public static class DateBean implements Serializable {

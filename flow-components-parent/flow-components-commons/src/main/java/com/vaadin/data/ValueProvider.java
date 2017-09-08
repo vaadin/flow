@@ -43,7 +43,7 @@ extends SerializableFunction<SOURCE, TARGET> {
      *            the type of the input and output objects to the function
      * @return a function that always returns its input argument
      */
-    public static <T> ValueProvider<T, T> identity() {
+    static <T> ValueProvider<T, T> identity() {
         return t -> t;
     }
 
@@ -55,5 +55,5 @@ extends SerializableFunction<SOURCE, TARGET> {
      * @return the value provided by the source
      */
     @Override
-    public TARGET apply(SOURCE source);
+    TARGET apply(SOURCE source);
 }

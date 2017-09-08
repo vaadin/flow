@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Label;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 
@@ -28,7 +28,7 @@ import com.vaadin.flow.template.angular.model.TemplateModel;
 public class TextTemplateView extends Div implements View {
 
     public interface Model extends TemplateModel {
-        public void setName(String name);
+        void setName(String name);
     }
 
     public TextTemplateView() {

@@ -26,9 +26,9 @@ public class FormView extends AngularTemplate {
     static final String ID_AGE = "age";
 
     public interface ReadonlyFormModel extends TemplateModel {
-        public void setPerson(Person person);
+        void setPerson(Person person);
 
-        public Person getPerson();
+        Person getPerson();
     }
 
     @Override

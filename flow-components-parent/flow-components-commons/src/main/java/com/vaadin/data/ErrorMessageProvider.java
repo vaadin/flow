@@ -37,5 +37,5 @@ extends SerializableFunction<ValueContext, String> {
      * @return generated error message
      */
     @Override
-    public String apply(ValueContext context);
+    String apply(ValueContext context);
 }

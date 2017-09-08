@@ -36,7 +36,7 @@ public interface PropertySet<T> extends Serializable {
      *
      * @return a stream of property names, not <code>null</code>
      */
-    public Stream<PropertyDefinition<T, ?>> getProperties();
+    Stream<PropertyDefinition<T, ?>> getProperties();
 
     /**
      * Gets the definition for the named property, or an empty optional if there
@@ -47,5 +47,5 @@ public interface PropertySet<T> extends Serializable {
      * @return the property definition, or empty optional if property doesn't
      *         exist
      */
-    public Optional<PropertyDefinition<T, ?>> getProperty(String name);
+    Optional<PropertyDefinition<T, ?>> getProperty(String name);
 }

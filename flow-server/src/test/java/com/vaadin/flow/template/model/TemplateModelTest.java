@@ -228,10 +228,10 @@ public class TemplateModelTest {
     extends EmptyDivTemplate<TemplateWithExclude.ModelWithExclude> {
 
         public interface ModelWithExclude extends TemplateModel {
-            public Bean getBean();
+            Bean getBean();
 
             @Exclude({ "doubleValue", "booleanObject" })
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
         @Override
@@ -245,11 +245,11 @@ public class TemplateModelTest {
     extends EmptyDivTemplate<M> {
 
         public interface ModelWithExcludeAndInclude extends TemplateModel {
-            public Bean getBean();
+            Bean getBean();
 
             @Include({ "doubleValue", "booleanObject" })
             @Exclude("doubleValue")
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
         @Override
@@ -277,7 +277,7 @@ public class TemplateModelTest {
              */
             @Override
             @Include("doubleValue")
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
     }
@@ -287,10 +287,10 @@ public class TemplateModelTest {
 
         public interface ModelWithExcludeForSubBean
         extends com.vaadin.flow.template.model.TemplateModel {
-            public BeanContainingBeans getBeanContainingBeans();
+            BeanContainingBeans getBeanContainingBeans();
 
             @Exclude({ "bean1.booleanObject", "bean2" })
-            public void setBeanContainingBeans(
+            void setBeanContainingBeans(
                     BeanContainingBeans beanContainingBeans);
         }
 
@@ -306,9 +306,9 @@ public class TemplateModelTest {
 
         public interface ModelWithExcludeOnList extends TemplateModel {
             @Exclude("intValue")
-            public void setBeans(List<Bean> beans);
+            void setBeans(List<Bean> beans);
 
-            public List<Bean> getBeans();
+            List<Bean> getBeans();
         }
 
         @Override
@@ -320,10 +320,10 @@ public class TemplateModelTest {
     public static class TemplateWithInclude
     extends EmptyDivTemplate<TemplateWithInclude.ModelWithInclude> {
         public interface ModelWithInclude extends TemplateModel {
-            public Bean getBean();
+            Bean getBean();
 
             @Include({ "doubleValue", "booleanObject" })
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
         @Override
@@ -337,10 +337,10 @@ public class TemplateModelTest {
     EmptyDivTemplate<TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean> {
 
         public interface ModelWithIncludeForSubBean extends TemplateModel {
-            public BeanContainingBeans getBeanContainingBeans();
+            BeanContainingBeans getBeanContainingBeans();
 
             @Include({ "bean1.booleanObject" })
-            public void setBeanContainingBeans(
+            void setBeanContainingBeans(
                     BeanContainingBeans beanContainingBeans);
         }
 
@@ -355,9 +355,9 @@ public class TemplateModelTest {
 
         public interface ModelWithIncludeOnList extends TemplateModel {
             @Include("intValue")
-            public void setBeans(List<Bean> beans);
+            void setBeans(List<Bean> beans);
 
-            public List<Bean> getBeans();
+            List<Bean> getBeans();
         }
 
         @Override
@@ -443,7 +443,7 @@ public class TemplateModelTest {
 
         public interface ModelWithIncludeOnListSubBean extends TemplateModel {
             @Include({ "bean1.intValue", "bean2.booleanValue" })
-            public void setBeanContainingBeans(List<BeanContainingBeans> beans);
+            void setBeanContainingBeans(List<BeanContainingBeans> beans);
         }
 
         @Override
