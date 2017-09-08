@@ -16,6 +16,8 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.server.RequestHandler;
@@ -24,6 +26,8 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.shared.ui.LoadMode;
 
 public class TestingServiceInitListener implements VaadinServiceInitListener {
 
@@ -42,6 +46,22 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                 requestCount.incrementAndGet();
                 return false;
             }
+        });
+
+        event.addDependencyFilter((dependencies, context) -> {
+            if (dependencies.stream().anyMatch(dependency -> dependency.getUrl()
+                    .startsWith("replaceme://"))) {
+                List<Dependency> newList = new ArrayList<>();
+                newList.add(new Dependency(Dependency.Type.HTML_IMPORT,
+                        "/com/vaadin/flow/uitest/ui/dependencies/filtered.html",
+                        LoadMode.EAGER));
+                dependencies.stream()
+                        .filter(dependency -> !dependency.getUrl()
+                                .startsWith("replaceme://"))
+                        .forEach(newList::add);
+                dependencies = newList;
+            }
+            return dependencies;
         });
     }
 

@@ -4,13 +4,13 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 The application bootstrap page is created for you by the framework and normally there is no need to modify it.
 For instance FW includes its internal JavaScripts to be able to provide its core functionality.
 Also it is possible to include additional JavaScripts, HTML imports and Style Sheets using annotations `@JavaScript`,
-`HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>). 
+`HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>).
 
 Sometimes you may want to customize the page header and add there some additional data, e.g. custom `meta` tags.
 Such markup is required to enable your web page to become a rich object in a social graph using http://ogp.me/[OpenGraph protocol].
 
-To be able to modify default bootstrap page and add your custom meta tags on the page you should use 
-your `BootstrapListener` implementation and add it to the `ServiceInitEvent` instance available 
+To be able to modify default bootstrap page and add your custom meta tags on the page you should use
+your `BootstrapListener` implementation and add it to the `ServiceInitEvent` instance available
 in a `VaadinServiceInitListener`.
 
 Here is the code for the `BoostrapListener` implementation which modifies the header of the page:
@@ -32,7 +32,7 @@ public class CustomBootstrapListener implements BootstrapListener {
                     "http://ia.media-imdb.com/images/rock.jpg"));
     }
 
-    private Element createMeta(Document document, String property, 
+    private Element createMeta(Document document, String property,
             String content) {
         Element meta = document.createElement("meta");
         meta.attr("property", property);
@@ -42,25 +42,4 @@ public class CustomBootstrapListener implements BootstrapListener {
 }
 ----
 
-Now this listener should be added to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. 
-
-[source,java]
-----
-public class ApplicationServiceInitListener 
-        implements VaadinServiceInitListener {
-
-    @Override
-    public void serviceInit(ServiceInitEvent event) {
-        event.addBootstrapListener(new CustomBootstrapListener());
-    }
-
-}
-----
-
-This listener should be registered as a provider via Java SPI loading facility. To do this you should create  
-`META-INF/services` resource directory and a provider configuration file with the name `com.vaadin.server.VaadinServiceInitListener`.
-This is the text file and its content should be one line which is the fully qualified binary name of the `ApplicationServiceInitListener` class.
-It allows to discover the  `ApplicationServiceInitListener` class, instantiate it and register as a service init listener for the application.
-
-[TIP]
-See https://docs.oracle.com/javase/tutorial/ext/basics/spi.html#register-service-providers and https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html for details about Java SPI loading. 
+Now this listener should be added to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. Take a look on the <<tutorial-service-init-listener#,ServiceInitListener tutorial>> on how to configure it.
