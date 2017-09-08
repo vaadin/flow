@@ -55,7 +55,7 @@ public abstract class AbstractBindingValueProvider
      *            the binding type
      * @param value
      *            TemplateBinding.VALUE_PROPERTY property value
-     * @return
+     * @return the json object
      */
     protected JsonObject makeJsonObject(String type, Object value) {
         JsonObject json = Json.createObject();

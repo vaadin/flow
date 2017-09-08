@@ -209,6 +209,8 @@ public abstract class Component implements HasElement, Serializable,
      * Typically you do not want to call this method but define the element
      * through {@link #Component(Element)} instead.
      *
+     * @param component
+     *            the component to set the root element to
      * @param element
      *            the root element of the component
      */
@@ -404,6 +406,8 @@ public abstract class Component implements HasElement, Serializable,
      *
      * @see PropertyDescriptor
      *
+     * @param <T>
+     *            type of the value to set
      * @param descriptor
      *            the descriptor for the property to set, not <code>null</code>
      * @param value
@@ -420,6 +424,8 @@ public abstract class Component implements HasElement, Serializable,
      *
      * @see PropertyDescriptor
      *
+     * @param <T>
+     *            type of the value to get
      * @param descriptor
      *            the descriptor for the property to set, not <code>null</code>
      * @return the property value
@@ -447,6 +453,8 @@ public abstract class Component implements HasElement, Serializable,
      *
      * @see Element#as(Class)
      *
+     * @param <T>
+     *            the component type to create
      * @param element
      *            the element to wrap
      * @param componentType

@@ -96,6 +96,7 @@ public class AtmospherePushConnection implements PushConnection {
          *            The Reader from which to read.
          * @return true if this message is complete, false otherwise.
          * @throws IOException
+         *             if an IO error occurred
          */
         public boolean append(Reader reader) throws IOException {
             char[] buffer = new char[PushConstants.WEBSOCKET_BUFFER_SIZE];
@@ -222,6 +223,9 @@ public class AtmospherePushConnection implements PushConnection {
      * @return A Reader yielding a complete message or null if the message is
      *         not yet complete.
      * @throws IOException
+     *             if an IO error occurred
+     * @return a Reader yielding the complete message, or {@code null} if the
+     *         received message was a partial message
      */
     protected Reader receiveMessage(Reader reader) throws IOException {
 
@@ -361,6 +365,8 @@ public class AtmospherePushConnection implements PushConnection {
 
     /**
      * Returns the state of this connection.
+     * 
+     * @return the state of this connection
      */
     protected State getState() {
         return state;
@@ -370,6 +376,13 @@ public class AtmospherePushConnection implements PushConnection {
      * Reinitializes this PushConnection after deserialization. The connection
      * is initially in disconnected state; the client will handle the
      * reconnecting.
+     *
+     * @param stream
+     *            the object to read
+     * @throws IOException
+     *             if an IO error occurred
+     * @throws ClassNotFoundException
+     *             if the class of the stream object could not be found
      */
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {

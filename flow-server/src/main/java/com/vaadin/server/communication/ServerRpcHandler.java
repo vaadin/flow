@@ -236,6 +236,7 @@ public class ServerRpcHandler implements Serializable {
      * @param reader
      *            The {@link Reader} used to read the JSON.
      * @param request
+     *            The request through which the RPC was received
      * @throws IOException
      *             If reading the message fails.
      * @throws InvalidUIDLSecurityKeyException

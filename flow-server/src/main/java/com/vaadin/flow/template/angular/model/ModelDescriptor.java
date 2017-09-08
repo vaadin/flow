@@ -60,6 +60,8 @@ public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {
     /**
      * Gets the model descriptor for a model type.
      *
+     * @param <T>
+     *            the model type
      * @param modelType
      *            the model type to find a descriptor, not <code>null</code>
      * @return the model descriptor derived from the provided model type, not

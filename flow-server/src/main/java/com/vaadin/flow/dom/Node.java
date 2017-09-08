@@ -344,6 +344,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * 
      * @param child
      *            the element to check for its parent
+     * @param internalCheck
+     *            whether to use assertions or throw an exception on failure
      */
     protected void ensureChildHasParent(Element child, boolean internalCheck) {
         if (!Objects.equals(this, child.getParentNode())) {
