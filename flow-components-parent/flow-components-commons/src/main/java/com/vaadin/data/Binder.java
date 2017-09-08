@@ -1876,10 +1876,10 @@ public class Binder<BEAN> implements Serializable {
      *            the validation status
      */
     protected void handleValidationStatus(BindingValidationStatus<?> status) {
-        HasValue<?, ?> source = status.getField();
-        clearError(source);
         if (status.isError()) {
-            handleError(source, status.getMessage().get());
+            handleError(status.getField(), status.getMessage().orElse(null));
+        } else {
+            clearError(status.getField());
         }
     }
 
