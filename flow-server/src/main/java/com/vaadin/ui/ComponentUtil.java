@@ -150,7 +150,8 @@ public class ComponentUtil {
      * starting from the given element.
      *
      * @param element
-     * @return
+     *            the element from which to begin the search
+     * @return optional of the component, empty if no component is found
      */
     public static Optional<Component> findParentComponent(Element element) {
         Element mappedElement = element;
@@ -244,6 +245,8 @@ public class ComponentUtil {
      * @see Component#from(Element, Class)
      * @see Element#as(Class)
      *
+     * @param <T>
+     *            the component type
      * @param element
      *            the element
      * @param componentType

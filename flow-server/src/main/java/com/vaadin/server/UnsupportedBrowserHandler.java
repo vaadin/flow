@@ -51,8 +51,11 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
      * Writes a page encouraging the user to upgrade to a more current browser.
      *
      * @param request
+     *            The request to handle
      * @param response
+     *            The response object to which a response can be written.
      * @throws IOException
+     *             if an IO error occurred
      */
     protected void writeBrowserTooOldPage(VaadinRequest request,
             VaadinResponse response) throws IOException {

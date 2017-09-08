@@ -32,6 +32,8 @@ public interface ComponentEventNotifier extends Serializable {
     /**
      * Adds a listener for an event of the given type.
      *
+     * @param <T>
+     *            the component event type
      * @param eventType
      *            the component event type, not <code>null</code>
      * @param listener

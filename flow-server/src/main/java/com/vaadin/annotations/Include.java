@@ -51,7 +51,8 @@ public @interface Include {
      * <p>
      * By default all properties are included.
      *
-     * @return
+     * @return the properties to include from a bean when importing into a
+     *         template model
      */
     String[] value();
 }

@@ -181,6 +181,8 @@ public final class JsonUtils {
     /**
      * Creates a stream from a JSON array.
      *
+     * @param <T>
+     *            the stream type
      * @param array
      *            the JSON array to create a stream from
      * @return a stream of JSON values
