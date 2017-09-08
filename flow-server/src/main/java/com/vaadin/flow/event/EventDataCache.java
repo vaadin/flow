@@ -65,6 +65,8 @@ public class EventDataCache {
     /**
      * Gets the cached DOM event constructor for the given event type.
      *
+     * @param <T>
+     *            the component event type
      * @param eventType
      *            the component event type
      * @return an optional containing the DOM event constructor or an empty

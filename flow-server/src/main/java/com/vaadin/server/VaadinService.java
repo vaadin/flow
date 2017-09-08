@@ -314,8 +314,6 @@ public abstract class VaadinService implements Serializable {
      * {@link ServiceLoader}. This could for example be used to allow defining
      * an init listener as an OSGi service or as a Spring bean.
      *
-     * @since
-     *
      * @return an iterator of available service init listeners
      */
     protected Iterator<VaadinServiceInitListener> getServiceInitListeners() {
@@ -478,6 +476,7 @@ public abstract class VaadinService implements Serializable {
      * @param locale
      *            the desired locale for the system messages
      * @param request
+     *            the request being processed
      * @return the system messages to use
      */
     public SystemMessages getSystemMessages(Locale locale,
@@ -615,6 +614,9 @@ public abstract class VaadinService implements Serializable {
      * @return the vaadin service session for the request, or <code>null</code>
      *         if no session is found and this is a request for which a new
      *         session shouldn't be created.
+     * @throws ServiceException
+     * @throws SessionExpiredException
+     *             if the session has already expired
      */
     public VaadinSession findVaadinSession(VaadinRequest request)
             throws ServiceException, SessionExpiredException {
