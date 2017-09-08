@@ -35,10 +35,12 @@ public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
     /**
      * Gets the route target type to show.
      *
+     * @param <T>
+     *            the route target type
      * @param event
      *            the event which triggered showing of the route target
      *
-     * @return the route target type, not <code>null</code>
+     * @return the route target class, not <code>null</code>
      */
     public abstract Class<? extends Component> getRouteTargetType(
             NavigationEvent event);
@@ -51,8 +53,10 @@ public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
      * <p>
      * By default always creates new instances.
      *
+     * @param <T>
+     *            the route target type
      * @param routeTargetType
-     *            the type of the route target component
+     *            the class of the route target component
      * @param event
      *            the navigation event that uses the route target
      * @return an instance of the route target component

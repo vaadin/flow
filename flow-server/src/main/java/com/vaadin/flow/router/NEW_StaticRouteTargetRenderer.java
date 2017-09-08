@@ -31,7 +31,7 @@ public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
      * Creates a new route target renderer for the given component type and
      * route.
      *
-     * @param viewType
+     * @param routeTargetType
      *            the component type to show, not <code>null</code>
      */
     public NEW_StaticRouteTargetRenderer(
