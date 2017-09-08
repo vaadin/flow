@@ -19,9 +19,9 @@ import java.io.Serializable;
 
 import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Id;
-import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Input;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.View;
@@ -33,9 +33,9 @@ public class BasicTemplateView extends AngularTemplate implements View {
     public interface Model extends TemplateModel {
         // Not actually always a string any more, but must define some type for
         // the value to be considered present
-        public String getModelValue();
+        String getModelValue();
 
-        public String getFoo();
+        String getFoo();
     }
 
     @Id("container")

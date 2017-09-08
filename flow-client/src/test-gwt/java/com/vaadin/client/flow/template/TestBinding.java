@@ -21,6 +21,7 @@ import com.vaadin.flow.template.angular.ModelValueBindingProvider;
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;
 
 import elemental.json.JsonValue;
+
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -34,17 +35,17 @@ public interface TestBinding extends Binding {
     void setValue(String value);
 
     @JsOverlay
-    public static TestBinding createStatic(String value) {
+    static TestBinding createStatic(String value) {
         return createBinding(StaticBindingValueProvider.TYPE, value);
     }
 
     @JsOverlay
-    public static TestBinding createTextValueBinding(String value) {
+    static TestBinding createTextValueBinding(String value) {
         return createBinding(ModelValueBindingProvider.TYPE, value);
     }
 
     @JsOverlay
-    public static TestBinding createBinding(String type, String value) {
+    static TestBinding createBinding(String type, String value) {
         TestBinding binding = WidgetUtil
                 .crazyJsCast(JavaScriptObject.createObject());
         binding.setType(type);
@@ -54,7 +55,7 @@ public interface TestBinding extends Binding {
     }
 
     @JsOverlay
-    public default JsonValue asJson() {
+    default JsonValue asJson() {
         return WidgetUtil.crazyJsCast(this);
     }
 }

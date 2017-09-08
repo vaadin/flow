@@ -48,8 +48,8 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            The value context for the conversion.
      * @return The converted value compatible with the source type
      */
-    public Result<MODEL> convertToModel(PRESENTATION value,
-            ValueContext context);
+    Result<MODEL> convertToModel(PRESENTATION value,
+                                 ValueContext context);
 
     /**
      * Converts the given value from presentation type to model type.
@@ -62,8 +62,8 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            The value context for the conversion.
      * @return The converted value compatible with the source type
      */
-    public PRESENTATION convertToPresentation(MODEL value,
-            ValueContext context);
+    PRESENTATION convertToPresentation(MODEL value,
+                                       ValueContext context);
 
     /**
      * Returns a converter that returns its input as-is in both directions.
@@ -72,7 +72,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            the input and output type
      * @return an identity converter
      */
-    public static <T> Converter<T, T> identity() {
+    static <T> Converter<T, T> identity() {
         return from(t -> Result.ok(t), t -> t);
     }
 
@@ -97,7 +97,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * @see Result
      * @see Function
      */
-    public static <P, M> Converter<P, M> from(
+    static <P, M> Converter<P, M> from(
             SerializableFunction<P, M> toModel,
             SerializableFunction<M, P> toPresentation,
             SerializableFunction<Exception, String> onError) {
@@ -121,7 +121,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *
      * @see Function
      */
-    public static <P, M> Converter<P, M> from(
+    static <P, M> Converter<P, M> from(
             SerializableFunction<P, Result<M>> toModel,
             SerializableFunction<M, P> toPresentation) {
         return new Converter<P, M>() {
@@ -156,7 +156,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            the converter to chain, not null
      * @return a chained converter
      */
-    public default <T> Converter<PRESENTATION, T> chain(
+    default <T> Converter<PRESENTATION, T> chain(
             Converter<MODEL, T> other) {
         return new Converter<PRESENTATION, T>() {
             @Override

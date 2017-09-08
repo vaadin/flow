@@ -31,10 +31,10 @@ public class Converters {
 
         Person getPerson();
 
-        public Date getBirthDate();
+        Date getBirthDate();
 
         @Convert(DateToDateBeanConverter.class)
-        public void setBirthDate(Date birthDate);
+        void setBirthDate(Date birthDate);
     }
 
     @Entity

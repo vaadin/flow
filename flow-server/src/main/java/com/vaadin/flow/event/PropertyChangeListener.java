@@ -35,5 +35,5 @@ public interface PropertyChangeListener extends Serializable {
      * @param event
      *            the received event, not null
      */
-    public void propertyChange(PropertyChangeEvent event);
+    void propertyChange(PropertyChangeEvent event);
 }

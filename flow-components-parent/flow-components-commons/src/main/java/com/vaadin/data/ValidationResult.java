@@ -87,7 +87,7 @@ public interface ValidationResult extends Serializable {
      *
      * @return the successful result
      */
-    public static ValidationResult ok() {
+    static ValidationResult ok() {
         return new SimpleValidationResult(null);
     }
 
@@ -102,7 +102,7 @@ public interface ValidationResult extends Serializable {
      * @throws NullPointerException
      *             if {@code errorMessage} is null
      */
-    public static ValidationResult error(String errorMessage) {
+    static ValidationResult error(String errorMessage) {
         Objects.requireNonNull(errorMessage);
         return new SimpleValidationResult(errorMessage);
     }
