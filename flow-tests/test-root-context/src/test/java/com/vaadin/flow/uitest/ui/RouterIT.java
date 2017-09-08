@@ -3,8 +3,10 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.uitest.servlet.RouterTestServlet.ChildNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooBarNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.RootNavigationTarget;
@@ -40,6 +42,17 @@ public class RouterIT extends ChromeBrowserTest {
         openRouteUrl("foo/bar");
         Assert.assertEquals(FooBarNavigationTarget.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
+    }
+
+    @Test
+    public void childIsInsideRouterLayout() {
+        openRouteUrl("baz");
+
+        Assert.assertTrue(isElementPresent(By.id("layout")));
+        WebElement layout = findElement(By.id("layout"));
+
+        Assert.assertEquals(ChildNavigationTarget.class.getSimpleName(),
+                layout.findElement(By.id("name-div")).getText());
     }
 
     private void openRouteUrl(String route) {
