@@ -31,7 +31,7 @@ import com.vaadin.ui.UI;
  * {@link NavigationTrigger}.
  * 
  */
-public class NEW_LocationChangeEvent extends EventObject {
+public class NewLocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private final Location location;
@@ -52,7 +52,7 @@ public class NEW_LocationChangeEvent extends EventObject {
      * @param location
      *            the new location, not {@code null}
      */
-    public NEW_LocationChangeEvent(NEW_RouterInterface router, UI ui,
+    public NewLocationChangeEvent(RouterInterface router, UI ui,
             NavigationTrigger trigger, Location location) {
         super(router);
 
@@ -122,8 +122,8 @@ public class NEW_LocationChangeEvent extends EventObject {
     }
 
     @Override
-    public NEW_RouterInterface getSource() {
-        return (NEW_RouterInterface) super.getSource();
+    public RouterInterface getSource() {
+        return (RouterInterface) super.getSource();
     }
 
     /**
@@ -178,6 +178,6 @@ public class NEW_LocationChangeEvent extends EventObject {
      *            the component type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends Component> routeTargetType) {
-        rerouteTo(new NEW_StaticRouteTargetRenderer(routeTargetType));
+        rerouteTo(new StaticRouteTargetRenderer(routeTargetType));
     }
 }

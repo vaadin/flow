@@ -24,7 +24,7 @@ import com.vaadin.ui.UI;
  * Interface that defines the contract that different Router implementations
  * need to fulfill.
  */
-public interface NEW_RouterInterface extends Serializable {
+public interface RouterInterface extends Serializable {
 
     /**
      * Enables navigation for a new UI instance. This initializes the UI content

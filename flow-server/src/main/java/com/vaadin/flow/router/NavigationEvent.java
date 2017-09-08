@@ -42,7 +42,7 @@ public class NavigationEvent extends EventObject {
      *            the type of user action that triggered this navigation event,
      *            not {@code null}
      */
-    public NavigationEvent(NEW_RouterInterface router, Location location, UI ui,
+    public NavigationEvent(RouterInterface router, Location location, UI ui,
             NavigationTrigger trigger) {
         super(router);
 
@@ -56,8 +56,8 @@ public class NavigationEvent extends EventObject {
     }
 
     @Override
-    public NEW_RouterInterface getSource() {
-        return (NEW_RouterInterface) super.getSource();
+    public RouterInterface getSource() {
+        return (RouterInterface) super.getSource();
     }
 
     /**

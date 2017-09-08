@@ -36,7 +36,7 @@ import com.vaadin.ui.UI;
 
 public class NEW_RouterTest {
 
-    private NEW_Router router;
+    private NewRouter router;
     private UI ui;
 
     @Route("")
@@ -61,18 +61,18 @@ public class NEW_RouterTest {
     }
 
     public static class RouterTestUI extends UI {
-        final NEW_Router router;
+        final NewRouter router;
 
         public RouterTestUI() {
-            this(new NEW_Router());
+            this(new NewRouter());
         }
 
-        public RouterTestUI(NEW_Router router) {
+        public RouterTestUI(NewRouter router) {
             this.router = router;
         }
 
         @Override
-        public Optional<NEW_RouterInterface> getRouter() {
+        public Optional<RouterInterface> getRouter() {
             return Optional.of(router);
         }
     }
@@ -80,7 +80,7 @@ public class NEW_RouterTest {
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        router = new NEW_Router();
+        router = new NewRouter();
         ui = new RouterTestUI(router);
         Field field = RouteRegistry.getInstance().getClass()
                 .getDeclaredField("initialized");

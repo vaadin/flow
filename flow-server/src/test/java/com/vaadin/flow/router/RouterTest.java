@@ -55,7 +55,7 @@ public class RouterTest {
         }
 
         @Override
-        public Optional<NEW_RouterInterface> getRouter() {
+        public Optional<RouterInterface> getRouter() {
             return Optional.of(router);
         }
     }

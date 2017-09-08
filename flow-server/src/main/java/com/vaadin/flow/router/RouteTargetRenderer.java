@@ -30,7 +30,7 @@ import com.vaadin.util.ReflectTools;
  * 
  * @see Route
  */
-public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
+public abstract class RouteTargetRenderer implements NavigationHandler {
 
     /**
      * Gets the route target type to show.
@@ -77,7 +77,7 @@ public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
         List<Component> routeTargetChain = new ArrayList<>();
         routeTargetChain.add(componentInstance);
 
-        NEW_LocationChangeEvent locationChangeEvent = createEvent(event,
+        NewLocationChangeEvent locationChangeEvent = createEvent(event,
                 routeTargetChain);
 
         ui.getInternals().showRouteTarget(event.getLocation(),
@@ -109,9 +109,9 @@ public abstract class NEW_RouteTargetRenderer implements NavigationHandler {
         }
     }
 
-    private NEW_LocationChangeEvent createEvent(NavigationEvent event,
+    private NewLocationChangeEvent createEvent(NavigationEvent event,
             List<Component> routeTargetChain) {
-        return new NEW_LocationChangeEvent(event.getSource(), event.getUI(),
+        return new NewLocationChangeEvent(event.getSource(), event.getUI(),
                 event.getTrigger(), event.getLocation());
     }
 }

@@ -23,7 +23,7 @@ import com.vaadin.ui.Component;
  * A simple route target renderer that always uses the given view type and route
  * configured for it.
  */
-public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
+public class StaticRouteTargetRenderer extends RouteTargetRenderer {
 
     private final Class<? extends Component> routeTargetType;
 
@@ -34,7 +34,7 @@ public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
      * @param routeTargetType
      *            the component type to show, not <code>null</code>
      */
-    public NEW_StaticRouteTargetRenderer(
+    public StaticRouteTargetRenderer(
             Class<? extends Component> routeTargetType) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
