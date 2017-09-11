@@ -508,9 +508,8 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * @return this instance, for method chaining
      */
     @Override
-    public PasswordField setValue(String value) {
+    public void setValue(String value) {
         getElement().setProperty("value", value == null ? "" : value);
-        return get();
     }
 
     /**

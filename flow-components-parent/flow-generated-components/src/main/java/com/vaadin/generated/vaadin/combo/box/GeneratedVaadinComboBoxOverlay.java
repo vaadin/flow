@@ -15,14 +15,16 @@
  */
 package com.vaadin.generated.vaadin.combo.box;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: vaadin-combo-box-overlay#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -57,11 +59,9 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * 
 	 * @param positionTarget
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setPositionTarget(elemental.json.JsonObject positionTarget) {
+	protected void setPositionTarget(elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
-		return get();
 	}
 
 	/**
@@ -89,11 +89,9 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * 
 	 * @param verticalOffset
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setVerticalOffset(double verticalOffset) {
+	public void setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
-		return get();
 	}
 
 	/**
@@ -121,11 +119,9 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * 
 	 * @param touchDevice
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setTouchDevice(boolean touchDevice) {
+	public void setTouchDevice(boolean touchDevice) {
 		getElement().setProperty("touchDevice", touchDevice);
-		return get();
 	}
 
 	/**
@@ -153,11 +149,9 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * 
 	 * @param loading
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setLoading(boolean loading) {
+	public void setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
-		return get();
 	}
 
 	/**

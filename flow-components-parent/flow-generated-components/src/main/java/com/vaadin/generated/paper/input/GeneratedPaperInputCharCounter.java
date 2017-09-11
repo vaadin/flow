@@ -15,14 +15,16 @@
  */
 package com.vaadin.generated.paper.input;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
-import com.vaadin.components.JsonSerializable;
 
 /**
  * <p>
@@ -98,28 +100,24 @@ public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCou
 			return internalObject.getObject("inputElement");
 		}
 
-		public UpdateState setInputElement(
-				elemental.json.JsonObject inputElement) {
+		public void setInputElement(elemental.json.JsonObject inputElement) {
 			this.internalObject.put("inputElement", inputElement);
-			return this;
 		}
 
 		public String getValue() {
 			return internalObject.getString("value");
 		}
 
-		public UpdateState setValue(java.lang.String value) {
+		public void setValue(java.lang.String value) {
 			this.internalObject.put("value", value);
-			return this;
 		}
 
 		public boolean isInvalid() {
 			return internalObject.getBoolean("invalid");
 		}
 
-		public UpdateState setInvalid(boolean invalid) {
+		public void setInvalid(boolean invalid) {
 			this.internalObject.put("invalid", invalid);
-			return this;
 		}
 
 		@Override

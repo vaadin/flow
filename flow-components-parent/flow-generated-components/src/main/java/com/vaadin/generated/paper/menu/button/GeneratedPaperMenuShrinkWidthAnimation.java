@@ -15,12 +15,14 @@
  */
 package com.vaadin.generated.paper.menu.button;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
@@ -57,11 +59,9 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	 * 
 	 * @param animationTiming
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setAnimationTiming(elemental.json.JsonObject animationTiming) {
+	protected void setAnimationTiming(elemental.json.JsonObject animationTiming) {
 		getElement().setPropertyJson("animationTiming", animationTiming);
-		return get();
 	}
 
 	/**
@@ -89,11 +89,9 @@ public class GeneratedPaperMenuShrinkWidthAnimation<R extends GeneratedPaperMenu
 	 * 
 	 * @param isNeonAnimation
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setIsNeonAnimation(boolean isNeonAnimation) {
+	public void setIsNeonAnimation(boolean isNeonAnimation) {
 		getElement().setProperty("isNeonAnimation", isNeonAnimation);
-		return get();
 	}
 
 	/**

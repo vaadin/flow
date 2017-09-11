@@ -15,18 +15,20 @@
  */
 package com.vaadin.generated.paper.swatch.picker;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonArray;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonArray;
 
 /**
  * <p>
@@ -121,11 +123,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * 
 	 * @param color
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setColor(java.lang.String color) {
+	public void setColor(java.lang.String color) {
 		getElement().setProperty("color", color == null ? "" : color);
-		return get();
 	}
 
 	/**
@@ -161,11 +161,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * 
 	 * @param colorList
 	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setColorList(elemental.json.JsonArray colorList) {
+	protected void setColorList(elemental.json.JsonArray colorList) {
 		getElement().setPropertyJson("colorList", colorList);
-		return get();
 	}
 
 	/**
@@ -199,11 +197,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * 
 	 * @param columnCount
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setColumnCount(double columnCount) {
+	public void setColumnCount(double columnCount) {
 		getElement().setProperty("columnCount", columnCount);
-		return get();
 	}
 
 	/**
@@ -233,12 +229,10 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * 
 	 * @param horizontalAlign
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public void setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
-		return get();
 	}
 
 	/**
@@ -268,12 +262,10 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * 
 	 * @param verticalAlign
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public void setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
-		return get();
 	}
 
 	/**
@@ -303,11 +295,9 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * 
 	 * @param noink
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoink(boolean noink) {
+	public void setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
-		return get();
 	}
 
 	@DomEvent("color-picker-selected")

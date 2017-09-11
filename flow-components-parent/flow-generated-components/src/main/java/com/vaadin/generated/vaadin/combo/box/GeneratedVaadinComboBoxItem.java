@@ -15,12 +15,14 @@
  */
 package com.vaadin.generated.vaadin.combo.box;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
@@ -56,11 +58,9 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	 * 
 	 * @param index
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setIndex(double index) {
+	public void setIndex(double index) {
 		getElement().setProperty("index", index);
-		return get();
 	}
 
 	/**
@@ -103,11 +103,9 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	 * 
 	 * @param item
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setItem(java.lang.String item) {
+	public void setItem(java.lang.String item) {
 		getElement().setProperty("item", item == null ? "" : item);
-		return get();
 	}
 
 	/**
@@ -120,11 +118,9 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	 * 
 	 * @param item
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setItem(elemental.json.JsonObject item) {
+	protected void setItem(elemental.json.JsonObject item) {
 		getElement().setPropertyJson("item", item);
-		return get();
 	}
 
 	/**
@@ -152,11 +148,9 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	 * 
 	 * @param label
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public void setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return get();
 	}
 
 	/**
@@ -184,11 +178,9 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	 * 
 	 * @param selected
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setSelected(boolean selected) {
+	public void setSelected(boolean selected) {
 		getElement().setProperty("selected", selected);
-		return get();
 	}
 
 	/**
@@ -216,10 +208,8 @@ public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R
 	 * 
 	 * @param focused
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setFocused(boolean focused) {
+	public void setFocused(boolean focused) {
 		getElement().setProperty("focused", focused);
-		return get();
 	}
 }

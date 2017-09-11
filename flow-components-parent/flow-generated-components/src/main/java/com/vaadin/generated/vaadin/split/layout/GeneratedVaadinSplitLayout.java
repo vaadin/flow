@@ -15,16 +15,17 @@
  */
 package com.vaadin.generated.vaadin.split.layout;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
 
 /**
  * <p>
@@ -207,11 +208,9 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
 	 * 
 	 * @param vertical
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setVertical(boolean vertical) {
+	public void setVertical(boolean vertical) {
 		getElement().setProperty("vertical", vertical);
-		return get();
 	}
 
 	@DomEvent("iron-resize")

@@ -15,14 +15,16 @@
  */
 package com.vaadin.generated.vaadin.form.layout;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -189,11 +191,9 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	</dl>
 
 	 * @param responsiveSteps the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setResponsiveSteps(elemental.json.JsonObject responsiveSteps) {
+	protected void setResponsiveSteps(elemental.json.JsonObject responsiveSteps) {
 		getElement().setPropertyJson("responsiveSteps", responsiveSteps);
-		return get();
 	}
 
 	/**

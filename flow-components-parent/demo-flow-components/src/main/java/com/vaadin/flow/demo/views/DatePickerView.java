@@ -96,8 +96,8 @@ public class DatePickerView extends DemoView {
         // begin-source-example
         // source-example-heading: Internationalized date picker
         DatePicker datePicker = new DatePicker();
-        datePicker.setLabel("Finnish date picker")
-                .setPlaceholder("Syntymäpäivä");
+        datePicker.setLabel("Finnish date picker");
+        datePicker.setPlaceholder("Syntymäpäivä");
 
         datePicker.setI18n(new DatePickerI18n().setWeek("viikko")
                 .setCalendar("kalenteri").setClear("tyhjennä")

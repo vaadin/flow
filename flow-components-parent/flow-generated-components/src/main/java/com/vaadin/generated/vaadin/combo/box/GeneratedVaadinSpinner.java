@@ -15,12 +15,13 @@
  */
 package com.vaadin.generated.vaadin.combo.box;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: vaadin-spinner#2.0.0", "Flow#0.1-SNAPSHOT"})
@@ -41,10 +42,8 @@ public class GeneratedVaadinSpinner<R extends GeneratedVaadinSpinner<R>>
 	/**
 	 * @param active
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public void setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return get();
 	}
 }

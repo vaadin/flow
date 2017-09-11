@@ -15,19 +15,21 @@
  */
 package com.vaadin.generated.paper.icon.button;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.NotSupported;
+
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -171,11 +173,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return get();
 	}
 
 	/**
@@ -205,13 +205,11 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public void setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return get();
 	}
 
 	/**
@@ -225,11 +223,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	/**
 	 * @param keyBindings
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return get();
 	}
 
 	/**
@@ -274,11 +270,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param toggles
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setToggles(boolean toggles) {
+	public void setToggles(boolean toggles) {
 		getElement().setProperty("toggles", toggles);
-		return get();
 	}
 
 	/**
@@ -307,11 +301,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param active
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public void setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return get();
 	}
 
 	/**
@@ -374,12 +366,10 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param ariaActiveAttribute
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
+	public void setAriaActiveAttribute(java.lang.String ariaActiveAttribute) {
 		getElement().setProperty("ariaActiveAttribute",
 				ariaActiveAttribute == null ? "" : ariaActiveAttribute);
-		return get();
 	}
 
 	/**
@@ -424,11 +414,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**
@@ -458,11 +446,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param noink
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoink(boolean noink) {
+	public void setNoink(boolean noink) {
 		getElement().setProperty("noink", noink);
-		return get();
 	}
 
 	/**
@@ -492,11 +478,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param src
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setSrc(java.lang.String src) {
+	public void setSrc(java.lang.String src) {
 		getElement().setProperty("src", src == null ? "" : src);
-		return get();
 	}
 
 	/**
@@ -528,11 +512,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param icon
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setIcon(java.lang.String icon) {
+	public void setIcon(java.lang.String icon) {
 		getElement().setProperty("icon", icon == null ? "" : icon);
-		return get();
 	}
 
 	/**
@@ -560,11 +542,9 @@ public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>
 	 * 
 	 * @param alt
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAlt(java.lang.String alt) {
+	public void setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
-		return get();
 	}
 
 	/**

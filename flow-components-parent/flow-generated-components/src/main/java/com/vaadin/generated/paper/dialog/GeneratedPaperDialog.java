@@ -15,20 +15,22 @@
  */
 package com.vaadin.generated.paper.dialog;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.NotSupported;
+
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -142,11 +144,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param sizingTarget
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setSizingTarget(elemental.json.JsonObject sizingTarget) {
+	protected void setSizingTarget(elemental.json.JsonObject sizingTarget) {
 		getElement().setPropertyJson("sizingTarget", sizingTarget);
-		return get();
 	}
 
 	/**
@@ -174,11 +174,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param fitInto
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setFitInto(elemental.json.JsonObject fitInto) {
+	protected void setFitInto(elemental.json.JsonObject fitInto) {
 		getElement().setPropertyJson("fitInto", fitInto);
-		return get();
 	}
 
 	/**
@@ -208,11 +206,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param noOverlap
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoOverlap(boolean noOverlap) {
+	public void setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
-		return get();
 	}
 
 	/**
@@ -242,11 +238,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param positionTarget
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setPositionTarget(elemental.json.JsonObject positionTarget) {
+	protected void setPositionTarget(elemental.json.JsonObject positionTarget) {
 		getElement().setPropertyJson("positionTarget", positionTarget);
-		return get();
 	}
 
 	/**
@@ -278,12 +272,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param horizontalAlign
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public void setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
-		return get();
 	}
 
 	/**
@@ -315,12 +307,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param verticalAlign
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public void setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
-		return get();
 	}
 
 	/**
@@ -352,11 +342,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param dynamicAlign
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDynamicAlign(boolean dynamicAlign) {
+	public void setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
-		return get();
 	}
 
 	/**
@@ -412,11 +400,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param horizontalOffset
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalOffset(double horizontalOffset) {
+	public void setHorizontalOffset(double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
-		return get();
 	}
 
 	/**
@@ -472,11 +458,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param verticalOffset
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setVerticalOffset(double verticalOffset) {
+	public void setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
-		return get();
 	}
 
 	/**
@@ -504,11 +488,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param autoFitOnAttach
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutoFitOnAttach(boolean autoFitOnAttach) {
+	public void setAutoFitOnAttach(boolean autoFitOnAttach) {
 		getElement().setProperty("autoFitOnAttach", autoFitOnAttach);
-		return get();
 	}
 
 	/**
@@ -537,11 +519,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param opened
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public void setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return get();
 	}
 
 	/**
@@ -586,11 +566,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param withBackdrop
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setWithBackdrop(boolean withBackdrop) {
+	public void setWithBackdrop(boolean withBackdrop) {
 		getElement().setProperty("withBackdrop", withBackdrop);
-		return get();
 	}
 
 	/**
@@ -620,11 +598,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param noAutoFocus
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoAutoFocus(boolean noAutoFocus) {
+	public void setNoAutoFocus(boolean noAutoFocus) {
 		getElement().setProperty("noAutoFocus", noAutoFocus);
-		return get();
 	}
 
 	/**
@@ -652,11 +628,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param noCancelOnEscKey
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoCancelOnEscKey(boolean noCancelOnEscKey) {
+	public void setNoCancelOnEscKey(boolean noCancelOnEscKey) {
 		getElement().setProperty("noCancelOnEscKey", noCancelOnEscKey);
-		return get();
 	}
 
 	/**
@@ -684,12 +658,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param noCancelOnOutsideClick
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoCancelOnOutsideClick(boolean noCancelOnOutsideClick) {
+	public void setNoCancelOnOutsideClick(boolean noCancelOnOutsideClick) {
 		getElement().setProperty("noCancelOnOutsideClick",
 				noCancelOnOutsideClick);
-		return get();
 	}
 
 	/**
@@ -723,11 +695,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param closingReason
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setClosingReason(elemental.json.JsonObject closingReason) {
+	protected void setClosingReason(elemental.json.JsonObject closingReason) {
 		getElement().setPropertyJson("closingReason", closingReason);
-		return get();
 	}
 
 	/**
@@ -755,11 +725,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param restoreFocusOnClose
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+	public void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
-		return get();
 	}
 
 	/**
@@ -787,11 +755,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param alwaysOnTop
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysOnTop(boolean alwaysOnTop) {
+	public void setAlwaysOnTop(boolean alwaysOnTop) {
 		getElement().setProperty("alwaysOnTop", alwaysOnTop);
-		return get();
 	}
 
 	/**
@@ -819,11 +785,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param modal
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setModal(boolean modal) {
+	public void setModal(boolean modal) {
 		getElement().setProperty("modal", modal);
-		return get();
 	}
 
 	/**
@@ -851,11 +815,9 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param animationConfig
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setAnimationConfig(elemental.json.JsonObject animationConfig) {
+	protected void setAnimationConfig(elemental.json.JsonObject animationConfig) {
 		getElement().setPropertyJson("animationConfig", animationConfig);
-		return get();
 	}
 
 	/**
@@ -887,12 +849,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param entryAnimation
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setEntryAnimation(java.lang.String entryAnimation) {
+	public void setEntryAnimation(java.lang.String entryAnimation) {
 		getElement().setProperty("entryAnimation",
 				entryAnimation == null ? "" : entryAnimation);
-		return get();
 	}
 
 	/**
@@ -924,12 +884,10 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * 
 	 * @param exitAnimation
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setExitAnimation(java.lang.String exitAnimation) {
+	public void setExitAnimation(java.lang.String exitAnimation) {
 		getElement().setProperty("exitAnimation",
 				exitAnimation == null ? "" : exitAnimation);
-		return get();
 	}
 
 	/**

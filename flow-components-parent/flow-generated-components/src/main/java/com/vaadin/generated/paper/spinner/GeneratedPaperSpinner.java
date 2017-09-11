@@ -15,12 +15,13 @@
  */
 package com.vaadin.generated.paper.spinner;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
 
 /**
  * <p>
@@ -130,11 +131,9 @@ public class GeneratedPaperSpinner<R extends GeneratedPaperSpinner<R>>
 	 * 
 	 * @param active
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public void setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return get();
 	}
 
 	/**
@@ -166,10 +165,8 @@ public class GeneratedPaperSpinner<R extends GeneratedPaperSpinner<R>>
 	 * 
 	 * @param alt
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAlt(java.lang.String alt) {
+	public void setAlt(java.lang.String alt) {
 		getElement().setProperty("alt", alt == null ? "" : alt);
-		return get();
 	}
 }
