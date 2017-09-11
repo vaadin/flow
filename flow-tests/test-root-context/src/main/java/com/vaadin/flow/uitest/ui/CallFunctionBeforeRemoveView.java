@@ -28,8 +28,10 @@ public class CallFunctionBeforeRemoveView extends AbstractDivView {
         NativeButton button = new NativeButton("Call function and detach");
         add(button);
         button.addClickListener(event -> {
-            input.getElement().callFunction("focus");
-            remove(input);
+            if (input.getParent().isPresent()) {
+                input.getElement().callFunction("focus");
+                remove(input);
+            }
         });
     }
 }
