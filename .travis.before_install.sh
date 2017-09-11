@@ -24,4 +24,15 @@ then
     # Run Selenoid (https://github.com/aerokube/selenoid)
     docker run -d -p 4444:4444 -v `pwd`:/etc/selenoid:ro \
           -v /var/run/docker.sock:/var/run/docker.sock aerokube/selenoid:${selenoidVersion}
+else
+    custom_chrome_dir=/tmp/custom_chrome
+    chrome_package_name=google-chrome-stable_current_amd64.deb
+    mkdir -p ${custom_chrome_dir}
+    scp -o "StrictHostKeyChecking no" -P 5177 dev@virtuallypreinstalled.com:/home/dev/custom_chrome/${chrome_package_name} ${custom_chrome_dir}
+    if [ ! -f ${custom_chrome_dir}/${chrome_package_name} ]; then
+        echo "Was not able to download custom Chrome binary from the remote server, using the official distribution"
+        wget -O ${custom_chrome_dir} http://dl.google.com/dl/linux/direct/google-chrome-stable_current_amd64.deb
+    fi
+    sudo dpkg -i --force-all ${custom_chrome_dir}/${chrome_package_name}
+    rm -rfv ${custom_chrome_dir}
 fi
