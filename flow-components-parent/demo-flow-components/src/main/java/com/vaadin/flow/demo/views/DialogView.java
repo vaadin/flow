@@ -16,8 +16,10 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.html.Label;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Dialog;
+import com.vaadin.ui.HorizontalLayout;
 
 /**
  * View for {@link Dialog} demo.
@@ -28,18 +30,59 @@ public class DialogView extends DemoView {
     @Override
     void initView() {
         addBasicDialog();
+        addDialogWithOpenedChangedListener();
+        addDialogWithHTML();
     }
 
     private void addBasicDialog() {
+        Button button = new Button("Open dialog");
+
         // begin-source-example
         // source-example-heading: Basic dialog
         Dialog dialog = new Dialog("Hello World!");
-
-        Button button = new Button("Open dialog");
         button.addClickListener(event -> dialog.open());
         // end-source-example
 
         dialog.setId("basic-dialog");
         addCard("Basic dialog", button, dialog);
+    }
+
+    private void addDialogWithOpenedChangedListener() {
+        Button button = new Button("Open dialog");
+        Label message = new Label();
+        Dialog dialog = new Dialog("Hello World!");
+
+        // begin-source-example
+        // source-example-heading: Dialog with an OpenedChangedListener
+        dialog.addOpenedChangeListener(event -> {
+            if (dialog.isOpened()) {
+                message.setText("Dialog opened!");
+            } else {
+                message.setText("Dialog closed!");
+            }
+        });
+        // end-source-example
+
+        button.addClickListener(event -> dialog.open());
+
+        dialog.setId("dialog-with-opened-changed-listener");
+        addCard("Dialog with an OpenedChangedListener",
+                new HorizontalLayout(button, message), dialog);
+    }
+
+    private void addDialogWithHTML() {
+        Button button = new Button("Open dialog");
+
+        // begin-source-example
+        // source-example-heading: Dialog with HTML content
+        Dialog dialog = new Dialog("<b>Dialog can be closed by:</b><ul>"
+                + "<li>Hitting the esc key</li>"
+                + "<li>Clicking outside of it</li></ul>");
+        // end-source-example
+
+        button.addClickListener(event -> dialog.open());
+
+        dialog.setId("dialog-with-html");
+        addCard("Dialog with HTML content", button, dialog);
     }
 }
