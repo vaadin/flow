@@ -43,7 +43,7 @@ public class DialogView extends DemoView {
         button.addClickListener(event -> dialog.open());
         // end-source-example
 
-        dialog.setId("basic-dialog");
+        button.setId("basic-dialog-button");
         addCard("Basic dialog", button, dialog);
     }
 
@@ -64,8 +64,8 @@ public class DialogView extends DemoView {
         // end-source-example
 
         button.addClickListener(event -> dialog.open());
-
-        dialog.setId("dialog-with-opened-changed-listener");
+        button.setId("dialog-with-listener-button");
+        message.setId("dialog-message-label");
         addCard("Dialog with an OpenedChangedListener",
                 new HorizontalLayout(button, message), dialog);
     }
@@ -81,8 +81,7 @@ public class DialogView extends DemoView {
         // end-source-example
 
         button.addClickListener(event -> dialog.open());
-
-        dialog.setId("dialog-with-html");
+        button.setId("dialog-with-html-button");
         addCard("Dialog with HTML content", button, dialog);
     }
 }
