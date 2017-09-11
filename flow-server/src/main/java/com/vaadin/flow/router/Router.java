@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,7 +29,7 @@ import com.vaadin.ui.UI;
  *
  * @author Vaadin Ltd
  */
-public class Router implements Serializable {
+public class Router implements RouterInterface {
     /**
      * The live configuration instance. All changes to the configuration are
      * done on a copy, which is then swapped into use so that nobody outside
@@ -68,6 +67,7 @@ public class Router implements Serializable {
      * @param initRequest
      *            the Vaadin request that bootstraps the provided UI
      */
+    @Override
     public void initializeUI(UI ui, VaadinRequest initRequest) {
         assert getConfiguration().isConfigured();
 
@@ -109,6 +109,7 @@ public class Router implements Serializable {
      *            <code>null</code>
      * @return the HTTP status code resulting from the navigation
      */
+    @Override
     public int navigate(UI ui, Location location, NavigationTrigger trigger) {
         assert ui != null;
         assert location != null;
@@ -154,6 +155,7 @@ public class Router implements Serializable {
      * @param configurator
      *            the configurator that will update the configuration
      */
+    @Override
     public void reconfigure(RouterConfigurator configurator) {
         /*
          * This is expected to be run so rarely (during service init and OSGi
@@ -188,6 +190,7 @@ public class Router implements Serializable {
      *
      * @return the currently used router configuration
      */
+    @Override
     public ImmutableRouterConfiguration getConfiguration() {
         ImmutableRouterConfiguration currentConfig = configuration;
 

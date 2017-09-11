@@ -1,6 +1,6 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
-== Defining View Routes
+== Defining Routes With RouterConfiguration
 The _Routing API_ allows you to define a mapping between _URLs_ and _Views_ and handles navigation between _Views_ without page reloads. Routes are specified on a service (servlet) level, i.e. the configuration is shared between all users. You can define your own `RouterConfigurator` class which provides the configuration using the `@VaadinServletConfiguration` annotation.
 
 [source,java]
@@ -39,38 +39,10 @@ public class HomeView extends Div implements View {
 }
 ----
 
-== Navigating Between Views
-
-You can use the `RouterLink` component to create links that lead to views in the application.
-
-[source,java]
-----
-Div menu = new Div();
-menu.add(new RouterLink("Home", HomeView.class));
-menu.add(new RouterLink("Company", CompanyView.class));
-----
-
-It is also possible to navigate with normal `<a href="company">` type links but these will cause a page reload.
-Navigation with `RouterLink` instead fetches the contents of the new view, which is updated in place without reloading the page.
-
-[TIP]
-By adding a `router-link` attribute to a regular link, you tell the framework that it should handle navigation without reloads, e.g. `<a router-link href="company">Go to the company page</a>`.
-
-To trigger navigation from the server side, use `UI.navigateTo(String)`, where the string parameter is the location to navigate to, e.g. to navigate to the `company` view when clicking a button:
-
-[source,java]
-----
-NativeButton button = new NativeButton("Navigate to company");
-button.addClickListener( e-> {
-     button.getUI().ifPresent(ui -> ui.navigateTo("company"));
-});
-----
-
-[NOTE]
-Router links will work even if the session has expired so you should prefer to use those instead of handling navigation server side.
-
 See also:
 
+* <<tutorial-routing-annotation#,Defining Routes With @Route>>
+* <<tutorial-routing-navigation#,Navigating Between Routes>>
 * <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
 * <<tutorial-routing-view-parameters#,Using View Parameters>>
 * <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>

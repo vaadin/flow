@@ -36,7 +36,7 @@ https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy[same or
 
 ==== Handling user navigation
 
-If you choose to not use the <<tutorial-routing#,Router>>, you can replace it by setting a handler for navigation events using the
+If you choose to not use the <<tutorial-routing-router-configuration#,RouterConfiguration>>, you can replace it by setting a handler for navigation events using the
 `history.setHistoryStateChangeHandler(HistoryStateChangeHandler)`. It will be
 notified when:
 

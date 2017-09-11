@@ -150,11 +150,11 @@ public class VaadinServlet extends HttpServlet {
             VaadinServletConfiguration configuration = optionalConfigAnnotation
                     .get();
             if (configuration.ui() == UI.class && configuration
-                    .routerConfigurator() == RouterConfigurator.class) {
-                throw new ServletException(
-                        "At least one of 'ui' and 'routerConfigurator' must be defined in @"
-                                + VaadinServletConfiguration.class
-                                        .getSimpleName());
+                    .routerConfigurator() == RouterConfigurator.class
+                    && configuration.usingNewRouting() == false) {
+                throw new ServletException(String.format(
+                        "At least one of 'ui' and 'routerConfigurator' must be defined in @%s if 'usingNewRouting' is false",
+                        VaadinServletConfiguration.class.getSimpleName()));
             }
 
             Method[] methods = VaadinServletConfiguration.class
