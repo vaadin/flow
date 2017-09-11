@@ -74,6 +74,6 @@ class CustomPageTitleGenerator extends DefaultPageTitleGenerator {
 
 See also:
 
-* <<tutorial-routing#,Defining View Routes and Navigating>>
+* <<tutorial-routing-router-configuration#,Defining Routes With RouterConfiguration>>
 * <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
 * <<tutorial-routing-view-parameters#,Using View Parameters>>
