@@ -888,6 +888,7 @@ public class ComponentGenerator {
                     && shouldImplementHasValue(metadata)) {
                 method.addAnnotation(Override.class);
             }
+
         } else {
 
             for (ComponentBasicType basicType : property.getType()) {
@@ -920,9 +921,9 @@ public class ComponentGenerator {
                 if (fluentSetters) {
                     addFluentReturnToMethod(method);
                 }
-
                 if ("value".equals(propertyJavaName)
                         && shouldImplementHasValue(metadata)) {
+
                     method.addAnnotation(Override.class);
                     if (setterType.isPrimitive()) {
                         implementHasValueSetterWithPimitiveType(javaClass,
@@ -972,7 +973,9 @@ public class ComponentGenerator {
             overloadMethod.getJavaDoc().addTagValue(JAVADOC_SEE,
                     "#setValue(Double)");
 
-            addFluentReturnToMethod(overloadMethod);
+            if (fluentSetters) {
+                addFluentReturnToMethod(overloadMethod);
+            }
         }
     }
 

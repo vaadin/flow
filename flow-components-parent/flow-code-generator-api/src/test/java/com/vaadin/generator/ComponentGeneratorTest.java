@@ -201,7 +201,7 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithGetterAndFluentSetter_methodContainsJavaDoc() {
+    public void generateClassWithGetterAndSetter_methodContainsJavaDoc() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
         propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
@@ -214,18 +214,14 @@ public class ComponentGeneratorTest {
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
-        Assert.assertTrue("No fluent setter found", generatedClass
-                .contains("public R setName(java.lang.String name)"));
+        Assert.assertTrue("No setter found", generatedClass
+                .contains("public void setName(java.lang.String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
 
-        Assert.assertTrue("JavaDoc parameter for fluent setter was not found",
+        Assert.assertTrue("JavaDoc parameter for setter was not found",
                 generatedClass.contains("* @param " + propertyData.getName()));
-
-        Assert.assertTrue("JavaDoc return for fluent setter was not found",
-                generatedClass.contains(
-                        "* @return this instance, for method chaining"));
     }
 
     @Test
@@ -446,8 +442,8 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("No fluent setter found", generatedClass
-                .contains("public R setName(java.lang.String name)"));
+        Assert.assertTrue("No setter found", generatedClass
+                .contains("public void setName(java.lang.String name)"));
 
         Assert.assertTrue("Fluent setter doesn't check for null value",
                 generatedClass.contains(propertyData.getName()
@@ -476,7 +472,7 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithBooleanGetterAndFluentSetter_setterDoesNotSetEmptyForNullValue() {
+    public void generateClassWithBooleanGetterAndSetter_setterDoesNotSetEmptyForNullValue() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
         propertyData.setType(Arrays.asList(ComponentBasicType.BOOLEAN));
@@ -486,10 +482,10 @@ public class ComponentGeneratorTest {
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
-        Assert.assertTrue("No fluent setter found", generatedClass
-                .contains("public R setRequired(boolean required)"));
+        Assert.assertTrue("No setter found", generatedClass
+                .contains("public void setRequired(boolean required)"));
 
-        Assert.assertFalse("Fluent setter checks for null value",
+        Assert.assertFalse("Setter checks for null value",
                 generatedClass.contains(propertyData.getName()
                         + " == null ? \"\" : " + propertyData.getName()));
     }
@@ -692,7 +688,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated class should contain the setSomething method",
                 generatedClass.contains(
-                        "public R setSomething(SomethingProperty property)"));
+                        "public void setSomething(SomethingProperty property)"));
     }
 
     @Test
@@ -877,7 +873,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 generatedClass.contains("@Override public String getValue()"));
         Assert.assertTrue(generatedClass.contains(
-                "@Override public R setValue(java.lang.String value)"));
+                "@Override public void setValue(java.lang.String value)"));
     }
 
     @Test
@@ -902,13 +898,13 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 generatedClass.contains("@Override public Double getValue()"));
         Assert.assertTrue(generatedClass.contains(
-                "@Override public R setValue(java.lang.Double value)"));
+                "@Override public void setValue(java.lang.Double value)"));
         Assert.assertTrue(generatedClass
-                .contains("public R setValue(java.lang.Number value)"));
+                .contains("public void setValue(java.lang.Number value)"));
     }
 
     @Test
-    public void componentContainsUnregognizedPropertyTypes_methodsAreGeneratedAsProtected() {
+    public void componentContainsUnrecognizedPropertyTypes_methodsAreGeneratedAsProtected() {
         ComponentPropertyData objectProperty = new ComponentPropertyData();
         objectProperty.setName("objectProperty");
         objectProperty.setType(Arrays.asList(ComponentBasicType.OBJECT));
@@ -942,15 +938,15 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(generatedClass
                 .contains("protected JsonObject protectedGetObjectProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected R setObjectProperty(elemental.json.JsonObject objectProperty)"));
+                "protected void setObjectProperty(elemental.json.JsonObject objectProperty)"));
         Assert.assertTrue(generatedClass
                 .contains("protected JsonArray protectedGetArrayProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected R setArrayProperty(elemental.json.JsonArray arrayProperty)"));
+                "protected void setArrayProperty(elemental.json.JsonArray arrayProperty)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected JsonValue protectedGetUndefinedProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected R setUndefinedProperty(elemental.json.JsonValue undefinedProperty)"));
+                "protected void setUndefinedProperty( elemental.json.JsonValue undefinedProperty)"));
 
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomething(elemental.json.JsonObject objectParam)"));
