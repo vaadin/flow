@@ -15,16 +15,14 @@
  */
 package com.vaadin.generated.paper.tooltip;
 
-import javax.annotation.Generated;
-
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
-
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import com.vaadin.ui.HasComponents;
 
 /**
  * <p>

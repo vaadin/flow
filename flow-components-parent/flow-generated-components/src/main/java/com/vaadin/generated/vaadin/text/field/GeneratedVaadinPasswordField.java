@@ -15,13 +15,12 @@
  */
 package com.vaadin.generated.vaadin.text.field;
 
-import javax.annotation.Generated;
-
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: PasswordFieldElement#1.1.0-alpha3", "Flow#0.1-SNAPSHOT"})

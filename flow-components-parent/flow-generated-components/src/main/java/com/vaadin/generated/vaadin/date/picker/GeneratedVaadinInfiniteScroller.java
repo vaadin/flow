@@ -15,17 +15,15 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
-import javax.annotation.Generated;
-
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.components.NotSupported;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-
-import elemental.json.JsonArray;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
+import elemental.json.JsonArray;
+import com.vaadin.components.NotSupported;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
 		"WebComponent: InfiniteScrollerElement#2.0.2", "Flow#0.1-SNAPSHOT"})
@@ -125,8 +123,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to,
-			elemental.json.JsonObject from) {
+	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -144,7 +141,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+	protected void linkPaths(elemental.json.JsonObject to,
+			elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -180,7 +178,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -199,7 +197,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	public void unlinkPaths(java.lang.String path) {
+	protected void unlinkPaths(elemental.json.JsonObject path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -218,7 +216,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	protected void unlinkPaths(elemental.json.JsonObject path) {
+	public void unlinkPaths(java.lang.String path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -290,8 +288,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
+	protected void get(java.lang.String path, elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -320,7 +317,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
+	protected void get(elemental.json.JsonObject path,
+			elemental.json.JsonObject root) {
 	}
 
 	/**
