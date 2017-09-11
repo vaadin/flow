@@ -1,0 +1,118 @@
+{
+  "name": "VaadinDialogOverlay",
+  "tag": "vaadin-dialog-overlay",
+  "baseUrl": "vaadin-dialog/vaadin-dialog.html",
+  "version": "UNKNOWN",
+  "properties": [
+    {
+      "name": "opened",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "template",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "content",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "withBackdrop",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "focusTrap",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": ""
+    }
+  ],
+  "methods": [
+    {
+      "name": "close",
+      "description": "",
+      "parameters": [
+        {
+          "name": "sourceEvent",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "vaadin-overlay-close",
+      "description": "vaadin-overlay-close\nfired before the `vaadin-overlay` will be closed. If canceled the closing of the overlay is canceled as well.",
+      "properties": []
+    },
+    {
+      "name": "vaadin-overlay-escape-press",
+      "description": "vaadin-overlay-escape-press\nfired before the `vaadin-overlay` will be closed on ESC button press. If canceled the closing of the overlay is canceled as well.",
+      "properties": []
+    },
+    {
+      "name": "vaadin-overlay-open",
+      "description": "vaadin-overlay-open\nfired after the `vaadin-overlay` is opened.",
+      "properties": []
+    },
+    {
+      "name": "vaadin-overlay-outside-click",
+      "description": "vaadin-overlay-outside-click\nfired before the `vaadin-overlay` will be closed on outside click. If canceled the closing of the overlay is canceled as well.",
+      "properties": []
+    },
+    {
+      "name": "opened-changed",
+      "description": "Fired when the `opened` property changes.",
+      "properties": []
+    },
+    {
+      "name": "template-changed",
+      "description": "Fired when the `template` property changes.",
+      "properties": []
+    },
+    {
+      "name": "content-changed",
+      "description": "Fired when the `content` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [],
+  "description": ""
+}
