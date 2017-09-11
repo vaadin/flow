@@ -757,7 +757,6 @@ public class Binder<BEAN> implements Serializable {
         private final Binder<BEAN> binder;
 
         private final HasValue<?, FIELDVALUE> field;
-        private final HasValidation validationTarget;
         private final BindingValidationStatusHandler statusHandler;
 
         private final SerializableFunction<BEAN, TARGET> getter;
@@ -777,7 +776,6 @@ public class Binder<BEAN> implements Serializable {
                 Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
-            validationTarget = getValidationTarget(builder.field);
             statusHandler = builder.statusHandler;
             converterValidatorChain = builder.converterValidatorChain;
 
@@ -786,13 +784,6 @@ public class Binder<BEAN> implements Serializable {
 
             this.getter = getter;
             this.setter = setter;
-        }
-
-        private HasValidation getValidationTarget(HasValue<?, FIELDVALUE> field) {
-            if (field instanceof HasValidation) {
-                return (HasValidation) field;
-            }
-            return null;
         }
 
         @Override
