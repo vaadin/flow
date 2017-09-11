@@ -2,7 +2,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 == View Hierarchy and Nested Views
 
-For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and Navigating>>.
+For a basic routing tutorial, see <<tutorial-routing-router-configuration#,Defining Routes With RouterConfiguration>>.
 
 When defining routes using `setRoute(String, Class)`, the view will be rendered inside the `<body>` tag on the page (the element returned by `View.getElement()` is attached to the `<body>`). You can define a parent view using `setRoute(String, Class<? extends View>, Class<? extends HasChildView>)`. To render `CompanyView` inside a view you would call `MainLayout` you would do:
 
@@ -26,7 +26,7 @@ public class MainLayout extends Div implements HasChildView {
     // Initialize the main layout DOM
     Div header = new Div();
     header.setText("This header will always be shown");
-    
+
     childContainer = new Div();
     add(header, childContainer);
   }

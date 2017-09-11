@@ -168,7 +168,7 @@ public class MyUI extends UI{
     }
 
     @Override
-    public Optional<Router> getRouter() {
+    public Optional<RouterInterface> getRouter() {
         return Optional.ofNullable(router);
     }
 }

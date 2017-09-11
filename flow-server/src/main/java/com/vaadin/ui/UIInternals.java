@@ -540,6 +540,29 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Shows a route target in the related UI. This method is intended for
+     * framework use only. Use {@link UI#navigateTo(String)} to change the route
+     * target that is shown in a UI.
+     *
+     * @param viewLocation
+     *            the location of the route target relative to the servlet
+     *            serving the UI, not <code>null</code>
+     * @param target
+     *            the component to show, not <code>null</code>
+     */
+    public void showRouteTarget(Location viewLocation, Component target) {
+        assert target != null;
+        assert viewLocation != null;
+
+        this.viewLocation = viewLocation;
+
+        Element uiElement = ui.getElement();
+
+        uiElement.removeAllChildren();
+        uiElement.appendChild(target.getElement());
+    }
+
+    /**
      * Gets the currently active view and parent views.
      *
      * @return a list of view and parent view instances, starting from the

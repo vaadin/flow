@@ -2,7 +2,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 ifdef::env-atom[:outfilesuffix: .asciidoc]
 
 = Defining an Error View
-For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and Navigating>>.
+For a basic routing tutorial, see <<tutorial-routing-router-configuration#,Defining Routes With RouterConfiguration>>.
 
 When the user navigates to a URL which has not been mapped to any View, you want to tell the user that this URL does not lead to any content. You can register an error view in your router configuration so that it is shown for all unmapped URLs:
 
