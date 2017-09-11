@@ -173,7 +173,9 @@
                 </executions>
                 <configuration>
                     <excludes>
-                        <exclude>**/*Servlet*</exclude>
+                        <!-- vaadin.com does not need Servlet.{class,java} file -->
+                        <!-- it's not used anywhere else, so it's ok to remove it just like that -->
+                        <exclude>**/Servlet.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -195,7 +197,7 @@
                         <configuration>
                             <packaging>jar</packaging>
                             <repositoryId>${flow.repo.id}</repositoryId>
-                            <url>${flow.snapshot.repo.url}</url>
+                            <url>${flow.deployment.repo.url}</url>
                             <artifactId>${project.artifactId}</artifactId>
                             <groupId>${project.groupId}</groupId>
                             <version>${project.version}</version>

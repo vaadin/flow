@@ -23,6 +23,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-include-css#,Including Style Sheets>>
 ** <<tutorial-importing#,Importing html/javascript>>
 ** <<tutorial-ways-of-importing#,Ways of importing the dependencies>>
+** <<tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
 ** <<tutorial-bootstrap#,Modifying bootstrap page>>
 * Element API
 ** <<tutorial-properties-attributes#,Element Properties and Attributes>>
