@@ -36,9 +36,6 @@ public class TemplateHasInjectedSubTemplateIT extends ChromeBrowserTest {
         Assert.assertEquals("foo", text.getText());
 
         getInShadowRoot(template, By.id("button")).click();
-        // Click takes few moments sometimes
-        Thread.sleep(1000);
-
-        Assert.assertEquals("bar", text.getText());
+        waitUntil(driver -> "bar".equals(text.getText()));
     }
 }
