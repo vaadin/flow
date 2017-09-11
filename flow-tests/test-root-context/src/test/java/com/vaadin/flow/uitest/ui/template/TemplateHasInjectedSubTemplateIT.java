@@ -25,7 +25,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class TemplateHasInjectedSubTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void injectedSubTemplate_injectedInstanceWorks() {
+    public void injectedSubTemplate_injectedInstanceWorks() throws InterruptedException {
         open();
 
         WebElement template = findElement(By.id("template"));
@@ -36,6 +36,8 @@ public class TemplateHasInjectedSubTemplateIT extends ChromeBrowserTest {
         Assert.assertEquals("foo", text.getText());
 
         getInShadowRoot(template, By.id("button")).click();
+        // Click takes few moments sometimes
+        Thread.sleep(1000);
 
         Assert.assertEquals("bar", text.getText());
     }
