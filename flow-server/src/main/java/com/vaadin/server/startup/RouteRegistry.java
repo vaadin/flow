@@ -61,6 +61,8 @@ public class RouteRegistry {
      * 
      * @param navigationTargets
      *            set of navigation target components
+     * @throws InvalidRouteConfigurationException
+     *             if routing has been configured incorrectly
      */
     public void setNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)

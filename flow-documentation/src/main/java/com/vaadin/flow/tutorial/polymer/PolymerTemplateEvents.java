@@ -79,7 +79,7 @@ public class PolymerTemplateEvents {
     }
 
     public interface MessagesModel extends TemplateModel {
-        public void setMessages(List<Message> messages);
+        void setMessages(List<Message> messages);
     }
 
     @Tag("model-item-handler")

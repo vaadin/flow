@@ -197,6 +197,8 @@ public class JsonCodec {
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
      * {@link Double}.
      *
+     * @param <T>
+     *            the decoded type
      * @param json
      *            the JSON value
      * @param type

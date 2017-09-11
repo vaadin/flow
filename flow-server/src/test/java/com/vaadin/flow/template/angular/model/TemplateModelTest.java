@@ -253,7 +253,7 @@ public class TemplateModelTest {
         }
     }
 
-    public static interface ModelWithList extends TemplateModel {
+    public interface ModelWithList extends TemplateModel {
         List<Bean> getBeans();
 
         void setBeans(List<Bean> beans);
@@ -273,10 +273,10 @@ public class TemplateModelTest {
 
     public static class TemplateWithInclude extends EmptyDivTemplate {
         public interface ModelWithInclude extends TemplateModel {
-            public Bean getBean();
+            Bean getBean();
 
             @Include({ "doubleValue", "booleanObject" })
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
         @Override
@@ -288,10 +288,10 @@ public class TemplateModelTest {
     public static class TemplateWithExclude extends EmptyDivTemplate {
 
         public interface ModelWithExclude extends TemplateModel {
-            public Bean getBean();
+            Bean getBean();
 
             @Exclude({ "doubleValue", "booleanObject" })
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
         @Override
@@ -303,11 +303,11 @@ public class TemplateModelTest {
     public static class TemplateWithExcludeAndInclude extends EmptyDivTemplate {
 
         public interface ModelWithExcludeAndInclude extends TemplateModel {
-            public Bean getBean();
+            Bean getBean();
 
             @Include({ "doubleValue", "booleanObject" })
             @Exclude("doubleValue")
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
         @Override
@@ -349,7 +349,7 @@ public class TemplateModelTest {
              */
             @Override
             @Include("doubleValue")
-            public void setBean(Bean bean);
+            void setBean(Bean bean);
         }
 
         @Override
@@ -366,10 +366,10 @@ public class TemplateModelTest {
     public static class TemplateWithExcludeForSubBean extends EmptyDivTemplate {
 
         public interface ModelWithExcludeForSubBean extends TemplateModel {
-            public BeanContainingBeans getBeanContainingBeans();
+            BeanContainingBeans getBeanContainingBeans();
 
             @Exclude({ "bean1.booleanObject", "bean2" })
-            public void setBeanContainingBeans(
+            void setBeanContainingBeans(
                     BeanContainingBeans beanContainingBeans);
         }
 
@@ -383,10 +383,10 @@ public class TemplateModelTest {
     public static class TemplateWithIncludeForSubBean extends EmptyDivTemplate {
 
         public interface ModelWithIncludeForSubBean extends TemplateModel {
-            public BeanContainingBeans getBeanContainingBeans();
+            BeanContainingBeans getBeanContainingBeans();
 
             @Include({ "bean1.booleanObject" })
-            public void setBeanContainingBeans(
+            void setBeanContainingBeans(
                     BeanContainingBeans beanContainingBeans);
         }
 
@@ -401,9 +401,9 @@ public class TemplateModelTest {
 
         public interface ModelWithIncludeOnList extends TemplateModel {
             @Include("intValue")
-            public void setBeans(List<Bean> beans);
+            void setBeans(List<Bean> beans);
 
-            public List<Bean> getBeans();
+            List<Bean> getBeans();
         }
 
         @Override
@@ -418,7 +418,7 @@ public class TemplateModelTest {
 
         public interface ModelWithIncludeOnListSubBean extends TemplateModel {
             @Include({ "bean1.intValue", "bean2.booleanValue" })
-            public void setBeanContainingBeans(List<BeanContainingBeans> beans);
+            void setBeanContainingBeans(List<BeanContainingBeans> beans);
         }
 
         @Override
@@ -432,9 +432,9 @@ public class TemplateModelTest {
 
         public interface ModelWithExcludeOnList extends TemplateModel {
             @Exclude("intValue")
-            public void setBeans(List<Bean> beans);
+            void setBeans(List<Bean> beans);
 
-            public List<Bean> getBeans();
+            List<Bean> getBeans();
         }
 
         @Override

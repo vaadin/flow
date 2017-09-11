@@ -42,14 +42,14 @@ extends SerializablePredicate<Annotation> {
      * Configurator which is aware of {@literal @NotNull} annotation presence
      * for a property.
      */
-    public RequiredFieldConfigurator NOT_NULL = annotation -> annotation
+    RequiredFieldConfigurator NOT_NULL = annotation -> annotation
             .annotationType().equals(NotNull.class);
 
     /**
      * Configurator which is aware of {@literal @NotEmpty} annotation presence
      * for a property.
      */
-    public RequiredFieldConfigurator NOT_EMPTY = annotation -> annotation
+    RequiredFieldConfigurator NOT_EMPTY = annotation -> annotation
             .annotationType().getName()
             .equals("org.hibernate.validator.constraints.NotEmpty");
 
@@ -57,7 +57,7 @@ extends SerializablePredicate<Annotation> {
      * Configurator which is aware of {@literal Size} annotation with
      * {@code min()> 0} presence for a property.
      */
-    public RequiredFieldConfigurator SIZE = annotation -> annotation
+    RequiredFieldConfigurator SIZE = annotation -> annotation
             .annotationType().equals(Size.class)
             && ((Size) annotation).min() > 0;
 
@@ -65,7 +65,7 @@ extends SerializablePredicate<Annotation> {
              * Default configurator which is combination of {@link #NOT_NULL},
              * {@link #NOT_EMPTY} and {@link #SIZE} configurators.
              */
-            public RequiredFieldConfigurator DEFAULT = NOT_NULL.chain(NOT_EMPTY)
+            RequiredFieldConfigurator DEFAULT = NOT_NULL.chain(NOT_EMPTY)
                     .chain(SIZE);
 
             /**
@@ -75,7 +75,7 @@ extends SerializablePredicate<Annotation> {
              * @param configurator the configurator to chain, , not null
              * @return a chained configurator
              */
-            public default RequiredFieldConfigurator chain(
+            default RequiredFieldConfigurator chain(
                     RequiredFieldConfigurator configurator) {
                 return descriptor -> test(descriptor) || configurator.test(descriptor);
             }

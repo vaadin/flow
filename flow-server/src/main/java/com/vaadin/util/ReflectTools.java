@@ -425,6 +425,8 @@ public class ReflectTools implements Serializable {
      * {@link IllegalArgumentException} with a descriptive error message hinting
      * of what might be wrong with the class that could not be instantiated.
      *
+     * @param <T>
+     *            the instance type
      * @param cls
      *            the class to instantiate
      * @return an instance of the class

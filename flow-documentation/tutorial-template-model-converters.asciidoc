@@ -77,10 +77,10 @@ So you have a `Date` property in your model:
 ----
 public interface MyModel extends TemplateModel {
 
-    public Date getBirthDate();
+    Date getBirthDate();
 
     @Convert(DateToDateBeanConverter.class)
-    public void setBirthDate(Date birthDate);
+    void setBirthDate(Date birthDate);
 }
 ----
 

@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.annotations.PropertyId;
 import com.vaadin.components.data.HasValue;
 import com.vaadin.components.data.HasValue.ValueChangeEvent;
@@ -114,7 +115,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return the field for the binding
          */
-        public HasValue<?, ?> getField();
+        HasValue<?, ?> getField();
 
         /**
          * Validates the field value and returns a {@code ValidationStatus}
@@ -125,7 +126,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return the validation result.
          */
-        public BindingValidationStatus<TARGET> validate();
+        BindingValidationStatus<TARGET> validate();
 
     }
 
@@ -147,7 +148,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @return the field this binding is being built for
          */
-        public HasValue<?, ?> getField();
+        HasValue<?, ?> getField();
 
         /**
          * Completes this binding using the given getter and setter functions
@@ -189,8 +190,8 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called on this binding
          */
-        public Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
-                Setter<BEAN, TARGET> setter);
+        Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
+                                   Setter<BEAN, TARGET> setter);
 
         /**
          * Completes this binding by connecting the field to the property with
@@ -221,7 +222,7 @@ public class Binder<BEAN> implements Serializable {
          *
          * @see Binder.BindingBuilder#bind(ValueProvider, Setter)
          */
-        public Binding<BEAN, TARGET> bind(String propertyName);
+        Binding<BEAN, TARGET> bind(String propertyName);
 
         /**
          * Adds a validator to this binding. Validators are applied, in
@@ -238,7 +239,7 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
-        public BindingBuilder<BEAN, TARGET> withValidator(
+        BindingBuilder<BEAN, TARGET> withValidator(
                 Validator<? super TARGET> validator);
 
         /**
@@ -261,7 +262,7 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
-        public default BindingBuilder<BEAN, TARGET> withValidator(
+        default BindingBuilder<BEAN, TARGET> withValidator(
                 SerializablePredicate<? super TARGET> predicate,
                 String message) {
             return withValidator(Validator.from(predicate, message));
@@ -288,7 +289,7 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
-        public default BindingBuilder<BEAN, TARGET> withValidator(
+        default BindingBuilder<BEAN, TARGET> withValidator(
                 SerializablePredicate<? super TARGET> predicate,
                 ErrorMessageProvider errorMessageProvider) {
             return withValidator(
@@ -318,7 +319,7 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
-        public <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
+        <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
                 Converter<TARGET, NEWTARGET> converter);
 
         /**
@@ -348,7 +349,7 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
-        public default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
+        default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
                 SerializableFunction<TARGET, NEWTARGET> toModel,
                 SerializableFunction<NEWTARGET, TARGET> toPresentation) {
             return withConverter(Converter.from(toModel, toPresentation,
@@ -386,7 +387,7 @@ public class Binder<BEAN> implements Serializable {
          * @throws IllegalStateException
          *             if {@code bind} has already been called
          */
-        public default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
+        default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
                 SerializableFunction<TARGET, NEWTARGET> toModel,
                 SerializableFunction<NEWTARGET, TARGET> toPresentation,
                 String errorMessage) {
@@ -402,7 +403,7 @@ public class Binder<BEAN> implements Serializable {
          *            the value to use instead of {@code null}
          * @return a new binding with null representation handling.
          */
-        public default BindingBuilder<BEAN, TARGET> withNullRepresentation(
+        default BindingBuilder<BEAN, TARGET> withNullRepresentation(
                 TARGET nullRepresentation) {
             return withConverter(
                     fieldValue -> Objects.equals(fieldValue, nullRepresentation)
@@ -436,7 +437,7 @@ public class Binder<BEAN> implements Serializable {
          *            label to show validation status for the field
          * @return this binding, for chaining
          */
-        public default BindingBuilder<BEAN, TARGET> withStatusLabel(
+        default BindingBuilder<BEAN, TARGET> withStatusLabel(
                 Label label) {
             return withValidationStatusHandler(status -> {
                 label.setText(status.getMessage().orElse(""));
@@ -466,7 +467,7 @@ public class Binder<BEAN> implements Serializable {
          *            status change handler
          * @return this binding, for chaining
          */
-        public BindingBuilder<BEAN, TARGET> withValidationStatusHandler(
+        BindingBuilder<BEAN, TARGET> withValidationStatusHandler(
                 BindingValidationStatusHandler handler);
 
         /**
@@ -488,7 +489,7 @@ public class Binder<BEAN> implements Serializable {
          *            the error message to show for the invalid value
          * @return this binding, for chaining
          */
-        public default BindingBuilder<BEAN, TARGET> asRequired(
+        default BindingBuilder<BEAN, TARGET> asRequired(
                 String errorMessage) {
             return asRequired(context -> errorMessage);
         }
@@ -508,7 +509,7 @@ public class Binder<BEAN> implements Serializable {
          *            the provider for localized validation error message
          * @return this binding, for chaining
          */
-        public BindingBuilder<BEAN, TARGET> asRequired(
+        BindingBuilder<BEAN, TARGET> asRequired(
                 ErrorMessageProvider errorMessageProvider);
 
     }

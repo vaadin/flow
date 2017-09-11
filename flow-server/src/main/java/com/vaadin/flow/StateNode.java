@@ -229,6 +229,8 @@ public class StateNode implements Serializable {
      * feature. Use {@link #hasFeature(Class)} to check whether a node contains
      * a specific feature.
      *
+     * @param <T>
+     *            the desired feature type
      * @param featureType
      *            the desired feature type, not <code>null</code>
      * @return a feature instance, not <code>null</code>
@@ -510,6 +512,8 @@ public class StateNode implements Serializable {
     /**
      * Gets or creates a change tracker object for the provided feature.
      *
+     * @param <T>
+     *            the change tracker type
      * @param feature
      *            the feature for which to get a change tracker
      * @param factory

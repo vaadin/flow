@@ -42,6 +42,8 @@ public final class TemplateModelUtil {
      * Resolves a bean model type and model map based on a model instance and
      * passes those values to the provided callback.
      *
+     * @param <R>
+     *            the return type
      * @param model
      *            the model instance for which to resolve a type and a map, not
      *            <code>null</code>
@@ -81,6 +83,8 @@ public final class TemplateModelUtil {
      * Resolves a list model type and a model list based on a model instance and
      * passes those to the provided callback.
      *
+     * @param <R>
+     *            the return type
      * @param model
      *            the model instance for which to resolve a type and a list, not
      *            <code>null</code>

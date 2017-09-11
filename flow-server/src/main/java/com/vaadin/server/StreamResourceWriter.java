@@ -43,6 +43,7 @@ public interface StreamResourceWriter extends Serializable {
      * @param session
      *            vaadin session
      * @throws IOException
+     *             if an IO error occurred
      */
     void accept(OutputStream stream, VaadinSession session) throws IOException;
 }

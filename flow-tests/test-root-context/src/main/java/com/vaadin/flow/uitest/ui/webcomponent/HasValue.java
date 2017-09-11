@@ -26,7 +26,7 @@ import com.vaadin.ui.PropertyDescriptors;
  */
 public interface HasValue extends HasElement {
 
-    static class Descriptors {
+    class Descriptors {
         // Hides descriptors
         private static final PropertyDescriptor<Integer, Integer> valueProperty = PropertyDescriptors
                 .propertyWithDefault("value", 0);

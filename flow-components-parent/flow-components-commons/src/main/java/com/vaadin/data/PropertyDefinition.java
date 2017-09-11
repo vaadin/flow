@@ -36,21 +36,21 @@ public interface PropertyDefinition<T, V> extends Serializable {
      *
      * @return the getter, not <code>null</code>
      */
-    public ValueProvider<T, V> getGetter();
+    ValueProvider<T, V> getGetter();
 
     /**
      * Gets an optional setter for storing a property value in a bean.
      *
      * @return the setter, or an empty optional if this property is read-only
      */
-    public Optional<Setter<T, V>> getSetter();
+    Optional<Setter<T, V>> getSetter();
 
     /**
      * Gets the type of this property.
      *
      * @return the property type. not <code>null</code>
      */
-    public Class<V> getType();
+    Class<V> getType();
 
     /**
      * Gets the type of the class containing this property.
@@ -59,26 +59,26 @@ public interface PropertyDefinition<T, V> extends Serializable {
      *
      * @return the property type. not <code>null</code>
      */
-    public Class<?> getPropertyHolderType();
+    Class<?> getPropertyHolderType();
 
     /**
      * Gets the name of this property.
      *
      * @return the property name, not <code>null</code>
      */
-    public String getName();
+    String getName();
 
     /**
      * Gets the human readable caption to show for this property.
      *
      * @return the caption to show, not <code>null</code>
      */
-    public String getCaption();
+    String getCaption();
 
     /**
      * Gets the {@link PropertySet} that this property belongs to.
      *
      * @return the property set, not <code>null</code>
      */
-    public PropertySet<T> getPropertySet();
+    PropertySet<T> getPropertySet();
 }
