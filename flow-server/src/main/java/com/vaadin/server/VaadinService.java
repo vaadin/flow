@@ -47,6 +47,8 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.router.NewRouter;
+import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
@@ -170,7 +172,7 @@ public abstract class VaadinService implements Serializable {
      */
     private boolean initialized = false;
 
-    private final Router router = new Router();
+    private RouterInterface router = new Router();
 
     /**
      * Creates a new vaadin service based on a deployment configuration.
@@ -241,13 +243,17 @@ public abstract class VaadinService implements Serializable {
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
-        String routerConfiguratorClassName = deploymentConf
-                .getRouterConfiguratorClassName();
-        if (routerConfiguratorClassName != null && !RouterConfigurator.class
-                .getName().equals(routerConfiguratorClassName)) {
-            // Configure router if we have a non-default configurator type
+        if (deploymentConf.isUsingNewRouting()) {
+            router = new NewRouter();
+        } else {
+            String routerConfiguratorClassName = deploymentConf
+                    .getRouterConfiguratorClassName();
+            if (routerConfiguratorClassName != null && !RouterConfigurator.class
+                    .getName().equals(routerConfiguratorClassName)) {
+                // Configure router if we have a non-default configurator type
 
-            configureRouter(routerConfiguratorClassName);
+                configureRouter(routerConfiguratorClassName);
+            }
         }
 
         initialized = true;
@@ -2083,7 +2089,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the router, not <code>null</code>
      */
-    public Router getRouter() {
+    public RouterInterface getRouter() {
         return router;
     }
 }

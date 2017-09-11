@@ -118,4 +118,14 @@ public @interface VaadinServletConfiguration {
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)
     boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
+
+    /**
+     * Whether to use the new annotation based routing implementation instead of
+     * the old routing implementation that relies on a
+     * {@link RouterConfigurator}. The default value is {@code false}.
+     *
+     * @return whether to use the new annotation based routing implementation
+     */
+    @InitParameterName(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING)
+    boolean usingNewRouting() default false;
 }

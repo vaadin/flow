@@ -49,6 +49,7 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
                             .filter(RouteRegistryInitializer::isApplicableClass)
                             .map(clazz -> (Class<? extends Component>) clazz)
                             .collect(Collectors.toSet()));
+
         } catch (InvalidRouteConfigurationException irce) {
             throw new ServletException(
                     "Exception while registering Routes on servlet startup",

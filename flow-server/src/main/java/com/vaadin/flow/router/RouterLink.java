@@ -147,7 +147,7 @@ public class RouterLink extends Component
      *            the parameter values to set in the route
      */
     public void setRoute(Class<? extends View> viewType, String... parameters) {
-        Optional<Router> router = Optional.empty();
+        Optional<RouterInterface> router = Optional.empty();
         if (getElement().getNode().isAttached()) {
             StateTree tree = (StateTree) getElement().getNode().getOwner();
             router = tree.getUI().getRouter();
@@ -165,7 +165,7 @@ public class RouterLink extends Component
                     "Implicit router instance is not available. "
                             + "Use overloaded method with explicit router parameter.");
         }
-        updateHref(router.get(), viewType, parameters);
+        updateHref((Router) router.get(), viewType, parameters);
     }
 
     private void updateHref(Router router, Class<? extends View> viewType,

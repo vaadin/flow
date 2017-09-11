@@ -2,7 +2,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = Rerouting to another View
 
-For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and Navigating>>.
+For a basic routing tutorial, see <<tutorial-routing-router-configuration#,Defining Routes With RouterConfiguration>>.
 
 The navigation can be rerouted dynamically to another view if needed in the `View#onLocationChange(LocationChangeEvent)` event.
 

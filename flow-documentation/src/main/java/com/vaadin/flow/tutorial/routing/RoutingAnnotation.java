@@ -13,16 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.tutorial;
+package com.vaadin.flow.tutorial.routing;
 
-import javax.servlet.annotation.WebServlet;
-
-import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.annotations.Route;
+import com.vaadin.flow.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.server.VaadinServlet;
 
-@CodeFor("tutorial-hello-world.asciidoc")
-@WebServlet(urlPatterns = "/*", name = "HelloWorldServlet")
-@VaadinServletConfiguration(productionMode = false)
-public class HelloWorldServlet extends VaadinServlet {
+@CodeFor("tutorial-routing-annotation.asciidoc")
+public class RoutingAnnotation {
+
+    @Route("")
+    public class HelloWorld extends Div {
+        public HelloWorld() {
+            setText("Hello world");
+        }
+    }
+
+    @Route("some/path")
+    public class SomePathComponent extends Div {
+        public SomePathComponent() {
+            setText("Hello @Route!");
+        }
+    }
+
 }

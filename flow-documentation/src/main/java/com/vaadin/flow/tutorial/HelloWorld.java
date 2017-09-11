@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.tutorial;
 
-import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.annotations.Route;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("tutorial-hello-world.asciidoc")
-public class HelloWorld extends Div implements View {
+@Route("")
+public class HelloWorld extends Div {
     public HelloWorld() {
         setText("Hello world");
     }

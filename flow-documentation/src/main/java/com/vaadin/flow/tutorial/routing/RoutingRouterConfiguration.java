@@ -18,17 +18,15 @@ package com.vaadin.flow.tutorial.routing;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
 
-@CodeFor("tutorial-routing.asciidoc")
-public class Routing {
+@CodeFor("tutorial-routing-router-configuration.asciidoc")
+public class RoutingRouterConfiguration {
 
     @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)
     @VaadinServletConfiguration(routerConfigurator = MyRouterConfigurator.class, productionMode = false)
@@ -54,19 +52,5 @@ public class Routing {
 
     public class CompanyView extends HomeView {
 
-    }
-
-    void navigation() {
-        NativeButton button = new NativeButton("Navigate to company");
-        button.addClickListener(e -> {
-            button.getUI().ifPresent(ui -> ui.navigateTo("company"));
-        });
-
-    }
-
-    void routerLink() {
-        Div menu = new Div();
-        menu.add(new RouterLink("Home", HomeView.class));
-        menu.add(new RouterLink("Company", CompanyView.class));
     }
 }

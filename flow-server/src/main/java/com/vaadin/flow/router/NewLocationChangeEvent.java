@@ -23,20 +23,18 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
- * Event passed to {@link View#onLocationChange(LocationChangeEvent)} when the
- * context in which a view will be used changes.
- *
- * @author Vaadin Ltd
+ * Event created when the location changes by any of the reasons defined at
+ * {@link NavigationTrigger}.
+ * 
  */
-public class LocationChangeEvent extends EventObject {
+public class NewLocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private final Location location;
-    private final List<View> viewChain;
-    private final Map<String, String> routePlaceholders;
 
     private int statusCode = HttpServletResponse.SC_OK;
     private NavigationHandler rerouteTarget;
@@ -53,29 +51,18 @@ public class LocationChangeEvent extends EventObject {
      *            not <code>null</code>
      * @param location
      *            the new location, not {@code null}
-     * @param viewChain
-     *            the view chain that will be used, not {@code null}
-     * @param routePlaceholders
-     *            a map containing actual path segment values used for
-     *            placeholders in the used route mapping, not {@code null}
      */
-    public LocationChangeEvent(RouterInterface router, UI ui,
-            NavigationTrigger trigger,
-            Location location, List<View> viewChain,
-            Map<String, String> routePlaceholders) {
+    public NewLocationChangeEvent(RouterInterface router, UI ui,
+            NavigationTrigger trigger, Location location) {
         super(router);
 
         assert ui != null;
         assert trigger != null;
         assert location != null;
-        assert viewChain != null;
-        assert routePlaceholders != null;
 
         this.ui = ui;
         this.trigger = trigger;
         this.location = location;
-        this.viewChain = Collections.unmodifiableList(viewChain);
-        this.routePlaceholders = Collections.unmodifiableMap(routePlaceholders);
     }
 
     /**
@@ -85,27 +72,6 @@ public class LocationChangeEvent extends EventObject {
      */
     public Location getLocation() {
         return location;
-    }
-
-    /**
-     * Gets the view which is being shown.
-     * <p>
-     * This is the same as the most deeply nested view in the view chain.
-     *
-     * @return the view being shown, not {@code null}
-     */
-    public View getView() {
-        return viewChain.get(0);
-    }
-
-    /**
-     * Gets the chain of views that will be nested inside the UI, starting from
-     * the most deeply nested view.
-     *
-     * @return the view chain, not {@code null}
-     */
-    public List<View> getViewChain() {
-        return viewChain;
     }
 
     /**
@@ -125,33 +91,6 @@ public class LocationChangeEvent extends EventObject {
      */
     public NavigationTrigger getTrigger() {
         return trigger;
-    }
-
-    /**
-     * Gets the part of the location that matched the <code>*</code> part of the
-     * route.
-     *
-     * @return the wildcard part of the path, or {@code null} if not using a
-     *         wildcard route
-     */
-    public String getPathWildcard() {
-        return getPathParameter("*");
-    }
-
-    /**
-     * Gets the part of the location that matched <code>{placeholderName}</code>
-     * of the route.
-     *
-     * @param placeholderName
-     *            the name of the placeholder, not {@code null}
-     * @return the placeholder value, or {@code null} if the placeholder name
-     *         was not present in the route
-     */
-    public String getPathParameter(String placeholderName) {
-        assert placeholderName != null;
-        assert !placeholderName.contains("{") && !placeholderName.contains("}");
-
-        return routePlaceholders.get(placeholderName);
     }
 
     /**
@@ -222,10 +161,6 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
-     * <p>
-     * Calling this method outside
-     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
-     * effect.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -236,32 +171,13 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Reroutes the navigation to show the default error view instead of the
-     * view that is currently about to be displayed.
+     * Reroutes the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
      *
-     * <p>
-     * Calling this method outside
-     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
-     * effect.
+     * @param routeTargetType
+     *            the component type to display, not {@code null}
      */
-    public void rerouteToErrorView() {
-        rerouteTo(getSource().getConfiguration().getErrorHandler());
+    public void rerouteTo(Class<? extends Component> routeTargetType) {
+        rerouteTo(new StaticRouteTargetRenderer(routeTargetType));
     }
-
-    /**
-     * Reroutes the navigation to show the given view instead of the view that
-     * is currently about to be displayed.
-     *
-     * <p>
-     * Calling this method outside
-     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
-     * effect.
-     *
-     * @param viewType
-     *            the view type to display, not {@code null}
-     */
-    public void rerouteTo(Class<? extends View> viewType) {
-        rerouteTo(new StaticViewRenderer(viewType, null));
-    }
-
 }

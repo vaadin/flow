@@ -257,4 +257,14 @@ public interface DeploymentConfiguration extends Serializable {
         return getStringProperty(Constants.FRONTEND_URL_ES5, defaultUrl);
     }
 
+    /**
+     * Whether to use the new annotation based routing implementation instead of
+     * the old routing implementation that relies on a
+     * {@link RouterConfigurator}.
+     *
+     * @return whether to use the new annotation based routing implementation
+     */
+    default boolean isUsingNewRouting() {
+        return false;
+    }
 }
