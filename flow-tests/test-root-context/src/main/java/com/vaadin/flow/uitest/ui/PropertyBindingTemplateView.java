@@ -19,8 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Div;
+import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.model.TemplateModel;
@@ -33,11 +33,11 @@ import com.vaadin.ui.AngularTemplate;
 public class PropertyBindingTemplateView extends Div implements View {
 
     public interface Model extends TemplateModel {
-        public void setName(String name);
+        void setName(String name);
 
-        public void setMan(Boolean name);
+        void setMan(Boolean name);
 
-        public void setWeight(double weight);
+        void setWeight(double weight);
     }
 
     public static class PropertyBindingTemplate extends AngularTemplate {

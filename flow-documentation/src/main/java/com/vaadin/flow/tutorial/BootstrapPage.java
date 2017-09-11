@@ -20,21 +20,9 @@ import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
-import com.vaadin.server.ServiceInitEvent;
-import com.vaadin.server.VaadinServiceInitListener;
 
 @CodeFor("tutorial-bootstrap.asciidoc")
 public class BootstrapPage {
-
-    public class ApplicationServiceInitListener
-            implements VaadinServiceInitListener {
-
-        @Override
-        public void serviceInit(ServiceInitEvent event) {
-            event.addBootstrapListener(new CustomBootstrapListener());
-        }
-
-    }
 
     public class CustomBootstrapListener implements BootstrapListener {
 

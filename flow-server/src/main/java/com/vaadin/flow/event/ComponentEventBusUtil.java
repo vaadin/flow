@@ -116,7 +116,8 @@ public class ComponentEventBusUtil {
      * type, based on a DOM event.
      * <p>
      *
-     *
+     * @param <T>
+     *            the event type
      * @param eventType
      *            the event type
      * @return the constructor to use when creating an event from a DOM event

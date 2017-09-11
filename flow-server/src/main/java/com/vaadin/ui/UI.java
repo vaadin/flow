@@ -32,7 +32,7 @@ import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NEW_RouterInterface;
+import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
@@ -92,7 +92,7 @@ public class UI extends Component
 
     private final Page page = new Page(this);
 
-    private NEW_RouterInterface router;
+    private RouterInterface router;
 
     /**
      * Creates a new empty UI.
@@ -185,7 +185,7 @@ public class UI extends Component
         init(request);
 
         // Use router if it's active
-        NEW_RouterInterface serviceRouter = getSession().getService().getRouter();
+        RouterInterface serviceRouter = getSession().getService().getRouter();
         if (serviceRouter.getConfiguration().isConfigured()) {
             router = serviceRouter;
             router.initializeUI(this, request);
@@ -699,7 +699,7 @@ public class UI extends Component
      * @return an optional router, or an empty {@code Optional} if this UI was
      *         initialized without a router
      */
-    public Optional<NEW_RouterInterface> getRouter() {
+    public Optional<RouterInterface> getRouter() {
         return Optional.ofNullable(router);
     }
 

@@ -1,0 +1,34 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Modifying how dependencies are loaded with DependencyFilters
+
+As seen on the tutorials about using `@JavaScript`, `@HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>), you can use annotations or an imperative API to add resources (or dependencies) to your application when needed. But in some cases, a more fine control is needed: for example, when bundling resources into multiple different bundles, you may want to control the application to import the right bundle when some specific resource is requested.
+
+To control how the dependencies are loaded, and which files are effectively added or removed from the loading process, you can use DependencyFilters.
+
+Here is one example - it removes all dependencies and add one single bundle when running in production mode:
+
+[source,java]
+----
+public class BundleFilter implements DependencyFilter {
+    @Override
+    public List<Dependency> filter(List<Dependency> dependencies,
+            FilterContext filterContext) {
+
+        if (filterContext.getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            dependencies.clear();
+            dependencies.add(new Dependency(Dependency.Type.HTML_IMPORT,
+                    "my-bundle.html", LoadMode.EAGER));
+        }
+
+        return dependencies;
+    }
+}
+----
+[TIP]
+You can also use the `frontend://` and `context://` protocols on dependencies returned by the DependencyFilter. These protocols are resolved after the filters are applied. To know more about `frontend://` and `context://` protocols, read ** <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>.
+
+[WARNING]
+DependencyFilters allow you to change, add and remove any dependencies. You may leave your application in a broken state if you remove a required dependency for your project without providing a suitable replacement. With great power comes great responsibility.
+
+With your DependencyFilter in place, you need to add it to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. Take a look on the <<tutorial-service-init-listener#,ServiceInitListener tutorial>> on how to configure it.

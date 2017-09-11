@@ -596,7 +596,6 @@ public class Element extends Node<Element> {
      * <p>
      * Note in order to update the following properties, you need to use the
      * specific API for that:
-     * <p>
      * <table>
      * <caption>Properties with different API</caption>
      * <tr>
@@ -1311,6 +1310,8 @@ public class Element extends Node<Element> {
      *
      * @see Component#from(Element, Class)
      *
+     * @param <T>
+     *            the component type
      * @param componentType
      *            the component type
      * @return the component instance connected to the given element

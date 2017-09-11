@@ -26,14 +26,14 @@ import jsinterop.annotations.JsType;
 @JsType(isNative = true)
 public interface TestTemplateNode extends TemplateNode {
     @JsProperty
-    public void setType(String type);
+    void setType(String type);
 
     @JsProperty(name = JsonConstants.CHILD_TEMPLATE_KEY)
-    public void setChildrenIds(double[] children);
+    void setChildrenIds(double[] children);
 
     @SuppressWarnings("unchecked")
     @JsOverlay
-    public static <T extends TestTemplateNode> T create(String type) {
+    static <T extends TestTemplateNode> T create(String type) {
         TestTemplateNode templateNode = WidgetUtil
                 .crazyJsCast(JavaScriptObject.createObject());
         templateNode.setType(type);

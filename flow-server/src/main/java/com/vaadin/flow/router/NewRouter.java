@@ -31,7 +31,7 @@ import com.vaadin.ui.UI;
  * 
  * @see Route
  */
-public class NEW_Router implements NEW_RouterInterface {
+public class NewRouter implements RouterInterface {
 
     private final RouterConfiguration configuration = new RouterConfiguration() {
         @Override
@@ -82,7 +82,7 @@ public class NEW_Router implements NEW_RouterInterface {
             NavigationEvent navigationEvent = new NavigationEvent(this,
                     location, ui, trigger);
 
-            NavigationHandler handler = new NEW_StaticRouteTargetRenderer(
+            NavigationHandler handler = new StaticRouteTargetRenderer(
                     navigationTarget.get());
             return handler.handle(navigationEvent);
         }

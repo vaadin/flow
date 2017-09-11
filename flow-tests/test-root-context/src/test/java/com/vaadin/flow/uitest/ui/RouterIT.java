@@ -13,7 +13,7 @@ import com.vaadin.flow.uitest.servlet.RouterTestServlet.RootNavigationTarget;
 
 public class RouterIT extends ChromeBrowserTest {
 
-    @Override
+        @Override
     protected String getTestPath() {
         return "/new-router-session/";
     }
@@ -43,7 +43,7 @@ public class RouterIT extends ChromeBrowserTest {
         Assert.assertEquals(FooBarNavigationTarget.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
     }
-
+    
     @Test
     public void childIsInsideRouterLayout() {
         openRouteUrl("baz");
@@ -58,4 +58,5 @@ public class RouterIT extends ChromeBrowserTest {
     private void openRouteUrl(String route) {
         getDriver().get(getRootURL() + getTestPath() + route);
     }
+
 }

@@ -25,7 +25,6 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.data.HasValue;
 import com.vaadin.components.NotSupported;
-import elemental.json.JsonObject;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
@@ -728,14 +727,6 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 		return get();
 	}
 
-	public void connectedCallback() {
-		getElement().callFunction("connectedCallback");
-	}
-
-	public void disconnectedCallback() {
-		getElement().callFunction("disconnectedCallback");
-	}
-
 	/**
 	 * <p>
 	 * Description copied from corresponding location in WebComponent:
@@ -762,20 +753,6 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 */
 	public void checkValidity() {
 		getElement().callFunction("checkValidity");
-	}
-
-	/**
-	 * @param prop
-	 *            Missing documentation!
-	 * @param oldVal
-	 *            Missing documentation!
-	 * @param newVal
-	 *            Missing documentation!
-	 */
-	protected void attributeChangedCallback(JsonObject prop,
-			elemental.json.JsonObject oldVal, elemental.json.JsonObject newVal) {
-		getElement().callFunction("attributeChangedCallback", prop, oldVal,
-				newVal);
 	}
 
 	@DomEvent("iron-form-element-register")

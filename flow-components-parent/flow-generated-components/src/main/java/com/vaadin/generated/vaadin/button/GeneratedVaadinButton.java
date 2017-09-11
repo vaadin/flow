@@ -179,14 +179,6 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 		return get();
 	}
 
-	public void connectedCallback() {
-		getElement().callFunction("connectedCallback");
-	}
-
-	public void disconnectedCallback() {
-		getElement().callFunction("disconnectedCallback");
-	}
-
 	/**
 	 * Sets the given string as the content of this component.
 	 * 

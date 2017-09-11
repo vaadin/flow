@@ -24,23 +24,20 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasElement;
 import com.vaadin.ui.UI;
 
 /**
  * Event created when the location changes by any of the reasons defined at
  * {@link NavigationTrigger}.
- *
+ * 
  */
-public class NEW_LocationChangeEvent extends EventObject {
+public class NewLocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private final Location location;
 
     private int statusCode = HttpServletResponse.SC_OK;
     private NavigationHandler rerouteTarget;
-
-    private List<HasElement> routeTargetChain;
 
     /**
      * Creates a new location change event.
@@ -52,14 +49,11 @@ public class NEW_LocationChangeEvent extends EventObject {
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
-     * @param routeTargetChain
-     *            the route terget chain that will be used, not {@code null}
      * @param location
      *            the new location, not {@code null}
      */
-    public NEW_LocationChangeEvent(NEW_RouterInterface router, UI ui,
-            NavigationTrigger trigger, Location location,
-            List<HasElement> routeTargetChain) {
+    public NewLocationChangeEvent(RouterInterface router, UI ui,
+            NavigationTrigger trigger, Location location) {
         super(router);
 
         assert ui != null;
@@ -69,7 +63,6 @@ public class NEW_LocationChangeEvent extends EventObject {
         this.ui = ui;
         this.trigger = trigger;
         this.location = location;
-        this.routeTargetChain = Collections.unmodifiableList(routeTargetChain);
     }
 
     /**
@@ -79,16 +72,6 @@ public class NEW_LocationChangeEvent extends EventObject {
      */
     public Location getLocation() {
         return location;
-    }
-
-    /**
-     * Gets the chain of route targets that will be nested inside the UI,
-     * starting from the most deeply nested component.
-     *
-     * @return the view chain, not {@code null}
-     */
-    public List<HasElement> getRouteTargetChain() {
-        return routeTargetChain;
     }
 
     /**
@@ -102,7 +85,7 @@ public class NEW_LocationChangeEvent extends EventObject {
 
     /**
      * Gets the type of user action that triggered this location change.
-     *
+     * 
      * @return the type of user action that triggered this location change, not
      *         <code>null</code>
      */
@@ -139,8 +122,8 @@ public class NEW_LocationChangeEvent extends EventObject {
     }
 
     @Override
-    public NEW_RouterInterface getSource() {
-        return (NEW_RouterInterface) super.getSource();
+    public RouterInterface getSource() {
+        return (RouterInterface) super.getSource();
     }
 
     /**
@@ -195,6 +178,6 @@ public class NEW_LocationChangeEvent extends EventObject {
      *            the component type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends Component> routeTargetType) {
-        rerouteTo(new NEW_StaticRouteTargetRenderer(routeTargetType));
+        rerouteTo(new StaticRouteTargetRenderer(routeTargetType));
     }
 }

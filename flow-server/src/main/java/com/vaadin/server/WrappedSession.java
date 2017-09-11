@@ -38,7 +38,7 @@ public interface WrappedSession extends Serializable {
      *
      * @see javax.servlet.http.HttpSession#getMaxInactiveInterval()
      */
-    public int getMaxInactiveInterval();
+    int getMaxInactiveInterval();
 
     /**
      * Gets an attribute from this session.

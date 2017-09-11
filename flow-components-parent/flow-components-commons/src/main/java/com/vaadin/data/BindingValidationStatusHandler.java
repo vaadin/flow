@@ -43,5 +43,5 @@ extends SerializableEventListener {
      * @param statusChange
      *            the changed status
      */
-    public void statusChange(BindingValidationStatus<?> statusChange);
+    void statusChange(BindingValidationStatus<?> statusChange);
 }

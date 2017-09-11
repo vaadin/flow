@@ -939,6 +939,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Override default deserialization logic to account for transient
      * {@link #pendingAccessQueue}.
+     * 
+     * @param stream
+     *            the object to read
+     * @throws IOException
+     *             if an IO error occurred
+     * @throws ClassNotFoundException
+     *             if the class of the stream object could not be found
      */
     private void readObject(ObjectInputStream stream)
             throws IOException, ClassNotFoundException {

@@ -23,17 +23,17 @@ import com.vaadin.ui.AngularTemplate;
 
 public class JsInTemplateView extends AngularTemplate {
     public interface JsInTemplateModel extends TemplateModel {
-        public String getFirstName();
+        String getFirstName();
 
-        public void setFirstName(String firstName);
+        void setFirstName(String firstName);
 
-        public int getItemCount();
+        int getItemCount();
 
-        public void setItemCount(int itemCount);
+        void setItemCount(int itemCount);
 
-        public void setPerson(Person person);
+        void setPerson(Person person);
 
-        public void setPersonHolder(PersonHolder holder);
+        void setPersonHolder(PersonHolder holder);
     }
 
     public static class PersonHolder {

@@ -59,7 +59,7 @@ public class LocationChangeEvent extends EventObject {
      *            a map containing actual path segment values used for
      *            placeholders in the used route mapping, not {@code null}
      */
-    public LocationChangeEvent(NEW_RouterInterface router, UI ui,
+    public LocationChangeEvent(RouterInterface router, UI ui,
             NavigationTrigger trigger,
             Location location, List<View> viewChain,
             Map<String, String> routePlaceholders) {
@@ -183,8 +183,8 @@ public class LocationChangeEvent extends EventObject {
     }
 
     @Override
-    public NEW_RouterInterface getSource() {
-        return (NEW_RouterInterface) super.getSource();
+    public RouterInterface getSource() {
+        return (RouterInterface) super.getSource();
     }
 
     /**

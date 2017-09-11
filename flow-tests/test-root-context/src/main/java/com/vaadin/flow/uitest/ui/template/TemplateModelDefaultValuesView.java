@@ -21,27 +21,27 @@ import com.vaadin.ui.AngularTemplate;
 public class TemplateModelDefaultValuesView extends AngularTemplate {
 
     public interface Model extends TemplateModel {
-        public AllTypes getDefaultsInBean();
+        AllTypes getDefaultsInBean();
 
-        public void setDefaultsInBean(AllTypes defaults);
+        void setDefaultsInBean(AllTypes defaults);
 
-        public void setBooleanValue(boolean booleanValue);
+        void setBooleanValue(boolean booleanValue);
 
-        public void setBooleanObject(Boolean booleanObject);
+        void setBooleanObject(Boolean booleanObject);
 
-        public void setIntValue(int intValue);
+        void setIntValue(int intValue);
 
-        public void setIntObject(Integer intObject);
+        void setIntObject(Integer intObject);
 
-        public void setDoubleValue(double doubleValue);
+        void setDoubleValue(double doubleValue);
 
-        public void setDoubleObject(Double doubleObject);
+        void setDoubleObject(Double doubleObject);
 
-        public void setString(String string);
+        void setString(String string);
 
-        public void setPerson(Person person);
+        void setPerson(Person person);
 
-        public void setDefinedPerson(Person definedPerson);
+        void setDefinedPerson(Person definedPerson);
 
     }
 

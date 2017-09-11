@@ -15,21 +15,15 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.Route;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 
 /**
  * A simple route target renderer that always uses the given view type and route
  * configured for it.
  */
-public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
+public class StaticRouteTargetRenderer extends RouteTargetRenderer {
 
     private final Class<? extends Component> routeTargetType;
 
@@ -37,10 +31,10 @@ public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
      * Creates a new route target renderer for the given component type and
      * route.
      *
-     * @param viewType
+     * @param routeTargetType
      *            the component type to show, not <code>null</code>
      */
-    public NEW_StaticRouteTargetRenderer(
+    public StaticRouteTargetRenderer(
             Class<? extends Component> routeTargetType) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
@@ -52,17 +46,4 @@ public class NEW_StaticRouteTargetRenderer extends NEW_RouteTargetRenderer {
             NavigationEvent event) {
         return routeTargetType;
     }
-
-    @Override
-    public List<Class<? extends RouterLayout>> getParentTargetTypes(
-            NavigationEvent event, Class<? extends Component> targetType) {
-        assert targetType == routeTargetType;
-        Optional<Route> router = AnnotationReader.getAnnotationFor(targetType,
-                Route.class);
-        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
-            return Collections.singletonList(router.get().layout());
-        }
-        return Collections.emptyList();
-    }
-
 }

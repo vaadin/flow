@@ -205,8 +205,6 @@ public abstract class TemplateNode implements Serializable {
      * method.
      *
      * @param stateNode
-     *
-     * @param stateNode
      *            the template state node
      * @param id
      *            the id too look for

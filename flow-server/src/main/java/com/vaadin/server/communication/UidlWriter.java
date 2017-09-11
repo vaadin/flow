@@ -54,6 +54,8 @@ import com.vaadin.flow.router.View;
 import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.server.DependencyFilter;
+import com.vaadin.server.DependencyFilter.FilterContext;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServletRequest;
@@ -134,7 +136,8 @@ public class UidlWriter implements Serializable {
 
         encodeChanges(ui, stateChanges, templates);
 
-        populateDependencies(response, uiInternals.getDependencyList());
+        populateDependencies(response, session,
+                uiInternals.getDependencyList());
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.put("constants",
@@ -162,15 +165,24 @@ public class UidlWriter implements Serializable {
     }
 
     private static void populateDependencies(JsonObject response,
-            DependencyList dependencyList) {
+            VaadinSession session, DependencyList dependencyList) {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
+
+        FilterContext context = new FilterContext(session);
+
+        for (DependencyFilter filter : session.getService()
+                .getDependencyFilters()) {
+            pendingSendToClient = filter
+                    .filter(new ArrayList<>(pendingSendToClient), context);
+        }
+
         if (!pendingSendToClient.isEmpty()) {
             groupDependenciesByLoadMode(pendingSendToClient)
                     .forEach((loadMode, dependencies) -> response
                             .put(loadMode.name(), dependencies));
-            dependencyList.clearPendingSendToClient();
         }
+        dependencyList.clearPendingSendToClient();
     }
 
     private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(
@@ -227,7 +239,7 @@ public class UidlWriter implements Serializable {
                 .getResourceAsStream(resolvedPath);
 
         if (stream == null) {
-            Logger.getLogger(UidlWriter.class.getName()).info(
+            getLogger().config(
                     () -> String.format("The path '%s' for inline resource "
                             + "has been resolved to '%s'. "
                             + "But resource is not available via the servlet context. "
@@ -245,7 +257,7 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else {
-            Logger.getLogger(UidlWriter.class.getName()).info(
+            getLogger().config(
                     () -> String.format("The path '%s' for inline resource "
                             + "has been sucessfully resolved to resource URL '%s'",
                             url, resolvedPath));

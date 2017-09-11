@@ -147,7 +147,7 @@ public class RouterLink extends Component
      *            the parameter values to set in the route
      */
     public void setRoute(Class<? extends View> viewType, String... parameters) {
-        Optional<NEW_RouterInterface> router = Optional.empty();
+        Optional<RouterInterface> router = Optional.empty();
         if (getElement().getNode().isAttached()) {
             StateTree tree = (StateTree) getElement().getNode().getOwner();
             router = tree.getUI().getRouter();

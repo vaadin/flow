@@ -29,7 +29,7 @@ import com.vaadin.ui.UI;
  *
  * @author Vaadin Ltd
  */
-public class Router implements NEW_RouterInterface {
+public class Router implements RouterInterface {
     /**
      * The live configuration instance. All changes to the configuration are
      * done on a copy, which is then swapped into use so that nobody outside

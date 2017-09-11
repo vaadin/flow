@@ -3,31 +3,31 @@ package com.vaadin.flow.template.model;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 
 public interface BeanModel extends TemplateModel {
-    public boolean isBooleanValue();
+    boolean isBooleanValue();
 
-    public void setBooleanValue(boolean b);
+    void setBooleanValue(boolean b);
 
-    public int getIntValue();
+    int getIntValue();
 
-    public void setIntValue(int i);
+    void setIntValue(int i);
 
-    public double getDoubleValue();
+    double getDoubleValue();
 
-    public void setDoubleValue(double d);
+    void setDoubleValue(double d);
 
-    public String getString();
+    String getString();
 
-    public void setString(String s);
+    void setString(String s);
 
-    public Boolean getBooleanObject();
+    Boolean getBooleanObject();
 
-    public void setBooleanObject(Boolean bObject);
+    void setBooleanObject(Boolean bObject);
 
-    public Integer getIntObject();
+    Integer getIntObject();
 
-    public void setIntObject(Integer iObject);
+    void setIntObject(Integer iObject);
 
-    public Double getDoubleObject();
+    Double getDoubleObject();
 
-    public void setDoubleObject(Double dObject);
+    void setDoubleObject(Double dObject);
 }
