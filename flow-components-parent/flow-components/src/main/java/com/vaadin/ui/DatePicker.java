@@ -102,7 +102,6 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      * @param min
      *            the minimum date that is allowed to be selected, or
      *            <code>null</code> to remove any minimum constraints
-     * @return this instance for method chaining
      */
     public void setMin(LocalDate min) {
         if (min == null) {
@@ -130,7 +129,6 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      * @param max
      *            the maximum date that is allowed to be selected, or
      *            <code>null</code> to remove any maximum constraints
-     * @return this instance for method chaining
      */
     public void setMax(LocalDate max) {
         if (max == null) {

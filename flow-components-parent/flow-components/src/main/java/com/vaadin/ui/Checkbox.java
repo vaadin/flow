@@ -105,7 +105,6 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
      * @see #isIndeterminate()
      * @param value
      *            the value to set
-     * @return this instance, for method chaining
      */
     @Override
     public void setValue(Boolean value) {
