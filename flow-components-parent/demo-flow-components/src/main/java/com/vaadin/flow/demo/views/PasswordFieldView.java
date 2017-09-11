@@ -41,8 +41,8 @@ public class PasswordFieldView extends DemoView {
         Button button = new Button("Toggle eye icon if password is hidden",
                 event -> {
                     if (!passwordField.isPasswordVisible()) {
-                        passwordField.setHideToggleButton(
-                                !passwordField.isHideToggleButton());
+                        passwordField.setRevealButtonHidden(
+                                !passwordField.isRevealButtonHidden());
                     }
                 });
         // end-source-example

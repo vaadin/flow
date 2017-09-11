@@ -15,22 +15,23 @@
  */
 package com.vaadin.generated.vaadin.checkbox;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.Focusable;
-import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+import java.util.Objects;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.data.HasValue;
-import java.util.Objects;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.Focusable;
+import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
 
 /**
  * <p>
@@ -104,7 +105,7 @@ import com.vaadin.ui.HasComponents;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha2",
+		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha4",
 		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")

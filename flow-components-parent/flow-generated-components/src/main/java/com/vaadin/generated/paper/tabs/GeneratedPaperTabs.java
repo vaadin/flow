@@ -15,21 +15,23 @@
  */
 package com.vaadin.generated.paper.tabs;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import elemental.json.JsonArray;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -1084,7 +1086,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(double value) {
+	public void select(java.lang.String value) {
 		getElement().callFunction("select", value);
 	}
 
@@ -1101,7 +1103,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(java.lang.String value) {
+	public void select(double value) {
 		getElement().callFunction("select", value);
 	}
 

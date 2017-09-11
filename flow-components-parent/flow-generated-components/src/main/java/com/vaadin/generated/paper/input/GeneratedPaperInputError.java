@@ -15,15 +15,17 @@
  */
 package com.vaadin.generated.paper.input;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -69,7 +71,7 @@ import com.vaadin.ui.HasComponents;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-input-error#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: paper-input-error#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-input-error")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-error.html")
 public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>

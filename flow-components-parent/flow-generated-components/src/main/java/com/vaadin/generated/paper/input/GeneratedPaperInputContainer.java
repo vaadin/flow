@@ -15,18 +15,20 @@
  */
 package com.vaadin.generated.paper.input;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -245,7 +247,7 @@ import com.vaadin.shared.Registration;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-input-container#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: paper-input-container#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
 public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>

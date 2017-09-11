@@ -15,14 +15,16 @@
  */
 package com.vaadin.generated.paper.input;
 
+import javax.annotation.Generated;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.JsonSerializable;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+
 import elemental.json.JsonObject;
-import com.vaadin.components.JsonSerializable;
 
 /**
  * <p>
@@ -63,7 +65,7 @@ import com.vaadin.components.JsonSerializable;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-input-char-counter#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: paper-input-char-counter#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
 public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCounter<R>>

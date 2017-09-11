@@ -15,19 +15,21 @@
  */
 package com.vaadin.generated.paper.icon.button;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.NotSupported;
+
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.Tag;
+import com.vaadin.components.NotSupported;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -44,8 +46,10 @@ import com.vaadin.shared.Registration;
  * the button.
  * </p>
  * <p>
- * {@code paper-icon-button} includes a default icon set. Use {@code icon} to
- * specify which icon from the icon set to use.
+ * {@code paper-icon-button} does not include a default icon set. To use icons
+ * from the default set, include
+ * {@code PolymerElements/iron-icons/iron-icons.html}, and use the {@code icon}
+ * attribute to specify which icon from the icon set to use.
  * </p>
  * 
  * <pre>
@@ -137,7 +141,7 @@ import com.vaadin.shared.Registration;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-icon-button#2.0.0", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: paper-icon-button#2.0.1", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-icon-button")
 @HtmlImport("frontend://bower_components/paper-icon-button/paper-icon-button.html")
 public class GeneratedPaperIconButton<R extends GeneratedPaperIconButton<R>>

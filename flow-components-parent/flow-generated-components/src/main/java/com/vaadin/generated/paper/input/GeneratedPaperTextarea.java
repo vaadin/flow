@@ -15,20 +15,22 @@
  */
 package com.vaadin.generated.paper.input;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -58,7 +60,7 @@ import com.vaadin.shared.Registration;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-textarea#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: paper-textarea#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
@@ -362,10 +364,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The type of the input. The supported types are {@code text},
-	 * {@code number} and {@code password}. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the
-	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * The type of the input. The supported types are the <a href=
+	 * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_&lt;input&gt;_types"
+	 * >native input's types</a>. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the (Polymer 1)
+	 * {@code <input is="iron-input">}'s or (Polymer 2) {@code <iron-input>}'s
+	 * {@code type} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -380,10 +384,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The type of the input. The supported types are {@code text},
-	 * {@code number} and {@code password}. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the
-	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * The type of the input. The supported types are the <a href=
+	 * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_&lt;input&gt;_types"
+	 * >native input's types</a>. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the (Polymer 1)
+	 * {@code <input is="iron-input">}'s or (Polymer 2) {@code <iron-input>}'s
+	 * {@code type} property.
 	 * </p>
 	 * 
 	 * @param type
