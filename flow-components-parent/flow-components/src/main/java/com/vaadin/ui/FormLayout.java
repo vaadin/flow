@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.components.JsonSerializable;
-import com.vaadin.external.jsoup.helper.StringUtil;
+import org.jsoup.helper.StringUtil;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormItem;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormLayout;
 
@@ -33,7 +33,7 @@ import elemental.json.JsonValue;
 
 /**
  * Server-side component for the {@code <vaadin-form-layout>} element.
- * 
+ *
  * @author Vaadin Ltd
  */
 public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
@@ -42,7 +42,7 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
     /**
      * A class used in describing the responsive layouting behavior of a
      * {@link FormLayout}.
-     * 
+     *
      * @author Vaadin Ltd
      */
     public static class ResponsiveStep implements JsonSerializable {
@@ -81,7 +81,7 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
         /**
          * Constructs a ResponsiveStep with the given minimum width and number
          * of columns.
-         * 
+         *
          * @param minWidth
          *            the minimum width as a CSS string value after which this
          *            responsive step is to be applied
@@ -96,10 +96,10 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
         /**
          * Constructs a ResponsiveStep with the given minimum width, number of
          * columns and label position.
-         * 
+         *
          * @see LabelsPosition
          * @see FormItem
-         * 
+         *
          * @param minWidth
          *            the minimum width as a CSS string value after which this
          *            responsive step is to be applied
@@ -149,7 +149,7 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
     /**
      * Server-side component for the {@code <vaadin-form-item>} element. Used to
      * wrap components for display in a {@link FormLayout}.
-     * 
+     *
      * @author Vaadin Ltd
      */
     public static class FormItem extends GeneratedVaadinFormItem<FormItem> {
@@ -158,7 +158,7 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
          * Constructs a FormItem with the given initial components to wrap.
          * Additional components can be added after construction with
          * {@link #add(Component...)}.
-         * 
+         *
          * @param components
          *            the initial components to wrap as a form item.
          * @see HasComponents#add(Component...)
@@ -172,7 +172,7 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
      * Constructs a FormLayout with the given initial components. Additional
      * components can be added after construction with
      * {@link #add(Component...)}.
-     * 
+     *
      * @param components
      *            the components to add
      * @see HasComponents#add(Component...)
@@ -183,9 +183,9 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
 
     /**
      * Get the list of {@link ResponsiveStep}s used to configure this layout.
-     * 
+     *
      * @see ResponsiveStep
-     * 
+     *
      * @return the list of {@link ResponsiveStep}s used to configure this layout
      */
     public List<ResponsiveStep> getResponsiveSteps() {
@@ -200,9 +200,9 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
 
     /**
      * Configure the responsive steps used in this layout.
-     * 
+     *
      * @see ResponsiveStep
-     * 
+     *
      * @param steps
      *            list of {@link ResponsiveStep}s to set
      * @return this instance, for method chaining
@@ -225,9 +225,9 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
 
     /**
      * Configure the responsive steps used in this layout.
-     * 
+     *
      * @see ResponsiveStep
-     * 
+     *
      * @param steps
      *            the {@link ResponsiveStep}s to set
      * @return this instance, for method chaining

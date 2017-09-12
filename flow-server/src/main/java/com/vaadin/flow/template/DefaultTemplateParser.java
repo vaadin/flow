@@ -26,11 +26,11 @@ import javax.servlet.ServletContext;
 
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.external.jsoup.Jsoup;
-import com.vaadin.external.jsoup.nodes.Comment;
-import com.vaadin.external.jsoup.nodes.Document;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Comment;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;

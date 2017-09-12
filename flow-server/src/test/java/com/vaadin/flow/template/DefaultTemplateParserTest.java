@@ -35,9 +35,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.nodes.Comment;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.Comment;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import com.vaadin.flow.template.PolymerTemplateTest.ModelClass;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServletRequest;

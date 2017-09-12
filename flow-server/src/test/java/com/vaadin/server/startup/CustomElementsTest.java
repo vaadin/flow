@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.Jsoup;
+import org.jsoup.Jsoup;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.TemplateParser;
 import com.vaadin.flow.template.model.TemplateModel;

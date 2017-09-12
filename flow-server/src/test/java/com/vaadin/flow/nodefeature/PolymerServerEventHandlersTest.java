@@ -38,7 +38,7 @@ import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.Jsoup;
+import org.jsoup.Jsoup;
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
