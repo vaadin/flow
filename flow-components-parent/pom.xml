@@ -20,7 +20,6 @@
     </modules>
 
     <properties>
-        <frontend.maven.plugin.version>1.4</frontend.maven.plugin.version>
         <flow.version>${project.version}</flow.version>
         <build.demos.alone>true</build.demos.alone>
     </properties>
