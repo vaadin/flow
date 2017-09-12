@@ -1,3 +1,9 @@
+---
+title: Modifying the bootstrap page
+order: 5
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Modifying the bootstrap page
 

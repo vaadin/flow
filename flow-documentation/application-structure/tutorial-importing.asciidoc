@@ -1,5 +1,11 @@
+---
+title: Importing HTML and JavaScript
+order: 4
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Importing HTML and JavaScript 
+= Importing HTML and JavaScript
 
 There are two ways to import HTML and JavaScript with a component.
 

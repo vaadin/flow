@@ -1,3 +1,9 @@
+---
+title: Including Style Sheets
+order: 2
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Including Style Sheets
 

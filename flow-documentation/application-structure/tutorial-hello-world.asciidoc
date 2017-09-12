@@ -1,3 +1,9 @@
+---
+title: Building a Hello World Application
+order: 1
+layout: page
+---
+
 = Building a Hello World Application
 
 The simplest possible Hello World application displays the text "Hello world" on the screen and does nothing else. To accomplish this you need two things:
