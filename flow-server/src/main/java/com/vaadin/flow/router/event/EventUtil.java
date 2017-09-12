@@ -29,6 +29,9 @@ import com.vaadin.ui.Component;
  */
 public final class EventUtil {
 
+    private EventUtil() {
+    }
+
     /**
      * Collect all Components implementing BeforeNavigationListener connected to
      * given element tree.
@@ -39,11 +42,8 @@ public final class EventUtil {
      */
     public static List<BeforeNavigationListener> collectBeforeNavigation(
             Element element) {
-        List<BeforeNavigationListener> listeners = getListenerComponents(
-                flattenChildren(element), BeforeNavigationListener.class)
-                        .collect(Collectors.toList());
-
-        return listeners;
+        return getListenerComponents(flattenChildren(element),
+                BeforeNavigationListener.class).collect(Collectors.toList());
     }
 
     /**
@@ -59,11 +59,8 @@ public final class EventUtil {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
-        List<BeforeNavigationListener> listeners = getListenerComponents(
-                elements, BeforeNavigationListener.class)
-                        .collect(Collectors.toList());
-
-        return listeners;
+        return getListenerComponents(elements, BeforeNavigationListener.class)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -82,11 +79,13 @@ public final class EventUtil {
     }
 
     /**
-     * Collect elements with Component implementing BeforeNavigationListener.
+     * Collect elements with Component implementing listener of type T.
      *
      * @param elementStream
      *            collected elements
-     * @return
+     * @param type
+     *            class type to filter by
+     * @return stream of components implementing T
      */
     public static <T> Stream<T> getListenerComponents(
             Stream<Element> elementStream, Class<T> type) {

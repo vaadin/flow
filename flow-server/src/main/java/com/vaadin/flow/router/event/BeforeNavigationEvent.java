@@ -47,12 +47,14 @@ public class BeforeNavigationEvent extends EventObject {
     private Class<? extends Component> routeTarget;
 
     /**
-     * Construct event from a NavigationEvent
+     * Construct event from a NavigationEvent.
      * 
      * @param event
      *            NavigationEvent that is on going
      * @param navigationTarget
      *            Navigation target
+     * @param activationState
+     *            activation state that is handled
      */
     public BeforeNavigationEvent(NavigationEvent event,
             Class<?> navigationTarget, ActivationState activationState) {
@@ -70,6 +72,8 @@ public class BeforeNavigationEvent extends EventObject {
      *            not <code>null</code>
      * @param location
      *            the new location, not {@code null}
+     * @param activationState
+     *            activation state that is handled
      */
     public BeforeNavigationEvent(RouterInterface router,
             NavigationTrigger trigger, Location location,
@@ -140,14 +144,22 @@ public class BeforeNavigationEvent extends EventObject {
     }
 
     /**
+     * Check if we have a reroute target.
+     * 
+     * @return reroute target exists
+     */
+    public boolean hasRerouteTarget() {
+        return rerouteTarget != null;
+    }
+
+    /**
      * Gets the reroute target to use if the user should be rerouted to some
      * other view.
      *
-     * @return and optional navigation handler, or an empty optional if no
-     *         reroute target has been set
+     * @return an navigation handler
      */
-    public Optional<NavigationHandler> getRerouteTarget() {
-        return Optional.ofNullable(rerouteTarget);
+    public NavigationHandler getRerouteTarget() {
+        return rerouteTarget;
     }
 
     /**
@@ -179,7 +191,7 @@ public class BeforeNavigationEvent extends EventObject {
     }
 
     /**
-     * Get the route target for rerouting
+     * Get the route target for rerouting.
      * 
      * @return route target
      */

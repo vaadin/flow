@@ -21,11 +21,14 @@ package com.vaadin.flow.router.event;
  *
  * @author Vaadin Ltd
  */
+@FunctionalInterface
 public interface BeforeNavigationListener {
 
     /**
-     *
+     * Method called before navigation is executed.
+     * 
      * @param event
+     *            before navigation event with event details
      */
     void beforeNavigation(BeforeNavigationEvent event);
 }

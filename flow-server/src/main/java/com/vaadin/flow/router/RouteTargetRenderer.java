@@ -85,9 +85,8 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         for (BeforeNavigationListener listener : listeners) {
             listener.beforeNavigation(beforeNavigation);
             // Redirect here if rerouting set in deactivating chain.
-            if (beforeNavigation.getRerouteTarget().isPresent()) {
-                return reroute(event, beforeNavigation.getRerouteTarget().get(),
-                        beforeNavigation.getRouteTarget());
+            if (beforeNavigation.hasRerouteTarget()) {
+                return reroute(event, beforeNavigation);
             }
         }
 
@@ -104,9 +103,8 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         for (BeforeNavigationListener listener : listeners) {
             listener.beforeNavigation(beforeNavigation);
             // Redirect here if rerouting set in activating chain.
-            if (beforeNavigation.getRerouteTarget().isPresent()) {
-                return reroute(event, beforeNavigation.getRerouteTarget().get(),
-                        beforeNavigation.getRouteTarget());
+            if (beforeNavigation.hasRerouteTarget()) {
+                return reroute(event, beforeNavigation);
             }
         }
 
@@ -121,10 +119,12 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         return locationChangeEvent.getStatusCode();
     }
 
-    private int reroute(NavigationEvent event, NavigationHandler handler,
-            Class<? extends Component> target) {
-        Location location = new Location(
-                target.getAnnotation(Route.class).value());
+    private int reroute(NavigationEvent event,
+            BeforeNavigationEvent beforeNavigation) {
+        NavigationHandler handler = beforeNavigation.getRerouteTarget();
+
+        Location location = new Location(beforeNavigation.getRouteTarget()
+                .getAnnotation(Route.class).value());
 
         NavigationEvent newNavigationEvent = new NavigationEvent(
                 event.getSource(), location, event.getUI(),

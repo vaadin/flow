@@ -23,12 +23,12 @@ package com.vaadin.flow.router.event;
 public enum ActivationState {
 
     /**
-     * Components will be activated
+     * Components will be activated.
      */
     ACTIVATING,
 
     /**
-     * Components will be deactivated
+     * Components will be deactivated.
      */
     DEACTIVATING
 }
