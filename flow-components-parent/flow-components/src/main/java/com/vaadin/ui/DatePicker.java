@@ -224,16 +224,6 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
                                 event.isUserOriginated())));
     }
 
-    @Override
-    public void setErrorMessage(String errorMessage) {
-        setErrorMessage(errorMessage);
-    }
-
-    @Override
-    public void setInvalid(boolean invalid) {
-        setInvalid(invalid);
-    }
-
     private LocalDate convertDateFromString(String value) {
         if (value == null || value.isEmpty()) {
             return null;

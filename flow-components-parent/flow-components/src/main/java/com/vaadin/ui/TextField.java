@@ -80,14 +80,4 @@ public class TextField extends GeneratedVaadinTextField<TextField>
             super.setValue(value);
         }
     }
-
-    @Override
-    public void setErrorMessage(String errorMessage) {
-        setErrorMessage(errorMessage);
-    }
-
-    @Override
-    public void setInvalid(boolean invalid) {
-        setInvalid(invalid);
-    }
 }
