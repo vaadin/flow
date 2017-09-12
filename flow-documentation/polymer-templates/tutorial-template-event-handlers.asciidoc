@@ -1,3 +1,9 @@
+---
+title: Handling User Events in a PolymerTemplate
+order: 5
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Handling User Events in a PolymerTemplate
 
@@ -108,7 +114,7 @@ The server will throw an exception if the `EventData` can not be converted to gi
 for instance you could get the exception `java.lang.ClassCastException: Cannot cast elemental.json.impl.JreJsonNumber to elemental.json.JsonObject`
 Also the client might throw exceptions if the value given for `EventData` can not be executed or converted to Json.
 
-There is a shorthand for getting model specific item as an object in your event handler. To be able to use it you 
+There is a shorthand for getting model specific item as an object in your event handler. To be able to use it you
 should define your model (see <<tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>) in the template class.
 
 [source,java]
@@ -172,11 +178,11 @@ handle click events on the server side with `Message` as the parameter type.
 The method `handleClick` will be called in the server side with the data identified by `event.model.item` once the item is clicked.
 
 [NOTE]
-You can use the annotation `@ModelItem` with any value provided as a data path. 
+You can use the annotation `@ModelItem` with any value provided as a data path.
 By default the data path is `event.model.item`. But your data type should be declared somehow via the model definition (it should be referenced from the model).
 
 [NOTE]
-Please note that `@ModelItem` is just a convenience way of model data access. The argument which you 
+Please note that `@ModelItem` is just a convenience way of model data access. The argument which you
 receive in your event handler callback is the *model data* from the server side which you may access directly via your model instance.
 It means that the server doesn't update the model item anyhow from the client. So if you create a custom event on the client side
 with data that you want to send to the server as a model item it will be completely ignored by the server-side and the current model
@@ -200,7 +206,7 @@ So if you have the the following model definition and the event handler method:
     public interface Model extends TemplateModel {
         void setUserInfo(UserInfo userInfo);
     }
-    
+
     @EventHandler
     private void onClick(
             @ModelItem("event.detail.userInfo") UserInfo userInfo) {
@@ -222,7 +228,7 @@ Then the client side code below won't update the name of the `UserInfo` bean ins
 <script>
 class ContactHandler extends Polymer.Element {
       static get is() { return 'contact-handler' }
-    
+
         onClick(event) {
             this.userInfo.name = this.$.name.value;
             event.detail = {
@@ -235,7 +241,7 @@ class ContactHandler extends Polymer.Element {
 ----
 
 In this example the server-side model becomes desynchronized with the client side because client side model is updated incorrectly.
-The line `this.userInfo.name = this.$.name.value` should be replaced to `this.set("userInfo.name", this.$.name.value)`. That's 
-the correct way to update sub-properties in Polymer. But in this case the server-side model will be updated automatically for 
-you and there is no need to send this custom event at all. You may just notify somehow the server about the click event (e.g. via 
-`this.$server` and a `@ClientDelegate` method, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>) and get the model value directly from the server-side model. 
+The line `this.userInfo.name = this.$.name.value` should be replaced to `this.set("userInfo.name", this.$.name.value)`. That's
+the correct way to update sub-properties in Polymer. But in this case the server-side model will be updated automatically for
+you and there is no need to send this custom event at all. You may just notify somehow the server about the click event (e.g. via
+`this.$server` and a `@ClientDelegate` method, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>) and get the model value directly from the server-side model.

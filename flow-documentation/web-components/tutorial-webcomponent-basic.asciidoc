@@ -1,3 +1,9 @@
+---
+title: Basic Integration of a Polymer Web Component
+order: 1
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Basic Integration of a Polymer Web Component
 

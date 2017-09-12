@@ -1,3 +1,9 @@
+---
+title: Executing JavaScript
+order: 1
+layout: page
+---
+
 = Executing JavaScript
 
 You can use server-side Java to execute simple JavaScript snippets in the browser.

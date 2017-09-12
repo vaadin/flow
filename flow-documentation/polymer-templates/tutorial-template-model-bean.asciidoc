@@ -1,3 +1,9 @@
+---
+title: Using Beans with a PolymerTemplate Model
+order: 9
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Using Beans with a PolymerTemplate Model
 
@@ -106,9 +112,9 @@ You can use the `@Include` annotation and provide a list of properties that you 
 You can include and exclude sub bean properties by using the dot-annotation, e.g. `@Exclude("account.password")`.
 
 [NOTE]
-You don't have to declare the `Person` type as a class. It may be declared as an interface. 
+You don't have to declare the `Person` type as a class. It may be declared as an interface.
 And there is no need to create its instance and use setter. You just may call `getPerson()` and the model
-will return for you an empty proxy object which you can use to set its property directly. 
+will return for you an empty proxy object which you can use to set its property directly.
 
 [NOTE]
 When setting backend data directly to the model, you must exclude any bean properties that would lead to circular dependencies.

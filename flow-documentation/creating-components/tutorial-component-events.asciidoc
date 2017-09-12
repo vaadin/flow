@@ -1,3 +1,9 @@
+---
+title: Using Events with Components
+order: 5
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Using Events with Components
 

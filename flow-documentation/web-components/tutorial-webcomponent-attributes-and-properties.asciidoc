@@ -1,3 +1,9 @@
+---
+title: Using Attributes and Properties with a Polymer Web Component
+order: 2
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Using Attributes and Properties with a Polymer Web Component
 

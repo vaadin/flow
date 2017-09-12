@@ -1,3 +1,9 @@
+---
+title: VaadinServiceInitListener
+order: 6
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = VaadinServiceInitListener

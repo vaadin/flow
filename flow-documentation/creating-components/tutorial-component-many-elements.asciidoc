@@ -1,3 +1,9 @@
+---
+title: Creating a Component Based on Many Elements
+order: 2
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Creating a Component Based on Many Elements
 

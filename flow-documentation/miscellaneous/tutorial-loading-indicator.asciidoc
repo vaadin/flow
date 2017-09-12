@@ -1,3 +1,9 @@
+---
+title: The Loading Indicator
+order: 4
+layout: page
+---
+
 = The Loading Indicator
 
 To inform the user that loading is in progress and that the _UI_ is currently

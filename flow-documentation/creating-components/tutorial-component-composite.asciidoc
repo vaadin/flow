@@ -1,3 +1,9 @@
+---
+title: Creating a Component Using Existing Components
+order: 4
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Creating a Component Using Existing Components
 
@@ -45,7 +51,7 @@ To make the component easier to use, you can add an API for getting and setting 
   public void setValue(String value) {
     input.setValue(value);
   }
-  
+
   public String getLabel() {
     return label.getText();
   }

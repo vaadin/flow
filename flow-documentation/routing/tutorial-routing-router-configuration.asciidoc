@@ -1,3 +1,9 @@
+---
+title: Defining Routes With RouterConfiguration
+order: 9
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 == Defining Routes With RouterConfiguration

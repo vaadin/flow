@@ -1,3 +1,9 @@
+---
+title: Creating a Component Which Can Contain Other Components
+order: 6
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Creating a Component Which Can Contain Other Components
 

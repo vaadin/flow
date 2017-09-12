@@ -1,3 +1,9 @@
+---
+title: View Hierarchy and Nested Views
+order: 2
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 == View Hierarchy and Nested Views

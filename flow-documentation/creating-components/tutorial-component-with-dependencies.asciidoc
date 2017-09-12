@@ -1,3 +1,9 @@
+---
+title: Creating a Component with External Dependencies
+order: 7
+layout: page
+---
+
 = Creating a Component with External Dependencies
 
 Sometimes the content of a component depends on resources that are not available

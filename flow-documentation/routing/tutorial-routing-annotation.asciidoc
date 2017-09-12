@@ -1,3 +1,9 @@
+---
+title: Defining Routes With @Route
+order: 7
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 == Defining Routes With @Route

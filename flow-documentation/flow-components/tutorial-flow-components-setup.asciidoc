@@ -1,3 +1,9 @@
+---
+title: Setup your project to use Flow components
+order: 1
+layout: page
+---
+
 = Setup your project to use Flow components
 
 Flow provides some pre-built server-side components for Vaadin webcomponents,

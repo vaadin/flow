@@ -1,14 +1,20 @@
+---
+title: Using Model Converters with a PolymerTemplate Model
+order: 10
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Using Model Converters with a PolymerTemplate Model
 
 Sometimes you may want to use ready made beans in your model which you can't control
-(i.e. they are given to you as binary class files). But their structure may be 
+(i.e. they are given to you as binary class files). But their structure may be
 inappropriate for your template model used in a user interface representation.
 
-It usually happens if you use data base backend with JPA entities. Such entities 
-usually have unique identifier with `Long` type. `Long` type is not supported 
-by Flow at all (it can't be mapped correctly to any client type). So you have to 
-exclude any property with this type (see `@Exclude` in 
+It usually happens if you use data base backend with JPA entities. Such entities
+usually have unique identifier with `Long` type. `Long` type is not supported
+by Flow at all (it can't be mapped correctly to any client type). So you have to
+exclude any property with this type (see `@Exclude` in
 <<tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>).
 
 But what if you need this property on the client side for some reason (e.g. you
@@ -176,7 +182,6 @@ So here one `Date` property is converted to 3 sub-properties: the day, month and
 Each of them has its own editor but on the server side it's still the same one property `birthDate`.
 
 [NOTE]
-Please note that you still need use your original property name `birthDate` in this example 
+Please note that you still need use your original property name `birthDate` in this example
 to access to sub-properties. So those 3 sub-properties requires prefix which is the original
 property name and its name is still the same `birthDate` (and not a `dateBean` e.g.).
-

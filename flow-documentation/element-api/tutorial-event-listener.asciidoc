@@ -1,3 +1,9 @@
+---
+title: Listening to User Events
+order: 2
+layout: page
+---
+
 = Listening to User Events
 
 To make an application interactive, you want to react to events from the user. For this, you can listen to any browser event using `addEventListener` in `Element`:

@@ -1,3 +1,9 @@
+---
+title: Creating A Simple Component Using the Template API
+order: 1
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = Creating A Simple Component Using the Template API
@@ -175,10 +181,10 @@ Just make sure that their types matches to method declaration on the server side
 In some cases you may want to execute some client-side logic after the component
 is updated from the server during a roundtrip.
 E.g. the component constructor is called to create a component on the client side but
-this component is not yet initialized by data from the server side. So it's too early 
+this component is not yet initialized by data from the server side. So it's too early
 to do anything with the component which is not yet ready.
-In this case you can use the method `afterServerUpdate`. If this method is defined 
-for the component it will be called each time after the component is updated 
+In this case you can use the method `afterServerUpdate`. If this method is defined
+for the component it will be called each time after the component is updated
 from the server side.
 
 [source,html]
@@ -196,9 +202,9 @@ from the server side.
             static get is() {
                 return 'my-component'
             }
-            
+
             afterServerUpdate(){
-                console.log("The new 'text' value is: "+this.text);                
+                console.log("The new 'text' value is: "+this.text);
             }
         }
         customElements.define(MyComponent.is, MyComponent);

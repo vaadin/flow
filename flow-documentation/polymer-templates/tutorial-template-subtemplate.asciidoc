@@ -1,3 +1,9 @@
+---
+title: Using sub-template from PolymerTemplate
+order: 3
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Using sub-template from PolymerTemplate
 
@@ -38,15 +44,15 @@ public class ParentTemplate extends PolymerTemplate<Model> {
 
 public interface Model extends TemplateModel {
     void setName(String name);
-    
+
     String getName();
-} 
+}
 ----
 
-The HTML template has the `child-template` tag which is also a custom element imported from 
-another `ChildTemplate.html` file. Everything works for you on the client side if you don't have 
-a Java counterpart for this template on the server side. But if you have a `PolymerTemplate` 
-for the `child-template` custom element then you expect that it will be hooked up 
+The HTML template has the `child-template` tag which is also a custom element imported from
+another `ChildTemplate.html` file. Everything works for you on the client side if you don't have
+a Java counterpart for this template on the server side. But if you have a `PolymerTemplate`
+for the `child-template` custom element then you expect that it will be hooked up
 and work in the same way as it would have been instantiated manually and added
 somehow into a DOM structure of the parent template.
 
@@ -84,5 +90,5 @@ And it's the HTML template counterpart:
 </dom-module>
 ----
 
-This template delegates a click handler to the server side and the method `handleClick` 
+This template delegates a click handler to the server side and the method `handleClick`
 will be called on the `ChildTemplate` instance (not `ParentTemplate` instance).

@@ -1,3 +1,9 @@
+---
+title: Dynamic Styling
+order: 4
+layout: page
+---
+
 = Dynamic Styling
 
 To change the look and feel of your application, you can style it by using dynamic class names or inline styles. Using `getClassList()` in `Element`, you can dynamically modify the class names of any element as follows:

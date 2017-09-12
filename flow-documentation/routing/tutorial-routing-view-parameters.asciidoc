@@ -1,3 +1,9 @@
+---
+title: Using View Parameters
+order: 3
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 == Using View Parameters
 
