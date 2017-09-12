@@ -16,6 +16,7 @@
 package com.vaadin.generator;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,9 +44,8 @@ import com.vaadin.ui.HasText;
  * Unit tests for the component generator
  */
 public class ComponentGeneratorTest {
-
-    ComponentMetadata componentMetadata;
-    ComponentGenerator generator;
+    private ComponentMetadata componentMetadata;
+    private ComponentGenerator generator;
 
     @Before
     public void init() {
@@ -145,7 +145,7 @@ public class ComponentGeneratorTest {
         ComponentFunctionData functionData = new ComponentFunctionData();
         functionData.setName("my-method");
         functionData.setDescription("This is my method documentation.");
-        componentMetadata.setMethods(Arrays.asList(functionData));
+        componentMetadata.setMethods(Collections.singletonList(functionData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -162,10 +162,10 @@ public class ComponentGeneratorTest {
 
         ComponentFunctionParameterData parameter = new ComponentFunctionParameterData();
         parameter.setName("text");
-        parameter.setType(Arrays.asList(ComponentBasicType.STRING));
+        parameter.setType(Collections.singletonList(ComponentBasicType.STRING));
 
-        functionData.setParameters(Arrays.asList(parameter));
-        componentMetadata.setMethods(Arrays.asList(functionData));
+        functionData.setParameters(Collections.singletonList(parameter));
+        componentMetadata.setMethods(Collections.singletonList(functionData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -176,14 +176,12 @@ public class ComponentGeneratorTest {
 
     @Test
     public void generateClassWithGetterAndNonFluentSetter_methodContainsJavaDoc() {
-        generator.withFluentSetters(false);
-
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singletonList(ComponentBasicType.STRING));
         propertyData
         .setDescription("This is the name property of the component.");
-        componentMetadata.setProperties(Arrays.asList(propertyData));
+        componentMetadata.setProperties(Collections.singletonList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -201,42 +199,38 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithGetterAndFluentSetter_methodContainsJavaDoc() {
+    public void generateClassWithGetterAndSetter_methodContainsJavaDoc() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singletonList(ComponentBasicType.STRING));
         propertyData
         .setDescription("This is the name property of the component.");
-        componentMetadata.setProperties(Arrays.asList(propertyData));
+        componentMetadata.setProperties(Collections.singletonList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
 
         Assert.assertTrue("No getter found",
                 generatedClass.contains("public String getName()"));
-        Assert.assertTrue("No fluent setter found", generatedClass
-                .contains("public R setName(java.lang.String name)"));
+        Assert.assertTrue("No setter found", generatedClass
+                .contains("public void setName(java.lang.String name)"));
 
         Assert.assertTrue("Method javaDoc was not found",
                 generatedClass.contains("* " + propertyData.getDescription()));
 
-        Assert.assertTrue("JavaDoc parameter for fluent setter was not found",
+        Assert.assertTrue("JavaDoc parameter for setter was not found",
                 generatedClass.contains("* @param " + propertyData.getName()));
-
-        Assert.assertTrue("JavaDoc return for fluent setter was not found",
-                generatedClass.contains(
-                        "* @return this instance, for method chaining"));
     }
 
     @Test
     public void generateClassWithGetter_methodContainsJavaDoc_noSetter() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singletonList(ComponentBasicType.STRING));
         propertyData
         .setDescription("This is the name property of the component.");
         propertyData.setReadOnly(true);
-        componentMetadata.setProperties(Arrays.asList(propertyData));
+        componentMetadata.setProperties(Collections.singletonList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -254,11 +248,11 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetter_methodContainsJavaDocWithAtCodeWrap() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singletonList(ComponentBasicType.STRING));
         propertyData.setDescription(
                 "This is the `<input value=\"name\">` property of the component.");
         propertyData.setReadOnly(true);
-        componentMetadata.setProperties(Arrays.asList(propertyData));
+        componentMetadata.setProperties(Collections.singletonList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -275,11 +269,11 @@ public class ComponentGeneratorTest {
     public void generateClassWithGetterJavaDocBlock_methodContainsJavaDocWithAtCodeWrap() {
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singletonList(ComponentBasicType.STRING));
         propertyData.setDescription(
                 "This is the ```<input value=\"name\">``` property of the component.");
         propertyData.setReadOnly(true);
-        componentMetadata.setProperties(Arrays.asList(propertyData));
+        componentMetadata.setProperties(Collections.singletonList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -306,7 +300,7 @@ public class ComponentGeneratorTest {
         ComponentEventData eventData = new ComponentEventData();
         eventData.setName("change");
         eventData.setDescription("Component change event.");
-        componentMetadata.setEvents(Arrays.asList(eventData));
+        componentMetadata.setEvents(Collections.singletonList(eventData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -345,13 +339,13 @@ public class ComponentGeneratorTest {
         ComponentEventData eventData = new ComponentEventData();
         eventData.setName("change");
         eventData.setDescription("Component change event.");
-        componentMetadata.setEvents(Arrays.asList(eventData));
+        componentMetadata.setEvents(Collections.singletonList(eventData));
 
         ComponentPropertyBaseData property = new ComponentPropertyBaseData();
         property.setName("button");
-        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
+        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
 
-        eventData.setProperties(Arrays.asList(property));
+        eventData.setProperties(Collections.singletonList(property));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -381,13 +375,13 @@ public class ComponentGeneratorTest {
         ComponentEventData eventData = new ComponentEventData();
         eventData.setName("change");
         eventData.setDescription("Component change event.");
-        componentMetadata.setEvents(Arrays.asList(eventData));
+        componentMetadata.setEvents(Collections.singletonList(eventData));
 
         ComponentPropertyBaseData property = new ComponentPropertyBaseData();
         property.setName("details.property");
-        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
+        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
 
-        eventData.setProperties(Arrays.asList(property));
+        eventData.setProperties(Collections.singletonList(property));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -414,14 +408,12 @@ public class ComponentGeneratorTest {
 
     @Test
     public void generateClassWithStringGetterAndNonFluentSetter_setterSetsEmptyForNullValue() {
-        generator.withFluentSetters(false);
-
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("name");
-        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
+        propertyData.setType(Collections.singletonList(ComponentBasicType.STRING));
         propertyData
         .setDescription("This is the name property of the component.");
-        componentMetadata.setProperties(Arrays.asList(propertyData));
+        componentMetadata.setProperties(Collections.singletonList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -435,34 +427,12 @@ public class ComponentGeneratorTest {
     }
 
     @Test
-    public void generateClassWithStringGetterAndFluentSetter_setterSetsEmptyForNullValue() {
-        ComponentPropertyData propertyData = new ComponentPropertyData();
-        propertyData.setName("name");
-        propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
-        propertyData
-        .setDescription("This is the name property of the component.");
-        componentMetadata.setProperties(Arrays.asList(propertyData));
-
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        Assert.assertTrue("No fluent setter found", generatedClass
-                .contains("public R setName(java.lang.String name)"));
-
-        Assert.assertTrue("Fluent setter doesn't check for null value",
-                generatedClass.contains(propertyData.getName()
-                        + " == null ? \"\" : " + propertyData.getName()));
-    }
-
-    @Test
     public void generateClassWithBooleanGetterAndNonFluentSetter_setterDoesNotSetEmptyForNullValue() {
-        generator.withFluentSetters(false);
-
         ComponentPropertyData propertyData = new ComponentPropertyData();
         propertyData.setName("required");
-        propertyData.setType(Arrays.asList(ComponentBasicType.BOOLEAN));
+        propertyData.setType(Collections.singletonList(ComponentBasicType.BOOLEAN));
         propertyData.setDescription("This is a required field.");
-        componentMetadata.setProperties(Arrays.asList(propertyData));
+        componentMetadata.setProperties(Collections.singletonList(propertyData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -471,25 +441,6 @@ public class ComponentGeneratorTest {
                 .contains("public void setRequired(boolean required)"));
 
         Assert.assertFalse("Setter checks for null value",
-                generatedClass.contains(propertyData.getName()
-                        + " == null ? \"\" : " + propertyData.getName()));
-    }
-
-    @Test
-    public void generateClassWithBooleanGetterAndFluentSetter_setterDoesNotSetEmptyForNullValue() {
-        ComponentPropertyData propertyData = new ComponentPropertyData();
-        propertyData.setName("required");
-        propertyData.setType(Arrays.asList(ComponentBasicType.BOOLEAN));
-        propertyData.setDescription("This is a required field.");
-        componentMetadata.setProperties(Arrays.asList(propertyData));
-
-        String generatedClass = generator.generateClass(componentMetadata,
-                "com.my.test", null);
-
-        Assert.assertTrue("No fluent setter found", generatedClass
-                .contains("public R setRequired(boolean required)"));
-
-        Assert.assertFalse("Fluent setter checks for null value",
                 generatedClass.contains(propertyData.getName()
                         + " == null ? \"\" : " + propertyData.getName()));
     }
@@ -537,7 +488,7 @@ public class ComponentGeneratorTest {
     @Test
     public void generateClassWithClickableBehavior_classImplementsHasClickListeners() {
         componentMetadata
-        .setBehaviors(Arrays.asList("Polymer.GestureEventListeners"));
+        .setBehaviors(Collections.singletonList("Polymer.GestureEventListeners"));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -562,12 +513,12 @@ public class ComponentGeneratorTest {
     public void classContainsGetterAndRelatedChangeEvent_getterContainsSynchronizeAnnotation() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("someproperty");
-        property.setType(Arrays.asList(ComponentBasicType.STRING));
-        componentMetadata.setProperties(Arrays.asList(property));
+        property.setType(Collections.singletonList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
         event.setName("someproperty-changed");
-        componentMetadata.setEvents(Arrays.asList(event));
+        componentMetadata.setEvents(Collections.singletonList(event));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -584,7 +535,7 @@ public class ComponentGeneratorTest {
 
     @Test
     public void classContainsDefaultSlot_generatedClassImplementsHasComponents() {
-        componentMetadata.setSlots(Arrays.asList(""));
+        componentMetadata.setSlots(Collections.singletonList(""));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -662,16 +613,16 @@ public class ComponentGeneratorTest {
         // NestedClassGeneratorTest
         ComponentObjectTypeInnerType stringObjectType = new ComponentObjectTypeInnerType();
         stringObjectType.setName("internalString");
-        stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
+        stringObjectType.setType(Collections.singletonList(ComponentBasicType.STRING));
 
         ComponentObjectType objectType = new ComponentObjectType();
-        objectType.setInnerTypes(Arrays.asList(stringObjectType));
+        objectType.setInnerTypes(Collections.singletonList(stringObjectType));
 
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("something");
-        property.setObjectType(Arrays.asList(objectType));
+        property.setObjectType(Collections.singletonList(objectType));
 
-        componentMetadata.setProperties(Arrays.asList(property));
+        componentMetadata.setProperties(Collections.singletonList(property));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -692,7 +643,7 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 "Generated class should contain the setSomething method",
                 generatedClass.contains(
-                        "public R setSomething(SomethingProperty property)"));
+                        "public void setSomething(SomethingProperty property)"));
     }
 
     @Test
@@ -701,20 +652,20 @@ public class ComponentGeneratorTest {
         // NestedClassGeneratorTest
         ComponentObjectTypeInnerType stringObjectType = new ComponentObjectTypeInnerType();
         stringObjectType.setName("internalString");
-        stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
+        stringObjectType.setType(Collections.singletonList(ComponentBasicType.STRING));
 
         ComponentObjectType objectType = new ComponentObjectType();
-        objectType.setInnerTypes(Arrays.asList(stringObjectType));
+        objectType.setInnerTypes(Collections.singletonList(stringObjectType));
 
         ComponentFunctionParameterData parameter = new ComponentFunctionParameterData();
         parameter.setName("somethingParam");
-        parameter.setObjectType(Arrays.asList(objectType));
+        parameter.setObjectType(Collections.singletonList(objectType));
 
         ComponentFunctionData function = new ComponentFunctionData();
         function.setName("callSomething");
-        function.setParameters(Arrays.asList(parameter));
+        function.setParameters(Collections.singletonList(parameter));
 
-        componentMetadata.setMethods(Arrays.asList(function));
+        componentMetadata.setMethods(Collections.singletonList(function));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -739,20 +690,20 @@ public class ComponentGeneratorTest {
         // NestedClassGeneratorTest
         ComponentObjectTypeInnerType stringObjectType = new ComponentObjectTypeInnerType();
         stringObjectType.setName("internalString");
-        stringObjectType.setType(Arrays.asList(ComponentBasicType.STRING));
+        stringObjectType.setType(Collections.singletonList(ComponentBasicType.STRING));
 
         ComponentObjectType objectType = new ComponentObjectType();
-        objectType.setInnerTypes(Arrays.asList(stringObjectType));
+        objectType.setInnerTypes(Collections.singletonList(stringObjectType));
 
         ComponentPropertyBaseData eventData = new ComponentPropertyBaseData();
         eventData.setName("details");
-        eventData.setObjectType(Arrays.asList(objectType));
+        eventData.setObjectType(Collections.singletonList(objectType));
 
         ComponentEventData event = new ComponentEventData();
         event.setName("something-changed");
-        event.setProperties(Arrays.asList(eventData));
+        event.setProperties(Collections.singletonList(eventData));
 
-        componentMetadata.setEvents(Arrays.asList(event));
+        componentMetadata.setEvents(Collections.singletonList(event));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -799,7 +750,7 @@ public class ComponentGeneratorTest {
         function.setName("callSomething");
         function.setParameters(Arrays.asList(firstParameter, secondParameter));
 
-        componentMetadata.setMethods(Arrays.asList(function));
+        componentMetadata.setMethods(Collections.singletonList(function));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -822,15 +773,15 @@ public class ComponentGeneratorTest {
         ComponentObjectTypeInnerType stringObjectTypeInnerType = new ComponentObjectTypeInnerType();
         stringObjectTypeInnerType.setName("internalString");
         stringObjectTypeInnerType
-        .setType(Arrays.asList(ComponentBasicType.STRING));
+        .setType(Collections.singletonList(ComponentBasicType.STRING));
 
         ComponentObjectType stringObjectType = new ComponentObjectType();
         stringObjectType
-        .setInnerTypes(Arrays.asList(stringObjectTypeInnerType));
+        .setInnerTypes(Collections.singletonList(stringObjectTypeInnerType));
 
         ComponentFunctionParameterData firstParameter = new ComponentFunctionParameterData();
         firstParameter.setName("firstParam");
-        firstParameter.setObjectType(Arrays.asList(stringObjectType));
+        firstParameter.setObjectType(Collections.singletonList(stringObjectType));
 
         ComponentFunctionParameterData secondParameter = new ComponentFunctionParameterData();
         secondParameter.setName("secondParam");
@@ -841,7 +792,7 @@ public class ComponentGeneratorTest {
         function.setName("callSomething");
         function.setParameters(Arrays.asList(firstParameter, secondParameter));
 
-        componentMetadata.setMethods(Arrays.asList(function));
+        componentMetadata.setMethods(Collections.singletonList(function));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -859,12 +810,12 @@ public class ComponentGeneratorTest {
     public void componentContainsValueProperty_generatedClassImplementsHasValue() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
-        property.setType(Arrays.asList(ComponentBasicType.STRING));
-        componentMetadata.setProperties(Arrays.asList(property));
+        property.setType(Collections.singletonList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
         event.setName("value-changed");
-        componentMetadata.setEvents(Arrays.asList(event));
+        componentMetadata.setEvents(Collections.singletonList(event));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -877,19 +828,19 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 generatedClass.contains("@Override public String getValue()"));
         Assert.assertTrue(generatedClass.contains(
-                "@Override public R setValue(java.lang.String value)"));
+                "@Override public void setValue(java.lang.String value)"));
     }
 
     @Test
     public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
-        property.setType(Arrays.asList(ComponentBasicType.NUMBER));
-        componentMetadata.setProperties(Arrays.asList(property));
+        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
+        componentMetadata.setProperties(Collections.singletonList(property));
 
         ComponentEventData event = new ComponentEventData();
         event.setName("value-changed");
-        componentMetadata.setEvents(Arrays.asList(event));
+        componentMetadata.setEvents(Collections.singletonList(event));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -902,36 +853,36 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(
                 generatedClass.contains("@Override public Double getValue()"));
         Assert.assertTrue(generatedClass.contains(
-                "@Override public R setValue(java.lang.Double value)"));
+                "@Override public void setValue(java.lang.Double value)"));
         Assert.assertTrue(generatedClass
-                .contains("public R setValue(java.lang.Number value)"));
+                .contains("public void setValue(java.lang.Number value)"));
     }
 
     @Test
-    public void componentContainsUnregognizedPropertyTypes_methodsAreGeneratedAsProtected() {
+    public void componentContainsUnrecognizedPropertyTypes_methodsAreGeneratedAsProtected() {
         ComponentPropertyData objectProperty = new ComponentPropertyData();
         objectProperty.setName("objectProperty");
-        objectProperty.setType(Arrays.asList(ComponentBasicType.OBJECT));
+        objectProperty.setType(Collections.singletonList(ComponentBasicType.OBJECT));
 
         ComponentPropertyData arrayProperty = new ComponentPropertyData();
         arrayProperty.setName("arrayProperty");
-        arrayProperty.setType(Arrays.asList(ComponentBasicType.ARRAY));
+        arrayProperty.setType(Collections.singletonList(ComponentBasicType.ARRAY));
 
         ComponentPropertyData undefinedProperty = new ComponentPropertyData();
         undefinedProperty.setName("undefinedProperty");
-        undefinedProperty.setType(Arrays.asList(ComponentBasicType.UNDEFINED));
+        undefinedProperty.setType(Collections.singletonList(ComponentBasicType.UNDEFINED));
         componentMetadata.setProperties(Arrays.asList(objectProperty,
                 arrayProperty, undefinedProperty));
 
         ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
         objectParameter.setName("objectParam");
-        objectParameter.setType(Arrays.asList(ComponentBasicType.OBJECT));
+        objectParameter.setType(Collections.singletonList(ComponentBasicType.OBJECT));
 
         ComponentFunctionData function = new ComponentFunctionData();
         function.setName("callSomething");
-        function.setParameters(Arrays.asList(objectParameter));
+        function.setParameters(Collections.singletonList(objectParameter));
 
-        componentMetadata.setMethods(Arrays.asList(function));
+        componentMetadata.setMethods(Collections.singletonList(function));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);
@@ -942,15 +893,15 @@ public class ComponentGeneratorTest {
         Assert.assertTrue(generatedClass
                 .contains("protected JsonObject protectedGetObjectProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected R setObjectProperty(elemental.json.JsonObject objectProperty)"));
+                "protected void setObjectProperty(elemental.json.JsonObject objectProperty)"));
         Assert.assertTrue(generatedClass
                 .contains("protected JsonArray protectedGetArrayProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected R setArrayProperty(elemental.json.JsonArray arrayProperty)"));
+                "protected void setArrayProperty(elemental.json.JsonArray arrayProperty)"));
         Assert.assertTrue(generatedClass.contains(
                 "protected JsonValue protectedGetUndefinedProperty()"));
         Assert.assertTrue(generatedClass.contains(
-                "protected R setUndefinedProperty(elemental.json.JsonValue undefinedProperty)"));
+                "protected void setUndefinedProperty( elemental.json.JsonValue undefinedProperty)"));
 
         Assert.assertTrue(generatedClass.contains(
                 "protected void callSomething(elemental.json.JsonObject objectParam)"));
@@ -960,15 +911,15 @@ public class ComponentGeneratorTest {
     public void componentContainsFunctionsWithUnregognizedParameterTypes_methodsAreGeneratedAsProtected() {
         ComponentFunctionParameterData objectParameter = new ComponentFunctionParameterData();
         objectParameter.setName("objectParam");
-        objectParameter.setType(Arrays.asList(ComponentBasicType.OBJECT));
+        objectParameter.setType(Collections.singletonList(ComponentBasicType.OBJECT));
 
         ComponentFunctionData function1 = new ComponentFunctionData();
         function1.setName("callSomethingWithObject");
-        function1.setParameters(Arrays.asList(objectParameter));
+        function1.setParameters(Collections.singletonList(objectParameter));
 
         ComponentFunctionParameterData stringParameter = new ComponentFunctionParameterData();
         stringParameter.setName("stringParam");
-        stringParameter.setType(Arrays.asList(ComponentBasicType.STRING));
+        stringParameter.setType(Collections.singletonList(ComponentBasicType.STRING));
 
         ComponentFunctionData function2 = new ComponentFunctionData();
         function2.setName("callSomethingWithObjectAndString");
@@ -983,7 +934,7 @@ public class ComponentGeneratorTest {
 
         ComponentFunctionData function3 = new ComponentFunctionData();
         function3.setName("callSomethingWithMultiTypes");
-        function3.setParameters(Arrays.asList(multiParameter));
+        function3.setParameters(Collections.singletonList(multiParameter));
 
         componentMetadata
         .setMethods(Arrays.asList(function1, function2, function3));
@@ -1011,7 +962,7 @@ public class ComponentGeneratorTest {
     private void assertCallBackMethodIsNotGenerated(String callback) {
         ComponentFunctionData functionData = new ComponentFunctionData();
         functionData.setName(callback);
-        componentMetadata.setMethods(Arrays.asList(functionData));
+        componentMetadata.setMethods(Collections.singletonList(functionData));
 
         String generatedClass = generator.generateClass(componentMetadata,
                 "com.my.test", null);

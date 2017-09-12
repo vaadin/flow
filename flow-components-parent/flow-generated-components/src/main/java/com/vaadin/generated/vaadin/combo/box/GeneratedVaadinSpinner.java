@@ -41,10 +41,8 @@ public class GeneratedVaadinSpinner<R extends GeneratedVaadinSpinner<R>>
 	/**
 	 * @param active
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setActive(boolean active) {
+	public void setActive(boolean active) {
 		getElement().setProperty("active", active);
-		return get();
 	}
 }

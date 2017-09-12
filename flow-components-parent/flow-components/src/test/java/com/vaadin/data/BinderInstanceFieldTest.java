@@ -138,11 +138,10 @@ public class BinderInstanceFieldTest {
         }
 
         @Override
-        public CustomField<T> setValue(T value) {
+        public void setValue(T value) {
             this.value = value;
             getElement().setProperty("value", Optional.ofNullable(value)
                     .map(Object::toString).orElse(null));
-            return this;
         }
 
     }

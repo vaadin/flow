@@ -212,12 +212,10 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * 
 	 * @param bottomJustify
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setBottomJustify(java.lang.String bottomJustify) {
+	public void setBottomJustify(java.lang.String bottomJustify) {
 		getElement().setProperty("bottomJustify",
 				bottomJustify == null ? "" : bottomJustify);
-		return get();
 	}
 
 	/**
@@ -249,11 +247,9 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * 
 	 * @param justify
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setJustify(java.lang.String justify) {
+	public void setJustify(java.lang.String justify) {
 		getElement().setProperty("justify", justify == null ? "" : justify);
-		return get();
 	}
 
 	/**
@@ -285,12 +281,10 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * 
 	 * @param middleJustify
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMiddleJustify(java.lang.String middleJustify) {
+	public void setMiddleJustify(java.lang.String middleJustify) {
 		getElement().setProperty("middleJustify",
 				middleJustify == null ? "" : middleJustify);
-		return get();
 	}
 
 	/**
