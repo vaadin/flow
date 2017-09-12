@@ -757,7 +757,6 @@ public class Binder<BEAN> implements Serializable {
         private final Binder<BEAN> binder;
 
         private final HasValue<?, FIELDVALUE> field;
-        private final HasValidation validationTarget;
         private final BindingValidationStatusHandler statusHandler;
 
         private final SerializableFunction<BEAN, TARGET> getter;
@@ -777,7 +776,6 @@ public class Binder<BEAN> implements Serializable {
                 Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
-            validationTarget = getValidationTarget(builder.field);
             statusHandler = builder.statusHandler;
             converterValidatorChain = builder.converterValidatorChain;
 
@@ -786,13 +784,6 @@ public class Binder<BEAN> implements Serializable {
 
             this.getter = getter;
             this.setter = setter;
-        }
-
-        private HasValidation getValidationTarget(HasValue<?, FIELDVALUE> field) {
-            if (field instanceof HasValidation) {
-                return (HasValidation) field;
-            }
-            return null;
         }
 
         @Override
@@ -855,16 +846,7 @@ public class Binder<BEAN> implements Serializable {
          * @return the validation status
          */
         private BindingValidationStatus<TARGET> doValidation() {
-            BindingValidationStatus<TARGET> status = toValidationStatus(doConversion());
-            updateValidationTarget(status);
-            return status;
-        }
-
-        private void updateValidationTarget(BindingValidationStatus<TARGET> status) {
-            if (validationTarget != null) {
-                validationTarget.setInvalid(status.isError());
-                validationTarget.setErrorMessage(status.getMessage().orElse(""));
-            }
+            return toValidationStatus(doConversion());
         }
 
         /**
@@ -1857,7 +1839,11 @@ public class Binder<BEAN> implements Serializable {
      *            the error message to set
      */
     protected void handleError(HasValue<?, ?> field, String error) {
-        // Not implemented now
+        if (field instanceof HasValidation) {
+            HasValidation fieldWithValidation = (HasValidation) field;
+            fieldWithValidation.setInvalid(true);
+            fieldWithValidation.setErrorMessage(error);
+        }
     }
 
     /**
@@ -1867,7 +1853,11 @@ public class Binder<BEAN> implements Serializable {
      *            the field with an invalid value
      */
     protected void clearError(HasValue<?, ?> field) {
-        // Not implemented now
+        if (field instanceof HasValidation) {
+            HasValidation fieldWithValidation = (HasValidation) field;
+            fieldWithValidation.setInvalid(false);
+            fieldWithValidation.setErrorMessage(null);
+        }
     }
 
     /**
@@ -1878,10 +1868,10 @@ public class Binder<BEAN> implements Serializable {
      *            the validation status
      */
     protected void handleValidationStatus(BindingValidationStatus<?> status) {
-        HasValue<?, ?> source = status.getField();
-        clearError(source);
         if (status.isError()) {
-            handleError(source, status.getMessage().get());
+            handleError(status.getField(), status.getMessage().orElse(null));
+        } else {
+            clearError(status.getField());
         }
     }
 
