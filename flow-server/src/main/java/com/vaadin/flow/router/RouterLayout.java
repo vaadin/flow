@@ -12,7 +12,8 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- */package com.vaadin.flow.router;
+ */
+package com.vaadin.flow.router;
 
 import com.vaadin.annotations.Route;
 import com.vaadin.ui.HasElement;
@@ -35,7 +36,7 @@ public interface RouterLayout extends HasElement {
      *            the content component
      */
     default void setRouterLayoutContent(HasElement content) {
-         getElement().appendChild(content.getElement());
-     }
+        getElement().appendChild(content.getElement());
+    }
 
- }
+}
