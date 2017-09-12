@@ -16,28 +16,18 @@
 package com.vaadin.flow.router;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
-import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.UI;
 
-public class NEW_RouterTest {
-
-    private NewRouter router;
-    private UI ui;
+public class NewRoutingTestBase {
 
     @Route("")
     @Tag(Tag.DIV)
@@ -77,48 +67,15 @@ public class NEW_RouterTest {
         }
     }
 
+    protected NewRouter router;
+
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         router = new NewRouter();
-        ui = new RouterTestUI(router);
         Field field = RouteRegistry.getInstance().getClass()
                 .getDeclaredField("initialized");
         field.setAccessible(true);
         field.set(RouteRegistry.getInstance(), false);
-    }
-
-    @Test
-    public void basic_navigation() throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        FooNavigationTarget.class, FooBarNavigationTarget.class)
-                        .collect(Collectors.toSet()));
-
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
-
-        router.navigate(ui, new Location("foo"),
-                NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(FooNavigationTarget.class, getUIComponent());
-
-        router.navigate(ui, new Location("foo/bar"),
-                NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
-    }
-
-    @Test
-    public void page_title_set_from_annotation()
-            throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
-                Collections.singleton(NavigationTargetWithTitle.class));
-        router.navigate(ui, new Location("navigation-target-with-title"),
-                NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Custom Title", ui.getInternals().getTitle());
-    }
-
-    private Class<? extends Component> getUIComponent() {
-        return ComponentUtil.findParentComponent(ui.getElement().getChild(0))
-                .get().getClass();
     }
 }
