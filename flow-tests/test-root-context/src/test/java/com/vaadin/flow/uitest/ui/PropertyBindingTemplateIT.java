@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -40,8 +39,9 @@ public class PropertyBindingTemplateIT extends ChromeBrowserTest {
         WebElement input = findElement(By.cssSelector("input"));
 
         Assert.assertEquals("Foo", input.getAttribute("value"));
-        Assert.assertEquals(Boolean.TRUE, getProperty(input, "booleanprop"));
-        Assert.assertEquals(1.1d, getProperty(input, "doubleprop"));
+        Assert.assertTrue(
+                Boolean.parseBoolean(input.getAttribute("booleanprop")));
+        Assert.assertEquals("1.1", input.getAttribute("doubleprop"));
     }
 
     @Test
@@ -52,13 +52,8 @@ public class PropertyBindingTemplateIT extends ChromeBrowserTest {
         WebElement input = findElement(By.cssSelector("input"));
 
         Assert.assertEquals("Bar", input.getAttribute("value"));
-        Assert.assertEquals(Boolean.FALSE, getProperty(input, "booleanprop"));
-        Assert.assertEquals(2.2d, getProperty(input, "doubleprop"));
-    }
-
-    private Object getProperty(WebElement element, String property) {
-        JavascriptExecutor js = (JavascriptExecutor) getDriver();
-        return js.executeScript("return arguments[0]['" + property + "'];",
-                element);
+        Assert.assertFalse(
+                Boolean.parseBoolean(input.getAttribute("booleanprop")));
+        Assert.assertEquals("2.2", input.getAttribute("doubleprop"));
     }
 }

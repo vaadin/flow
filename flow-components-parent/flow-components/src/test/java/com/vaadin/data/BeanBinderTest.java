@@ -33,7 +33,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.components.data.HasValue;
 import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubConstraint;
 import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubSubConstraint;
 import com.vaadin.data.converter.StringToIntegerConverter;
@@ -492,12 +491,13 @@ extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
         Assert.assertTrue(binder.validate().isOk());
     }
 
-    private void assertInvalid(HasValue<?, ?> field, String message) {
+    private void assertInvalid(TextField field, String message) {
         BinderValidationStatus<?> status = binder.validate();
         List<BindingValidationStatus<?>> errors = status
                 .getFieldValidationErrors();
         assertEquals(1, errors.size());
         assertSame(field, errors.get(0).getField());
         assertEquals(message, errors.get(0).getMessage().get());
+        assertInvalidField(message, field);
     }
 }
