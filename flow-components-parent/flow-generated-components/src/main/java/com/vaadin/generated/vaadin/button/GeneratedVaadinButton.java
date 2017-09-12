@@ -125,11 +125,9 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 	 * 
 	 * @param autofocus
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public void setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
-		return get();
 	}
 
 	/**
@@ -172,11 +170,9 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**

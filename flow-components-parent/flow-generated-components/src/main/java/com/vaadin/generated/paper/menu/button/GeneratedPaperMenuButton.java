@@ -147,11 +147,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return get();
 	}
 
 	/**
@@ -181,13 +179,11 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public void setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return get();
 	}
 
 	/**
@@ -217,11 +213,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param keyBindings
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return get();
 	}
 
 	/**
@@ -266,11 +260,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**
@@ -299,11 +291,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param opened
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public void setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return get();
 	}
 
 	/**
@@ -333,12 +323,10 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param horizontalAlign
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalAlign(java.lang.String horizontalAlign) {
+	public void setHorizontalAlign(java.lang.String horizontalAlign) {
 		getElement().setProperty("horizontalAlign",
 				horizontalAlign == null ? "" : horizontalAlign);
-		return get();
 	}
 
 	/**
@@ -368,12 +356,10 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param verticalAlign
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setVerticalAlign(java.lang.String verticalAlign) {
+	public void setVerticalAlign(java.lang.String verticalAlign) {
 		getElement().setProperty("verticalAlign",
 				verticalAlign == null ? "" : verticalAlign);
-		return get();
 	}
 
 	/**
@@ -407,11 +393,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param dynamicAlign
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDynamicAlign(boolean dynamicAlign) {
+	public void setDynamicAlign(boolean dynamicAlign) {
 		getElement().setProperty("dynamicAlign", dynamicAlign);
-		return get();
 	}
 
 	/**
@@ -443,11 +427,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param horizontalOffset
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setHorizontalOffset(double horizontalOffset) {
+	public void setHorizontalOffset(double horizontalOffset) {
 		getElement().setProperty("horizontalOffset", horizontalOffset);
-		return get();
 	}
 
 	/**
@@ -479,11 +461,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param verticalOffset
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setVerticalOffset(double verticalOffset) {
+	public void setVerticalOffset(double verticalOffset) {
 		getElement().setProperty("verticalOffset", verticalOffset);
-		return get();
 	}
 
 	/**
@@ -513,11 +493,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param noOverlap
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoOverlap(boolean noOverlap) {
+	public void setNoOverlap(boolean noOverlap) {
 		getElement().setProperty("noOverlap", noOverlap);
-		return get();
 	}
 
 	/**
@@ -545,11 +523,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param noAnimations
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoAnimations(boolean noAnimations) {
+	public void setNoAnimations(boolean noAnimations) {
 		getElement().setProperty("noAnimations", noAnimations);
-		return get();
 	}
 
 	/**
@@ -579,11 +555,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param ignoreSelect
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setIgnoreSelect(boolean ignoreSelect) {
+	public void setIgnoreSelect(boolean ignoreSelect) {
 		getElement().setProperty("ignoreSelect", ignoreSelect);
-		return get();
 	}
 
 	/**
@@ -613,11 +587,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param closeOnActivate
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setCloseOnActivate(boolean closeOnActivate) {
+	public void setCloseOnActivate(boolean closeOnActivate) {
 		getElement().setProperty("closeOnActivate", closeOnActivate);
-		return get();
 	}
 
 	/**
@@ -647,13 +619,11 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param openAnimationConfig
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setOpenAnimationConfig(
+	protected void setOpenAnimationConfig(
 			elemental.json.JsonObject openAnimationConfig) {
 		getElement()
 				.setPropertyJson("openAnimationConfig", openAnimationConfig);
-		return get();
 	}
 
 	/**
@@ -683,13 +653,11 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param closeAnimationConfig
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setCloseAnimationConfig(
+	protected void setCloseAnimationConfig(
 			elemental.json.JsonObject closeAnimationConfig) {
 		getElement().setPropertyJson("closeAnimationConfig",
 				closeAnimationConfig);
-		return get();
 	}
 
 	/**
@@ -721,11 +689,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param allowOutsideScroll
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAllowOutsideScroll(boolean allowOutsideScroll) {
+	public void setAllowOutsideScroll(boolean allowOutsideScroll) {
 		getElement().setProperty("allowOutsideScroll", allowOutsideScroll);
-		return get();
 	}
 
 	/**
@@ -753,11 +719,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param restoreFocusOnClose
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setRestoreFocusOnClose(boolean restoreFocusOnClose) {
+	public void setRestoreFocusOnClose(boolean restoreFocusOnClose) {
 		getElement().setProperty("restoreFocusOnClose", restoreFocusOnClose);
-		return get();
 	}
 
 	/**
@@ -785,11 +749,9 @@ public class GeneratedPaperMenuButton<R extends GeneratedPaperMenuButton<R>>
 	 * 
 	 * @param contentElement
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setContentElement(elemental.json.JsonObject contentElement) {
+	protected void setContentElement(elemental.json.JsonObject contentElement) {
 		getElement().setPropertyJson("contentElement", contentElement);
-		return get();
 	}
 
 	/**

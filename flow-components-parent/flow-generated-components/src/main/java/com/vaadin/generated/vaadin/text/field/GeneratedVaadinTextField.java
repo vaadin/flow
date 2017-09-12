@@ -15,20 +15,21 @@
  */
 package com.vaadin.generated.vaadin.text.field;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.Focusable;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.Focusable;
+import com.vaadin.ui.HasStyle;
 
 /**
  * <p>
@@ -73,7 +74,7 @@ import com.vaadin.shared.Registration;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha3",
+		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha4",
 		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
@@ -111,11 +112,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param autofocus
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public void setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
-		return get();
 	}
 
 	/**
@@ -158,11 +157,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**
@@ -196,12 +193,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param autocomplete
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutocomplete(java.lang.String autocomplete) {
+	public void setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
 				autocomplete == null ? "" : autocomplete);
-		return get();
 	}
 
 	/**
@@ -235,12 +230,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param autocorrect
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutocorrect(java.lang.String autocorrect) {
+	public void setAutocorrect(java.lang.String autocorrect) {
 		getElement().setProperty("autocorrect",
 				autocorrect == null ? "" : autocorrect);
-		return get();
 	}
 
 	/**
@@ -268,12 +261,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param errorMessage
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setErrorMessage(java.lang.String errorMessage) {
+	public void setErrorMessage(java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
-		return get();
 	}
 
 	/**
@@ -301,11 +292,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param label
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public void setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return get();
 	}
 
 	/**
@@ -335,11 +324,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param list
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setList(java.lang.String list) {
+	public void setList(java.lang.String list) {
 		getElement().setProperty("list", list == null ? "" : list);
-		return get();
 	}
 
 	/**
@@ -369,11 +356,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param maxlength
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMaxlength(double maxlength) {
+	public void setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
-		return get();
 	}
 
 	/**
@@ -403,11 +388,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param minlength
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMinlength(double minlength) {
+	public void setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
-		return get();
 	}
 
 	/**
@@ -435,11 +418,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param name
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public void setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return get();
 	}
 
 	/**
@@ -469,11 +450,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param pattern
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setPattern(java.lang.String pattern) {
+	public void setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
-		return get();
 	}
 
 	/**
@@ -501,12 +480,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param placeholder
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public void setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
-		return get();
 	}
 
 	/**
@@ -536,11 +513,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param readonly
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setReadonly(boolean readonly) {
+	public void setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
-		return get();
 	}
 
 	/**
@@ -568,11 +543,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param required
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public void setRequired(boolean required) {
 		getElement().setProperty("required", required);
-		return get();
 	}
 
 	/**
@@ -600,11 +573,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param title
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setTitle(java.lang.String title) {
+	public void setTitle(java.lang.String title) {
 		getElement().setProperty("title", title == null ? "" : title);
-		return get();
 	}
 
 	/**
@@ -636,12 +607,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param value
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
 	@Override
-	public R setValue(java.lang.String value) {
+	public void setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
-		return get();
 	}
 
 	/**
@@ -670,11 +639,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public void setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
-		return get();
 	}
 
 	/**
@@ -720,11 +687,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * 
 	 * @param preventInvalidInput
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setPreventInvalidInput(boolean preventInvalidInput) {
+	public void setPreventInvalidInput(boolean preventInvalidInput) {
 		getElement().setProperty("preventInvalidInput", preventInvalidInput);
-		return get();
 	}
 
 	/**

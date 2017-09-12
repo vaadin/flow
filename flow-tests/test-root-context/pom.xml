@@ -54,7 +54,7 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.4</version>
+                <version>${frontend.maven.plugin.version}</version>
                 <configuration>
                     <nodeVersion>${node.version}</nodeVersion>
                     <npmVersion>${npm.version}</npmVersion>
@@ -80,8 +80,12 @@
                 <configuration>
                     <webResources>
                         <resource>
-                            <!-- this is relative to the pom.xml directory -->
                             <directory>${frontend.working.directory}</directory>
+                            <excludes>
+                                <exclude>build/**</exclude>
+                                <exclude>node/**</exclude>
+                                <exclude>node_modules/**</exclude>
+                            </excludes>
                         </resource>
                     </webResources>
                 </configuration>

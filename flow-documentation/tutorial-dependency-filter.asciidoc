@@ -25,6 +25,8 @@ public class BundleFilter implements DependencyFilter {
     }
 }
 ----
+[TIP]
+You can also use the `frontend://` and `context://` protocols on dependencies returned by the DependencyFilter. These protocols are resolved after the filters are applied. To know more about `frontend://` and `context://` protocols, read ** <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>.
 
 [WARNING]
 DependencyFilters allow you to change, add and remove any dependencies. You may leave your application in a broken state if you remove a required dependency for your project without providing a suitable replacement. With great power comes great responsibility.

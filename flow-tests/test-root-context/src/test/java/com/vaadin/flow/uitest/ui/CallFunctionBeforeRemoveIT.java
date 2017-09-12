@@ -29,6 +29,7 @@ public class CallFunctionBeforeRemoveIT extends ChromeBrowserTest {
 
         findElement(By.tagName("button")).click();
 
+        waitUntil(driver -> !isElementPresent(By.className("v-system-error")));
         Assert.assertFalse(isElementPresent(By.className("v-system-error")));
     }
 }
