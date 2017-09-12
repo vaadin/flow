@@ -54,8 +54,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
-
-
 /**
  * Connects one or more {@code Field} components to properties of a backing data
  * type such as a bean type. With a binder, input components can be grouped
@@ -191,7 +189,7 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called on this binding
          */
         Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
-                                   Setter<BEAN, TARGET> setter);
+                Setter<BEAN, TARGET> setter);
 
         /**
          * Completes this binding by connecting the field to the property with
@@ -407,9 +405,11 @@ public class Binder<BEAN> implements Serializable {
                 TARGET nullRepresentation) {
             return withConverter(
                     fieldValue -> Objects.equals(fieldValue, nullRepresentation)
-                    ? null : fieldValue,
-                            modelValue -> Objects.isNull(modelValue)
-                            ? nullRepresentation : modelValue);
+                            ? null
+                            : fieldValue,
+                    modelValue -> Objects.isNull(modelValue)
+                            ? nullRepresentation
+                            : modelValue);
         }
 
         /**
@@ -437,8 +437,7 @@ public class Binder<BEAN> implements Serializable {
          *            label to show validation status for the field
          * @return this binding, for chaining
          */
-        default BindingBuilder<BEAN, TARGET> withStatusLabel(
-                Label label) {
+        default BindingBuilder<BEAN, TARGET> withStatusLabel(Label label) {
             return withValidationStatusHandler(status -> {
                 label.setText(status.getMessage().orElse(""));
                 // Only show the label when validation has failed
@@ -489,8 +488,7 @@ public class Binder<BEAN> implements Serializable {
          *            the error message to show for the invalid value
          * @return this binding, for chaining
          */
-        default BindingBuilder<BEAN, TARGET> asRequired(
-                String errorMessage) {
+        default BindingBuilder<BEAN, TARGET> asRequired(String errorMessage) {
             return asRequired(context -> errorMessage);
         }
 
@@ -526,7 +524,7 @@ public class Binder<BEAN> implements Serializable {
      *            until a converter has been set
      */
     protected static class BindingBuilderImpl<BEAN, FIELDVALUE, TARGET>
-    implements BindingBuilder<BEAN, TARGET> {
+            implements BindingBuilder<BEAN, TARGET> {
 
         private final Binder<BEAN> binder;
 
@@ -598,7 +596,7 @@ public class Binder<BEAN> implements Serializable {
                     .getProperty(propertyName)
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Could not resolve property name " + propertyName
-                            + " from " + getBinder().propertySet));
+                                    + " from " + getBinder().propertySet));
 
             ValueProvider<BEAN, ?> getter = definition.getGetter();
             Setter<BEAN, ?> setter = definition.getSetter()
@@ -751,7 +749,7 @@ public class Binder<BEAN> implements Serializable {
      *            unless a converter has been set
      */
     protected static class BindingImpl<BEAN, FIELDVALUE, TARGET>
-    implements Binding<BEAN, TARGET> {
+            implements Binding<BEAN, TARGET> {
 
         private final Binder<BEAN> binder;
 
@@ -810,8 +808,8 @@ public class Binder<BEAN> implements Serializable {
         public BindingValidationStatus<TARGET> validate() {
             BindingValidationStatus<TARGET> status = doValidation();
             getBinder().getValidationStatusHandler()
-            .statusChange(new BinderValidationStatus<>(getBinder(),
-                    Arrays.asList(status), Collections.emptyList()));
+                    .statusChange(new BinderValidationStatus<>(getBinder(),
+                            Arrays.asList(status), Collections.emptyList()));
             getBinder().fireStatusChangeEvent(status.isError());
             return status;
         }
@@ -833,7 +831,7 @@ public class Binder<BEAN> implements Serializable {
                 Result<TARGET> result) {
             return new BindingValidationStatus<>(this,
                     result.isError()
-                    ? ValidationResult.error(result.getMessage().get())
+                            ? ValidationResult.error(result.getMessage().get())
                             : ValidationResult.ok());
         }
 
@@ -876,8 +874,9 @@ public class Binder<BEAN> implements Serializable {
             try {
                 getField().setValue(convertDataToFieldType(bean));
             } finally {
-                onValueChange = getField()
-                        .addValueChangeListener(this::handleFieldValueChange);
+                // Lambda instead of methref because of parser bug in Eclipse
+                onValueChange = getField().addValueChangeListener(
+                        event -> this.handleFieldValueChange(event));
             }
         }
 
@@ -999,7 +998,7 @@ public class Binder<BEAN> implements Serializable {
      * same as {@link Converter#identity()} behavior.
      */
     private static class ConverterDelegate<FIELDVALUE>
-    implements Converter<FIELDVALUE, FIELDVALUE> {
+            implements Converter<FIELDVALUE, FIELDVALUE> {
 
         private Converter<FIELDVALUE, FIELDVALUE> delegate;
 
@@ -1177,7 +1176,7 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                .withValidator(field.getDefaultValidator());
+                        .withValidator(field.getDefaultValidator());
     }
 
     /**
@@ -1895,8 +1894,8 @@ public class Binder<BEAN> implements Serializable {
             BinderValidationStatus<BEAN> binderStatus) {
         // let field events go to binding status handlers
         binderStatus.getFieldValidationStatuses()
-        .forEach(status -> ((BindingImpl<?, ?, ?>) status.getBinding())
-                .notifyStatusHandler(status));
+                .forEach(status -> ((BindingImpl<?, ?, ?>) status.getBinding())
+                        .notifyStatusHandler(status));
 
         // show first possible error or OK status in the label if set
         if (getStatusLabel().isPresent()) {
@@ -1980,7 +1979,7 @@ public class Binder<BEAN> implements Serializable {
      */
     public void setReadOnly(boolean fieldsReadOnly) {
         getBindings().stream().map(BindingImpl::getField)
-        .forEach(field -> field.setReadOnly(fieldsReadOnly));
+                .forEach(field -> field.setReadOnly(fieldsReadOnly));
     }
 
     /**
@@ -2025,7 +2024,7 @@ public class Binder<BEAN> implements Serializable {
 
     private void fireStatusChangeEvent(boolean hasValidationErrors) {
         getEventRouter()
-        .fireEvent(new StatusChangeEvent(this, hasValidationErrors));
+                .fireEvent(new StatusChangeEvent(this, hasValidationErrors));
     }
 
     private <FIELDVALUE> Converter<FIELDVALUE, FIELDVALUE> createNullRepresentationAdapter(
@@ -2033,8 +2032,9 @@ public class Binder<BEAN> implements Serializable {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
                 .from(fieldValue -> fieldValue,
                         modelValue -> Objects.isNull(modelValue)
-                        ? field.getEmptyValue() : modelValue,
-                                exception -> exception.getMessage());
+                                ? field.getEmptyValue()
+                                : modelValue,
+                        exception -> exception.getMessage());
         ConverterDelegate<FIELDVALUE> converter = new ConverterDelegate<>(
                 nullRepresentationConverter);
         initialConverters.put(field, converter);
@@ -2136,8 +2136,7 @@ public class Binder<BEAN> implements Serializable {
             Object objectWithMemberFields) {
         try {
             HasValue<?, ?> field = (HasValue<?, ?>) getMemberFieldValue(
-                    memberField,
-                    objectWithMemberFields);
+                    memberField, objectWithMemberFields);
             return bindings.stream()
                     .anyMatch(binding -> binding.getField() == field);
         } catch (Exception e) {
@@ -2192,8 +2191,8 @@ public class Binder<BEAN> implements Serializable {
             throw new IllegalStateException(String.format(
                     "Unable to detect value type for the member '%s' in the "
                             + "class '%s'.",
-                            memberField.getName(),
-                            objectWithMemberFields.getClass().getName()));
+                    memberField.getName(),
+                    objectWithMemberFields.getClass().getName()));
         }
         if (propertyType.equals(GenericTypeReflector.erase(valueType))) {
             HasValue<?, ?> field;
@@ -2209,7 +2208,7 @@ public class Binder<BEAN> implements Serializable {
             if (field == null) {
                 field = makeFieldInstance(
                         (Class<? extends HasValue<?, ?>>) memberField
-                        .getType());
+                                .getType());
                 initializeField(objectWithMemberFields, memberField, field);
             }
             forField(field).bind(property);
@@ -2219,7 +2218,7 @@ public class Binder<BEAN> implements Serializable {
                     "Property type '%s' doesn't "
                             + "match the field type '%s'. "
                             + "Binding should be configured manually using converter.",
-                            propertyType.getName(), valueType.getTypeName()));
+                    propertyType.getName(), valueType.getTypeName()));
         }
     }
 
@@ -2264,7 +2263,7 @@ public class Binder<BEAN> implements Serializable {
 
         while (searchClass != null) {
             memberFieldInOrder
-            .addAll(Arrays.asList(searchClass.getDeclaredFields()));
+                    .addAll(Arrays.asList(searchClass.getDeclaredFields()));
             searchClass = searchClass.getSuperclass();
         }
         return memberFieldInOrder;
