@@ -235,12 +235,10 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param valueAsString
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setValueAsString(java.lang.String valueAsString) {
+	public void setValueAsString(java.lang.String valueAsString) {
 		getElement().setProperty("value",
 				valueAsString == null ? "" : valueAsString);
-		return get();
 	}
 
 	/**
@@ -268,11 +266,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param required
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public void setRequired(boolean required) {
 		getElement().setProperty("required", required);
-		return get();
 	}
 
 	/**
@@ -300,11 +296,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param name
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public void setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return get();
 	}
 
 	/**
@@ -353,12 +347,10 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param initialPosition
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setInitialPosition(java.lang.String initialPosition) {
+	public void setInitialPosition(java.lang.String initialPosition) {
 		getElement().setProperty("initialPosition",
 				initialPosition == null ? "" : initialPosition);
-		return get();
 	}
 
 	/**
@@ -386,11 +378,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param label
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public void setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return get();
 	}
 
 	/**
@@ -418,11 +408,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param opened
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public void setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return get();
 	}
 
 	/**
@@ -454,11 +442,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param showWeekNumbers
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setShowWeekNumbers(boolean showWeekNumbers) {
+	public void setShowWeekNumbers(boolean showWeekNumbers) {
 		getElement().setProperty("showWeekNumbers", showWeekNumbers);
-		return get();
 	}
 
 	/**
@@ -631,11 +617,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param i18n
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setI18n(elemental.json.JsonObject i18n) {
+	protected void setI18n(elemental.json.JsonObject i18n) {
 		getElement().setPropertyJson("i18n", i18n);
-		return get();
 	}
 
 	/**
@@ -681,11 +665,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param minAsString
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMinAsString(java.lang.String minAsString) {
+	public void setMinAsString(java.lang.String minAsString) {
 		getElement().setProperty("min", minAsString == null ? "" : minAsString);
-		return get();
 	}
 
 	/**
@@ -729,11 +711,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param maxAsString
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMaxAsString(java.lang.String maxAsString) {
+	public void setMaxAsString(java.lang.String maxAsString) {
 		getElement().setProperty("max", maxAsString == null ? "" : maxAsString);
-		return get();
 	}
 
 	/**
@@ -761,11 +741,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**
@@ -793,12 +771,10 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param errorMessage
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setErrorMessage(java.lang.String errorMessage) {
+	public void setErrorMessage(java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
-		return get();
 	}
 
 	/**
@@ -828,12 +804,10 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param placeholder
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public void setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
-		return get();
 	}
 
 	/**
@@ -861,11 +835,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param readonly
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setReadonly(boolean readonly) {
+	public void setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
-		return get();
 	}
 
 	/**
@@ -894,11 +866,9 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public void setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
-		return get();
 	}
 
 	/**

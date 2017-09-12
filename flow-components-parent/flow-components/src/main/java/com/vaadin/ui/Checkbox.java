@@ -105,18 +105,16 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
      * @see #isIndeterminate()
      * @param value
      *            the value to set
-     * @return this instance, for method chaining
      */
     @Override
-    public Checkbox setValue(Boolean value) {
+    public void setValue(Boolean value) {
         if (value == null) {
             setIndeterminate(true);
             getElement().setPropertyJson("checked", Json.createNull());
-            return get();
+        } else {
+            setIndeterminate(false);
+            super.setValue(value);
         }
-        setIndeterminate(false);
-        super.setValue(value);
-        return get();
     }
 
     /**
@@ -129,7 +127,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
     @Override
     public Boolean getValue() {
         if (isEmpty()) {
-            return (Boolean) null;
+            return null;
         }
         return super.getValue();
     }
