@@ -82,7 +82,6 @@ public class BinderValidationStatusTest
         BindingValidationStatus<?> evt = statusCapture.get();
         Assert.assertEquals(Status.ERROR, evt.getStatus());
         Assert.assertEquals(EMPTY_ERROR_MESSAGE, evt.getMessage().get());
-        assertInvalidField(EMPTY_ERROR_MESSAGE, nameField);
         Assert.assertEquals(nameField, evt.getField());
 
         statusCapture.set(null);
@@ -97,7 +96,6 @@ public class BinderValidationStatusTest
         Assert.assertNotNull(evt);
         Assert.assertEquals(Status.OK, evt.getStatus());
         Assert.assertFalse(evt.getMessage().isPresent());
-        assertValidField(nameField);
         Assert.assertEquals(nameField, evt.getField());
     }
 
@@ -117,7 +115,6 @@ public class BinderValidationStatusTest
 
         assertVisible(label, true);
         Assert.assertEquals(EMPTY_ERROR_MESSAGE, label.getText());
-        assertInvalidField(EMPTY_ERROR_MESSAGE, nameField);
 
         nameField.setValue("foo");
 
@@ -127,7 +124,6 @@ public class BinderValidationStatusTest
 
         assertVisible(label, false);
         Assert.assertEquals("", label.getText());
-
     }
 
     @Test
@@ -244,13 +240,11 @@ public class BinderValidationStatusTest
         Assert.assertTrue(r.isError());
         Assert.assertEquals(EMPTY_ERROR_MESSAGE, r.getMessage().get());
         Assert.assertEquals(nameField, r.getField());
-        assertInvalidField(EMPTY_ERROR_MESSAGE, nameField);
 
         r = bindingStatuses.get(1);
         Assert.assertFalse(r.isError());
         Assert.assertFalse(r.getMessage().isPresent());
         Assert.assertEquals(ageField, r.getField());
-        assertValidField(ageField);
 
         Assert.assertEquals(0, status.getBeanValidationResults().size());
         Assert.assertEquals(0, status.getBeanValidationErrors().size());
@@ -272,13 +266,11 @@ public class BinderValidationStatusTest
         Assert.assertFalse(r.isError());
         Assert.assertFalse(r.getMessage().isPresent());
         Assert.assertEquals(nameField, r.getField());
-        assertValidField(nameField);
 
         r = bindingStatuses.get(1);
         Assert.assertTrue(r.isError());
         Assert.assertEquals(NOT_NUMBER_ERROR_MESSAGE, r.getMessage().get());
         Assert.assertEquals(ageField, r.getField());
-        assertInvalidField(NOT_NUMBER_ERROR_MESSAGE, ageField);
 
         Assert.assertEquals(0, status.getBeanValidationResults().size());
         Assert.assertEquals(0, status.getBeanValidationErrors().size());
@@ -338,13 +330,11 @@ public class BinderValidationStatusTest
         Assert.assertTrue(r.isError());
         Assert.assertEquals(EMPTY_ERROR_MESSAGE, r.getMessage().get());
         Assert.assertEquals(nameField, r.getField());
-        assertInvalidField(EMPTY_ERROR_MESSAGE, nameField);
 
         r = bindingStatuses.get(1);
         Assert.assertFalse(r.isError());
         Assert.assertFalse(r.getMessage().isPresent());
         Assert.assertEquals(ageField, r.getField());
-        assertValidField(ageField);
 
         Assert.assertEquals(0, status.getBeanValidationResults().size());
         Assert.assertEquals(0, status.getBeanValidationErrors().size());
@@ -366,15 +356,11 @@ public class BinderValidationStatusTest
         Assert.assertFalse(r.isError());
         Assert.assertFalse(r.getMessage().isPresent());
         Assert.assertEquals(nameField, r.getField());
-        assertValidField(nameField);
 
         r = bindingStatuses.get(1);
         Assert.assertTrue(r.isError());
         Assert.assertEquals(NOT_NUMBER_ERROR_MESSAGE, r.getMessage().get());
-        Assert.assertEquals(NOT_NUMBER_ERROR_MESSAGE,
-                ageField.getErrorMessage());
         Assert.assertEquals(ageField, r.getField());
-        assertInvalidField(NOT_NUMBER_ERROR_MESSAGE, ageField);
 
         Assert.assertEquals(0, status.getBeanValidationResults().size());
         Assert.assertEquals(0, status.getBeanValidationErrors().size());

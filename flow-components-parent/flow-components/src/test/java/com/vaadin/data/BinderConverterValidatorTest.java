@@ -589,14 +589,11 @@ public class BinderConverterValidatorTest
             BindingValidationStatus<?> error = validationErrors.get(0);
             Assert.assertEquals(nameField, error.getField());
             Assert.assertEquals(msg, error.getMessage().get());
-            assertInvalidField(msg, nameField);
 
             error = validationErrors.get(1);
             Assert.assertEquals(ageField, error.getField());
             Assert.assertEquals(NEGATIVE_ERROR_MESSAGE,
                     error.getMessage().get());
-
-            assertInvalidField(NEGATIVE_ERROR_MESSAGE, ageField);
         }
     }
 
