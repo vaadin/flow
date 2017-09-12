@@ -102,13 +102,13 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      * @param min
      *            the minimum date that is allowed to be selected, or
      *            <code>null</code> to remove any minimum constraints
-     * @return this instance for method chaining
      */
-    public DatePicker setMin(LocalDate min) {
+    public void setMin(LocalDate min) {
         if (min == null) {
-            return setMinAsString("");
+            setMinAsString("");
+        } else {
+            setMinAsString(FORMATTER.format(min));
         }
-        return setMinAsString(FORMATTER.format(min));
     }
 
     /**
@@ -129,13 +129,13 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      * @param max
      *            the maximum date that is allowed to be selected, or
      *            <code>null</code> to remove any maximum constraints
-     * @return this instance for method chaining
      */
-    public DatePicker setMax(LocalDate max) {
+    public void setMax(LocalDate max) {
         if (max == null) {
-            return setMaxAsString("");
+            setMaxAsString("");
+        } else {
+            setMaxAsString(FORMATTER.format(max));
         }
-        return setMaxAsString(FORMATTER.format(max));
     }
 
     /**
@@ -199,13 +199,12 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     }
 
     @Override
-    public DatePicker setValue(LocalDate value) {
+    public void setValue(LocalDate value) {
         if (value == null) {
             setValueAsString("");
         } else {
             setValueAsString(FORMATTER.format(value));
         }
-        return get();
     }
 
     @Override
