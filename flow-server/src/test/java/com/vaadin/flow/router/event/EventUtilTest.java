@@ -123,5 +123,4 @@ public class EventUtilTest {
         Assert.assertEquals("Wrong amount of listener instances found", 1,
                 listenerComponents.size());
     }
-
 }
