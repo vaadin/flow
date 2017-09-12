@@ -27,7 +27,7 @@ import com.vaadin.testbench.By;
 public class BasicTypeInListIT extends ChromeBrowserTest {
 
     @Test
-    public void basicTypeinModeList() {
+    public void basicTypeInModeList() {
         open();
 
         WebElement template = findElement(By.id("template"));

@@ -23,7 +23,7 @@ First, we need to define a template with all components:
 
 [source,html]
 ----
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 
 <dom-module id="hello-world">
@@ -60,12 +60,12 @@ We've also imported some dependencies:
 
 * Polymer library
 
-The `../bower_components/polymer/polymer.html` is a link to Polymer library that should be imported in order to have the
+The `../bower_components/polymer/polymer-element.html` is a link to Polymer library that should be imported in order to have the
 functionality working.
 
 [NOTE] You should take care about proper handling of the polymer template file URL, it should be available via URL.
 
-[NOTE] To get `polymer.html` into your project, you can use one of the ways provided by
+[NOTE] To get `polymer-element.html` into your project, you can use one of the ways provided by
 https://www.polymer-project.org/2.0/start/install-2-0[official Polymer page] or use Maven plugins, such as
 https://github.com/eirslett/frontend-maven-plugin[frontend-maven-plugin]
 
@@ -76,12 +76,12 @@ https://github.com/vaadin/flow-demo/[GitHub page] of a demo for more details.
 
 For clarity and demonstration purposes, this example uses https://github.com/PolymerElements/paper-input[paper-input.html] component.
 
-[NOTE] In order to retrieve and use the component in the demo, same rules as for `polymer.html` apply.
+[NOTE] In order to retrieve and use the component in the demo, same rules as for `polymer-element.html` apply.
 
 === Server side
 
 To be able to use this template you need to create a Java class which extends `PolymerTemplate`,
-set its tag name matching the polymer `dom-module` id attribute and add the html imports for Polymer library (`polymer.html`)
+set its tag name matching the polymer `dom-module` id attribute and add the html imports for Polymer library (`polymer-element.html`)
 and our template:
 
 [source,java]
@@ -183,7 +183,7 @@ from the server side.
 
 [source,html]
 ----
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
 
 <dom-module id="my-component">
     <template>

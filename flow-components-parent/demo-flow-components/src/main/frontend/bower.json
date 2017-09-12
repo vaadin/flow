@@ -39,7 +39,8 @@
     "vaadin-combo-box": "~2.0.0",
     "vaadin-form-layout": "~1.0.0",
     "vaadin-split-layout": "~3.0.0-alpha1",
-    "vaadin-date-picker": "~2.0.0"
+    "vaadin-date-picker": "~2.0.0",
+    "vaadin-dialog": "~1.0.0-alpha2"
   },
   "resolutions": {
     "iron-flex-layout": "1 - 2",

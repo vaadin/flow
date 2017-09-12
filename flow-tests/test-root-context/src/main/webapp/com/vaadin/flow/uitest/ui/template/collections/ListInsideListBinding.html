@@ -1,15 +1,15 @@
-<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="/bower_components/polymer/lib/elements/dom-if.html">
 
 <dom-module id="list-inside-list-binding">
     <template>
         <dom-repeat items="[[nestedMessages]]">
             <template>
                 <div>
-                    <dom-repeat items="[[item]]">
-                        <template>
-                            <div class='submsg' on-click="removeItem">[[item.text]]</div>
-                        </template>
-                    </dom-repeat>
+                    <template is="dom-repeat" items="[[item]]">
+                        <div class='submsg' on-click="removeItem">[[item.text]]</div>
+                    </template>
                 </div>
             </template>
         </dom-repeat>

@@ -1,12 +1,11 @@
-<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymer/lib/elements/dom-repeat.html">
 
 <dom-module id="clear-list">
     <template>
-        <dom-repeat items="[[messages]]">
-            <template>
-                <div class='msg' on-click="selectItem">[[item.text]]</div>
-            </template>
-        </dom-repeat>
+        <template is="dom-repeat" items="[[messages]]">
+            <div class='msg' on-click="selectItem">[[item.text]]</div>
+        </template>
         <button id="clearList" on-click="clearList">clearList</button>
     </template>
     <script>
