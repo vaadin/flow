@@ -505,39 +505,35 @@ public class UIInternals implements Serializable {
             viewChain.addAll(parentViews);
         }
 
-        if (viewChain.isEmpty()) {
-            uiElement.removeAllChildren();
-        } else {
-            // Ensure the entire chain is connected
-            View root = null;
-            for (View part : viewChain) {
-                if (root != null) {
-                    assert part instanceof HasChildView : "All parts of the chain except the first must implement "
-                            + HasChildView.class.getSimpleName();
-                    HasChildView parent = (HasChildView) part;
-                    if (oldChildren.get(parent) != root) {
-                        parent.setChildView(root);
-                    }
-                } else if (part instanceof HasChildView
-                        && oldChildren.containsKey(part)) {
-                    // Remove old child view from leaf view if it had one
-                    ((HasChildView) part).setChildView(null);
+        // Ensure the entire chain is connected
+        View root = null;
+        for (View part : viewChain) {
+            if (root != null) {
+                assert part instanceof HasChildView : "All parts of the chain except the first must implement "
+                        + HasChildView.class.getSimpleName();
+                HasChildView parent = (HasChildView) part;
+                if (oldChildren.get(parent) != root) {
+                    parent.setChildView(root);
                 }
-                root = part;
+            } else if (part instanceof HasChildView
+                    && oldChildren.containsKey(part)) {
+                // Remove old child view from leaf view if it had one
+                ((HasChildView) part).setChildView(null);
             }
+            root = part;
+        }
 
-            if (root == null) {
-                throw new IllegalArgumentException(
-                        "Root can't be null here since we know there's at least one item in the chain");
-            }
+        if (root == null) {
+            throw new IllegalArgumentException(
+                    "Root can't be null here since we know there's at least one item in the chain");
+        }
 
-            Element rootElement = root.getElement();
+        Element rootElement = root.getElement();
 
-            if (!uiElement.equals(rootElement.getParent())) {
-                uiElement.removeAllChildren();
-                rootElement.removeFromParent();
-                uiElement.appendChild(rootElement);
-            }
+        if (!uiElement.equals(rootElement.getParent())) {
+            uiElement.removeAllChildren();
+            rootElement.removeFromParent();
+            uiElement.appendChild(rootElement);
         }
     }
 
