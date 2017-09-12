@@ -23,7 +23,6 @@ These tutorials show how the different features are used.
 ** <<tutorial-include-css#,Including Style Sheets>>
 ** <<tutorial-importing#,Importing html/javascript>>
 ** <<tutorial-ways-of-importing#,Ways of importing the dependencies>>
-** <<tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
 ** <<tutorial-bootstrap#,Modifying bootstrap page>>
 * Element API
 ** <<tutorial-properties-attributes#,Element Properties and Attributes>>
@@ -55,6 +54,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-routing-annotation#,Defining Routes with @Route>>
 ** <<tutorial-routing-navigation#,Navigating Between Routes>>
 ** <<tutorial-routing-router-configuration#,Defining View Routes with RouterConfiguration>>
+** <<tutorial-router-layout#,Router Layouts and Nested Router Targets>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
 ** <<tutorial-routing-view-parameters#,Using View Parameters>>
 ** <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>

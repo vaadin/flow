@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import com.vaadin.annotations.Route;
 import com.vaadin.ui.Component;
 
 /**
@@ -45,5 +48,20 @@ public class StaticRouteTargetRenderer extends RouteTargetRenderer {
     public Class<? extends Component> getRouteTargetType(
             NavigationEvent event) {
         return routeTargetType;
+    }
+
+    @Override
+    public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
+            NavigationEvent event, Class<? extends Component> routeTargetType) {
+        assert routeTargetType == this.routeTargetType;
+
+        List<Class<? extends RouterLayout>> parentLayouts = new ArrayList<>();
+        Route route = routeTargetType.getAnnotation(Route.class);
+        if (route != null) {
+            parentLayouts.add(route.layout());
+        }
+        // not evaluating @ParentLayout for now
+
+        return parentLayouts;
     }
 }

@@ -40,6 +40,7 @@ import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.server.VaadinService;
@@ -133,6 +134,7 @@ public class UIInternals implements Serializable {
 
     private Location viewLocation = new Location("");
     private ArrayList<View> viewChain = new ArrayList<>();
+    private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
 
@@ -549,8 +551,11 @@ public class UIInternals implements Serializable {
      *            serving the UI, not <code>null</code>
      * @param target
      *            the component to show, not <code>null</code>
+     * @param layouts
+     *            the parent layouts
      */
-    public void showRouteTarget(Location viewLocation, Component target) {
+    public void showRouteTarget(Location viewLocation, Component target,
+            List<RouterLayout> layouts) {
         assert target != null;
         assert viewLocation != null;
 
@@ -558,8 +563,65 @@ public class UIInternals implements Serializable {
 
         Element uiElement = ui.getElement();
 
-        uiElement.removeAllChildren();
-        uiElement.appendChild(target.getElement());
+        // Assemble previous parent-child relationships to enable detecting
+        // changes
+        Map<RouterLayout, HasElement> oldChildren = new HashMap<>();
+        for (int i = 0; i < routerTargetChain.size() - 1; i++) {
+            HasElement child = routerTargetChain.get(i);
+            RouterLayout parent = (RouterLayout) routerTargetChain.get(i + 1);
+
+            oldChildren.put(parent, child);
+        }
+
+        routerTargetChain = new ArrayList<>();
+        routerTargetChain.add(target);
+
+        if (layouts != null) {
+            routerTargetChain.addAll(layouts);
+        }
+
+        // Ensure the entire chain is connected
+        HasElement root = null;
+        for (HasElement part : routerTargetChain) {
+            if (part instanceof UI) {
+                break;
+            }
+            if (root != null) {
+                assert part instanceof RouterLayout : "All parts of the chain except the first must implement "
+                        + RouterLayout.class.getSimpleName();
+                RouterLayout parent = (RouterLayout) part;
+                HasElement oldChild = oldChildren.get(parent);
+                if (oldChild != root) {
+                    removeFromParent(oldChild);
+                    parent.setRouterLayoutContent(root);
+                }
+            } else if (part instanceof RouterLayout
+                    && oldChildren.containsKey(part)) {
+                // Remove old child view from leaf view if it had one
+                removeFromParent(oldChildren.get(part));
+                ((RouterLayout) part).setRouterLayoutContent(null);
+            }
+            root = part;
+        }
+
+        if (root == null) {
+            throw new IllegalArgumentException(
+                    "Root can't be null here since we know there's at least one item in the chain");
+        }
+
+        Element rootElement = root.getElement();
+
+        if (!uiElement.equals(rootElement.getParent())) {
+            uiElement.removeAllChildren();
+            rootElement.removeFromParent();
+            uiElement.appendChild(rootElement);
+        }
+    }
+
+    private void removeFromParent(HasElement component) {
+        if (component != null) {
+            component.getElement().removeFromParent();
+        }
     }
 
     /**
@@ -570,6 +632,16 @@ public class UIInternals implements Serializable {
      */
     public List<View> getActiveViewChain() {
         return Collections.unmodifiableList(viewChain);
+    }
+
+    /**
+     * Gets the currently active router target and parent layouts.
+     *
+     * @return a list of active router target and parent layout instances,
+     *         starting from the innermost part
+     */
+    public List<HasElement> getActiveRouterTargetsChain() {
+        return Collections.unmodifiableList(routerTargetChain);
     }
 
     /**
