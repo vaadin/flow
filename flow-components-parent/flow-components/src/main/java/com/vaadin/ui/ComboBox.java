@@ -367,14 +367,4 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     public String getEmptyValue() {
         return "";
     }
-
-    @Override
-    public void setErrorMessage(String errorMessage) {
-        setErrorMessage(errorMessage);
-    }
-
-    @Override
-    public void setInvalid(boolean invalid) {
-        setInvalid(invalid);
-    }
 }
