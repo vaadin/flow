@@ -48,7 +48,8 @@ public @interface Route {
      * When navigating between components that use the same layout, the same
      * component instance is reused.
      *
-     * @return
+     * @return the layout component class used by the route target component.
+     *         The default is the {@link UI} of the application.
      */
     Class<? extends RouterLayout> layout() default UI.class;
 }

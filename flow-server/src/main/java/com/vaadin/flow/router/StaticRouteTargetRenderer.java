@@ -54,7 +54,7 @@ public class StaticRouteTargetRenderer extends RouteTargetRenderer {
     }
 
     @Override
-    public List<Class<? extends RouterLayout>> getParentTargetTypes(
+    public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             NavigationEvent event, Class<? extends Component> targetType) {
         assert targetType == routeTargetType;
         Optional<Route> router = AnnotationReader.getAnnotationFor(targetType,
