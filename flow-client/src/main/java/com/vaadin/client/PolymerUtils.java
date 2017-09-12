@@ -168,7 +168,7 @@ public final class PolymerUtils {
      * Checks whether the {@code htmlNode} can turn into polymer 2 element
      * later.
      * <p>
-     * Lazy loaded dependencies can load {@literal polymer.html} much later then
+     * Lazy loaded dependencies can load Polymer later than
      * the element itself gets processed by the Flow. This method helps to
      * determine such elements.
      *

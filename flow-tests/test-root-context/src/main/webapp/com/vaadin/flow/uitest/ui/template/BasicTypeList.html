@@ -13,15 +13,14 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/bower_components/polymer/lib/elements/dom-repeat.html">
 
 <dom-module id="basic-type-list">
     <template>
-            <dom-repeat items="[[items]]">
-                <template>
-                    <div class="item">[[item]]</div>
-                </template>
-            </dom-repeat>
+        <template is="dom-repeat" items="{{items}}">
+            <div class="item">[[item]]</div>
+        </template>
     </template>
     <script>
         class BasicTypeList extends Polymer.Element {
