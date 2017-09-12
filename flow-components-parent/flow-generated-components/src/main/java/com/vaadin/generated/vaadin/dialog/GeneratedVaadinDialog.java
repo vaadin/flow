@@ -100,11 +100,9 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * 
 	 * @param opened
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public void setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return get();
 	}
 
 	/**
@@ -132,12 +130,10 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * 
 	 * @param noCloseOnOutsideClick
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoCloseOnOutsideClick(boolean noCloseOnOutsideClick) {
+	public void setNoCloseOnOutsideClick(boolean noCloseOnOutsideClick) {
 		getElement()
 				.setProperty("noCloseOnOutsideClick", noCloseOnOutsideClick);
-		return get();
 	}
 
 	/**
@@ -165,11 +161,9 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * 
 	 * @param noCloseOnEsc
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoCloseOnEsc(boolean noCloseOnEsc) {
+	public void setNoCloseOnEsc(boolean noCloseOnEsc) {
 		getElement().setProperty("noCloseOnEsc", noCloseOnEsc);
-		return get();
 	}
 
 	/**
@@ -196,6 +190,24 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	protected void setProperties(JsonObject props,
 			elemental.json.JsonObject setReadOnly) {
 		getElement().callFunction("setProperties", props, setReadOnly);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+		getElement().callFunction("linkPaths", to, from);
 	}
 
 	/**
@@ -250,24 +262,6 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 *            Source path to link.
 	 */
 	public void linkPaths(java.lang.String to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 

@@ -47,20 +47,16 @@ public class Dialog extends GeneratedVaadinDialog<Dialog> {
 
     /**
      * Opens the dialog.
-     * 
-     * @return this instance for method chaining
      */
-    public Dialog open() {
-        return setOpened(true);
+    public void open() {
+        setOpened(true);
     }
 
     /**
      * Closes the dialog.
-     * 
-     * @return this instance for method chaining
      */
-    public Dialog close() {
-        return setOpened(false);
+    public void close() {
+        setOpened(false);
     }
 
 }

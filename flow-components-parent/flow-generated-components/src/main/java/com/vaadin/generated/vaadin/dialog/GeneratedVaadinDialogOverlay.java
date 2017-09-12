@@ -48,11 +48,9 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
 	/**
 	 * @param opened
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public void setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return get();
 	}
 
 	/**
@@ -67,11 +65,9 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
 	/**
 	 * @param template
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setTemplate(elemental.json.JsonObject template) {
+	protected void setTemplate(elemental.json.JsonObject template) {
 		getElement().setPropertyJson("template", template);
-		return get();
 	}
 
 	/**
@@ -86,11 +82,9 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
 	/**
 	 * @param content
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setContent(elemental.json.JsonObject content) {
+	protected void setContent(elemental.json.JsonObject content) {
 		getElement().setPropertyJson("content", content);
-		return get();
 	}
 
 	/**
@@ -104,11 +98,9 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
 	/**
 	 * @param withBackdrop
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setWithBackdrop(boolean withBackdrop) {
+	public void setWithBackdrop(boolean withBackdrop) {
 		getElement().setProperty("withBackdrop", withBackdrop);
-		return get();
 	}
 
 	/**
@@ -122,11 +114,9 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
 	/**
 	 * @param focusTrap
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setFocusTrap(boolean focusTrap) {
+	public void setFocusTrap(boolean focusTrap) {
 		getElement().setProperty("focusTrap", focusTrap);
-		return get();
 	}
 
 	/**
