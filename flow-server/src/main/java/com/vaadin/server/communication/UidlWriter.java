@@ -239,7 +239,7 @@ public class UidlWriter implements Serializable {
                 .getResourceAsStream(resolvedPath);
 
         if (stream == null) {
-            getLogger().config(
+            getLogger().warning(
                     () -> String.format("The path '%s' for inline resource "
                             + "has been resolved to '%s'. "
                             + "But resource is not available via the servlet context. "
