@@ -103,7 +103,7 @@ public class ComponentGenerator {
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
     // https://github.com/vaadin/flow/issues/2370
-    private boolean fluentSetters = false;
+    private boolean fluentSetters;
 
     private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
