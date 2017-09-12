@@ -580,42 +580,41 @@ public class UIInternals implements Serializable {
             routerTargetChain.addAll(layouts);
         }
 
-        if (routerTargetChain.isEmpty()) {
-            uiElement.removeAllChildren();
-        } else {
-            // Ensure the entire chain is connected
-            HasElement root = null;
-            for (HasElement part : routerTargetChain) {
-                if (root != null) {
-                    assert part instanceof RouterLayout : "All parts of the chain except the first must implement "
-                            + RouterLayout.class.getSimpleName();
-                    RouterLayout parent = (RouterLayout) part;
-                    HasElement oldChild = oldChildren.get(parent);
-                    if (oldChild != root) {
-                        removeFromParent(oldChild);
-                        parent.setRouterLayoutContent(root);
-                    }
-                } else if (part instanceof RouterLayout
-                        && oldChildren.containsKey(part)) {
-                    // Remove old child view from leaf view if it had one
-                    removeFromParent(oldChildren.get(part));
-                    ((RouterLayout) part).setRouterLayoutContent(null);
+        // Ensure the entire chain is connected
+        HasElement root = null;
+        for (HasElement part : routerTargetChain) {
+            if (part instanceof UI) {
+                break;
+            }
+            if (root != null) {
+                assert part instanceof RouterLayout : "All parts of the chain except the first must implement "
+                        + RouterLayout.class.getSimpleName();
+                RouterLayout parent = (RouterLayout) part;
+                HasElement oldChild = oldChildren.get(parent);
+                if (oldChild != root) {
+                    removeFromParent(oldChild);
+                    parent.setRouterLayoutContent(root);
                 }
-                root = part;
+            } else if (part instanceof RouterLayout
+                    && oldChildren.containsKey(part)) {
+                // Remove old child view from leaf view if it had one
+                removeFromParent(oldChildren.get(part));
+                ((RouterLayout) part).setRouterLayoutContent(null);
             }
+            root = part;
+        }
 
-            if (root == null) {
-                throw new IllegalArgumentException(
-                        "Root can't be null here since we know there's at least one item in the chain");
-            }
+        if (root == null) {
+            throw new IllegalArgumentException(
+                    "Root can't be null here since we know there's at least one item in the chain");
+        }
 
-            Element rootElement = root.getElement();
+        Element rootElement = root.getElement();
 
-            if (!uiElement.equals(rootElement.getParent())) {
-                uiElement.removeAllChildren();
-                rootElement.removeFromParent();
-                uiElement.appendChild(rootElement);
-            }
+        if (!uiElement.equals(rootElement.getParent())) {
+            uiElement.removeAllChildren();
+            rootElement.removeFromParent();
+            uiElement.appendChild(rootElement);
         }
     }
 
