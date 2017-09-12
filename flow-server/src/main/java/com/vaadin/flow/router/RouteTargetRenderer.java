@@ -20,6 +20,10 @@ import java.util.List;
 
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Title;
+import com.vaadin.flow.router.event.ActivationState;
+import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.router.event.BeforeNavigationListener;
+import com.vaadin.flow.router.event.EventUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -72,10 +76,26 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
 
         assert routeTargetType != null;
 
+        BeforeNavigationEvent beforeNavigation = new BeforeNavigationEvent(
+                event, routeTargetType, ActivationState.DEACTIVATING);
+        List<BeforeNavigationListener> listeners = EventUtil
+                .collectBeforeNavigationListeners(ui.getElement());
+        if (executeBeforeNavigation(beforeNavigation, listeners)) {
+            return reroute(event, beforeNavigation);
+        }
+
         Component componentInstance = getRouteTarget(routeTargetType, event);
 
         List<Component> routeTargetChain = new ArrayList<>();
         routeTargetChain.add(componentInstance);
+
+        beforeNavigation = new BeforeNavigationEvent(event, routeTargetType,
+                ActivationState.ACTIVATING);
+        listeners = EventUtil
+                .collectBeforeNavigationListeners(routeTargetChain);
+        if (executeBeforeNavigation(beforeNavigation, listeners)) {
+            return reroute(event, beforeNavigation);
+        }
 
         NewLocationChangeEvent locationChangeEvent = createEvent(event,
                 routeTargetChain);
@@ -86,6 +106,34 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         updatePageTitle(event, routeTargetType);
 
         return locationChangeEvent.getStatusCode();
+    }
+
+    private boolean executeBeforeNavigation(
+            BeforeNavigationEvent beforeNavigation,
+            List<BeforeNavigationListener> listeners) {
+        for (BeforeNavigationListener listener : listeners) {
+            listener.beforeNavigation(beforeNavigation);
+
+            if (beforeNavigation.hasRerouteTarget()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int reroute(NavigationEvent event,
+            BeforeNavigationEvent beforeNavigation) {
+        NavigationHandler handler = beforeNavigation.getRerouteTarget();
+
+        Location location = new Location(beforeNavigation.getRouteTargetType()
+                .getAnnotation(Route.class).value());
+
+        NavigationEvent newNavigationEvent = new NavigationEvent(
+                event.getSource(), location, event.getUI(),
+                NavigationTrigger.PROGRAMMATIC);
+
+        event.getUI().getPage().getHistory().pushState(null, location);
+        return handler.handle(newNavigationEvent);
     }
 
     /**
