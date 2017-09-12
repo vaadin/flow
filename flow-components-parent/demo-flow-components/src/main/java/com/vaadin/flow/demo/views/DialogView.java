@@ -27,6 +27,8 @@ import com.vaadin.ui.HorizontalLayout;
 @ComponentDemo(name = "Dialog", href = "vaadin-dialog")
 public class DialogView extends DemoView {
 
+    private static final String BUTTON_CAPTION = "Open dialog";
+
     @Override
     void initView() {
         addBasicDialog();
@@ -35,7 +37,7 @@ public class DialogView extends DemoView {
     }
 
     private void addBasicDialog() {
-        Button button = new Button("Open dialog");
+        Button button = new Button(BUTTON_CAPTION);
 
         // begin-source-example
         // source-example-heading: Basic dialog
@@ -48,7 +50,7 @@ public class DialogView extends DemoView {
     }
 
     private void addDialogWithOpenedChangedListener() {
-        Button button = new Button("Open dialog");
+        Button button = new Button(BUTTON_CAPTION);
         Label message = new Label();
         Dialog dialog = new Dialog("Hello World!");
 
@@ -71,7 +73,7 @@ public class DialogView extends DemoView {
     }
 
     private void addDialogWithHTML() {
-        Button button = new Button("Open dialog");
+        Button button = new Button(BUTTON_CAPTION);
 
         // begin-source-example
         // source-example-heading: Dialog with HTML content
