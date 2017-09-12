@@ -13,17 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.router.event;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.flow.router.StaticRouteTargetRenderer;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 
 /**
  * Event created before navigation happens.
@@ -32,24 +37,27 @@ import com.vaadin.ui.UI;
  */
 public class BeforeNavigationEvent extends EventObject {
 
-    private final UI ui;
-    private final NavigationTrigger trigger;
     private final Location location;
+    private final NavigationTrigger trigger;
+    private final ActivationState activationState;
 
-    private int statusCode = HttpServletResponse.SC_OK;
     private NavigationHandler rerouteTarget;
+
     private Class<?> navigationTarget;
+    private Class<? extends Component> routeTarget;
 
     /**
      * Construct event from a NavigationEvent
      * 
-     * @param event NavigationEvent that is on going
-     * @param navigationTarget Navigation target
+     * @param event
+     *            NavigationEvent that is on going
+     * @param navigationTarget
+     *            Navigation target
      */
     public BeforeNavigationEvent(NavigationEvent event,
-            Class<?> navigationTarget) {
-        this(event.getSource(), event.getUI(), event.getTrigger(),
-                event.getLocation(), navigationTarget);
+            Class<?> navigationTarget, ActivationState activationState) {
+        this(event.getSource(), event.getTrigger(), event.getLocation(),
+                navigationTarget, activationState);
     }
 
     /**
@@ -57,28 +65,26 @@ public class BeforeNavigationEvent extends EventObject {
      *
      * @param router
      *            the router that triggered the change, not {@code null}
-     * @param ui
-     *            the UI in which the view is used, not {@code null}
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
      * @param location
      *            the new location, not {@code null}
      */
-    public BeforeNavigationEvent(RouterInterface router, UI ui,
+    public BeforeNavigationEvent(RouterInterface router,
             NavigationTrigger trigger, Location location,
-            Class<?> navigationTarget) {
+            Class<?> navigationTarget, ActivationState activationState) {
         super(router);
 
-        assert ui != null;
         assert trigger != null;
         assert location != null;
         assert navigationTarget != null;
+        assert activationState != null : "Navigation event needs to be for deactivating or activating";
 
-        this.ui = ui;
         this.trigger = trigger;
         this.location = location;
         this.navigationTarget = navigationTarget;
+        this.activationState = activationState;
     }
 
     /**
@@ -88,15 +94,6 @@ public class BeforeNavigationEvent extends EventObject {
      */
     public Location getLocation() {
         return location;
-    }
-
-    /**
-     * Gets the UI in which the view is shown.
-     *
-     * @return the UI, not {@code null}
-     */
-    public UI getUI() {
-        return ui;
     }
 
     /**
@@ -143,27 +140,6 @@ public class BeforeNavigationEvent extends EventObject {
     }
 
     /**
-     * Gets the HTTP status code that will be returned for the client if this
-     * location change is an initial rendering request.
-     *
-     * @return the http status code
-     */
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    /**
-     * Sets the HTTP status code that will be returned for the client if this
-     * location change is an initial rendering request.
-     *
-     * @param statusCode
-     *            the http status code
-     */
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    /**
      * Gets the reroute target to use if the user should be rerouted to some
      * other view.
      *
@@ -181,8 +157,12 @@ public class BeforeNavigationEvent extends EventObject {
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
      *            previously set reroute target
+     * @param routeTargetType
+     *            the component type to display, not {@code null}
      */
-    public void rerouteTo(NavigationHandler rerouteTarget) {
+    public void rerouteTo(NavigationHandler rerouteTarget,
+            Class<? extends Component> routeTargetType) {
+        this.routeTarget = routeTargetType;
         this.rerouteTarget = rerouteTarget;
     }
 
@@ -194,18 +174,34 @@ public class BeforeNavigationEvent extends EventObject {
      *            the component type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends Component> routeTargetType) {
-        rerouteTo(new StaticRouteTargetRenderer(routeTargetType));
+        rerouteTo(new StaticRouteTargetRenderer(routeTargetType),
+                routeTargetType);
     }
 
+    /**
+     * Get the route target for rerouting
+     * 
+     * @return route target
+     */
+    public Class<? extends Component> getRouteTarget() {
+        return routeTarget;
+    }
+
+    /**
+     * Get the navigation target.
+     * 
+     * @return navigation target
+     */
     public Class<?> getNavigationTarget() {
         return navigationTarget;
     }
 
-//    /**
-//     * Postpone navigation until action.proceed() is called or another
-//     * navigation action has been done.
-//     */
-//    public ContinueNavigationAction postpone() {
-//
-//    }
+    /**
+     * Get current navigation state change direction.
+     * 
+     * @return activating or deactivating
+     */
+    public ActivationState getActivationState() {
+        return activationState;
+    }
 }

@@ -17,12 +17,13 @@ package com.vaadin.flow.router;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Title;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.router.event.ActivationState;
+import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.router.event.BeforeNavigationListener;
+import com.vaadin.flow.router.event.EventUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -74,10 +75,21 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         Class<? extends Component> routeTargetType = getRouteTargetType(event);
 
         assert routeTargetType != null;
+
         BeforeNavigationEvent beforeNavigation = new BeforeNavigationEvent(
-                event, routeTargetType);
+                event, routeTargetType, ActivationState.DEACTIVATING);
+
         // inform deactivating components that we are leaving.
-        callBeforeNavigation(ui.getElement(), beforeNavigation);
+        List<BeforeNavigationListener> listeners = EventUtil
+                .collectBeforeNavigation(ui.getElement());
+        for (BeforeNavigationListener listener : listeners) {
+            listener.beforeNavigation(beforeNavigation);
+            // Redirect here if rerouting set in deactivating chain.
+            if (beforeNavigation.getRerouteTarget().isPresent()) {
+                return reroute(event, beforeNavigation.getRerouteTarget().get(),
+                        beforeNavigation.getRouteTarget());
+            }
+        }
 
         Component componentInstance = getRouteTarget(routeTargetType, event);
 
@@ -85,8 +97,18 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         routeTargetChain.add(componentInstance);
 
         // inform activating components that we are coming.
-        routeTargetChain.forEach(component -> callBeforeNavigation(
-                component.getElement(), beforeNavigation));
+        beforeNavigation = new BeforeNavigationEvent(event, routeTargetType,
+                ActivationState.ACTIVATING);
+        listeners = EventUtil.collectBeforeNavigation(routeTargetChain);
+
+        for (BeforeNavigationListener listener : listeners) {
+            listener.beforeNavigation(beforeNavigation);
+            // Redirect here if rerouting set in activating chain.
+            if (beforeNavigation.getRerouteTarget().isPresent()) {
+                return reroute(event, beforeNavigation.getRerouteTarget().get(),
+                        beforeNavigation.getRouteTarget());
+            }
+        }
 
         NewLocationChangeEvent locationChangeEvent = createEvent(event,
                 routeTargetChain);
@@ -99,42 +121,17 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         return locationChangeEvent.getStatusCode();
     }
 
-    private void callBeforeNavigation(Element element,
-            BeforeNavigationEvent beforeNavigation) {
-        List<BeforeNavigationListener> listeners = getBeforeNavigationListenerComponents(
-                flattenChildren(element)).collect(Collectors.toList());
-        for (BeforeNavigationListener listener : listeners) {
-            listener.beforeNavigation(beforeNavigation);
-        }
-    }
+    private int reroute(NavigationEvent event, NavigationHandler handler,
+            Class<? extends Component> target) {
+        Location location = new Location(
+                target.getAnnotation(Route.class).value());
 
-    /**
-     * Collect all children for given node as a Element stream.
-     * 
-     * @param node
-     *            start node to collect child elements from
-     * @return stream of Elements
-     */
-    private Stream<Element> flattenChildren(Element node) {
-        if (node.getChildCount() > 0) {
-            return Stream.concat(Stream.of(node),
-                    node.getChildren().flatMap(this::flattenChildren));
-        }
-        return Stream.of(node);
-    }
+        NavigationEvent newNavigationEvent = new NavigationEvent(
+                event.getSource(), location, event.getUI(),
+                NavigationTrigger.PROGRAMMATIC);
 
-    /**
-     * Collect elements with Component implementing BeforeNavigationListener.
-     *
-     * @param elementStream collected elements
-     * @return
-     */
-    private Stream<BeforeNavigationListener> getBeforeNavigationListenerComponents(
-            Stream<Element> elementStream) {
-        return elementStream.flatMap(
-                o -> o.getComponent().map(Stream::of).orElseGet(Stream::empty))
-                .filter(component -> component instanceof BeforeNavigationListener)
-                .map(component -> (BeforeNavigationListener) component);
+        event.getUI().getPage().getHistory().pushState(null, location);
+        return handler.handle(newNavigationEvent);
     }
 
     /**

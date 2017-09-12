@@ -16,7 +16,9 @@
 package com.vaadin.flow.router;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +30,8 @@ import org.junit.Test;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
+import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.flow.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
@@ -38,6 +42,7 @@ public class NEW_RouterTest {
 
     private NewRouter router;
     private UI ui;
+    private static List<String> eventCollector = new ArrayList<>(0);
 
     @Route("")
     @Tag(Tag.DIV)
@@ -51,7 +56,23 @@ public class NEW_RouterTest {
 
     @Route("foo/bar")
     @Tag(Tag.DIV)
-    public static class FooBarNavigationTarget extends Component {
+    public static class FooBarNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("FooBar " + event.getActivationState());
+        }
+    }
+
+    @Route("reroute")
+    @Tag(Tag.DIV)
+    public static class ReroutingNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Redirecting");
+            event.rerouteTo(FooBarNavigationTarget.class);
+        }
     }
 
     @Route("navigation-target-with-title")
@@ -82,6 +103,7 @@ public class NEW_RouterTest {
             IllegalArgumentException, IllegalAccessException {
         router = new NewRouter();
         ui = new RouterTestUI(router);
+        eventCollector.clear();
         Field field = RouteRegistry.getInstance().getClass()
                 .getDeclaredField("initialized");
         field.setAccessible(true);
@@ -115,6 +137,59 @@ public class NEW_RouterTest {
         router.navigate(ui, new Location("navigation-target-with-title"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Custom Title", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void test_before_navigation_event_is_triggered()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
+                        FooNavigationTarget.class, FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("foo/bar"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
+
+    }
+
+    @Test
+    public void test_before_navigation_event_is_triggered_for_attach_and_detach()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
+                        FooNavigationTarget.class, FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("foo/bar"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
+        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(0));
+
+        router.navigate(ui, new Location("foo"), NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 2, eventCollector.size());
+        Assert.assertEquals("FooBar DEACTIVATING", eventCollector.get(1));
+    }
+
+    @Test
+    public void test_reroute_on_before_navigation_event()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
+                        ReroutingNavigationTarget.class, FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        router.navigate(ui, new Location("reroute"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2, eventCollector.size());
+
+        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+
+        Assert.assertEquals("Redirecting", eventCollector.get(0));
+        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(1));
     }
 
     private Class<? extends Component> getUIComponent() {

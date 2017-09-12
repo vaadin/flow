@@ -13,19 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.router.event;
 
 /**
- * Event sent to the active and de-active navigation chain instances
- * implementing this interface before navigation happens.
- *
+ * Enumeration for knowing in which activation state a event is fired for.
+ * 
  * @author Vaadin Ltd
  */
-public interface BeforeNavigationListener {
+public enum ActivationState {
 
     /**
-     *
-     * @param event
+     * Components will be activated
      */
-    void beforeNavigation(BeforeNavigationEvent event);
+    ACTIVATING,
+
+    /**
+     * Components will be deactivated
+     */
+    DEACTIVATING
 }
