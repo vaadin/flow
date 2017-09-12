@@ -23,7 +23,7 @@
                     <plugin>
                         <groupId>com.github.eirslett</groupId>
                         <artifactId>frontend-maven-plugin</artifactId>
-                        <version>1.4</version>
+                        <version>${frontend.maven.plugin.version}</version>
                         <configuration>
                             <nodeVersion>${node.version}</nodeVersion>
                             <npmVersion>${npm.version}</npmVersion>
@@ -77,6 +77,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-clean-plugin</artifactId>
+                        <version>${maven.clean.plugin.version}</version>
                         <!-- Clean up generated sources and downloaded webcomponents -->
                         <configuration>
                             <filesets>

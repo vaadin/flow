@@ -15,20 +15,22 @@
  */
 package com.vaadin.generated.paper.input;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -41,7 +43,7 @@ import com.vaadin.shared.Registration;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-input#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: paper-input#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-input")
 @HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
@@ -100,11 +102,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**
@@ -134,11 +134,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return get();
 	}
 
 	/**
@@ -168,13 +166,11 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public void setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return get();
 	}
 
 	/**
@@ -188,11 +184,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	/**
 	 * @param keyBindings
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return get();
 	}
 
 	/**
@@ -228,11 +222,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param label
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public void setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return get();
 	}
 
 	/**
@@ -262,12 +254,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param value
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
 	@Override
-	public R setValue(java.lang.String value) {
+	public void setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
-		return get();
 	}
 
 	/**
@@ -310,11 +300,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public void setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
-		return get();
 	}
 
 	/**
@@ -348,12 +336,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param allowedPattern
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAllowedPattern(java.lang.String allowedPattern) {
+	public void setAllowedPattern(java.lang.String allowedPattern) {
 		getElement().setProperty("allowedPattern",
 				allowedPattern == null ? "" : allowedPattern);
-		return get();
 	}
 
 	/**
@@ -361,10 +347,12 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The type of the input. The supported types are {@code text},
-	 * {@code number} and {@code password}. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the
-	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * The type of the input. The supported types are the <a href=
+	 * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_&lt;input&gt;_types"
+	 * >native input's types</a>. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the (Polymer 1)
+	 * {@code <input is="iron-input">}'s or (Polymer 2) {@code <iron-input>}'s
+	 * {@code type} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -379,19 +367,19 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The type of the input. The supported types are {@code text},
-	 * {@code number} and {@code password}. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the
-	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * The type of the input. The supported types are the <a href=
+	 * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_&lt;input&gt;_types"
+	 * >native input's types</a>. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the (Polymer 1)
+	 * {@code <input is="iron-input">}'s or (Polymer 2) {@code <iron-input>}'s
+	 * {@code type} property.
 	 * </p>
 	 * 
 	 * @param type
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setType(java.lang.String type) {
+	public void setType(java.lang.String type) {
 		getElement().setProperty("type", type == null ? "" : type);
-		return get();
 	}
 
 	/**
@@ -425,11 +413,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param list
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setList(java.lang.String list) {
+	public void setList(java.lang.String list) {
 		getElement().setProperty("list", list == null ? "" : list);
-		return get();
 	}
 
 	/**
@@ -461,11 +447,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param pattern
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setPattern(java.lang.String pattern) {
+	public void setPattern(java.lang.String pattern) {
 		getElement().setProperty("pattern", pattern == null ? "" : pattern);
-		return get();
 	}
 
 	/**
@@ -503,11 +487,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param required
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public void setRequired(boolean required) {
 		getElement().setProperty("required", required);
-		return get();
 	}
 
 	/**
@@ -539,12 +521,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param errorMessage
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setErrorMessage(java.lang.String errorMessage) {
+	public void setErrorMessage(java.lang.String errorMessage) {
 		getElement().setProperty("errorMessage",
 				errorMessage == null ? "" : errorMessage);
-		return get();
 	}
 
 	/**
@@ -572,11 +552,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param charCounter
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setCharCounter(boolean charCounter) {
+	public void setCharCounter(boolean charCounter) {
 		getElement().setProperty("charCounter", charCounter);
-		return get();
 	}
 
 	/**
@@ -610,11 +588,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param noLabelFloat
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoLabelFloat(boolean noLabelFloat) {
+	public void setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
-		return get();
 	}
 
 	/**
@@ -646,11 +622,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param alwaysFloatLabel
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
-		return get();
 	}
 
 	/**
@@ -684,11 +658,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param autoValidate
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutoValidate(boolean autoValidate) {
+	public void setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
-		return get();
 	}
 
 	/**
@@ -720,12 +692,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param validator
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setValidator(java.lang.String validator) {
+	public void setValidator(java.lang.String validator) {
 		getElement().setProperty("validator",
 				validator == null ? "" : validator);
-		return get();
 	}
 
 	/**
@@ -757,12 +727,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param autocomplete
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutocomplete(java.lang.String autocomplete) {
+	public void setAutocomplete(java.lang.String autocomplete) {
 		getElement().setProperty("autocomplete",
 				autocomplete == null ? "" : autocomplete);
-		return get();
 	}
 
 	/**
@@ -794,11 +762,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param autofocus
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public void setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
-		return get();
 	}
 
 	/**
@@ -830,12 +796,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param inputmode
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setInputmode(java.lang.String inputmode) {
+	public void setInputmode(java.lang.String inputmode) {
 		getElement().setProperty("inputmode",
 				inputmode == null ? "" : inputmode);
-		return get();
 	}
 
 	/**
@@ -867,11 +831,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param minlength
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMinlength(double minlength) {
+	public void setMinlength(double minlength) {
 		getElement().setProperty("minlength", minlength);
-		return get();
 	}
 
 	/**
@@ -903,11 +865,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param maxlength
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMaxlength(double maxlength) {
+	public void setMaxlength(double maxlength) {
 		getElement().setProperty("maxlength", maxlength);
-		return get();
 	}
 
 	/**
@@ -939,11 +899,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param min
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMin(java.lang.String min) {
+	public void setMin(java.lang.String min) {
 		getElement().setProperty("min", min == null ? "" : min);
-		return get();
 	}
 
 	/**
@@ -977,11 +935,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param max
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMax(java.lang.String max) {
+	public void setMax(java.lang.String max) {
 		getElement().setProperty("max", max == null ? "" : max);
-		return get();
 	}
 
 	/**
@@ -1013,11 +969,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param step
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setStep(java.lang.String step) {
+	public void setStep(java.lang.String step) {
 		getElement().setProperty("step", step == null ? "" : step);
-		return get();
 	}
 
 	/**
@@ -1045,11 +999,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param name
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public void setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return get();
 	}
 
 	/**
@@ -1079,12 +1031,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param placeholder
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setPlaceholder(java.lang.String placeholder) {
+	public void setPlaceholder(java.lang.String placeholder) {
 		getElement().setProperty("placeholder",
 				placeholder == null ? "" : placeholder);
-		return get();
 	}
 
 	/**
@@ -1116,11 +1066,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param readonly
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setReadonly(boolean readonly) {
+	public void setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
-		return get();
 	}
 
 	/**
@@ -1152,11 +1100,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param size
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setSize(double size) {
+	public void setSize(double size) {
 		getElement().setProperty("size", size);
-		return get();
 	}
 
 	/**
@@ -1188,12 +1134,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param autocapitalize
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutocapitalize(java.lang.String autocapitalize) {
+	public void setAutocapitalize(java.lang.String autocapitalize) {
 		getElement().setProperty("autocapitalize",
 				autocapitalize == null ? "" : autocapitalize);
-		return get();
 	}
 
 	/**
@@ -1225,12 +1169,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param autocorrect
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutocorrect(java.lang.String autocorrect) {
+	public void setAutocorrect(java.lang.String autocorrect) {
 		getElement().setProperty("autocorrect",
 				autocorrect == null ? "" : autocorrect);
-		return get();
 	}
 
 	/**
@@ -1262,11 +1204,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param autosave
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutosave(java.lang.String autosave) {
+	public void setAutosave(java.lang.String autosave) {
 		getElement().setProperty("autosave", autosave == null ? "" : autosave);
-		return get();
 	}
 
 	/**
@@ -1298,11 +1238,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param results
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setResults(double results) {
+	public void setResults(double results) {
 		getElement().setProperty("results", results);
-		return get();
 	}
 
 	/**
@@ -1334,11 +1272,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param accept
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAccept(java.lang.String accept) {
+	public void setAccept(java.lang.String accept) {
 		getElement().setProperty("accept", accept == null ? "" : accept);
-		return get();
 	}
 
 	/**
@@ -1370,11 +1306,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * 
 	 * @param multiple
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMultiple(boolean multiple) {
+	public void setMultiple(boolean multiple) {
 		getElement().setProperty("multiple", multiple);
-		return get();
 	}
 
 	/**

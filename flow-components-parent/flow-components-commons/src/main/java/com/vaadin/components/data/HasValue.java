@@ -134,7 +134,7 @@ extends ComponentSupplier<C>, Serializable {
      * @throws IllegalArgumentException
      *             if the value is invalid
      */
-    C setValue(V value);
+    void setValue(V value);
 
     /**
      * Returns the current value of this object.

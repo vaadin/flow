@@ -2,7 +2,7 @@
   "name": "paper-input",
   "tag": "paper-input",
   "baseUrl": "paper-input/paper-input.html",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "properties": [
     {
       "name": "focused",
@@ -83,7 +83,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The type of the input. The supported types are `text`, `number` and `password`.\nIf you're using PaperInputBehavior to implement your own paper-input-like element,\nbind this to the `<input is=\"iron-input\">`'s `type` property.\n       "
+      "description": "The type of the input. The supported types are the\n[native input's types](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_<input>_types).\nIf you're using PaperInputBehavior to implement your own paper-input-like element,\nbind this to the (Polymer 1) `<input is=\"iron-input\">`'s or (Polymer 2)\n`<iron-input>`'s `type` property.\n       "
     },
     {
       "name": "list",

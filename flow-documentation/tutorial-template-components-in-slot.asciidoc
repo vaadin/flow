@@ -9,7 +9,7 @@ This means that the template needs to have a `<slot></slot>` to mark the place w
 For example you could have the html template built something like this:
 [source,html]
 ----
-<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
 
 <dom-module id="component-container">
     <template>
@@ -99,7 +99,7 @@ A `PolymerTemplate` class can be used as a parent view by using the `<slot></slo
 To define a parent view that shows the actual view below a heading a and a menu, `MainLayout.html` could look like this:
 [source,html]
 ----
-<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/polymer/polymer-element.html">
 
 <dom-module id="main-layout">
     <template>

@@ -13,25 +13,64 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.generated.vaadin.date.picker;
+package com.vaadin.generated.vaadin.dialog;
 
-import javax.annotation.Generated;
-
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.components.NotSupported;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentSupplier;
 import com.vaadin.ui.HasStyle;
-
-import elemental.json.JsonArray;
+import javax.annotation.Generated;
+import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import elemental.json.JsonObject;
+import elemental.json.JsonArray;
+import com.vaadin.components.NotSupported;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * {@code <vaadin-dialog>} is a Polymer 2 element for customised modal dialogs.
+ * </p>
+ * <p>
+ * {@code }
+ * <code>html &lt;vaadin-dialog opened&gt; &lt;template&gt; Sample dialog &lt;/template&gt; &lt;/vaadin-dialog&gt; {@code }</code>
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * <th>Theme for Element</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code backdrop}</td>
+ * <td>Backdrop of the overlay</td>
+ * <td>vaadin-dialog-overlay</td>
+ * </tr>
+ * <tr>
+ * <td>{@code content}</td>
+ * <td>Content of the overlay</td>
+ * <td>vaadin-dialog-overlay</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: InfiniteScrollerElement#2.0.2", "Flow#0.1-SNAPSHOT"})
-@Tag("vaadin-infinite-scroller")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-infinite-scroller.html")
-public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
+		"WebComponent: Vaadin.VaadinDialog#null", "Flow#0.1-SNAPSHOT"})
+@Tag("vaadin-dialog")
+@HtmlImport("frontend://bower_components/vaadin-dialog/vaadin-dialog.html")
+public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 		extends
 			Component implements ComponentSupplier<R>, HasStyle {
 
@@ -40,16 +79,15 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Count of individual items in each buffer. The scroller has 2 buffers
-	 * altogether so bufferSize of 20 will result in 40 buffered DOM items in
-	 * total. Changing after initialization not supported.
+	 * True if the overlay is currently displayed.
 	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
+	 * This property is synchronized automatically from client side when a
+	 * 'opened-changed' event happens.
 	 * </p>
 	 */
-	public double getBufferSize() {
-		return getElement().getProperty("bufferSize", 0.0);
+	@Synchronize(property = "opened", value = "opened-changed")
+	public boolean isOpened() {
+		return getElement().getProperty("opened", false);
 	}
 
 	/**
@@ -57,32 +95,75 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Count of individual items in each buffer. The scroller has 2 buffers
-	 * altogether so bufferSize of 20 will result in 40 buffered DOM items in
-	 * total. Changing after initialization not supported.
+	 * True if the overlay is currently displayed.
 	 * </p>
 	 * 
-	 * @param bufferSize
-	 *            the double value to set
-	 */
-	public void setBufferSize(double bufferSize) {
-		getElement().setProperty("bufferSize", bufferSize);
-	}
-
-	/**
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 */
-	public boolean isActive() {
-		return getElement().getProperty("active", false);
-	}
-
-	/**
-	 * @param active
+	 * @param opened
 	 *            the boolean value to set
 	 */
-	public void setActive(boolean active) {
-		getElement().setProperty("active", active);
+	public void setOpened(boolean opened) {
+		getElement().setProperty("opened", opened);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to disable closing dialog on outside click
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 */
+	public boolean isNoCloseOnOutsideClick() {
+		return getElement().getProperty("noCloseOnOutsideClick", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to disable closing dialog on outside click
+	 * </p>
+	 * 
+	 * @param noCloseOnOutsideClick
+	 *            the boolean value to set
+	 */
+	public void setNoCloseOnOutsideClick(boolean noCloseOnOutsideClick) {
+		getElement()
+				.setProperty("noCloseOnOutsideClick", noCloseOnOutsideClick);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to disable closing dialog on Escape press
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 */
+	public boolean isNoCloseOnEsc() {
+		return getElement().getProperty("noCloseOnEsc", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to disable closing dialog on Escape press
+	 * </p>
+	 * 
+	 * @param noCloseOnEsc
+	 *            the boolean value to set
+	 */
+	public void setNoCloseOnEsc(boolean noCloseOnEsc) {
+		getElement().setProperty("noCloseOnEsc", noCloseOnEsc);
 	}
 
 	/**
@@ -109,24 +190,6 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	protected void setProperties(JsonObject props,
 			elemental.json.JsonObject setReadOnly) {
 		getElement().callFunction("setProperties", props, setReadOnly);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
-		getElement().callFunction("linkPaths", to, from);
 	}
 
 	/**
@@ -180,6 +243,24 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
+	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
 	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
@@ -199,7 +280,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	protected void unlinkPaths(elemental.json.JsonObject path) {
+	public void unlinkPaths(java.lang.String path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -218,7 +299,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	public void unlinkPaths(java.lang.String path) {
+	protected void unlinkPaths(elemental.json.JsonObject path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -290,7 +371,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
+	protected void get(elemental.json.JsonObject path,
+			elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -319,8 +401,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
+	protected void get(java.lang.String path, elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -595,5 +676,20 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	@NotSupported
 	protected void resolveUrl(java.lang.String url,
 			elemental.json.JsonObject base) {
+	}
+
+	@DomEvent("opened-changed")
+	public static class OpenedChangeEvent<R extends GeneratedVaadinDialog<R>>
+			extends
+				ComponentEvent<R> {
+		public OpenedChangeEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent<R>> listener) {
+		return addListener(OpenedChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 }
