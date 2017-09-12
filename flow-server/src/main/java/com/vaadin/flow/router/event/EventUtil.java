@@ -40,7 +40,7 @@ public final class EventUtil {
      *            element to search from
      * @return navigation listeners
      */
-    public static List<BeforeNavigationListener> collectBeforeNavigation(
+    public static List<BeforeNavigationListener> collectBeforeNavigationListeners(
             Element element) {
         return getListenerComponents(flattenChildren(element),
                 BeforeNavigationListener.class).collect(Collectors.toList());
@@ -54,7 +54,7 @@ public final class EventUtil {
      *            components to search
      * @return navigation listeners
      */
-    public static List<BeforeNavigationListener> collectBeforeNavigation(
+    public static List<BeforeNavigationListener> collectBeforeNavigationListeners(
             List<Component> components) {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));

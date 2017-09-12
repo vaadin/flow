@@ -15,14 +15,9 @@
  */
 package com.vaadin.flow.router.event;
 
-import java.util.Collections;
 import java.util.EventObject;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationTrigger;
@@ -43,8 +38,8 @@ public class BeforeNavigationEvent extends EventObject {
 
     private NavigationHandler rerouteTarget;
 
-    private Class<?> navigationTarget;
-    private Class<? extends Component> routeTarget;
+    private final Class<?> navigationTarget;
+    private Class<? extends Component> routeTargetType;
 
     /**
      * Construct event from a NavigationEvent.
@@ -72,6 +67,8 @@ public class BeforeNavigationEvent extends EventObject {
      *            not <code>null</code>
      * @param location
      *            the new location, not {@code null}
+     * @param navigationTarget
+     *            navigation target class
      * @param activationState
      *            activation state that is handled
      */
@@ -110,34 +107,6 @@ public class BeforeNavigationEvent extends EventObject {
         return trigger;
     }
 
-    /**
-     * Gets the query parameters used for navigation. If only the first value of
-     * parameter list is important, please use
-     * {@link LocationChangeEvent#getQueryParameter(String)}
-     *
-     * @return the query parameters, not {@code null}
-     */
-    public Map<String, List<String>> getQueryParameters() {
-        return location.getQueryParameters().getParameters();
-    }
-
-    /**
-     * Gets first parameter that corresponds to specified {@code parameterName}.
-     * If there are multiple parameters corresponding to the same
-     * {@code parameterName}, the first one will be returned. To access all
-     * parameters, use {@link LocationChangeEvent#getQueryParameters()} method.
-     *
-     * @param parameterName
-     *            the name of a parameter to get
-     * @return first corresponding query parameter or {@link Optional#empty()},
-     *         if no parameters found for {@code parameterName} specified
-     */
-    public Optional<String> getQueryParameter(String parameterName) {
-        return location.getQueryParameters().getParameters()
-                .getOrDefault(parameterName, Collections.emptyList()).stream()
-                .findFirst();
-    }
-
     @Override
     public RouterInterface getSource() {
         return (RouterInterface) super.getSource();
@@ -174,7 +143,7 @@ public class BeforeNavigationEvent extends EventObject {
      */
     public void rerouteTo(NavigationHandler rerouteTarget,
             Class<? extends Component> routeTargetType) {
-        this.routeTarget = routeTargetType;
+        this.routeTargetType = routeTargetType;
         this.rerouteTarget = rerouteTarget;
     }
 
@@ -195,8 +164,8 @@ public class BeforeNavigationEvent extends EventObject {
      * 
      * @return route target
      */
-    public Class<? extends Component> getRouteTarget() {
-        return routeTarget;
+    public Class<? extends Component> getRouteTargetType() {
+        return routeTargetType;
     }
 
     /**

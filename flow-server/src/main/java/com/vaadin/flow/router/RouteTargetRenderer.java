@@ -78,16 +78,10 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
 
         BeforeNavigationEvent beforeNavigation = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.DEACTIVATING);
-
-        // inform deactivating components that we are leaving.
         List<BeforeNavigationListener> listeners = EventUtil
-                .collectBeforeNavigation(ui.getElement());
-        for (BeforeNavigationListener listener : listeners) {
-            listener.beforeNavigation(beforeNavigation);
-            // Redirect here if rerouting set in deactivating chain.
-            if (beforeNavigation.hasRerouteTarget()) {
-                return reroute(event, beforeNavigation);
-            }
+                .collectBeforeNavigationListeners(ui.getElement());
+        if (executeBeforeNavigation(beforeNavigation, listeners)) {
+            return reroute(event, beforeNavigation);
         }
 
         Component componentInstance = getRouteTarget(routeTargetType, event);
@@ -95,17 +89,12 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         List<Component> routeTargetChain = new ArrayList<>();
         routeTargetChain.add(componentInstance);
 
-        // inform activating components that we are coming.
         beforeNavigation = new BeforeNavigationEvent(event, routeTargetType,
                 ActivationState.ACTIVATING);
-        listeners = EventUtil.collectBeforeNavigation(routeTargetChain);
-
-        for (BeforeNavigationListener listener : listeners) {
-            listener.beforeNavigation(beforeNavigation);
-            // Redirect here if rerouting set in activating chain.
-            if (beforeNavigation.hasRerouteTarget()) {
-                return reroute(event, beforeNavigation);
-            }
+        listeners = EventUtil
+                .collectBeforeNavigationListeners(routeTargetChain);
+        if (executeBeforeNavigation(beforeNavigation, listeners)) {
+            return reroute(event, beforeNavigation);
         }
 
         NewLocationChangeEvent locationChangeEvent = createEvent(event,
@@ -119,11 +108,24 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
         return locationChangeEvent.getStatusCode();
     }
 
+    private boolean executeBeforeNavigation(
+            BeforeNavigationEvent beforeNavigation,
+            List<BeforeNavigationListener> listeners) {
+        for (BeforeNavigationListener listener : listeners) {
+            listener.beforeNavigation(beforeNavigation);
+
+            if (beforeNavigation.hasRerouteTarget()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private int reroute(NavigationEvent event,
             BeforeNavigationEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getRerouteTarget();
 
-        Location location = new Location(beforeNavigation.getRouteTarget()
+        Location location = new Location(beforeNavigation.getRouteTargetType()
                 .getAnnotation(Route.class).value());
 
         NavigationEvent newNavigationEvent = new NavigationEvent(
