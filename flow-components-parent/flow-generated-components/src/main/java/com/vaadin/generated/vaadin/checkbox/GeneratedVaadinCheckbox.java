@@ -15,22 +15,23 @@
  */
 package com.vaadin.generated.vaadin.checkbox;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.Focusable;
-import com.vaadin.ui.HasClickListeners;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+import java.util.Objects;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.Tag;
 import com.vaadin.components.data.HasValue;
-import java.util.Objects;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.Focusable;
+import com.vaadin.ui.HasClickListeners;
 import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasStyle;
 
 /**
  * <p>
@@ -104,7 +105,7 @@ import com.vaadin.ui.HasComponents;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha2",
+		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha4",
 		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
@@ -144,11 +145,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 
 	 * @param autofocus
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutofocus(boolean autofocus) {
+	public void setAutofocus(boolean autofocus) {
 		getElement().setProperty("autofocus", autofocus);
-		return get();
 	}
 
 	/**
@@ -191,11 +190,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**
@@ -225,14 +222,12 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 
 	 * @param value
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
 	@Override
-	public R setValue(java.lang.Boolean value) {
+	public void setValue(java.lang.Boolean value) {
 		Objects.requireNonNull(value,
 				"GeneratedVaadinCheckbox value must not be null");
 		getElement().setProperty("checked", value);
-		return get();
 	}
 
 	/**
@@ -267,11 +262,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 
 	 * @param indeterminate
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setIndeterminate(boolean indeterminate) {
+	public void setIndeterminate(boolean indeterminate) {
 		getElement().setProperty("indeterminate", indeterminate);
-		return get();
 	}
 
 	/**
@@ -299,11 +292,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 
 	 * @param name
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public void setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return get();
 	}
 
 	/**
@@ -333,11 +324,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * 
 	 * @param postValue
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setPostValue(java.lang.String postValue) {
+	public void setPostValue(java.lang.String postValue) {
 		getElement().setProperty("value", postValue == null ? "" : postValue);
-		return get();
 	}
 
 	@Override

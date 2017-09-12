@@ -48,6 +48,7 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
@@ -101,7 +102,8 @@ public class ComponentGenerator {
     private String classNamePrefix;
     private String licenseNote;
     private String frontendDirectory = "bower_components/";
-    private boolean fluentSetters = true;
+    // https://github.com/vaadin/flow/issues/2370
+    private boolean fluentSetters;
 
     private final JavaDocFormatter javaDocFormatter = new JavaDocFormatter();
 
@@ -823,8 +825,7 @@ public class ComponentGenerator {
      * The "value" also cannot be multi-typed.
      */
     private boolean shouldImplementHasValue(ComponentMetadata metadata) {
-        if (metadata.getProperties() == null || metadata.getEvents() == null
-                || !fluentSetters) {
+        if (metadata.getProperties() == null || metadata.getEvents() == null) {
             return false;
         }
 
@@ -881,11 +882,11 @@ public class ComponentGenerator {
 
             if (fluentSetters) {
                 addFluentReturnToMethod(method);
+            }
 
-                if ("value".equals(propertyJavaName)
-                        && shouldImplementHasValue(metadata)) {
-                    method.addAnnotation(Override.class);
-                }
+            if ("value".equals(propertyJavaName)
+                    && shouldImplementHasValue(metadata)) {
+                method.addAnnotation(Override.class);
             }
 
         } else {
@@ -919,16 +920,15 @@ public class ComponentGenerator {
 
                 if (fluentSetters) {
                     addFluentReturnToMethod(method);
+                }
+                if ("value".equals(propertyJavaName)
+                        && shouldImplementHasValue(metadata)) {
 
-                    if ("value".equals(propertyJavaName)
-                            && shouldImplementHasValue(metadata)) {
-
-                        method.addAnnotation(Override.class);
-                        if (setterType.isPrimitive()) {
-                            implementHasValueSetterWithPimitiveType(javaClass,
-                                    property, method, setterType,
-                                    parameterName);
-                        }
+                    method.addAnnotation(Override.class);
+                    if (setterType.isPrimitive()) {
+                        implementHasValueSetterWithPimitiveType(javaClass,
+                                property, method, setterType,
+                                parameterName);
                     }
                 }
             }
@@ -973,7 +973,9 @@ public class ComponentGenerator {
             overloadMethod.getJavaDoc().addTagValue(JAVADOC_SEE,
                     "#setValue(Double)");
 
-            addFluentReturnToMethod(overloadMethod);
+            if (fluentSetters) {
+                addFluentReturnToMethod(overloadMethod);
+            }
         }
     }
 

@@ -15,18 +15,20 @@
  */
 package com.vaadin.generated.paper.input;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
+
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import elemental.json.JsonObject;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+
+import elemental.json.JsonObject;
 
 /**
  * <p>
@@ -245,7 +247,7 @@ import com.vaadin.shared.Registration;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-input-container#2.0.1", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: paper-input-container#2.0.2", "Flow#0.1-SNAPSHOT"})
 @Tag("paper-input-container")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-container.html")
 public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer<R>>
@@ -279,11 +281,9 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * 
 	 * @param noLabelFloat
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setNoLabelFloat(boolean noLabelFloat) {
+	public void setNoLabelFloat(boolean noLabelFloat) {
 		getElement().setProperty("noLabelFloat", noLabelFloat);
-		return get();
 	}
 
 	/**
@@ -311,11 +311,9 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * 
 	 * @param alwaysFloatLabel
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAlwaysFloatLabel(boolean alwaysFloatLabel) {
+	public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
-		return get();
 	}
 
 	/**
@@ -343,12 +341,10 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * 
 	 * @param attrForValue
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAttrForValue(java.lang.String attrForValue) {
+	public void setAttrForValue(java.lang.String attrForValue) {
 		getElement().setProperty("attrForValue",
 				attrForValue == null ? "" : attrForValue);
-		return get();
 	}
 
 	/**
@@ -376,11 +372,9 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * 
 	 * @param autoValidate
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAutoValidate(boolean autoValidate) {
+	public void setAutoValidate(boolean autoValidate) {
 		getElement().setProperty("autoValidate", autoValidate);
-		return get();
 	}
 
 	/**
@@ -412,11 +406,9 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * 
 	 * @param invalid
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setInvalid(boolean invalid) {
+	public void setInvalid(boolean invalid) {
 		getElement().setProperty("invalid", invalid);
-		return get();
 	}
 
 	/**

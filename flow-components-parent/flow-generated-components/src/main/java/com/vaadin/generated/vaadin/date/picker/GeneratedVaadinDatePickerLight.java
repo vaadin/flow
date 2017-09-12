@@ -105,11 +105,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param value
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setValue(java.lang.String value) {
+	public void setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
-		return get();
 	}
 
 	/**
@@ -137,11 +135,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param required
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public void setRequired(boolean required) {
 		getElement().setProperty("required", required);
-		return get();
 	}
 
 	/**
@@ -169,11 +165,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param name
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public void setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return get();
 	}
 
 	/**
@@ -222,12 +216,10 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param initialPosition
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setInitialPosition(java.lang.String initialPosition) {
+	public void setInitialPosition(java.lang.String initialPosition) {
 		getElement().setProperty("initialPosition",
 				initialPosition == null ? "" : initialPosition);
-		return get();
 	}
 
 	/**
@@ -255,11 +247,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param label
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setLabel(java.lang.String label) {
+	public void setLabel(java.lang.String label) {
 		getElement().setProperty("label", label == null ? "" : label);
-		return get();
 	}
 
 	/**
@@ -287,11 +277,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param opened
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public void setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return get();
 	}
 
 	/**
@@ -323,11 +311,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param showWeekNumbers
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setShowWeekNumbers(boolean showWeekNumbers) {
+	public void setShowWeekNumbers(boolean showWeekNumbers) {
 		getElement().setProperty("showWeekNumbers", showWeekNumbers);
-		return get();
 	}
 
 	/**
@@ -500,11 +486,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param i18n
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setI18n(elemental.json.JsonObject i18n) {
+	protected void setI18n(elemental.json.JsonObject i18n) {
 		getElement().setPropertyJson("i18n", i18n);
-		return get();
 	}
 
 	/**
@@ -550,11 +534,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param min
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMin(java.lang.String min) {
+	public void setMin(java.lang.String min) {
 		getElement().setProperty("min", min == null ? "" : min);
-		return get();
 	}
 
 	/**
@@ -598,11 +580,9 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param max
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setMax(java.lang.String max) {
+	public void setMax(java.lang.String max) {
 		getElement().setProperty("max", max == null ? "" : max);
-		return get();
 	}
 
 	/**
@@ -632,12 +612,10 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 * 
 	 * @param attrForValue
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAttrForValue(java.lang.String attrForValue) {
+	public void setAttrForValue(java.lang.String attrForValue) {
 		getElement().setProperty("attrForValue",
 				attrForValue == null ? "" : attrForValue);
-		return get();
 	}
 
 	/**

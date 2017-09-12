@@ -75,10 +75,9 @@ implements HasSize {
     }
 
     @Override
-    public TextField setValue(String value) {
+    public void setValue(String value) {
         if (!Objects.equals(value, getValue())) {
-            return super.setValue(value);
+            super.setValue(value);
         }
-        return this;
     }
 }

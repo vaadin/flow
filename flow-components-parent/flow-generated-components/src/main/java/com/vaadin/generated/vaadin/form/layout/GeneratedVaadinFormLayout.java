@@ -189,11 +189,9 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	</dl>
 
 	 * @param responsiveSteps the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setResponsiveSteps(elemental.json.JsonObject responsiveSteps) {
+	protected void setResponsiveSteps(elemental.json.JsonObject responsiveSteps) {
 		getElement().setPropertyJson("responsiveSteps", responsiveSteps);
-		return get();
 	}
 
 	/**
