@@ -862,8 +862,8 @@ public class Binder<BEAN> implements Serializable {
 
         private void updateValidationTarget(BindingValidationStatus<TARGET> status) {
             if (validationTarget != null) {
-                validationTarget.setInvalidNew(status.isError());
-                validationTarget.setErrorMessageNew(status.getMessage().orElse(""));
+                validationTarget.setInvalid(status.isError());
+                validationTarget.setErrorMessage(status.getMessage().orElse(""));
             }
         }
 
