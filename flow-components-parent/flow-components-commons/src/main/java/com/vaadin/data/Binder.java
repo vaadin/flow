@@ -876,7 +876,6 @@ public class Binder<BEAN> implements Serializable {
             onValueChange.remove();
             try {
                 getField().setValue(convertDataToFieldType(bean));
-                doValidation();
             } finally {
                 onValueChange = getField()
                         .addValueChangeListener(this::handleFieldValueChange);
