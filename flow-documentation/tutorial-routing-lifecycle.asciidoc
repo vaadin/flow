@@ -1,0 +1,65 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Navigation Lifecycle
+
+During the navigation lifecycle the activating and deactivating components will get a number of different lifecycle state events.
+
+== BeforeNavigationEvent
+
+Any `Component` in the activating or deactivating navigation target chain will receive a `BeforeNavigationEvent` if they extend the `BeforeNavigationListener` *interface*.
+
+This holds also true for listener implementation in a node component found from the root target e.g.
+[source,java]
+----
+@Route("")
+@Tag("main-layout")
+@HtmlImport("frontend://com/example//MainLayout.html")
+public class MainLayout extends PolymerTemplate<TemplateModel> {
+
+    public MainLayout() {
+        SideElement side = new SideElement();
+        getElement().appendChild(side.getElement());
+    }
+}
+
+public class SideElement extends Div implements BeforeNavigationListener {
+    @Override
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        // Handle for instance before navigation clean up
+    }
+}
+----
+
+
+==== Reroute
+The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need show completely different information in some state.
+Rerouting can happen from a listener in the detaching or the attaching chain.
+
+In this example the reroute would happen on attach of BlogList when it receives no results.
+[source,java]
+----
+@Route("no-items")
+public class NoItemsView extends Div {
+  public NoItemsView() {
+    setText("No items found.");
+  }
+}
+
+@Route("blog")
+public class BlogList extends Div implements BeforeNavigationListener {
+  @Override
+  public void beforeNavigation(BeforeNavigationEvent event) {
+    // implementation omitted
+    Object record = getItem();
+
+    if (record == null) {
+      event.rerouteTo(NoItemsView.class);
+    }
+  }
+
+  private Object getItem() {
+    // no-op implementation
+    return null;
+  }
+}
+----
