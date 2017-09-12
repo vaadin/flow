@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.Jsoup;
+import org.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;

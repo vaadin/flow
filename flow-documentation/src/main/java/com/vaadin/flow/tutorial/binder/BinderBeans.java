@@ -26,9 +26,9 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.BinderValidationStatusHandler;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.converter.StringToIntegerConverter;
-import com.vaadin.external.jsoup.Jsoup;
-import com.vaadin.external.jsoup.safety.Whitelist;
 import com.vaadin.ui.html.Label;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.textfield.TextField;
 

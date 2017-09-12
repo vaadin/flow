@@ -16,7 +16,7 @@
 
 package com.vaadin.server;
 
-import com.vaadin.external.jsoup.nodes.Document;
+import org.jsoup.nodes.Document;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.ui.UI;
 
@@ -51,7 +51,7 @@ public class BootstrapPageResponse {
      *            the DOM document making up the HTML page.
      * @param uriResolver
      *            the uri resolver utility
-     * 
+     *
      * @param ui
      *            the UI for the bootstrap.
      */
@@ -68,7 +68,7 @@ public class BootstrapPageResponse {
 
     /**
      * Gets the HTTP response that serves the bootstrap page.
-     * 
+     *
      * @return the Vaadin response.
      */
     public VaadinResponse getResponse() {

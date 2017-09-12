@@ -19,8 +19,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.nodes.Document;
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.ui.Component;
 

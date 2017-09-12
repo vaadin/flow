@@ -28,7 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.vaadin.util.AnnotationReader;
-import com.vaadin.external.jsoup.select.Elements;
+import org.jsoup.select.Elements;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
@@ -64,7 +64,7 @@ public class TemplateInitializer {
     private final ParserData parserData;
     private final Set<String> notInjectableElementIds = new HashSet<>();
 
-    private com.vaadin.external.jsoup.nodes.Element parsedTemplateRoot;
+    private org.jsoup.nodes.Element parsedTemplateRoot;
 
     private static class SubTemplateData {
         private final String id;
@@ -143,8 +143,8 @@ public class TemplateInitializer {
     }
 
     private void inspectCustomElements(
-            com.vaadin.external.jsoup.nodes.Element childElement,
-            com.vaadin.external.jsoup.nodes.Element templateRoot) {
+            org.jsoup.nodes.Element childElement,
+            org.jsoup.nodes.Element templateRoot) {
         if (isInsideTemplate(childElement, templateRoot)) {
             storeNotInjectableElementId(childElement);
         }
@@ -155,7 +155,7 @@ public class TemplateInitializer {
     }
 
     private void storeNotInjectableElementId(
-            com.vaadin.external.jsoup.nodes.Element element) {
+            org.jsoup.nodes.Element element) {
         String id = element.id();
         if (id != null && !id.isEmpty()) {
             notInjectableElementIds.add(id);
@@ -165,8 +165,8 @@ public class TemplateInitializer {
     private void parseTemplate() {
         assert parsedTemplateRoot != null;
         Elements templates = parsedTemplateRoot.getElementsByTag("template");
-        for (com.vaadin.external.jsoup.nodes.Element element : templates) {
-            com.vaadin.external.jsoup.nodes.Element parent = element.parent();
+        for (org.jsoup.nodes.Element element : templates) {
+            org.jsoup.nodes.Element parent = element.parent();
             if (parent != null && getElement().getTag().equals(parent.id())) {
                 inspectCustomElements(element, element);
             }
@@ -174,8 +174,8 @@ public class TemplateInitializer {
     }
 
     private boolean isInsideTemplate(
-            com.vaadin.external.jsoup.nodes.Element element,
-            com.vaadin.external.jsoup.nodes.Element templateRoot) {
+            org.jsoup.nodes.Element element,
+            org.jsoup.nodes.Element templateRoot) {
         if (element == templateRoot) {
             return false;
         }
@@ -186,8 +186,8 @@ public class TemplateInitializer {
     }
 
     private void requestAttachCustomElement(
-            com.vaadin.external.jsoup.nodes.Element element,
-            com.vaadin.external.jsoup.nodes.Element templateRoot) {
+            org.jsoup.nodes.Element element,
+            org.jsoup.nodes.Element templateRoot) {
         String tag = element.tagName();
 
         if (CustomElementRegistry.getInstance()
@@ -230,12 +230,12 @@ public class TemplateInitializer {
         });
     }
 
-    private JsonArray getPath(com.vaadin.external.jsoup.nodes.Element element,
-            com.vaadin.external.jsoup.nodes.Element templateRoot) {
+    private JsonArray getPath(org.jsoup.nodes.Element element,
+            org.jsoup.nodes.Element templateRoot) {
         List<Integer> path = new ArrayList<>();
-        com.vaadin.external.jsoup.nodes.Element current = element;
+        org.jsoup.nodes.Element current = element;
         while (!current.equals(templateRoot)) {
-            com.vaadin.external.jsoup.nodes.Element parent = current.parent();
+            org.jsoup.nodes.Element parent = current.parent();
             path.add(indexOf(parent, current));
             current = parent;
         }
@@ -248,7 +248,7 @@ public class TemplateInitializer {
 
     /**
      * Returns the index of the {@code child} in the collection of
-     * {@link com.vaadin.external.jsoup.nodes.Element} children of the
+     * {@link org.jsoup.nodes.Element} children of the
      * {@code parent} ignoring "style" elements.
      * <p>
      * "style" elements are handled differently depending on ES5/ES6. Also
@@ -261,11 +261,11 @@ public class TemplateInitializer {
      *            the child element whose index is calculated
      * @return the index of the {@code child} in the {@code parent}
      */
-    private int indexOf(com.vaadin.external.jsoup.nodes.Element parent,
-            com.vaadin.external.jsoup.nodes.Element child) {
+    private int indexOf(org.jsoup.nodes.Element parent,
+            org.jsoup.nodes.Element child) {
         Elements children = parent.children();
         int index = -1;
-        for (com.vaadin.external.jsoup.nodes.Element nextChild : children) {
+        for (org.jsoup.nodes.Element nextChild : children) {
             if (!"style".equals(nextChild.tagName())) {
                 index++;
             }
@@ -333,7 +333,7 @@ public class TemplateInitializer {
         } else {
             Optional<String> tag = Optional
                     .ofNullable(parsedTemplateRoot.getElementById(id))
-                    .map(com.vaadin.external.jsoup.nodes.Element::tagName);
+                    .map(org.jsoup.nodes.Element::tagName);
             if (tag.isPresent()) {
                 parserData.addTag(id, tag.get());
             }

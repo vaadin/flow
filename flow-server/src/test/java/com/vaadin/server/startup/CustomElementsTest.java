@@ -28,10 +28,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
 import com.vaadin.flow.model.TemplateModel;
+import org.jsoup.Jsoup;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 

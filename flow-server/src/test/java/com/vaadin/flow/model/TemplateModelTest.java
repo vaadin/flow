@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.Jsoup;
+import org.jsoup.Jsoup;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
@@ -28,9 +28,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
-
     public interface EmptyModel extends TemplateModel {
-
     }
 
     public interface BasicTypeModel extends TemplateModel {

@@ -19,9 +19,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.vaadin.external.jsoup.nodes.Attribute;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import com.vaadin.flow.template.angular.AbstractBindingValueProvider;
 import com.vaadin.flow.template.angular.ElementTemplateBuilder;
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;

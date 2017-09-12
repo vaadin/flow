@@ -34,8 +34,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.Jsoup;
-import com.vaadin.external.jsoup.nodes.Element;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementData;
