@@ -38,9 +38,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.UI;
 
-public class NEW_RouterTest {
+public class NewRouterTest extends NewRoutingTestBase {
 
-    private NewRouter router;
     private UI ui;
     private static List<String> eventCollector = new ArrayList<>(0);
 
@@ -101,7 +100,7 @@ public class NEW_RouterTest {
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        router = new NewRouter();
+        super.init();
         ui = new RouterTestUI(router);
         eventCollector.clear();
         Field field = RouteRegistry.getInstance().getClass()
@@ -149,7 +148,8 @@ public class NEW_RouterTest {
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
 
     }
 
@@ -163,28 +163,32 @@ public class NEW_RouterTest {
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 1, eventCollector.size());
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
         Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(0));
 
-        router.navigate(ui, new Location("foo"), NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals("Expected event amount was wrong", 2, eventCollector.size());
+        router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
         Assert.assertEquals("FooBar DEACTIVATING", eventCollector.get(1));
     }
 
     @Test
     public void test_reroute_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance()
-                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        ReroutingNavigationTarget.class, FooBarNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        RouteRegistry.getInstance().setNavigationTargets(Stream
+                .of(RootNavigationTarget.class, ReroutingNavigationTarget.class,
+                        FooBarNavigationTarget.class)
+                .collect(Collectors.toSet()));
 
         router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
 
         router.navigate(ui, new Location("reroute"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Expected event amount was wrong", 2, eventCollector.size());
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
 
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
 

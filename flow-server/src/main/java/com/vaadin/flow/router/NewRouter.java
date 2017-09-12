@@ -15,23 +15,23 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.Optional;
-
 import com.vaadin.annotations.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
  * The router takes care of serving content when the user navigates within a
  * site or an application.
  * 
+ * @author Vaadin Ltd.
+ *
  * @see Route
  */
 public class NewRouter implements RouterInterface {
+
+    private RouteResolver routeResolver;
 
     private final RouterConfiguration configuration = new RouterConfiguration() {
         @Override
@@ -39,6 +39,13 @@ public class NewRouter implements RouterInterface {
             return true;
         }
     };
+
+    /**
+     * Constructs a new router with a {@link DefaultRouteResolver}.
+     */
+    public NewRouter() {
+        routeResolver = new DefaultRouteResolver();
+    }
 
     @Override
     public void initializeUI(UI ui, VaadinRequest initRequest) {
@@ -74,23 +81,21 @@ public class NewRouter implements RouterInterface {
         assert location != null;
         assert trigger != null;
 
-        Optional<Class<? extends Component>> navigationTarget = RouteRegistry
-                .getInstance().getNavigationTarget(location);
-
-        if (navigationTarget.isPresent()) {
-
+        NavigationState newState = getRouteResolver()
+                .resolve(new ResolveRequest(this, location));
+        if (newState != null) {
             NavigationEvent navigationEvent = new NavigationEvent(this,
                     location, ui, trigger);
 
             NavigationHandler handler = new StaticRouteTargetRenderer(
-                    navigationTarget.get());
+                    newState.getNavigationTarget());
             return handler.handle(navigationEvent);
         }
 
         Location slashToggledLocation = location.toggleTrailingSlash();
-
-        if (RouteRegistry.getInstance()
-                .getNavigationTarget(slashToggledLocation).isPresent()) {
+        NavigationState slashToggledState = getRouteResolver()
+                .resolve(new ResolveRequest(this, slashToggledLocation));
+        if (slashToggledState != null) {
             NavigationEvent navigationEvent = new NavigationEvent(this,
                     slashToggledLocation, ui, trigger);
 
@@ -110,5 +115,9 @@ public class NewRouter implements RouterInterface {
     @Override
     public ImmutableRouterConfiguration getConfiguration() {
         return configuration;
+    }
+
+    private RouteResolver getRouteResolver() {
+        return routeResolver;
     }
 }
