@@ -111,11 +111,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param keyEventTarget
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
+	protected void setKeyEventTarget(elemental.json.JsonObject keyEventTarget) {
 		getElement().setPropertyJson("keyEventTarget", keyEventTarget);
-		return get();
 	}
 
 	/**
@@ -145,13 +143,11 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param stopKeyboardEventPropagation
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setStopKeyboardEventPropagation(
+	public void setStopKeyboardEventPropagation(
 			boolean stopKeyboardEventPropagation) {
 		getElement().setProperty("stopKeyboardEventPropagation",
 				stopKeyboardEventPropagation);
-		return get();
 	}
 
 	/**
@@ -181,11 +177,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param keyBindings
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setKeyBindings(elemental.json.JsonObject keyBindings) {
+	protected void setKeyBindings(elemental.json.JsonObject keyBindings) {
 		getElement().setPropertyJson("keyBindings", keyBindings);
-		return get();
 	}
 
 	/**
@@ -213,11 +207,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param name
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setName(java.lang.String name) {
+	public void setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
-		return get();
 	}
 
 	/**
@@ -263,12 +255,10 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param value
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
 	@Override
-	public R setValue(java.lang.String value) {
+	public void setValue(java.lang.String value) {
 		getElement().setProperty("value", value == null ? "" : value);
-		return get();
 	}
 
 	/**
@@ -306,11 +296,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param required
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setRequired(boolean required) {
+	public void setRequired(boolean required) {
 		getElement().setProperty("required", required);
-		return get();
 	}
 
 	/**
@@ -339,11 +327,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param opened
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOpened(boolean opened) {
+	public void setOpened(boolean opened) {
 		getElement().setProperty("opened", opened);
-		return get();
 	}
 
 	/**
@@ -371,11 +357,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param disabled
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setDisabled(boolean disabled) {
+	public void setDisabled(boolean disabled) {
 		getElement().setProperty("disabled", disabled);
-		return get();
 	}
 
 	/**
@@ -403,11 +387,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param readonly
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setReadonly(boolean readonly) {
+	public void setReadonly(boolean readonly) {
 		getElement().setProperty("readonly", readonly);
-		return get();
 	}
 
 	/**
@@ -437,11 +419,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param items
 	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setItems(elemental.json.JsonArray items) {
+	protected void setItems(elemental.json.JsonArray items) {
 		getElement().setPropertyJson("items", items);
-		return get();
 	}
 
 	/**
@@ -475,11 +455,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param allowCustomValue
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAllowCustomValue(boolean allowCustomValue) {
+	public void setAllowCustomValue(boolean allowCustomValue) {
 		getElement().setProperty("allowCustomValue", allowCustomValue);
-		return get();
 	}
 
 	/**
@@ -511,11 +489,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param filteredItems
 	 *            the JsonArray value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setFilteredItems(elemental.json.JsonArray filteredItems) {
+	protected void setFilteredItems(elemental.json.JsonArray filteredItems) {
 		getElement().setPropertyJson("filteredItems", filteredItems);
-		return get();
 	}
 
 	/**
@@ -561,11 +537,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param loading
 	 *            the boolean value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setLoading(boolean loading) {
+	public void setLoading(boolean loading) {
 		getElement().setProperty("loading", loading);
-		return get();
 	}
 
 	/**
@@ -594,11 +568,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param filter
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setFilter(java.lang.String filter) {
+	public void setFilter(java.lang.String filter) {
 		getElement().setProperty("filter", filter == null ? "" : filter);
-		return get();
 	}
 
 	/**
@@ -626,11 +598,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param selectedItem
 	 *            the JsonObject value to set
-	 * @return this instance, for method chaining
 	 */
-	protected R setSelectedItem(elemental.json.JsonObject selectedItem) {
+	protected void setSelectedItem(elemental.json.JsonObject selectedItem) {
 		getElement().setPropertyJson("selectedItem", selectedItem);
-		return get();
 	}
 
 	/**
@@ -680,12 +650,10 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param itemLabelPath
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setItemLabelPath(java.lang.String itemLabelPath) {
+	public void setItemLabelPath(java.lang.String itemLabelPath) {
 		getElement().setProperty("itemLabelPath",
 				itemLabelPath == null ? "" : itemLabelPath);
-		return get();
 	}
 
 	/**
@@ -725,12 +693,10 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param itemValuePath
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setItemValuePath(java.lang.String itemValuePath) {
+	public void setItemValuePath(java.lang.String itemValuePath) {
 		getElement().setProperty("itemValuePath",
 				itemValuePath == null ? "" : itemValuePath);
-		return get();
 	}
 
 	/**
@@ -775,12 +741,10 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param attrForValue
 	 *            the String value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setAttrForValue(java.lang.String attrForValue) {
+	public void setAttrForValue(java.lang.String attrForValue) {
 		getElement().setProperty("attrForValue",
 				attrForValue == null ? "" : attrForValue);
-		return get();
 	}
 
 	/**
@@ -810,12 +774,10 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * 
 	 * @param overlayVerticalOffset
 	 *            the double value to set
-	 * @return this instance, for method chaining
 	 */
-	public R setOverlayVerticalOffset(double overlayVerticalOffset) {
+	public void setOverlayVerticalOffset(double overlayVerticalOffset) {
 		getElement()
 				.setProperty("overlayVerticalOffset", overlayVerticalOffset);
-		return get();
 	}
 
 	/**
