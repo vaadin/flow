@@ -71,11 +71,8 @@ public final class EventUtil {
      * @return stream of Elements
      */
     public static Stream<Element> flattenChildren(Element node) {
-        if (node.getChildCount() > 0) {
-            return Stream.concat(Stream.of(node),
-                    node.getChildren().flatMap(EventUtil::flattenChildren));
-        }
-        return Stream.of(node);
+        return Stream.concat(Stream.of(node),
+                node.getChildren().flatMap(EventUtil::flattenChildren));
     }
 
     /**
