@@ -5,6 +5,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.html.Div;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
@@ -28,5 +29,17 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route("foo/bar")
     public static class FooBarNavigationTarget extends ClassNameDiv {
+    }
+
+    public static class MyRouterLayout extends Div implements RouterLayout {
+
+        public MyRouterLayout() {
+            setId("layout");
+        }
+    }
+
+    @Route(value = "baz", layout = MyRouterLayout.class)
+    public static class ChildNavigationTarget extends ClassNameDiv {
+
     }
 }
