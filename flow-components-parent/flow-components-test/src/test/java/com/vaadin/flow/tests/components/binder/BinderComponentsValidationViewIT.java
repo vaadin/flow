@@ -42,13 +42,21 @@ public class BinderComponentsValidationViewIT extends AbstractComponentIT {
         assertFieldValue(textField,
                 BinderComponentsValidationView.INITIAL_TEXT);
 
+        updateFromServerAndValidate(textField);
+
         String correctInput = "bbbc90ef149427d9093dc8db60a5af9777a26c4a";
         inputAndValidate(textField, correctInput, true);
 
         // see BinderComponentsValidationView for validation details
         inputAndValidate(textField, '2' + correctInput, false);
 
-        updateFromServerAndValidate(textField);
+        // see https://github.com/vaadin/vaadin-text-field/issues/130
+        focusLostShouldNotChangeValidationStatus(textField);
+    }
+
+    private void focusLostShouldNotChangeValidationStatus(WebElement textField) {
+        findElement(By.tagName("body")).click();
+        assertValid(textField, false);
     }
 
     private void inputAndValidate(WebElement textField, String input,
@@ -72,11 +80,9 @@ public class BinderComponentsValidationViewIT extends AbstractComponentIT {
     }
 
     private void assertValid(WebElement textField, boolean valid) {
-        if (valid) {
-            assertThat("Unexpected text in the text field component",
-                    Boolean.parseBoolean(textField.getAttribute("invalid")),
-                    is(!valid));
-        }
+        assertThat("Unexpected text field validity",
+                Boolean.parseBoolean(textField.getAttribute("invalid")),
+                is(!valid));
 
         if (valid) {
             assertThat("Unexpected text in the text field component",
