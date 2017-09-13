@@ -51,26 +51,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
         clear();
     }
 
-    // A stub that should be removed after this ticket is implemented:
-    // https://github.com/vaadin/vaadin-text-field/issues/130
-    private void disableValidatorIfNotNeeded() {
-        String patternProperty = getElement()
-                .getProperty(PATTERN_PROPERTY_NAME);
-        boolean isPatternPropertyEmpty = patternProperty == null
-                || patternProperty.isEmpty();
-        if (isPatternPropertyEmpty && !Boolean.parseBoolean(
-                getElement().getProperty(REQUIRED_PROPERTY_NAME))) {
-            Optional.ofNullable(UI.getCurrent()).map(UI::getPage)
-                    .ifPresent(page -> page.executeJavaScript(
-                            "$0.checkValidity = function() {};", getElement()));
-        } else {
-            Optional.ofNullable(UI.getCurrent()).map(UI::getPage)
-                    .ifPresent(page -> page.executeJavaScript(
-                            "$0.checkValidity = $0.flowCheckValidityOld;",
-                            getElement()));
-        }
-    }
-
     /**
      * Constructs an empty {@code TextField} with the given label.
      * <p>
@@ -100,6 +80,26 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     public TextField(String label, String placeholder) {
         this(label);
         setPlaceholder(placeholder);
+    }
+
+    // A stub that should be removed after this ticket is implemented:
+    // https://github.com/vaadin/vaadin-text-field/issues/130
+    private void disableValidatorIfNotNeeded() {
+        String patternProperty = getElement()
+                .getProperty(PATTERN_PROPERTY_NAME);
+        boolean isPatternPropertyEmpty = patternProperty == null
+                || patternProperty.isEmpty();
+        if (isPatternPropertyEmpty && !Boolean.parseBoolean(
+                getElement().getProperty(REQUIRED_PROPERTY_NAME))) {
+            Optional.ofNullable(UI.getCurrent()).map(UI::getPage)
+                    .ifPresent(page -> page.executeJavaScript(
+                            "$0.checkValidity = function() {};", getElement()));
+        } else {
+            Optional.ofNullable(UI.getCurrent()).map(UI::getPage)
+                    .ifPresent(page -> page.executeJavaScript(
+                            "$0.checkValidity = $0.flowCheckValidityOld;",
+                            getElement()));
+        }
     }
 
     @Override
