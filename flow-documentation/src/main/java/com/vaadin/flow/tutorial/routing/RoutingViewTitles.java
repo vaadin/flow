@@ -1,15 +1,15 @@
 package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.annotations.Title;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.DefaultPageTitleGenerator;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-routing-view-titles.asciidoc")
+@CodeFor("routing/tutorial-routing-view-titles.asciidoc")
 public class RoutingViewTitles {
     @Title("home")
     class HomeView extends Div implements View {

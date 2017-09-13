@@ -29,7 +29,6 @@ These tutorials show how the different features are used.
 ** <<application-structure/tutorial-include-css#,Including Style Sheets>>
 ** <<application-structure/tutorial-importing#,Importing html/javascript>>
 ** <<application-structure/tutorial-ways-of-importing#,Ways of importing the dependencies>>
-** <<application-structure/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
 ** <<application-structure/tutorial-bootstrap#,Modifying bootstrap page>>
 * Element API
 ** <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>
@@ -84,12 +83,13 @@ These tutorials show how the different features are used.
 ** <<miscellaneous/tutorial-history-api#,The History API>>
 ** <<miscellaneous/tutorial-dynamic-content#,Dynamic Content>>
 ** <<miscellaneous/tutorial-loading-indicator#,The Loading Indicator>>
+** <<miscellaneous/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 
 == Server-side DOM tree
 
-Tutorials: <<tutorial-properties-attributes#,Element Properties and Attributes>>, <<tutorial-event-listener#,Listening to User Events>>, <<tutorial-user-input#,Retrieving User Input>>,  <<tutorial-dynamic-styling#,Dynamic styling>>
+Tutorials: <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>, <<element-api/tutorial-event-listener#,Listening to User Events>>, <<element-api/tutorial-user-input#,Retrieving User Input>>,  <<element-api/tutorial-dynamic-styling#,Dynamic styling>>
 
 Flow allows Java code to control the DOM in the user's browser through a server-side representation of the same DOM tree.
 All changes are automatically synchronized to the real DOM tree in the browser.
@@ -123,7 +123,7 @@ the same template definition is reused for all component instance using the same
 
 == History API
 
-Tutorial: <<tutorial-history-api#,The History API>>
+Tutorial: <<miscellaneous/tutorial-history-api#,The History API>>
 
 The _History API_ allows you to access the browser navigation history through `ui.getPage().getHistory()`.
 The API allows you to:

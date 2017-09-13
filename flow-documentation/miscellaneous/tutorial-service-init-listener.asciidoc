@@ -8,7 +8,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = VaadinServiceInitListener
 
-A VaadinServiceInitListener can be used to configure RequestHandlers, <<tutorial-bootstrap#,BootstrapListeners>> and <<tutorial-dependency-filter#,DependencyFilters>>.
+A VaadinServiceInitListener can be used to configure RequestHandlers, <<../application-structure/tutorial-bootstrap#,BootstrapListeners>> and <<tutorial-dependency-filter#,DependencyFilters>>.
 
 The listener should be added to a `ServiceInitEvent` which is sent when a Vaadin service is initialized.
 
@@ -43,7 +43,7 @@ This listener should be registered as a provider via Java SPI loading facility. 
 This is a text file and it should contain the fully qualified name of the `ApplicationServiceInitListener` class on its own line.
 It allows to discover the  `ApplicationServiceInitListener` class, instantiate it and register as a service init listener for the application.
 
-image:images/service-init-listener.png[The location of the configuration file]
+image:../images/service-init-listener.png[The location of the configuration file]
 
 The content of the file should be like this:
 [source,text]

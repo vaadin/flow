@@ -133,7 +133,8 @@ Right now you need to also extend the `HasChildView` interface and implement the
 ----
 @Tag("main-layout")
 @HtmlImport("/com/example/ComponentContainer.html")
-public class MainLayout extends PolymerTemplate<TemplateModel> implements HasChildView {
+public class MainLayout extends PolymerTemplate<TemplateModel> 
+        implements HasChildView {
 
     private View childView;
 

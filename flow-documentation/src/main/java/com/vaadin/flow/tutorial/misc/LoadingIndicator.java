@@ -5,7 +5,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-loading-indicator.asciidoc")
+@CodeFor("miscellaneous/tutorial-loading-indicator.asciidoc")
 public class LoadingIndicator {
     public class MyUI extends UI {
         @Override

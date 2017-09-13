@@ -37,7 +37,7 @@ public class PaperSlider extends Component {
 }
 ----
 
-The setters forward the value to the corresponding property in the element and the getters return the property value or a default value if no value has been set. This uses the same property methods described in the <<tutorial-properties-attributes#,Element Properties and Attributes>> tutorial as there is no difference between configuring a property for a built in element and for a web component element.
+The setters forward the value to the corresponding property in the element and the getters return the property value or a default value if no value has been set. This uses the same property methods described in the <<../element-api/tutorial-properties-attributes#,Element Properties and Attributes>> tutorial as there is no difference between configuring a property for a built in element and for a web component element.
 
 For listening to events from a web component, see
 ** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>.

@@ -23,7 +23,7 @@ import com.vaadin.ui.UI;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
-@CodeFor("tutorial-history-api.asciidoc")
+@CodeFor("miscellaneous/tutorial-history-api.asciidoc")
 public class HistoryAPI {
 
     void tutorialCode() {

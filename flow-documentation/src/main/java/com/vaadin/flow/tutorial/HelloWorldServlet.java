@@ -21,7 +21,7 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
 
-@CodeFor("tutorial-hello-world.asciidoc")
+@CodeFor("application-structure/tutorial-hello-world.asciidoc")
 @WebServlet(urlPatterns = "/*", name = "HelloWorldServlet")
 @VaadinServletConfiguration(productionMode = false)
 public class HelloWorldServlet extends VaadinServlet {

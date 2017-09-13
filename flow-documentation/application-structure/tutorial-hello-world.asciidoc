@@ -40,4 +40,4 @@ public class HelloWorldServlet extends VaadinServlet {
 
 Your servlet will listen for HTTP requests to all paths (`"/*"`) and serve the `HelloWorld` view when the root URL is requested (`setRoute("",...)`). Deploy the application to a servlet container, and open the URL (typically http://localhost:8080/<name-of-project>) to see the "Hello world" text.
 
-For more information about defining routes, see  <<tutorial-routing-annotation#,Defining Routes With @Route>>.
+For more information about defining routes, see  <<../routing/tutorial-routing-annotation#,Defining Routes With @Route>>.

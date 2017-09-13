@@ -21,7 +21,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
 
-@CodeFor("tutorial-bootstrap.asciidoc")
+@CodeFor("application-structure/tutorial-bootstrap.asciidoc")
 public class BootstrapPage {
 
     public class CustomBootstrapListener implements BootstrapListener {

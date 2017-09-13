@@ -35,7 +35,7 @@ version number. When using Maven you can add it to your `pom.xml` as this:
 [TIP]
 To enable compilation to ES5 (for browsers that lack of ES6 support, such as
   IE11), you need extra configuration, which is described at
-  <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+  <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
 
 == bower.json configuration
 

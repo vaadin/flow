@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.tutorial.element;
 
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-dynamic-styling.asciidoc")
+@CodeFor("element-api/tutorial-dynamic-styling.asciidoc")
 public class DynamicStyling {
 
     Element button = ElementFactory.createDiv();
