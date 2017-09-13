@@ -86,21 +86,19 @@ public class SynchronizedPropertyIT extends ChromeBrowserTest {
         WebElement multiSyncValueAsNumberLabel = findElement(
                 By.id("multiSyncValueAsNumberLabel"));
         multiSyncValue.sendKeys("123");
-        Assert.assertEquals("Server value: 123", multiSyncValueLabel.getText());
+        waitUntil(driver -> "Server value: 123".equals(multiSyncValueLabel.getText()), 2000);
         Assert.assertEquals("", multiSyncValueAsNumberLabel.getText());
         blur();
-        Assert.assertEquals("Server value: 123", multiSyncValueLabel.getText());
+        waitUntil(driver -> "Server value: 123".equals(multiSyncValueLabel.getText()), 2000);
         Assert.assertEquals("Server valueAsNumber: 123",
                 multiSyncValueAsNumberLabel.getText());
 
         multiSyncValue.sendKeys("456");
-        Assert.assertEquals("Server value: 123456",
-                multiSyncValueLabel.getText());
+        waitUntil(driver -> "Server value: 123456".equals(multiSyncValueLabel.getText()), 2000);
         Assert.assertEquals("Server valueAsNumber: 123",
                 multiSyncValueAsNumberLabel.getText());
         blur();
-        Assert.assertEquals("Server value: 123456",
-                multiSyncValueLabel.getText());
+        waitUntil(driver -> "Server value: 123456".equals(multiSyncValueLabel.getText()), 2000);
         Assert.assertEquals("Server valueAsNumber: 123456",
                 multiSyncValueAsNumberLabel.getText());
     }
