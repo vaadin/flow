@@ -129,8 +129,6 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
             chain.add(getRouteTarget(parentType, event));
         }
 
-        NewLocationChangeEvent locationChangeEvent = createEvent(event, chain);
-
         beforeNavigation = new BeforeNavigationEvent(event, routeTargetType,
                 ActivationState.ACTIVATING);
         listeners = EventUtil.collectBeforeNavigationListeners(chain);
@@ -147,6 +145,7 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
 
         updatePageTitle(event, routeTargetType, routeLayoutTypes);
 
+        NewLocationChangeEvent locationChangeEvent = createEvent(event, chain);
         return locationChangeEvent.getStatusCode();
     }
 
