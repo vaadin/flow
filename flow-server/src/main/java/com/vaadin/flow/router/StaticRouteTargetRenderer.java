@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -57,12 +58,27 @@ public class StaticRouteTargetRenderer extends RouteTargetRenderer {
     public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             NavigationEvent event, Class<? extends Component> targetType) {
         assert targetType == routeTargetType;
-        Optional<Route> router = AnnotationReader.getAnnotationFor(targetType,
-                Route.class);
-        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
-            return Collections.singletonList(router.get().layout());
-        }
-        return Collections.emptyList();
+
+        return getParentLayouts(targetType);
     }
 
+    private List<Class<? extends RouterLayout>> getParentLayouts(
+            Class<?> component) {
+        List<Class<? extends RouterLayout>> list = new ArrayList<>(0);
+
+        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(component, ParentLayout.class);
+
+        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
+            list.add(router.get().layout());
+            list.addAll(getParentLayouts(router.get().layout()));
+        } else if (parentLayout.isPresent()) {
+            list.add(parentLayout.get().value());
+            list.addAll(getParentLayouts(parentLayout.get().value()));
+        }
+
+        return list;
+    }
 }
