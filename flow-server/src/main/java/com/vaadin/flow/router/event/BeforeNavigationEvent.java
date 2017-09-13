@@ -20,10 +20,10 @@ import java.util.EventObject;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NavigationStateRenderer;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.StaticRouteTargetRenderer;
-import com.vaadin.ui.Component;
 
 /**
  * Event created before navigation happens.
@@ -39,7 +39,7 @@ public class BeforeNavigationEvent extends EventObject {
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
-    private Class<? extends Component> routeTargetType;
+    private NavigationState rerouteTargetState;
 
     /**
      * Construct event from a NavigationEvent.
@@ -138,12 +138,12 @@ public class BeforeNavigationEvent extends EventObject {
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
      *            previously set reroute target
-     * @param routeTargetType
-     *            the component type to display, not {@code null}
+     * @param targetState
+     *            the target navigation state of the rerouting
      */
     public void rerouteTo(NavigationHandler rerouteTarget,
-            Class<? extends Component> routeTargetType) {
-        this.routeTargetType = routeTargetType;
+            NavigationState targetState) {
+        this.rerouteTargetState = targetState;
         this.rerouteTarget = rerouteTarget;
     }
 
@@ -151,12 +151,11 @@ public class BeforeNavigationEvent extends EventObject {
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
      *
-     * @param routeTargetType
-     *            the component type to display, not {@code null}
+     * @param targetState
+     *            the target navigation state of the rerouting
      */
-    public void rerouteTo(Class<? extends Component> routeTargetType) {
-        rerouteTo(new StaticRouteTargetRenderer(routeTargetType),
-                routeTargetType);
+    public void rerouteTo(NavigationState targetState) {
+        rerouteTo(new NavigationStateRenderer(targetState), targetState);
     }
 
     /**
@@ -164,8 +163,8 @@ public class BeforeNavigationEvent extends EventObject {
      * 
      * @return route target
      */
-    public Class<? extends Component> getRouteTargetType() {
-        return routeTargetType;
+    public Class<?> getRouteTargetType() {
+        return rerouteTargetState.getNavigationTarget();
     }
 
     /**

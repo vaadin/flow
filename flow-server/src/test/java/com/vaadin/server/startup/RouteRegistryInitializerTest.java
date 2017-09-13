@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.annotations.Route;
-import com.vaadin.flow.router.Location;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 
@@ -52,15 +51,15 @@ public class RouteRegistryInitializerTest {
 
         Assert.assertEquals("Route '' registered to NavigationTarget.class",
                 NavigationTarget.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("")).get());
+                        .getNavigationTarget("").get());
         Assert.assertEquals(
                 "Route 'foo' registered to NavigationTargetFoo.class",
                 NavigationTargetFoo.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("foo")).get());
+                        .getNavigationTarget("foo").get());
         Assert.assertEquals(
                 "Route 'bar' registered to NavigationTargetBar.class",
                 NavigationTargetBar.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("bar")).get());
+                        .getNavigationTarget("bar").get());
     }
 
     @Test

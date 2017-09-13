@@ -17,11 +17,13 @@ package com.vaadin.flow.router;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.router.event.ActivationState;
@@ -34,42 +36,26 @@ import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
 /**
- * Handles navigation events by rendering a component of a specific type in the
+ * Handles navigation events by rendering a contained NavigationState in the
  * target UI.
- * 
+ *
+ * @see NavigationState
  * @see Route
  */
-public abstract class RouteTargetRenderer implements NavigationHandler {
+public class NavigationStateRenderer implements NavigationHandler {
+
+    private final NavigationState navigationState;
 
     /**
-     * Gets the route target type to show.
+     * Constructs a new NavigationStateRenderer that handles the given
+     * navigation state.
      *
-     * @param event
-     *            the event which triggered showing of the route target
-     *
-     * @return the route target class, not <code>null</code>
+     * @param navigationState
+     *            the navigation state handled by this instance
      */
-    public abstract Class<? extends Component> getRouteTargetType(
-            NavigationEvent event);
-
-    /**
-     * Gets the router layout types to show for the given route target type,
-     * starting from the parent layout immediately wrapping the route target
-     * type.
-     *
-     * @see #getRouteTargetType(NavigationEvent)
-     *
-     * @param event
-     *            the event which triggered showing of the component and its
-     *            parents
-     * @param routeTargetType
-     *            component type to show
-     *
-     * @return a list of parent {@link RouterLayout} types, not
-     *         <code>null</code>
-     */
-    public abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            NavigationEvent event, Class<? extends Component> routeTargetType);
+    public NavigationStateRenderer(NavigationState navigationState) {
+        this.navigationState = navigationState;
+    }
 
     /**
      * Gets the component instance to use for the given type and the
@@ -103,7 +89,8 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
 
-        Class<? extends Component> routeTargetType = getRouteTargetType(event);
+        Class<? extends Component> routeTargetType = navigationState
+                .getNavigationTarget();
         List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
                 event, routeTargetType);
 
@@ -112,16 +99,15 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
 
         checkForDuplicates(routeTargetType, routeLayoutTypes);
 
-        BeforeNavigationEvent beforeNavigation = new BeforeNavigationEvent(
+        BeforeNavigationEvent beforeNavigationDeactivating = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.DEACTIVATING);
         List<BeforeNavigationListener> listeners = EventUtil
                 .collectBeforeNavigationListeners(ui.getElement());
-        if (executeBeforeNavigation(beforeNavigation, listeners)) {
-            return reroute(event, beforeNavigation);
+        if (executeBeforeNavigation(beforeNavigationDeactivating, listeners)) {
+            return reroute(event, beforeNavigationDeactivating);
         }
 
         Component componentInstance = getRouteTarget(routeTargetType, event);
-
         List<HasElement> chain = new ArrayList<>();
         chain.add(componentInstance);
 
@@ -129,11 +115,19 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
             chain.add(getRouteTarget(parentType, event));
         }
 
-        beforeNavigation = new BeforeNavigationEvent(event, routeTargetType,
+        BeforeNavigationEvent beforeNavigationActivating = new BeforeNavigationEvent(
+                event, routeTargetType,
                 ActivationState.ACTIVATING);
+
+        navigationState.getUrlParameters().ifPresent(urlParameters -> {
+            HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
+            hasUrlParameter.setParameter(beforeNavigationActivating,
+                    hasUrlParameter.deserializeUrlParameters(urlParameters));
+        });
+
         listeners = EventUtil.collectBeforeNavigationListeners(chain);
-        if (executeBeforeNavigation(beforeNavigation, listeners)) {
-            return reroute(event, beforeNavigation);
+        if (executeBeforeNavigation(beforeNavigationActivating, listeners)) {
+            return reroute(event, beforeNavigationActivating);
         }
 
         @SuppressWarnings("unchecked")
@@ -233,5 +227,16 @@ public abstract class RouteTargetRenderer implements NavigationHandler {
             List<HasElement> routeTargetChain) {
         return new NewLocationChangeEvent(event.getSource(), event.getUI(),
                 event.getTrigger(), event.getLocation(), routeTargetChain);
+    }
+
+    private List<Class<? extends RouterLayout>> getRouterLayoutTypes(
+            NavigationEvent event, Class<? extends Component> targetType) {
+        assert targetType == navigationState.getNavigationTarget();
+        Optional<Route> router = AnnotationReader.getAnnotationFor(targetType,
+                Route.class);
+        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
+            return Collections.singletonList(router.get().layout());
+        }
+        return Collections.emptyList();
     }
 }

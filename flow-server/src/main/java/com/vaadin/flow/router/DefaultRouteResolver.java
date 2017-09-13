@@ -15,7 +15,12 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
@@ -27,14 +32,70 @@ import com.vaadin.ui.Component;
  */
 public class DefaultRouteResolver implements RouteResolver {
 
+    @SuppressWarnings("unchecked")
     @Override
     public NavigationState resolve(ResolveRequest request) {
-        Optional<Class<? extends Component>> navigationTarget = RouteRegistry
-                .getInstance().getNavigationTarget(request.getLocation());
-        if (!navigationTarget.isPresent()) {
+        String path = findPathString(
+                new ArrayList<>(request.getLocation().getSegments()));
+        if (path == null) {
             return null;
         }
-        return new NavigationStateBuilder().withTarget(navigationTarget.get())
-                .build();
+
+        NavigationStateBuilder builder = new NavigationStateBuilder();
+        Class<? extends Component> navigationTarget = getNavigationTarget(path);
+
+        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
+            List<String> pathParameters = getPathParameters(
+                    request.getLocation().getPath(), path);
+            if (!HasUrlParameter.verifyParameters(navigationTarget,
+                    pathParameters)) {
+                return null;
+            }
+            builder.withTarget(navigationTarget, pathParameters);
+        } else {
+            builder.withTarget(navigationTarget);
+        }
+
+        return builder.build();
+    }
+
+    private String findPathString(List<String> pathSegments) {
+        List<String> remainingSegments = pathSegments;
+        while (!remainingSegments.isEmpty()) {
+            String currentPath = remainingSegments.stream()
+                    .collect(Collectors.joining("/"));
+            Optional<?> target = RouteRegistry.getInstance()
+                    .getNavigationTarget(currentPath);
+            if (target.isPresent()) {
+                return currentPath;
+            }
+            remainingSegments.remove(remainingSegments.size() - 1);
+        }
+        return null;
+    }
+
+    private Class<? extends Component> getNavigationTarget(String path) {
+        return RouteRegistry.getInstance().getNavigationTarget(path)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "No navigation target found for path '%s'.", path)));
+    }
+
+    private List<String> getPathParameters(String completePath,
+            String routePath) {
+        assert completePath != null;
+        assert routePath != null;
+
+        String parameterPart = completePath.replaceFirst(routePath, "");
+        if (parameterPart.startsWith("/")) {
+            parameterPart = parameterPart.substring(1, parameterPart.length());
+        }
+        if (parameterPart.endsWith("/")) {
+            parameterPart = parameterPart.substring(0,
+                    parameterPart.length() - 1);
+        }
+        if (parameterPart.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(parameterPart.split("/"));
     }
 }

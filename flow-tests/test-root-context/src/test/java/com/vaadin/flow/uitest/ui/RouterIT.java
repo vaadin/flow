@@ -55,6 +55,13 @@ public class RouterIT extends ChromeBrowserTest {
                 layout.findElement(By.id("name-div")).getText());
     }
 
+    @Test
+    public void stringRouteParameter() {
+        openRouteUrl("greeting/World");
+        Assert.assertEquals("Hello, World!",
+                findElement(By.id("greeting-div")).getText());
+    }
+
     private void openRouteUrl(String route) {
         getDriver().get(getRootURL() + getTestPath() + route);
     }
