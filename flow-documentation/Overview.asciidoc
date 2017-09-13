@@ -62,6 +62,7 @@ These tutorials show how the different features are used.
 ** <<routing/tutorial-routing-lifecycle#,Navigation Lifecycle>>
 ** <<routing/tutorial-routing-navigation#,Navigating Between Routes>>
 ** <<routing/tutorial-routing-router-configuration#,Defining View Routes with RouterConfiguration>>
+** <<routing/tutorial-router-layout#,Router Layouts and Nested Router Targets>>
 ** <<routing/tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
 ** <<routing/tutorial-routing-view-parameters#,Using View Parameters>>
 ** <<routing/tutorial-routing-view-titles#,Updating Page Title on Navigation>>

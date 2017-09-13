@@ -72,7 +72,9 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     private void clickLink(String linkText) {
-        findElement(By.linkText(linkText)).click();
+        WebElement link = findElement(By.linkText(linkText));
+        scrollToElement(link);
+        link.click();
     }
 
     private void verifyScrollTargetVisible() {

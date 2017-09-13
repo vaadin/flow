@@ -51,7 +51,7 @@ import elemental.json.JsonValue;
  *            the type of the items to be inserted in the combo box
  */
 public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
-        implements HasSize, HasItems<T> {
+        implements HasSize, HasItems<T>, HasValidation {
 
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
@@ -60,7 +60,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     /**
      * Default constructor. Creates an empty combo box.
-     * 
+     *
      * @see #setItemType(Class)
      */
     public ComboBox() {
@@ -72,7 +72,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     /**
      * Creates an empty combo box with the defined label.
-     * 
+     *
      * @param label
      *            the label describing the combo box
      * @see #setItemType(Class)
@@ -84,7 +84,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     /**
      * Creates an empty combo box with the defined {@link Class} for the items.
-     * 
+     *
      * @param itemType
      *            the Class of the items. This class definition is used when
      *            deserializing json to Java objects
@@ -97,7 +97,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Creates an empty combo box with the defined {@link Class} for the items
      * and a label.
-     * 
+     *
      * @param itemType
      *            the Class of the items. This class definition is used when
      *            deserializing json to Java objects
@@ -113,7 +113,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Creates a combo box with the defined label and populated with the items
      * in the collection.
-     * 
+     *
      * @param label
      *            the label describing the combo box
      * @param items
@@ -129,7 +129,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Creates a combo box with the defined label and populated with the items
      * in the array.
-     * 
+     *
      * @param label
      *            the label describing the combo box
      * @param items
@@ -154,7 +154,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * <pre>
      * comboBox.setItemTemplate("Name: [[item.name]]<br>Id: [[item.id]]");
      * </pre>
-     * 
+     *
      * </blockquote>
      * <p>
      * You can access any property of the object using the notation
@@ -163,7 +163,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * Note: the webcomponent currently doesn't support changing the item
      * template after the component is first populated. This method should be
      * called before setting any items.
-     * 
+     *
      * @param template
      *            the template to be used to render the items inside the list of
      *            this combo box
@@ -182,7 +182,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     /**
      * Gets the current item template associated with this combo box.
-     * 
+     *
      * @return the current item template, or <code>null</code> if it wasn't set
      */
     public String getItemTemplate() {
@@ -200,7 +200,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * Gets the current items set on the combo box. To deserialize from json to
      * the type of the object expected by the combo box, the item type must be
      * set. See {@link #setItemType(Class)} for instructions.
-     * 
+     *
      * @return the current items in the combo box, or empty list if there are
      *         none
      */
@@ -212,7 +212,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Sets the selectable items in this combo box. Objects are serialized to
      * json using the {@link JsonSerializer#toJson(Collection)}.
-     * 
+     *
      * @param items
      *            the selectable items in this combo box
      */
@@ -232,7 +232,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * The item type is needed when deserializing objects from json, which occur
      * when calling {@link #getSelectedItem()}, {@link #getItems()} and
      * {@link #getFilteredItems()} methods.
-     * 
+     *
      * @return the type of the items inside the combo box
      */
     public Class<T> getItemType() {
@@ -249,7 +249,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * The item type is needed when deserializing objects from json, which occur
      * when calling {@link #getSelectedItem()}, {@link #getItems()} and
      * {@link #getFilteredItems()} methods.
-     * 
+     *
      * @param itemType
      *            the type of the items inside the combo box
      * @return this instance for method chaining
@@ -262,7 +262,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     /**
      * Gets the selected object of this combo box.
-     * 
+     *
      * @return the selected object, or <code>null</code> if none was selected
      */
     public T getSelectedItem() {
@@ -273,7 +273,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Manually sets the selected object of this combo box (without user
      * interaction). This can be used to set a default value of the combo box.
-     * 
+     *
      * @param item
      *            the selected object, or <code>null</code> to clear the
      *            selection
@@ -290,7 +290,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * Gets the list of items which were filtered by the user input. Filter
      * events can be received by using
      * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
-     * 
+     *
      * @return the list of filtered items, or empty list if none were filtered
      */
     public List<T> getFilteredItems() {
@@ -303,7 +303,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * the list of visible items in reaction of the input of the user. Filter
      * events can be received by using
      * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
-     * 
+     *
      * @param filteredItems
      *            the items to show in response of a filter input
      * @return this instance for method chaining
@@ -316,7 +316,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * It sets the list of visible items in reaction of the input of the user.
      * Filter events can be received by using
      * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
-     * 
+     *
      * @param filteredItems
      *            the items to show in response of a filter input
      * @return this instance for method chaining
@@ -367,5 +367,4 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     public String getEmptyValue() {
         return "";
     }
-
 }

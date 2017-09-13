@@ -15,6 +15,9 @@
  */
 package com.vaadin.data;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -166,11 +169,13 @@ public class BinderBookOfVaadinTest {
         binder = new Binder<BookPerson>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
@@ -229,7 +234,7 @@ public class BinderBookOfVaadinTest {
         field.setValue("abc@vaadin.com");
         status = binder.validate();
         Assert.assertEquals(0, status.getBeanValidationErrors().size());
-        Assert.assertNull(field.getErrorMessage());
+        assertThat(field.getErrorMessage(), isEmptyOrNullString());
     }
 
     @Test
@@ -251,7 +256,7 @@ public class BinderBookOfVaadinTest {
         field.setValue("long last name");
         status = binder.validate();
         Assert.assertEquals(0, status.getFieldValidationErrors().size());
-        Assert.assertNull(field.getErrorMessage());
+        assertThat(field.getErrorMessage(), isEmptyOrNullString());
     }
 
     @Test
@@ -284,7 +289,7 @@ public class BinderBookOfVaadinTest {
         field.setValue("abc@acme.com");
         status = binder.validate();
         Assert.assertEquals(0, status.getFieldValidationErrors().size());
-        Assert.assertNull(field.getErrorMessage());
+        assertThat(field.getErrorMessage(), isEmptyOrNullString());
     }
 
     @Test
@@ -348,11 +353,13 @@ public class BinderBookOfVaadinTest {
         Binder<Trip> binder = new Binder<Trip>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
@@ -414,11 +421,13 @@ public class BinderBookOfVaadinTest {
         Binder<Trip> binder = new Binder<Trip>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
