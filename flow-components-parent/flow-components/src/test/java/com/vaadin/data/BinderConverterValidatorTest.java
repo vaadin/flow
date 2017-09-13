@@ -15,8 +15,10 @@
  */
 package com.vaadin.data;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -37,10 +39,11 @@ import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.flow.html.Label;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.tests.data.bean.Person;
+import com.vaadin.ui.HasValidation;
 import com.vaadin.ui.TextField;
 
 public class BinderConverterValidatorTest
-extends BinderTestBase<Binder<Person>, Person> {
+        extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
 
@@ -62,11 +65,13 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder = new Binder<Person>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
@@ -92,18 +97,17 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         assertTrue(status.isOk());
         assertFalse(componentErrors.containsKey(nameField));
+        assertValidField(nameField);
     }
 
-    @SuppressWarnings("serial")
     @Test
     public void bound_validatorsFail_errors() {
         BindingBuilder<Person, String> binding = binder.forField(nameField);
         binding.withValidator(Validator.alwaysPass());
-        String msg1 = "foo";
-        String msg2 = "bar";
+        String errorMessage = "foo";
         binding.withValidator((String value,
-                ValueContext context) -> ValidationResult.error(msg1));
-        binding.withValidator(value -> false, msg2);
+                ValueContext context) -> ValidationResult.error(errorMessage));
+        binding.withValidator(value -> false, "bar");
         binding.bind(Person::getFirstName, Person::setFirstName);
 
         BinderValidationStatus<Person> status = binder.validate();
@@ -114,14 +118,14 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         BindingValidationStatus<?> validationStatus = errors.stream()
                 .findFirst().get();
-        String msg = validationStatus.getMessage().get();
-        assertEquals(msg1, msg);
+        assertEquals(errorMessage, validationStatus.getMessage().get());
 
         HasValue<?, ?> field = validationStatus.getField();
 
         assertEquals(nameField, field);
 
-        assertEquals("foo", componentErrors.get(nameField));
+        assertEquals(errorMessage, componentErrors.get(nameField));
+        assertInvalidField(errorMessage, nameField);
     }
 
     @Test
@@ -138,9 +142,9 @@ extends BinderTestBase<Binder<Person>, Person> {
             }
         };
         binder.forField(salaryField)
-        .withConverter(Double::valueOf, String::valueOf)
-        .withValidator(positiveNumberValidator)
-        .bind(Person::getSalaryDouble, Person::setSalaryDouble);
+                .withConverter(Double::valueOf, String::valueOf)
+                .withValidator(positiveNumberValidator)
+                .bind(Person::getSalaryDouble, Person::setSalaryDouble);
 
         Person person = new Person();
         binder.setBean(person);
@@ -148,6 +152,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         assertEquals(10, person.getSalaryDouble(), 0);
         salaryField.setValue("-1"); // Does not pass validator
         assertEquals(10, person.getSalaryDouble(), 0);
+        assertInvalidField(NEGATIVE_ERROR_MESSAGE, salaryField);
     }
 
     @Test
@@ -170,23 +175,16 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         ageField.setValue("");
         assertEquals(32, item.getAge());
-        assertValidationErrors(binder.validate(), EMPTY_ERROR_MESSAGE);
+        assertValidationError(binder.validate(), EMPTY_ERROR_MESSAGE);
     }
 
-    private void assertValidationErrors(
-            List<BindingValidationStatus<?>> validationErrors,
-            String... errorMessages) {
-        assertEquals(errorMessages.length, validationErrors.size());
-        for (int i = 0; i < errorMessages.length; i++) {
-            assertEquals(errorMessages[i],
-                    validationErrors.get(i).getMessage().get());
-        }
-    }
-
-    private void assertValidationErrors(BinderValidationStatus<Person> status,
-            String... errorMessages) {
-        assertValidationErrors(status.getFieldValidationErrors(),
-                errorMessages);
+    private void assertValidationError(BinderValidationStatus<Person> status,
+                                       String errorMessage) {
+        List<BindingValidationStatus<?>> validationErrors = status.getFieldValidationErrors();
+        assertThat("Got one error message, should have one validation error", validationErrors, hasSize(1));
+        BindingValidationStatus<?> error = validationErrors.get(0);
+        assertEquals(errorMessage, error.getMessage().get());
+        assertInvalidField(errorMessage, (HasValidation) error.getField());
     }
 
     @Test
@@ -194,7 +192,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         bindAgeWithValidatorConverterValidator();
         ageField.setValue("abc");
         assertEquals(32, item.getAge());
-        assertValidationErrors(binder.validate(), NOT_NUMBER_ERROR_MESSAGE);
+        assertValidationError(binder.validate(), NOT_NUMBER_ERROR_MESSAGE);
     }
 
     @Test
@@ -203,7 +201,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         ageField.setValue("-5");
         assertEquals(32, item.getAge());
-        assertValidationErrors(binder.validate(), NEGATIVE_ERROR_MESSAGE);
+        assertValidationError(binder.validate(), NEGATIVE_ERROR_MESSAGE);
     }
 
     @Test
@@ -212,6 +210,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         binder.getBean().setAge(12);
         binder.readBean(binder.getBean());
         assertEquals("12", ageField.getValue());
+        assertValidField(ageField);
     }
 
     @Test
@@ -268,6 +267,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         List<BindingValidationStatus<?>> errors = binder.validate()
                 .getFieldValidationErrors();
         assertEquals(0, errors.size());
+        assertValidField(nameField);
     }
 
     @Test
@@ -288,6 +288,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         BindingValidationStatus<?> error = errors.get(0);
         assertEquals(msg, error.getMessage().get());
         assertEquals(nameField, error.getField());
+        assertInvalidField(msg, nameField);
     }
 
     @Test
@@ -311,6 +312,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         assertEquals(msg1, error.getMessage().get());
         assertEquals(nameField, error.getField());
+        assertInvalidField(msg1, nameField);
     }
 
     @Test
@@ -325,6 +327,7 @@ extends BinderTestBase<Binder<Person>, Person> {
 
         assertFalse(binder.validate().hasErrors());
         assertTrue(binder.validate().isOk());
+        assertValidField(nameField);
     }
 
     @Test
@@ -346,12 +349,14 @@ extends BinderTestBase<Binder<Person>, Person> {
         assertFalse(binder.writeBeanIfValid(person));
         // check that field level-validation failed and bean is not updated
         assertEquals(firstName, person.getFirstName());
+        assertInvalidField(msg1, nameField);
 
         nameField.setValue("new name");
 
         assertFalse(binder.writeBeanIfValid(person));
         // Bean is updated but reverted
         assertEquals(firstName, person.getFirstName());
+        assertValidField(nameField);
     }
 
     @Test
@@ -383,14 +388,15 @@ extends BinderTestBase<Binder<Person>, Person> {
         ageField.setValue(String.valueOf(12));
 
         assertTrue(beanLevelValidationRun.get());
+        assertValidField(ageField);
     }
 
     @Test
     public void binderHasChanges() throws ValidationException {
         binder.forField(nameField)
-        .withValidator(Validator.from(name -> !"".equals(name),
-                "Name can't be empty"))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .withValidator(Validator.from(name -> !"".equals(name),
+                        "Name can't be empty"))
+                .bind(Person::getFirstName, Person::setFirstName);
         assertFalse(binder.hasChanges());
         binder.setBean(item);
         assertFalse(binder.hasChanges());
@@ -441,7 +447,7 @@ extends BinderTestBase<Binder<Person>, Person> {
         Binder<Person> binder = new Binder<>();
         String msg = "foo";
         binder.forField(nameField).withValidator(new NotEmptyValidator<>(msg))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
 
         Person person = new Person();
         String firstName = "foo";
@@ -459,7 +465,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     public void save_beanValidationErrors() throws ValidationException {
         Binder<Person> binder = new Binder<>();
         binder.forField(nameField).withValidator(new NotEmptyValidator<>("a"))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.withValidator(Validator.from(person -> false, "b"));
 
@@ -476,7 +482,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     @Test
     public void save_fieldsAndBeanLevelValidation() throws ValidationException {
         binder.forField(nameField).withValidator(new NotEmptyValidator<>("a"))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.withValidator(
                 Validator.from(person -> person.getLastName() != null, "b"));
@@ -493,7 +499,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     public void saveIfValid_fieldValidationErrors() {
         String msg = "foo";
         binder.forField(nameField).withValidator(new NotEmptyValidator<>(msg))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
 
         Person person = new Person();
         person.setFirstName("foo");
@@ -506,7 +512,7 @@ extends BinderTestBase<Binder<Person>, Person> {
     public void saveIfValid_noValidationErrors() {
         String msg = "foo";
         binder.forField(nameField).withValidator(new NotEmptyValidator<>(msg))
-        .bind(Person::getFirstName, Person::setFirstName);
+                .bind(Person::getFirstName, Person::setFirstName);
 
         Person person = new Person();
         person.setFirstName("foo");
@@ -670,35 +676,35 @@ extends BinderTestBase<Binder<Person>, Person> {
         final SerializablePredicate<String> lengthPredicate = v -> v
                 .length() > 2;
 
-                BindingBuilder<Person, String> firstNameBinding = binder
-                        .forField(nameField).withValidator(lengthPredicate, "length");
-                firstNameBinding.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> firstNameBinding = binder
+                .forField(nameField).withValidator(lengthPredicate, "length");
+        firstNameBinding.bind(Person::getFirstName, Person::setFirstName);
 
-                Binding<Person, String> lastNameBinding = binder.forField(lastNameField)
-                        .withValidator(v -> !nameField.getValue().isEmpty()
-                                || lengthPredicate.test(v), "err")
-                        .withValidator(lengthPredicate, "length")
-                        .bind(Person::getLastName, Person::setLastName);
+        Binding<Person, String> lastNameBinding = binder.forField(lastNameField)
+                .withValidator(v -> !nameField.getValue().isEmpty()
+                        || lengthPredicate.test(v), "err")
+                .withValidator(lengthPredicate, "length")
+                .bind(Person::getLastName, Person::setLastName);
 
-                // this will be triggered as a new bean is bound with binder.bind(),
-                // causing a validation error to be visible until reset is done
-                nameField.addValueChangeListener(v -> lastNameBinding.validate());
+        // this will be triggered as a new bean is bound with binder.bind(),
+        // causing a validation error to be visible until reset is done
+        nameField.addValueChangeListener(v -> lastNameBinding.validate());
 
-                Person person = new Person();
-                binder.setBean(person);
+        Person person = new Person();
+        binder.setBean(person);
 
-                Assert.assertFalse(componentErrors.containsKey(nameField));
-                Assert.assertFalse(componentErrors.containsKey(lastNameField));
+        Assert.assertFalse(componentErrors.containsKey(nameField));
+        Assert.assertFalse(componentErrors.containsKey(lastNameField));
 
-                nameField.setValue("x");
+        nameField.setValue("x");
 
-                Assert.assertTrue(componentErrors.containsKey(nameField));
-                Assert.assertTrue(componentErrors.containsKey(lastNameField));
+        Assert.assertTrue(componentErrors.containsKey(nameField));
+        Assert.assertTrue(componentErrors.containsKey(lastNameField));
 
-                binder.setBean(person);
+        binder.setBean(person);
 
-                Assert.assertFalse(componentErrors.containsKey(nameField));
-                Assert.assertFalse(componentErrors.containsKey(lastNameField));
+        Assert.assertFalse(componentErrors.containsKey(nameField));
+        Assert.assertFalse(componentErrors.containsKey(lastNameField));
     }
 
     protected void bindName() {
@@ -708,8 +714,8 @@ extends BinderTestBase<Binder<Person>, Person> {
 
     protected void bindAgeWithValidatorConverterValidator() {
         binder.forField(ageField).withValidator(notEmpty)
-        .withConverter(stringToInteger).withValidator(notNegative)
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(stringToInteger).withValidator(notNegative)
+                .bind(Person::getAge, Person::setAge);
         binder.setBean(item);
     }
 
@@ -718,8 +724,8 @@ extends BinderTestBase<Binder<Person>, Person> {
             throws ValidationException {
         Binder<Person> binder = new Binder<>();
         binder.forField(ageField)
-        .withConverter(new StringToIntegerConverter("Can't convert"))
-        .bind(Person::getAge, Person::setAge);
+                .withConverter(new StringToIntegerConverter("Can't convert"))
+                .bind(Person::getAge, Person::setAge);
 
         binder.withValidator(Validator.from(person -> false, "b"));
 

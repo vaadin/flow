@@ -16,6 +16,8 @@
 
 package com.vaadin.data;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -51,11 +53,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder = new Binder<Person>() {
             @Override
             protected void handleError(HasValue<?, ?> field, String error) {
+                super.handleError(field, error);
                 componentErrors.put(field, error);
             }
 
             @Override
             protected void clearError(HasValue<?, ?> field) {
+                super.clearError(field);
                 componentErrors.remove(field);
             }
         };
@@ -459,13 +463,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binding.bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
-        Assert.assertNull(textField.getErrorMessage());
+        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
 
         textField.setValue(textField.getEmptyValue());
         Assert.assertEquals("foobar", componentErrors.get(textField));
 
         textField.setValue("value");
-        Assert.assertNull(textField.getErrorMessage());
+        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
         assertTrue(textField.isRequiredIndicatorVisible());
     }
 
@@ -506,7 +510,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         binding.bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
-        Assert.assertNull(textField.getErrorMessage());
+        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
         Assert.assertEquals(0, invokes.get());
 
         textField.setValue(textField.getEmptyValue());
@@ -516,7 +520,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertEquals(2, invokes.get());
 
         textField.setValue("value");
-        Assert.assertNull(textField.getErrorMessage());
+        assertThat(textField.getErrorMessage(), isEmptyOrNullString());
         assertTrue(textField.isRequiredIndicatorVisible());
     }
 
