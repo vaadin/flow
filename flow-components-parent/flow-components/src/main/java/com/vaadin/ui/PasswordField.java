@@ -17,6 +17,7 @@
 package com.vaadin.ui;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinPasswordField;
 
@@ -37,8 +38,10 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * cleared.
      */
     public PasswordField() {
-        UI.getCurrent().getPage().executeJavaScript(
-                "$0.flowCheckValidityOld = $0.checkValidity;", getElement());
+        Optional.ofNullable(UI.getCurrent()).map(UI::getPage)
+                .ifPresent(page -> page.executeJavaScript(
+                        "$0.flowCheckValidityOld = $0.checkValidity;",
+                        getElement()));
         disableValidatorIfNotNeeded();
         getElement().addPropertyChangeListener(PATTERN_PROPERTY_NAME,
                 event -> disableValidatorIfNotNeeded());
@@ -58,12 +61,14 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
                 || patternProperty.isEmpty();
         if (isPatternPropertyEmpty && !Boolean.parseBoolean(
                 getElement().getProperty(REQUIRED_PROPERTY_NAME))) {
-            UI.getCurrent().getPage().executeJavaScript(
-                    "$0.checkValidity = () => {};", getElement());
+            Optional.ofNullable(UI.getCurrent()).map(UI::getPage)
+                    .ifPresent(page -> page.executeJavaScript(
+                            "$0.checkValidity = function() {};", getElement()));
         } else {
-            UI.getCurrent().getPage().executeJavaScript(
-                    "$0.checkValidity = $0.flowCheckValidityOld;",
-                    getElement());
+            Optional.ofNullable(UI.getCurrent()).map(UI::getPage)
+                    .ifPresent(page -> page.executeJavaScript(
+                            "$0.checkValidity = $0.flowCheckValidityOld;",
+                            getElement()));
         }
     }
 
