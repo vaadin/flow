@@ -1,0 +1,23 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+== Router Layouts and Nested Router Targets
+
+For a basic routing tutorial, see <<tutorial-routing-annotation#,Defining Routes with @Route>>.
+
+When defining routes using `@Route("path")`, the component will by default be rendered inside the `<body>` tag on the page (the element returned by `HasElement.getElement()` is attached to the `<body>`). You can define a parent layout using the `Route.layout()` method. To render `CompanyComponent` inside a layout a layout you would call `MainLayout` you would do:
+
+[source,java]
+----
+@Tag("div")
+@Route(value="company", layout=MainLayout.class)
+public class CompanyComponent extends Component {
+}
+----
+
+All parent layouts must implement the `RouterLayout` interface. 
+
+If there are multiple router target components using the same parent layout, then the parent layout instances will remain the same when the user navigates between the child components.
+
+See also:
+
+* <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>

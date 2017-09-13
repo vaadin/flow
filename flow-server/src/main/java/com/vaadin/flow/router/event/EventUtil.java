@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.HasElement;
 
 /**
  * Event handling utilities.
@@ -55,7 +55,7 @@ public final class EventUtil {
      * @return navigation listeners
      */
     public static List<BeforeNavigationListener> collectBeforeNavigationListeners(
-            List<Component> components) {
+            List<HasElement> components) {
         Stream<Element> elements = components.stream()
                 .flatMap(component -> flattenChildren(component.getElement()));
 
