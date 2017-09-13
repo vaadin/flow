@@ -20,6 +20,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
+import java.util.Objects;
+
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -31,6 +33,7 @@ import com.vaadin.testbench.By;
  * @author Vaadin Ltd.
  */
 public class BinderComponentsValidationViewIT extends AbstractComponentIT {
+    private static final String VALUE_ATTRIBUTE_NAME = "value";
 
     // each test creates a new Chrome instance, so it's easier to verify a
     // component this way
@@ -54,7 +57,8 @@ public class BinderComponentsValidationViewIT extends AbstractComponentIT {
         focusLostShouldNotChangeValidationStatus(textField);
     }
 
-    private void focusLostShouldNotChangeValidationStatus(WebElement textField) {
+    private void focusLostShouldNotChangeValidationStatus(
+            WebElement textField) {
         findElement(By.tagName("body")).click();
         assertValid(textField, false);
     }
@@ -63,24 +67,27 @@ public class BinderComponentsValidationViewIT extends AbstractComponentIT {
             boolean valid) {
         cleanInputField(textField);
         textField.sendKeys(input);
+        waitUntil(driver -> Objects
+                .equals(textField.getAttribute(VALUE_ATTRIBUTE_NAME), input));
         assertValid(textField, valid);
     }
 
     private void cleanInputField(WebElement textField) {
         getCommandExecutor().executeScript(
-                "arguments[0][arguments[1]]=arguments[3]", textField, "value",
-                "");
+                "arguments[0][arguments[1]]=arguments[3]", textField,
+                VALUE_ATTRIBUTE_NAME, "");
         assertFieldValue(textField, null);
         assertValid(textField, true);
     }
 
     private void assertFieldValue(WebElement textField, String expectedValue) {
         assertThat("Unexpected text in the text field component",
-                textField.getAttribute("value"), is(expectedValue));
+                textField.getAttribute(VALUE_ATTRIBUTE_NAME),
+                is(expectedValue));
     }
 
     private void assertValid(WebElement textField, boolean valid) {
-        assertThat("Unexpected text field validity",
+        assertThat("Unexpected text field 'invalid' property value",
                 Boolean.parseBoolean(textField.getAttribute("invalid")),
                 is(!valid));
 
