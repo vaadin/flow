@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.List;
+
 import com.vaadin.ui.Component;
 
 /**
@@ -34,6 +36,24 @@ public class NavigationStateBuilder {
     }
 
     /**
+     * Assigns the given navigation target with the given url parameter to the
+     * navigation state being built.
+     *
+     * @param navigationTarget
+     *            the navigation target
+     * @param urlParameters
+     *            the url parameter of the navigation target
+     * @return this builder, for chaining
+     */
+    public NavigationStateBuilder withTarget(
+            Class<? extends Component> navigationTarget,
+            List<String> urlParameters) {
+        currentState.setNavigationTarget(navigationTarget);
+        currentState.setUrlParameters(urlParameters);
+        return this;
+    }
+
+    /**
      * Assigns the given navigation target to the navigation state being built.
      *
      * @param navigationTarget
@@ -43,6 +63,7 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget) {
         currentState.setNavigationTarget(navigationTarget);
+        currentState.setUrlParameters(null);
         return this;
     }
 

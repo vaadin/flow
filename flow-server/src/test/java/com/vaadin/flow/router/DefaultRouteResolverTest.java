@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +42,8 @@ public class DefaultRouteResolverTest extends NewRoutingTestBase {
             throws InvalidRouteConfigurationException {
         RouteRegistry.getInstance()
                 .setNavigationTargets(Stream.of(RootNavigationTarget.class,
-                        FooNavigationTarget.class, FooBarNavigationTarget.class)
+                        FooNavigationTarget.class, FooBarNavigationTarget.class,
+                        GreetingNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
         Assert.assertEquals(RootNavigationTarget.class,
@@ -60,8 +62,48 @@ public class DefaultRouteResolverTest extends NewRoutingTestBase {
                         new Location("Not a configured location"))));
     }
 
+    @Test
+    public void string_url_parameter_correctly_set_to_state()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Collections.singleton(GreetingNavigationTarget.class));
+
+        Assert.assertEquals(Collections.singletonList("World"),
+                resolveNavigationState("greeting/World").getUrlParameters()
+                        .get());
+    }
+
+    @Test
+    public void route_precedence_with_parameters()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                OtherGreetingNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        Assert.assertEquals(GreetingNavigationTarget.class,
+                resolveNavigationTarget("greeting/World"));
+        Assert.assertEquals(OtherGreetingNavigationTarget.class,
+                resolveNavigationTarget("greeting/other/World"));
+    }
+
+    @Test
+    public void wrong_number_of_parameters_does_not_match()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Collections.singleton(GreetingNavigationTarget.class));
+
+        Assert.assertEquals(null,
+                resolveNavigationState("greeting/World/something"));
+        Assert.assertEquals(null, resolveNavigationState("greeting"));
+    }
+
     private Class<? extends Component> resolveNavigationTarget(String path) {
-        return resolver.resolve(new ResolveRequest(router, new Location(path)))
-                .getNavigationTarget();
+        return resolveNavigationState(path).getNavigationTarget();
+    }
+
+    private NavigationState resolveNavigationState(String path) {
+        return resolver.resolve(new ResolveRequest(router, new Location(path)));
     }
 }

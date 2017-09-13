@@ -87,8 +87,7 @@ public class NewRouter implements RouterInterface {
             NavigationEvent navigationEvent = new NavigationEvent(this,
                     location, ui, trigger);
 
-            NavigationHandler handler = new StaticRouteTargetRenderer(
-                    newState.getNavigationTarget());
+            NavigationHandler handler = new NavigationStateRenderer(newState);
             return handler.handle(navigationEvent);
         }
 
