@@ -18,16 +18,16 @@ package com.vaadin.flow.tutorial.routing;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
 
-@CodeFor("tutorial-routing-view-parameters.asciidoc")
+@CodeFor("routing/tutorial-routing-view-parameters.asciidoc")
 public class RoutingViewParameters {
 
     private interface Product {

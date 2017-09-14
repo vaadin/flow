@@ -21,7 +21,7 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
 
-@CodeFor("tutorial-webcomponents-es5.asciidoc")
+@CodeFor("web-components/tutorial-webcomponents-es5.asciidoc")
 @WebServlet(urlPatterns = "/*", name = "UIServlet", asyncSupported = true)
 @VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
 public class Servlet extends VaadinServlet {

@@ -25,7 +25,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.HasText;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-importing.asciidoc")
+@CodeFor("application-structure/tutorial-importing.asciidoc")
 public class Importing {
 
     //@formatter:off - custom line wrapping

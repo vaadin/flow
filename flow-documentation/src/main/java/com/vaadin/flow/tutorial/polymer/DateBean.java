@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-model-converters.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-model-converters.asciidoc")
 public class DateBean implements Serializable {
 
     private String day;

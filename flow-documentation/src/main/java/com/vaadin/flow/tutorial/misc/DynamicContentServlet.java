@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-dynamic-content.asciidoc")
+@CodeFor("miscellaneous/tutorial-dynamic-content.asciidoc")
 @WebServlet(urlPatterns = "/image", name = "DynamicContentServlet")
 public class DynamicContentServlet extends HttpServlet {
 

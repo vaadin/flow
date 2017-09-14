@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-flow-components-binder.asciidoc")
+@CodeFor("binding-data/tutorial-flow-components-binder.asciidoc")
 public class Person implements Serializable {
     private String name;
     private String lastName;
