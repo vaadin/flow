@@ -17,12 +17,12 @@ package com.vaadin.flow.tutorial.webcomponent;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-webcomponent-basic.asciidoc")
+@CodeFor("web-components/tutorial-webcomponent-basic.asciidoc")
 public class WebComponentBasics {
     @Tag("paper-slider")
     @HtmlImport("bower_components/paper-slider/paper-slider.html")

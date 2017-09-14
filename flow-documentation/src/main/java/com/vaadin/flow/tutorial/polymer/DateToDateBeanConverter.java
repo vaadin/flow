@@ -7,7 +7,7 @@ import java.util.GregorianCalendar;
 import com.vaadin.flow.template.model.ModelConverter;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-model-converters.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-model-converters.asciidoc")
 public class DateToDateBeanConverter implements ModelConverter<Date, DateBean> {
 
     @Override

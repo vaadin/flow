@@ -1,0 +1,74 @@
+---
+title: Setup your project to use Flow components
+order: 1
+layout: page
+---
+
+= Setup your project to use Flow components
+
+Flow provides some pre-built server-side components for Vaadin webcomponents,
+such as `VaadinButton`, `VaadinTextField` and so on. Those components are part of
+the `flow-components` package, that can be added as an optional dependency to
+any Flow project.
+
+== Maven configuration
+
+[NOTE]
+Before you configure your project to use Flow components, make sure it is
+properly configured to run with Polymer webcomponents. Please refer to
+<<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+for more information.
+
+The first step is to add the `flow-components` package to your project
+dependencies. This package is released alongside Flow and shares the same
+version number. When using Maven you can add it to your `pom.xml` as this:
+
+[source,xml]
+----
+<dependency>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-components</artifactId>
+    <version>${flow.version}</version>
+</dependency>
+----
+
+[TIP]
+To enable compilation to ES5 (for browsers that lack of ES6 support, such as
+  IE11), you need extra configuration, which is described at
+  <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+
+== bower.json configuration
+
+In your `bower.json` file, which is located at `src/main/frontend`, you
+need to add the webcomponent dependencies to each desired webcomponent. Here is
+an example that adds all supported elements:
+
+[source,json]
+----
+{
+  // [...] other properties
+  "dependencies": {
+    "polymer": "~2.0.2",
+    "vaadin-text-field": "~1.1.0-alpha2",
+    "vaadin-button": "~1.0.0",
+    "vaadin-checkbox": "~1.0.0-alpha1",
+    "vaadin-combo-box": "~2.0.0",
+    "vaadin-form-layout": "~1.0.0"
+  }
+}
+----
+
+The full list of Vaadin webcomponents and their latest versions can be found
+https://www.webcomponents.org/collection/vaadin/vaadin-core-elements[here].
+
+You only need to add the webcomponents you are going to use in your project.
+There's no harm to add webcomponents that you are not going to use at the
+server-side, except that the final `war` size will be larger for no reason.
+
+== Demo and code samples
+
+The Flow components demo at http://flow.app.fi contains examples of
+the usage of each supported component, with code samples for common use cases.
+
+You can also download the demo project directly from
+https://github.com/vaadin/flow/tree/master/flow-components-parent/demo-flow-components[GitHub]

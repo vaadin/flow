@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-routing-error-view.asciidoc")
+@CodeFor("routing/tutorial-routing-error-view.asciidoc")
 public class RoutingErrorView {
     public class MyRouterConfigurator implements RouterConfigurator {
         @Override

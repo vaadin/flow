@@ -25,7 +25,7 @@ import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
-@CodeFor("tutorial-component-events.asciidoc")
+@CodeFor("creating-components/tutorial-component-events.asciidoc")
 public class ComponentEvents {
 
     @DomEvent("change")
