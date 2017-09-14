@@ -1,6 +1,6 @@
 ---
 title: Navigating Between Routes
-order: 8
+order: 3
 layout: page
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Defining Routes With RouterConfiguration
-order: 9
+order: 4
 layout: page
 ---
 

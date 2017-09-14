@@ -1,6 +1,6 @@
 ---
 title: Using View Parameters
-order: 3
+order: 7
 layout: page
 ---
 

@@ -1,3 +1,9 @@
+---
+title: Router Layouts and Nested Router Targets
+order: 4
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 == Router Layouts and Nested Router Targets
@@ -14,7 +20,7 @@ public class CompanyComponent extends Component {
 }
 ----
 
-All parent layouts must implement the `RouterLayout` interface. 
+All parent layouts must implement the `RouterLayout` interface.
 
 If there are multiple router target components using the same parent layout, then the parent layout instances will remain the same when the user navigates between the child components.
 

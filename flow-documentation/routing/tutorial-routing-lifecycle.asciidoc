@@ -1,3 +1,9 @@
+---
+title: Navigation Lifecycle
+order: 2
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = Navigation Lifecycle

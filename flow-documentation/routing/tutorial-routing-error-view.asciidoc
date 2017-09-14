@@ -1,6 +1,6 @@
 ---
 title: Defining an Error View
-order: 5
+order: 9
 layout: page
 ---
 
