@@ -32,7 +32,7 @@ import com.vaadin.flow.html.Label;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.TextField;
 
-@CodeFor("tutorial-flow-components-binder-beans.asciidoc")
+@CodeFor("binding-data/tutorial-flow-components-binder-beans.asciidoc")
 public class BinderBeans {
 
     private TextField streetAddressField;
@@ -59,9 +59,9 @@ public class BinderBeans {
         binder.bind(streetAddressField, "address.street");
         // Bind using forField for additional configuration
         binder.forField(yearOfBirthField)
-        .withConverter(
-                new StringToIntegerConverter("Please enter a number"))
-        .bind("yearOfBirth");
+                .withConverter(
+                        new StringToIntegerConverter("Please enter a number"))
+                .bind("yearOfBirth");
     }
 
     public void beanBinder() {
@@ -120,7 +120,7 @@ public class BinderBeans {
         // @formatter:on
     }
 
-    private void setVisible(Label label , boolean visible){
+    private void setVisible(Label label, boolean visible) {
 
     }
 }

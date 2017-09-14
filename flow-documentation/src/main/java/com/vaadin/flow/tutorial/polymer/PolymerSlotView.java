@@ -29,7 +29,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.CompanyView;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.HomeView;
 
-@CodeFor("tutorial-template-components-in-slot.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-components-in-slot.asciidoc")
 public class PolymerSlotView {
     @Tag("component-container")
     @HtmlImport("/com/example/ComponentContainer.html")
@@ -43,13 +43,14 @@ public class PolymerSlotView {
 
     @Tag("main-layout")
     @HtmlImport("/com/example/MainLayout.html")
-    public class MainLayout extends PolymerTemplate<TemplateModel> implements HasChildView {
+    public class MainLayout extends PolymerTemplate<TemplateModel>
+            implements HasChildView {
 
         private View childView;
 
         @Override
         public void setChildView(View childView) {
-            if(this.childView != null) {
+            if (this.childView != null) {
                 getElement().removeChild(this.childView.getElement());
             }
             getElement().appendChild(childView.getElement());

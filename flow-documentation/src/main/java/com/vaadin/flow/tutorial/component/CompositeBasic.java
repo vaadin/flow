@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.tutorial.component;
 
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Input;
 import com.vaadin.flow.html.Label;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Composite;
 
-@CodeFor("tutorial-component-composite.asciidoc")
+@CodeFor("creating-components/tutorial-component-composite.asciidoc")
 public class CompositeBasic {
     public class TextField extends Composite<Div> {
 

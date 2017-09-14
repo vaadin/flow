@@ -22,7 +22,7 @@ import com.vaadin.annotations.Convert;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-model-converters.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-model-converters.asciidoc")
 public class Converters {
 
     public interface MyModel extends TemplateModel {

@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-routing-rerouting.asciidoc")
+@CodeFor("routing/tutorial-routing-rerouting.asciidoc")
 public class ReroutingView {
 
     public class MyView extends Div implements View {
