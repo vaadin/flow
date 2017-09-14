@@ -1,3 +1,9 @@
+---
+title: Importing HTML and JavaScript
+order: 4
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Ways of Importing the Dependencies
 
