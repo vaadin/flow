@@ -20,7 +20,7 @@ import com.vaadin.flow.html.Div;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FlexLayout.Alignment;
-import com.vaadin.ui.FlexLayout.SpacingMode;
+import com.vaadin.ui.FlexLayout.JustifyContentMode;
 import com.vaadin.ui.VerticalLayout;
 
 /**
@@ -58,13 +58,13 @@ public class VerticalLayoutView extends DemoView {
 
     private void createLayoutWithSpacing() {
         // begin-source-example
-        // source-example-heading: Layout with spacing
+        // source-example-heading: Layout with justify content
         VerticalLayout layout = new VerticalLayout();
         layout.setHeight("150px");
         layout.getStyle().set("border", "1px solid #9E9E9E");
 
-        // the default is SpacingMode.BETWEEN
-        layout.setSpacing(true);
+        // the default is JustifyContentMode.START
+        layout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         Component component1 = createComponent(1, "#78909C");
         Component component2 = createComponent(2, "#546E7A");
@@ -78,16 +78,20 @@ public class VerticalLayoutView extends DemoView {
         component3.getElement().getStyle().set("fontSize", "9px");
 
         Div buttons = new Div();
-        buttons.add(createSpacingButton(layout, "space-between-button",
-                SpacingMode.BETWEEN));
-        buttons.add(createSpacingButton(layout, "space-around-button",
-                SpacingMode.AROUND));
-        buttons.add(createSpacingButton(layout, "space-evenly-button",
-                SpacingMode.EVENLY));
+        buttons.add(createSpacingButton(layout, "justify-content-start-button",
+                JustifyContentMode.START));
+        buttons.add(createSpacingButton(layout, "justify-content-end-button",
+                JustifyContentMode.END));
+        buttons.add(createSpacingButton(layout,
+                "justify-content-between-button", JustifyContentMode.BETWEEN));
+        buttons.add(createSpacingButton(layout, "justify-content-around-button",
+                JustifyContentMode.AROUND));
+        buttons.add(createSpacingButton(layout, "justify-content-evenly-button",
+                JustifyContentMode.EVENLY));
 
-        layout.setId("layout-with-spacing");
+        layout.setId("layout-with-justify-content");
 
-        addCard("Layout with spacing", layout, buttons);
+        addCard("Layout with justify content", layout, buttons);
     }
 
     private void createLayoutWithDefaultAlignment() {
@@ -96,7 +100,7 @@ public class VerticalLayoutView extends DemoView {
         VerticalLayout layout = new VerticalLayout();
         layout.setHeight("150px");
         layout.getStyle().set("border", "1px solid #9E9E9E");
-        layout.setSpacing(true);
+        layout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         // the default is Alignment.START
         layout.setDefaultComponentAlignment(Alignment.STRETCH);
@@ -132,7 +136,7 @@ public class VerticalLayoutView extends DemoView {
         VerticalLayout layout = new VerticalLayout();
         layout.setHeight("150px");
         layout.getStyle().set("border", "1px solid #9E9E9E");
-        layout.setSpacing(true);
+        layout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         Component component1 = createComponent(1, "#78909C");
         layout.setComponentAlignment(Alignment.START, component1);
@@ -206,11 +210,11 @@ public class VerticalLayoutView extends DemoView {
     }
 
     private Component createSpacingButton(VerticalLayout layout, String id,
-            SpacingMode spacing) {
+            JustifyContentMode spacing) {
         GeneratedPaperButton button = new GeneratedPaperButton(spacing.name());
         button.setId(id);
         button.setRaised(true);
-        button.addClickListener(event -> layout.setSpacingMode(spacing));
+        button.addClickListener(event -> layout.setJustifyContentMode(spacing));
         return button;
     }
 
