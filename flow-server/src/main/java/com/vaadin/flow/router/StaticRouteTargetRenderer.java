@@ -64,7 +64,7 @@ public class StaticRouteTargetRenderer extends RouteTargetRenderer {
 
     private List<Class<? extends RouterLayout>> getParentLayouts(
             Class<?> component) {
-        List<Class<? extends RouterLayout>> list = new ArrayList<>(0);
+        List<Class<? extends RouterLayout>> list = new ArrayList<>();
 
         Optional<Route> router = AnnotationReader.getAnnotationFor(component,
                 Route.class);

@@ -57,7 +57,7 @@ public class RouterIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void targetHasMulipleParentLayouts() {
+    public void targetHasMultipleParentLayouts() {
         openRouteUrl("target");
 
         Assert.assertTrue("Missing top most level: main layout",

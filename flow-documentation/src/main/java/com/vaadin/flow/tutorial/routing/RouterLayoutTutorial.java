@@ -42,7 +42,7 @@ public class RouterLayoutTutorial {
             addMenuElement(IconsView.class, "Icons");
         }
         private void addMenuElement(Class<? extends Component> navigationTarget, String name) {
-            // implementation ommitted
+            // implementation omitted
         }
     }
 

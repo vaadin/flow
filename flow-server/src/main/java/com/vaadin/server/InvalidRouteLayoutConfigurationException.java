@@ -16,7 +16,7 @@
 package com.vaadin.server;
 
 /**
- * Exception indicating that Route layouts configuration has problems
+ * Exception indicating that Route layouts configuration has problems.
  */
 public class InvalidRouteLayoutConfigurationException extends RuntimeException {
 

@@ -48,21 +48,22 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
             Set<Class<? extends Component>> routes = classSet.stream()
                     .filter(RouteRegistryInitializer::isApplicableClass)
                     .map(clazz -> (Class<? extends Component>) clazz)
+                    .peek(this::checkForConflictingAnnotations)
                     .collect(Collectors.toSet());
-
-            for (Class<?> route : routes) {
-                if (route.isAnnotationPresent(ParentLayout.class)) {
-                    throw new InvalidRouteLayoutConfigurationException(route
-                            .getCanonicalName()
-                            + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
-                }
-            }
 
             RouteRegistry.getInstance().setNavigationTargets(routes);
         } catch (InvalidRouteConfigurationException irce) {
             throw new ServletException(
                     "Exception while registering Routes on servlet startup",
                     irce);
+        }
+    }
+
+    private void checkForConflictingAnnotations(Class<?> route) {
+        if (route.isAnnotationPresent(ParentLayout.class)) {
+            throw new InvalidRouteLayoutConfigurationException(route
+                    .getCanonicalName()
+                    + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
         }
     }
 

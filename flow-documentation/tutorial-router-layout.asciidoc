@@ -28,9 +28,10 @@ See also:
 * <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
 
 ==== Multiple parent layouts with @ParentLayout
-In some cases there might be a need to have a parent layout for a parent layout in the application for instance we might have a Main layout used for everything and a Menu bar.
+In some cases there might be a need to have a parent layout for a parent layout in the application.
+One example would be that we have a Main layout used for everything and a Menu bar that is reused for views.
 
-For instance we could have the following setup:
+For this we could have the following setup:
 [source,java]
 ----
 public class MainLayout extends Div implements RouterLayout {
@@ -43,7 +44,7 @@ public class MenuBar extends Div implements RouterLayout {
         addMenuElement(IconsView.class, "Icons");
     }
     private void addMenuElement(Class<? extends Component> navigationTarget, String name) {
-        // implementation ommitted
+        // implementation omitted
     }
 }
 
@@ -59,7 +60,7 @@ public class IconsView extends Div {
 In this case we would have a `MainLayout` that always encapsulates `MenuBar` which in turn encapsulates
 `TutorialView` or `IconsView` depending on where we have navigated to.
 
-In this sample we used 2 parent layer, but there is no restriction in the amount of nested layouts.
+In this sample we have 2 parent layers, but there is no restriction in the amount of nested layouts.
 
 [NOTE]
 A layout that is a RouterLayout could have an @Route with a layout and would then have
