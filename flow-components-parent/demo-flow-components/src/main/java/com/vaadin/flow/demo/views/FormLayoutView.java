@@ -54,7 +54,10 @@ public class FormLayoutView extends DemoView {
         createFormLayoutWithBinder();
     }
 
-    public class Contact implements Serializable {
+    /**
+     * Example Bean for the Form with Binder.
+     */
+    private static class Contact implements Serializable {
 
         private String firstName = "";
         private String lastName = "";
@@ -119,7 +122,7 @@ public class FormLayoutView extends DemoView {
                             : ", phone " + phone
                                     + (doNotCall ? " (don't call me!)"
                                             : " (you can call me)"))
-                    + (email == null | email.isEmpty() ? ""
+                    + (email == null || email.isEmpty() ? ""
                             : ", e-mail " + email);
         }
     }
