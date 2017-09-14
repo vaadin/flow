@@ -1,6 +1,6 @@
 ---
 title: Rerouting to another View
-order: 6
+order: 10
 layout: page
 ---
 

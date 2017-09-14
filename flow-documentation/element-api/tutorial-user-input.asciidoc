@@ -1,5 +1,5 @@
 ---
-title: etrieving User Input
+title: Retrieving User Input
 order: 3
 layout: page
 ---
