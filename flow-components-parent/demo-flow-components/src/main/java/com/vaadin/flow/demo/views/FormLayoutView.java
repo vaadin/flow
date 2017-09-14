@@ -116,14 +116,23 @@ public class FormLayoutView extends DemoView {
 
         @Override
         public String toString() {
-            return firstName + " " + lastName
-                    + (birthDate == null ? "" : ", born on " + birthDate)
-                    + (phone == null || phone.isEmpty() ? ""
-                            : ", phone " + phone
-                                    + (doNotCall ? " (don't call me!)"
-                                            : " (you can call me)"))
-                    + (email == null || email.isEmpty() ? ""
-                            : ", e-mail " + email);
+            StringBuilder builder = new StringBuilder();
+            builder.append(firstName).append(" ").append(lastName);
+            if (birthDate != null) {
+                builder.append(", born on ").append(birthDate);
+            }
+            if (phone != null && !phone.isEmpty()) {
+                builder.append(", phone ").append(phone);
+                if (doNotCall) {
+                    builder.append(" (don't call me!)");
+                } else {
+                    builder.append(" (you can call me)");
+                }
+            }
+            if (email != null && !email.isEmpty()) {
+                builder.append(", e-mail ").append(email);
+            }
+            return builder.toString();
         }
     }
 
@@ -271,7 +280,7 @@ public class FormLayoutView extends DemoView {
                         .map(BindingValidationStatus::getMessage)
                         .map(Optional::get).distinct()
                         .collect(Collectors.joining(", "));
-                infoLabel.setText(errorText);
+                infoLabel.setText("There are errors: " + errorText);
             }
         });
         reset.addClickListener(event -> {
@@ -281,6 +290,16 @@ public class FormLayoutView extends DemoView {
             doNotCall.setValue(false);
         });
         // end-source-example
+
+        infoLabel.setId("binder-info");
+        firstName.setId("binder-first-name");
+        lastName.setId("binder-last-name");
+        phone.setId("binder-phone");
+        email.setId("binder-email");
+        birthDate.setId("binder-birth-date");
+        doNotCall.setId("binder-do-not-call");
+        save.setId("binder-save");
+        reset.setId("binder-reset");
 
         addCard("A form layout with fields using Binder", layoutWithBinder,
                 infoLabel, actions);
