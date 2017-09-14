@@ -67,6 +67,5 @@ its own navigation target, but would also be able to function as a middle layout
 bringing in the parent layout without having an extra `@ParentLayout` annotation.
 
 [NOTE]
-The layout value given in `@Route` is given precedence over the `@ParentLayout` annotation
-and as a recommendation both shouldn't be used at the same time.
+Having `@Route` and `@ParentLayout` defined on the same class will throw on startup.
 
