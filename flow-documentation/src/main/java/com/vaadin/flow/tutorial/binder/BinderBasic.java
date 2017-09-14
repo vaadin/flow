@@ -23,7 +23,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.TextField;
 
-@CodeFor("tutorial-flow-components-binder.asciidoc")
+@CodeFor("binding-data/tutorial-flow-components-binder.asciidoc")
 public class BinderBasic {
 
     private TextField titleField;
@@ -38,12 +38,12 @@ public class BinderBasic {
 
         // Start by defining the Field instance to use
         binder.forField(titleField)
-        // Finalize by doing the actual binding to the Person class
-        .bind(
-                // Callback that loads the title from a person instance
-                Person::getTitle,
-                // Callback that saves the title in a person instance
-                Person::setTitle);
+                // Finalize by doing the actual binding to the Person class
+                .bind(
+                        // Callback that loads the title from a person instance
+                        Person::getTitle,
+                        // Callback that saves the title in a person instance
+                        Person::setTitle);
 
         TextField nameField = new TextField();
 

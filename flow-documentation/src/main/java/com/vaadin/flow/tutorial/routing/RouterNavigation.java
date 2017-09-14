@@ -22,7 +22,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.CompanyView;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.HomeView;
 
-@CodeFor("tutorial-routing-navigation.asciidoc")
+@CodeFor("routing/tutorial-routing-navigation.asciidoc")
 public class RouterNavigation {
 
     void navigation() {

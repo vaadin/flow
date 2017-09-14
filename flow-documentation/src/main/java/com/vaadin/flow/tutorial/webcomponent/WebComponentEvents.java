@@ -25,7 +25,7 @@ import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
-@CodeFor("tutorial-webcomponent-events.asciidoc")
+@CodeFor("web-components/tutorial-webcomponent-events.asciidoc")
 public class WebComponentEvents {
     @DomEvent("value-change")
     public class ValueChangeEvent extends ComponentEvent<PaperSlider> {

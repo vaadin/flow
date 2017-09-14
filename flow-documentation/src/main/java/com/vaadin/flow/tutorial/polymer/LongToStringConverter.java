@@ -20,7 +20,7 @@ import java.util.Optional;
 import com.vaadin.flow.template.model.ModelConverter;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-model-converters.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-model-converters.asciidoc")
 public class LongToStringConverter implements ModelConverter<Long, String> {
 
     @Override

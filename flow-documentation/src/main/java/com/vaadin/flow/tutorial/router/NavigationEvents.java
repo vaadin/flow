@@ -25,7 +25,7 @@ import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-routing-lifecycle.asciidoc")
+@CodeFor("routing/tutorial-routing-lifecycle.asciidoc")
 public class NavigationEvents {
 
     @Route("")
@@ -45,7 +45,6 @@ public class NavigationEvents {
             // Handle for instance before navigation clean up
         }
     }
-
 
     @Route("no-items")
     public class NoItemsView extends Div {

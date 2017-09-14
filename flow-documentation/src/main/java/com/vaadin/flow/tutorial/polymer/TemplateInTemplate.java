@@ -22,7 +22,7 @@ import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-subtemplate.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-subtemplate.asciidoc")
 public class TemplateInTemplate {
 
     @Tag("parent-template")

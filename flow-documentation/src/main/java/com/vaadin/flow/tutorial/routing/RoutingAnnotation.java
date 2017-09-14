@@ -19,7 +19,7 @@ import com.vaadin.annotations.Route;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-routing-annotation.asciidoc")
+@CodeFor("routing/tutorial-routing-annotation.asciidoc")
 public class RoutingAnnotation {
 
     @Route("")

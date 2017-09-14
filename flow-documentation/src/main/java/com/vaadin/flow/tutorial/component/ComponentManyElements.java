@@ -20,7 +20,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-component-many-elements.asciidoc")
+@CodeFor("creating-components/tutorial-component-many-elements.asciidoc")
 public class ComponentManyElements {
 
     @Tag("div")
