@@ -16,14 +16,17 @@
 package com.vaadin.flow.router.event;
 
 import java.util.EventObject;
+import java.util.Objects;
 
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationStateRenderer;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.ui.Component;
 
 /**
  * Event created before navigation happens.
@@ -148,14 +151,28 @@ public class BeforeNavigationEvent extends EventObject {
     }
 
     /**
+     * Reroutes the navigation to the given navigation state.
+     *
+     * @param targetState
+     *            the target navigation state of the rerouting, not {@code null}
+     */
+    public void rerouteTo(NavigationState targetState) {
+        Objects.requireNonNull(targetState, "targetState cannot be null");
+        rerouteTo(new NavigationStateRenderer(targetState), targetState);
+    }
+
+    /**
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
      *
-     * @param targetState
-     *            the target navigation state of the rerouting
+     * @param routeTargetType
+     *            the component type to display, not {@code null}
      */
-    public void rerouteTo(NavigationState targetState) {
-        rerouteTo(new NavigationStateRenderer(targetState), targetState);
+    public void rerouteTo(Class<? extends Component> routeTargetType) {
+        Objects.requireNonNull(routeTargetType,
+                "routeTargetType cannot be null");
+        rerouteTo(new NavigationStateBuilder().withTarget(routeTargetType)
+                .build());
     }
 
     /**
