@@ -5,8 +5,9 @@ layout: page
 ---
 
 ifdef::env-github[:outfilesuffix: .asciidoc]
+==== Work in progress
 
-== Defining Routes With @Route
+= Defining Routes With @Route
 The `@Route` annotation allows you to define an arbitrary component as a route target for a given URL fragment. For example:
 
 [source,java]
