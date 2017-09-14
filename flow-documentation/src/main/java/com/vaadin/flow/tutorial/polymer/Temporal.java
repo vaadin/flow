@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-model-converters.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-model-converters.asciidoc")
 @Target(ElementType.FIELD)
 public @interface Temporal {
 

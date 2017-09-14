@@ -25,9 +25,10 @@ import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-ways-of-importing.asciidoc")
+@CodeFor("application-structure/tutorial-ways-of-importing.asciidoc")
 public class LazyImporting {
 
+    //@formatter:off - custom line wrapping
     @Tag("div")
     @HtmlImport("/html/layout.html") // same as @HtmlImport("/html/layout.html", loadMode = LoadMode.EAGER)
     @StyleSheet(value = "/css/big_style_file.css", loadMode = LoadMode.INLINE)
@@ -35,6 +36,7 @@ public class LazyImporting {
     public class MainLayout extends Component {
         // implementation omitted
     }
+    //@formatter:on
 
     public class MyCustomUI extends UI {
 

@@ -21,7 +21,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-include-css.asciidoc")
+@CodeFor("application-structure/tutorial-include-css.asciidoc")
 public class IncludeCss {
 
     //@formatter:off - custom line wrapping

@@ -1,3 +1,9 @@
+---
+title: Overview
+order: 1
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Flow
 :toc:
@@ -19,71 +25,72 @@ The current version provides a complete DOM tree implementation and beginnings o
 These tutorials show how the different features are used.
 
 * Application structure
-** <<tutorial-hello-world#,Hello World>>
-** <<tutorial-include-css#,Including Style Sheets>>
-** <<tutorial-importing#,Importing html/javascript>>
-** <<tutorial-ways-of-importing#,Ways of importing the dependencies>>
-** <<tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
-** <<tutorial-bootstrap#,Modifying bootstrap page>>
+** <<application-structure/tutorial-hello-world#,Hello World>>
+** <<application-structure/tutorial-include-css#,Including Style Sheets>>
+** <<application-structure/tutorial-importing#,Importing html/javascript>>
+** <<application-structure/tutorial-ways-of-importing#,Ways of importing the dependencies>>
+** <<application-structure/tutorial-bootstrap#,Modifying bootstrap page>>
 * Element API
-** <<tutorial-properties-attributes#,Element Properties and Attributes>>
-** <<tutorial-event-listener#,Listening to User Events>>
-** <<tutorial-user-input#,Retrieving User Input>>
-** <<tutorial-dynamic-styling#,Dynamic styling>>
-** <<tutorial-shadow-root#,Shadow root in server-side Element>>
+** <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>
+** <<element-api/tutorial-event-listener#,Listening to User Events>>
+** <<element-api/tutorial-user-input#,Retrieving User Input>>
+** <<element-api/tutorial-dynamic-styling#,Dynamic styling>>
+** <<element-api/tutorial-shadow-root#,Shadow root in server-side Element>>
 * Web components
-** <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
-** <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
-** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
-** <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+** <<web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+** <<web-components/tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
+** <<web-components/tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
+** <<web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
 * Flow components
-** <<tutorial-flow-components-setup#,Setup your project to use Flow components>>
+** <<flow-components/tutorial-flow-components-setup#,Setup your project to use Flow components>>
 ** Binding Data to Forms
-*** <<tutorial-flow-components-binder#,Binder overview>>
-*** <<tutorial-flow-components-binder-validation#,Validating and Converting User Input>>
-*** <<tutorial-flow-components-binder-load#,Loading from and Saving to Business Objects>>
-*** <<tutorial-flow-components-binder-beans#,Binding Beans to Forms>>
+*** <<binding-data/tutorial-flow-components-binder#,Binder overview>>
+*** <<binding-data/tutorial-flow-components-binder-validation#,Validating and Converting User Input>>
+*** <<binding-data/tutorial-flow-components-binder-load#,Loading from and Saving to Business Objects>>
+*** <<binding-data/tutorial-flow-components-binder-beans#,Binding Beans to Forms>>
 * Creating your own components
-** <<tutorial-component-basic#,Creating A Simple Component Using the Element API>>
-** <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
-** <<tutorial-component-property-descriptor#,Using API Helpers for Defining Component Properties>>
-** <<tutorial-component-composite#,Creating a Component Using Existing Components>>
-** <<tutorial-component-events#,Using Events with Components>>
-** <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
-** <<tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
+** <<creating-components/tutorial-component-basic#,Creating A Simple Component Using the Element API>>
+** <<creating-components/tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
+** <<creating-components/tutorial-component-property-descriptor#,Using API Helpers for Defining Component Properties>>
+** <<creating-components/tutorial-component-composite#,Creating a Component Using Existing Components>>
+** <<creating-components/tutorial-component-events#,Using Events with Components>>
+** <<creating-components/tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
+** <<creating-components/tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
 * Routing and navigation
-** <<tutorial-routing-annotation#,Defining Routes with @Route>>
-** <<tutorial-routing-lifecycle#,Navigation Lifecycle>>
-** <<tutorial-routing-navigation#,Navigating Between Routes>>
-** <<tutorial-routing-router-configuration#,Defining View Routes with RouterConfiguration>>
-** <<tutorial-router-layout#,Router Layouts and Nested Router Targets>>
-** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
-** <<tutorial-routing-view-parameters#,Using View Parameters>>
-** <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
-** <<tutorial-routing-error-view#,Defining an Error View>>
-** <<tutorial-routing-rerouting#,Rerouting to another View>>
+** <<routing/tutorial-routing-annotation#,Defining Routes with @Route>>
+** <<routing/tutorial-routing-lifecycle#,Navigation Lifecycle>>
+** <<routing/tutorial-routing-navigation#,Navigating Between Routes>>
+** <<routing/tutorial-routing-router-configuration#,Defining View Routes with RouterConfiguration>>
+** <<routing/tutorial-router-layout#,Router Layouts and Nested Router Targets>>
+** <<routing/tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
+** <<routing/tutorial-routing-view-parameters#,Using View Parameters>>
+** <<routing/tutorial-routing-view-titles#,Updating Page Title on Navigation>>
+** <<routing/tutorial-routing-error-view#,Defining an Error View>>
+** <<routing/tutorial-routing-rerouting#,Rerouting to another View>>
 * Polymer template
-** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
-** <<tutorial-template-components#,Binding Components from PolymerTemplate>>
-** <<tutorial-template-subtemplate#,Using sub-template from PolymerTemplate>>
-** <<tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
-** <<tutorial-template-event-handlers#,Handling User Events in a PolymerTemplate>>
-** <<tutorial-template-bindings#,Binding Model Data in a PolymerTemplate>>
-*** <<tutorial-template-bindings#two-way-binding,Two-way data binding>>
-*** <<tutorial-template-list-bindings#,Using List of Items in a PolymerTemplate with template repeater>>
-** <<tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>
-** <<tutorial-template-model-converters#,Using Model Converters with a PolymerTemplate Model>>
+** <<polymer-templates/tutorial-template-basic#,Creating A Simple Component Using the Template API>>
+** <<polymer-templates/tutorial-template-components#,Binding Components from PolymerTemplate>>
+** <<polymer-templates/tutorial-template-subtemplate#,Using sub-template from PolymerTemplate>>
+** <<polymer-templates/tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
+** <<polymer-templates/tutorial-template-event-handlers#,Handling User Events in a PolymerTemplate>>
+** <<polymer-templates/tutorial-template-bindings#,Binding Model Data in a PolymerTemplate>>
+*** <<polymer-templates/tutorial-template-bindings#two-way-binding,Two-way data binding>>
+*** <<polymer-templates/tutorial-template-list-bindings#,Using List of Items in a PolymerTemplate with template repeater>>
+** <<polymer-templates/tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>
+** <<polymer-templates/tutorial-template-model-converters#,Using Model Converters with a PolymerTemplate Model>>
 * Misc
-** <<tutorial-execute-javascript#,Executing JavaScript>>
-** <<tutorial-history-api#,The History API>>
-** <<tutorial-dynamic-content#,Dynamic Content>>
-** <<tutorial-loading-indicator#,The Loading Indicator>>
+** <<miscellaneous/tutorial-execute-javascript#,Executing JavaScript>>
+** <<miscellaneous/tutorial-history-api#,The History API>>
+** <<miscellaneous/tutorial-dynamic-content#,Dynamic Content>>
+** <<miscellaneous/tutorial-loading-indicator#,The Loading Indicator>>
+** <<miscellaneous/tutorial-dependency-filter#,Modifying how dependencies are loaded with DependencyFilters>>
+** <<miscellaneous/tutorial-service-init-listener#,Configure RequestHandlers, BootstrapListeners and DependencyFilters using VaadinServiceInitListener>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 
 == Server-side DOM tree
 
-Tutorials: <<tutorial-properties-attributes#,Element Properties and Attributes>>, <<tutorial-event-listener#,Listening to User Events>>, <<tutorial-user-input#,Retrieving User Input>>,  <<tutorial-dynamic-styling#,Dynamic styling>>
+Tutorials: <<element-api/tutorial-properties-attributes#,Element Properties and Attributes>>, <<element-api/tutorial-event-listener#,Listening to User Events>>, <<element-api/tutorial-user-input#,Retrieving User Input>>,  <<element-api/tutorial-dynamic-styling#,Dynamic styling>>
 
 Flow allows Java code to control the DOM in the user's browser through a server-side representation of the same DOM tree.
 All changes are automatically synchronized to the real DOM tree in the browser.
@@ -117,7 +124,7 @@ the same template definition is reused for all component instance using the same
 
 == History API
 
-Tutorial: <<tutorial-history-api#,The History API>>
+Tutorial: <<miscellaneous/tutorial-history-api#,The History API>>
 
 The _History API_ allows you to access the browser navigation history through `ui.getPage().getHistory()`.
 The API allows you to:

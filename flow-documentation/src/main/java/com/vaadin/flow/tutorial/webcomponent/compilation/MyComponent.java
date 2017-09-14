@@ -7,7 +7,7 @@ import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.webcomponent.compilation.MyComponent.MyModel;
 
-@CodeFor("tutorial-webcomponents-es5.asciidoc")
+@CodeFor("web-components/tutorial-webcomponents-es5.asciidoc")
 @Tag("my-component")
 @HtmlImport("frontend://components/my-component.html")
 public class MyComponent extends PolymerTemplate<MyModel> {

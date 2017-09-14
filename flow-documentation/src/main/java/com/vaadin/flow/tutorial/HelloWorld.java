@@ -19,7 +19,7 @@ import com.vaadin.annotations.Route;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-hello-world.asciidoc")
+@CodeFor("application-structure/tutorial-hello-world.asciidoc")
 @Route("")
 public class HelloWorld extends Div {
     public HelloWorld() {

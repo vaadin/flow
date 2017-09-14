@@ -20,7 +20,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-component-basic.asciidoc")
+@CodeFor("creating-components/tutorial-component-basic.asciidoc")
 public class ComponentBasic {
 
     @Tag("input")
