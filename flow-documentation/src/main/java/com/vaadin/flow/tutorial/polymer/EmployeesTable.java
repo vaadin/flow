@@ -10,7 +10,7 @@ import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.polymer.EmployeesTable.EmployeesModel;
 
-@CodeFor("tutorial-template-list-bindings.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-list-bindings.asciidoc")
 public class EmployeesTable extends PolymerTemplate<EmployeesModel> {
 
     public class Employee {

@@ -24,7 +24,7 @@ import com.vaadin.data.ValidationResult;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Button;
 
-@CodeFor("tutorial-flow-components-binder-load.asciidoc")
+@CodeFor("binding-data/tutorial-flow-components-binder-load.asciidoc")
 public class BinderLoadSave {
 
     private Binder<Person> binder = new Binder<>();
@@ -61,7 +61,7 @@ public class BinderLoadSave {
         }
     }
 
-    public void writeIfValid(){
+    public void writeIfValid() {
         Person person = new Person("John Doe", 1957);
 
         boolean saved = binder.writeBeanIfValid(person);

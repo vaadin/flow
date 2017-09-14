@@ -25,7 +25,7 @@ import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-basic.asciidoc")
+@CodeFor("polymer-templates/tutorial-template-basic.asciidoc")
 public class HelloWorldTutorial {
 
     /**

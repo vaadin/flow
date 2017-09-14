@@ -23,7 +23,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.PropertyDescriptor;
 import com.vaadin.ui.PropertyDescriptors;
 
-@CodeFor("tutorial-component-property-descriptor.asciidoc")
+@CodeFor("creating-components/tutorial-component-property-descriptor.asciidoc")
 public class ComponentPropertyDescriptor {
 
     // @formatter:off

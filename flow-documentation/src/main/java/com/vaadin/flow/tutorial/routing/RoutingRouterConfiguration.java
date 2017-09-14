@@ -25,7 +25,7 @@ import com.vaadin.flow.router.View;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
 
-@CodeFor("tutorial-routing-router-configuration.asciidoc")
+@CodeFor("routing/tutorial-routing-router-configuration.asciidoc")
 public class RoutingRouterConfiguration {
 
     @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)

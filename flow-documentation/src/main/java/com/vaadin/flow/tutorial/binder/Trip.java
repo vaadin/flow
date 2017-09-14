@@ -20,7 +20,7 @@ import java.time.LocalDate;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-flow-components-binder.asciidoc")
+@CodeFor("binding-data/tutorial-flow-components-binder.asciidoc")
 public class Trip implements Serializable {
     private LocalDate returnDate;
 

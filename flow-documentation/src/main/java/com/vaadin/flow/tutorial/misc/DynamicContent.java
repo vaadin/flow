@@ -19,14 +19,14 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.html.NativeButton;
 import com.vaadin.flow.html.Input;
+import com.vaadin.flow.html.NativeButton;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-dynamic-content.asciidoc")
+@CodeFor("miscellaneous/tutorial-dynamic-content.asciidoc")
 public class DynamicContent {
 
     void tutorialCode() {
