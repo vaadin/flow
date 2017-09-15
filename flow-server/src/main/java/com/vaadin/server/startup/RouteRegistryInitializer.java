@@ -15,17 +15,18 @@
  */
 package com.vaadin.server.startup;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
 
 /**
@@ -44,16 +45,25 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
                         .setNavigationTargets(Collections.emptySet());
                 return;
             }
-            RouteRegistry.getInstance()
-                    .setNavigationTargets(classSet.stream()
-                            .filter(RouteRegistryInitializer::isApplicableClass)
-                            .map(clazz -> (Class<? extends Component>) clazz)
-                            .collect(Collectors.toSet()));
+            Set<Class<? extends Component>> routes = classSet.stream()
+                    .filter(RouteRegistryInitializer::isApplicableClass)
+                    .map(clazz -> (Class<? extends Component>) clazz)
+                    .peek(this::checkForConflictingAnnotations)
+                    .collect(Collectors.toSet());
 
+            RouteRegistry.getInstance().setNavigationTargets(routes);
         } catch (InvalidRouteConfigurationException irce) {
             throw new ServletException(
                     "Exception while registering Routes on servlet startup",
                     irce);
+        }
+    }
+
+    private void checkForConflictingAnnotations(Class<?> route) {
+        if (route.isAnnotationPresent(ParentLayout.class)) {
+            throw new InvalidRouteLayoutConfigurationException(route
+                    .getCanonicalName()
+                    + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
         }
     }
 
