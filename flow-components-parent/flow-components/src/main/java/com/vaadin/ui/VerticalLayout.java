@@ -55,12 +55,12 @@ public class VerticalLayout extends FlexLayout {
      * @param alignment
      *            the individual alignment for the children components. Setting
      *            <code>null</code> will reset the alignment to its default
-     * @param components
+     * @param componentsToAlign
      *            The components to which the individual alignment should be set
      */
     public void setHorizontalComponentAlignment(Alignment alignment,
-            Component... components) {
-        setAlignSelf(alignment, components);
+            Component... componentsToAlign) {
+        setAlignSelf(alignment, componentsToAlign);
     }
 
     /**
