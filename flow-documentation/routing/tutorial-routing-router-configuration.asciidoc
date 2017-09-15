@@ -47,7 +47,6 @@ public class HomeView extends Div implements View {
 
 See also:
 
-* <<tutorial-routing-annotation#,Defining Routes With @Route>>
 * <<tutorial-routing-navigation#,Navigating Between Routes>>
 * <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
 * <<tutorial-routing-view-parameters#,Using View Parameters>>
