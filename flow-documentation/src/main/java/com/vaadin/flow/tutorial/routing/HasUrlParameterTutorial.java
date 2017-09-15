@@ -21,7 +21,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-router-url-parameters.asciidoc")
+@CodeFor("routing/tutorial-router-url-parameters.asciidoc")
 public class HasUrlParameterTutorial {
 
     @Route(value = "greet")
