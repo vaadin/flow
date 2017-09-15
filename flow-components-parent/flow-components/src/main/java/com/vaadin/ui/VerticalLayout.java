@@ -51,6 +51,11 @@ public class VerticalLayout extends FlexLayout {
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
+     * <p>
+     * It's the same as the {@link #setAlignSelf(Alignment, Component...)}
+     * method
+     *
+     * @see #setAlignSelf(Alignment, Component...)
      *
      * @param alignment
      *            the individual alignment for the children components. Setting
@@ -68,6 +73,10 @@ public class VerticalLayout extends FlexLayout {
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
+     * <p>
+     * It's the same as the {@link #getAlignSelf(Component)} method
+     *
+     * @see #getAlignSelf(Component)
      *
      * @param component
      *            The component which individual layout should be read
@@ -84,6 +93,10 @@ public class VerticalLayout extends FlexLayout {
      * {@link #setHorizontalComponentAlignment(Alignment, Component...)} method.
      * <p>
      * The default alignment is {@link Alignment#START}.
+     * <p>
+     * It's the same as the {@link #setAlignItems(Alignment)} method.
+     *
+     * @see #setAlignItems(Alignment)
      *
      * @param alignment
      *            the alignment to apply to the components. Setting
@@ -98,6 +111,11 @@ public class VerticalLayout extends FlexLayout {
      * individual alignments inside the layout.
      * <p>
      * The default alignment is {@link Alignment#START}.
+     * <p>
+     * It's the same as the {@link #getAlignItems()} method.
+     *
+     * @see VerticalLayout#getAlignItems()
+     *
      *
      * @return the general alignment used by the layout, never <code>null</code>
      */
