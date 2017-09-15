@@ -24,7 +24,7 @@ import com.vaadin.flow.dom.Element;
  * flex-direction and doesn't have any predetermined width or height.
  * <p>
  * This component can be used as a base class for more advanced layouts.
- * 
+ *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Using_CSS_flexible_boxes">Using
  *      CSS Flexible boxes on MDN</a>
@@ -106,7 +106,7 @@ public class FlexLayout extends Component
     /**
      * Convenience constructor to create a layout with the children already
      * inside it.
-     * 
+     *
      * @param children
      *            the items to add to this layout
      * @see #add(Component...)
@@ -119,16 +119,18 @@ public class FlexLayout extends Component
     /**
      * Sets the default alignment to be used by all components without
      * individual alignments inside the layout. Individual components can be
-     * aligned by using the
-     * {@link #setComponentAlignment(Alignment, Component...)} method.
+     * aligned by using the {@link #setAlignSelf(Alignment, Component...)}
+     * method.
+     * <p>
+     * It effectively sets the {@code "alignItems"} style value.
      * <p>
      * The default alignment is {@link Alignment#STRETCH}.
-     * 
+     *
      * @param alignment
      *            the alignment to apply to the components. Setting
      *            <code>null</code> will reset the alignment to its default
      */
-    public void setDefaultComponentAlignment(Alignment alignment) {
+    public void setAlignItems(Alignment alignment) {
         if (alignment == null) {
             getStyle().remove(ALIGN_ITEMS_CSS_PROPERTY);
         } else {
@@ -141,10 +143,10 @@ public class FlexLayout extends Component
      * alignments inside the layout.
      * <p>
      * The default alignment is {@link Alignment#STRETCH}.
-     * 
+     *
      * @return the general alignment used by the layout, never <code>null</code>
      */
-    public Alignment getDefaultComponentAlignment() {
+    public Alignment getAlignItems() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
                 Alignment.STRETCH);
     }
@@ -152,18 +154,20 @@ public class FlexLayout extends Component
     /**
      * Sets an alignment for individual components inside the layout. This
      * individual alignment for the component overrides any alignment set at the
-     * {@link #setDefaultComponentAlignment(Alignment)}.
+     * {@link #setAlignItems(Alignment)}.
+     * <p>
+     * It effectively sets the {@code "alignSelf"} style value.
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
-     * 
+     *
      * @param alignment
      *            the individual alignment for the children components. Setting
      *            <code>null</code> will reset the alignment to its default
      * @param components
      *            The components to which the individual alignment should be set
      */
-    public void setComponentAlignment(Alignment alignment,
+    public void setAlignSelf(Alignment alignment,
             Component... components) {
         if (alignment == null) {
             for (Component component : components) {
@@ -183,12 +187,12 @@ public class FlexLayout extends Component
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
-     * 
+     *
      * @param component
      *            The component which individual layout should be read
      * @return the alignment of the component, never <code>null</code>
      */
-    public Alignment getComponentAlignment(Component component) {
+    public Alignment getAlignSelf(Component component) {
         return Alignment.toAlignment(
                 component.getElement().getStyle().get(ALIGN_SELF_CSS_PROPERTY),
                 Alignment.AUTO);
@@ -207,7 +211,7 @@ public class FlexLayout extends Component
      * <p>
      * Setting to expand ratio 0 disables the expansion of the component.
      * Negative values are not allowed.
-     * 
+     *
      * @param ratio
      *            the proportion of the available space the components should
      *            take up
@@ -234,7 +238,7 @@ public class FlexLayout extends Component
 
     /**
      * Gets the expand ratio of a given component.
-     * 
+     *
      * @param component
      *            the component to read the expand ratio from
      * @return the expand ratio, or 0 if none was set
@@ -264,7 +268,7 @@ public class FlexLayout extends Component
      * When using spacing, the {@link SpacingMode} is taken in consideration
      * when distributing the available space. The default spacing mode is
      * {@link SpacingMode#BETWEEN}.
-     * 
+     *
      * @param spacing
      *            <code>true</code> to enable empty spaces among children,
      *            <code>false</code> to disable
@@ -283,7 +287,7 @@ public class FlexLayout extends Component
     /**
      * Gets whether spacing is used in this layout. The default is
      * <code>false</code>.
-     * 
+     *
      * @return <code>true</code> if spacing is used, <code>false</code>
      *         otherwise
      */
@@ -297,7 +301,7 @@ public class FlexLayout extends Component
      * <code>true</code>.
      * <p>
      * The default spacing mode is {@link SpacingMode#BETWEEN}.
-     * 
+     *
      * @param spacingMode
      *            the spacing mode of the layout, never <code>null</code>
      */
@@ -318,7 +322,7 @@ public class FlexLayout extends Component
      * effective when {@link #setSpacing(boolean)} is set to <code>true</code>.
      * <p>
      * The default spacing mode is {@link SpacingMode#BETWEEN}.
-     * 
+     *
      * @return the spacing mode used by the layout, never <code>null</code>
      */
     public SpacingMode getSpacingMode() {
