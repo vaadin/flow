@@ -124,7 +124,9 @@ public class FormLayoutIT extends AbstractChromeTest {
         Assert.assertEquals("There are errors: Incorrect email address",
                 info.getText());
 
-        findEmailInput().sendKeys("a@foo.bar");
+        // there's a bug preventing invalid fields from being cleared. See
+        // https://github.com/vaadin/flow-demo/issues/344
+        findEmailInput().clear();
 
         // reset
         scrollIntoViewAndClick(findElement(By.id("binder-reset")));

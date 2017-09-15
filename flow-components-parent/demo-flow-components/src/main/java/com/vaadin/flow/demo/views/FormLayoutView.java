@@ -302,7 +302,7 @@ public class FormLayoutView extends DemoView {
         reset.setId("binder-reset");
 
         addCard("A form layout with fields using Binder", layoutWithBinder,
-                infoLabel, actions);
+                actions, infoLabel);
 
     }
 }
