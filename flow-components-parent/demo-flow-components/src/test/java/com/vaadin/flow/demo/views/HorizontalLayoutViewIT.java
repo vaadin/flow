@@ -69,6 +69,11 @@ public class HorizontalLayoutViewIT extends AbstractChromeTest {
         waitUntil(driver -> "flex-end"
                 .equals(vlayout.getCssValue("justify-content")));
 
+        button = layout.findElement(By.id("justify-content-between-button"));
+        scrollIntoViewAndClick(button);
+        waitUntil(driver -> "space-between"
+                .equals(vlayout.getCssValue("justify-content")));
+
         button = layout.findElement(By.id("justify-content-around-button"));
         scrollIntoViewAndClick(button);
         waitUntil(driver -> "space-around"
@@ -77,11 +82,6 @@ public class HorizontalLayoutViewIT extends AbstractChromeTest {
         button = layout.findElement(By.id("justify-content-evenly-button"));
         scrollIntoViewAndClick(button);
         waitUntil(driver -> "space-evenly"
-                .equals(vlayout.getCssValue("justify-content")));
-
-        button = layout.findElement(By.id("justify-content-between-button"));
-        scrollIntoViewAndClick(button);
-        waitUntil(driver -> "space-between"
                 .equals(vlayout.getCssValue("justify-content")));
     }
 
