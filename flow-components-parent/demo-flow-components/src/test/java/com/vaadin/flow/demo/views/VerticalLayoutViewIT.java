@@ -50,26 +50,38 @@ public class VerticalLayoutViewIT extends AbstractChromeTest {
     }
 
     @Test
-    public void layoutWithSpacing() {
-        WebElement vlayout = layout.findElement(By.id("layout-with-spacing"));
+    public void layoutWithJustifyContent() {
+        WebElement vlayout = layout
+                .findElement(By.id("layout-with-justify-content"));
         assertBasicFlexPropertiesAreSet(vlayout);
 
         Assert.assertEquals("space-between",
                 vlayout.getCssValue("justify-content"));
 
-        WebElement button = layout.findElement(By.id("space-around-button"));
+        WebElement button = layout
+                .findElement(By.id("justify-content-start-button"));
+        scrollIntoViewAndClick(button);
+        waitUntil(driver -> "flex-start"
+                .equals(vlayout.getCssValue("justify-content")));
+
+        button = layout.findElement(By.id("justify-content-end-button"));
+        scrollIntoViewAndClick(button);
+        waitUntil(driver -> "flex-end"
+                .equals(vlayout.getCssValue("justify-content")));
+
+        button = layout.findElement(By.id("justify-content-between-button"));
+        scrollIntoViewAndClick(button);
+        waitUntil(driver -> "space-between"
+                .equals(vlayout.getCssValue("justify-content")));
+
+        button = layout.findElement(By.id("justify-content-around-button"));
         scrollIntoViewAndClick(button);
         waitUntil(driver -> "space-around"
                 .equals(vlayout.getCssValue("justify-content")));
 
-        button = layout.findElement(By.id("space-evenly-button"));
+        button = layout.findElement(By.id("justify-content-evenly-button"));
         scrollIntoViewAndClick(button);
         waitUntil(driver -> "space-evenly"
-                .equals(vlayout.getCssValue("justify-content")));
-
-        button = layout.findElement(By.id("space-between-button"));
-        scrollIntoViewAndClick(button);
-        waitUntil(driver -> "space-between"
                 .equals(vlayout.getCssValue("justify-content")));
     }
 

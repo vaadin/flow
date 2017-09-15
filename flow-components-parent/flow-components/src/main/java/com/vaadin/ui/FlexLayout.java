@@ -68,13 +68,13 @@ public class FlexLayout extends Component
      * <code>justify-content</code> CSS property.
      *
      */
-    public enum SpacingMode {
-        BETWEEN("space-between"), AROUND("space-around"), EVENLY(
-                "space-evenly");
+    public enum JustifyContentMode {
+        START("flex-start"), END("flex-end"), BETWEEN("space-between"), AROUND(
+                "space-around"), EVENLY("space-evenly");
 
         private final String flexValue;
 
-        SpacingMode(String flexValue) {
+        JustifyContentMode(String flexValue) {
             this.flexValue = flexValue;
         }
 
@@ -82,21 +82,22 @@ public class FlexLayout extends Component
             return flexValue;
         }
 
-        static SpacingMode toSpacingMode(String flexValue,
-                SpacingMode defaultValue) {
+        static JustifyContentMode toJustifyContentMode(String flexValue,
+                JustifyContentMode defaultValue) {
             return Arrays.stream(values())
-                    .filter(spacing -> spacing.getFlexValue().equals(flexValue))
+                    .filter(justifyContent -> justifyContent.getFlexValue()
+                            .equals(flexValue))
                     .findFirst().orElse(defaultValue);
         }
 
     }
 
-    private SpacingMode spacingMode = SpacingMode.BETWEEN;
-    private boolean spacing;
+    private JustifyContentMode justifyContentMode = JustifyContentMode.BETWEEN;
 
     /**
-     * Default constructor. Creates an empty layout without spacing, with items
-     * aligned as {@link Alignment#STRETCH}.
+     * Default constructor. Creates an empty layout with justify content mode as
+     * {@link JustifyContentMode#START}, with items aligned as
+     * {@link Alignment#STRETCH}.
      */
     public FlexLayout() {
         super(new Element("div"));
@@ -256,73 +257,34 @@ public class FlexLayout extends Component
     }
 
     /**
-     * Sets the layout to show empty space among items if the space in the
-     * layout is greater than the space required by children. By default, all
-     * components are rendered together and the remaining space is distributed
-     * at the end of the layout.
+     * Gets the {@link JustifyContentMode} used by this layout.
      * <p>
-     * When using spacing, the {@link SpacingMode} is taken in consideration
-     * when distributing the available space. The default spacing mode is
-     * {@link SpacingMode#BETWEEN}.
+     * The default justify content mode is {@link JustifyContentMode#START}.
      * 
-     * @param spacing
-     *            <code>true</code> to enable empty spaces among children,
-     *            <code>false</code> to disable
-     * @see #setSpacingMode(SpacingMode)
+     * @param justifyContentMode
+     *            the justify content mode of the layout, never
+     *            <code>null</code>
      */
-    public void setSpacing(boolean spacing) {
-        this.spacing = spacing;
-        if (spacing) {
-            getElement().getStyle().set(JUSTIFY_CONTENT_CSS_PROPERTY,
-                    spacingMode.getFlexValue());
-        } else {
-            getElement().getStyle().remove(JUSTIFY_CONTENT_CSS_PROPERTY);
-        }
-    }
-
-    /**
-     * Gets whether spacing is used in this layout. The default is
-     * <code>false</code>.
-     * 
-     * @return <code>true</code> if spacing is used, <code>false</code>
-     *         otherwise
-     */
-    public boolean isSpacing() {
-        return spacing;
-    }
-
-    /**
-     * Gets the {@link SpacingMode} used by this layout. The spacing mode is
-     * only effective when {@link #setSpacing(boolean)} is set to
-     * <code>true</code>.
-     * <p>
-     * The default spacing mode is {@link SpacingMode#BETWEEN}.
-     * 
-     * @param spacingMode
-     *            the spacing mode of the layout, never <code>null</code>
-     */
-    public void setSpacingMode(SpacingMode spacingMode) {
-        if (spacingMode == null) {
+    public void setJustifyContentMode(JustifyContentMode justifyContentMode) {
+        if (justifyContentMode == null) {
             throw new IllegalArgumentException(
-                    "The 'spacingMode' argument can not be null");
+                    "The 'justifyContentMode' argument can not be null");
         }
-        this.spacingMode = spacingMode;
-        if (spacing) {
-            getElement().getStyle().set(JUSTIFY_CONTENT_CSS_PROPERTY,
-                    spacingMode.getFlexValue());
-        }
+        this.justifyContentMode = justifyContentMode;
+        getElement().getStyle().set(JUSTIFY_CONTENT_CSS_PROPERTY,
+                justifyContentMode.getFlexValue());
     }
 
     /**
-     * Gets the current spacing mode of the layout. This property is only
-     * effective when {@link #setSpacing(boolean)} is set to <code>true</code>.
+     * Gets the current justify content mode of the layout.
      * <p>
-     * The default spacing mode is {@link SpacingMode#BETWEEN}.
+     * The default justify content mode is {@link JustifyContentMode#START}.
      * 
-     * @return the spacing mode used by the layout, never <code>null</code>
+     * @return the justify content mode used by the layout, never
+     *         <code>null</code>
      */
-    public SpacingMode getSpacingMode() {
-        return spacingMode;
+    public JustifyContentMode getJustifyContentMode() {
+        return justifyContentMode;
     }
 
 }
