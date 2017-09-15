@@ -15,22 +15,42 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
+import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.html.Div;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 
 @CodeFor("routing/tutorial-router-layout.asciidoc")
-public class RouterLayout {
+public class RouterLayoutTutorial {
 
     @Tag("div")
     @Route(value = "company", layout = MainLayout.class)
     public class CompanyComponent extends Component {
     }
 
-    public static class MainLayout extends Div
-            implements com.vaadin.flow.router.RouterLayout {
 
+    public class MainLayout extends Div implements RouterLayout {
+    }
+
+    @ParentLayout(MainLayout.class)
+    public class MenuBar extends Div implements RouterLayout {
+        public MenuBar() {
+            addMenuElement(TutorialView.class, "Tutorial");
+            addMenuElement(IconsView.class, "Icons");
+        }
+        private void addMenuElement(Class<? extends Component> navigationTarget, String name) {
+            // implementation omitted
+        }
+    }
+
+    @Route(value = "tutorial", layout = MenuBar.class)
+    public class TutorialView extends Div {
+    }
+
+    @Route(value="icons", layout = MenuBar.class)
+    public class IconsView extends Div {
     }
 }

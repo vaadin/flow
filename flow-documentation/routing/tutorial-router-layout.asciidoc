@@ -11,7 +11,12 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 For a basic routing tutorial, see <<tutorial-routing-annotation#,Defining Routes with @Route>>.
 
-When defining routes using `@Route("path")`, the component will by default be rendered inside the `<body>` tag on the page (the element returned by `HasElement.getElement()` is attached to the `<body>`). You can define a parent layout using the `Route.layout()` method. To render `CompanyComponent` inside a layout a layout you would call `MainLayout` you would do:
+=== RouterLayout
+
+When defining routes using `@Route("path")`, the component will by default be rendered inside the `<body>` tag on the page (the element returned by `HasElement.getElement()` is attached to the `<body>`).
+
+A parent layout can be defined using the `Route.layout()` method.
+As an example to have `CompanyComponent` render inside a layout called `MainLayout` the code would look like:
 
 [source,java]
 ----
@@ -21,10 +26,54 @@ public class CompanyComponent extends Component {
 }
 ----
 
-All parent layouts must implement the `RouterLayout` interface.
+All layouts used as a parent layout must implement the `RouterLayout` interface.
 
 If there are multiple router target components using the same parent layout, then the parent layout instances will remain the same when the user navigates between the child components.
 
 See also:
 
 * <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
+
+==== Multiple parent layouts with @ParentLayout
+In some cases there might be a need to have a parent layout for a parent layout in the application.
+One example would be that we have a Main layout used for everything and a Menu bar that is reused for views.
+
+For this we could have the following setup:
+[source,java]
+----
+public class MainLayout extends Div implements RouterLayout {
+}
+
+@ParentLayout(MainLayout.class)
+public class MenuBar extends Div implements RouterLayout {
+    public MenuBar() {
+        addMenuElement(TutorialView.class, "Tutorial");
+        addMenuElement(IconsView.class, "Icons");
+    }
+    private void addMenuElement(Class<? extends Component> navigationTarget, String name) {
+        // implementation omitted
+    }
+}
+
+@Route(value = "tutorial", layout = MenuBar.class)
+public class TutorialView extends Div {
+}
+
+@Route(value="icons", layout = MenuBar.class)
+public class IconsView extends Div {
+}
+----
+
+In this case we would have a `MainLayout` that always encapsulates `MenuBar` which in turn encapsulates
+`TutorialView` or `IconsView` depending on where we have navigated to.
+
+In this sample we have 2 parent layers, but there is no restriction in the amount of nested layouts.
+
+[NOTE]
+A layout that is a RouterLayout could have an @Route with a layout and would then have
+its own navigation target, but would also be able to function as a middle layout
+bringing in the parent layout without having an extra `@ParentLayout` annotation.
+
+[NOTE]
+Having `@Route` and `@ParentLayout` defined on the same class will throw on startup.
+
