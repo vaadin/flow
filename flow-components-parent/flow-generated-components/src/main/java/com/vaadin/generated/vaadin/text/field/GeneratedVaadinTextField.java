@@ -15,21 +15,20 @@
  */
 package com.vaadin.generated.vaadin.text.field;
 
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.Focusable;
 import javax.annotation.Generated;
-
-import com.vaadin.annotations.DomEvent;
+import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Tag;
-import com.vaadin.components.NotSupported;
 import com.vaadin.components.data.HasValue;
+import com.vaadin.components.NotSupported;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.Focusable;
-import com.vaadin.ui.HasStyle;
 
 /**
  * <p>

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.html.Div;
@@ -27,6 +28,7 @@ import com.vaadin.ui.ComboBox;
 /**
  * View for {@link ComboBox} demo.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-combo-box.html")
 @ComponentDemo(name = "ComboBox", href = "vaadin-combo-box")
 public class ComboBoxView extends DemoView {
     /**

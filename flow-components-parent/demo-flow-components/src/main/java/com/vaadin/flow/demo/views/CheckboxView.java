@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.ui.Button;
@@ -23,6 +24,7 @@ import com.vaadin.ui.Checkbox;
 /**
  * View for {@link Checkbox} demo.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-checkbox.html")
 @ComponentDemo(name = "Checkbox", href = "vaadin-checkbox")
 public class CheckboxView extends DemoView {
 

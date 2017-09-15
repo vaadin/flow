@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Label;
 import com.vaadin.ui.Button;
@@ -24,6 +25,8 @@ import com.vaadin.ui.HorizontalLayout;
 /**
  * View for {@link Dialog} demo.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-dialog.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Dialog", href = "vaadin-dialog")
 public class DialogView extends DemoView {
 

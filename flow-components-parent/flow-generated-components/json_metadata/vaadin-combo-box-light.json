@@ -1,64 +1,16 @@
 {
-  "name": "vaadin-combo-box-light",
+  "name": "Vaadin.ComboBoxLightElement",
   "tag": "vaadin-combo-box-light",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-light.html",
-  "version": "2.0.0",
+  "version": "3.0.0-alpha3",
   "properties": [
-    {
-      "name": "keyEventTarget",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "The EventTarget that will be firing relevant KeyboardEvents. Set it to\n`null` to disable the listeners."
-    },
-    {
-      "name": "stopKeyboardEventPropagation",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "If true, this property will cause the implementing element to\nautomatically stop propagation on any handled KeyboardEvents.\n         "
-    },
-    {
-      "name": "keyBindings",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "To be used to express what combination of keys  will trigger the relative\ncallback. e.g. `keyBindings: { 'esc': '_onEscPressed'}`"
-    },
-    {
-      "name": "name",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "The name of this element.\n       "
-    },
-    {
-      "name": "value",
-      "type": [
-        "STRING"
-      ],
-      "objectType": [],
-      "description": "The `String` value for the selected item of the combo box. Provides\nthe value for `iron-form`.\n\nWhen there’s no item selected, the value is an empty string.\n\nUse `selectedItem` property to get the raw selected item from\nthe `items` array.\n       "
-    },
-    {
-      "name": "required",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "Set to true to mark the input as required. If used in a form, a\ncustom element that uses this behavior should also use\nPolymer.IronValidatableBehavior and define a custom validation method.\nOtherwise, a `required` element will always be considered valid.\nIt's also strongly recommended to provide a visual style for the element\nwhen its value is invalid.\n       "
-    },
     {
       "name": "opened",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True if the dropdown is open, false otherwise.\n       "
+      "description": "True if the dropdown is open, false otherwise.\n         "
     },
     {
       "name": "disabled",
@@ -66,7 +18,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Set to true to disable this element.\n       "
+      "description": "Set to true to disable this element.\n         "
     },
     {
       "name": "readonly",
@@ -74,7 +26,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "When present, it specifies that the element field is read-only.\n       "
+      "description": "When present, it specifies that the element field is read-only.\n         "
     },
     {
       "name": "items",
@@ -82,7 +34,7 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "A full set of items to filter the visible options from.\nThe items can be of either `String` or `Object` type.\n       "
+      "description": "A full set of items to filter the visible options from.\nThe items can be of either `String` or `Object` type.\n         "
     },
     {
       "name": "allowCustomValue",
@@ -90,7 +42,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If `true`, the user can input a value that is not present in the items list.\n`value` property will be set to the input value in this case.\nAlso, when `value` is set programmatically, the input value will be set\nto reflect that value.\n       "
+      "description": "If `true`, the user can input a value that is not present in the items list.\n`value` property will be set to the input value in this case.\nAlso, when `value` is set programmatically, the input value will be set\nto reflect that value.\n         "
     },
     {
       "name": "filteredItems",
@@ -98,7 +50,15 @@
         "ARRAY"
       ],
       "objectType": [],
-      "description": "A subset of items, filtered based on the user input. Filtered items\ncan be assigned directly to omit the internal filtering functionality.\nThe items can be of either `String` or `Object` type.\n       "
+      "description": "A subset of items, filtered based on the user input. Filtered items\ncan be assigned directly to omit the internal filtering functionality.\nThe items can be of either `String` or `Object` type.\n         "
+    },
+    {
+      "name": "value",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The `String` value for the selected item of the combo box. Provides\nthe value for `iron-form`.\n\nWhen there’s no item selected, the value is an empty string.\n\nUse `selectedItem` property to get the raw selected item from\nthe `items` array.\n         "
     },
     {
       "name": "hasValue",
@@ -106,7 +66,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "A read-only property indicating whether this combo box has a value\nselected or not. It can be used for example in styling of the component.\n       ",
+      "description": "A read-only property indicating whether this combo box has a value\nselected or not. It can be used for example in styling of the component.\n         ",
       "readOnly": true
     },
     {
@@ -115,7 +75,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "When set to `true`, a loading spinner is displayed on top of the list of options.\n       "
+      "description": "When set to `true`, a loading spinner is displayed on top of the list of options.\n         "
     },
     {
       "name": "filter",
@@ -123,7 +83,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Filtering string the user has typed into the input field.\n       "
+      "description": "Filtering string the user has typed into the input field.\n         "
     },
     {
       "name": "selectedItem",
@@ -131,7 +91,7 @@
         "OBJECT"
       ],
       "objectType": [],
-      "description": "The selected item from the `items` array.\n       "
+      "description": "The selected item from the `items` array.\n         "
     },
     {
       "name": "itemLabelPath",
@@ -139,7 +99,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Path for label of the item. If `items` is an array of objects, the\n`itemLabelPath` is used to fetch the displayed string label for each\nitem.\n\nThe item label is also used for matching items when processing user\ninput, i.e., for filtering and selecting items.\n\nWhen using item templates, the property is still needed because it is used\nfor filtering, and for displaying the selected item value in the input box.\n       "
+      "description": "Path for label of the item. If `items` is an array of objects, the\n`itemLabelPath` is used to fetch the displayed string label for each\nitem.\n\nThe item label is also used for matching items when processing user\ninput, i.e., for filtering and selecting items.\n\nWhen using item templates, the property is still needed because it is used\nfor filtering, and for displaying the selected item value in the input box.\n         "
     },
     {
       "name": "itemValuePath",
@@ -147,7 +107,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "Path for the value of the item. If `items` is an array of objects, the\n`itemValuePath:` is used to fetch the string value for the selected\nitem.\n\nThe item value is used in the `value` property of the combo box,\nto provide the form value.\n       "
+      "description": "Path for the value of the item. If `items` is an array of objects, the\n`itemValuePath:` is used to fetch the string value for the selected\nitem.\n\nThe item value is used in the `value` property of the combo box,\nto provide the form value.\n         "
     },
     {
       "name": "inputElement",
@@ -159,12 +119,28 @@
       "readOnly": true
     },
     {
+      "name": "required",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to mark the input as required.\n         "
+    },
+    {
+      "name": "name",
+      "type": [
+        "STRING"
+      ],
+      "objectType": [],
+      "description": "The name of this element.\n         "
+    },
+    {
       "name": "attrForValue",
       "type": [
         "STRING"
       ],
       "objectType": [],
-      "description": "Name of the two-way data-bindable property representing the\nvalue of the custom input field.\n       "
+      "description": "Name of the two-way data-bindable property representing the\nvalue of the custom input field.\n           "
     },
     {
       "name": "overlayVerticalOffset",
@@ -172,115 +148,10 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "Number of pixels used as the vertical offset in positioning of\nthe dropdown.\n       "
+      "description": "Number of pixels used as the vertical offset in positioning of\nthe dropdown.\n           "
     }
   ],
   "methods": [
-    {
-      "name": "addOwnKeyBinding",
-      "description": "Can be used to imperatively add a key binding to the implementing\nelement. This is the imperative equivalent of declaring a keybinding\nin the `keyBindings` prototype property.",
-      "parameters": [
-        {
-          "name": "eventString",
-          "type": [
-            "STRING"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        },
-        {
-          "name": "handlerName",
-          "type": [
-            "STRING"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "removeOwnKeyBindings",
-      "description": "When called, will remove all imperatively-added key bindings.\n       ",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "keyboardEventMatchesKeys",
-      "description": "Returns true if a keyboard event matches `eventString`.",
-      "parameters": [
-        {
-          "name": "event",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        },
-        {
-          "name": "eventString",
-          "type": [
-            "STRING"
-          ],
-          "objectType": [],
-          "description": "Missing documentation!"
-        }
-      ],
-      "returns": "BOOLEAN"
-    },
-    {
-      "name": "templatize",
-      "description": "Generates an anonymous `TemplateInstance` class (stored as `this.ctor`)\nfor the provided template.  This method should be called once per\ntemplate to prepare an element for stamping the template, followed\nby `stamp` to create new instances of the template.",
-      "parameters": [
-        {
-          "name": "template",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Template to prepare"
-        },
-        {
-          "name": "mutableData",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "When `true`, the generated class will skip\n  strict dirty-checking for objects and arrays (always consider them to\n  be \"dirty\"). Defaults to false."
-        }
-      ],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "stamp",
-      "description": "Creates an instance of the template prepared by `templatize`.  The object\nreturned is an instance of the anonymous class generated by `templatize`\nwhose `root` property is a document fragment containing newly cloned\ntemplate content, and which has property accessors corresponding to\nproperties referenced in template bindings.",
-      "parameters": [
-        {
-          "name": "model",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Object containing initial property values to\n  populate into the template bindings."
-        }
-      ],
-      "returns": "OBJECT"
-    },
-    {
-      "name": "modelForElement",
-      "description": "Returns the template \"model\" (`TemplateInstance`) associated with\na given element, which serves as the binding scope for the template\ninstance the element is contained in.  A template model should be used\nto manipulate data associated with this template instance.",
-      "parameters": [
-        {
-          "name": "el",
-          "type": [
-            "OBJECT"
-          ],
-          "objectType": [],
-          "description": "Element for which to return a template model."
-        }
-      ],
-      "returns": "OBJECT"
-    },
     {
       "name": "open",
       "description": "Opens the dropdown list.\n     ",
@@ -298,60 +169,69 @@
       "description": "Reverts back to original value.\n     ",
       "parameters": [],
       "returns": "UNDEFINED"
-    }
-  ],
-  "events": [
-    {
-      "name": "iron-form-element-register",
-      "description": "iron-form-element-register",
-      "properties": []
     },
     {
-      "name": "iron-form-element-unregister",
-      "description": "iron-form-element-unregister",
-      "properties": []
-    },
-    {
-      "name": "value-changed",
-      "description": "value-changed",
-      "properties": [
+      "name": "validate",
+      "description": "Returns true if `value` is valid, and sets the `invalid` flag appropriatelly.",
+      "parameters": [
         {
-          "name": "detail",
+          "name": "value",
           "type": [
             "OBJECT"
           ],
           "objectType": [],
           "description": "Missing documentation!"
-        },
+        }
+      ],
+      "returns": "BOOLEAN"
+    },
+    {
+      "name": "checkValidity",
+      "description": "Returns true if the current input value satisfies all constraints (if any)\n\nYou can override the `checkValidity` method for custom validations.\n     ",
+      "parameters": [
         {
-          "name": "detail.value",
+          "name": "value",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "change",
+      "description": "change",
+      "properties": []
+    },
+    {
+      "name": "custom-value-set",
+      "description": "custom-value-set",
+      "properties": [
+        {
+          "name": "detail",
           "type": [
             "STRING"
           ],
           "objectType": [],
-          "description": "the combobox value"
+          "description": "the custom value"
         }
       ]
-    },
-    {
-      "name": "vaadin-dropdown-closed",
-      "description": "vaadin-dropdown-closed",
-      "properties": []
-    },
-    {
-      "name": "vaadin-dropdown-opened",
-      "description": "vaadin-dropdown-opened",
-      "properties": []
-    },
-    {
-      "name": "opened-changed",
-      "description": "Fired when the `opened` property changes.",
-      "properties": []
-    },
-    {
-      "name": "filter-changed",
-      "description": "Fired when the `filter` property changes.",
-      "properties": []
     },
     {
       "name": "selected-item-changed",
@@ -377,21 +257,24 @@
       ]
     },
     {
-      "name": "change",
-      "description": "change",
-      "properties": []
-    },
-    {
-      "name": "custom-value-set",
-      "description": "custom-value-set",
+      "name": "value-changed",
+      "description": "value-changed",
       "properties": [
         {
           "name": "detail",
           "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        },
+        {
+          "name": "detail.value",
+          "type": [
             "STRING"
           ],
           "objectType": [],
-          "description": "the custom value"
+          "description": "the combobox value"
         }
       ]
     }
@@ -399,13 +282,11 @@
   "slots": [
     ""
   ],
-  "behaviors": [
-    "Polymer.IronA11yKeysBehavior",
-    "vaadin.elements.combobox.ComboBoxBehavior",
-    "Polymer.IronFormElementBehavior",
-    "Polymer.Templatizer",
-    "vaadin.elements.combobox.DropdownBehavior"
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ComboBoxMixin",
+    "Vaadin.ThemableMixin",
+    "Vaadin.ComboBoxDropdownMixin"
   ],
-  "mixins": [],
-  "description": "`<vaadin-combo-box-light>` is a customizable version of the `<vaadin-combo-box>` providing\nonly the dropdown functionality and leaving the input field definition to the user.\n\nThis element is using the same [`ComboBoxBehavior`](#vaadin.elements.combobox.ComboBoxBehavior) as\n[`<vaadin-combo-box>`](#vaadin-combo-box), so the API remains the same.\n\nTo create a custom input field, you need to add a child element which has a two-way\ndata-bindable property representing the input value. The property name is expected\nto be `bindValue` by default. See the example below for a simplest possible example\nusing an `<input>` element extended with `iron-input`.\n\n```html\n<vaadin-combo-box-light>\n  <iron-input>\n    <input>\n  </iron-input>\n</vaadin-combo-box-light>\n```\n\nIf you are using other custom input fields like `<paper-input>`, you\nneed to define the name of value property with `attrForValue` property.\nSee the example below on how to create a custom input field based\non a `<paper-input>` decorated with a custom `<iron-icon>` and\ntwo `<paper-button>`s to act as the clear and toggle controls.\n\n```html\n<vaadin-combo-box-light attr-for-value=\"value\">\n  <paper-input label=\"Elements\" class=\"input\">\n    <iron-icon icon=\"toll\" prefix></iron-icon>\n    <paper-button suffix class=\"clear-button\">Clear</paper-button>\n    <paper-button suffix class=\"toggle-button\">Toggle</paper-button>\n  </paper-input>\n</vaadin-combo-box-light>\n```"
+  "description": "`<vaadin-combo-box-light>` is a customizable version of the `<vaadin-combo-box>` providing\nonly the dropdown functionality and leaving the input field definition to the user.\n\nThis element is using the same [`ComboBoxBehavior`](#vaadin.elements.combobox.ComboBoxBehavior) as\n[`<vaadin-combo-box>`](#vaadin-combo-box), so the API remains the same.\n\nTo create a custom input field, you need to add a child element which has a two-way\ndata-bindable property representing the input value. The property name is expected\nto be `value` by default. See the example below for a simplest possible example\nusing a `<vaadin-text-field>` element.\n\n```html\n<vaadin-combo-box-light>\n  <vaadin-text-field>\n  </vaadin-text-field>\n</vaadin-combo-box-light>\n```\n\nIf you are using other custom input fields like `<iron-input>`, you\nneed to define the name of the bindable property with the `attrForValue` attribute.\n\n```html\n<vaadin-combo-box-light attr-for-value=\"bind-value\">\n  <iron-input>\n    <input>\n  </iron-input>\n</vaadin-combo-box-light>\n```\n\nIn the next example you can see how to create a custom input field based\non a `<paper-input>` decorated with a custom `<iron-icon>` and\ntwo `<paper-button>`s to act as the clear and toggle controls.\n\n```html\n<vaadin-combo-box-light>\n  <paper-input label=\"Elements\" class=\"input\">\n    <iron-icon icon=\"toll\" prefix></iron-icon>\n    <paper-button slot=\"suffix\" class=\"clear-button\">Clear</paper-button>\n    <paper-button slot=\"suffix\" class=\"toggle-button\">Toggle</paper-button>\n  </paper-input>\n</vaadin-combo-box-light>\n```"
 }

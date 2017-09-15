@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
 import com.vaadin.ui.FormLayout;
@@ -27,6 +28,11 @@ import com.vaadin.ui.TextField;
  * 
  * @author Vaadin Ltd
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-text-field.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-form-layout.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-date-picker.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-checkbox.html")
 @ComponentDemo(name = "Form Layout", href = "vaadin-form-layout", subcategory = "Layouts")
 public class FormLayoutView extends DemoView {
 
