@@ -173,13 +173,13 @@ public class HorizontalLayoutView extends DemoView {
         layout.getStyle().set("border", "1px solid #9E9E9E");
 
         Component component1 = createComponent(1, "#78909C");
-        layout.setExpandRatio(1, component1);
+        layout.expand(component1);
 
         Component component2 = createComponent(2, "#546E7A");
-        layout.setExpandRatio(2, component2);
+        layout.setFlexGrow(2, component2);
 
         Component component3 = createComponent(3, "#37474F");
-        layout.setExpandRatio(0.5, component3);
+        layout.setFlexGrow(0.5, component3);
 
         layout.add(component1, component2, component3);
         // end-source-example
