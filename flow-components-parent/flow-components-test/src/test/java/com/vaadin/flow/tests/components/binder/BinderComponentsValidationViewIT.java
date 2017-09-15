@@ -20,6 +20,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
+import java.util.Objects;
+
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -31,6 +33,7 @@ import com.vaadin.testbench.By;
  * @author Vaadin Ltd.
  */
 public class BinderComponentsValidationViewIT extends AbstractComponentIT {
+    private static final String VALUE_ATTRIBUTE_NAME = "value";
 
     // each test creates a new Chrome instance, so it's easier to verify a
     // component this way
@@ -42,41 +45,51 @@ public class BinderComponentsValidationViewIT extends AbstractComponentIT {
         assertFieldValue(textField,
                 BinderComponentsValidationView.INITIAL_TEXT);
 
+        updateFromServerAndValidate(textField);
+
         String correctInput = "bbbc90ef149427d9093dc8db60a5af9777a26c4a";
         inputAndValidate(textField, correctInput, true);
 
         // see BinderComponentsValidationView for validation details
         inputAndValidate(textField, '2' + correctInput, false);
 
-        updateFromServerAndValidate(textField);
+        // see https://github.com/vaadin/vaadin-text-field/issues/130
+        focusLostShouldNotChangeValidationStatus(textField);
+    }
+
+    private void focusLostShouldNotChangeValidationStatus(
+            WebElement textField) {
+        findElement(By.tagName("body")).click();
+        assertValid(textField, false);
     }
 
     private void inputAndValidate(WebElement textField, String input,
             boolean valid) {
         cleanInputField(textField);
         textField.sendKeys(input);
+        waitUntil(driver -> Objects
+                .equals(textField.getAttribute(VALUE_ATTRIBUTE_NAME), input));
         assertValid(textField, valid);
     }
 
     private void cleanInputField(WebElement textField) {
         getCommandExecutor().executeScript(
-                "arguments[0][arguments[1]]=arguments[3]", textField, "value",
-                "");
+                "arguments[0][arguments[1]]=arguments[3]", textField,
+                VALUE_ATTRIBUTE_NAME, "");
         assertFieldValue(textField, null);
         assertValid(textField, true);
     }
 
     private void assertFieldValue(WebElement textField, String expectedValue) {
         assertThat("Unexpected text in the text field component",
-                textField.getAttribute("value"), is(expectedValue));
+                textField.getAttribute(VALUE_ATTRIBUTE_NAME),
+                is(expectedValue));
     }
 
     private void assertValid(WebElement textField, boolean valid) {
-        if (valid) {
-            assertThat("Unexpected text in the text field component",
-                    Boolean.parseBoolean(textField.getAttribute("invalid")),
-                    is(!valid));
-        }
+        assertThat("Unexpected text field 'invalid' property value",
+                Boolean.parseBoolean(textField.getAttribute("invalid")),
+                is(!valid));
 
         if (valid) {
             assertThat("Unexpected text in the text field component",

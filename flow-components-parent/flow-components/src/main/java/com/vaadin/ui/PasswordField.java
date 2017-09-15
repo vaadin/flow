@@ -27,6 +27,8 @@ import com.vaadin.generated.vaadin.text.field.GeneratedVaadinPasswordField;
  */
 public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
         implements HasSize, HasValidation {
+    private static final String PATTERN_PROPERTY_NAME = "pattern";
+    private static final String REQUIRED_PROPERTY_NAME = "required";
 
     /**
      * Constructs an empty {@code PasswordField}.
@@ -35,6 +37,18 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
      * cleared.
      */
     public PasswordField() {
+        addAttachListener(event -> {
+            Page page = event.getUI().getPage();
+            page.executeJavaScript(
+                    "$0.flowCheckValidityOld = $0.checkValidity;",
+                    getElement());
+            disableValidatorIfNotNeeded(page);
+            getElement().addPropertyChangeListener(PATTERN_PROPERTY_NAME,
+                    event -> disableValidatorIfNotNeeded(page));
+            getElement().addPropertyChangeListener(REQUIRED_PROPERTY_NAME,
+                    event -> disableValidatorIfNotNeeded(page));
+        });
+
         getElement().synchronizeProperty("hasValue", "value-changed");
         clear();
     }
@@ -68,6 +82,24 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     public PasswordField(String label, String placeholder) {
         this(label);
         setPlaceholder(placeholder);
+    }
+
+    // A stub that should be removed after this ticket is implemented:
+    // https://github.com/vaadin/vaadin-text-field/issues/130
+    private void disableValidatorIfNotNeeded(Page page) {
+        String patternProperty = getElement()
+                .getProperty(PATTERN_PROPERTY_NAME);
+        boolean isPatternPropertyEmpty = patternProperty == null
+                || patternProperty.isEmpty();
+        if (isPatternPropertyEmpty && !Boolean.parseBoolean(
+                getElement().getProperty(REQUIRED_PROPERTY_NAME))) {
+            page.executeJavaScript("$0.checkValidity = function() {};",
+                    getElement());
+        } else {
+            page.executeJavaScript(
+                    "$0.checkValidity = $0.flowCheckValidityOld;",
+                    getElement());
+        }
     }
 
     @Override
