@@ -23,8 +23,17 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * The default element used for items in the vaadin-combobox.
+ * </p>
+ */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-item#2.0.0", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: Vaadin.ComboBoxItemElement#3.0.0-alpha3",
+		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
 public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>

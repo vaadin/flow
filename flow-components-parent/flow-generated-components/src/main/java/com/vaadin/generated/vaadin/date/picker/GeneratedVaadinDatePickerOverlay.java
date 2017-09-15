@@ -29,7 +29,7 @@ import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: DatePickerOverlayElement#2.0.2", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: DatePickerOverlayElement#2.0.3", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-date-picker-overlay")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-overlay.html")
 public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePickerOverlay<R>>

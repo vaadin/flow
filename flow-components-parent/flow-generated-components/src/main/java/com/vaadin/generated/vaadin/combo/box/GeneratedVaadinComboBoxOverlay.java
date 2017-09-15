@@ -25,72 +25,13 @@ import elemental.json.JsonObject;
 import com.vaadin.components.NotSupported;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-overlay#2.0.0", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: Vaadin.ComboBoxOverlayElement#3.0.0-alpha3",
+		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
 public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOverlay<R>>
 		extends
 			Component implements ComponentSupplier<R>, HasStyle {
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The element to position/align the dropdown by.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	protected JsonObject protectedGetPositionTarget() {
-		return (JsonObject) getElement().getPropertyRaw("positionTarget");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The element to position/align the dropdown by.
-	 * </p>
-	 * 
-	 * @param positionTarget
-	 *            the JsonObject value to set
-	 */
-	protected void setPositionTarget(elemental.json.JsonObject positionTarget) {
-		getElement().setPropertyJson("positionTarget", positionTarget);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Vertical offset for the overlay position.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	public double getVerticalOffset() {
-		return getElement().getProperty("verticalOffset", 0.0);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Vertical offset for the overlay position.
-	 * </p>
-	 * 
-	 * @param verticalOffset
-	 *            the double value to set
-	 */
-	public void setVerticalOffset(double verticalOffset) {
-		getElement().setProperty("verticalOffset", verticalOffset);
-	}
 
 	/**
 	 * <p>
@@ -120,6 +61,22 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 */
 	public void setTouchDevice(boolean touchDevice) {
 		getElement().setProperty("touchDevice", touchDevice);
+	}
+
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isOpened() {
+		return getElement().getProperty("opened", false);
+	}
+
+	/**
+	 * @param opened
+	 *            the boolean value to set
+	 */
+	public void setOpened(boolean opened) {
+		getElement().setProperty("opened", opened);
 	}
 
 	/**
@@ -157,12 +114,14 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Can be called to manually notify a resizable and its descendant
-	 * resizables of a resize change.
+	 * Vertical offset for the overlay position.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
 	 * </p>
 	 */
-	public void notifyResize() {
-		getElement().callFunction("notifyResize");
+	public double getVerticalOffset() {
+		return getElement().getProperty("verticalOffset", 0.0);
 	}
 
 	/**
@@ -170,51 +129,14 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Used to assign the closest resizable ancestor to this resizable if the
-	 * ancestor detects a request for notifications.
+	 * Vertical offset for the overlay position.
 	 * </p>
 	 * 
-	 * @param parentResizable
-	 *            Missing documentation!
+	 * @param verticalOffset
+	 *            the double value to set
 	 */
-	protected void assignParentResizable(
-			elemental.json.JsonObject parentResizable) {
-		getElement().callFunction("assignParentResizable", parentResizable);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Used to remove a resizable descendant from the list of descendants that
-	 * should be notified of a resize change.
-	 * </p>
-	 * 
-	 * @param target
-	 *            Missing documentation!
-	 */
-	protected void stopResizeNotificationsFor(elemental.json.JsonObject target) {
-		getElement().callFunction("stopResizeNotificationsFor", target);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * This method can be overridden to filter nested elements that should or
-	 * should not be notified by the current element. Return true if an element
-	 * should be notified, or false if it should not be notified.
-	 * </p>
-	 * 
-	 * @param element
-	 *            A candidate descendant element that implements
-	 *            `IronResizableBehavior`.
-	 * @return It would return a boolean
-	 */
-	@NotSupported
-	protected void resizerShouldNotify(elemental.json.JsonObject element) {
+	public void setVerticalOffset(double verticalOffset) {
+		getElement().setProperty("verticalOffset", verticalOffset);
 	}
 
 	/**
@@ -230,7 +152,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void indexOfLabel(elemental.json.JsonObject label) {
+	protected void indexOfLabel(JsonObject label) {
 	}
 
 	/**

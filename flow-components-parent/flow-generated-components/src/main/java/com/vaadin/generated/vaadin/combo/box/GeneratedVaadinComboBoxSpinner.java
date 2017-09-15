@@ -23,10 +23,11 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: vaadin-spinner#2.0.0", "Flow#0.1-SNAPSHOT"})
-@Tag("vaadin-spinner")
-@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-spinner.html")
-public class GeneratedVaadinSpinner<R extends GeneratedVaadinSpinner<R>>
+		"WebComponent: Vaadin.ComboBoxSpinnerElement#3.0.0-alpha3",
+		"Flow#0.1-SNAPSHOT"})
+@Tag("vaadin-combo-box-spinner")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-spinner.html")
+public class GeneratedVaadinComboBoxSpinner<R extends GeneratedVaadinComboBoxSpinner<R>>
 		extends
 			Component implements ComponentSupplier<R>, HasStyle {
 
