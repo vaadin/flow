@@ -70,7 +70,7 @@ public class DefaultTemplateParser implements TemplateParser {
                 HtmlImport.class)) {
             String path = resolvePath(request, htmlImport.value());
 
-            log(logEnabled, Level.INFO,
+            log(logEnabled, Level.CONFIG,
                     String.format("Html import path '%s' is resolved to '%s'",
                             htmlImport.value(), path));
             try (InputStream content = context.getResourceAsStream(path)) {
@@ -83,7 +83,7 @@ public class DefaultTemplateParser implements TemplateParser {
                 Element templateElement = parseHtmlImport(content,
                         htmlImport.value());
                 if (isTemplateImport(templateElement, tag)) {
-                    log(logEnabled, Level.INFO,
+                    log(logEnabled, Level.CONFIG,
                             String.format(
                                     "Found a template file containing template "
                                             + "definition for the tag '%s' by the path '%s'",
