@@ -2,6 +2,7 @@ package com.vaadin.flow.uitest.servlet;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.html.Div;
@@ -40,6 +41,24 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route(value = "baz", layout = MyRouterLayout.class)
     public static class ChildNavigationTarget extends ClassNameDiv {
+
+    }
+
+    public static class MainLayout extends Div implements RouterLayout {
+        public MainLayout() {
+            setId("mainLayout");
+        }
+    }
+
+    @ParentLayout(MainLayout.class)
+    public static class MiddleLayout extends Div implements RouterLayout {
+        public MiddleLayout() {
+            setId("middleLayout");
+        }
+    }
+
+    @Route(value = "target", layout = MiddleLayout.class)
+    public static class TargetLayout extends ClassNameDiv {
 
     }
 }
