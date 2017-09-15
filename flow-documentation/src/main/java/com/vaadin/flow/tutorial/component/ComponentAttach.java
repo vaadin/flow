@@ -9,7 +9,7 @@ import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DetachEvent;
 
-@CodeFor("tutorial-component-with-dependencies.asciidoc")
+@CodeFor("creating-components/tutorial-component-with-dependencies.asciidoc")
 public class ComponentAttach {
 
     interface I18N {

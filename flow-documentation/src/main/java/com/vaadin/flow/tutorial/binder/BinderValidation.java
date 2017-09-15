@@ -30,7 +30,7 @@ import com.vaadin.ui.Checkbox;
 import com.vaadin.ui.DatePicker;
 import com.vaadin.ui.TextField;
 
-@CodeFor("tutorial-flow-components-binder-validation.asciidoc")
+@CodeFor("binding-data/tutorial-flow-components-binder-validation.asciidoc")
 public class BinderValidation {
 
     private TextField emailField;
@@ -88,25 +88,25 @@ public class BinderValidation {
         Label emailStatus = new Label();
 
         binder.forField(emailField)
-        .withValidator(new EmailValidator(
-                "This doesn't look like a valid email address"))
-        // Shorthand that updates the label based on the status
-        .withStatusLabel(emailStatus)
-        .bind(Person::getEmail, Person::setEmail);
+                .withValidator(new EmailValidator(
+                        "This doesn't look like a valid email address"))
+                // Shorthand that updates the label based on the status
+                .withStatusLabel(emailStatus)
+                .bind(Person::getEmail, Person::setEmail);
 
         Label nameStatus = new Label();
 
         binder.forField(nameField)
-        // Define the validator
-        .withValidator(name -> name.length() >= 3,
-                "Full name must contain at least three characters")
-        // Define how the validation status is displayed
-        .withValidationStatusHandler(status -> {
-            nameStatus.setText(status.getMessage().orElse(""));
-            setVisible(nameStatus, status.isError());
-        })
-        // Finalize the binding
-        .bind(Person::getName, Person::setName);
+                // Define the validator
+                .withValidator(name -> name.length() >= 3,
+                        "Full name must contain at least three characters")
+                // Define how the validation status is displayed
+                .withValidationStatusHandler(status -> {
+                    nameStatus.setText(status.getMessage().orElse(""));
+                    setVisible(nameStatus, status.isError());
+                })
+                // Finalize the binding
+                .bind(Person::getName, Person::setName);
     }
 
     public void validateEmail() {
@@ -132,7 +132,7 @@ public class BinderValidation {
         Binder.BindingBuilder<Trip, LocalDate> returnBindingBuilder = binder
                 .forField(returning).withValidator(
                         returnDate -> !returnDate
-                        .isBefore(departing.getValue()),
+                                .isBefore(departing.getValue()),
                         "Cannot return before departing");
         Binder.Binding<Trip, LocalDate> returnBinder = returnBindingBuilder
                 .bind(Trip::getReturnDate, Trip::setReturnDate);
@@ -145,31 +145,31 @@ public class BinderValidation {
         TextField yearOfBirthField = new TextField("Year of birth");
 
         binder.forField(yearOfBirthField)
-        .withConverter(
-                new StringToIntegerConverter("Must enter a number"))
-        .bind(Person::getYearOfBirth, Person::setYearOfBirth);
+                .withConverter(
+                        new StringToIntegerConverter("Must enter a number"))
+                .bind(Person::getYearOfBirth, Person::setYearOfBirth);
 
         // Checkbox for gender
         Checkbox genderField = new Checkbox("Gender");
 
         binder.forField(genderField)
-        .withConverter(gender -> gender ? Gender.FEMALE : Gender.MALE,
-                gender -> Gender.FEMALE.equals(gender))
-        .bind(Person::getGender, Person::setGender);
+                .withConverter(gender -> gender ? Gender.FEMALE : Gender.MALE,
+                        gender -> Gender.FEMALE.equals(gender))
+                .bind(Person::getGender, Person::setGender);
     }
 
     public void multipleConverters() {
         binder.forField(yearOfBirthField)
-        // Validator will be run with the String value of the field
-        .withValidator(text -> text.length() == 4,
-                "Doesn't look like a year")
-        // Converter will only be run for strings with 4 characters
-        .withConverter(
-                new StringToIntegerConverter("Must enter a number"))
-        // Validator will be run with the converted value
-        .withValidator(year -> year >= 1900 && year < 2000,
-                "Person must be born in the 20th century")
-        .bind(Person::getYearOfBirth, Person::setYearOfBirth);
+                // Validator will be run with the String value of the field
+                .withValidator(text -> text.length() == 4,
+                        "Doesn't look like a year")
+                // Converter will only be run for strings with 4 characters
+                .withConverter(
+                        new StringToIntegerConverter("Must enter a number"))
+                // Validator will be run with the converted value
+                .withValidator(year -> year >= 1900 && year < 2000,
+                        "Person must be born in the 20th century")
+                .bind(Person::getYearOfBirth, Person::setYearOfBirth);
     }
 
     public void callBackConverters() {

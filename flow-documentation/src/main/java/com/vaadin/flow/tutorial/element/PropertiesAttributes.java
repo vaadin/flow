@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.tutorial.element;
 
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-properties-attributes.asciidoc")
+@CodeFor("element-api/tutorial-properties-attributes.asciidoc")
 public class PropertiesAttributes {
 
     @SuppressWarnings("unused")

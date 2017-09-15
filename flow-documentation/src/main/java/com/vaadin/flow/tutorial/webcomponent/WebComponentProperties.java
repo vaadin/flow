@@ -20,7 +20,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-webcomponent-attributes-and-properties.asciidoc")
+@CodeFor("web-components/tutorial-webcomponent-attributes-and-properties.asciidoc")
 public class WebComponentProperties {
     @Tag("paper-slider")
     @HtmlImport("bower_components/paper-slider/paper-slider.html")

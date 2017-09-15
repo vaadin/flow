@@ -23,7 +23,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-router-layout.asciidoc")
+@CodeFor("routing/tutorial-router-layout.asciidoc")
 public class RouterLayoutTutorial {
 
     @Tag("div")

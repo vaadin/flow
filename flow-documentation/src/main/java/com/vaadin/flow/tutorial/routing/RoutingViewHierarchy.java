@@ -18,17 +18,17 @@ package com.vaadin.flow.tutorial.routing;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-routing-view-hierarchy.asciidoc")
+@CodeFor("routing/tutorial-routing-view-hierarchy.asciidoc")
 public class RoutingViewHierarchy {
 
     @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)
