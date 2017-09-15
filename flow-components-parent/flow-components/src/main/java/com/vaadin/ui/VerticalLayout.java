@@ -34,7 +34,7 @@ public class VerticalLayout extends FlexLayout {
     /**
      * Convenience constructor to create a layout with the children already
      * inside it.
-     * 
+     *
      * @param children
      *            the items to add to this layout
      * @see #add(Component...)
@@ -51,7 +51,7 @@ public class VerticalLayout extends FlexLayout {
      * {@link #setComponentAlignment(Alignment, Component...)} method.
      * <p>
      * The default alignment is {@link Alignment#START}.
-     * 
+     *
      * @param alignment
      *            the alignment to apply to the components. Setting
      *            <code>null</code> will reset the alignment to its default
@@ -71,12 +71,25 @@ public class VerticalLayout extends FlexLayout {
      * alignments inside the layout.
      * <p>
      * The default alignment is {@link Alignment#START}.
-     * 
+     *
      * @return the general alignment used by the layout, never <code>null</code>
      */
     @Override
     public Alignment getDefaultComponentAlignment() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
                 Alignment.START);
+    }
+
+    /**
+     * Expands the given components.
+     * <p>
+     * It effectively sets {@code 1} as a flex grow property value for each
+     * component.
+     *
+     * @param componentsToExpand
+     *            components to expand
+     */
+    public void expand(Component... componentsToExpand) {
+        setFlexGrow(1.0d, componentsToExpand);
     }
 }
