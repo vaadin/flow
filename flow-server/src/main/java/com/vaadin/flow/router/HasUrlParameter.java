@@ -33,6 +33,7 @@ import com.vaadin.flow.router.event.BeforeNavigationEvent;
  * @param <T>
  *            type parameter type
  */
+@FunctionalInterface
 public interface HasUrlParameter<T> {
 
     /**
@@ -74,7 +75,7 @@ public interface HasUrlParameter<T> {
      *            the list of url parameters to verify
      * @return {@code true} if the parameters are valid, otherwise {@code false}
      */
-    public static boolean verifyParameters(
+    static boolean verifyParameters(
             Class<?> navigationTarget,
             List<String> urlParameters) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
@@ -89,15 +90,12 @@ public interface HasUrlParameter<T> {
                     "Parameter type of the given navigationTarget '%s' could not be resolved.",
                     navigationTarget.getName()));
         }
-        Class<?> parameterType = (Class<?>) GenericTypeReflector.erase(type);
+        Class<?> parameterType = GenericTypeReflector.erase(type);
         Set<Class<?>> supportedTypes = Stream
                 .of(Long.class, Integer.class, String.class)
                 .collect(Collectors.toSet());
         if (supportedTypes.contains(parameterType)) {
-            if (urlParameters.size() == 1) {
-                return true;
-            }
-            return false;
+            return urlParameters.size() == 1;
         }
         throw new UnsupportedOperationException(String.format(
                 "Currently HasUrlParameter only supports the following parameter types: %s.",
