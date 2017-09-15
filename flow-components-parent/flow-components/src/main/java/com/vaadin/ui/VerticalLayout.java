@@ -15,8 +15,6 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.ui.FlexLayout.Alignment;
-
 /**
  * VerticalLayout is a component container, which shows the subcomponents in the
  * order of their addition (vertically). A vertical layout is by default 100%
@@ -111,7 +109,7 @@ public class VerticalLayout extends FlexLayout {
      * Sets the default horizontal alignment to be used by all components
      * without individual alignments inside the layout. Individual components
      * can be aligned by using the
-     * {@link #setComponentAlignment(Alignment, Component...)} method.
+     * {@link #setAlignSelf(Alignment, Component...)} method.
      * <p>
      * It effectively sets the {@code "alignItems"} style value.
      * <p>

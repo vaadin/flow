@@ -15,8 +15,6 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.ui.FlexLayout.Alignment;
-
 /**
  * HorizontalLayout is a component container, which shows the subcomponents in
  * the order of their addition (horizontally). A horizontal layout is doesn't
@@ -114,8 +112,8 @@ public class HorizontalLayout extends FlexLayout {
     /**
      * Sets the default vertical alignment to be used by all components without
      * individual alignments inside the layout. Individual components can be
-     * aligned by using the
-     * {@link #setComponentAlignment(Alignment, Component...)} method.
+     * aligned by using the {@link #setAlignSelf(Alignment, Component...)}
+     * method.
      * <p>
      * It effectively sets the {@code "alignItems"} style value.
      * <p>
