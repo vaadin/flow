@@ -167,7 +167,6 @@ public class NavigationStateRenderer implements NavigationHandler {
                 event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC);
 
-        event.getUI().getPage().getHistory().pushState(null, location);
         return handler.handle(newNavigationEvent);
     }
 
