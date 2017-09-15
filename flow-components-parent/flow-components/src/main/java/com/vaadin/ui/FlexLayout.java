@@ -210,18 +210,18 @@ public class FlexLayout extends Component
      * Setting to flex grow property value 0 disables the expansion of the
      * component. Negative values are not allowed.
      *
-     * @param ratio
+     * @param flexGrow
      *            the proportion of the available space the components should
      *            take up
      * @param components
      *            the components to apply the flex grow property
      */
-    public void setFlexGrow(double ratio, Component... components) {
-        if (ratio < 0) {
+    public void setFlexGrow(double flexGrow, Component... components) {
+        if (flexGrow < 0) {
             throw new IllegalArgumentException(
                     "Flex grow property cannot be negative");
         }
-        if (ratio == 0) {
+        if (flexGrow == 0) {
             for (Component component : components) {
                 component.getElement().getStyle()
                         .remove(FLEX_GROW_CSS_PROPERTY);
@@ -229,7 +229,7 @@ public class FlexLayout extends Component
         } else {
             for (Component component : components) {
                 component.getElement().getStyle().set(FLEX_GROW_CSS_PROPERTY,
-                        String.valueOf(ratio));
+                        String.valueOf(flexGrow));
             }
         }
     }
