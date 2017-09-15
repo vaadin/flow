@@ -25,8 +25,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
 
 /**
@@ -91,6 +94,14 @@ public class RouteRegistryInitializerTest {
         RouteRegistry.getInstance().setNavigationTargets(new HashSet<>());
     }
 
+    @Test(expected = InvalidRouteLayoutConfigurationException.class)
+    public void routeRegistry_fails_on_faulty_configuration() throws ServletException  {
+        routeRegistryInitializer.onStartup(
+                Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
+                        FaultyConfiguration.class).collect(Collectors.toSet()),
+                null);
+    }
+
     @Route("")
     private static class NavigationTarget extends Component {
     }
@@ -105,5 +116,14 @@ public class RouteRegistryInitializerTest {
 
     @Route("bar")
     private static class NavigationTargetBar extends Component {
+    }
+
+    private static class RouteParentLayout extends Component
+            implements RouterLayout {
+    }
+
+    @ParentLayout(RouteParentLayout.class)
+    @Route(value = "wrong")
+    private static class FaultyConfiguration extends Component {
     }
 }

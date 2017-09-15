@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.ChildNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooBarNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooNavigationTarget;
@@ -60,6 +61,22 @@ public class RouterIT extends ChromeBrowserTest {
         openRouteUrl("greeting/World");
         Assert.assertEquals("Hello, World!",
                 findElement(By.id("greeting-div")).getText());
+    }
+
+    @Test
+    public void targetHasMultipleParentLayouts() {
+        openRouteUrl("target");
+
+        Assert.assertTrue("Missing top most level: main layout",
+                isElementPresent(By.id("mainLayout")));
+        Assert.assertTrue("Missing center layout: middle layout",
+                isElementPresent(By.id("middleLayout")));
+
+        WebElement layout = findElement(By.id("middleLayout"));
+
+        Assert.assertEquals("Child layout is the wrong class",
+                RouterTestServlet.TargetLayout.class.getSimpleName(),
+                layout.findElement(By.id("name-div")).getText());
     }
 
     private void openRouteUrl(String route) {
