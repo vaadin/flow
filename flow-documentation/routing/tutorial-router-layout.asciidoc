@@ -1,6 +1,6 @@
 ---
 title: Router Layouts and Nested Router Targets
-order: 4
+order: 3
 layout: page
 ---
 

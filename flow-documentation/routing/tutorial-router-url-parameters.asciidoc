@@ -1,8 +1,14 @@
+---
+title: Routing and URL Parameters
+order: 4
+layout: page
+---
+
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
-== Routing and URL Parameters
+= Routing and URL Parameters
 
-=== URL Parameters for Navigation Targets
+== URL Parameters for Navigation Targets
 
 A navigation target that supports parameters passed through the URL should implement the `HasUrlParameter` interface and define the parameter type using generics.
 In this way, the Router API can offer a type-safe way of constructing URLs that lead to a specific target.
