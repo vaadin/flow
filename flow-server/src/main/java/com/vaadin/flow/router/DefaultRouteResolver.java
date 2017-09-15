@@ -35,8 +35,7 @@ public class DefaultRouteResolver implements RouteResolver {
     @SuppressWarnings("unchecked")
     @Override
     public NavigationState resolve(ResolveRequest request) {
-        String path = findPathString(
-                new ArrayList<>(request.getLocation().getSegments()));
+        String path = findPathString(request.getLocation().getSegments());
         if (path == null) {
             return null;
         }
@@ -60,7 +59,7 @@ public class DefaultRouteResolver implements RouteResolver {
     }
 
     private String findPathString(List<String> pathSegments) {
-        List<String> remainingSegments = pathSegments;
+        List<String> remainingSegments = new ArrayList<>(pathSegments);
         while (!remainingSegments.isEmpty()) {
             String currentPath = remainingSegments.stream()
                     .collect(Collectors.joining("/"));
