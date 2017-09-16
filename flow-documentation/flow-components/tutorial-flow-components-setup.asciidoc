@@ -16,7 +16,7 @@ any Flow project.
 [NOTE]
 Before you configure your project to use Flow components, make sure it is
 properly configured to run with Polymer webcomponents. Please refer to
-<<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
 for more information.
 
 The first step is to add the `flow-components` package to your project
