@@ -26,11 +26,11 @@ import com.vaadin.ui.HasComponents;
  *
  */
 public class ComponentMetadata {
-
     private String tag;
     private String name;
     private String version;
     private String description;
+    private String parentTagName;
     private String baseUrl;
     private List<ComponentPropertyData> properties;
     private List<ComponentFunctionData> methods;
@@ -167,6 +167,23 @@ public class ComponentMetadata {
      */
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * Gets parent element tag name or {@code null}, if no parents present.
+     * @return parent element tag name or {@code null}, if no parents present.
+     */
+    public String getParentTagName() {
+        return parentTagName;
+    }
+
+    /**
+     * Sets parent element tag name, that is used to determine inheritance relations.
+     *
+     * @param parentTagName parent element tag name
+     */
+    public void setParentTagName(String parentTagName) {
+        this.parentTagName = parentTagName;
     }
 
     /**

@@ -92,6 +92,7 @@ public class ComponentGenerator {
     private static final String JAVADOC_SEE = "@see";
     private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
+    private static final String GENERIC_TYPE_DECLARATION = '<' + GENERIC_TYPE + '>';
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
     private static final Set<String> LIFECYCLE_CALLBACKS = createCallbacks();
 
