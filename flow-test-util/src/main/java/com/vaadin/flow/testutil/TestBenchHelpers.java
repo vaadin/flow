@@ -246,6 +246,17 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
+     * Scrolls the page to the element specified and clicks it.
+     *
+     * @param element
+     *            the element to scroll to and click
+     */
+    protected void scrollIntoViewAndClick(WebElement element) {
+        scrollToElement(element);
+        element.click();
+    }
+
+    /**
      * Gets current scroll position on x axis.
      *
      * @return current scroll position on x axis.
