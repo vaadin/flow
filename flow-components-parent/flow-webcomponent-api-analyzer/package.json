@@ -5,7 +5,7 @@
   "author": "Vaadin Ltd",
   "license": "Apache License 2.0",
   "dependencies": {
-    "bower": "^1.8.0",
+    "bower": "^1.8.2",
     "coa": "~1.0.1",
     "ejs": "~2.4.2",
     "fs-extra": "latest",

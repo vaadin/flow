@@ -2,6 +2,7 @@
   "name": "Vaadin.ButtonElement",
   "tag": "vaadin-button",
   "baseUrl": "vaadin-button/vaadin-button.html",
+  "version": "1.0.1",
   "properties": [
     {
       "name": "autofocus",
