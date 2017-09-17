@@ -7,7 +7,7 @@ layout: page
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Modifying how dependencies are loaded with DependencyFilters
 
-As seen on the tutorials about using `@JavaScript`, `@HtmlImport` and `@StyleSheet` (see <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>), you can use annotations or an imperative API to add resources (or dependencies) to your application when needed. But in some cases, a more fine control is needed: for example, when bundling resources into multiple different bundles, you may want to control the application to import the right bundle when some specific resource is requested.
+As seen on the tutorials about using `@JavaScript`, `@HtmlImport` and `@StyleSheet` (see <<../application-structure/tutorial-include-css#,Including Style Sheets>> and <<../application-structure/tutorial-importing#,Importing html/javascript>>), you can use annotations or an imperative API to add resources (or dependencies) to your application when needed. But in some cases, a more fine control is needed: for example, when bundling resources into multiple different bundles, you may want to control the application to import the right bundle when some specific resource is requested.
 
 To control how the dependencies are loaded, and which files are effectively added or removed from the loading process, you can use DependencyFilters.
 
