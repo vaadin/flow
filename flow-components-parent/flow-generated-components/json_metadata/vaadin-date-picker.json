@@ -2,7 +2,7 @@
   "name": "Vaadin.DatePickerElement",
   "tag": "vaadin-date-picker",
   "baseUrl": "vaadin-date-picker/vaadin-date-picker.html",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "properties": [
     {
       "name": "value",

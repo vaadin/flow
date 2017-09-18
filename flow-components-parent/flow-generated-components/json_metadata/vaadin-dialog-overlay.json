@@ -42,7 +42,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": ""
+      "description": "When true move focus to the first focusable element in the overlay,\nor to the overlay if there are no focusable elements.\n           "
     }
   ],
   "methods": [
