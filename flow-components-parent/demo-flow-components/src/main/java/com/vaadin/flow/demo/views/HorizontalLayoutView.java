@@ -201,16 +201,9 @@ public class HorizontalLayoutView extends DemoView {
         layout.setWidth("200px");
         layout.getStyle().set("border", "1px solid #9E9E9E");
 
-        Label gap = new Label();
-        layout.add(gap);
-        layout.expand(gap);
-
         Component component = createComponent(1, "#78909C");
         layout.add(component);
-
-        gap = new Label();
-        layout.add(gap);
-        layout.expand(gap);
+        layout.setJustifyContentMode(JustifyContentMode.AROUND);
 
         // end-source-example
 

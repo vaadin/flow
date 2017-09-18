@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Label;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FlexLayout.Alignment;
@@ -200,17 +199,10 @@ public class VerticalLayoutView extends DemoView {
         layout.setHeight("200px");
         layout.getStyle().set("border", "1px solid #9E9E9E");
 
-        Label gap = new Label();
-        layout.add(gap);
-        layout.expand(gap);
-
         Component component = createComponent(1, "#78909C");
         layout.add(component);
         layout.setHorizontalComponentAlignment(Alignment.CENTER, component);
-
-        gap = new Label();
-        layout.add(gap);
-        layout.expand(gap);
+        layout.setJustifyContentMode(JustifyContentMode.AROUND);
 
         // end-source-example
 
