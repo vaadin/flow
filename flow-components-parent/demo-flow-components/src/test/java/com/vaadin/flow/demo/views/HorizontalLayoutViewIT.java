@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -154,6 +156,20 @@ public class HorizontalLayoutViewIT extends AbstractChromeTest {
 
         child = vlayout.findElement(By.id("ratio-0.5"));
         Assert.assertEquals("0.5", child.getCssValue("flex-grow"));
+    }
+
+    @Test
+    public void centerComponent() {
+        WebElement vlayout = layout.findElement(By.id("layout-with-center"));
+        assertBasicFlexPropertiesAreSet(vlayout);
+
+        List<WebElement> gaps = vlayout.findElements(By.cssSelector("label"));
+        Assert.assertTrue(gaps.size() > 0);
+        for (WebElement gap : gaps) {
+            Assert.assertEquals("1", gap.getCssValue("flex-grow"));
+        }
+
+        Assert.assertTrue(isElementPresent(By.id("center")));
     }
 
     private void assertBasicFlexPropertiesAreSet(WebElement vlayout) {

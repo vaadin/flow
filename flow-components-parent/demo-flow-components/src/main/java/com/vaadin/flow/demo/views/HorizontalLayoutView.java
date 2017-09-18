@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
+import com.vaadin.flow.html.Label;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FlexLayout.Alignment;
@@ -36,6 +37,7 @@ public class HorizontalLayoutView extends DemoView {
         createLayoutWithDefaultAlignment();
         createLayoutWithIndividualAlignments();
         createLayoutWithExpandRatios();
+        createLayoutWithCenterComponent();
     }
 
     private void createDefaultLayout() {
@@ -190,6 +192,32 @@ public class HorizontalLayoutView extends DemoView {
         layout.setId("layout-with-expand-ratios");
 
         addCard("Layout with expand ratios", layout);
+    }
+
+    private void createLayoutWithCenterComponent() {
+        // begin-source-example
+        // source-example-heading: Layout with component in the center
+        HorizontalLayout layout = new HorizontalLayout();
+        layout.setWidth("200px");
+        layout.getStyle().set("border", "1px solid #9E9E9E");
+
+        Label gap = new Label();
+        layout.add(gap);
+        layout.expand(gap);
+
+        Component component = createComponent(1, "#78909C");
+        layout.add(component);
+
+        gap = new Label();
+        layout.add(gap);
+        layout.expand(gap);
+
+        // end-source-example
+
+        component.setId("center");
+        layout.setId("layout-with-center");
+
+        addCard("Layout with component in the center", layout);
     }
 
     private Component createComponent(int index, String color) {
