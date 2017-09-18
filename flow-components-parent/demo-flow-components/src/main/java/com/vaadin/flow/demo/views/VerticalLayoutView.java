@@ -103,7 +103,7 @@ public class VerticalLayoutView extends DemoView {
         layout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         // the default is Alignment.START
-        layout.setDefaultComponentAlignment(Alignment.STRETCH);
+        layout.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
 
         Component component1 = createComponent(1, "#78909C");
         Component component2 = createComponent(2, "#546E7A");
@@ -139,16 +139,17 @@ public class VerticalLayoutView extends DemoView {
         layout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         Component component1 = createComponent(1, "#78909C");
-        layout.setComponentAlignment(Alignment.START, component1);
+        layout.setHorizontalComponentAlignment(Alignment.START,
+                component1);
 
         Component component2 = createComponent(2, "#546E7A");
-        layout.setComponentAlignment(Alignment.CENTER, component2);
+        layout.setHorizontalComponentAlignment(Alignment.CENTER, component2);
 
         Component component3 = createComponent(3, "#37474F");
-        layout.setComponentAlignment(Alignment.END, component3);
+        layout.setHorizontalComponentAlignment(Alignment.END, component3);
 
         Component component4 = createComponent(4, "#263238");
-        layout.setComponentAlignment(Alignment.STRETCH, component4);
+        layout.setHorizontalComponentAlignment(Alignment.STRETCH, component4);
 
         layout.add(component1, component2, component3, component4);
         // end-source-example
@@ -168,16 +169,16 @@ public class VerticalLayoutView extends DemoView {
         VerticalLayout layout = new VerticalLayout();
         layout.setHeight("200px");
         layout.getStyle().set("border", "1px solid #9E9E9E");
-        layout.setDefaultComponentAlignment(Alignment.STRETCH);
+        layout.setDefaultHorizontalComponentAlignment(Alignment.STRETCH);
 
         Component component1 = createComponent(1, "#78909C");
-        layout.setExpandRatio(1, component1);
+        layout.expand(component1);
 
         Component component2 = createComponent(2, "#546E7A");
-        layout.setExpandRatio(2, component2);
+        layout.setFlexGrow(2, component2);
 
         Component component3 = createComponent(3, "#37474F");
-        layout.setExpandRatio(0.5, component3);
+        layout.setFlexGrow(0.5, component3);
 
         layout.add(component1, component2, component3);
         // end-source-example
@@ -205,7 +206,8 @@ public class VerticalLayoutView extends DemoView {
         button.setId(id);
         button.setRaised(true);
         button.addClickListener(
-                event -> layout.setDefaultComponentAlignment(alignment));
+                event -> layout
+                        .setDefaultHorizontalComponentAlignment(alignment));
         return button;
     }
 

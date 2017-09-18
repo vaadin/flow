@@ -24,7 +24,7 @@ import com.vaadin.flow.dom.Element;
  * flex-direction and doesn't have any predetermined width or height.
  * <p>
  * This component can be used as a base class for more advanced layouts.
- * 
+ *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Using_CSS_flexible_boxes">Using
  *      CSS Flexible boxes on MDN</a>
@@ -107,7 +107,7 @@ public class FlexLayout extends Component
     /**
      * Convenience constructor to create a layout with the children already
      * inside it.
-     * 
+     *
      * @param children
      *            the items to add to this layout
      * @see #add(Component...)
@@ -120,16 +120,18 @@ public class FlexLayout extends Component
     /**
      * Sets the default alignment to be used by all components without
      * individual alignments inside the layout. Individual components can be
-     * aligned by using the
-     * {@link #setComponentAlignment(Alignment, Component...)} method.
+     * aligned by using the {@link #setAlignSelf(Alignment, Component...)}
+     * method.
+     * <p>
+     * It effectively sets the {@code "alignItems"} style value.
      * <p>
      * The default alignment is {@link Alignment#STRETCH}.
-     * 
+     *
      * @param alignment
      *            the alignment to apply to the components. Setting
      *            <code>null</code> will reset the alignment to its default
      */
-    public void setDefaultComponentAlignment(Alignment alignment) {
+    public void setAlignItems(Alignment alignment) {
         if (alignment == null) {
             getStyle().remove(ALIGN_ITEMS_CSS_PROPERTY);
         } else {
@@ -142,10 +144,10 @@ public class FlexLayout extends Component
      * alignments inside the layout.
      * <p>
      * The default alignment is {@link Alignment#STRETCH}.
-     * 
+     *
      * @return the general alignment used by the layout, never <code>null</code>
      */
-    public Alignment getDefaultComponentAlignment() {
+    public Alignment getAlignItems() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
                 Alignment.STRETCH);
     }
@@ -153,18 +155,20 @@ public class FlexLayout extends Component
     /**
      * Sets an alignment for individual components inside the layout. This
      * individual alignment for the component overrides any alignment set at the
-     * {@link #setDefaultComponentAlignment(Alignment)}.
+     * {@link #setAlignItems(Alignment)}.
+     * <p>
+     * It effectively sets the {@code "alignSelf"} style value.
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
-     * 
+     *
      * @param alignment
      *            the individual alignment for the children components. Setting
      *            <code>null</code> will reset the alignment to its default
      * @param components
      *            The components to which the individual alignment should be set
      */
-    public void setComponentAlignment(Alignment alignment,
+    public void setAlignSelf(Alignment alignment,
             Component... components) {
         if (alignment == null) {
             for (Component component : components) {
@@ -184,43 +188,44 @@ public class FlexLayout extends Component
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
-     * 
+     *
      * @param component
      *            The component which individual layout should be read
      * @return the alignment of the component, never <code>null</code>
      */
-    public Alignment getComponentAlignment(Component component) {
+    public Alignment getAlignSelf(Component component) {
         return Alignment.toAlignment(
                 component.getElement().getStyle().get(ALIGN_SELF_CSS_PROPERTY),
                 Alignment.AUTO);
     }
 
     /**
-     * Sets the expand ratio of the components inside the layout. The expand
-     * ratio specifies what amount of the available space inside the layout the
-     * component should take up, proportionally to the other components.
+     * Sets the flex grow property of the components inside the layout. The flex
+     * grow property specifies what amount of the available space inside the
+     * layout the component should take up, proportionally to the other
+     * components.
      * <p>
-     * For example, if all components have a expand ratio set to 1, the
-     * remaining space in the layout will be distributed equally to all
-     * components inside the layout. If you set a expend ratio of one component
-     * to 2, that component will take twice the available space as the other
-     * components, and so on.
+     * For example, if all components have a flex grow property value set to 1,
+     * the remaining space in the layout will be distributed equally to all
+     * components inside the layout. If you set a flex grow property of one
+     * component to 2, that component will take twice the available space as the
+     * other components, and so on.
      * <p>
-     * Setting to expand ratio 0 disables the expansion of the component.
-     * Negative values are not allowed.
-     * 
-     * @param ratio
+     * Setting to flex grow property value 0 disables the expansion of the
+     * component. Negative values are not allowed.
+     *
+     * @param flexGrow
      *            the proportion of the available space the components should
      *            take up
      * @param components
-     *            the components to apply the expand ratio
+     *            the components to apply the flex grow property
      */
-    public void setExpandRatio(double ratio, Component... components) {
-        if (ratio < 0) {
+    public void setFlexGrow(double flexGrow, Component... components) {
+        if (flexGrow < 0) {
             throw new IllegalArgumentException(
-                    "Expand ratio cannot be negative");
+                    "Flex grow property cannot be negative");
         }
-        if (ratio == 0) {
+        if (flexGrow == 0) {
             for (Component component : components) {
                 component.getElement().getStyle()
                         .remove(FLEX_GROW_CSS_PROPERTY);
@@ -228,19 +233,19 @@ public class FlexLayout extends Component
         } else {
             for (Component component : components) {
                 component.getElement().getStyle().set(FLEX_GROW_CSS_PROPERTY,
-                        String.valueOf(ratio));
+                        String.valueOf(flexGrow));
             }
         }
     }
 
     /**
-     * Gets the expand ratio of a given component.
-     * 
+     * Gets the flex grow property of a given component.
+     *
      * @param component
-     *            the component to read the expand ratio from
-     * @return the expand ratio, or 0 if none was set
+     *            the component to read the flex grow property from
+     * @return the flex grow property, or 0 if none was set
      */
-    public double getExpandRatio(Component component) {
+    public double getFlexGrow(Component component) {
         String ratio = component.getElement().getStyle()
                 .get(FLEX_GROW_CSS_PROPERTY);
         if (ratio == null || ratio.isEmpty()) {
@@ -250,7 +255,7 @@ public class FlexLayout extends Component
             return Double.parseDouble(ratio);
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "The expand ratio of the component is not parseable to double: "
+                    "The flex grow property of the component is not parseable to double: "
                             + ratio,
                     e);
         }
@@ -260,7 +265,7 @@ public class FlexLayout extends Component
      * Gets the {@link JustifyContentMode} used by this layout.
      * <p>
      * The default justify content mode is {@link JustifyContentMode#START}.
-     * 
+     *
      * @param justifyContentMode
      *            the justify content mode of the layout, never
      *            <code>null</code>
@@ -279,7 +284,7 @@ public class FlexLayout extends Component
      * Gets the current justify content mode of the layout.
      * <p>
      * The default justify content mode is {@link JustifyContentMode#START}.
-     * 
+     *
      * @return the justify content mode used by the layout, never
      *         <code>null</code>
      */
