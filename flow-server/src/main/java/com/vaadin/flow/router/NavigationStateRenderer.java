@@ -143,6 +143,26 @@ public class NavigationStateRenderer implements NavigationHandler {
         return locationChangeEvent.getStatusCode();
     }
 
+    /**
+     * Gets the router layout types to show for the given route target type,
+     * starting from the parent layout immediately wrapping the route target
+     * type.
+     *
+     * @see #getRouteTargetType(NavigationEvent)
+     *
+     * @param routeTargetType
+     *            component type to show
+     *
+     * @return a list of parent {@link RouterLayout} types, not
+     *         <code>null</code>
+     */
+    public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
+            NavigationEvent event, Class<? extends Component> targetType) {
+        assert targetType == navigationState.getNavigationTarget();
+
+        return getParentLayouts(targetType);
+    }
+
     private boolean executeBeforeNavigation(
             BeforeNavigationEvent beforeNavigation,
             List<BeforeNavigationListener> listeners) {
@@ -226,13 +246,6 @@ public class NavigationStateRenderer implements NavigationHandler {
             List<HasElement> routeTargetChain) {
         return new NewLocationChangeEvent(event.getSource(), event.getUI(),
                 event.getTrigger(), event.getLocation(), routeTargetChain);
-    }
-
-    public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            NavigationEvent event, Class<? extends Component> targetType) {
-        assert targetType == navigationState.getNavigationTarget();
-
-        return getParentLayouts(targetType);
     }
 
     private List<Class<? extends RouterLayout>> getParentLayouts(

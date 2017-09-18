@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
@@ -32,7 +31,6 @@ import com.vaadin.ui.Component;
  */
 public class DefaultRouteResolver implements RouteResolver {
 
-    @SuppressWarnings("unchecked")
     @Override
     public NavigationState resolve(ResolveRequest request) {
         String path = findPathString(request.getLocation().getSegments());
@@ -59,16 +57,25 @@ public class DefaultRouteResolver implements RouteResolver {
     }
 
     private String findPathString(List<String> pathSegments) {
-        List<String> remainingSegments = new ArrayList<>(pathSegments);
-        while (!remainingSegments.isEmpty()) {
-            String currentPath = remainingSegments.stream()
-                    .collect(Collectors.joining("/"));
+        if (pathSegments.isEmpty()) {
+            return null;
+        }
+
+        List<String> paths = new ArrayList<>();
+        String currentPath = pathSegments.get(0);
+        paths.add(currentPath);
+        for (int i = 1; i < pathSegments.size(); i++) {
+            currentPath += "/" + pathSegments.get(i);
+            paths.add(currentPath);
+        }
+        while (!paths.isEmpty()) {
+            currentPath = paths.get(paths.size() - 1);
             Optional<?> target = RouteRegistry.getInstance()
                     .getNavigationTarget(currentPath);
             if (target.isPresent()) {
                 return currentPath;
             }
-            remainingSegments.remove(remainingSegments.size() - 1);
+            paths.remove(paths.size() - 1);
         }
         return null;
     }
