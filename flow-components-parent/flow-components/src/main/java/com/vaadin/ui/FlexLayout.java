@@ -120,8 +120,10 @@ public class FlexLayout extends Component
     /**
      * Sets the default alignment to be used by all components without
      * individual alignments inside the layout. Individual components can be
-     * aligned by using the
-     * {@link #setComponentAlignment(Alignment, Component...)} method.
+     * aligned by using the {@link #setAlignSelf(Alignment, Component...)}
+     * method.
+     * <p>
+     * It effectively sets the {@code "alignItems"} style value.
      * <p>
      * The default alignment is {@link Alignment#STRETCH}.
      *
@@ -129,7 +131,7 @@ public class FlexLayout extends Component
      *            the alignment to apply to the components. Setting
      *            <code>null</code> will reset the alignment to its default
      */
-    public void setDefaultComponentAlignment(Alignment alignment) {
+    public void setAlignItems(Alignment alignment) {
         if (alignment == null) {
             getStyle().remove(ALIGN_ITEMS_CSS_PROPERTY);
         } else {
@@ -145,7 +147,7 @@ public class FlexLayout extends Component
      *
      * @return the general alignment used by the layout, never <code>null</code>
      */
-    public Alignment getDefaultComponentAlignment() {
+    public Alignment getAlignItems() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
                 Alignment.STRETCH);
     }
@@ -153,7 +155,9 @@ public class FlexLayout extends Component
     /**
      * Sets an alignment for individual components inside the layout. This
      * individual alignment for the component overrides any alignment set at the
-     * {@link #setDefaultComponentAlignment(Alignment)}.
+     * {@link #setAlignItems(Alignment)}.
+     * <p>
+     * It effectively sets the {@code "alignSelf"} style value.
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
@@ -164,7 +168,7 @@ public class FlexLayout extends Component
      * @param components
      *            The components to which the individual alignment should be set
      */
-    public void setComponentAlignment(Alignment alignment,
+    public void setAlignSelf(Alignment alignment,
             Component... components) {
         if (alignment == null) {
             for (Component component : components) {
@@ -189,7 +193,7 @@ public class FlexLayout extends Component
      *            The component which individual layout should be read
      * @return the alignment of the component, never <code>null</code>
      */
-    public Alignment getComponentAlignment(Component component) {
+    public Alignment getAlignSelf(Component component) {
         return Alignment.toAlignment(
                 component.getElement().getStyle().get(ALIGN_SELF_CSS_PROPERTY),
                 Alignment.AUTO);
