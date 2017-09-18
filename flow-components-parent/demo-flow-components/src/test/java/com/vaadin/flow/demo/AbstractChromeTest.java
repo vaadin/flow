@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.demo;
 
-import org.openqa.selenium.WebElement;
-
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
@@ -24,19 +22,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  *
  */
 public abstract class AbstractChromeTest extends ChromeBrowserTest {
-
-    /**
-     * Calls {@code scrollIntoView} function of the element and then clicks on
-     * it.
-     * 
-     * @param element
-     *            the element to be clicked
-     */
-    protected void scrollIntoViewAndClick(WebElement element) {
-        getCommandExecutor().executeScript("arguments[0].scrollIntoView()",
-                element);
-        element.click();
-    }
 
     @Override
     protected int getDeploymentPort() {
