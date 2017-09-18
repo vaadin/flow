@@ -183,7 +183,7 @@ import com.vaadin.shared.Registration;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.DatePickerElement#2.0.2", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: Vaadin.DatePickerElement#2.0.3", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-date-picker")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker.html")
 public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
