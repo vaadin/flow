@@ -15,7 +15,10 @@
  */
 package com.vaadin.server.startup;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,10 +26,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
+import com.vaadin.annotations.RoutePrefix;
 import com.vaadin.flow.router.Location;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -115,7 +122,7 @@ public class RouteRegistry {
                                 + "navigation target component '%s'.",
                         navigationTarget.getName()));
             }
-            String route = navigationTarget.getAnnotation(Route.class).value();
+            String route = getNavigationRoute(navigationTarget);
             if (navigationTargetMap.containsKey(route)) {
                 throw new InvalidRouteConfigurationException(String.format(
                         "Navigation targets must have unique routes, "
@@ -127,11 +134,67 @@ public class RouteRegistry {
         }
     }
 
+    /**
+     * Collect the whole route for the navigation target.
+     * <p>
+     * The whole route is composed of the Route annotation and any
+     * ParentLayout:@RoutePrefix that may be in the navigation chain.
+     * 
+     * @param navigationTarget
+     *            navigation target to get chain route for
+     * @return full navigation route
+     */
+    private String getNavigationRoute(Class<?> navigationTarget) {
+        Route annotation = navigationTarget.getAnnotation(Route.class);
+        if (annotation.absolute()) {
+            return annotation.value();
+        }
+
+        StringBuilder fullRoute = new StringBuilder();
+        List<String> parentRoutePrefixes = getParentRoutePrefixes(
+                navigationTarget);
+        Collections.reverse(parentRoutePrefixes);
+
+        parentRoutePrefixes
+                .forEach(prefix -> fullRoute.append(prefix).append("/"));
+
+        fullRoute.append(annotation.value());
+
+        return fullRoute.toString();
+    }
+
+    private List<String> getParentRoutePrefixes(Class<?> component) {
+        List<String> list = new ArrayList<>();
+
+        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(component, ParentLayout.class);
+        Optional<RoutePrefix> routePrefix = AnnotationReader
+                .getAnnotationFor(component, RoutePrefix.class);
+
+        routePrefix.ifPresent(prefix -> list.add(prefix.value()));
+
+        // break chain on an absolute RoutePrefix or Route
+        if ((routePrefix.isPresent() && routePrefix.get().absolute())
+                || (router.isPresent() && router.get().absolute())) {
+            return list;
+        }
+
+        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
+            list.addAll(getParentRoutePrefixes(router.get().layout()));
+        } else if (parentLayout.isPresent()) {
+            list.addAll(getParentRoutePrefixes(parentLayout.get().value()));
+        }
+
+        return list;
+    }
+
     private void doRegisterNavigationTargets(
             Set<Class<? extends Component>> navigationTargets) {
         routes.clear();
         navigationTargets.forEach(navigationTarget -> {
-            String route = navigationTarget.getAnnotation(Route.class).value();
+            String route = getNavigationRoute(navigationTarget);
             Logger.getLogger(RouteRegistry.class.getName()).log(Level.FINE,
                     String.format(
                             "Registering route '%s' to navigation target '%s'.",

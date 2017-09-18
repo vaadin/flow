@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
@@ -33,8 +32,7 @@ public class NavigationStateRendererTest {
                 navigationStateFromTarget(RouteParentLayout.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(Mockito.mock(NavigationEvent.class),
-                        RouteParentLayout.class);
+                .getRouterLayoutTypes(RouteParentLayout.class);
 
         Assert.assertEquals(
                 "Found layout even though RouteParentLayout doesn't have any parents.",
@@ -47,8 +45,7 @@ public class NavigationStateRendererTest {
                 navigationStateFromTarget(SingleView.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(Mockito.mock(NavigationEvent.class),
-                        SingleView.class);
+                .getRouterLayoutTypes(SingleView.class);
 
         Assert.assertEquals("Not all expected layouts were found", 1,
                 routerLayoutTypes.size());
@@ -61,8 +58,7 @@ public class NavigationStateRendererTest {
                 navigationStateFromTarget(ChildConfiguration.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(Mockito.mock(NavigationEvent.class),
-                        ChildConfiguration.class);
+                .getRouterLayoutTypes(ChildConfiguration.class);
 
         Assert.assertEquals("Not all expected layouts were found", 2,
                 routerLayoutTypes.size());

@@ -2,6 +2,7 @@
   "name": "Vaadin.FormLayoutElement",
   "tag": "vaadin-form-layout",
   "baseUrl": "vaadin-form-layout/vaadin-form-layout.html",
+  "version": "1.0.1",
   "properties": [
     {
       "name": "responsiveSteps",
