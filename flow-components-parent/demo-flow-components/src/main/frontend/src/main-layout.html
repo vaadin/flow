@@ -25,6 +25,11 @@
         display: none;
       }
 
+      app-drawer {
+        overflow: auto;
+        margin-bottom: 120px;
+      }
+
       app-header {
         color: #fff;
         background-color: var(--app-primary-color);
@@ -45,7 +50,7 @@
 
     <app-drawer-layout fullbleed>
       <!-- Side menu -->
-      <app-drawer id="drawer" slot="drawer" style="overflow: auto;">
+      <app-drawer id="drawer" slot="drawer">
         <app-toolbar>Components</app-toolbar>
         <div id="samples" class="flex style-scope paper-header-panel">
         	<drawer-item page="[[page]]" selectors="[[vaadinComponentSelectors]]" category="Vaadin Components"></drawer-item>
