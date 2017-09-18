@@ -33,6 +33,4 @@ public class SomePathComponent extends Div {
 
 So whenever the user navigates to `http://yourdomain.com/some/path` (assuming the app is running from the root context), either by clicking on links inside the application or by typing the address directly on the address bar, the `SomePathComponent` component would be shown at the page.
 
-See also:
-
-* <<tutorial-routing-navigation#,Navigating Between Routes>>
+For nested route definitions see: <<tutorial-routing-layout#route-prefix,ParentLayout route control using @RoutePrefix>>

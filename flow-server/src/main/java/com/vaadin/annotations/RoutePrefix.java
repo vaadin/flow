@@ -22,41 +22,27 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.ui.UI;
-
 /**
- * Defines the route for components that function as navigation targets in
- * routing.
+ * Defines the route prefix that a Parent layout adds to a route when used in
+ * the active view chain.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
 @Documented
-public @interface Route {
+public @interface RoutePrefix {
 
     /**
-     * Gets the route path value of the annotated class.
-     *
-     * @return the path value of this route
+     * Get the route prefix defined for class.
+     * 
+     * @return route prefix to add
      */
     String value();
 
     /**
-     * Sets the parent component for the route target component.
-     * <p>
-     * When navigating between components that use the same layout, the same
-     * component instance is reused.
-     *
-     * @return the layout component class used by the route target component.
-     *         The default is the {@link UI} of the application.
-     */
-    Class<? extends RouterLayout> layout() default UI.class;
-
-    /**
      * Have the rout chain break on defined class and not take into notice any
      * more parent layout route prefixes.
-     *
+     * 
      * @return route up to here should be absolute
      */
     boolean absolute() default false;
