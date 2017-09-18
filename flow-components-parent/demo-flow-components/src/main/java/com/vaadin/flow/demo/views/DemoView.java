@@ -70,11 +70,8 @@ public abstract class DemoView extends Component
 
     private void putSourceCode(SourceCodeExample example) {
         String heading = example.getHeading();
-        List<SourceCodeExample> list = sourceCodeExamples.get(heading);
-        if (list == null) {
-            list = new ArrayList<>();
-            sourceCodeExamples.put(heading, list);
-        }
+        List<SourceCodeExample> list = sourceCodeExamples
+                .computeIfAbsent(heading, key -> new ArrayList<>());
         list.add(example);
     }
 
