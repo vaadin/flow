@@ -17,7 +17,6 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Label;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FlexLayout.Alignment;
