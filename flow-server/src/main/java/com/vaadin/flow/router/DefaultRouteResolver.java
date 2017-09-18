@@ -62,14 +62,14 @@ public class DefaultRouteResolver implements RouteResolver {
         }
 
         List<String> paths = new ArrayList<>();
-        String currentPath = pathSegments.get(0);
-        paths.add(currentPath);
+        StringBuilder pathBuilder = new StringBuilder(pathSegments.get(0));
+        paths.add(pathBuilder.toString());
         for (int i = 1; i < pathSegments.size(); i++) {
-            currentPath += "/" + pathSegments.get(i);
-            paths.add(currentPath);
+            pathBuilder.append("/").append(pathSegments.get(i));
+            paths.add(pathBuilder.toString());
         }
         while (!paths.isEmpty()) {
-            currentPath = paths.get(paths.size() - 1);
+            String currentPath = paths.get(paths.size() - 1);
             Optional<?> target = RouteRegistry.getInstance()
                     .getNavigationTarget(currentPath);
             if (target.isPresent()) {
