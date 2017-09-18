@@ -70,7 +70,8 @@ public class NewRouterTest extends NewRoutingTestBase {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Redirecting");
-            event.rerouteTo(FooBarNavigationTarget.class);
+            event.rerouteTo(new NavigationStateBuilder()
+                    .withTarget(FooBarNavigationTarget.class).build());
         }
     }
 

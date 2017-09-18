@@ -19,11 +19,11 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.ui.Component;
 import com.vaadin.ui.HasElement;
 import com.vaadin.ui.UI;
 
@@ -191,10 +191,12 @@ public class NewLocationChangeEvent extends EventObject {
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
      *
-     * @param routeTargetType
-     *            the component type to display, not {@code null}
+     * @param rerouteTargetState
+     *            the target navigation state of the rerouting, not {@code null}
      */
-    public void rerouteTo(Class<? extends Component> routeTargetType) {
-        rerouteTo(new StaticRouteTargetRenderer(routeTargetType));
+    public void rerouteTo(NavigationState rerouteTargetState) {
+        Objects.requireNonNull(rerouteTargetState,
+                "rerouteTargetState cannot be null");
+        rerouteTo(new NavigationStateRenderer(rerouteTargetState));
     }
 }

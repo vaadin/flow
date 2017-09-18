@@ -15,11 +15,12 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +29,6 @@ import org.junit.Test;
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.RoutePrefix;
-import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
@@ -56,15 +56,15 @@ public class RouteRegistryInitializerTest {
 
         Assert.assertEquals("Route '' registered to NavigationTarget.class",
                 NavigationTarget.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("")).get());
+                        .getNavigationTarget("").get());
         Assert.assertEquals(
                 "Route 'foo' registered to NavigationTargetFoo.class",
                 NavigationTargetFoo.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("foo")).get());
+                        .getNavigationTarget("foo").get());
         Assert.assertEquals(
                 "Route 'bar' registered to NavigationTargetBar.class",
                 NavigationTargetBar.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("bar")).get());
+                        .getNavigationTarget("bar").get());
     }
 
     @Test
@@ -114,7 +114,7 @@ public class RouteRegistryInitializerTest {
 
         Optional<Class<? extends Component>> navigationTarget = RouteRegistry
                 .getInstance()
-                .getNavigationTarget(new Location("parent/prefix"));
+                .getNavigationTarget("parent/prefix");
 
         Assert.assertTrue("Couldn't find navigation target for `parent/prefix`",
                 navigationTarget.isPresent());
@@ -131,7 +131,7 @@ public class RouteRegistryInitializerTest {
                 null);
 
         Optional<Class<? extends Component>> navigationTarget = RouteRegistry
-                .getInstance().getNavigationTarget(new Location("absolute"));
+                .getInstance().getNavigationTarget("absolute");
 
         Assert.assertTrue("Could not find navigation target for `absolute`",
                 navigationTarget.isPresent());
@@ -148,7 +148,7 @@ public class RouteRegistryInitializerTest {
 
         Optional<Class<? extends Component>> navigationTarget = RouteRegistry
                 .getInstance()
-                .getNavigationTarget(new Location("absolute/levels"));
+                .getNavigationTarget("absolute/levels");
 
         Assert.assertTrue(
                 "Could not find navigation target for `absolute/levels`",

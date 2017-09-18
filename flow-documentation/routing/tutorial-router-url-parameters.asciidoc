@@ -1,0 +1,36 @@
+---
+title: Routing and URL Parameters
+order: 4
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+==== Work in progress
+
+= Routing and URL Parameters
+
+== URL Parameters for Navigation Targets
+
+A navigation target that supports parameters passed through the URL should implement the `HasUrlParameter` interface and define the parameter type using generics.
+In this way, the Router API can offer a type-safe way of constructing URLs that lead to a specific target.
+
+`HasUrlParameter` defines the setParameter method that is invoked by Router based on values extracted from the URL.
+The method will always be invoked before a navigation target is activated.
+
+In the following code snippet we define a navigation target that takes a string parameter and produces a greeting string from it, which the target then sets as its own text content on navigation.
+
+[source,java]
+----
+@Route(value = "greet")
+public class GreetingComponent extends Div
+        implements HasUrlParameter<String> {
+
+    @Override
+    public void setParameter(BeforeNavigationEvent event,
+            String parameter) {
+        setText(String.format("Hello, %s!", parameter));
+    }
+}
+----
+
+On startup this navigation target will automatically be configured to every path of the form `greet/<anything>`, except in the case where a separate navigation target with an exact `@Route` has been configured to match `greet/<some specific path>` the exact navigation target takes precedence when resolving the URL.

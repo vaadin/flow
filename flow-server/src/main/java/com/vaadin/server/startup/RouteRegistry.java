@@ -90,16 +90,15 @@ public class RouteRegistry {
      * 
      * @see Location
      * 
-     * @param location
-     *            the location to get the navigation target for, not
-     *            {@code null}
+     * @param pathString
+     *            the path to get the navigation target for, not {@code null}
      * @return optional of the navigation target corresponding to the given
      *         location
      */
     public Optional<Class<? extends Component>> getNavigationTarget(
-            Location location) {
-        Objects.requireNonNull(location, "Location must not be null.");
-        return Optional.ofNullable(routes.get(location.getPath()));
+            String pathString) {
+        Objects.requireNonNull(pathString, "pathString must not be null.");
+        return Optional.ofNullable(routes.get(pathString));
     }
 
     /**

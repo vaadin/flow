@@ -23,6 +23,7 @@ import org.junit.Before;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
+import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -48,6 +49,28 @@ public class NewRoutingTestBase {
     @Title("Custom Title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithTitle extends Component {
+    }
+
+    @Route("greeting")
+    @Title("Custom Title")
+    @Tag(Tag.DIV)
+    public static class GreetingNavigationTarget extends Component
+            implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+        }
+    }
+
+    @Route("greeting/other")
+    @Title("Custom Title")
+    @Tag(Tag.DIV)
+    public static class OtherGreetingNavigationTarget extends Component
+            implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+        }
     }
 
     public static class RouterTestUI extends UI {
