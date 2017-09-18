@@ -80,4 +80,9 @@ public class TextField extends GeneratedVaadinTextField<TextField>
             super.setValue(value);
         }
     }
+
+    @Override
+    public boolean hasValue() {
+        return !isEmpty();
+    }
 }
