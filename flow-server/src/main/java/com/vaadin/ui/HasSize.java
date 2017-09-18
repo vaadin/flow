@@ -46,6 +46,7 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     *
      * Gets the width defined for the component.
      * <p>
      * Note that this does not return the actual size of the component but the
@@ -84,5 +85,29 @@ public interface HasSize extends HasElement {
      */
     default String getHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_HEIGHT);
+    }
+
+    /**
+     * Sets the width and the height of the component to "100%".
+     * <p>
+     * This is just a convenience method which delegates its call to the
+     * {@link #setWidth(String)} and {@link #setHeight(String)} methods with
+     * {@literal "100%"} as the argument value
+     */
+    default void setSizeFull() {
+        setWidth("100%");
+        setHeight("100%");
+    }
+
+    /**
+     * Removes the width and the height of the component.
+     * <p>
+     * This is just a convenience method which delegates its call to the
+     * {@link #setWidth(String)} and {@link #setHeight(String)} methods with
+     * {@literal null} as the argument value
+     */
+    default void setSizeUndefined() {
+        setWidth(null);
+        setHeight(null);
     }
 }
