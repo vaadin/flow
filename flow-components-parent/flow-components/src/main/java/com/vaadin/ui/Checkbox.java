@@ -21,7 +21,7 @@ import elemental.json.Json;
 
 /**
  * Server-side component for the {@code vaadin-checkbox} element.
- * 
+ *
  * @author Vaadin Ltd
  */
 public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
@@ -35,7 +35,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
 
     /**
      * Constructs a VaadinCheckbox with the initial label text.
-     * 
+     *
      * @see #setLabel(String)
      * @param labelText
      *            the label text to set
@@ -45,9 +45,20 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
     }
 
     /**
+     * Constructs a VaadinCheckbox with the initial value.
+     *
+     * @see #setValue(Boolean)
+     * @param initialValue
+     *            the initial value
+     */
+    public Checkbox(boolean initialValue) {
+        setValue(initialValue);
+    }
+
+    /**
      * Constructs a VaadinCheckbox with the initial label text and value change
      * listener.
-     * 
+     *
      * @see #setLabel(String)
      * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
      * @param label
@@ -63,7 +74,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
 
     /**
      * Get the current label text.
-     * 
+     *
      * @return the current label text
      */
     public String getLabel() {
@@ -72,7 +83,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
 
     /**
      * Set the current label text of this checkbox.
-     * 
+     *
      * @param label
      *            the label text to set
      * @return this instance, for method chaining
@@ -84,11 +95,11 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
 
     /**
      * Set the accessibility label of this checkbox.
-     * 
+     *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/ARIA_Techniques/Using_the_aria-label_attribute"
      *      >aria-label at MDN</a>
-     * 
+     *
      * @param ariaLabel
      *            the accessibility label to set
      * @return this instance, for method chaining
@@ -101,7 +112,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
     /**
      * Set whether this checkbox should be checked. Given a null value as an
      * argument the checkbox state will be set to be indeterminate.
-     * 
+     *
      * @see #isIndeterminate()
      * @param value
      *            the value to set
@@ -120,7 +131,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
     /**
      * Get the current checked state of this checkbox. A null return value
      * implies that the checked state is indeterminate.
-     * 
+     *
      * @see #isIndeterminate()
      * @return the checked state of this checkbox
      */
@@ -134,7 +145,7 @@ public class Checkbox extends GeneratedVaadinCheckbox<Checkbox>
 
     /**
      * Returns whether the value of this checkbox is indeterminate.
-     * 
+     *
      * @see #isIndeterminate()
      * @return whether the checkbox' value is indeterminate
      */
