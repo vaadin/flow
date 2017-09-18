@@ -36,6 +36,7 @@ public class VerticalLayoutView extends DemoView {
         createLayoutWithDefaultAlignment();
         createLayoutWithIndividualAlignments();
         createLayoutWithExpandRatios();
+        createLayoutWithCenterComponent();
     }
 
     private void createDefaultLayout() {
@@ -189,6 +190,26 @@ public class VerticalLayoutView extends DemoView {
         layout.setId("layout-with-expand-ratios");
 
         addCard("Layout with expand ratios", layout);
+    }
+
+    private void createLayoutWithCenterComponent() {
+        // begin-source-example
+        // source-example-heading: Layout with component in the center
+        VerticalLayout layout = new VerticalLayout();
+        layout.setHeight("200px");
+        layout.getStyle().set("border", "1px solid #9E9E9E");
+
+        Component component = createComponent(1, "#78909C");
+        layout.add(component);
+        layout.setHorizontalComponentAlignment(Alignment.CENTER, component);
+        layout.setJustifyContentMode(JustifyContentMode.AROUND);
+
+        // end-source-example
+
+        component.setId("center");
+        layout.setId("layout-with-center");
+
+        addCard("Layout with component in the center", layout);
     }
 
     private Component createComponent(int index, String color) {
