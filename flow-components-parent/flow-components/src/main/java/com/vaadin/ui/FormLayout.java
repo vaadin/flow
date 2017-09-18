@@ -169,6 +169,13 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
     }
 
     /**
+     * Constructs an empty layout. Components can be added with
+     * {@link #add(Component...)}.
+     */
+    public FormLayout() {
+    }
+
+    /**
      * Constructs a FormLayout with the given initial components. Additional
      * components can be added after construction with
      * {@link #add(Component...)}.
