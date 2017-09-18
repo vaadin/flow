@@ -150,14 +150,14 @@ public class NavigationStateRenderer implements NavigationHandler {
      *
      * @see #getRouteTargetType(NavigationEvent)
      *
-     * @param routeTargetType
+     * @param targetType
      *            component type to show
      *
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
      */
     public List<Class<? extends RouterLayout>> getRouterLayoutTypes(
-            NavigationEvent event, Class<? extends Component> targetType) {
+            Class<? extends Component> targetType) {
         assert targetType == navigationState.getNavigationTarget();
 
         return getParentLayouts(targetType);
