@@ -49,6 +49,9 @@ public class InMemoryDataProviderHelpers {
         }
     };
 
+    private InMemoryDataProviderHelpers() {
+    }
+
     /**
      * Wraps a given data provider so that its filter ignores null items
      * returned by the given value provider.

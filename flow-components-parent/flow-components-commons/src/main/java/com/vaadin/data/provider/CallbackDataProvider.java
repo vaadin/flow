@@ -57,7 +57,7 @@ public class CallbackDataProvider<T, F>
          *            the query that defines which items to fetch
          * @return a stream of items
          */
-        public Stream<T> fetch(Query<T, F> query);
+        Stream<T> fetch(Query<T, F> query);
     }
 
     /**
@@ -83,7 +83,7 @@ public class CallbackDataProvider<T, F>
          *            the query that defines which items to count
          * @return the number of available items
          */
-        public int count(Query<T, F> query);
+        int count(Query<T, F> query);
     }
 
     private final FetchCallback<T, F> fetchCallback;

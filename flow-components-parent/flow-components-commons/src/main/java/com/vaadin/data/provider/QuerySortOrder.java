@@ -35,16 +35,6 @@ public class QuerySortOrder extends SortOrder<String> {
     }
 
     /**
-     * Gets sorting information.
-     *
-     * @return sorting entity, usually field id
-     */
-    @Override
-    public String getSorted() {
-        return super.getSorted();
-    }
-
-    /**
      * Creates a new query sort builder with given sorting using ascending sort
      * direction.
      *

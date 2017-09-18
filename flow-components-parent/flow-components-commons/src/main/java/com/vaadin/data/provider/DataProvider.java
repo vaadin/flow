@@ -125,7 +125,7 @@ public interface DataProvider<T, F> extends Serializable {
      *            the item to get identifier for; not {@code null}
      * @return the identifier for given item; not {@code null}
      */
-    public default Object getId(T item) {
+    default Object getId(T item) {
         Objects.requireNonNull(item, "Cannot provide an id for a null item.");
         return item;
     }
@@ -177,7 +177,7 @@ public interface DataProvider<T, F> extends Serializable {
      *
      * @return wrapped data provider, not <code>null</code>
      */
-    public default <C> DataProvider<T, C> withConvertedFilter(
+    default <C> DataProvider<T, C> withConvertedFilter(
             SerializableFunction<C, F> filterConverter) {
         Objects.requireNonNull(filterConverter,
                 "Filter converter can't be null");
@@ -206,7 +206,7 @@ public interface DataProvider<T, F> extends Serializable {
      *
      * @return a data provider with a configurable filter, not <code>null</code>
      */
-    public default <Q, C> ConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
+    default <Q, C> ConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
             SerializableBiFunction<Q, C, F> filterCombiner) {
         return new ConfigurableFilterDataProviderWrapper<T, Q, C, F>(this) {
             @Override
@@ -225,7 +225,7 @@ public interface DataProvider<T, F> extends Serializable {
      *
      * @return a data provider with a configurable filter, not <code>null</code>
      */
-    public default ConfigurableFilterDataProvider<T, Void, F> withConfigurableFilter() {
+    default ConfigurableFilterDataProvider<T, Void, F> withConfigurableFilter() {
         return withConfigurableFilter((queryFilter, configuredFilter) -> {
             assert queryFilter == null : "Filter from Void query must be null";
 
@@ -246,7 +246,7 @@ public interface DataProvider<T, F> extends Serializable {
      *            the collection of data, not <code>null</code>
      * @return a new list data provider
      */
-    public static <T> ListDataProvider<T> ofCollection(Collection<T> items) {
+    static <T> ListDataProvider<T> ofCollection(Collection<T> items) {
         return new ListDataProvider<>(items);
     }
 
@@ -263,7 +263,7 @@ public interface DataProvider<T, F> extends Serializable {
      * @return a new list data provider
      */
     @SafeVarargs
-    public static <T> ListDataProvider<T> ofItems(T... items) {
+    static <T> ListDataProvider<T> ofItems(T... items) {
         return new ListDataProvider<>(Arrays.asList(items));
     }
 
@@ -286,7 +286,7 @@ public interface DataProvider<T, F> extends Serializable {
      *            a stream of data items, not {@code null}
      * @return a new list data provider
      */
-    public static <T> ListDataProvider<T> fromStream(Stream<T> items) {
+    static <T> ListDataProvider<T> fromStream(Stream<T> items) {
         return new ListDataProvider<>(items.collect(Collectors.toList()));
     }
 
@@ -305,7 +305,7 @@ public interface DataProvider<T, F> extends Serializable {
      *            a query
      * @return a new callback data provider
      */
-    public static <T, F> CallbackDataProvider<T, F> fromFilteringCallbacks(
+    static <T, F> CallbackDataProvider<T, F> fromFilteringCallbacks(
             FetchCallback<T, F> fetchCallback,
             CountCallback<T, F> countCallback) {
         return new CallbackDataProvider<>(fetchCallback, countCallback);
@@ -326,7 +326,7 @@ public interface DataProvider<T, F> extends Serializable {
      *            a query
      * @return a new callback data provider
      */
-    public static <T> CallbackDataProvider<T, Void> fromCallbacks(
+    static <T> CallbackDataProvider<T, Void> fromCallbacks(
             FetchCallback<T, Void> fetchCallback,
             CountCallback<T, Void> countCallback) {
         return fromFilteringCallbacks(fetchCallback, countCallback);

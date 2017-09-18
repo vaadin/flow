@@ -37,7 +37,7 @@ public interface InMemoryDataProvider<T> extends
         ConfigurableFilterDataProvider<T, SerializablePredicate<T>, SerializablePredicate<T>> {
 
     @Override
-    public default boolean isInMemory() {
+    default boolean isInMemory() {
         return true;
     }
 
@@ -46,7 +46,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return the filter of this data provider
      */
-    public SerializablePredicate<T> getFilter();
+    SerializablePredicate<T> getFilter();
 
     /**
      * Sets a filter to be applied to all queries. The filter replaces any
@@ -61,7 +61,7 @@ public interface InMemoryDataProvider<T> extends
      *            filters
      */
     @Override
-    public void setFilter(SerializablePredicate<T> filter);
+    void setFilter(SerializablePredicate<T> filter);
 
     /**
      * Sets a filter for an item property. The filter replaces any filter that
@@ -77,7 +77,7 @@ public interface InMemoryDataProvider<T> extends
      * @param valueFilter
      *            filter for testing the property value, not <code>null</code>
      */
-    public default <V> void setFilter(ValueProvider<T, V> valueProvider,
+    default <V> void setFilter(ValueProvider<T, V> valueProvider,
             SerializablePredicate<V> valueFilter) {
         setFilter(InMemoryDataProviderHelpers
                 .createValueProviderFilter(valueProvider, valueFilter));
@@ -94,7 +94,7 @@ public interface InMemoryDataProvider<T> extends
      * @param filter
      *            the filter to add, not <code>null</code>
      */
-    public default void addFilter(SerializablePredicate<T> filter) {
+    default void addFilter(SerializablePredicate<T> filter) {
         Objects.requireNonNull(filter, "Filter cannot be null");
 
         if (getFilter() == null) {
@@ -119,7 +119,7 @@ public interface InMemoryDataProvider<T> extends
      * @param valueFilter
      *            filter for testing the property value, not <code>null</code>
      */
-    public default <V> void addFilter(ValueProvider<T, V> valueProvider,
+    default <V> void addFilter(ValueProvider<T, V> valueProvider,
             SerializablePredicate<V> valueFilter) {
         Objects.requireNonNull(valueProvider, "Value provider cannot be null");
         Objects.requireNonNull(valueFilter, "Value filter cannot be null");
@@ -144,7 +144,7 @@ public interface InMemoryDataProvider<T> extends
      * @param requiredValue
      *            the value that the property must have for the filter to pass
      */
-    public default <V> void setFilterByValue(ValueProvider<T, V> valueProvider,
+    default <V> void setFilterByValue(ValueProvider<T, V> valueProvider,
             V requiredValue) {
         setFilter(InMemoryDataProviderHelpers.createEqualsFilter(valueProvider,
                 requiredValue));
@@ -166,7 +166,7 @@ public interface InMemoryDataProvider<T> extends
      * @param requiredValue
      *            the value that the property must have for the filter to pass
      */
-    public default <V> void addFilterByValue(ValueProvider<T, V> valueProvider,
+    default <V> void addFilterByValue(ValueProvider<T, V> valueProvider,
             V requiredValue) {
         addFilter(InMemoryDataProviderHelpers.createEqualsFilter(valueProvider,
                 requiredValue));
@@ -177,7 +177,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @see #setFilter(SerializablePredicate)
      */
-    public default void clearFilters() {
+    default void clearFilters() {
         setFilter(null);
     }
 
@@ -186,7 +186,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return the sort comparator of this data provider
      */
-    public SerializableComparator<T> getSortComparator();
+    SerializableComparator<T> getSortComparator();
 
     /**
      * Sets the comparator to use as the default sorting for this data provider.
@@ -204,7 +204,7 @@ public interface InMemoryDataProvider<T> extends
      *            a comparator to use, or <code>null</code> to clear any
      *            previously set sort order
      */
-    public void setSortComparator(SerializableComparator<T> comparator);
+    void setSortComparator(SerializableComparator<T> comparator);
 
     /**
      * Adds a comparator to the default sorting for this data provider. If no
@@ -223,7 +223,7 @@ public interface InMemoryDataProvider<T> extends
      * @param comparator
      *            a comparator to add, not <code>null</code>
      */
-    public default void addSortComparator(
+    default void addSortComparator(
             SerializableComparator<T> comparator) {
         Objects.requireNonNull(comparator, "Comparator to add cannot be null");
         SerializableComparator<T> originalComparator = getSortComparator();
@@ -258,7 +258,7 @@ public interface InMemoryDataProvider<T> extends
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
      */
-    public default <V extends Comparable<? super V>> void setSortOrder(
+    default <V extends Comparable<? super V>> void setSortOrder(
             ValueProvider<T, V> valueProvider, SortDirection sortDirection) {
         setSortComparator(InMemoryDataProviderHelpers
                 .propertyComparator(valueProvider, sortDirection));
@@ -285,7 +285,7 @@ public interface InMemoryDataProvider<T> extends
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
      */
-    public default <V extends Comparable<? super V>> void addSortOrder(
+    default <V extends Comparable<? super V>> void addSortOrder(
             ValueProvider<T, V> valueProvider, SortDirection sortDirection) {
         addSortComparator(InMemoryDataProviderHelpers
                 .propertyComparator(valueProvider, sortDirection));
@@ -307,7 +307,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    public default <Q> DataProvider<T, Q> filteringBy(
+    default <Q> DataProvider<T, Q> filteringBy(
             SerializableBiPredicate<T, Q> predicate) {
         Objects.requireNonNull(predicate, "Predicate cannot be null");
 
@@ -335,7 +335,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    public default <V, Q> DataProvider<T, Q> filteringBy(
+    default <V, Q> DataProvider<T, Q> filteringBy(
             ValueProvider<T, V> valueProvider,
             SerializableBiPredicate<V, Q> predicate) {
         Objects.requireNonNull(valueProvider, "Value provider cannot be null");
@@ -357,7 +357,7 @@ public interface InMemoryDataProvider<T> extends
      *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    public default <V> DataProvider<T, V> filteringByEquals(
+    default <V> DataProvider<T, V> filteringByEquals(
             ValueProvider<T, V> valueProvider) {
         return filteringBy(valueProvider, Objects::equals);
     }
@@ -377,7 +377,7 @@ public interface InMemoryDataProvider<T> extends
      *            not <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    public default DataProvider<T, String> filteringBySubstring(
+    default DataProvider<T, String> filteringBySubstring(
             ValueProvider<T, String> valueProvider, Locale locale) {
         Objects.requireNonNull(locale, "Locale cannot be null");
         return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
@@ -399,7 +399,7 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    public default DataProvider<T, String> filteringBySubstring(
+    default DataProvider<T, String> filteringBySubstring(
             ValueProvider<T, String> valueProvider) {
         return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(
                 this, valueProvider, String::contains,
@@ -421,7 +421,7 @@ public interface InMemoryDataProvider<T> extends
      *            not <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    public default DataProvider<T, String> filteringByPrefix(
+    default DataProvider<T, String> filteringByPrefix(
             ValueProvider<T, String> valueProvider, Locale locale) {
         return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider,
                 String::startsWith, () -> locale);
@@ -441,7 +441,7 @@ public interface InMemoryDataProvider<T> extends
      *            <code>null</code>
      * @return a data provider that filters accordingly, not <code>null</code>
      */
-    public default DataProvider<T, String> filteringByPrefix(
+    default DataProvider<T, String> filteringByPrefix(
             ValueProvider<T, String> valueProvider) {
         return InMemoryDataProviderHelpers.filteringByCaseInsensitiveString(this, valueProvider,
                 String::startsWith, InMemoryDataProviderHelpers.CURRENT_LOCALE_SUPPLIER);
