@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.vaadin.annotations.StyleSheet;
@@ -38,7 +40,7 @@ import com.vaadin.ui.UI;
 public abstract class DemoView extends Component
         implements View, HasComponents {
 
-    private Map<String, SourceCodeExample> sourceCodeExamples = new HashMap<>();
+    private Map<String, List<SourceCodeExample>> sourceCodeExamples = new HashMap<>();
 
     protected DemoView() {
         getElement().setAttribute("class", "demo-view");
@@ -63,8 +65,14 @@ public abstract class DemoView extends Component
      */
     public void populateSources() {
         SourceContentResolver.getSourceCodeExamplesForClass(getClass())
-                .forEach(example -> sourceCodeExamples.put(example.getHeading(),
-                        example));
+                .forEach(this::putSourceCode);
+    }
+
+    private void putSourceCode(SourceCodeExample example) {
+        String heading = example.getHeading();
+        List<SourceCodeExample> list = sourceCodeExamples
+                .computeIfAbsent(heading, key -> new ArrayList<>());
+        list.add(example);
     }
 
     /**
@@ -90,27 +98,32 @@ public abstract class DemoView extends Component
             card.add(components);
         }
 
-        SourceCodeExample sourceCodeExample = sourceCodeExamples.get(heading);
-        if (sourceCodeExample != null) {
-            SourceContent content = new SourceContent();
-            String sourceString = sourceCodeExample.getSourceCode();
-            switch (sourceCodeExample.getSourceType()) {
-            case CSS:
-                content.addCss(sourceString);
-                break;
-            case JAVA:
-                content.addCode(sourceString);
-                break;
-            case UNDEFINED:
-            default:
-                content.addCode(sourceString);
-                break;
-            }
-            card.add(content);
+        List<SourceCodeExample> list = sourceCodeExamples.get(heading);
+        if (list != null) {
+            list.stream().map(this::createSourceContent).forEach(card::add);
         }
 
         add(card);
 
         return card;
+    }
+
+    private SourceContent createSourceContent(
+            SourceCodeExample sourceCodeExample) {
+        SourceContent content = new SourceContent();
+        String sourceString = sourceCodeExample.getSourceCode();
+        switch (sourceCodeExample.getSourceType()) {
+        case CSS:
+            content.addCss(sourceString);
+            break;
+        case JAVA:
+            content.addCode(sourceString);
+            break;
+        case UNDEFINED:
+        default:
+            content.addCode(sourceString);
+            break;
+        }
+        return content;
     }
 }

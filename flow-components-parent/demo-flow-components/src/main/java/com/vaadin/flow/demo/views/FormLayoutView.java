@@ -32,6 +32,8 @@ import com.vaadin.flow.html.Label;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Checkbox;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Composite;
 import com.vaadin.ui.DatePicker;
 import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.FormLayout.FormItem;
@@ -52,6 +54,7 @@ public class FormLayoutView extends DemoView {
         createResponsiveLayout();
         createFormLayoutWithItems();
         createFormLayoutWithBinder();
+        createCompositeLayout();
     }
 
     /**
@@ -135,6 +138,21 @@ public class FormLayoutView extends DemoView {
             return builder.toString();
         }
     }
+
+    // begin-source-example
+    // source-example-heading: Using form layout inside a composite
+    // You can create a custom layout that internally uses FormLayout
+    public class MyCustomLayout extends Composite<FormLayout> {
+
+        public void addItemWithLabel(String label, Component item) {
+            FormItem formItem = new FormItem(item);
+            formItem.addToLabel(new Label(label));
+
+            // getContent() returns a wrapped FormLayout
+            getContent().add(formItem);
+        }
+    }
+    // end-source-example
 
     private void createResponsiveLayout() {
         // @formatter:off
@@ -304,5 +322,20 @@ public class FormLayoutView extends DemoView {
         addCard("A form layout with fields using Binder", layoutWithBinder,
                 actions, infoLabel);
 
+    }
+
+    private void createCompositeLayout() {
+        // begin-source-example
+        // source-example-heading: Using form layout inside a composite
+        // And then just use it like a regular component
+        MyCustomLayout layout = new MyCustomLayout();
+        TextField name = new TextField();
+        TextField email = new TextField();
+
+        layout.addItemWithLabel("Name", name);
+        layout.addItemWithLabel("E-mail", email);
+        // end-source-example
+
+        addCard("Using form layout inside a composite", layout);
     }
 }
