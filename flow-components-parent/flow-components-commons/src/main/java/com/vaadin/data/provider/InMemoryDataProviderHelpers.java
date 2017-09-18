@@ -36,6 +36,9 @@ import com.vaadin.ui.UI;
  */
 public class InMemoryDataProviderHelpers {
 
+    private InMemoryDataProviderHelpers() {
+    }
+
     /**
      * Supplier that attempts to resolve a locale from the current UI. Returns
      * the system's default locale as a fallback.

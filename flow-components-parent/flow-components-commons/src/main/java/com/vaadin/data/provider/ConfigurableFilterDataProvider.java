@@ -38,6 +38,6 @@ public interface ConfigurableFilterDataProvider<T, Q, C>
      *            the filter to set, or <code>null</code> to clear any
      *            previously set filter
      */
-    public void setFilter(C filter);
+    void setFilter(C filter);
 
 }

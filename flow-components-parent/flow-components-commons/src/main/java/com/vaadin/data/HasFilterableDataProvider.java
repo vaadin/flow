@@ -43,7 +43,7 @@ public interface HasFilterableDataProvider<T, F> extends HasItems<T> {
      * @param dataProvider
      *            the data provider, not <code>null</code>
      */
-    public default void setDataProvider(DataProvider<T, F> dataProvider) {
+    default void setDataProvider(DataProvider<T, F> dataProvider) {
         setDataProvider(dataProvider, SerializableFunction.identity());
     }
 
@@ -58,6 +58,6 @@ public interface HasFilterableDataProvider<T, F> extends HasItems<T> {
      *            listing into filter values expected by the provided data
      *            provider, not <code>null</code>
      */
-    public <C> void setDataProvider(DataProvider<T, C> dataProvider,
+    <C> void setDataProvider(DataProvider<T, C> dataProvider,
             SerializableFunction<F, C> filterConverter);
 }
