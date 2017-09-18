@@ -33,6 +33,9 @@ public interface HasSize extends HasElement {
      * <p>
      * The width should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
+     * <p>
+     * If the provided {@code width} value is {@literal null} then width is
+     * removed.
      *
      * @param width
      *            the width to set
@@ -46,6 +49,7 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     *
      * Gets the width defined for the component.
      * <p>
      * Note that this does not return the actual size of the component but the
@@ -62,9 +66,12 @@ public interface HasSize extends HasElement {
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
+     * <p>
+     * If the provided {@code height} value is {@literal null} then height is
+     * removed.
      *
      * @param height
-     *            the height to set
+     *            the height to set, may be {@code null}
      */
     default void setHeight(String height) {
         if (height == null) {
@@ -84,5 +91,29 @@ public interface HasSize extends HasElement {
      */
     default String getHeight() {
         return getElement().getStyle().get(ElementConstants.STYLE_HEIGHT);
+    }
+
+    /**
+     * Sets the width and the height of the component to "100%".
+     * <p>
+     * This is just a convenience method which delegates its call to the
+     * {@link #setWidth(String)} and {@link #setHeight(String)} methods with
+     * {@literal "100%"} as the argument value
+     */
+    default void setSizeFull() {
+        setWidth("100%");
+        setHeight("100%");
+    }
+
+    /**
+     * Removes the width and the height of the component.
+     * <p>
+     * This is just a convenience method which delegates its call to the
+     * {@link #setWidth(String)} and {@link #setHeight(String)} methods with
+     * {@literal null} as the argument value
+     */
+    default void setSizeUndefined() {
+        setWidth(null);
+        setHeight(null);
     }
 }
