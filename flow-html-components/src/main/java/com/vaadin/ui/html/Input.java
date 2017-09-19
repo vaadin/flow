@@ -21,8 +21,8 @@ import java.util.Optional;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.common.HtmlComponent;
-import com.vaadin.ui.html.event.ChangeEvent;
-import com.vaadin.ui.html.event.ChangeNotifier;
+import com.vaadin.ui.event.ChangeEvent;
+import com.vaadin.ui.event.ChangeNotifier;
 import com.vaadin.ui.common.PropertyDescriptor;
 import com.vaadin.ui.common.PropertyDescriptors;
 

@@ -13,11 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.html.event;
+package com.vaadin.ui.event;
 
-import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**
  * Mixin interface for components that support adding click listeners to the

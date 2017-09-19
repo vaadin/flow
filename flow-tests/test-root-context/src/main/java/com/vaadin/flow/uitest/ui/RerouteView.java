@@ -21,8 +21,8 @@ import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.html.Input;
 import com.vaadin.ui.html.Label;
-import com.vaadin.ui.html.event.ChangeEvent;
-import com.vaadin.ui.html.event.ChangeNotifier;
+import com.vaadin.ui.event.ChangeEvent;
+import com.vaadin.ui.event.ChangeNotifier;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.shared.Registration;
 

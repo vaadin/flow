@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.html.event;
+package com.vaadin.ui.event;
 
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.common.HtmlComponent;
