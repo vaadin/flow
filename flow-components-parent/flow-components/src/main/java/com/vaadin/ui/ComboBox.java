@@ -167,9 +167,8 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * @param template
      *            the template to be used to render the items inside the list of
      *            this combo box
-     * @return this instance for method chaining
      */
-    public ComboBox<T> setItemTemplate(String template) {
+    public void setItemTemplate(String template) {
         getElement().getChildren()
                 .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
                 .findFirst().ifPresent(element -> element.removeFromParent());
@@ -177,7 +176,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         Element templateElement = new Element(TEMPLATE_TAG_NAME);
         getElement().appendChild(templateElement);
         templateElement.setProperty("innerHTML", template);
-        return get();
     }
 
     /**
@@ -252,12 +250,10 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      *
      * @param itemType
      *            the type of the items inside the combo box
-     * @return this instance for method chaining
      */
-    public ComboBox<T> setItemType(Class<T> itemType) {
+    public void setItemType(Class<T> itemType) {
         Objects.requireNonNull(itemType, "itemType can not be null");
         this.itemType = itemType;
-        return get();
     }
 
     /**
@@ -277,19 +273,15 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * @param item
      *            the selected object, or <code>null</code> to clear the
      *            selection
-     * @return this instance for method chaining
      */
-    public ComboBox<T> setSelectedItem(T item) {
+    public void setSelectedItem(T item) {
         tryToSetItemTypeIfNeeded(item);
         JsonValue json = JsonSerializer.toJson(item);
         getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
-        return get();
     }
 
     /**
-     * Gets the list of items which were filtered by the user input. Filter
-     * events can be received by using
-     * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
+     * Gets the list of items which were filtered by the user input.
      *
      * @return the list of filtered items, or empty list if none were filtered
      */
@@ -300,31 +292,24 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     /**
      * Convenience method for the {@link #setFilteredItems(Collection)}. It sets
-     * the list of visible items in reaction of the input of the user. Filter
-     * events can be received by using
-     * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
+     * the list of visible items in reaction of the input of the user.
      *
      * @param filteredItems
      *            the items to show in response of a filter input
-     * @return this instance for method chaining
      */
-    public ComboBox<T> setFilteredItems(T... filteredItems) {
-        return setFilteredItems(Arrays.asList(filteredItems));
+    public void setFilteredItems(T... filteredItems) {
+        setFilteredItems(Arrays.asList(filteredItems));
     }
 
     /**
      * It sets the list of visible items in reaction of the input of the user.
-     * Filter events can be received by using
-     * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
      *
      * @param filteredItems
      *            the items to show in response of a filter input
-     * @return this instance for method chaining
      */
-    public ComboBox<T> setFilteredItems(Collection<T> filteredItems) {
+    public void setFilteredItems(Collection<T> filteredItems) {
         tryToSetItemTypeIfNeeded(filteredItems);
         setFilteredItems(JsonSerializer.toJson(filteredItems));
-        return get();
     }
 
     /*
