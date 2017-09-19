@@ -15,10 +15,14 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.Optional;
+
 import com.vaadin.annotations.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.startup.RouteRegistry;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
@@ -118,5 +122,61 @@ public class NewRouter implements RouterInterface {
 
     private RouteResolver getRouteResolver() {
         return routeResolver;
+    }
+
+    /**
+     * Get the registered url string for given navigation target.
+     * 
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @return url for the navigation target
+     */
+    public String getUrl(Class<? extends Component> navigationTarget) {
+        Optional<String> targetUrl = RouteRegistry.getInstance()
+                .getTargetUrl(navigationTarget);
+        if (!targetUrl.isPresent()) {
+            throw new IllegalArgumentException(
+                    "No route found for given navigation target!");
+        }
+        return targetUrl.get();
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameter in the
+     * url.
+     * <p>
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type Boolean then
+     * calling getUrl with a String will fail.
+     * 
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameter
+     *            parameter to embed into the generated url
+     * @return url for the naviagtion target with parameter
+     */
+    public <T> String getUrl(
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+        String routeString = getUrl(
+                (Class<? extends Component>) navigationTarget).replace(
+                        "{" + parameter.getClass().getSimpleName() + "}",
+                        parameter.toString());
+
+        Optional<Class<? extends Component>> registryTarget = RouteRegistry
+                .getInstance().getNavigationTarget(routeString);
+
+        if (registryTarget.isPresent()
+                && !hasUrlParameters(registryTarget.get())
+                && !registryTarget.get().equals(navigationTarget)) {
+            throw new IllegalArgumentException(String.format(
+                    "Url matches existing navigation target '%s' with higher priority.",
+                    registryTarget.get().getName()));
+        }
+        return routeString;
+    }
+
+    private boolean hasUrlParameters(
+            Class<? extends Component> navigationTarget) {
+        return HasUrlParameter.class.isAssignableFrom(navigationTarget);
     }
 }

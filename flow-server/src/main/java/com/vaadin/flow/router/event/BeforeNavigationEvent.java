@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.router.event;
 
+import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Objects;
+import java.util.Optional;
 
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
@@ -26,7 +29,9 @@ import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationStateRenderer;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Event created before navigation happens.
@@ -173,6 +178,62 @@ public class BeforeNavigationEvent extends EventObject {
                 "routeTargetType cannot be null");
         rerouteTo(new NavigationStateBuilder().withTarget(routeTargetType)
                 .build());
+    }
+
+    /**
+     * Reroute to navigation component registered for given location string
+     * instead of the component about to be displayed.
+     * 
+     * @param route
+     *            reroute target location string
+     */
+    public void rerouteTo(String route) {
+        RouteRegistry.getInstance().getNavigationTarget(route)
+                .ifPresent(routeTarget -> rerouteTo(routeTarget));
+    }
+
+    /**
+     * Reroute to navigation component registered for given location string with
+     * given route parameter instead of the component about to be displayed.
+     *
+     * @param route
+     *            reroute target location string
+     * @param routeParam
+     *            route parameter
+     */
+    public <T> void rerouteTo(String route, T routeParam) {
+        Optional<Class<? extends Component>> optionalTarget = RouteRegistry
+                .getInstance().getNavigationTarget(route);
+
+        if (optionalTarget.isPresent()) {
+            boolean hasUrlParameter = HasUrlParameter.class
+                    .isAssignableFrom(optionalTarget.get());
+            if (hasUrlParameter) {
+                Class genericInterfaceType = ReflectTools
+                        .getGenericInterfaceType(optionalTarget.get(),
+                                HasUrlParameter.class);
+                if (genericInterfaceType
+                        .isAssignableFrom(routeParam.getClass())) {
+                    rerouteTo(
+                            new NavigationStateBuilder()
+                                    .withTarget(optionalTarget.get(),
+                                            Arrays.asList(
+                                                    routeParam.toString()))
+                                    .build());
+                } else {
+                    throw new IllegalArgumentException(String.format(
+                            "Given route parameter '%s' is of the wrong type. Required '%s'.",
+                            routeParam.getClass(), genericInterfaceType));
+                }
+            } else {
+                throw new IllegalArgumentException(String.format(
+                        "Found navigation target for route '%s' doesn't support url parameters.",
+                        route));
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "No navigation target found route '" + route + "'");
+        }
     }
 
     /**
