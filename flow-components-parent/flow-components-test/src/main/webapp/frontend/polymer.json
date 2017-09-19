@@ -1,7 +1,8 @@
 {
   "entrypoint": "index.html",
   "sources": [
-   "bower.json"
+    "bower_components/**/*",
+    "bower.json"
   ],
   "extraDependencies": [
     "bower_components/webcomponentsjs/webcomponents-lite.js"

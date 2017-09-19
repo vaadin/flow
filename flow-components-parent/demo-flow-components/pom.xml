@@ -95,7 +95,6 @@
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
-                            <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
                             <resourceBase>${jetty.extra.resource.base}</resourceBase>
                         </resourceBases>
                     </webAppConfig>
@@ -125,7 +124,7 @@
                 <version>${maven.resources.plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>copy-source-code</id>
+                        <id>copy-resources-for-vaadin-com</id>
                         <phase>process-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
@@ -135,23 +134,18 @@
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                    <directory>${project.basedir}/src/main/java</directory>
+                                    <directory>src/main/java</directory>
                                 </resource>
                                 <resource>
-                                    <directory>${frontend.working.directory}</directory>
+                                    <directory>src/main/webapp</directory>
                                     <targetPath>META-INF/resources</targetPath>
                                     <excludes>
-                                        <exclude>node/**</exclude>
-                                        <exclude>node_modules/**</exclude>
-                                        <exclude>etc/**</exclude>
-                                        <exclude>bower_components/**</exclude>
-                                        <exclude>build/**</exclude>
-                                        <exclude>package-lock.json</exclude>
+                                        <exclude>**/node/**</exclude>
+                                        <exclude>**/node_modules/**</exclude>
+                                        <exclude>**/etc/**</exclude>
+                                        <exclude>**/bower_components/**</exclude>
+                                        <exclude>**/build/**</exclude>
                                     </excludes>
-                                </resource>
-                                <resource>
-                                    <directory>${project.basedir}/${webapp.directory}</directory>
-                                    <targetPath>META-INF/resources</targetPath>
                                 </resource>
                             </resources>
                         </configuration>
@@ -220,7 +214,7 @@
 
             <properties>
                 <npm.build.goal>run prodMode</npm.build.goal>
-                <jetty.extra.resource.base>${project.build.directory}/jetty-extra-resources</jetty.extra.resource.base>
+                <jetty.extra.resource.base>${project.basedir}/${frontend.working.directory}/build</jetty.extra.resource.base>
             </properties>
 
             <dependencies>
@@ -240,56 +234,13 @@
                         <configuration>
                             <webResources>
                                 <resource>
-                                    <directory>${project.basedir}/${webapp.directory}</directory>
-                                </resource>
-                                <resource>
                                     <directory>${frontend.working.directory}/build</directory>
-                                    <targetPath>${vaadin.frontend.path}</targetPath>
                                 </resource>
                             </webResources>
+                            <packagingExcludes>
+                                **/frontend/bower_components/,**/node_modules/,**/node/,**/build/,**/etc/
+                            </packagingExcludes>
                         </configuration>
-                    </plugin>
-
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <version>${maven.resources.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>copy-resources</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>
-                                        ${project.build.directory}/jetty-extra-resources/${vaadin.frontend.path}
-                                    </outputDirectory>
-                                    <overwrite>true</overwrite>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/${frontend.working.directory}/build
-                                            </directory>
-                                        </resource>
-                                        <resource>
-                                            <directory>${frontend.working.directory}</directory>
-                                            <targetPath>META-INF/resources</targetPath>
-                                            <excludes>
-                                                <exclude>node/**</exclude>
-                                                <exclude>node_modules/**</exclude>
-                                                <exclude>etc/**</exclude>
-                                                <exclude>bower_components/**</exclude>
-                                                <exclude>build/**</exclude>
-                                                <exclude>package-lock.json</exclude>
-                                            </excludes>
-                                        </resource>
-                                        <resource>
-                                            <directory>${project.basedir}/${webapp.directory}</directory>
-                                            <targetPath>META-INF/resources</targetPath>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
@@ -314,19 +265,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-war-plugin</artifactId>
                         <configuration>
-                            <webResources>
-                                <resource>
-                                    <directory>${project.basedir}/${webapp.directory}</directory>
-                                </resource>
-                                <resource>
-                                    <directory>${frontend.working.directory}</directory>
-                                    <excludes>
-                                        <exclude>build/**</exclude>
-                                        <exclude>node/**</exclude>
-                                        <exclude>node_modules/**</exclude>
-                                    </excludes>
-                                </resource>
-                            </webResources>
+                            <packagingExcludes>**/node_modules/,**/node/,**/build/,**/etc/</packagingExcludes>
                         </configuration>
                     </plugin>
                 </plugins>
