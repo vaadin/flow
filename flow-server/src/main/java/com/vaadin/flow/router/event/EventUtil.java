@@ -64,6 +64,23 @@ public final class EventUtil {
     }
 
     /**
+     * Collect all Components implementing AfterNavigationListener that are
+     * found in the trees of given Components.
+     *
+     * @param components
+     *            components to search
+     * @return after navigation listeners
+     */
+    public static List<AfterNavigationListener> collectAfterNavigationListeners(
+            List<HasElement> components) {
+        Stream<Element> elements = components.stream()
+                .flatMap(component -> flattenChildren(component.getElement()));
+
+        return getListenerComponents(elements, AfterNavigationListener.class)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Collect all children for given node as a Element stream.
      *
      * @param node

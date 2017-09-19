@@ -18,7 +18,10 @@ package com.vaadin.flow.tutorial.router;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.html.Anchor;
 import com.vaadin.flow.html.Div;
+import com.vaadin.flow.router.event.AfterNavigationEvent;
+import com.vaadin.flow.router.event.AfterNavigationListener;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationListener;
 import com.vaadin.flow.template.PolymerTemplate;
@@ -68,6 +71,17 @@ public class NavigationEvents {
         private Object getItem() {
             // no-op implementation
             return null;
+        }
+    }
+
+    public class SideMenu extends Div implements AfterNavigationListener {
+        Anchor blog = new Anchor("blog", "Blog");
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            boolean active = event.getLocation().getFirstSegment()
+                    .equals(blog.getHref());
+            blog.getElement().getClassList().set("≥active", active);
         }
     }
 }
