@@ -22,6 +22,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Registry for all exclusions in the generated files. Excluded properties,
+ * events or methods are not generated.
+ * 
+ * @author Vaadin Ltd
+ * 
+ */
 public class ExclusionRegistry {
 
     private static final Map<String, Set<String>> PROPERTY_EXCLUSION_REGISTRY = new HashMap<>();
@@ -42,55 +49,111 @@ public class ExclusionRegistry {
     private ExclusionRegistry() {
     }
 
-    private static void put(String elementIdentifier, String name,
+    private static void put(String elementTag, String name,
             Map<String, Set<String>> map) {
-        Objects.requireNonNull(elementIdentifier,
-                "elementIdentifier cannot be null.");
         Objects.requireNonNull(name, "propertyNameToMap cannot be null.");
 
-        Set<String> list = map.computeIfAbsent(elementIdentifier,
-                element -> new HashSet<>());
-        list.add(name);
+        map.computeIfAbsent(elementTag, element -> new HashSet<>()).add(name);
     }
 
-    public static void excludeProperty(String elementIdentifier,
-            String propertyName) {
-        put(elementIdentifier, propertyName, PROPERTY_EXCLUSION_REGISTRY);
+    /**
+     * Excludes a property from being generated for a specific element denoted
+     * by it's tag.
+     * 
+     * @param elementTag
+     *            the tag of the element which the property should be excluded
+     *            from generation. Setting <code>null</code> makes the exclusion
+     *            apply to all elements
+     * @param propertyName
+     *            the name of the property to be excluded
+     * 
+     */
+    public static void excludeProperty(String elementTag, String propertyName) {
+        put(elementTag, propertyName, PROPERTY_EXCLUSION_REGISTRY);
     }
 
-    public static void excludeEvent(String elementIdentifier,
-            String eventName) {
-        put(elementIdentifier, eventName, EVENT_EXCLUSION_REGISTRY);
+    /**
+     * Excludes an event from being generated for a specific element denoted by
+     * it's tag.
+     * 
+     * @param elementTag
+     *            the tag of the element which the event should be excluded from
+     *            generation. Setting <code>null</code> makes the exclusion
+     *            apply to all elements
+     * 
+     * @param eventName
+     *            the name of the event to be excluded
+     */
+    public static void excludeEvent(String elementTag, String eventName) {
+        put(elementTag, eventName, EVENT_EXCLUSION_REGISTRY);
     }
 
-    public static void excludeMethod(String elementIdentifier,
-            String methodName) {
-        put(elementIdentifier, methodName, METHOD_EXCLUSION_REGISTRY);
+    /**
+     * Excludes a method from being generated for a specific element denoted by
+     * it's tag.
+     * 
+     * @param elementTag
+     *            the tag of the element which the method should be excluded
+     *            from generation. Setting <code>null</code> makes the exclusion
+     *            apply to all elements
+     * @param methodName
+     *            the name of the method to be excluded
+     */
+    public static void excludeMethod(String elementTag, String methodName) {
+        put(elementTag, methodName, METHOD_EXCLUSION_REGISTRY);
     }
 
-    private static boolean isExcluded(String elementIdentifier, String name,
+    private static boolean isExcluded(String elementTag, String name,
             Map<String, Set<String>> map) {
-        return map
-                .getOrDefault(elementIdentifier,
-                        map.getOrDefault(null, Collections.emptySet()))
+        if (map.getOrDefault(null, Collections.emptySet()).contains(name)) {
+            return true;
+        }
+        return map.getOrDefault(elementTag, Collections.emptySet())
                 .contains(name);
     }
 
-    public static boolean isPropertyExcluded(String elementIdentifier,
+    /**
+     * Gets whether a property should be excluded or not from the generation.
+     * 
+     * @param elementTag
+     *            the tag of the element
+     * @param propertyName
+     *            the name of the property
+     * @return <code>true</code> if the property should be excluded,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isPropertyExcluded(String elementTag,
             String propertyName) {
-        return isExcluded(elementIdentifier, propertyName,
+        return isExcluded(elementTag, propertyName,
                 PROPERTY_EXCLUSION_REGISTRY);
     }
 
-    public static boolean isEventExcluded(String elementIdentifier,
-            String eventName) {
-        return isExcluded(elementIdentifier, eventName,
-                EVENT_EXCLUSION_REGISTRY);
+    /**
+     * Gets whether an event should be excluded or not from the generation.
+     * 
+     * @param elementTag
+     *            the tag of the element
+     * @param eventName
+     *            the name of the event
+     * @return <code>true</code> if the event should be excluded,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isEventExcluded(String elementTag, String eventName) {
+        return isExcluded(elementTag, eventName, EVENT_EXCLUSION_REGISTRY);
     }
 
-    public static boolean isMethodExcluded(String elementIdentifier,
-            String eventName) {
-        return isExcluded(elementIdentifier, eventName,
-                METHOD_EXCLUSION_REGISTRY);
+    /**
+     * Gets whether a method should be excluded or not from the generation.
+     * 
+     * @param elementTag
+     *            the tag of the element
+     * @param methodName
+     *            the name of the method
+     * @return <code>true</code> if the method should be excluded,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isMethodExcluded(String elementTag,
+            String methodName) {
+        return isExcluded(elementTag, methodName, METHOD_EXCLUSION_REGISTRY);
     }
 }

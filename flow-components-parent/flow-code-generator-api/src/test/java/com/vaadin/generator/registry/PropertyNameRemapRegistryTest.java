@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.generator;
+package com.vaadin.generator.registry;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -25,7 +25,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.common.HasValue;
+import com.vaadin.components.data.HasValue;
+import com.vaadin.generator.ComponentGenerator;
+import com.vaadin.generator.ComponentGeneratorTestUtils;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentMetadata;
