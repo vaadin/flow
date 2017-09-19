@@ -17,6 +17,7 @@ package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
+import com.vaadin.annotations.RoutePrefix;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.RouterLayout;
@@ -52,5 +53,31 @@ public class RouterLayoutTutorial {
 
     @Route(value="icons", layout = MenuBar.class)
     public class IconsView extends Div {
+    }
+
+    @Route(value = "path", layout = SomeParent.class)
+    public class PathComponent extends Div {
+        // Implementation omitted
+    }
+
+    @RoutePrefix("some")
+    public class SomeParent extends Div implements RouterLayout {
+        // Implementation omitted
+    }
+
+    @Route(value = "content", layout = SomeParent.class, absolute = true)
+    public class MyContent extends Div {
+        // Implementation omitted
+    }
+
+    @RoutePrefix(value = "framework", absolute = true)
+    @ParentLayout(SomeParent.class)
+    public class FrameworkSite extends Div implements RouterLayout {
+        // Implementation omitted
+    }
+
+    @Route(value = "tutorial", layout = FrameworkSite.class)
+    public class Tutorials extends Div {
+        // Implementation omitted
     }
 }

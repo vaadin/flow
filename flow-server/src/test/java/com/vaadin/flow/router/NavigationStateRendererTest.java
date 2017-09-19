@@ -1,25 +1,38 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.router;
 
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.ui.Component;
 
-public class StaticRouteTargetRendererTest {
+public class NavigationStateRendererTest {
 
     @Test
     public void getRouterLayoutForSingle() throws Exception {
-        StaticRouteTargetRenderer childRenderer = new StaticRouteTargetRenderer(
-                RouteParentLayout.class);
+        NavigationStateRenderer childRenderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RouteParentLayout.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(Mockito.mock(NavigationEvent.class),
-                        RouteParentLayout.class);
+                .getRouterLayoutTypes(RouteParentLayout.class);
 
         Assert.assertEquals(
                 "Found layout even though RouteParentLayout doesn't have any parents.",
@@ -28,12 +41,11 @@ public class StaticRouteTargetRendererTest {
 
     @Test
     public void getRouterLayoutForSingleParent() throws Exception {
-        StaticRouteTargetRenderer childRenderer = new StaticRouteTargetRenderer(
-                SingleView.class);
+        NavigationStateRenderer childRenderer = new NavigationStateRenderer(
+                navigationStateFromTarget(SingleView.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(Mockito.mock(NavigationEvent.class),
-                        SingleView.class);
+                .getRouterLayoutTypes(SingleView.class);
 
         Assert.assertEquals("Not all expected layouts were found", 1,
                 routerLayoutTypes.size());
@@ -42,12 +54,11 @@ public class StaticRouteTargetRendererTest {
 
     @Test
     public void getRouterLayoutForMulipleLayers() throws Exception {
-        StaticRouteTargetRenderer childRenderer = new StaticRouteTargetRenderer(
-                ChildConfiguration.class);
+        NavigationStateRenderer childRenderer = new NavigationStateRenderer(
+                navigationStateFromTarget(ChildConfiguration.class));
 
         List<Class<? extends RouterLayout>> routerLayoutTypes = childRenderer
-                .getRouterLayoutTypes(Mockito.mock(NavigationEvent.class),
-                        ChildConfiguration.class);
+                .getRouterLayoutTypes(ChildConfiguration.class);
 
         Assert.assertEquals("Not all expected layouts were found", 2,
                 routerLayoutTypes.size());
@@ -72,5 +83,10 @@ public class StaticRouteTargetRendererTest {
 
     @Route(value = "single", layout = RouteParentLayout.class)
     private static class SingleView extends Component {
+    }
+
+    private NavigationState navigationStateFromTarget(
+            Class<? extends Component> target) {
+        return new NavigationStateBuilder().withTarget(target).build();
     }
 }

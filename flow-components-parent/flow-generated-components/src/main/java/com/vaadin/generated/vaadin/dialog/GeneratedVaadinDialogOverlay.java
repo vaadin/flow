@@ -127,7 +127,7 @@ public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay
 	 * When true move focus to the first focusable element in the overlay, or to
 	 * the overlay if there are no focusable elements.
 	 * </p>
-	 * 
+	 *
 	 * @param focusTrap
 	 *            the boolean value to set
 	 */

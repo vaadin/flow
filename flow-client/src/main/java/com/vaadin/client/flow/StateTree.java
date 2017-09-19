@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow;
 
+import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
@@ -140,6 +141,32 @@ public class StateTree {
     }
 
     /**
+     * Validates that the provided node is not null and is properly registered
+     * for this state tree.
+     * <p>
+     * Logs a warning if there was a problem with the node.
+     * 
+     * @param node
+     *            node to test
+     * @return node is valid
+     */
+    private boolean isValidNode(StateNode node) {
+        boolean isValid = true;
+        if (node == null) {
+            Console.warn("Node is null");
+            isValid = false;
+        } else if (!node.getTree().equals(this)) {
+            Console.warn("Node is not created for this tree");
+            isValid = false;
+        } else if (!node.equals(getNode(node.getId()))) {
+            Console.warn("Node id is not registered with this tree");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    /**
      * Finds the node with the given id.
      *
      * @param id
@@ -205,6 +232,9 @@ public class StateTree {
     /**
      * Sends a request to call server side method with {@code methodName} using
      * {@code argsArray} as argument values.
+     * <p>
+     * In cases when the state tree has been changed and we receive a delayed or
+     * deferred template event the event is just ignored.
      *
      * @param node
      *            the node referring to the server side instance containing the
@@ -216,10 +246,11 @@ public class StateTree {
      */
     public void sendTemplateEventToServer(StateNode node, String methodName,
             JsArray<?> argsArray) {
-        assert assertValidNode(node);
-        JsonArray array = WidgetUtil.crazyJsCast(argsArray);
-        registry.getServerConnector().sendTemplateEventMessage(node, methodName,
-                array);
+        if (isValidNode(node)) {
+            JsonArray array = WidgetUtil.crazyJsCast(argsArray);
+            registry.getServerConnector().sendTemplateEventMessage(node,
+                    methodName, array);
+        }
     }
 
     /**

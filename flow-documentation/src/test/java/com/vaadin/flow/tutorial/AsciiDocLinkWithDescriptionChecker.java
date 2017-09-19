@@ -6,10 +6,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,8 +15,6 @@ import java.util.regex.Pattern;
  * @author Vaadin Ltd.
  */
 class AsciiDocLinkWithDescriptionChecker implements TutorialLineChecker {
-    private final Set<String> checkedTutorialPaths = new HashSet<>();
-
     private final String linkSyntaxFragment;
     private final Pattern linkPattern;
     private final String fileExtension;
@@ -60,17 +56,16 @@ class AsciiDocLinkWithDescriptionChecker implements TutorialLineChecker {
 
     private Optional<String> validateAsciiDocLink(Path tutorialPath,
             String tutorialName, String asciiDocLink) {
-        if (checkedTutorialPaths.add(asciiDocLink)) {
-            Path externalTutorialPath = Paths.get(
-                    tutorialPath.getParent().toString(),
-                    asciiDocLink + fileExtension);
-            if (!Files.isRegularFile(externalTutorialPath)) {
-                return Optional.of(String.format(
-                        "Could not locate file '%s' referenced in tutorial %s",
-                        asciiDocLink, tutorialName));
-            }
+        Path externalTutorialPath = Paths.get(
+                tutorialPath.getParent().toString(),
+                asciiDocLink + fileExtension);
+        if (!Files.isRegularFile(externalTutorialPath)) {
+            return Optional.of(String.format(
+                    "Could not locate file '%s' referenced in tutorial %s",
+                    asciiDocLink, tutorialName));
+        } else {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     private boolean matchedCorrectValue(Matcher matcher) {

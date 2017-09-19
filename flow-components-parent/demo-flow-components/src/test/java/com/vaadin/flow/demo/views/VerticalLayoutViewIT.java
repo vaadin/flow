@@ -151,6 +151,18 @@ public class VerticalLayoutViewIT extends AbstractChromeTest {
         Assert.assertEquals("0.5", child.getCssValue("flex-grow"));
     }
 
+    @Test
+    public void centerComponent() {
+        WebElement vlayout = layout
+                .findElement(By.id("layout-with-center"));
+        assertBasicFlexPropertiesAreSet(vlayout);
+
+        Assert.assertEquals("space-around",
+                vlayout.getCssValue("justify-content"));
+        WebElement component = layout.findElement(By.id("center"));
+        Assert.assertEquals("center", component.getCssValue("align-self"));
+    }
+
     private void assertBasicFlexPropertiesAreSet(WebElement vlayout) {
         Assert.assertEquals("flex", vlayout.getCssValue("display"));
         Assert.assertEquals("column", vlayout.getCssValue("flex-direction"));

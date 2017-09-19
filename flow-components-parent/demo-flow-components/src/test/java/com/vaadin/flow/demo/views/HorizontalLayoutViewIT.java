@@ -156,6 +156,17 @@ public class HorizontalLayoutViewIT extends AbstractChromeTest {
         Assert.assertEquals("0.5", child.getCssValue("flex-grow"));
     }
 
+    @Test
+    public void centerComponent() {
+        WebElement hlayout = layout.findElement(By.id("layout-with-center"));
+        assertBasicFlexPropertiesAreSet(hlayout);
+
+        Assert.assertEquals("space-around",
+                hlayout.getCssValue("justify-content"));
+
+        Assert.assertTrue(isElementPresent(By.id("center")));
+    }
+
     private void assertBasicFlexPropertiesAreSet(WebElement vlayout) {
         Assert.assertEquals("inline-flex", vlayout.getCssValue("display"));
         Assert.assertEquals("row", vlayout.getCssValue("flex-direction"));

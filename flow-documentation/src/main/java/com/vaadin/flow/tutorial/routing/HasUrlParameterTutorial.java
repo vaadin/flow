@@ -15,27 +15,23 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
-import com.vaadin.annotations.RoutePrefix;
 import com.vaadin.flow.html.Div;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
-@CodeFor("routing/tutorial-routing-annotation.asciidoc")
-public class RoutingAnnotation {
+@CodeFor("routing/tutorial-router-url-parameters.asciidoc")
+public class HasUrlParameterTutorial {
 
-    @Route("")
-    public class HelloWorld extends Div {
-        public HelloWorld() {
-            setText("Hello world");
-        }
-    }
+    @Route(value = "greet")
+    public class GreetingComponent extends Div
+            implements HasUrlParameter<String> {
 
-    @Route("some/path")
-    public class SomePathComponent extends Div {
-        public SomePathComponent() {
-            setText("Hello @Route!");
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            setText(String.format("Hello, %s!", parameter));
         }
     }
 }

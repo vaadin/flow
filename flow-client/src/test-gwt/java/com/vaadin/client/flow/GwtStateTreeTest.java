@@ -22,6 +22,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.collection.JsArray;
+import com.vaadin.client.flow.reactive.Reactive;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -95,6 +96,29 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         assertEquals(object, args.getObject(3));
 
         assertEquals("item", ((JsonArray) args.getObject(4)).getString(0));
+    }
+
+    public void testDeferredTemplateMessage_isIgnored() {
+        StateNode node = new StateNode(0, tree);
+        tree.registerNode(node);
+
+        Reactive.addPostFlushListener(() -> {
+            tree.sendTemplateEventToServer(node, "click", null);
+            TestServerConnector serverConnector = (TestServerConnector) registry
+                    .getServerConnector();
+            assertNull(
+                    "Found node even though message should not have been sent.",
+                    serverConnector.node);
+            assertNull(
+                    "Found methodName even though message should not have been sent.",
+                    serverConnector.methodName);
+            assertNull(
+                    "Found arguments even though message should not have been sent.",
+                    serverConnector.args);
+        });
+
+        tree.unregisterNode(node);
+        Reactive.flush();
     }
 
     private native JsArray<JavaScriptObject> getArgArray()

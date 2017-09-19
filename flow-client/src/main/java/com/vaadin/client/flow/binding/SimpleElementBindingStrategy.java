@@ -27,7 +27,6 @@ import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -150,9 +149,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 || node.hasFeature(NodeFeatures.OVERRIDE_DATA)) {
             return true;
         }
-        Optional<StateNode> root = Optional.of(node).map(StateNode::getTree)
-                .map(StateTree::getRootNode);
-        return root.isPresent() && root.get() == node;
+        return node.getTree() != null
+                && node.equals(node.getTree().getRootNode());
     }
 
     @Override

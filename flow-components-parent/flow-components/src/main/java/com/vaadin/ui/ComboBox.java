@@ -367,4 +367,14 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     public String getEmptyValue() {
         return "";
     }
+
+    @Override
+    public void setInvalid(boolean invalid) {
+        getElement().setProperty("invalid", invalid);
+    }
+
+    @Override
+    public boolean isInvalid() {
+        return Boolean.parseBoolean(getElement().getProperty("invalid"));
+    }
 }

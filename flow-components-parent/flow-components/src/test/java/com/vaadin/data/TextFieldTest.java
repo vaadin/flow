@@ -13,18 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.demo;
+package com.vaadin.data;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.junit.Assert;
+import org.junit.Test;
 
-/**
- * Base class for the integration tests of this project.
- *
- */
-public abstract class AbstractChromeTest extends ChromeBrowserTest {
+import com.vaadin.ui.TextField;
 
-    @Override
-    protected int getDeploymentPort() {
-        return 8080;
+public class TextFieldTest {
+
+    @Test
+    public void hasValueIsInSyncWithIsEmpty() {
+        TextField field = new TextField();
+
+        Assert.assertFalse(field.hasValue());
+        Assert.assertTrue(field.isEmpty());
+
+        field.setValue("foo");
+        Assert.assertTrue(field.hasValue());
+        Assert.assertFalse(field.isEmpty());
+
+        field.setValue("");
+        Assert.assertFalse(field.hasValue());
+        Assert.assertTrue(field.isEmpty());
     }
 }

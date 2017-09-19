@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
 import com.vaadin.ui.Component;
 
 /**
@@ -22,9 +27,10 @@ import com.vaadin.ui.Component;
  *
  * @author Vaadin Ltd.
  */
-public class NavigationState {
+public class NavigationState implements Serializable {
 
     private Class<? extends Component> navigationTarget;
+    private List<String> urlParameters;
 
     /**
      * Gets the navigation target of this state.
@@ -43,6 +49,28 @@ public class NavigationState {
      */
     public void setNavigationTarget(
             Class<? extends Component> navigationTarget) {
+        Objects.requireNonNull(navigationTarget,
+                "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
+    }
+
+    /**
+     * Gets the list of strings that correspond to the raw string url
+     * parameters.
+     *
+     * @return the url parameters of this navigation state
+     */
+    public Optional<List<String>> getUrlParameters() {
+        return Optional.ofNullable(urlParameters);
+    }
+
+    /**
+     * Set the list of strings that correspond to the raw string url parameters.
+     *
+     * @param urlParameters
+     *            the url parameters to set
+     */
+    public void setUrlParameters(List<String> urlParameters) {
+        this.urlParameters = urlParameters;
     }
 }

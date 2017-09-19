@@ -20,10 +20,6 @@ const globalVar = require('./global-variables');
 const path = require('path');
 const File = require('vinyl');
 
-const skipInherited = (inheritedFrom) => {
-  return globalVar.skipInheritedAPI && inheritedFrom === 'undefined';
-};
-
 const getObjectType = (type) => {
   // This is for JS Object types that have some properties
   // {inputElement: (Element|undefined), value: (string|undefined), invalid: boolean}
@@ -38,7 +34,7 @@ const getObjectType = (type) => {
       const objectTypeJson = {
         "name": name,
         "type": getTypes(objectType)
-      }
+      };
       if (objectType.includes('undefined')) {
         objectTypeJson['optional'] = true;
       }
@@ -97,171 +93,11 @@ const getType = (type) => {
 
 const isOptional = (type) => {
   if (typeof type !== 'string') {
-    console.warn(`isOptional called with non-string parameter ${type}`)
+    console.warn(`isOptional called with non-string parameter ${type}`);
     return false;
   }
-  const possibleTypes = type.match(/[A-Za-z]+/g)
+  const possibleTypes = type.match(/[A-Za-z]+/g);
   return possibleTypes ? possibleTypes.includes('undefined') : false;
-}
-
-/**
- * Converts properties Map to desired JSON output:
- *
- * "properties": [
- * {"name": "stringProperty", "type": "STRING", "description": "Description of the property"},
- * {"name": "numberProperty", "type": "NUMBER"},
- * {"name": "booleanProperty", "type": "BOOLEAN"},
- * {"name": "arrayProperty", "type": "ARRAY"},
- * {"name": "objectProperty", "type": "OBJECT"},
- * {"name": "stringReadOnlyProperty", "type": "STRING", "readOnly": true}
- * ]
- *
- * Inherited properties are skipped.
- *
- * @param properties a Map of the PolymerElement.properties
- * @returns {Array} of properties json data
- */
-const propertiesToJsonArray = (properties) => {
-  const propertiesJson = [];
-  for (let property of properties.values()) {
-    if (typeof property !== 'undefined' && !skipInherited(property.inheritedFrom) && property.privacy === 'public') {
-      const propertyJson = {
-        "name": property.name,
-        // property can be of only one type, but in case there is an object property, need to use an empty array here
-        "type": getTypes(property.type),
-        "objectType": getObjectType(property.type),
-        "description": property.jsdoc ? property.jsdoc.description : 'Missing documentation!',
-      }
-      if (property.readOnly) {
-        propertyJson.readOnly = true;
-      }
-      propertiesJson.push(propertyJson);
-    }
-  }
-  console.log(`    Wrote ${propertiesJson.length} properties out of ${properties.size}`);
-  return propertiesJson;
-};
-
-/**
- * Converts method parameters array to desired JSON output:
- *
- * "parameters" : [
- * {"name" : "paramName", "type": {"STRING", "ELEMENT} },
- * {"name" : "optionalParameter", "types": {"NUMBER"}, "optional" : true }
- * ]}
- *
- * @param parameters the parameters array from method.parameters
- * @returns {Array} of parameter json data
- */
-const parametersToJsonArray = (parameters) => {
-  const parametersJson = [];
-  if (typeof parameters === 'undefined') {
-    return parametersJson;
-  }
-  for (let parameter of parameters) {
-    // ignore parameters of the type 'Event' - they don't have meaningful data
-    if (parameter.type === 'Event') {
-      continue;
-    }
-    const parameterJson = {
-      "name": parameter.name,
-      "type": getTypes(parameter.type),
-      "objectType": getObjectType(parameter.type),
-      "description": parameter.description ? parameter.description :
-        (parameter.desc ? parameter.desc : "Missing documentation!")
-    };
-    if (isOptional(parameter.type)) {
-      parameterJson.optional = true;
-    }
-    parametersJson.push(parameterJson);
-  }
-  return parametersJson;
-};
-
-/**
- * Converts methods Map to desired json output:
- *
- * "methods": [
- *  {"name": "doSomething",
- *   "returns" : "STRING",
- *   "description": "Call this method to do something",
- *   "parameters" : [ ... ]
- *  },
- *  {"name": "doSomethingElse",
- *   "parameters" : [ ... ]
- * }]
- *
- * Inherited and non-public methods are skipped.
- *
- * @param methods a Map of the PolymerElement.methods
- * @returns {Array} of methods json data
- */
-const methodsToJsonArray = (methods) => {
-  const methodsJson = [];
-  for (let method of methods.values()) {
-    // do not add inherited or non-public functions
-    if (typeof method !== 'undefined' && !skipInherited(method.inheritedFrom) && method.privacy === 'public') {
-      const methodJson = {
-        "name": method.name,
-        "description": method.jsdoc ? method.jsdoc.description : "Missing documentation!",
-        "parameters": parametersToJsonArray(method.params),
-        "returns": typeof method['return'] === 'undefined' ? 'UNDEFINED' : getType(method['return'].type)
-      };
-      methodsJson.push(methodJson);
-    }
-  }
-  console.log(`    Wrote ${methodsJson.length} methods out of ${methods.size}`);
-  return methodsJson;
-};
-
-/**
- * Converts events Map to desired json output:
- *
- * "events" : [
- *  {"name" : "close", "description": "This event is called when the X button is clicked",
- *  "properties" : [
- *    {"name" : "property1", "type": "STRING" },
- *    {"name" : "property2", "type": "NUMBER" }
- * ]}]
- *
- * @param events a Map of the PolymerElement.events
- * @returns {Array} of events json data
- */
-const eventsToJsonArray = (events) => {
-  const eventsJson = [];
-  for (let event of events.values()) {
-    if (typeof event !== 'undefined' && !skipInherited(event.inheritedFrom)) {
-      const eventJson = {
-        "name": event.name,
-        "description": event.jsondoc ? event.jsondoc.description :
-          (event.description ? event.description : "Missing documentation!"),
-        "properties": parametersToJsonArray(event.params)
-      };
-      eventsJson.push(eventJson);
-    }
-  }
-  console.log(`    Wrote ${eventsJson.length} events out of ${events.size}`);
-  return eventsJson;
-};
-
-/**
- * Converts an array of Slot objects to desired json output:
- *
- * "slots": ["", "named-slot", "another-named-slot"]
- * @param slots
- * @returns {Array}
- */
-const slotsToJsonArray = (slots) => {
-  const slotsJson = [];
-  for (let slot of slots) {
-    const name = slot.name;
-    if (typeof name === 'undefined' || name === '') {
-      slotsJson.push("");
-    } else {
-      slotsJson.push(name);
-    }
-  }
-  return slotsJson;
 };
 
 module.exports = class ElementJsonTransform extends Transform {
@@ -271,6 +107,7 @@ module.exports = class ElementJsonTransform extends Transform {
     super(options);
     this.versionReader = versionReader;
     this.mixinCollector = mixinCollector;
+    this.elementClassToProcessedResult = new Map();
   }
 
   /**
@@ -294,28 +131,211 @@ module.exports = class ElementJsonTransform extends Transform {
    * @private
    */
   _transform(element, encoding, callback) {
-    console.info("Generating JSON for " + element.tagName);
-    const version = this.versionReader.getElementVersion(element.tagName);
-    const name = element.name ? element.name : element.tagName;
+    const elementTagName = element.tagName;
+    console.info("Generating JSON for " + elementTagName);
+    const elementClassName = element.name;
+
+    const resultingName = elementClassName ? elementClassName : elementTagName;
+    const version = this.versionReader.getElementVersion(elementTagName);
+    const parentClassData = element.superClass
+        ? this.elementClassToProcessedResult.get(element.superClass.identifier)
+        : null;
+
     const json = {
-      "name": name,
-      "tag": element.tagName,
+      "name": resultingName,
+      "tag": elementTagName,
       "baseUrl": element._parsedDocument.baseUrl,
       "version": version,
-      "properties": propertiesToJsonArray(element.properties),
-      "methods": methodsToJsonArray(element.methods),
-      "events": eventsToJsonArray(element.events),
-      "slots": slotsToJsonArray(element.slots),
-      "listeners": element.listers,
-      "behaviors": this.mixinCollector.getFlattenedBehaviorHierarchy(name),
-      "mixins": this.mixinCollector.getFlattenedMixinHierarchy(name),
+      "properties": this.propertiesToJsonArray(element.properties, parentClassData),
+      "methods": this.methodsToJsonArray(element.methods, parentClassData),
+      "events": this.eventsToJsonArray(element.events, parentClassData),
+      "slots": this.slotsToJsonArray(element.slots),
+      "behaviors": this.mixinCollector.getFlattenedBehaviorHierarchy(resultingName),
+      "mixins": this.mixinCollector.getFlattenedMixinHierarchy(resultingName),
       "description": element.jsdoc ? element.jsdoc.description : "Missing documentation!"
     };
 
+    if (parentClassData) {
+      json.parentTagName = parentClassData.tag;
+    }
+
+    if (elementClassName) {
+        this.elementClassToProcessedResult.set(elementClassName, json)
+    }
+
     const file = new File({
-      path: path.join(globalVar.targetDir, element.tagName + '.json'),
+      path: path.join(globalVar.targetDir, elementTagName + '.json'),
       contents: new Buffer(JSON.stringify(json, null, 2) + '\n')
     });
+
     callback(null, file);
   }
-}
+
+  skipInherited(mixinInheritedFrom, parentClassData) {
+    return globalVar.skipInheritedAPI && parentClassData && (mixinInheritedFrom === parentClassData.name ||
+      (parentClassData.mixins && parentClassData.mixins.includes(mixinInheritedFrom)));
+  };
+
+  /**
+   * Converts properties Map to desired JSON output:
+   *
+   * "properties": [
+   * {"name": "stringProperty", "type": "STRING", "description": "Description of the property"},
+   * {"name": "numberProperty", "type": "NUMBER"},
+   * {"name": "booleanProperty", "type": "BOOLEAN"},
+   * {"name": "arrayProperty", "type": "ARRAY"},
+   * {"name": "objectProperty", "type": "OBJECT"},
+   * {"name": "stringReadOnlyProperty", "type": "STRING", "readOnly": true}
+   * ]
+   *
+   * Inherited properties are skipped.
+   *
+   * @param properties a Map of the PolymerElement.properties
+   * @param parentClassData data on the closest superclass or null, if none present
+   * @returns {Array} of properties json data
+   */
+  propertiesToJsonArray(properties, parentClassData) {
+    const propertiesJson = [];
+    for (let property of properties.values()) {
+      if (typeof property !== 'undefined' && !this.skipInherited(property.inheritedFrom, parentClassData) && property.privacy === 'public') {
+        const propertyJson = {
+          "name": property.name,
+          // property can be of only one type, but in case there is an object property, need to use an empty array here
+          "type": getTypes(property.type),
+          "objectType": getObjectType(property.type),
+          "description": property.jsdoc ? property.jsdoc.description : 'Missing documentation!',
+        };
+        if (property.readOnly) {
+          propertyJson.readOnly = true;
+        }
+        propertiesJson.push(propertyJson);
+      }
+    }
+    console.log(`    Wrote ${propertiesJson.length} properties out of ${properties.size}`);
+    return propertiesJson;
+  };
+
+  /**
+   * Converts method parameters array to desired JSON output:
+   *
+   * "parameters" : [
+   * {"name" : "paramName", "type": {"STRING", "ELEMENT} },
+   * {"name" : "optionalParameter", "types": {"NUMBER"}, "optional" : true }
+   * ]}
+   *
+   * @param parameters the parameters array from method.parameters
+   * @returns {Array} of parameter json data
+   */
+  parametersToJsonArray(parameters) {
+    const parametersJson = [];
+    if (typeof parameters === 'undefined') {
+      return parametersJson;
+    }
+    for (let parameter of parameters) {
+      // ignore parameters of the type 'Event' - they don't have meaningful data
+      if (parameter.type === 'Event') {
+        continue;
+      }
+      const parameterJson = {
+        "name": parameter.name,
+        "type": getTypes(parameter.type),
+        "objectType": getObjectType(parameter.type),
+        "description": parameter.description ? parameter.description :
+          (parameter.desc ? parameter.desc : "Missing documentation!")
+      };
+      if (isOptional(parameter.type)) {
+        parameterJson.optional = true;
+      }
+      parametersJson.push(parameterJson);
+    }
+    return parametersJson;
+  };
+
+  /**
+   * Converts methods Map to desired json output:
+   *
+   * "methods": [
+   *  {"name": "doSomething",
+   *   "returns" : "STRING",
+   *   "description": "Call this method to do something",
+   *   "parameters" : [ ... ]
+   *  },
+   *  {"name": "doSomethingElse",
+   *   "parameters" : [ ... ]
+   * }]
+   *
+   * Inherited and non-public methods are skipped.
+   *
+   * @param methods a Map of the PolymerElement.methods
+   * @param parentClassData data on the closest superclass or null, if none present
+   * @returns {Array} of methods json data
+   */
+  methodsToJsonArray(methods, parentClassData) {
+    const methodsJson = [];
+    for (let method of methods.values()) {
+      // do not add inherited or non-public functions
+      if (typeof method !== 'undefined' && !this.skipInherited(method.inheritedFrom, parentClassData) && method.privacy === 'public') {
+        const methodJson = {
+          "name": method.name,
+          "description": method.jsdoc ? method.jsdoc.description : "Missing documentation!",
+          "parameters": this.parametersToJsonArray(method.params),
+          "returns": typeof method['return'] === 'undefined' ? 'UNDEFINED' : getType(method['return'].type)
+        };
+        methodsJson.push(methodJson);
+      }
+    }
+    console.log(`    Wrote ${methodsJson.length} methods out of ${methods.size}`);
+    return methodsJson;
+  };
+
+  /**
+   * Converts events Map to desired json output:
+   *
+   * "events" : [
+   *  {"name" : "close", "description": "This event is called when the X button is clicked",
+   *  "properties" : [
+   *    {"name" : "property1", "type": "STRING" },
+   *    {"name" : "property2", "type": "NUMBER" }
+   * ]}]
+   *
+   * @param events a Map of the PolymerElement.events
+   * @param parentClassData data on the closest superclass or null, if none present
+   * @returns {Array} of events json data
+   */
+  eventsToJsonArray(events, parentClassData) {
+    const eventsJson = [];
+    for (let event of events.values()) {
+      if (typeof event !== 'undefined' && !this.skipInherited(event.inheritedFrom, parentClassData)) {
+        const eventJson = {
+          "name": event.name,
+          "description": event.jsondoc ? event.jsondoc.description :
+            (event.description ? event.description : "Missing documentation!"),
+          "properties": this.parametersToJsonArray(event.params)
+        };
+        eventsJson.push(eventJson);
+      }
+    }
+    console.log(`    Wrote ${eventsJson.length} events out of ${events.size}`);
+    return eventsJson;
+  };
+
+  /**
+   * Converts an array of Slot objects to desired json output:
+   *
+   * "slots": ["", "named-slot", "another-named-slot"]
+   * @param slots
+   * @returns {Array}
+   */
+  slotsToJsonArray(slots) {
+    const slotsJson = [];
+    for (let slot of slots) {
+      const name = slot.name;
+      if (typeof name === 'undefined' || name === '') {
+        slotsJson.push("");
+      } else {
+        slotsJson.push(name);
+      }
+    }
+    return slotsJson;
+  };
+};

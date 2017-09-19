@@ -15,10 +15,12 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,7 +28,7 @@ import org.junit.Test;
 
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
-import com.vaadin.flow.router.Location;
+import com.vaadin.annotations.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
@@ -54,15 +56,15 @@ public class RouteRegistryInitializerTest {
 
         Assert.assertEquals("Route '' registered to NavigationTarget.class",
                 NavigationTarget.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("")).get());
+                        .getNavigationTarget("").get());
         Assert.assertEquals(
                 "Route 'foo' registered to NavigationTargetFoo.class",
                 NavigationTargetFoo.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("foo")).get());
+                        .getNavigationTarget("foo").get());
         Assert.assertEquals(
                 "Route 'bar' registered to NavigationTargetBar.class",
                 NavigationTargetBar.class, RouteRegistry.getInstance()
-                        .getNavigationTarget(new Location("bar")).get());
+                        .getNavigationTarget("bar").get());
     }
 
     @Test
@@ -95,11 +97,64 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
-    public void routeRegistry_fails_on_faulty_configuration() throws ServletException  {
+    public void routeRegistry_fails_on_faulty_configuration()
+            throws ServletException {
         routeRegistryInitializer.onStartup(
                 Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
                         FaultyConfiguration.class).collect(Collectors.toSet()),
                 null);
+    }
+
+    @Test
+    public void routeRegistry_stores_whole_path_with_parent_route_prefix()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(ExtendingPrefix.class).collect(Collectors.toSet()),
+                null);
+
+        Optional<Class<? extends Component>> navigationTarget = RouteRegistry
+                .getInstance()
+                .getNavigationTarget("parent/prefix");
+
+        Assert.assertTrue("Couldn't find navigation target for `parent/prefix`",
+                navigationTarget.isPresent());
+        Assert.assertEquals(
+                "Route 'parent/prefix' was not registered to ExtendingPrefix.class",
+                ExtendingPrefix.class, navigationTarget.get());
+    }
+
+    @Test
+    public void routeRegistry_route_with_absolute_ignores_parent_route_prefix()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(AbosulteRoute.class).collect(Collectors.toSet()),
+                null);
+
+        Optional<Class<? extends Component>> navigationTarget = RouteRegistry
+                .getInstance().getNavigationTarget("absolute");
+
+        Assert.assertTrue("Could not find navigation target for `absolute`",
+                navigationTarget.isPresent());
+        Assert.assertEquals("Route 'absolute' was not registered correctly",
+                AbosulteRoute.class, navigationTarget.get());
+    }
+
+    @Test
+    public void routeRegistry_route_with_absolute_parent_prefix_ignores_remaining_parent_route_prefixes()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Stream.of(MultiLevelRoute.class).collect(Collectors.toSet()),
+                null);
+
+        Optional<Class<? extends Component>> navigationTarget = RouteRegistry
+                .getInstance()
+                .getNavigationTarget("absolute/levels");
+
+        Assert.assertTrue(
+                "Could not find navigation target for `absolute/levels`",
+                navigationTarget.isPresent());
+        Assert.assertEquals("Route 'absolute' was not registered correctly",
+                MultiLevelRoute.class, navigationTarget.get());
     }
 
     @Route("")
@@ -125,5 +180,28 @@ public class RouteRegistryInitializerTest {
     @ParentLayout(RouteParentLayout.class)
     @Route(value = "wrong")
     private static class FaultyConfiguration extends Component {
+    }
+
+    @RoutePrefix("parent")
+    private static class ParentWithRoutePrefix extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "prefix", layout = ParentWithRoutePrefix.class)
+    private static class ExtendingPrefix extends Component {
+    }
+
+    @Route(value = "absolute", layout = ParentWithRoutePrefix.class, absolute = true)
+    private static class AbosulteRoute extends Component {
+    }
+
+    @RoutePrefix(value = "absolute", absolute = true)
+    @ParentLayout(ParentWithRoutePrefix.class)
+    private static class AbsoluteMiddleParent extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "levels", layout = AbsoluteMiddleParent.class)
+    private static class MultiLevelRoute extends Component {
     }
 }

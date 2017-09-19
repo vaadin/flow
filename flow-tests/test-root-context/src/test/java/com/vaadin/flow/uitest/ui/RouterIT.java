@@ -57,6 +57,13 @@ public class RouterIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void stringRouteParameter() {
+        openRouteUrl("greeting/World");
+        Assert.assertEquals("Hello, World!",
+                findElement(By.id("greeting-div")).getText());
+    }
+
+    @Test
     public void targetHasMultipleParentLayouts() {
         openRouteUrl("target");
 

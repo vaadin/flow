@@ -68,6 +68,7 @@ These tutorials show how the different features are used.
 ** <<routing/tutorial-routing-annotation#,Defining Routes with @Route>>
 ** <<routing/tutorial-routing-lifecycle#,Navigation Lifecycle>>
 ** <<routing/tutorial-router-layout#,Router Layouts and Nested Router Targets>>
+** <<routing/tutorial-router-url-parameters#, URL Parameters for Navigation Targets>>
 * Polymer template
 ** <<polymer-templates/tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 ** <<polymer-templates/tutorial-template-components#,Binding Components from PolymerTemplate>>
