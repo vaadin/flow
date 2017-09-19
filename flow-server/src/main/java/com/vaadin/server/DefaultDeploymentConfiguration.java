@@ -382,7 +382,7 @@ public class DefaultDeploymentConfiguration
         VaadinUriResolver uriResolver = new VaadinUriResolver() {
             @Override
             protected String getContextRootUrl() {
-                // ServlerContext.getResource expects a leading slash
+                // ServletContext.getResource expects a leading slash
                 return "/";
             }
 
@@ -409,40 +409,28 @@ public class DefaultDeploymentConfiguration
             }
 
             // Don't traverse some potentially huge but pointless directories
-            if (name.startsWith("node/") || name.startsWith("node_modules/")) {
-                return false;
-            } else {
-                return true;
-            }
+            return !name.startsWith("node/") && !name.startsWith("node_modules/");
         });
 
-        int findCount = foundPolyfills.size();
-        if (findCount == 1) {
-            String jsName = foundPolyfills.get(0);
-            String dirName = jsName.substring(0, jsName.lastIndexOf('/'));
-
-            assert !dirName.endsWith("/");
-
-            // Log something here as well
-            getLogger().log(Level.INFO,
-                    () -> formatDefaultPolyfillMessage(
-                            "Will use webcomponents polyfill discovered in "
-                                    + dirName));
-            return "frontend://" + dirName + '/';
-        } else {
-            if (findCount == 0) {
-                getLogger().log(Level.WARNING,
-                        () -> formatDefaultPolyfillMessage(
-                                "Webcomponents polyfill will not be used because none was found in frontend:// (resolved to "
-                                        + scanBase + ")"));
-            } else {
-                getLogger().log(Level.WARNING,
-                        () -> formatDefaultPolyfillMessage(
-                                "Webcomponents polyfill will not be used because multiple implementations were found: "
-                                        + foundPolyfills));
-            }
+        if (foundPolyfills.isEmpty()) {
+            getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
+                    "Webcomponents polyfill will not be used because none was found in frontend:// (resolved to "
+                            + scanBase + ')'));
             return null;
         }
+        if (foundPolyfills.size() > 1) {
+            getLogger().log(Level.WARNING, () -> String.format(
+                    "Have located multiple webcomponents polyfills: '%s', will use the first one from the list",
+                    foundPolyfills));
+        }
+
+        String fileName = foundPolyfills.get(0);
+        String dirName = fileName.substring(0, fileName.lastIndexOf('/'));
+        assert !dirName.endsWith("/");
+
+        getLogger().log(Level.INFO, () -> formatDefaultPolyfillMessage(
+                "Will use webcomponents polyfill discovered in " + dirName));
+        return "frontend://" + dirName + '/';
     }
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {
