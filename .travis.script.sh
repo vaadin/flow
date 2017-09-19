@@ -7,6 +7,9 @@
 # SKIP_SONAR == skip sonar checks
 # USE_SELENOID == use Docker and Selenoid to run IT tests in personal hub
 
+# Exclude third party code from Sonar analysis
+SONAR_EXCLUSIONS=**/bower_components/**,**/node_modules/**,**/node/**,**/src/main/webapp/**
+
 # Get all changes to branch (no-merges)
 actualCommits=`git log --no-merges --pretty=oneline master^..HEAD`
 
@@ -106,6 +109,7 @@ function runSonar {
             -Dsonar.verbose=true \
             -Dsonar.host.url=$SONAR_HOST \
             -Dsonar.login=$SONAR_LOGIN \
+            -Dsonar.exclusions=$SONAR_EXCLUSIONS \
             $(getSonarDetails) \
             -DskipTests \
             compile sonar:sonar
