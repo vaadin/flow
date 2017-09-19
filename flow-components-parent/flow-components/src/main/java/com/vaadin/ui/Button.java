@@ -16,7 +16,7 @@
 package com.vaadin.ui;
 
 import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.Image;
+import com.vaadin.ui.html.Image;
 import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
 
 /**

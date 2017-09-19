@@ -18,7 +18,7 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Label;
 import com.vaadin.generated.paper.progress.GeneratedPaperProgress;
 
 /**

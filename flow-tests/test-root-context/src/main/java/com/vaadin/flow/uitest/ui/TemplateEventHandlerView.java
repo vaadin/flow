@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.HtmlContainer;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.HtmlContainer;
+import com.vaadin.ui.html.Label;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 

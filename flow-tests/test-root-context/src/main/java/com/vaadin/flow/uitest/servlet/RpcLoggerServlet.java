@@ -23,8 +23,8 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
 import com.vaadin.flow.uitest.ui.RPCLoggerUI;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.RequestHandler;

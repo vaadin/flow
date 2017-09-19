@@ -13,24 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.event.ClickNotifier;
+import com.vaadin.ui.html.event.ClickNotifier;
 import com.vaadin.ui.Component;
 
 /**
- * Component representing a <code>&lt;h4&gt;</code> element.
+ * Component representing a <code>&lt;h5&gt;</code> element.
  *
  * @author Vaadin Ltd
  */
-@Tag(Tag.H4)
-public class H4 extends HtmlContainer implements ClickNotifier {
+@Tag(Tag.H5)
+public class H5 extends HtmlContainer implements ClickNotifier {
 
     /**
      * Creates a new empty heading.
      */
-    public H4() {
+    public H5() {
         super();
     }
 
@@ -40,7 +40,7 @@ public class H4 extends HtmlContainer implements ClickNotifier {
      * @param components
      *            the child components
      */
-    public H4(Component... components) {
+    public H5(Component... components) {
         super(components);
     }
 
@@ -50,7 +50,7 @@ public class H4 extends HtmlContainer implements ClickNotifier {
      * @param text
      *            the text
      */
-    public H4(String text) {
+    public H5(String text) {
         super();
         setText(text);
     }

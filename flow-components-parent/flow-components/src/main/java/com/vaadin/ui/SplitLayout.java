@@ -18,7 +18,7 @@ package com.vaadin.ui;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.ElementConstants;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.generated.vaadin.split.layout.GeneratedVaadinSplitLayout;
 
 /**

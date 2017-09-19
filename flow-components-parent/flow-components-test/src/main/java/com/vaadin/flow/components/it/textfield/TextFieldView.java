@@ -16,7 +16,7 @@
 package com.vaadin.flow.components.it.textfield;
 
 import com.vaadin.flow.components.it.TestView;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.TextField;
 

@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.ui.DatePicker;
 import com.vaadin.ui.DatePicker.DatePickerI18n;
 

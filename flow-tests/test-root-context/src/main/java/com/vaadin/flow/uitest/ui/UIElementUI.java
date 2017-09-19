@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 

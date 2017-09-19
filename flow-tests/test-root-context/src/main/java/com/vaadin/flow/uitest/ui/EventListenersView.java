@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Label;
 
 public class EventListenersView extends AbstractDivView {
 

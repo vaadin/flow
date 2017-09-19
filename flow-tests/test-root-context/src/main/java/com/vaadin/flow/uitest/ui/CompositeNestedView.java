@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.uitest.ui.CompositeView.NameField;
 import com.vaadin.ui.Composite;

@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Hr;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Hr;
 import com.vaadin.flow.router.View;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinSession;

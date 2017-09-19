@@ -28,7 +28,7 @@ import com.vaadin.components.data.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.BindingValidationStatus.Status;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Label;
 import com.vaadin.tests.data.bean.Person;
 
 public class BinderValidationStatusTest

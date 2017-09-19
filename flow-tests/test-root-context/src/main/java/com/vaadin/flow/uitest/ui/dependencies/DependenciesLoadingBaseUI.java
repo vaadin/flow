@@ -1,6 +1,6 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.UI;

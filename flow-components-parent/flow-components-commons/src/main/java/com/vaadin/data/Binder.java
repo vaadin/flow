@@ -46,7 +46,7 @@ import com.vaadin.components.data.HasValue.ValueChangeListener;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.event.EventRouter;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Label;
 import com.vaadin.server.SerializableFunction;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.shared.Registration;

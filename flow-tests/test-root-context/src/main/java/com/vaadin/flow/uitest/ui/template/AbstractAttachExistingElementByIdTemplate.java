@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Id;
-import com.vaadin.flow.html.Input;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Input;
+import com.vaadin.ui.html.Label;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 

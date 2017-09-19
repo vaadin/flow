@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;

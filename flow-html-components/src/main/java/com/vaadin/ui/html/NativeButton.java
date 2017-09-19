@@ -13,12 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.event.ClickEvent;
-import com.vaadin.flow.html.event.ClickNotifier;
+import com.vaadin.ui.html.event.ClickEvent;
+import com.vaadin.ui.html.event.ClickNotifier;
 
 /**
  * Component representing a <code>&lt;button&gt;</code> element.

@@ -16,8 +16,8 @@
 package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.annotations.Route;
-import com.vaadin.flow.html.Anchor;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Anchor;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NewRouter;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;

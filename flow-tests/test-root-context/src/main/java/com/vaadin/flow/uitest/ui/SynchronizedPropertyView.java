@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Text;
 

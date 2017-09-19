@@ -18,6 +18,8 @@ package com.vaadin.flow.html;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.ui.html.Label;
+
 public class LabelTest extends ComponentTest {
 
     // Actual test methods in super class

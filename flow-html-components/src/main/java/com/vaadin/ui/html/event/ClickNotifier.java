@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html.event;
+package com.vaadin.ui.html.event;
 
 import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;

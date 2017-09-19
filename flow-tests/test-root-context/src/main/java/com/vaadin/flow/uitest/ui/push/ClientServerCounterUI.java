@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.DetachEvent;
 import com.vaadin.ui.UI;

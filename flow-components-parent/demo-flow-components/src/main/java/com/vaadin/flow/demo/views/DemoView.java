@@ -25,7 +25,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.demo.SourceContentResolver;
 import com.vaadin.flow.demo.model.SourceCodeExample;
-import com.vaadin.flow.html.H3;
+import com.vaadin.ui.html.H3;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;

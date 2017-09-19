@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
 import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.event.ChangeEvent;
-import com.vaadin.flow.html.event.ChangeNotifier;
+import com.vaadin.ui.html.event.ChangeEvent;
+import com.vaadin.ui.html.event.ChangeNotifier;
 import com.vaadin.ui.PropertyDescriptor;
 import com.vaadin.ui.PropertyDescriptors;
 

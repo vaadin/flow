@@ -16,7 +16,7 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Label;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Dialog;
 import com.vaadin.ui.HorizontalLayout;

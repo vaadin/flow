@@ -21,9 +21,9 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Hr;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Hr;
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;

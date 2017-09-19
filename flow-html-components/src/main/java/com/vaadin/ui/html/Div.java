@@ -13,22 +13,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.ui.html.event.ClickNotifier;
+import com.vaadin.ui.Component;
 
 /**
- * Component representing a <code>&lt;hr&gt;</code> element.
+ * Component representing a <code>&lt;div&gt;</code> element.
  *
  * @author Vaadin Ltd
  */
-@Tag(Tag.HR)
-public class Hr extends HtmlComponent {
-    
+@Tag(Tag.DIV)
+public class Div extends HtmlContainer implements ClickNotifier {
+
     /**
-     * Creates a new hr.
+     * Creates a new empty div.
      */
-    public Hr() {
+    public Div() {
         super();
+    }
+
+    /**
+     * Creates a new div with the given child components.
+     *
+     * @param components
+     *            the child components
+     */
+    public Div(Component... components) {
+        super(components);
     }
 }

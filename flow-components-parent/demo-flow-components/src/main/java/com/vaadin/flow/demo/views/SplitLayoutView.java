@@ -18,7 +18,7 @@ package com.vaadin.flow.demo.views;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Label;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.SplitLayout;
 

@@ -5,7 +5,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;

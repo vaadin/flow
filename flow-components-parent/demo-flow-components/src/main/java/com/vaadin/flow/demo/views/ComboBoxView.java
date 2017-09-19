@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.dom.ElementConstants;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.ui.ComboBox;
 
 /**

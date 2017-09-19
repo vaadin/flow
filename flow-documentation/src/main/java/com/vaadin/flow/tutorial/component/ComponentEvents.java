@@ -19,7 +19,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
