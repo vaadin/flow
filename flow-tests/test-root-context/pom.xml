@@ -58,7 +58,7 @@
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
-                            <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
+                            <resourceBase>${frontend.working.directory}</resourceBase>
                             <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
                         </resourceBases>
                     </webAppConfig>

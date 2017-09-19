@@ -153,7 +153,7 @@
                                     <!-- these paths are relative to the
                                         project where the profile is triggered -->
                                     <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                                    <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
+                                    <resourceBase>${frontend.working.directory}</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>

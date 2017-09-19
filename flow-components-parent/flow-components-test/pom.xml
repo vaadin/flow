@@ -47,19 +47,14 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>install-node-and-npm</id>
+                        <id>install-bower-dependencies</id>
                         <goals>
                             <goal>install-node-and-npm</goal>
                             <goal>npm</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>npm run</id>
-                        <goals>
-                            <goal>npm</goal>
+                            <goal>bower</goal>
                         </goals>
                         <configuration>
-                            <arguments>${npm.build.goal}</arguments>
+                            <workingDirectory>${frontend.working.directory}</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -95,7 +90,7 @@
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
-                            <resourceBase>${jetty.extra.resource.base}</resourceBase>
+                            <resourceBase>${frontend.working.directory}</resourceBase>
                         </resourceBases>
                     </webAppConfig>
                 </configuration>
@@ -131,74 +126,6 @@
 
     <profiles>
         <profile>
-            <id>productionMode</id>
-            <activation>
-                <property>
-                    <name>vaadin.productionMode</name>
-                </property>
-            </activation>
-
-            <properties>
-                <npm.build.goal>run prodMode</npm.build.goal>
-                <jetty.extra.resource.base>${project.basedir}/${frontend.working.directory}/build</jetty.extra.resource.base>
-            </properties>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server-production-mode</artifactId>
-                    <version>${flow.version}</version>
-                </dependency>
-            </dependencies>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <version>${maven.war.plugin.version}</version>
-                        <configuration>
-                            <webResources>
-                                <resource>
-                                    <directory>${frontend.working.directory}/build</directory>
-                                </resource>
-                            </webResources>
-                            <packagingExcludes>
-                                **/frontend/bower_components/,**/node_modules/,**/node/,**/build/,**/etc/
-                            </packagingExcludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>debugMode</id>
-            <activation>
-                <property>
-                    <name>!vaadin.productionMode</name>
-                </property>
-            </activation>
-
-            <properties>
-                <npm.build.goal>run devMode</npm.build.goal>
-                <jetty.extra.resource.base>${project.basedir}/${frontend.working.directory}</jetty.extra.resource.base>
-            </properties>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <packagingExcludes>**/node_modules/,**/node/,**/build/,**/etc/</packagingExcludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
             <id>local-run</id>
             <activation>
                 <property>
@@ -229,6 +156,5 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 </project>
