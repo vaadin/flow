@@ -16,17 +16,19 @@
 package com.vaadin.server;
 
 import java.io.Serializable;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
 /**
- * A {@link Predicate} that is also {@link Serializable}.
+ * A {@link BiPredicate} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
  *
  * @param <T>
- *            the type of the input to the predicate
- *
+ *            the type of the first input to the predicate
+ * @param <U>
+ *            the type of the second input to the predicate
  */
-public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
-    // Only method inherited from Predicate
+public interface SerializableBiPredicate<T, U>
+        extends BiPredicate<T, U>, Serializable {
+    // Only method inherited from BiPredicate
 }

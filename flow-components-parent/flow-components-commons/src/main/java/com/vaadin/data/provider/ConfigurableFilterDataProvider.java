@@ -13,20 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
-
-import java.io.Serializable;
-import java.util.function.Predicate;
+package com.vaadin.data.provider;
 
 /**
- * A {@link Predicate} that is also {@link Serializable}.
+ * A data provider that supports programmatically setting a filter that will be
+ * applied to all queries.
  *
  * @author Vaadin Ltd
  *
  * @param <T>
- *            the type of the input to the predicate
- *
+ *            the data provider item type
+ * @param <Q>
+ *            the query filter type
+ * @param <C>
+ *            the configurable filter type
  */
-public interface SerializablePredicate<T> extends Predicate<T>, Serializable {
-    // Only method inherited from Predicate
+public interface ConfigurableFilterDataProvider<T, Q, C>
+        extends DataProvider<T, Q> {
+
+    /**
+     * Sets the filter to use for all queries handled by this data provider.
+     *
+     * @param filter
+     *            the filter to set, or <code>null</code> to clear any
+     *            previously set filter
+     */
+    void setFilter(C filter);
+
 }
