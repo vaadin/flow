@@ -56,7 +56,7 @@ public class RouteRegistry {
 
     /**
      * Get the singleton instance of RouteRegistry.
-     * 
+     *
      * @return the singleton instance of the registry
      */
     public static RouteRegistry getInstance() {
@@ -68,7 +68,7 @@ public class RouteRegistry {
      * <p>
      * <strong>Note:</strong> Navigation targets can only be set once, i.e. when
      * {@link #isInitialized()} is {@code false}.
-     * 
+     *
      * @param navigationTargets
      *            set of navigation target components
      * @throws InvalidRouteConfigurationException
@@ -90,9 +90,9 @@ public class RouteRegistry {
      * Gets the optional navigation target class for a given Location. Returns
      * an empty optional if no navigation target corresponds to the given
      * Location.
-     * 
+     *
      * @see Location
-     * 
+     *
      * @param pathString
      *            the path to get the navigation target for, not {@code null}
      * @return optional of the navigation target corresponding to the given
@@ -120,7 +120,7 @@ public class RouteRegistry {
 
     /**
      * Append any required parameters as /{param_class} to the route.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to generate url for
      * @return route with required parameters
@@ -139,7 +139,7 @@ public class RouteRegistry {
     /**
      * Returns whether this registry has been initialized with navigation
      * targets.
-     * 
+     *
      * @return whether this registry has been initialized
      */
     public boolean isInitialized() {
@@ -174,7 +174,7 @@ public class RouteRegistry {
      * <p>
      * The whole route is composed of the Route annotation and any
      * ParentLayout:@RoutePrefix that may be in the navigation chain.
-     * 
+     *
      * @param navigationTarget
      *            navigation target to get chain route for
      * @return full navigation route
@@ -237,5 +237,15 @@ public class RouteRegistry {
             routes.put(route, navigationTarget);
             targetRoutes.put(navigationTarget, route);
         });
+    }
+
+    /**
+     * Checks whether any navigation targets have been registered.
+     *
+     * @return <code>true</code> if at least one navigation target is
+     *         registered; otherwise <code>false</code>
+     */
+    public boolean hasNavigationTargets() {
+        return !routes.isEmpty();
     }
 }
