@@ -52,7 +52,7 @@ public class GreetingComponent extends Div
     }
 }
 
-public class ParameterMenu extends Div {
+public class ParameterMenu extends Div {
     public ParameterMenu() {
         String route = ((NewRouter) UI.getCurrent().getRouter().get())
                 .getUrl(GreetingComponent.class, "anonymous");
