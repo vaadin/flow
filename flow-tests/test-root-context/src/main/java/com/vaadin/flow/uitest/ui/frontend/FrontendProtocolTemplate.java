@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.frontend;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * This is the Java wrapper for the webcomponent defined at the

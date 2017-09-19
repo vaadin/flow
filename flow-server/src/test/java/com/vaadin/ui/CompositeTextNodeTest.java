@@ -2,7 +2,8 @@ package com.vaadin.ui;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.ui.ComponentTest.TracksAttachDetach;
+import com.vaadin.ui.common.ComponentTest.TracksAttachDetach;
+import com.vaadin.ui.common.Component;
 
 public class CompositeTextNodeTest extends CompositeTest {
 

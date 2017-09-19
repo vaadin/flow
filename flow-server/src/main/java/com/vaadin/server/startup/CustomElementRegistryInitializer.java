@@ -25,7 +25,7 @@ import javax.servlet.annotation.HandlesTypes;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.server.InvalidCustomElementNameException;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.util.CustomElementNameValidator;
 
 /**

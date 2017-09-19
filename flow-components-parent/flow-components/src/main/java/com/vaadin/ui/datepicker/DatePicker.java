@@ -25,8 +25,8 @@ import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.date.picker.GeneratedVaadinDatePicker;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.HasSize;
-import com.vaadin.ui.HasValidation;
+import com.vaadin.ui.common.HasSize;
+import com.vaadin.ui.common.HasValidation;
 import com.vaadin.util.JsonSerializer;
 
 import elemental.json.JsonArray;

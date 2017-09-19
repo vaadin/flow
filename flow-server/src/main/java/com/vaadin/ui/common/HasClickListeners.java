@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
@@ -22,41 +22,41 @@ import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**
- * Mixin interface to handle focus events on components.
+ * Mixin interface to handle click events on components.
  *
  * @param <T>
  *            the type of the component returned at the
- *            {@link FocusEvent#getSource()}
+ *            {@link ClickEvent#getSource()}
  */
-public interface HasFocusListeners<T extends Component>
+public interface HasClickListeners<T extends Component>
         extends ComponentEventNotifier {
 
     /**
-     * Add a listener to focus DOM events.
+     * Add a listener to click DOM events.
      * 
      * @param listener
-     *            the focus listener
-     * @return a registration that can be used to unregister the listener
+     *            The click listener.
+     * @return A registration that can be used to unregister the listener.
      * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">focus
+     *      "https://developer.mozilla.org/en-US/docs/Web/Events/click">click
      *      event at MDN</a>
      */
-    default Registration addFocusListener(
-            ComponentEventListener<FocusEvent<T>> listener) {
-        return addListener(FocusEvent.class, (ComponentEventListener) listener);
+    default Registration addClickListener(
+            ComponentEventListener<ClickEvent<T>> listener) {
+        return addListener(ClickEvent.class, (ComponentEventListener) listener);
     }
 
     /**
-     * Class that represents the DOM event "focus".
+     * Class that represents the DOM event "click".
      * 
      * @param <C>
      *            The source component type.
      */
-    @DomEvent("focus")
-    class FocusEvent<C extends Component> extends ComponentEvent<C> {
+    @DomEvent("click")
+    class ClickEvent<C extends Component> extends ComponentEvent<C> {
 
         /**
-         * FocusEvent base constructor.
+         * ComponentEvent base constructor.
          * 
          * @param source
          *            the source component
@@ -65,7 +65,7 @@ public interface HasFocusListeners<T extends Component>
          *            side, <code>false</code> otherwise
          * @see ComponentEvent
          */
-        public FocusEvent(C source, boolean fromClient) {
+        public ClickEvent(C source, boolean fromClient) {
             super(source, fromClient);
         }
     }

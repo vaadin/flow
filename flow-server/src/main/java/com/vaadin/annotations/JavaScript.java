@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * Annotation for defining JavaScript dependencies on a {@link Component} class.

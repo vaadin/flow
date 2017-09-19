@@ -30,7 +30,7 @@ import com.vaadin.flow.router.NavigationStateRenderer;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.util.ReflectTools;
 
 /**

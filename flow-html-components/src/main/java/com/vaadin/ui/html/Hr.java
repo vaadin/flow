@@ -16,6 +16,7 @@
 package com.vaadin.ui.html;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlComponent;
 
 /**
  * Component representing a <code>&lt;hr&gt;</code> element.

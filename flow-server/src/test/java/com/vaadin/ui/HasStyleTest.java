@@ -24,6 +24,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasStyle;
 
 public class HasStyleTest {
 

@@ -25,7 +25,7 @@ import java.util.Optional;
 import com.vaadin.flow.router.View;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.ui.UI;
 
 /**

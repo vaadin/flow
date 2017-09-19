@@ -24,7 +24,7 @@ import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.H1;
 import com.vaadin.ui.html.Label;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 public class AttachExistingElementView extends AbstractDivView {
 

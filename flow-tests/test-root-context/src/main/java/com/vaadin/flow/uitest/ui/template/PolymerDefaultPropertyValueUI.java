@@ -23,8 +23,8 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.PropertyDescriptor;
-import com.vaadin.ui.PropertyDescriptors;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
 import com.vaadin.ui.UI;
 
 public class PolymerDefaultPropertyValueUI extends UI {

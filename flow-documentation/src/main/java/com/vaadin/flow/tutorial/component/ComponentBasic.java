@@ -18,7 +18,7 @@ package com.vaadin.flow.tutorial.component;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 @CodeFor("creating-components/tutorial-component-basic.asciidoc")
 public class ComponentBasic {

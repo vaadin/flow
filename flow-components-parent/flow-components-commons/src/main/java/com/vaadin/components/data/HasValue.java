@@ -23,9 +23,9 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.ComponentSupplier;
+import com.vaadin.ui.common.ComponentSupplier;
 
 /**
  * A generic interface for field components and other user interface objects

@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.vaadin.shared.util.SharedUtil;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 public class ComponentProperty {
     public String name;

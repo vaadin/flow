@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import java.io.Serializable;
 import java.util.Optional;
@@ -25,10 +25,12 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.Composite;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**

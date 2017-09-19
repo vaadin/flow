@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * Test event util functionality.

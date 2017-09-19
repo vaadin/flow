@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
@@ -22,41 +22,41 @@ import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**
- * Mixin interface to handle blur events on components.
+ * Mixin interface to handle focus events on components.
  *
  * @param <T>
  *            the type of the component returned at the
- *            {@link BlurEvent#getSource()}
+ *            {@link FocusEvent#getSource()}
  */
-public interface HasBlurListeners<T extends Component>
+public interface HasFocusListeners<T extends Component>
         extends ComponentEventNotifier {
 
     /**
-     * Add a listener to blur DOM events.
+     * Add a listener to focus DOM events.
      * 
      * @param listener
-     *            the blur listener
+     *            the focus listener
      * @return a registration that can be used to unregister the listener
      * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">blur
+     *      "https://developer.mozilla.org/en-US/docs/Web/Events/blur">focus
      *      event at MDN</a>
      */
-    default Registration addBlurListener(
-            ComponentEventListener<BlurEvent<T>> listener) {
-        return addListener(BlurEvent.class, (ComponentEventListener) listener);
+    default Registration addFocusListener(
+            ComponentEventListener<FocusEvent<T>> listener) {
+        return addListener(FocusEvent.class, (ComponentEventListener) listener);
     }
 
     /**
-     * Class that represents the DOM event "blur".
+     * Class that represents the DOM event "focus".
      * 
      * @param <C>
      *            The source component type.
      */
-    @DomEvent("blur")
-    class BlurEvent<C extends Component> extends ComponentEvent<C> {
+    @DomEvent("focus")
+    class FocusEvent<C extends Component> extends ComponentEvent<C> {
 
         /**
-         * BlurEvent base constructor.
+         * FocusEvent base constructor.
          * 
          * @param source
          *            the source component
@@ -65,9 +65,9 @@ public interface HasBlurListeners<T extends Component>
          *            side, <code>false</code> otherwise
          * @see ComponentEvent
          */
-        public BlurEvent(C source, boolean fromClient) {
+        public FocusEvent(C source, boolean fromClient) {
             super(source, fromClient);
         }
-
     }
+
 }

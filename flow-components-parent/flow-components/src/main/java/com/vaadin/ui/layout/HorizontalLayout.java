@@ -15,8 +15,7 @@
  */
 package com.vaadin.ui.layout;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.layout.FlexLayout;
+import com.vaadin.ui.common.Component;
 
 /**
  * HorizontalLayout is a component container, which shows the subcomponents in

@@ -21,8 +21,8 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.UI;
 
 @CodeFor("application-structure/tutorial-importing.asciidoc")

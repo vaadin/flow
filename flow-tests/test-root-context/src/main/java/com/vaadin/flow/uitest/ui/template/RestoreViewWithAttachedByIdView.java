@@ -24,7 +24,7 @@ import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 

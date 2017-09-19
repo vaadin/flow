@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.ui.HasElement;
-import com.vaadin.ui.PropertyDescriptor;
-import com.vaadin.ui.PropertyDescriptors;
+import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
 
 /**
  * Defines setters and getters for a "max" property with a default of 100.

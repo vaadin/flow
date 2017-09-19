@@ -25,7 +25,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.ui.UI;
 
 public class NewRoutingTestBase {

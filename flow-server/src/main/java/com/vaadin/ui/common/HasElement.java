@@ -13,24 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
+
+import com.vaadin.flow.dom.Element;
 
 /**
- * Event fired before a {@link Component} is detached from the UI.
- * <p>
- * When a hierarchy of components is being detached, this event is fired
- * child-first.
+ * Marker interface for any class which is based on an {@link Element}.
+ *
+ * @author Vaadin Ltd
  */
-public class DetachEvent extends AbstractAttachDetachEvent {
-
+@FunctionalInterface
+public interface HasElement {
     /**
-     * Creates a new detach event with the given component as source.
+     * Gets the element associated with this instance.
      *
-     * @param source
-     *            the component that was detached
+     * @return the element associated with this instance
      */
-    public DetachEvent(Component source) {
-        super(source);
-    }
+    Element getElement();
 
 }

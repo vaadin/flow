@@ -19,8 +19,8 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.html.HtmlContainer;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.common.Component;
 
 /**
  * Card to hold components for DemoViews

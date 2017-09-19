@@ -54,8 +54,8 @@ import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
-import com.vaadin.components.JsonSerializable;
-import com.vaadin.components.NotSupported;
+import com.vaadin.ui.common.JsonSerializable;
+import com.vaadin.ui.common.NotSupported;
 import com.vaadin.components.data.HasValue;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
@@ -68,12 +68,12 @@ import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.ui.event.ComponentEvent;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasText;
 
 import elemental.json.JsonObject;
 

@@ -22,7 +22,7 @@ import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.flow.StateNode;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.HtmlContainer;
+import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.html.Label;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;

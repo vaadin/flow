@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -43,20 +43,35 @@ public class ComponentMetaData {
      * <p>
      * Framework internal class, thus package-private.
      */
-    static class DependencyInfo {
+    public static class DependencyInfo {
         private final List<HtmlImport> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
 
-        List<HtmlImport> getHtmlImports() {
+        /**
+         * Get unmodifiable list of html imports.
+         * 
+         * @return html import list
+         */
+        public List<HtmlImport> getHtmlImports() {
             return Collections.unmodifiableList(htmlImports);
         }
 
-        List<JavaScript> getJavaScripts() {
+        /**
+         * Get unmodifiable list of java script.
+         * 
+         * @return java script list
+         */
+        public List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);
         }
 
-        List<StyleSheet> getStyleSheets() {
+        /**
+         * Get unmodifiable list of style sheets.
+         * 
+         * @return style sheet list
+         */
+        public List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);
         }
 

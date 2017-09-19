@@ -23,7 +23,7 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * Marks that a component should load all the dependencies for another

@@ -20,7 +20,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 @CodeFor("web-components/tutorial-webcomponent-basic.asciidoc")
 public class WebComponentBasics {

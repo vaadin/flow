@@ -15,14 +15,14 @@
  */
 package com.vaadin.generated.vaadin.form.layout;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -215,7 +215,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	 *            the components to add
 	 * @see HasComponents#add(Component...)
 	 */
-	public GeneratedVaadinFormLayout(com.vaadin.ui.Component... components) {
+	public GeneratedVaadinFormLayout(Component... components) {
 		add(components);
 	}
 

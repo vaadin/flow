@@ -13,30 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
-import java.io.Serializable;
-import java.util.function.Supplier;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
- * Interface for supplying {@link Component}s. Interfaces that contain fluent
- * APIs should extend this supplier, so then can return the proper types for
- * method chains.
- *
- * @param <C>
- *            the type of the component
+ * Methods annotated with {@link NotSupported} are mapped to the original
+ * webcomponent implementation, but not supported at Java level.
+ * <p>
+ * Calling methods annotated this way results in no-ops.
+ * <p>
+ * Subclasses can override the not supported methods and add meaningful
+ * implementation to them.
  */
-public interface ComponentSupplier<C extends Component>
-        extends Supplier<C>, Serializable {
-
-    /**
-     * Gets this instance as a {@link Component}.
-     * 
-     * @return this instance
-     */
-    @Override
-    default C get() {
-        return (C) this;
-    }
+@Target(ElementType.METHOD)
+@Documented
+public @interface NotSupported {
 
 }

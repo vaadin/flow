@@ -39,7 +39,7 @@ import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.ui.html.Label;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.HasValidation;
+import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.textfield.TextField;
 
 public class BinderConverterValidatorTest

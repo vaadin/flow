@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.ui.common.Component;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -109,7 +110,7 @@ public abstract class Composite<T extends Component> extends Component {
      *
      * @return the content for the composite, never {@code null}
      */
-    protected T getContent() {
+    public T getContent() {
         if (content == null) {
             T newContent = initContent();
             if (newContent == null) {

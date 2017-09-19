@@ -33,7 +33,7 @@ import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.TemplateParser;
 import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * @author Vaadin Ltd.

@@ -39,11 +39,11 @@ import org.junit.Test;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.HtmlComponent;
-import com.vaadin.ui.html.HtmlContainer;
+import com.vaadin.ui.common.HtmlComponent;
+import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.html.Label;
 
 public class HtmlComponentSmokeTest {

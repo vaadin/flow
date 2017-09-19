@@ -27,7 +27,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.vaadin.ui.HasValidation;
+import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.textfield.TextField;
 import com.vaadin.ui.UI;
 

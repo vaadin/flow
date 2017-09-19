@@ -13,23 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.components;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+package com.vaadin.ui.common;
 
 /**
- * Methods annotated with {@link NotSupported} are mapped to the original
- * webcomponent implementation, but not supported at Java level.
+ * Event fired before a {@link Component} is detached from the UI.
  * <p>
- * Calling methods annotated this way results in no-ops.
- * <p>
- * Subclasses can override the not supported methods and add meaningful
- * implementation to them.
+ * When a hierarchy of components is being detached, this event is fired
+ * child-first.
  */
-@Target(ElementType.METHOD)
-@Documented
-public @interface NotSupported {
+public class DetachEvent extends AbstractAttachDetachEvent {
+
+    /**
+     * Creates a new detach event with the given component as source.
+     *
+     * @param source
+     *            the component that was detached
+     */
+    public DetachEvent(Component source) {
+        super(source);
+    }
 
 }

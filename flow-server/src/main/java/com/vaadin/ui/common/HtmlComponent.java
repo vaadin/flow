@@ -13,17 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.html;
+package com.vaadin.ui.common;
 
 import java.util.Optional;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasSize;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.PropertyDescriptor;
-import com.vaadin.ui.PropertyDescriptors;
 
 /**
  * Base class for a {@link Component} that represents a single built-in HTML

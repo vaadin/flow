@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.HasElement;
+import com.vaadin.ui.common.HasElement;
 
 /**
  * Event handling utilities.

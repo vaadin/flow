@@ -21,7 +21,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.TextTemplateNode;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * Handles storing and retrieval of the state information for a text node

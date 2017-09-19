@@ -18,8 +18,8 @@ package com.vaadin.ui.textfield;
 import java.util.Objects;
 
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
-import com.vaadin.ui.HasSize;
-import com.vaadin.ui.HasValidation;
+import com.vaadin.ui.common.HasSize;
+import com.vaadin.ui.common.HasValidation;
 
 /**
  * Server-side component for the {@code vaadin-text-field} element.

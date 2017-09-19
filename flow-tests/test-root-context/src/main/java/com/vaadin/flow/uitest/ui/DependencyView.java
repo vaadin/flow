@@ -28,9 +28,9 @@ import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.AttachEvent;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
 

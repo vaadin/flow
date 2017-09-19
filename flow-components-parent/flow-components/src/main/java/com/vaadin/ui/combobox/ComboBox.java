@@ -25,8 +25,8 @@ import com.vaadin.annotations.Id;
 import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
-import com.vaadin.ui.HasSize;
-import com.vaadin.ui.HasValidation;
+import com.vaadin.ui.common.HasSize;
+import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.util.JsonSerializer;
 

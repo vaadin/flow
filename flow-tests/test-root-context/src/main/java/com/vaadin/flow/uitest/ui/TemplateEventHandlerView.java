@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.HtmlContainer;
+import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.html.Label;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.model.TemplateModel;

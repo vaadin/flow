@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 public class DefaultRouteResolverTest extends NewRoutingTestBase {
 

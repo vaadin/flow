@@ -26,7 +26,7 @@ import org.junit.Test;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 import com.vaadin.util.ReflectTools;

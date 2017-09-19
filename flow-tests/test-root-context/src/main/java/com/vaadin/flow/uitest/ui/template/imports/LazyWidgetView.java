@@ -22,7 +22,7 @@ import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.common.AttachEvent;
 
 @Tag("x-lazy-widget")
 @HtmlImport(value = "/com/vaadin/flow/uitest/ui/template/imports/x-lazy-widget.html", loadMode = LoadMode.LAZY)

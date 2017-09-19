@@ -32,8 +32,8 @@ import com.vaadin.flow.router.event.AfterNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationListener;
 import com.vaadin.flow.router.event.EventUtil;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasElement;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 

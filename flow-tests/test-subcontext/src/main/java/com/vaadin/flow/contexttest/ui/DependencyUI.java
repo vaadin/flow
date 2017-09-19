@@ -26,7 +26,7 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.UI;
 
 @StyleSheet("context://test-files/css/allred.css")

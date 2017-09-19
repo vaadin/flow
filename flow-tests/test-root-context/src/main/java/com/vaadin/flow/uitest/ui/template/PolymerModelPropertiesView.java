@@ -22,7 +22,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.event.ComponentEvent;
 
 @Tag("model-properties")

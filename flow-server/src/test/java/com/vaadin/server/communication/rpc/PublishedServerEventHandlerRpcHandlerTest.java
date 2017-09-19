@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Tag;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

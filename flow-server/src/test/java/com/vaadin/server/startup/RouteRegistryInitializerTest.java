@@ -33,7 +33,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.

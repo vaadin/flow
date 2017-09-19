@@ -53,7 +53,7 @@ import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.server.startup.CustomElementRegistryAccess;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 

@@ -13,22 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
-import com.vaadin.flow.dom.Element;
+import java.io.Serializable;
+import java.util.function.Supplier;
 
 /**
- * Marker interface for any class which is based on an {@link Element}.
+ * Interface for supplying {@link Component}s. Interfaces that contain fluent
+ * APIs should extend this supplier, so then can return the proper types for
+ * method chains.
  *
- * @author Vaadin Ltd
+ * @param <C>
+ *            the type of the component
  */
-@FunctionalInterface
-public interface HasElement {
+public interface ComponentSupplier<C extends Component>
+        extends Supplier<C>, Serializable {
+
     /**
-     * Gets the element associated with this instance.
-     *
-     * @return the element associated with this instance
+     * Gets this instance as a {@link Component}.
+     * 
+     * @return this instance
      */
-    Element getElement();
+    @Override
+    default C get() {
+        return (C) this;
+    }
 
 }

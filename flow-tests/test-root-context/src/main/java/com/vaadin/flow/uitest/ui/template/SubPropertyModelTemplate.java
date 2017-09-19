@@ -23,7 +23,7 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate.SubPropertyModel;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.common.HasComponents;
 
 @Tag("sub-property-model")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/SubPropertyModel.html")

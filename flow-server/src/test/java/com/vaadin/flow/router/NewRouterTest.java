@@ -37,8 +37,8 @@ import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentUtil;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.ComponentUtil;
 import com.vaadin.ui.UI;
 
 public class NewRouterTest extends NewRoutingTestBase {

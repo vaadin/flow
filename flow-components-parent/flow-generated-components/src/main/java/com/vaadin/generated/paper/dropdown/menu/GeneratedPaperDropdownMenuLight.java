@@ -15,15 +15,15 @@
  */
 package com.vaadin.generated.paper.dropdown.menu;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.NotSupported;
+import com.vaadin.ui.common.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
@@ -1304,7 +1304,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToDropdownContent(com.vaadin.ui.Component... components) {
+	public R addToDropdownContent(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "dropdown-content");
 			getElement().appendChild(component.getElement());
@@ -1320,7 +1320,7 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * @throws IllegalArgumentException
 	 *             if any of the components is not a child of this component.
 	 */
-	public void remove(com.vaadin.ui.Component... components) {
+	public void remove(Component... components) {
 		for (Component component : components) {
 			if (getElement().equals(component.getElement().getParent())) {
 				component.getElement().removeAttribute("slot");

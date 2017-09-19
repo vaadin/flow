@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 public class NavigationStateRendererTest {
 

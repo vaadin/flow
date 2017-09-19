@@ -50,8 +50,8 @@ import com.vaadin.ui.html.Label;
 import com.vaadin.server.SerializableFunction;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasValidation;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 

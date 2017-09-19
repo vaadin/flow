@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 /**
  * A component that supports input validation.

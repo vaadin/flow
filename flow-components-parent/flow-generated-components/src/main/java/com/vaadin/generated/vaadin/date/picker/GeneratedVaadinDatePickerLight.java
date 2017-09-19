@@ -15,15 +15,15 @@
  */
 package com.vaadin.generated.vaadin.date.picker;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -685,7 +685,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 *            the components to add
 	 * @see HasComponents#add(Component...)
 	 */
-	public GeneratedVaadinDatePickerLight(com.vaadin.ui.Component... components) {
+	public GeneratedVaadinDatePickerLight(Component... components) {
 		add(components);
 	}
 

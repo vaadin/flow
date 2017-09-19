@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -48,7 +48,7 @@ public class DependencyList implements Serializable {
     /**
      * Creates a new instance.
      */
-    protected DependencyList() {
+    public DependencyList() {
     }
 
     private Logger getLogger() {

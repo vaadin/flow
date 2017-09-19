@@ -34,11 +34,11 @@ import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasClickListeners;
-import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasClickListeners;
+import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasText;
 
 /**
  * Unit tests for the component generator

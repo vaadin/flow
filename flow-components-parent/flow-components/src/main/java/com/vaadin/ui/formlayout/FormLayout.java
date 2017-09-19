@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.components.JsonSerializable;
+import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.external.jsoup.helper.StringUtil;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormItem;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormLayout;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HasSize;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.HasSize;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -166,7 +166,7 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
          *            the initial components to wrap as a form item.
          * @see HasComponents#add(Component...)
          */
-        public FormItem(com.vaadin.ui.Component... components) {
+        public FormItem(Component... components) {
             super(components);
         }
     }
@@ -187,7 +187,7 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
      *            the components to add
      * @see HasComponents#add(Component...)
      */
-    public FormLayout(com.vaadin.ui.Component... components) {
+    public FormLayout(Component... components) {
         super(components);
     }
 

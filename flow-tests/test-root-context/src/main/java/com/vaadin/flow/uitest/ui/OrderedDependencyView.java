@@ -21,8 +21,8 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Hr;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasText;
 
 public class OrderedDependencyView extends AbstractDivView {
 

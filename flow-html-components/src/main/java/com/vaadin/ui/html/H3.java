@@ -16,8 +16,9 @@
 package com.vaadin.ui.html;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.html.event.ClickNotifier;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * Component representing a <code>&lt;h3&gt;</code> element.

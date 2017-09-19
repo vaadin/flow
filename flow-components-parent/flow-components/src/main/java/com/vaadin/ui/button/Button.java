@@ -16,8 +16,8 @@
 package com.vaadin.ui.button;
 
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasSize;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.html.Image;
 import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
 

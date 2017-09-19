@@ -22,7 +22,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 import com.vaadin.ui.event.ComponentEvent;
 
 @CodeFor("web-components/tutorial-webcomponent-events.asciidoc")

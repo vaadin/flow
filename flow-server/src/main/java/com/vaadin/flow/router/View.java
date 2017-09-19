@@ -20,8 +20,8 @@ import java.io.Serializable;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasElement;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
 
 /**

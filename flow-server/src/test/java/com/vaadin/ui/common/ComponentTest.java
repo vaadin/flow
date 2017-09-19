@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +41,14 @@ import com.vaadin.annotations.Uses;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.ui.Text;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.UIInternals;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.ComponentUtil;
+import com.vaadin.ui.common.DependencyList;
+import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
@@ -48,7 +56,6 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
-import com.vaadin.ui.AngularTemplateTest.TestSpan;
 
 public class ComponentTest {
 
@@ -81,18 +88,6 @@ public class ComponentTest {
             extends Component {
         public TestComponentWhichUsesNullElementConstructor() {
             super(null);
-        }
-    }
-
-    @Tag("div")
-    public static class TestComponentWhichMapsComponentInConstructor
-            extends Component {
-
-        TestSpan span;
-
-        public TestComponentWhichMapsComponentInConstructor() {
-            super();
-            span = Component.from(getElement().getChild(0), TestSpan.class);
         }
     }
 
@@ -845,19 +840,6 @@ public class ComponentTest {
 
         Assert.assertSame(e, c.getElement());
         Assert.assertSame(c, e.getComponent().get());
-    }
-
-    @Test
-    public void mapToComponentWhichMapsToComponentInConstructor() {
-        Element div = new Element("div").setAttribute("id", "root");
-        Element span = new Element("span").setAttribute("id", "child");
-        div.appendChild(span);
-
-        TestComponentWhichMapsComponentInConstructor c = Component.from(div,
-                TestComponentWhichMapsComponentInConstructor.class);
-
-        Assert.assertEquals(div, c.getElement());
-        Assert.assertEquals(span, c.span.getElement());
     }
 
     @Tag("div")

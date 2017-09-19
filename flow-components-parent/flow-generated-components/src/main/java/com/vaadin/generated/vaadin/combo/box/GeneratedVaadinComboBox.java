@@ -15,9 +15,9 @@
  */
 package com.vaadin.generated.vaadin.combo.box;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
@@ -25,7 +25,7 @@ import com.vaadin.annotations.Synchronize;
 import com.vaadin.components.data.HasValue;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
+import com.vaadin.ui.common.NotSupported;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
@@ -1392,7 +1392,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToPrefix(com.vaadin.ui.Component... components) {
+	public R addToPrefix(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "prefix");
 			getElement().appendChild(component.getElement());
@@ -1414,7 +1414,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToSuffix(com.vaadin.ui.Component... components) {
+	public R addToSuffix(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "suffix");
 			getElement().appendChild(component.getElement());
@@ -1436,7 +1436,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToClearButton(com.vaadin.ui.Component... components) {
+	public R addToClearButton(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "clear-button");
 			getElement().appendChild(component.getElement());
@@ -1458,7 +1458,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToToggleButton(com.vaadin.ui.Component... components) {
+	public R addToToggleButton(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "toggle-button");
 			getElement().appendChild(component.getElement());
@@ -1474,7 +1474,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * @throws IllegalArgumentException
 	 *             if any of the components is not a child of this component.
 	 */
-	public void remove(com.vaadin.ui.Component... components) {
+	public void remove(Component... components) {
 		for (Component component : components) {
 			if (getElement().equals(component.getElement().getParent())) {
 				component.getElement().removeAttribute("slot");

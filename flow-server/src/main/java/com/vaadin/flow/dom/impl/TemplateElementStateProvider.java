@@ -54,7 +54,7 @@ import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.AngularTemplate;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 /**
  * Handles storing and retrieval of the state information for an element defined

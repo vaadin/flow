@@ -17,9 +17,9 @@ package com.vaadin.flow.uitest.ui.frontend;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.router.View;
-import com.vaadin.ui.AttachEvent;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * Wrapper view for the {@link FrontendProtocolTemplate} component. This class

@@ -22,7 +22,7 @@ import java.util.List;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NewLocationChangeEvent;
 import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.ui.HasElement;
+import com.vaadin.ui.common.HasElement;
 
 /**
  * Event created before navigation happens.

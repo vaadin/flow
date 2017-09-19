@@ -47,8 +47,12 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.ui.ComponentMetaData.DependencyInfo;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.Page.ExecutionCanceler;
+import com.vaadin.ui.common.ComponentUtil;
+import com.vaadin.ui.common.DependencyList;
+import com.vaadin.ui.common.HasElement;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the

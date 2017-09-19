@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.common;
 
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.event.ComponentEvent;
 
 /**

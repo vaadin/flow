@@ -18,9 +18,10 @@ package com.vaadin.ui.html;
 import java.util.Optional;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.PropertyDescriptor;
-import com.vaadin.ui.PropertyDescriptors;
+import com.vaadin.ui.common.Component;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
+import com.vaadin.ui.common.HtmlContainer;
 
 /**
  * Component representing a <code>&lt;label&gt;</code> element.

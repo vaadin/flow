@@ -21,7 +21,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.ComponentTest.TestComponent;
+import com.vaadin.ui.common.ComponentTest.TestComponent;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
 
 public class PropertyDescriptorsTest {
 

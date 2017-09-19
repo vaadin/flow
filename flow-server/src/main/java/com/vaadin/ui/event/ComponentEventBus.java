@@ -28,7 +28,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.common.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;

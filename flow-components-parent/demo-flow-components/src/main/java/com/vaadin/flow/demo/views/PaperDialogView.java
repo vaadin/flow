@@ -20,7 +20,7 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.H2;
-import com.vaadin.ui.html.HtmlComponent;
+import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.generated.paper.dialog.GeneratedPaperDialog;
 

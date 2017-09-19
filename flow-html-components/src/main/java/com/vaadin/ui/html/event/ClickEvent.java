@@ -17,7 +17,7 @@ package com.vaadin.ui.html.event;
 
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
-import com.vaadin.ui.html.HtmlComponent;
+import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.ui.event.ComponentEvent;
 
 /**

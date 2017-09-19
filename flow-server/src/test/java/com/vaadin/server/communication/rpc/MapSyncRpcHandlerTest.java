@@ -29,8 +29,7 @@ import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.AngularTemplateTest.H1TestComponent;
-import com.vaadin.ui.ComponentTest.TestComponent;
+import com.vaadin.ui.common.ComponentTest.TestComponent;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -42,43 +41,6 @@ public class MapSyncRpcHandlerTest {
     private static final String NEW_VALUE = "newValue";
     private static final String DUMMY_EVENT = "dummy-event";
     private static final String TEST_PROPERTY = "test-property";
-
-    public static class TemplateUsingStreamConstructor extends InlineTemplate {
-
-        @Id("header")
-        protected H1TestComponent header;
-
-        public TemplateUsingStreamConstructor() {
-            super("<div><h1 id='header'>Header</h1>@child@<div id='footer'></div></div>");
-        }
-
-    }
-
-    @Test
-    public void templateSynchronizeRootElement() throws Exception {
-        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
-        Element element = t.getElement();
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
-        UI ui = new UI();
-        ui.add(t);
-        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
-        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
-        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
-        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
-    }
-
-    @Test
-    public void templateSynchronizeNonRootElement() throws Exception {
-        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
-        Element element = t.header.getElement();
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
-        UI ui = new UI();
-        ui.add(t);
-        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
-        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
-        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
-        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
-    }
 
     @Test
     public void testSynchronizeProperty() throws Exception {
