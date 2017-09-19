@@ -70,14 +70,14 @@ public final class Constants implements Serializable {
      * components.
      */
     public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + ApplicationConstants.VAADIN_STATIC_FILES_PATH + "frontend/es6/";
+            + "frontend-es6/";
 
     /**
      * Default value of the configuration of the build URL of ES5 web
      * components.
      */
     public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + ApplicationConstants.VAADIN_STATIC_FILES_PATH + "frontend/es5/";
+            + "frontend-es5/";
 
     private Constants() {
         // prevent instantiation constants class only
