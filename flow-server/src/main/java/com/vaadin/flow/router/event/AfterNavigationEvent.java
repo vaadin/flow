@@ -58,7 +58,7 @@ public class AfterNavigationEvent extends EventObject {
     /**
      * Get the active chain that we have after navigation.
      * 
-     * @return active view chain
+     * @return unmodifiable list of active view chain
      */
     public List<HasElement> getActiveChain() {
         return Collections.unmodifiableList(event.getRouteTargetChain());
