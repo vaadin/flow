@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.annotations.Route;
+import com.vaadin.annotations.RoutePrefix;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
@@ -75,6 +76,45 @@ public class NewRouterTest extends NewRoutingTestBase {
         }
     }
 
+    @Route("param")
+    @Tag(Tag.DIV)
+    public static class RouteWithParameter extends Component implements BeforeNavigationListener, HasUrlParameter<String> {
+
+        private String param;
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            eventCollector.add("Received param: " + parameter);
+            param = parameter;
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Stored parameter: " + param);
+        }
+    }
+
+    @Route("redirect/to/param")
+    @Tag(Tag.DIV)
+    public static class RerouteToRouteWithParam extends Component implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteTo("param", "hello");
+        }
+    }
+
+    @Route("fail/param")
+    @Tag(Tag.DIV)
+    public static class FailRerouteWithParam extends Component implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteTo("param", Boolean.TRUE);
+        }
+    }
+
     @Route("navigation-target-with-title")
     @Title("Custom Title")
     @Tag(Tag.DIV)
@@ -97,6 +137,19 @@ public class NewRouterTest extends NewRoutingTestBase {
             return Optional.of(router);
         }
     }
+
+    @RoutePrefix("parent")
+    public static class RouteParent extends Component implements RouterLayout {
+    }
+
+    @Route(value = "child", layout = RouteParent.class)
+    public static class RouteChild extends Component {
+    }
+
+    @Route(value = "single", layout = RouteParent.class, absolute = true)
+    public static class LoneRoute extends Component {
+    }
+
 
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -195,6 +248,61 @@ public class NewRouterTest extends NewRoutingTestBase {
 
         Assert.assertEquals("Redirecting", eventCollector.get(0));
         Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(1));
+    }
+
+    @Test
+    public void basic_url_resolving()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
+                        FooNavigationTarget.class, FooBarNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        Assert.assertEquals("", router.getUrl(RootNavigationTarget.class));
+        Assert.assertEquals("foo", router.getUrl(FooNavigationTarget.class));
+        Assert.assertEquals("foo/bar",
+                router.getUrl(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void nested_layouts_url_resolving()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Stream.of(RouteChild.class, LoneRoute.class).collect(Collectors.toSet()));
+
+        Assert.assertEquals("parent/child", router.getUrl(RouteChild.class));
+        Assert.assertEquals("single", router.getUrl(LoneRoute.class));
+    }
+
+    @Test
+    public void layout_with_url_parameter_url_resolving() throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Stream.of(GreetingNavigationTarget.class, OtherGreetingNavigationTarget.class).collect(Collectors.toSet()));
+
+        Assert.assertEquals("greeting/my_param", router.getUrl(GreetingNavigationTarget.class, "my_param"));
+        Assert.assertEquals("greeting/true", router.getUrl(GreetingNavigationTarget.class, "true"));
+
+        Assert.assertEquals("greeting/other", router.getUrl(GreetingNavigationTarget.class, "other"));
+    }
+
+    @Test
+    public void test_reroute_with_url_parameter() throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Stream.of(GreetingNavigationTarget.class, RouteWithParameter.class, RerouteToRouteWithParam.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("redirect/to/param"), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.", "Stored parameter: hello", eventCollector.get(1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fail_reroute_with_faulty_url_parameter() throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Stream.of(GreetingNavigationTarget.class, RouteWithParameter.class, FailRerouteWithParam.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("fail/param"), NavigationTrigger.PROGRAMMATIC);
     }
 
     private Class<? extends Component> getUIComponent() {

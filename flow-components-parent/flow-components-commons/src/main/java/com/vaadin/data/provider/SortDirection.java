@@ -13,32 +13,41 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.data.provider;
 
 import java.io.Serializable;
-import java.util.function.Function;
 
 /**
- * A {@link Function} that is also {@link Serializable}.
+ * Describes sorting direction.
  *
  * @author Vaadin Ltd
- * @param <T>
- *            the type of the input to the function
- * @param <R>
- *            the type of the result of the function
  */
-@FunctionalInterface
-public interface SerializableFunction<T, R>
-        extends Function<T, R>, Serializable {
+public enum SortDirection implements Serializable {
 
     /**
-     * Returns a function that always returns its input argument.
-     *
-     * @param <T>
-     *            the type of the input and output objects to the function
-     * @return a function that always returns its input argument
+     * Ascending (e.g. A-Z, 1..9) sort order
      */
-    static <T> SerializableFunction<T, T> identity() {
-        return t -> t;
-    }
+    ASCENDING {
+        @Override
+        public SortDirection getOpposite() {
+            return DESCENDING;
+        }
+    },
+
+    /**
+     * Descending (e.g. Z-A, 9..1) sort order
+     */
+    DESCENDING {
+        @Override
+        public SortDirection getOpposite() {
+            return ASCENDING;
+        }
+    };
+
+    /**
+     * Get the sort direction that is the direct opposite to this one.
+     *
+     * @return a sort direction value
+     */
+    public abstract SortDirection getOpposite();
 }
