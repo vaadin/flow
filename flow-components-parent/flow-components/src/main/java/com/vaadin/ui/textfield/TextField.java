@@ -13,11 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.textfield;
 
 import java.util.Objects;
 
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
+import com.vaadin.ui.HasSize;
+import com.vaadin.ui.HasValidation;
 
 /**
  * Server-side component for the {@code vaadin-text-field} element.

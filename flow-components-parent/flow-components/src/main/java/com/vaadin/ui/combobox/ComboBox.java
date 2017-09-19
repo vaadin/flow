@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.combobox;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +25,8 @@ import com.vaadin.annotations.Id;
 import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
+import com.vaadin.ui.HasSize;
+import com.vaadin.ui.HasValidation;
 import com.vaadin.util.JsonSerializer;
 
 import elemental.json.JsonArray;

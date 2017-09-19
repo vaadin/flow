@@ -23,8 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.DatePicker;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.datepicker.DatePicker;
+import com.vaadin.ui.textfield.TextField;
 import com.vaadin.ui.UI;
 
 public class ValueContextTest extends UI {

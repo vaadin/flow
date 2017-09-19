@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.datepicker;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -25,6 +25,8 @@ import com.vaadin.components.data.HasValue;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.date.picker.GeneratedVaadinDatePicker;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.HasSize;
+import com.vaadin.ui.HasValidation;
 import com.vaadin.util.JsonSerializer;
 
 import elemental.json.JsonArray;

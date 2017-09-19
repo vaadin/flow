@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.SplitLayout;
+import com.vaadin.ui.splitlayout.SplitLayout;
 
 /**
  * View for {@link SplitLayout} demo.

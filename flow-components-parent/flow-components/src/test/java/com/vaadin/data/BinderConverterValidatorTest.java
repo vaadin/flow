@@ -40,7 +40,7 @@ import com.vaadin.ui.html.Label;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.ui.HasValidation;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 public class BinderConverterValidatorTest
         extends BinderTestBase<Binder<Person>, Person> {

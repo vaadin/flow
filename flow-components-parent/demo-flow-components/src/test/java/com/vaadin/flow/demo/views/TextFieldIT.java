@@ -23,7 +23,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.AbstractChromeTest;
 import com.vaadin.testbench.By;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * Integration tests for the {@link TextField}.

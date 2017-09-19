@@ -13,22 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.layout;
+
+import com.vaadin.ui.Component;
 
 /**
- * HorizontalLayout is a component container, which shows the subcomponents in
- * the order of their addition (horizontally). A horizontal layout is doesn't
- * have a predefined size - its size is defined by the components inside it.
+ * VerticalLayout is a component container, which shows the subcomponents in the
+ * order of their addition (vertically). A vertical layout is by default 100%
+ * wide.
  */
-public class HorizontalLayout extends FlexLayout {
+public class VerticalLayout extends FlexLayout {
 
     /**
-     * Default constructor. Creates an empty layout, without spacing and without
-     * a predefined width. The default alignment is {@link Alignment#BASELINE}.
+     * Default constructor. Creates an empty layout, with 100% width, without
+     * spacing, with items aligned as {@link Alignment#STRETCH}.
      */
-    public HorizontalLayout() {
-        getStyle().set("display", "inline-flex").set("flexDirection", "row");
-        setDefaultVerticalComponentAlignment(Alignment.BASELINE);
+    public VerticalLayout() {
+        getStyle().set("flexDirection", "column").set("width", "100%");
+        setDefaultHorizontalComponentAlignment(Alignment.START);
     }
 
     /**
@@ -39,17 +41,15 @@ public class HorizontalLayout extends FlexLayout {
      *            the items to add to this layout
      * @see #add(Component...)
      */
-    public HorizontalLayout(Component... children) {
+    public VerticalLayout(Component... children) {
         this();
         add(children);
     }
 
     /**
-     * Sets a vertical alignment for individual components inside the layout.
+     * Sets a horizontal alignment for individual components inside the layout.
      * This individual alignment for the component overrides any alignment set
-     * at the {@link #setDefaultVerticalComponentAlignment(Alignment)}.
-     * <p>
-     * It effectively sets the {@code "alignSelf"} style value.
+     * at the {@link #setDefaultHorizontalComponentAlignment(Alignment)}.
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
@@ -65,18 +65,18 @@ public class HorizontalLayout extends FlexLayout {
      * @param componentsToAlign
      *            The components to which the individual alignment should be set
      */
-    public void setVerticalComponentAlignment(Alignment alignment,
+    public void setHorizontalComponentAlignment(Alignment alignment,
             Component... componentsToAlign) {
         setAlignSelf(alignment, componentsToAlign);
     }
 
     /**
-     * Gets the individual vertical alignment of a given component.
+     * Gets the individual horizontal alignment of a given component.
      * <p>
      * The default alignment for individual components is
      * {@link Alignment#AUTO}.
      * <p>
-     * It's the same as the {@link #getAlignSelf(Component)} method.
+     * It's the same as the {@link #getAlignSelf(Component)} method
      *
      * @see #getAlignSelf(Component)
      *
@@ -84,17 +84,15 @@ public class HorizontalLayout extends FlexLayout {
      *            The component which individual layout should be read
      * @return the alignment of the component, never <code>null</code>
      */
-    public Alignment getVerticalComponentAlignment(Component component) {
+    public Alignment getHorizontalComponentAlignment(Component component) {
         return getAlignSelf(component);
     }
 
     /**
-     * Sets the default vertical alignment to be used by all components without
-     * individual alignments inside the layout. Individual components can be
-     * aligned by using the
-     * {@link #setVerticalComponentAlignment(Alignment, Component...)} method.
-     * <p>
-     * It effectively sets the {@code "alignItems"} style value.
+     * Sets the default horizontal alignment to be used by all components
+     * without individual alignments inside the layout. Individual components
+     * can be aligned by using the
+     * {@link #setHorizontalComponentAlignment(Alignment, Component...)} method.
      * <p>
      * The default alignment is {@link Alignment#START}.
      * <p>
@@ -106,35 +104,36 @@ public class HorizontalLayout extends FlexLayout {
      *            the alignment to apply to the components. Setting
      *            <code>null</code> will reset the alignment to its default
      */
-    public void setDefaultVerticalComponentAlignment(Alignment alignment) {
+    public void setDefaultHorizontalComponentAlignment(Alignment alignment) {
         setAlignItems(alignment);
     }
 
     /**
-     * Gets the default vertical alignment used by all components without
+     * Gets the default horizontal alignment used by all components without
      * individual alignments inside the layout.
      * <p>
-     * The default alignment is {@link Alignment#STRETCH}.
+     * The default alignment is {@link Alignment#START}.
      * <p>
      * It's the same as the {@link #getAlignItems()} method.
      *
-     * @see #getAlignItems()
+     * @see VerticalLayout#getAlignItems()
+     *
      *
      * @return the general alignment used by the layout, never <code>null</code>
      */
-    public Alignment getDefaultVerticalComponentAlignment() {
+    public Alignment getDefaultHorizontalComponentAlignment() {
         return getAlignItems();
     }
 
     /**
-     * Sets the default vertical alignment to be used by all components without
-     * individual alignments inside the layout. Individual components can be
-     * aligned by using the {@link #setAlignSelf(Alignment, Component...)}
-     * method.
+     * Sets the default horizontal alignment to be used by all components
+     * without individual alignments inside the layout. Individual components
+     * can be aligned by using the
+     * {@link #setAlignSelf(Alignment, Component...)} method.
      * <p>
      * It effectively sets the {@code "alignItems"} style value.
      * <p>
-     * The default alignment is {@link Alignment#BASELINE}.
+     * The default alignment is {@link Alignment#START}.
      *
      * @param alignment
      *            the alignment to apply to the components. Setting
@@ -144,24 +143,24 @@ public class HorizontalLayout extends FlexLayout {
     public void setAlignItems(Alignment alignment) {
         if (alignment == null) {
             getStyle().set(ALIGN_ITEMS_CSS_PROPERTY,
-                    Alignment.BASELINE.getFlexValue());
+                    Alignment.START.getFlexValue());
         } else {
             getStyle().set(ALIGN_ITEMS_CSS_PROPERTY, alignment.getFlexValue());
         }
     }
 
     /**
-     * Gets the default vertical alignment used by all components without
+     * Gets the default horizontal alignment used by all components without
      * individual alignments inside the layout.
      * <p>
-     * The default alignment is {@link Alignment#BASELINE}.
+     * The default alignment is {@link Alignment#START}.
      *
      * @return the general alignment used by the layout, never <code>null</code>
      */
     @Override
     public Alignment getAlignItems() {
         return Alignment.toAlignment(getStyle().get(ALIGN_ITEMS_CSS_PROPERTY),
-                Alignment.BASELINE);
+                Alignment.START);
     }
 
     /**

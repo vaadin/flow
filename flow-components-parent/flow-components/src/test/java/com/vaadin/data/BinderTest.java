@@ -42,7 +42,7 @@ import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.NotEmptyValidator;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.tests.data.bean.Sex;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 

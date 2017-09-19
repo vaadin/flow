@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 public class BinderCustomPropertySetTest {
     public static class MapPropertyDefinition

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.formlayout;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +25,9 @@ import com.vaadin.components.JsonSerializable;
 import com.vaadin.external.jsoup.helper.StringUtil;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormItem;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormLayout;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.HasSize;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

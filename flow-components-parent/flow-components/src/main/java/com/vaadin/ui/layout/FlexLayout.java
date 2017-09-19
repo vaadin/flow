@@ -13,11 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.layout;
 
 import java.util.Arrays;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HasOrderedComponents;
+import com.vaadin.ui.HasSize;
+import com.vaadin.ui.HasStyle;
 
 /**
  * A layout component that implements Flexbox. It uses the default

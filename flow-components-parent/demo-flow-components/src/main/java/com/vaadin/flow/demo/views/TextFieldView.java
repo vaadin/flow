@@ -18,7 +18,7 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.html.Div;
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * View for {@link GeneratedVaadinTextField} demo.

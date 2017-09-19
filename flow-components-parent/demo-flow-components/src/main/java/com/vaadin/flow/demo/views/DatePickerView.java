@@ -20,8 +20,8 @@ import java.util.Arrays;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.html.Div;
-import com.vaadin.ui.DatePicker;
-import com.vaadin.ui.DatePicker.DatePickerI18n;
+import com.vaadin.ui.datepicker.DatePicker;
+import com.vaadin.ui.datepicker.DatePicker.DatePickerI18n;
 
 /**
  * View for {@link DatePicker} demo.

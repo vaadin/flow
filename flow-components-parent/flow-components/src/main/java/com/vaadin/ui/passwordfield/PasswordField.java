@@ -14,11 +14,13 @@
  * the License.
  */
 
-package com.vaadin.ui;
+package com.vaadin.ui.passwordfield;
 
 import java.util.Objects;
 
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinPasswordField;
+import com.vaadin.ui.HasSize;
+import com.vaadin.ui.HasValidation;
 
 /**
  * Server-side component for the {@code vaadin-password-field} element.

@@ -13,9 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.button;
 
 import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HasSize;
 import com.vaadin.ui.html.Image;
 import com.vaadin.generated.vaadin.button.GeneratedVaadinButton;
 

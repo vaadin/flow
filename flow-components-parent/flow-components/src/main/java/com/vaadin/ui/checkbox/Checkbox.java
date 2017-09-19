@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.checkbox;
 
 import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
+import com.vaadin.ui.HasSize;
 
 import elemental.json.Json;
 
