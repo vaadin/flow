@@ -130,8 +130,7 @@ public class NewRouter implements RouterInterface {
      * 
      * @param navigationTarget
      *            navigation target to get url for
-     * @return url or {@code IllegalArgumentException} if no route found for
-     *         target
+     * @return url
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
         Optional<String> targetUrl = RouteRegistry.getInstance()
@@ -147,14 +146,15 @@ public class NewRouter implements RouterInterface {
      * Get the url string for given navigation target with the parameter in the
      * url.
      * <p>
-     * Note! Given parameter is checked for type so if the navigation target
-     * parameter is Boolean then a String will throw.
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type Boolean then
+     * calling getUrl with a String will fail.
      * 
      * @param navigationTarget
      *            navigation target to get url for
      * @param parameter
      *            parameter to embed into the generated url
-     * @return url or {@code IllegalArgumentException} if something is wrong
+     * @return url
      */
     public <T> String getUrl(Class<? extends Component> navigationTarget,
             T parameter) {

@@ -570,7 +570,10 @@ public class ReflectTools implements Serializable {
             return null;
         }
         Type[] typeArguments = parameterizedType.getActualTypeArguments();
-        return (Class<?>) typeArguments[0];
+        if (typeArguments[0] instanceof Class) {
+            return (Class<?>) typeArguments[0];
+        }
+        return null;
     }
 
     /**
