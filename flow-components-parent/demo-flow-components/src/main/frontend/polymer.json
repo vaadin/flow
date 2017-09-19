@@ -7,13 +7,13 @@
     "bower_components/webcomponentsjs/webcomponents-lite.js"
   ],
   "builds": [{
-    "name": "es5",
+    "name": "frontend-es5",
     "js": {"compile": true, "minify": true},
     "css": {"minify": true},
     "html": {"minify": true}
   },
     {
-      "name": "es6",
+      "name": "frontend-es6",
       "js": {"minify": true},
       "css": {"minify": true},
       "html": {"minify": true}
