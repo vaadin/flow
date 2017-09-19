@@ -30,6 +30,8 @@ import org.junit.Test;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
+import com.vaadin.flow.router.event.AfterNavigationEvent;
+import com.vaadin.flow.router.event.AfterNavigationListener;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
@@ -95,6 +97,33 @@ public class NewRouterTest extends NewRoutingTestBase {
         @Override
         public Optional<RouterInterface> getRouter() {
             return Optional.of(router);
+        }
+    }
+
+    @Route("navigationEvents")
+    @Tag(Tag.DIV)
+    public static class NavigationEvents extends Component {
+        public NavigationEvents() {
+            getElement().appendChild(new AfterNavigation().getElement());
+            getElement().appendChild(new BeforeNavigation().getElement());
+        }
+    }
+
+    @Tag(Tag.DIV)
+    private static class AfterNavigation extends Component
+            implements AfterNavigationListener {
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            eventCollector.add("Event after navigation");
+        }
+    }
+
+    @Tag(Tag.DIV)
+    private static class BeforeNavigation extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Event before navigation");
         }
     }
 
@@ -195,6 +224,50 @@ public class NewRouterTest extends NewRoutingTestBase {
 
         Assert.assertEquals("Redirecting", eventCollector.get(0));
         Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(1));
+    }
+
+    @Test
+    public void before_and_after_event_fired_in_correct_order()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Stream.of(NavigationEvents.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("navigationEvents"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "Event before navigation", eventCollector.get(0));
+        Assert.assertEquals("After navigation event was wrong.",
+                "Event after navigation", eventCollector.get(1));
+    }
+
+    @Test
+    public void after_event_not_fired_on_detach()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream
+                        .of(NavigationEvents.class, FooNavigationTarget.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("navigationEvents"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "Event before navigation", eventCollector.get(0));
+        Assert.assertEquals("After navigation event was wrong.",
+                "Event after navigation", eventCollector.get(1));
+
+        router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 3,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "Event before navigation", eventCollector.get(2));
     }
 
     private Class<? extends Component> getUIComponent() {
