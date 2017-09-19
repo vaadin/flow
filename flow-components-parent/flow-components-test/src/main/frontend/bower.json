@@ -28,6 +28,7 @@
     "iron-iconset-svg": "~2.0.1",
     "iron-media-query": "~2.0.0",
     "iron-selector": "~2.0.0",
+    "vaadin-grid": "3.0.1",
     "vaadin-text-field": "~1.1.0-alpha2",
     "vaadin-button": "~1.0.0",
     "vaadin-checkbox": "~1.0.0-alpha1",
