@@ -27,7 +27,6 @@ import com.vaadin.data.BindingValidationStatus;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Label;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.ui.Button;
@@ -144,12 +143,9 @@ public class FormLayoutView extends DemoView {
     // You can create a custom layout that internally uses FormLayout
     public class MyCustomLayout extends Composite<FormLayout> {
 
-        public void addItemWithLabel(String label, Component item) {
-            FormItem formItem = new FormItem(item);
-            formItem.addToLabel(new Label(label));
-
+        public void addItemWithLabel(Component item, String label) {
             // getContent() returns a wrapped FormLayout
-            getContent().add(formItem);
+            getContent().addFormItem(item, label);
         }
     }
     // end-source-example
@@ -174,7 +170,7 @@ public class FormLayoutView extends DemoView {
         
         nameLayout.setResponsiveSteps(
                 new ResponsiveStep("0", 1),
-                new ResponsiveStep("20em", 2),
+                new ResponsiveStep("21em", 2),
                 new ResponsiveStep("22em", 3));
         // end-source-example
         // @formatter:on
@@ -187,23 +183,13 @@ public class FormLayoutView extends DemoView {
         // source-example-heading: A form layout with fields wrapped in items
         FormLayout layoutWithFormItems = new FormLayout();
 
-        TextField name = new TextField();
-        name.setPlaceholder("John");
-        FormItem firstItem = new FormItem(name);
+        TextField firstName = new TextField();
+        firstName.setPlaceholder("John");
+        layoutWithFormItems.addFormItem(firstName, "First name");
+
         TextField lastName = new TextField();
         lastName.setPlaceholder("Doe");
-        FormItem secondItem = new FormItem(lastName);
-
-        Div firstItemLabelComponent = new Div();
-        firstItemLabelComponent.setText("First name");
-
-        Div secondItemLabelComponent = new Div();
-        secondItemLabelComponent.setText("Last name");
-
-        firstItem.addToLabel(firstItemLabelComponent);
-        secondItem.addToLabel(secondItemLabelComponent);
-
-        layoutWithFormItems.add(firstItem, secondItem);
+        layoutWithFormItems.addFormItem(lastName, "Last name");
         // end-source-example
 
         addCard("A form layout with fields wrapped in items",
@@ -230,25 +216,17 @@ public class FormLayoutView extends DemoView {
         Button save = new Button("Save");
         Button reset = new Button("Reset");
 
-        // Create the form items to proper align the fields
-        FormItem firstNameItem = new FormItem(firstName);
-        firstNameItem.addToLabel(new Label("First name"));
-        FormItem lastNameItem = new FormItem(lastName);
-        lastNameItem.addToLabel(new Label("Last name"));
-        FormItem birthDateItem = new FormItem(birthDate);
-        birthDateItem.addToLabel(new Label("Birthdate"));
-        FormItem emailItem = new FormItem(email);
-        emailItem.addToLabel(new Label("E-mail"));
-        FormItem phoneItem = new FormItem(phone, doNotCall);
-        phoneItem.addToLabel(new Label("Phone"));
+        layoutWithBinder.addFormItem(firstName, "First name");
+        layoutWithBinder.addFormItem(lastName, "Last name");
+        layoutWithBinder.addFormItem(birthDate, "Birthdate");
+        layoutWithBinder.addFormItem(email, "E-mail");
+        FormItem phoneItem = layoutWithBinder.addFormItem(phone, "Phone");
+        phoneItem.add(doNotCall);
 
         // Button bar
         HorizontalLayout actions = new HorizontalLayout();
         actions.add(save, reset);
         save.getStyle().set("marginRight", "10px");
-
-        layoutWithBinder.add(firstNameItem, lastNameItem, birthDateItem,
-                emailItem, phoneItem);
 
         SerializablePredicate<String> phoneOrEmailPredicate = value -> !phone
                 .getValue().trim().isEmpty()
@@ -332,8 +310,8 @@ public class FormLayoutView extends DemoView {
         TextField name = new TextField();
         TextField email = new TextField();
 
-        layout.addItemWithLabel("Name", name);
-        layout.addItemWithLabel("E-mail", email);
+        layout.addItemWithLabel(name, "Name");
+        layout.addItemWithLabel(email, "E-mail");
         // end-source-example
 
         addCard("Using form layout inside a composite", layout);
