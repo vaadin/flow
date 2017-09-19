@@ -206,7 +206,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+	protected void linkPaths(elemental.json.JsonObject to,
+			elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -242,7 +243,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param from
 	 *            Source path to link.
 	 */
-	public void linkPaths(java.lang.String to, java.lang.String from) {
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -260,28 +261,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to,
-			elemental.json.JsonObject from) {
+	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes a data path alias previously established with {@code _linkPaths}.
-	 * </p>
-	 * <p>
-	 * Note, the path to unlink should be the target ({@code to}) used when
-	 * linking the paths.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Target path to unlink.
-	 */
-	public void unlinkPaths(java.lang.String path) {
-		getElement().callFunction("unlinkPaths", path);
 	}
 
 	/**
@@ -300,6 +281,25 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 *            Target path to unlink.
 	 */
 	protected void unlinkPaths(elemental.json.JsonObject path) {
+		getElement().callFunction("unlinkPaths", path);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Removes a data path alias previously established with {@code _linkPaths}.
+	 * </p>
+	 * <p>
+	 * Note, the path to unlink should be the target ({@code to}) used when
+	 * linking the paths.
+	 * </p>
+	 * 
+	 * @param path
+	 *            Target path to unlink.
+	 */
+	public void unlinkPaths(java.lang.String path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -371,7 +371,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
+	protected void get(elemental.json.JsonObject path,
+			elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -400,8 +401,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
+	protected void get(java.lang.String path, elemental.json.JsonObject root) {
 	}
 
 	/**
