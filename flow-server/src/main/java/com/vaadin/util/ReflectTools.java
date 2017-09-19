@@ -18,6 +18,8 @@ package com.vaadin.util;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -460,11 +462,22 @@ public class ReflectTools implements Serializable {
             Class<?> originalClass) {
         checkClassAccessibility(originalClass);
         try {
-            return proxyClass.getConstructor().newInstance();
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException(String.format(
-                    CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
-                    originalClass.getName()), e);
+            Optional<Constructor<?>> constructor = Stream
+                    .of(proxyClass.getConstructors())
+                    .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+            if (constructor.isPresent()) {
+                return proxyClass.cast(constructor.get().newInstance());
+            }
+
+            constructor = Stream.of(proxyClass.getConstructors())
+                    .filter(ctor -> ctor.getParameterCount() == 1)
+                    .filter(ctor -> ctor.isVarArgs()).findFirst();
+            if (constructor.isPresent()) {
+                Class<?> paramType = constructor.get().getParameterTypes()[0];
+
+                return proxyClass.cast(constructor.get().newInstance(
+                        Array.newInstance(paramType.getComponentType(), 0)));
+            }
         } catch (InstantiationException e) {
             if (originalClass.isMemberClass()
                     && !Modifier.isStatic(originalClass.getModifiers())) {
@@ -488,13 +501,17 @@ public class ReflectTools implements Serializable {
                     CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
                     originalClass.getName()), e);
         }
+
+        throw new IllegalArgumentException(String.format(
+                CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
+                originalClass.getName()));
     }
 
     /**
      * Makes a check whether the {@code clazz} is externally accessible for
      * instantiation (e.g. it's not inner class (nested and not static) and is
      * not a local class).
-     * 
+     *
      * @param clazz
      *            type to check
      */
