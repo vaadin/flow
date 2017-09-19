@@ -1,43 +1,23 @@
 ---
-title: URL generation
-order: 5
+title: Routing and URL Parameters
+order: 4
 layout: page
 ---
 
 ifdef::env-github[:outfilesuffix: .asciidoc]
 ==== Work in progress
 
-= URL generation
+= Routing and URL Parameters
 
-Router exposes methods to get the navigation URL for registered navigation targets.
+== URL Parameters for Navigation Targets
 
-For a normal navigation target the request is a simple as calling for `Router.getUrl(Class target)`
+A navigation target that supports parameters passed through the URL should implement the `HasUrlParameter` interface and define the parameter type using generics.
+In this way, the Router API can offer a type-safe way of constructing URLs that lead to a specific target.
 
-[source,java]
-----
-@Route("path")
-public class PathComponent extends Div {
-  public PathComponent() {
-    setText("Hello @Route!");
-  }
-}
+`HasUrlParameter` defines the setParameter method that is invoked by Router based on values extracted from the URL.
+The method will always be invoked before a navigation target is activated.
 
-public class Menu extends Div {
-    public Menu() {
-        String route = ((NewRouter) UI.getCurrent().getRouter().get())
-                .getUrl(PathComponent.class);
-        Anchor link = new Anchor(route, "Path");
-    }
-}
-----
-
-The returned url would in this case simply be "path", but in the case where we have parent
-layouts that add path parts it might not be as simple to generate the path by hand.
-
-== URL generation for navigation target with parameter
-
-For navigation targets with required parameters the parameter is given to resolver
-and the returning string will then contain the parameter e.g. `Router.getUrl(Class target, T parameter)`
+In the following code snippet we define a navigation target that takes a string parameter and produces a greeting string from it, which the target then sets as its own text content on navigation.
 
 [source,java]
 ----
@@ -51,13 +31,6 @@ public class GreetingComponent extends Div
         setText(String.format("Hello, %s!", parameter));
     }
 }
-
-public class ParameterMenu extends Div {
-    public ParameterMenu() {
-        String route = ((NewRouter) UI.getCurrent().getRouter().get())
-                .getUrl(GreetingComponent.class, "anonymous");
-        Anchor link = new Anchor(route, "Greeting");
-    }
-}
 ----
 
+On startup this navigation target will automatically be configured to every path of the form `greet/<anything>`, except in the case where a separate navigation target with an exact `@Route` has been configured to match `greet/<some specific path>` the exact navigation target takes precedence when resolving the URL.
