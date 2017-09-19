@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.router;
 
+import java.util.Optional;
+
 import com.vaadin.annotations.Route;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.startup.RouteRegistry;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -118,5 +123,74 @@ public class NewRouter implements RouterInterface {
 
     private RouteResolver getRouteResolver() {
         return routeResolver;
+    }
+
+    /**
+     * Get the registered url string for given navigation target.
+     * 
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @return url or {@code IllegalArgumentException} if no route found for
+     *         target
+     */
+    public String getUrl(Class<? extends Component> navigationTarget) {
+        Optional<String> targetUrl = RouteRegistry.getInstance()
+                .getTargetUrl(navigationTarget);
+        if (!targetUrl.isPresent()) {
+            throw new IllegalArgumentException(
+                    "No route found for given navigation target!");
+        }
+        return targetUrl.get();
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameter in the
+     * url.
+     * <p>
+     * Note! Given parameter is checked for type so if the navigation target
+     * parameter is Boolean then a String will throw.
+     * 
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameter
+     *            parameter to embed into the generated url
+     * @return url or {@code IllegalArgumentException} if something is wrong
+     */
+    public <T> String getUrl(Class<? extends Component> navigationTarget,
+            T parameter) {
+        boolean hasUrlParameter = hasUrlParameters(navigationTarget);
+        if (hasUrlParameter) {
+            Class genericInterfaceType = ReflectTools.getGenericInterfaceType(
+                    navigationTarget, HasUrlParameter.class);
+            if (genericInterfaceType.isAssignableFrom(parameter.getClass())) {
+                String routeString = getUrl(navigationTarget).replace(
+                        "{" + genericInterfaceType.getSimpleName() + "}",
+                        parameter.toString());
+
+                Optional<Class<? extends Component>> registryTarget = RouteRegistry
+                        .getInstance().getNavigationTarget(routeString);
+
+                if (registryTarget.isPresent()
+                        && !hasUrlParameters(registryTarget.get())
+                        && !registryTarget.get().equals(navigationTarget)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Url matches existing navigation target '%s' with higher priority.",
+                            registryTarget.get().getName()));
+                }
+                return routeString;
+            }
+            throw new IllegalArgumentException(String.format(
+                    "Given route parameter '%s' is of the wrong type. Required '%s'.",
+                    parameter.getClass(), genericInterfaceType));
+        }
+
+        throw new IllegalArgumentException(String.format(
+                "Given navigation target '%s' doesn't support url parameters.",
+                navigationTarget.getName()));
+    }
+
+    private boolean hasUrlParameters(
+            Class<? extends Component> navigationTarget) {
+        return HasUrlParameter.class.isAssignableFrom(navigationTarget);
     }
 }
