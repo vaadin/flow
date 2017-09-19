@@ -44,21 +44,9 @@ public class ApplicationConstants implements Serializable {
     public static final String FRONTEND_PROTOCOL_PREFIX = "frontend://";
 
     /**
-     * An internal protocol used for identifying a font icon resource.
-     */
-    public static final String FONTICON_PROTOCOL_PREFIX = "fonticon://";
-
-    /**
      * The identifier used for the CSRF token.
      */
     public static final String UIDL_SECURITY_TOKEN_ID = "Vaadin-Security-Key";
-
-    /**
-     * URL parameter used in UIDL requests to indicate that the full server-side
-     * state should be returned to the client, i.e. without any incremental
-     * changes.
-     */
-    public static final String URL_PARAMETER_REPAINT_ALL = "repaintAll";
 
     /**
      * Configuration parameter giving the (in some cases relative) URL to the
@@ -172,11 +160,6 @@ public class ApplicationConstants implements Serializable {
      * Attribute name for marking internal router link anchors.
      */
     public static final String ROUTER_LINK_ATTRIBUTE = "router-link";
-
-    /**
-     * Attribute name for marking elements which are pre-rendered.
-     */
-    public static final String PRE_RENDER_ATTRIBUTE = "pre-render";
 
     /**
      * Configuration parameter for the build URL of ES6 web components.

@@ -35,7 +35,6 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
     // Javadocs for VaadinService should be updated if this value is changed
     public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
-    public static final String SERVLET_PARAMETER_RESOURCE_CACHE_TIME = "resourceCacheTime";
     public static final String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = "heartbeatInterval";
     public static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
     public static final String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
@@ -79,8 +78,6 @@ public final class Constants implements Serializable {
      */
     public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
             + ApplicationConstants.VAADIN_STATIC_FILES_PATH + "frontend/es5/";
-
-    public static final String WEB_COMPONENTS = "webComponents";
 
     private Constants() {
         // prevent instantiation constants class only
