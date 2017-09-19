@@ -266,6 +266,43 @@
                 </plugins>
             </build>
         </profile>
+        
+        <profile>
+            <id>eclipse</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <version>${jetty.version}</version>
+                        <configuration>
+                            <webAppConfig>
+                                <webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
+                                <!-- Configure all project META-INF/resources
+                                    directories for Jetty as resource folders as Jetty inside Eclipse is run
+                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty
+                                    only scans JARs for META-INF/resources folders -->
+                                <resourceBases>
+                                    <!-- these paths are relative to the
+                                        project where the profile is triggered -->
+                                    <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
+                                    <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
+                                    <resourceBase>${project.basedir}/../flow-components/target/classes/META-INF/resources</resourceBase>
+                                    <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
+                                    <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>
+                                </resourceBases>
+                            </webAppConfig>
+                            <!-- force default ports so that running IT tests
+                                from IDE work -->
+                            <httpConnector>
+                                <port>8080</port>
+                            </httpConnector>
+                            <stopPort>8081</stopPort>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>        
 
     </profiles>
 </project>
