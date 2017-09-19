@@ -13,14 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
 import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.vaadin.ui.ComponentEvent;
 
 /**
  * Cache for tracking global information related to {@link ComponentEvent}

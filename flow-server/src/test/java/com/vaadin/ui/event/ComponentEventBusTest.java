@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,7 +27,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
 import elemental.json.Json;

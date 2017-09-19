@@ -16,8 +16,10 @@
 package com.vaadin.ui;
 
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**
  * Mixin interface to handle click events on components.

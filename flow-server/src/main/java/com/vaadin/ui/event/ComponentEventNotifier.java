@@ -13,11 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.event;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 /**

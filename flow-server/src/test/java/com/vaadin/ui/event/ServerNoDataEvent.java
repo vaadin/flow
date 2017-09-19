@@ -13,30 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
-import java.io.Serializable;
-import java.util.EventListener;
+import com.vaadin.ui.Component;
 
-import com.vaadin.ui.ComponentEvent;
+public class ServerNoDataEvent extends ComponentEvent<Component> {
 
-/**
- * Generic listener for component events.
- *
- * @author Vaadin Ltd
- *
- * @param <T>
- *            component event type
- */
-@FunctionalInterface
-public interface ComponentEventListener<T extends ComponentEvent<?>>
-        extends EventListener, Serializable {
+    public ServerNoDataEvent(Component source, boolean fromClient) {
+        super(source, fromClient);
+    }
 
-    /**
-     * Invoked when a component event has been fired.
-     *
-     * @param event
-     *            component event
-     */
-    void onComponentEvent(T event);
 }

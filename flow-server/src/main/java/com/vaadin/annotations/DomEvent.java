@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.event.ComponentEvent;
 
 /**
  * Maps a DOM event to a {@link ComponentEvent}.

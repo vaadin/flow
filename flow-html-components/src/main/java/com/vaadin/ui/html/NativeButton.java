@@ -16,7 +16,7 @@
 package com.vaadin.ui.html;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.event.ClickEvent;
 import com.vaadin.ui.html.event.ClickNotifier;
 

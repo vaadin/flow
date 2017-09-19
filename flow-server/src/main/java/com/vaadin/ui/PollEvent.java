@@ -16,6 +16,7 @@
 package com.vaadin.ui;
 
 import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.event.ComponentEvent;
 
 /**
  * An event that is fired whenever a client polls the server for asynchronous UI

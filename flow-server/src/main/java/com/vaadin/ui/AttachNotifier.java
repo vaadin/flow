@@ -15,8 +15,9 @@
  */
 package com.vaadin.ui;
 
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**
  * Mixin interface for components that support adding attach listeners.

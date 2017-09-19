@@ -13,15 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
+import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 
-public class ServerNoDataEvent extends ComponentEvent<Component> {
+@DomEvent("dom-event")
+public class InvalidMappedToDomEvent extends ComponentEvent<Component> {
 
-    public ServerNoDataEvent(Component source, boolean fromClient) {
-        super(source, fromClient);
+    public InvalidMappedToDomEvent(Component source) {
+        super(source, true);
     }
 
 }

@@ -24,8 +24,8 @@ import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",

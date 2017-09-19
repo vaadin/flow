@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
 import com.vaadin.ui.HasSize;
 import com.vaadin.ui.HasValidation;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.util.JsonSerializer;
 
 import elemental.json.JsonArray;
@@ -291,7 +292,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Gets the list of items which were filtered by the user input. Filter
      * events can be received by using
-     * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
+     * {@link #addFilterChangeListener(ComponentEventListener)}.
      *
      * @return the list of filtered items, or empty list if none were filtered
      */
@@ -304,7 +305,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      * Convenience method for the {@link #setFilteredItems(Collection)}. It sets
      * the list of visible items in reaction of the input of the user. Filter
      * events can be received by using
-     * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
+     * {@link #addFilterChangeListener(ComponentEventListener)}.
      *
      * @param filteredItems
      *            the items to show in response of a filter input
@@ -317,7 +318,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * It sets the list of visible items in reaction of the input of the user.
      * Filter events can be received by using
-     * {@link #addFilterChangeListener(com.vaadin.flow.event.ComponentEventListener)}.
+     * {@link #addFilterChangeListener(ComponentEventListener)}.
      *
      * @param filteredItems
      *            the items to show in response of a filter input

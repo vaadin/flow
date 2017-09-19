@@ -13,11 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.event;
 
 import java.util.EventObject;
 
-import com.vaadin.flow.event.ComponentEventBus;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.event.ComponentEventBus;
 
 /**
  * An event whose source is a {@link Component}.

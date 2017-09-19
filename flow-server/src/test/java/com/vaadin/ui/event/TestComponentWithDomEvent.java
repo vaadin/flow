@@ -13,19 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.EventData;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentTest.TestComponent;
 
-@DomEvent("dom-event")
-public class MappedToDomInvalidEventData extends ComponentEvent<Component> {
-
-    public MappedToDomInvalidEventData(Component source, boolean fromClient,
-            @EventData("") int strangeServerSideParam) {
-        super(source, fromClient);
-    }
+public class TestComponentWithDomEvent extends TestComponent {
 
 }

@@ -16,7 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.HtmlContainer;
 import com.vaadin.ui.html.Input;

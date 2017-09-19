@@ -24,8 +24,8 @@ import org.junit.Test;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.event.PropertyChangeEvent;
-import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.ui.event.PropertyChangeEvent;
+import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.shared.Registration;
 
 public class ElementPropertyMapTest {

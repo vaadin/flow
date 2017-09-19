@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
 import java.lang.reflect.Constructor;
 
@@ -23,7 +23,6 @@ import org.junit.Test;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
 public class ComponentEventBusUtilTest {
@@ -74,7 +73,7 @@ public class ComponentEventBusUtilTest {
             ComponentEventBusUtil.getEventConstructor(InnerClass.class);
         } catch (IllegalArgumentException exception) {
             Assert.assertEquals(
-                    "Cannot instantiate 'com.vaadin.flow.event.ComponentEventBusUtilTest$InnerClass'. "
+                    "Cannot instantiate 'com.vaadin.ui.event.ComponentEventBusUtilTest$InnerClass'. "
                             + "Make sure the class is static if it is an inner class.",
                     exception.getMessage());
         }
@@ -101,7 +100,7 @@ public class ComponentEventBusUtilTest {
             ComponentEventBusUtil.getEventConstructor(LocalClass.class);
         } catch (IllegalArgumentException exception) {
             Assert.assertEquals(
-                    "Cannot instantiate local class 'com.vaadin.flow.event.ComponentEventBusUtilTest$1LocalClass'. "
+                    "Cannot instantiate local class 'com.vaadin.ui.event.ComponentEventBusUtilTest$1LocalClass'. "
                             + "Move class declaration outside the method.",
                     exception.getMessage());
         }

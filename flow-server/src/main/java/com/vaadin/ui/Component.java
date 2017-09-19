@@ -25,9 +25,11 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.event.ComponentEventBus;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventBus;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.ComponentEventNotifier;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a

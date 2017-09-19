@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -29,7 +29,6 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;

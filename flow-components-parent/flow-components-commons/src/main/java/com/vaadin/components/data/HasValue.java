@@ -21,10 +21,10 @@ import java.util.Optional;
 
 import com.vaadin.data.Binder;
 import com.vaadin.data.Validator;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.ComponentSupplier;
 
 /**

@@ -325,10 +325,10 @@ public class ComponentGeneratorTest {
         Assert.assertTrue("Missing DomEvent import", generatedClass
                 .contains("import com.vaadin.annotations.DomEvent;"));
         Assert.assertTrue("Missing ComponentEvent import", generatedClass
-                .contains("import com.vaadin.ui.ComponentEvent;"));
+                .contains("import com.vaadin.ui.event.ComponentEvent;"));
         Assert.assertTrue("Missing ComponentEventListener import",
                 generatedClass.contains(
-                        "import com.vaadin.flow.event.ComponentEventListener;"));
+                        "import com.vaadin.ui.event.ComponentEventListener;"));
         Assert.assertFalse("EventData imported even without events",
                 generatedClass
                 .contains("import com.vaadin.annotations.EventData;"));

@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.button;
 
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasSize;
 import com.vaadin.ui.html.Image;

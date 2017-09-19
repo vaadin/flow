@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
 import java.io.Serializable;
 

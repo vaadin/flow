@@ -16,12 +16,12 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Hr;
 import com.vaadin.ui.html.Input;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.Text;
 

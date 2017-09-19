@@ -13,24 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
-import java.math.BigDecimal;
+import java.io.Serializable;
+import java.util.EventListener;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
+/**
+ * Generic listener for component events.
+ *
+ * @author Vaadin Ltd
+ *
+ * @param <T>
+ *            component event type
+ */
+@FunctionalInterface
+public interface ComponentEventListener<T extends ComponentEvent<?>>
+        extends EventListener, Serializable {
 
-public class ServerEvent extends ComponentEvent<Component> {
-
-    private BigDecimal someValue;
-
-    public ServerEvent(Component source, BigDecimal someValue) {
-        super(source, false);
-        this.someValue = someValue;
-    }
-
-    public BigDecimal getSomeValue() {
-        return someValue;
-    }
-
+    /**
+     * Invoked when a component event has been fired.
+     *
+     * @param event
+     *            component event
+     */
+    void onComponentEvent(T event);
 }

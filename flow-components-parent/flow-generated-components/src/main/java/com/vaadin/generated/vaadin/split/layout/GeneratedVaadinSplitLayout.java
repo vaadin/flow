@@ -22,8 +22,8 @@ import javax.annotation.Generated;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 /**

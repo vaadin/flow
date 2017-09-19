@@ -16,6 +16,7 @@
 package com.vaadin.ui;
 
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.event.ComponentEvent;
 
 /**
  * Internal helper for {@link AttachEvent} and {@link DetachEvent}.

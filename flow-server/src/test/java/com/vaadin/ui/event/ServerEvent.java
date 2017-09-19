@@ -13,17 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
-import com.vaadin.annotations.DomEvent;
+import java.math.BigDecimal;
+
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 
-@DomEvent("dom-event")
-public class InvalidMappedToDomEvent extends ComponentEvent<Component> {
+public class ServerEvent extends ComponentEvent<Component> {
 
-    public InvalidMappedToDomEvent(Component source) {
-        super(source, true);
+    private BigDecimal someValue;
+
+    public ServerEvent(Component source, BigDecimal someValue) {
+        super(source, false);
+        this.someValue = someValue;
+    }
+
+    public BigDecimal getSomeValue() {
+        return someValue;
     }
 
 }

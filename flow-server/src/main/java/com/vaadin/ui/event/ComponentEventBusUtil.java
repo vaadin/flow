@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.event;
+package com.vaadin.ui.event;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
@@ -27,7 +27,6 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.util.ReflectTools;
 
 /**
