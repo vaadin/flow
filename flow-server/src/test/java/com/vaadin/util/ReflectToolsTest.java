@@ -59,6 +59,13 @@ public class ReflectToolsTest {
 
     }
 
+    public static class VarArgsCtor {
+
+        public VarArgsCtor(String... args) {
+
+        }
+    }
+
     @Test
     public void testCreateInstance() {
         OkToCreate instance = ReflectTools.createInstance(OkToCreate.class);
@@ -66,6 +73,15 @@ public class ReflectToolsTest {
         Assert.assertNotNull(instance);
         Assert.assertSame("Created instance should be of the requested type",
                 OkToCreate.class, instance.getClass());
+    }
+
+    @Test
+    public void testCreateInstance_varArgsCtor() {
+        VarArgsCtor instance = ReflectTools.createInstance(VarArgsCtor.class);
+
+        Assert.assertNotNull(instance);
+        Assert.assertSame("Created instance should be of the requested type",
+                VarArgsCtor.class, instance.getClass());
     }
 
     @Test
