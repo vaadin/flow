@@ -285,14 +285,6 @@ public class NewRouterTest extends NewRoutingTestBase {
         Assert.assertEquals("greeting/other", router.getUrl(GreetingNavigationTarget.class, "other"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void layout_with_url_parameter_fails_on_wrong_type_url_resolving() throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
-                Stream.of(GreetingNavigationTarget.class).collect(Collectors.toSet()));
-
-        Assert.assertEquals("greeting/true", router.getUrl(GreetingNavigationTarget.class, Boolean.TRUE));
-    }
-
     @Test
     public void test_reroute_with_url_parameter() throws InvalidRouteConfigurationException {
         RouteRegistry.getInstance().setNavigationTargets(

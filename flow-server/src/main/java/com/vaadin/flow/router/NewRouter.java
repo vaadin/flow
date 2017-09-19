@@ -24,7 +24,6 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
-import com.vaadin.util.ReflectTools;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -130,7 +129,7 @@ public class NewRouter implements RouterInterface {
      * 
      * @param navigationTarget
      *            navigation target to get url for
-     * @return url
+     * @return url for the navigation target
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
         Optional<String> targetUrl = RouteRegistry.getInstance()
@@ -154,39 +153,26 @@ public class NewRouter implements RouterInterface {
      *            navigation target to get url for
      * @param parameter
      *            parameter to embed into the generated url
-     * @return url
+     * @return url for the naviagtion target with parameter
      */
-    public <T> String getUrl(Class<? extends Component> navigationTarget,
-            T parameter) {
-        boolean hasUrlParameter = hasUrlParameters(navigationTarget);
-        if (hasUrlParameter) {
-            Class genericInterfaceType = ReflectTools.getGenericInterfaceType(
-                    navigationTarget, HasUrlParameter.class);
-            if (genericInterfaceType.isAssignableFrom(parameter.getClass())) {
-                String routeString = getUrl(navigationTarget).replace(
-                        "{" + genericInterfaceType.getSimpleName() + "}",
+    public <T> String getUrl(
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+        String routeString = getUrl(
+                (Class<? extends Component>) navigationTarget).replace(
+                        "{" + parameter.getClass().getSimpleName() + "}",
                         parameter.toString());
 
-                Optional<Class<? extends Component>> registryTarget = RouteRegistry
-                        .getInstance().getNavigationTarget(routeString);
+        Optional<Class<? extends Component>> registryTarget = RouteRegistry
+                .getInstance().getNavigationTarget(routeString);
 
-                if (registryTarget.isPresent()
-                        && !hasUrlParameters(registryTarget.get())
-                        && !registryTarget.get().equals(navigationTarget)) {
-                    throw new IllegalArgumentException(String.format(
-                            "Url matches existing navigation target '%s' with higher priority.",
-                            registryTarget.get().getName()));
-                }
-                return routeString;
-            }
+        if (registryTarget.isPresent()
+                && !hasUrlParameters(registryTarget.get())
+                && !registryTarget.get().equals(navigationTarget)) {
             throw new IllegalArgumentException(String.format(
-                    "Given route parameter '%s' is of the wrong type. Required '%s'.",
-                    parameter.getClass(), genericInterfaceType));
+                    "Url matches existing navigation target '%s' with higher priority.",
+                    registryTarget.get().getName()));
         }
-
-        throw new IllegalArgumentException(String.format(
-                "Given navigation target '%s' doesn't support url parameters.",
-                navigationTarget.getName()));
+        return routeString;
     }
 
     private boolean hasUrlParameters(
