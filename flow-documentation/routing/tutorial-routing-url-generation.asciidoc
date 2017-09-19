@@ -31,7 +31,7 @@ public class Menu extends Div {
 }
 ----
 
-The returned url would in this case simply be "path", but in the case where we have parent
+The returned url would in this case simply be resolved to *path*, but in the case where we have parent
 layouts that add path parts it might not be as simple to generate the path by hand.
 
 == URL generation for navigation target with parameter
