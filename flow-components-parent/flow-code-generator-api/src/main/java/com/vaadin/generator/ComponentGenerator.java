@@ -31,8 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Generated;
 
@@ -57,6 +55,9 @@ import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.generator.metadata.ComponentType;
+import com.vaadin.generator.registry.BehaviorRegistry;
+import com.vaadin.generator.registry.ExclusionRegistry;
+import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
@@ -93,7 +94,6 @@ public class ComponentGenerator {
     private static final String GENERIC_TYPE_DECLARATION = '<' + GENERIC_TYPE
             + '>';
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
-    private static final Set<String> LIFECYCLE_CALLBACKS = createCallbacks();
 
     private ObjectMapper mapper;
     private File jsonFile;
@@ -176,7 +176,7 @@ public class ComponentGenerator {
     }
 
     /**
-     * Set the base package taht will be used.
+     * Set the base package that will be used.
      *
      * @param basePackage
      *            The base package to be used for the generated Java class. The
@@ -364,12 +364,17 @@ public class ComponentGenerator {
         }
 
         if (metadata.getMethods() != null) {
-            metadata.getMethods().forEach(
-                    function -> generateMethodFor(javaClass, function));
+            metadata.getMethods().stream()
+                    .filter(function -> !ExclusionRegistry.isMethodExcluded(
+                            metadata.getTag(), function.getName()))
+                    .forEach(
+                            function -> generateMethodFor(javaClass, function));
         }
 
         if (metadata.getEvents() != null) {
-            metadata.getEvents()
+            metadata.getEvents().stream()
+                    .filter(event -> !ExclusionRegistry.isEventExcluded(
+                            metadata.getTag(), event.getName()))
                     .forEach(event -> generateEventListenerFor(javaClass,
                             metadata, event));
         }
@@ -460,14 +465,18 @@ public class ComponentGenerator {
 
     private void generateGettersAndSetters(ComponentMetadata metadata,
             JavaClassSource javaClass) {
-        metadata.getProperties().forEach(property -> {
-            generateGetterFor(javaClass, metadata, property,
-                    metadata.getEvents());
 
-            if (!property.isReadOnly()) {
-                generateSetterFor(javaClass, metadata, property);
-            }
-        });
+        metadata.getProperties().stream()
+                .filter(property -> !ExclusionRegistry.isPropertyExcluded(
+                        metadata.getTag(), property.getName()))
+                .forEach(property -> {
+                    generateGetterFor(javaClass, metadata, property,
+                            metadata.getEvents());
+
+                    if (!property.isReadOnly()) {
+                        generateSetterFor(javaClass, metadata, property);
+                    }
+                });
     }
 
     private void generateAdders(ComponentMetadata metadata,
@@ -1008,9 +1017,6 @@ public class ComponentGenerator {
 
     private void generateMethodFor(JavaClassSource javaClass,
             ComponentFunctionData function) {
-        if (LIFECYCLE_CALLBACKS.contains(function.getName())) {
-            return;
-        }
         Set<List<ComponentType>> typeVariants = FunctionParameterVariantCombinator
                 .generateVariants(function);
         Map<ComponentObjectType, JavaClassSource> nestedClassesMap = new HashMap<>();
@@ -1307,10 +1313,4 @@ public class ComponentGenerator {
                 + PROPERTY_CHANGE_EVENT_POSTFIX;
     }
 
-    private static Set<String> createCallbacks() {
-        return Collections.unmodifiableSet(Stream
-                .of("connectedCallback", "disconnectedCallback",
-                        "attributeChangedCallback")
-                .collect(Collectors.toSet()));
-    }
 }

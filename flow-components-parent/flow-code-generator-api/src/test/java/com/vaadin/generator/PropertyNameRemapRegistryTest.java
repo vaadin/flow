@@ -30,6 +30,7 @@ import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentPropertyData;
+import com.vaadin.generator.registry.PropertyNameRemapRegistry;
 
 /**
  * Unit tests for {@link PropertyNameRemapRegistryTest}.
