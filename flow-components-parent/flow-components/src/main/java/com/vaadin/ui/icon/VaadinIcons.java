@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.icon;
 
 /**
  * Enumeration of all icons in the <a href="https://vaadin.com/icons">Vaadin

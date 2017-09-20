@@ -13,11 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.icon;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.ElementConstants;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
 
 /**
  * Component for displaying an icon from the
