@@ -1,4 +1,4 @@
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.model;
 
 import com.vaadin.flow.template.angular.model.TemplateModel;
 

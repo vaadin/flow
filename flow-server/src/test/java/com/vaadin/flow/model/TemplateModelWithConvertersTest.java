@@ -1,4 +1,4 @@
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.model;
 
 import static org.junit.Assert.assertEquals;
 
@@ -15,15 +15,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.model.Convert;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.template.model.TemplateModelTest.EmptyDivTemplate;
+import com.vaadin.flow.model.TemplateModelTest.EmptyDivTemplate;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
-import com.vaadin.flow.model.InvalidTemplateModelException;
-import com.vaadin.flow.model.ModelConverter;
-import com.vaadin.flow.model.TemplateModel;
 
 public class TemplateModelWithConvertersTest {
 

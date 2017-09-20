@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.model;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -25,7 +25,6 @@ import org.junit.Test;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.model.BeanModelType;
-import com.vaadin.flow.model.PropertyFilter;
 
 public class BeanModelTypeTest {
     // Partial overlap with Bean

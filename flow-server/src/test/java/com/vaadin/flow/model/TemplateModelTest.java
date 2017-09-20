@@ -1,4 +1,4 @@
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,8 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.model.Exclude;
-import com.vaadin.flow.model.Include;
 import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.StateNode;
@@ -27,8 +25,6 @@ import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
-import com.vaadin.flow.model.InvalidTemplateModelException;
-import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
@@ -270,7 +266,7 @@ public class TemplateModelTest {
     TemplateWithExcludeAndInclude<TemplateWithExcludeAndIncludeSubclassOverrides.ModelWithExcludeAndIncludeSubclass> {
 
         public interface ModelWithExcludeAndIncludeSubclass extends
-        com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude {
+        TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude {
 
             /*
              * Super class has annotations for this method to only include

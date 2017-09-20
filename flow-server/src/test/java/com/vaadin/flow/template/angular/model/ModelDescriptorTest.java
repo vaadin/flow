@@ -46,7 +46,7 @@ import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncl
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeOnList.ModelWithIncludeOnList;
 import com.vaadin.flow.model.BasicModelType;
-import com.vaadin.flow.template.model.Bean;
+import com.vaadin.flow.model.Bean;
 import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.flow.model.ModelType;
 

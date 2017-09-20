@@ -1,4 +1,4 @@
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.model;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -6,16 +6,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.template.model.TemplateModelTest.EmptyModel;
-import com.vaadin.flow.template.model.TemplateModelTest.EmptyModelTemplate;
+import com.vaadin.flow.model.TemplateModelTest.EmptyModel;
+import com.vaadin.flow.model.TemplateModelTest.EmptyModelTemplate;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
-import com.vaadin.flow.model.BeanModelType;
-import com.vaadin.flow.model.ModelDescriptor;
-import com.vaadin.flow.model.PropertyFilter;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.model.TemplateModelProxyHandler;
 
 public class TemplateModelProxyHandlerTest {
 

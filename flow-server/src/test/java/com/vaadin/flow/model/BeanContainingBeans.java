@@ -1,4 +1,4 @@
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.model;
 
 public class BeanContainingBeans {
     private Bean bean1;

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.model;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -34,29 +34,21 @@ import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.BasicTypeValue;
-import com.vaadin.flow.template.model.TemplateModelTest.BasicTypeModel;
-import com.vaadin.flow.template.model.TemplateModelTest.BeanModel;
-import com.vaadin.flow.template.model.TemplateModelTest.ListBeanModel;
-import com.vaadin.flow.template.model.TemplateModelTest.ListInsideListBeanModel;
-import com.vaadin.flow.template.model.TemplateModelTest.ListInsideListInsideList;
-import com.vaadin.flow.template.model.TemplateModelTest.NotSupportedModel;
-import com.vaadin.flow.template.model.TemplateModelTest.SubBeansModel;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExclude.ModelWithExclude;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExcludeAndIncludeSubclassOverrides.ModelWithExcludeAndIncludeSubclass;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExcludeForSubBean.ModelWithExcludeForSubBean;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExcludeOnList.ModelWithExcludeOnList;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithInclude.ModelWithInclude;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean;
-import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithIncludeOnList.ModelWithIncludeOnList;
-import com.vaadin.flow.model.BasicComplexModelType;
-import com.vaadin.flow.model.BasicModelType;
-import com.vaadin.flow.model.BeanModelType;
-import com.vaadin.flow.model.ComplexModelType;
-import com.vaadin.flow.model.InvalidTemplateModelException;
-import com.vaadin.flow.model.ListModelType;
-import com.vaadin.flow.model.ModelDescriptor;
-import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.model.TemplateModelTest.BasicTypeModel;
+import com.vaadin.flow.model.TemplateModelTest.BeanModel;
+import com.vaadin.flow.model.TemplateModelTest.ListBeanModel;
+import com.vaadin.flow.model.TemplateModelTest.ListInsideListBeanModel;
+import com.vaadin.flow.model.TemplateModelTest.ListInsideListInsideList;
+import com.vaadin.flow.model.TemplateModelTest.NotSupportedModel;
+import com.vaadin.flow.model.TemplateModelTest.SubBeansModel;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithExclude.ModelWithExclude;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithExcludeAndIncludeSubclassOverrides.ModelWithExcludeAndIncludeSubclass;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithExcludeForSubBean.ModelWithExcludeForSubBean;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithExcludeOnList.ModelWithExcludeOnList;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithInclude.ModelWithInclude;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean;
+import com.vaadin.flow.model.TemplateModelTest.TemplateWithIncludeOnList.ModelWithIncludeOnList;
 
 public class ModelDescriptorTest {
 
