@@ -19,13 +19,16 @@ import java.io.Serializable;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.BootstrapListener;
 import com.vaadin.server.BootstrapPageResponse;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HasElement;
 
 /**
  * Delegate for discovering, creating and managing instances of various types
@@ -116,4 +119,35 @@ public interface Instantiator extends Serializable {
         return serviceInitFilters;
     }
 
+    /**
+     * Creates an instance of a navigation target or router layout. This method
+     * is not called in cases when a component instance is reused when
+     * navigating.
+     *
+     * @param routeTargetType
+     *            the instance type to create, not <code>null</code>
+     * @param event
+     *            the navigation event for which the instance is created, not
+     *            <code>null</code>
+     * @return the created instance, not <code>null</code>
+     */
+    <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
+            NavigationEvent event);
+
+    /**
+     * Gets the instantiator to use for the given UI.
+     *
+     * @param ui
+     *            the attached UI for which to find an instantiator, not
+     *            <code>null</code>
+     * @return the instantiator, not <code>null</code>
+     */
+    static Instantiator get(UI ui) {
+        assert ui != null;
+
+        VaadinSession session = ui.getSession();
+        assert session != null;
+
+        return session.getService().getInstantiator();
+    }
 }
