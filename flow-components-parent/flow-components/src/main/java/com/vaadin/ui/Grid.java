@@ -150,12 +150,12 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
     }
 
     @ClientDelegate
-    public void confirmUpdate(int id) {
+    private void confirmUpdate(int id) {
         dataCommunicator.confirmUpdate(id);
     }
 
     @ClientDelegate
-    public void setRequestedRange(int start, int length) {
+    private void setRequestedRange(int start, int length) {
         dataCommunicator.setRequestedRange(start, length);
     }
 
