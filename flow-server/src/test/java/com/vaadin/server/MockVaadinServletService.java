@@ -18,6 +18,8 @@ package com.vaadin.server;
 import java.util.Collections;
 import java.util.List;
 
+import com.vaadin.function.DeploymentConfiguration;
+
 /**
  * 
  * @author Vaadin Ltd

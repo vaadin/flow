@@ -21,10 +21,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
-import com.vaadin.flow.template.angular.ElementTemplateNode;
 import com.vaadin.ui.AngularTemplate;
 
 public class AngularTemplateIncludeBuilderTest {

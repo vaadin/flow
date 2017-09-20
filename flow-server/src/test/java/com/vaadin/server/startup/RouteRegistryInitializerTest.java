@@ -25,12 +25,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
-import com.vaadin.annotations.RoutePrefix;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.RoutePrefix;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;

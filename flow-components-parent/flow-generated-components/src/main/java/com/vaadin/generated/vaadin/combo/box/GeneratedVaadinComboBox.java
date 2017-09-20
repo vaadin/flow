@@ -16,21 +16,21 @@
 package com.vaadin.generated.vaadin.combo.box;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.HasValue;
 import elemental.json.JsonArray;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.data.HasValue;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.annotations.EventData;
+import com.vaadin.ui.event.EventData;
 
 /**
  * <p>
@@ -61,7 +61,8 @@ import com.vaadin.annotations.EventData;
  * triggered.
  * </p>
  * <p>
- * This element can be used within an {@code iron-form}.
+ * This element is also extended with the {@code IronFormElementBehavior} to
+ * enable usage within an {@code iron-form}.
  * </p>
  * <h3>Item Template</h3>
  * <p>
@@ -130,8 +131,7 @@ import com.vaadin.annotations.EventData;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxElement#3.0.0-alpha3",
-		"Flow#0.1-SNAPSHOT"})
+		"WebComponent: vaadin-combo-box#2.0.0", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
 public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
@@ -147,12 +147,170 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * True if the dropdown is open, false otherwise.
+	 * Name of the validator to use.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
 	 */
+	public String getValidator() {
+		return getElement().getProperty("validator");
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Name of the validator to use.
+	 * </p>
+	 * 
+	 * @param validator
+	 *            the String value to set
+	 */
+	public void setValidator(java.lang.String validator) {
+		getElement().setProperty("validator",
+				validator == null ? "" : validator);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * True if the last call to {@code validate} is invalid.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * 'invalid-changed' event happens.
+	 * </p>
+	 */
+	@Synchronize(property = "invalid", value = "invalid-changed")
+	public boolean isInvalid() {
+		return getElement().getProperty("invalid", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * True if the last call to {@code validate} is invalid.
+	 * </p>
+	 * 
+	 * @param invalid
+	 *            the boolean value to set
+	 */
+	public void setInvalid(boolean invalid) {
+		getElement().setProperty("invalid", invalid);
+	}
+
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public String getName() {
+		return getElement().getProperty("name");
+	}
+
+	/**
+	 * @param name
+	 *            the String value to set
+	 */
+	public void setName(java.lang.String name) {
+		getElement().setProperty("name", name == null ? "" : name);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * The {@code String} value for the selected item of the combo box. Provides
+	 * the value for {@code iron-form}.
+	 * </p>
+	 * <p>
+	 * When there’s no item selected, the value is an empty string.
+	 * </p>
+	 * <p>
+	 * Use {@code selectedItem} property to get the raw selected item from the
+	 * {@code items} array.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * 'value-changed' event happens.
+	 * </p>
+	 */
+	@Synchronize(property = "value", value = "value-changed")
+	@Override
+	public String getValue() {
+		return getElement().getProperty("value");
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * The {@code String} value for the selected item of the combo box. Provides
+	 * the value for {@code iron-form}.
+	 * </p>
+	 * <p>
+	 * When there’s no item selected, the value is an empty string.
+	 * </p>
+	 * <p>
+	 * Use {@code selectedItem} property to get the raw selected item from the
+	 * {@code items} array.
+	 * </p>
+	 * 
+	 * @param value
+	 *            the String value to set
+	 */
+	@Override
+	public void setValue(java.lang.String value) {
+		getElement().setProperty("value", value == null ? "" : value);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to mark the input as required.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 */
+	public boolean isRequired() {
+		return getElement().getProperty("required", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to mark the input as required.
+	 * </p>
+	 * 
+	 * @param required
+	 *            the boolean value to set
+	 */
+	public void setRequired(boolean required) {
+		getElement().setProperty("required", required);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * True if the dropdown is open, false otherwise.
+	 * <p>
+	 * This property is synchronized automatically from client side when a
+	 * 'opened-changed' event happens.
+	 * </p>
+	 */
+	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}
@@ -325,55 +483,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The {@code String} value for the selected item of the combo box. Provides
-	 * the value for {@code iron-form}.
-	 * </p>
-	 * <p>
-	 * When there’s no item selected, the value is an empty string.
-	 * </p>
-	 * <p>
-	 * Use {@code selectedItem} property to get the raw selected item from the
-	 * {@code items} array.
-	 * <p>
-	 * This property is synchronized automatically from client side when a
-	 * 'value-changed' event happens.
-	 * </p>
-	 */
-	@Synchronize(property = "value", value = "value-changed")
-	@Override
-	public String getValue() {
-		return getElement().getProperty("value");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The {@code String} value for the selected item of the combo box. Provides
-	 * the value for {@code iron-form}.
-	 * </p>
-	 * <p>
-	 * When there’s no item selected, the value is an empty string.
-	 * </p>
-	 * <p>
-	 * Use {@code selectedItem} property to get the raw selected item from the
-	 * {@code items} array.
-	 * </p>
-	 * 
-	 * @param value
-	 *            the String value to set
-	 */
-	@Override
-	public void setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * A read-only property indicating whether this combo box has a value
 	 * selected or not. It can be used for example in styling of the component.
 	 * <p>
@@ -424,10 +533,11 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * <p>
 	 * Filtering string the user has typed into the input field.
 	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
+	 * This property is synchronized automatically from client side when a
+	 * 'filter-changed' event happens.
 	 * </p>
 	 */
+	@Synchronize(property = "filter", value = "filter-changed")
 	public String getFilter() {
 		return getElement().getProperty("filter");
 	}
@@ -593,66 +703,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Set to true to mark the input as required.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	public boolean isRequired() {
-		return getElement().getProperty("required", false);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Set to true to mark the input as required.
-	 * </p>
-	 * 
-	 * @param required
-	 *            the boolean value to set
-	 */
-	public void setRequired(boolean required) {
-		getElement().setProperty("required", required);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The name of this element.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	public String getName() {
-		return getElement().getProperty("name");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The name of this element.
-	 * </p>
-	 * 
-	 * @param name
-	 *            the String value to set
-	 */
-	public void setName(java.lang.String name) {
-		getElement().setProperty("name", name == null ? "" : name);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * The label for this element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -736,6 +786,36 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 */
 	public void setAlwaysFloatLabel(boolean alwaysFloatLabel) {
 		getElement().setProperty("alwaysFloatLabel", alwaysFloatLabel);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to auto-validate the input value.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 */
+	public boolean isAutoValidate() {
+		return getElement().getProperty("autoValidate", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to auto-validate the input value.
+	 * </p>
+	 * 
+	 * @param autoValidate
+	 *            the boolean value to set
+	 */
+	public void setAutoValidate(boolean autoValidate) {
+		getElement().setProperty("autoValidate", autoValidate);
 	}
 
 	/**
@@ -959,6 +1039,97 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	}
 
 	/**
+	 * @return It would return a boolean
+	 */
+	@NotSupported
+	protected void hasValidator() {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Returns true if the {@code value} is valid, and updates {@code invalid}.
+	 * If you want your element to have custom validation logic, do not override
+	 * this method; override {@code _getValidity(value)} instead.
+	 * </p>
+	 * 
+	 * @param value
+	 *            Deprecated: The value to be validated. By default, it is
+	 *            passed to the validator's `validate()` function, if a
+	 *            validator is set. If this argument is not specified, then the
+	 *            element's `value` property is used, if it exists.
+	 * @return It would return a boolean
+	 */
+	@NotSupported
+	protected void validate(elemental.json.JsonObject value) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Generates an anonymous {@code TemplateInstance} class (stored as
+	 * {@code this.ctor}) for the provided template. This method should be
+	 * called once per template to prepare an element for stamping the template,
+	 * followed by {@code stamp} to create new instances of the template.
+	 * </p>
+	 * 
+	 * @param template
+	 *            Template to prepare
+	 * @param mutableData
+	 *            When `true`, the generated class will skip strict
+	 *            dirty-checking for objects and arrays (always consider them to
+	 *            be "dirty"). Defaults to false.
+	 */
+	protected void templatize(elemental.json.JsonObject template,
+			elemental.json.JsonObject mutableData) {
+		getElement().callFunction("templatize", template, mutableData);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Creates an instance of the template prepared by {@code templatize}. The
+	 * object returned is an instance of the anonymous class generated by
+	 * {@code templatize} whose {@code root} property is a document fragment
+	 * containing newly cloned template content, and which has property
+	 * accessors corresponding to properties referenced in template bindings.
+	 * </p>
+	 * 
+	 * @param model
+	 *            Object containing initial property values to populate into the
+	 *            template bindings.
+	 * @return It would return a interface elemental.json.JsonObject
+	 */
+	@NotSupported
+	protected void stamp(elemental.json.JsonObject model) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Returns the template &quot;model&quot; ({@code TemplateInstance})
+	 * associated with a given element, which serves as the binding scope for
+	 * the template instance the element is contained in. A template model
+	 * should be used to manipulate data associated with this template instance.
+	 * </p>
+	 * 
+	 * @param el
+	 *            Element for which to return a template model.
+	 * @return It would return a interface elemental.json.JsonObject
+	 */
+	@NotSupported
+	protected void modelForElement(elemental.json.JsonObject el) {
+	}
+
+	/**
 	 * <p>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
@@ -999,42 +1170,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Returns true if {@code value} is valid, and sets the {@code invalid} flag
-	 * appropriatelly.
-	 * </p>
-	 * 
-	 * @param value
-	 *            Missing documentation!
-	 * @return It would return a boolean
-	 */
-	@NotSupported
-	protected void validate(elemental.json.JsonObject value) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Returns true if the current input value satisfies all constraints (if
-	 * any)
-	 * </p>
-	 * <p>
-	 * You can override the {@code checkValidity} method for custom validations.
-	 * </p>
-	 * 
-	 * @param value
-	 *            Missing documentation!
-	 */
-	protected void checkValidity(elemental.json.JsonObject value) {
-		getElement().callFunction("checkValidity", value);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * Sets focus on the input field.
 	 * </p>
 	 */
@@ -1052,6 +1187,143 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 */
 	public void blur() {
 		getElement().callFunction("blur");
+	}
+
+	@DomEvent("invalid-changed")
+	public static class InvalidChangeEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		public InvalidChangeEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addInvalidChangeListener(
+			ComponentEventListener<InvalidChangeEvent<R>> listener) {
+		return addListener(InvalidChangeEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("iron-form-element-register")
+	public static class IronFormElementRegisterEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		public IronFormElementRegisterEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addIronFormElementRegisterListener(
+			ComponentEventListener<IronFormElementRegisterEvent<R>> listener) {
+		return addListener(IronFormElementRegisterEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("iron-form-element-unregister")
+	public static class IronFormElementUnregisterEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		public IronFormElementUnregisterEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addIronFormElementUnregisterListener(
+			ComponentEventListener<IronFormElementUnregisterEvent<R>> listener) {
+		return addListener(IronFormElementUnregisterEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("vaadin-dropdown-closed")
+	public static class VaadinDropdownClosedEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		public VaadinDropdownClosedEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addVaadinDropdownClosedListener(
+			ComponentEventListener<VaadinDropdownClosedEvent<R>> listener) {
+		return addListener(VaadinDropdownClosedEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("vaadin-dropdown-opened")
+	public static class VaadinDropdownOpenedEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		public VaadinDropdownOpenedEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addVaadinDropdownOpenedListener(
+			ComponentEventListener<VaadinDropdownOpenedEvent<R>> listener) {
+		return addListener(VaadinDropdownOpenedEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("opened-changed")
+	public static class OpenedChangeEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		public OpenedChangeEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent<R>> listener) {
+		return addListener(OpenedChangeEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("filter-changed")
+	public static class FilterChangeEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		public FilterChangeEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addFilterChangeListener(
+			ComponentEventListener<FilterChangeEvent<R>> listener) {
+		return addListener(FilterChangeEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("selected-item-changed")
+	public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBox<R>>
+			extends
+				ComponentEvent<R> {
+		private final JsonObject detail;
+		private final JsonObject detailValue;
+
+		public SelectedItemChangeEvent(
+				R source,
+				boolean fromClient,
+				@EventData("event.detail") elemental.json.JsonObject detail,
+				@EventData("event.detail.value") elemental.json.JsonObject detailValue) {
+			super(source, fromClient);
+			this.detail = detail;
+			this.detailValue = detailValue;
+		}
+
+		public JsonObject getDetail() {
+			return detail;
+		}
+
+		public JsonObject getDetailValue() {
+			return detailValue;
+		}
+	}
+
+	public Registration addSelectedItemChangeListener(
+			ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
+		return addListener(SelectedItemChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 
 	@DomEvent("change")
@@ -1091,38 +1363,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 				(ComponentEventListener) listener);
 	}
 
-	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBox<R>>
-			extends
-				ComponentEvent<R> {
-		private final JsonObject detail;
-		private final JsonObject detailValue;
-
-		public SelectedItemChangeEvent(
-				R source,
-				boolean fromClient,
-				@EventData("event.detail") elemental.json.JsonObject detail,
-				@EventData("event.detail.value") elemental.json.JsonObject detailValue) {
-			super(source, fromClient);
-			this.detail = detail;
-			this.detailValue = detailValue;
-		}
-
-		public JsonObject getDetail() {
-			return detail;
-		}
-
-		public JsonObject getDetailValue() {
-			return detailValue;
-		}
-	}
-
-	public Registration addSelectedItemChangeListener(
-			ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
-		return addListener(SelectedItemChangeEvent.class,
-				(ComponentEventListener) listener);
-	}
-
 	@DomEvent("focused-changed")
 	public static class FocusedChangeEvent<R extends GeneratedVaadinComboBox<R>>
 			extends
@@ -1152,9 +1392,75 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToPrefix(com.vaadin.ui.Component... components) {
+	public R addToPrefix(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "prefix");
+			getElement().appendChild(component.getElement());
+		}
+		return get();
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * 'suffix'.
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see <a
+	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+	 *      page about slots</a>
+	 * @see <a
+	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+	 *      website about slots</a>
+	 * @return this instance, for method chaining
+	 */
+	public R addToSuffix(Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "suffix");
+			getElement().appendChild(component.getElement());
+		}
+		return get();
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * 'clear-button'.
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see <a
+	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+	 *      page about slots</a>
+	 * @see <a
+	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+	 *      website about slots</a>
+	 * @return this instance, for method chaining
+	 */
+	public R addToClearButton(Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "clear-button");
+			getElement().appendChild(component.getElement());
+		}
+		return get();
+	}
+
+	/**
+	 * Adds the given components as children of this component at the slot
+	 * 'toggle-button'.
+	 * 
+	 * @param components
+	 *            The components to add.
+	 * @see <a
+	 *      href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot">MDN
+	 *      page about slots</a>
+	 * @see <a
+	 *      href="https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element">Spec
+	 *      website about slots</a>
+	 * @return this instance, for method chaining
+	 */
+	public R addToToggleButton(Component... components) {
+		for (Component component : components) {
+			component.getElement().setAttribute("slot", "toggle-button");
 			getElement().appendChild(component.getElement());
 		}
 		return get();
@@ -1168,7 +1474,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * @throws IllegalArgumentException
 	 *             if any of the components is not a child of this component.
 	 */
-	public void remove(com.vaadin.ui.Component... components) {
+	public void remove(Component... components) {
 		for (Component component : components) {
 			if (getElement().equals(component.getElement().getParent())) {
 				component.getElement().removeAttribute("slot");

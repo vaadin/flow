@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.tutorial.component;
 
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Input;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Input;
+import com.vaadin.ui.html.Label;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Composite;
 

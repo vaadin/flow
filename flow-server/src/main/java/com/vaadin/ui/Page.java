@@ -17,8 +17,8 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.shared.ui.Dependency;

@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UI;
 

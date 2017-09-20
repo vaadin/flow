@@ -31,7 +31,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;

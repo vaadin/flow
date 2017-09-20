@@ -16,13 +16,13 @@
 package com.vaadin.generated.vaadin.form.layout;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.HasClickListeners;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasClickListeners;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -180,7 +180,7 @@ public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToLabel(com.vaadin.ui.Component... components) {
+	public R addToLabel(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "label");
 			getElement().appendChild(component.getElement());
@@ -189,7 +189,7 @@ public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
 	}
 
 	@Override
-	public void remove(com.vaadin.ui.Component... components) {
+	public void remove(Component... components) {
 		for (Component component : components) {
 			if (getElement().equals(component.getElement().getParent())) {
 				component.getElement().removeAttribute("slot");
@@ -215,7 +215,7 @@ public class GeneratedVaadinFormItem<R extends GeneratedVaadinFormItem<R>>
 	 *            the components to add
 	 * @see HasComponents#add(Component...)
 	 */
-	public GeneratedVaadinFormItem(com.vaadin.ui.Component... components) {
+	public GeneratedVaadinFormItem(Component... components) {
 		add(components);
 	}
 

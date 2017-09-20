@@ -17,8 +17,8 @@ package com.vaadin.flow.tutorial.routing;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.html.Div;
+import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;

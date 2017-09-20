@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.tutorial;
 
-import com.vaadin.annotations.StyleSheet;
+import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Component;

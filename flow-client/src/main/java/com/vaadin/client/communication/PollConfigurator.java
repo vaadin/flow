@@ -19,7 +19,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeFeatures;
 
 /**
  * Observes the poll configuration stored in the given node and configures

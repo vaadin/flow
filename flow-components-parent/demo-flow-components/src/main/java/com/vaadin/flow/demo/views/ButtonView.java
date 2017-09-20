@@ -17,10 +17,10 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Image;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.HasClickListeners.ClickEvent;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Image;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.common.HasClickListeners.ClickEvent;
 
 /**
  * View for {@link Button} demo.

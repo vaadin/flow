@@ -26,6 +26,9 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.router.Location;
+import com.vaadin.router.QueryParameters;
+
 public class LocationTest {
     @Test
     public void parseLocation() {

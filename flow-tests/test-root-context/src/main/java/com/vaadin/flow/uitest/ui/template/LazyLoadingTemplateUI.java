@@ -18,11 +18,11 @@ package com.vaadin.flow.uitest.ui.template;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.Jsoup;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;

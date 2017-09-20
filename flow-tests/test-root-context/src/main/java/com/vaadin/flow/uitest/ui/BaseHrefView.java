@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Anchor;
+import com.vaadin.ui.html.Anchor;
 
 public class BaseHrefView extends AbstractDivView {
 

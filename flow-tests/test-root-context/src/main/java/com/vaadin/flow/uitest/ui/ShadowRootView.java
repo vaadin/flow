@@ -18,8 +18,8 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 
 /**

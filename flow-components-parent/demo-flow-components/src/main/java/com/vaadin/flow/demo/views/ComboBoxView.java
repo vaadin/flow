@@ -21,8 +21,8 @@ import java.util.List;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.dom.ElementConstants;
-import com.vaadin.flow.html.Div;
-import com.vaadin.ui.ComboBox;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.combobox.ComboBox;
 
 /**
  * View for {@link ComboBox} demo.

@@ -26,7 +26,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;

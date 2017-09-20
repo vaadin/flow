@@ -16,15 +16,15 @@
 package com.vaadin.generated.vaadin.date.picker;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
