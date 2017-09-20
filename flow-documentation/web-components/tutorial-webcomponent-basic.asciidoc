@@ -7,6 +7,11 @@ layout: page
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Basic Integration of a Polymer Web Component
 
+[NOTE]
+If you are using https://github.com/vaadin/flow-application-skeleton[`flow-application-skeleton`] as a starting point, you have everything already configured to use any component from `flow-components` jar.
+In this case, you can skip to <<Installing the Web Component>>.
+If you want to learn how to use any web component in your project, continue reading.
+
 This tutorial covers setting up a basic web component and importing needed resources. For related tutorials, see
 
 * <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
@@ -31,10 +36,6 @@ public class PaperSlider extends Component {
 You specify the tag name of the element using the `@Tag` annotation, just like you would with any built in element such as `<div>`. The actual implementation of the `<paper-slider>` element is in the `paper-slider.html` file, which you can  import using `@HtmlImport`.
 
 == Configuring the Project
-
-[NOTE]
-If you are using some skeleton project or a demo such as https://github.com/vaadin/flow-application-skeleton[`flow-application-skeleton`] as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
-
 The imported file `paper-slider.html` contains a client side code which needs to be available as a web resource. So it should be
 fetched and saved in some directory which is served by your server.
 If you use maven then just add  the following snippet in your `pom.xml` file inside your `plugins` section:
