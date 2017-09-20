@@ -34,7 +34,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.server.communication.StreamResourceRequestHandler;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -204,8 +203,7 @@ public class VaadinServiceTest {
             }
         };
 
-        MockVaadinServletService service = new MockVaadinServletService(
-                new VaadinServlet(), new MockDeploymentConfiguration());
+        MockVaadinServletService service = new MockVaadinServletService();
 
         service.init(instantiator);
 

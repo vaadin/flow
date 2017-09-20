@@ -20,14 +20,11 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.router.Title;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.flow.template.angular.InlineTemplate;
+import com.vaadin.router.Title;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
@@ -37,6 +34,9 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 
 public class BootstrapHandlerTest {
 
@@ -77,8 +77,8 @@ public class BootstrapHandlerTest {
 
         deploymentConfiguration = new MockDeploymentConfiguration();
 
-        service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
-                deploymentConfiguration));
+        service = Mockito
+                .spy(new MockVaadinServletService(deploymentConfiguration));
 
         session = Mockito.spy(new MockVaadinSession(service));
         session.lock();
