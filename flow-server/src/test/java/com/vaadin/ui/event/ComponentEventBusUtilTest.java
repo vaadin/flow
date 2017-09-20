@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.ComponentTest.TestComponent;
+import com.vaadin.ui.ComponentTest.TestComponent;
 
 public class ComponentEventBusUtilTest {
 

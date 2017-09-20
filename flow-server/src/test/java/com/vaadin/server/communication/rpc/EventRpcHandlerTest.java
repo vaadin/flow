@@ -26,7 +26,7 @@ import com.vaadin.flow.dom.TemplateElementStateProviderTest;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.AngularTemplate;
-import com.vaadin.ui.common.ComponentTest.TestComponent;
+import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;

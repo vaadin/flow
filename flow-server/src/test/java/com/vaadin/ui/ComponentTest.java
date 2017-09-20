@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.common;
+package com.vaadin.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +34,13 @@ import org.junit.Test;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.DependencyList;
+import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.common.Uses;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;

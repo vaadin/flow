@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.event;
 
-import com.vaadin.ui.common.ComponentTest.TestComponent;
+import com.vaadin.ui.ComponentTest.TestComponent;
 
 public class TestComponentWithDomEvent extends TestComponent {
 
