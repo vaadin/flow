@@ -26,7 +26,7 @@ import com.vaadin.function.SerializableEventListener;
  * <p>
  * error message} for failed field validations. For bean level validation errors
  * the default handler will display the first error message in
- * {@link Binder#setStatusLabel(com.vaadin.ui.Label) status label}, if one has
+ * {@link Binder#setStatusLabel(com.vaadin.ui.common.HasText) status label}, if one has
  * been set.
  *
  * @author Vaadin Ltd

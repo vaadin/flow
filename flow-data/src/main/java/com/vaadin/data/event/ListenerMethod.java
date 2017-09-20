@@ -49,6 +49,7 @@ import java.util.logging.Logger;
  *
  * @author Vaadin Ltd.
  * @since 3.0
+ * @deprecated using this reflection-based implementation is not encouraged
  */
 @Deprecated
 public class ListenerMethod implements EventListener, Serializable {

@@ -35,6 +35,7 @@ import com.vaadin.shared.Registration;
  *
  * @author Vaadin Ltd.
  * @since 3.0
+ * @deprecated using this reflection-based implementation is not encouraged
  */
 @Deprecated
 public class EventRouter implements MethodEventSource {
