@@ -278,18 +278,4 @@ extends ComponentSupplier<C>, Serializable {
     default boolean isRequiredIndicatorVisible() {
         return get().getElement().getProperty("required", false);
     }
-// TODO: fix Validator!
-//    /**
-//     * Returns a validator that checks the internal state of the HasValue. This
-//     * should be overridden for components with internal value conversion or
-//     * validation, eg. when the user is providing a string that has to be parsed
-//     * into a date. An invalid input from user will be exposed to a
-//     * Binder and can be seen as a validation failure.
-//     *
-//     * @since 8.1
-//     * @return internal state validator
-//     */
-//    default Validator<V> getDefaultValidator() {
-//        return Validator.alwaysPass();
-//    }
 }

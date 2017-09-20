@@ -17,8 +17,7 @@ package com.vaadin.data;
 
 /**
  * A generic interface for field components and other user interface objects
- * that have a user-editable value. Emits change events whenever the value is
- * changed, either by the user or programmatically.
+ * that have a user-editable value that should be validated.
  *
  * @author Vaadin Ltd.
  *
@@ -28,14 +27,13 @@ package com.vaadin.data;
 public interface HasValidator<V> {
 
     /**
-     * Returns a validator that checks the internal state of the HasValue. This
-     * should be overridden for components with internal value conversion or
-     * validation, eg. when the user is providing a string that has to be parsed
-     * into a date. An invalid input from user will be exposed to a
-     * {@code Binder} and can be seen as a validation failure.
+     * Returns a validator that checks the state of the Value. This should be
+     * overridden for components with internal value conversion or validation,
+     * eg. when the user is providing a string that has to be parsed into a
+     * date. An invalid input from user will be exposed to a {@code Binder} and
+     * can be seen as a validation failure.
      *
-     * @since 8.1
-     * @return internal state validator
+     * @return state validator
      */
     default Validator<V> getDefaultValidator() {
         return Validator.alwaysPass();
