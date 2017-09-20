@@ -21,6 +21,7 @@ import java.util.List;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.shared.ui.Dependency;
 
 /**
@@ -37,7 +38,9 @@ public interface DependencyFilter extends Serializable {
      * version.
      * <p>
      * Called whenever dependencies are about to be sent to the client side for
-     * loading.
+     * loading. The filter is also called when a {@link PolymerTemplate} is
+     * about to be parsed - in this case the filter should return a file that
+     * contains the template definition for the corresponding PolymerTemplate.
      *
      * @param dependencies
      *            the collected dependencies, possibly already modified by other
