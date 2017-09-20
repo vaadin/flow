@@ -21,13 +21,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.util.JsonSerializer;
 
 import elemental.json.JsonArray;

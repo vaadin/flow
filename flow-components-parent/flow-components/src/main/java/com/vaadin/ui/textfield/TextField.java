@@ -17,7 +17,6 @@ package com.vaadin.ui.textfield;
 
 import java.util.Objects;
 
-import com.vaadin.generated.vaadin.text.field.GeneratedVaadinTextField;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 
