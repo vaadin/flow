@@ -15,7 +15,6 @@
  */
 package com.vaadin.ui.checkbox;
 
-import com.vaadin.generated.vaadin.checkbox.GeneratedVaadinCheckbox;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValue;
 

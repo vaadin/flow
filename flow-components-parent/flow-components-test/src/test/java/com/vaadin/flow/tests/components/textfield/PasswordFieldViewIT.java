@@ -36,33 +36,37 @@ public class PasswordFieldViewIT extends AbstractComponentIT {
 
     @Test
     public void assertReadOnly() {
-        WebElement webComponent = findElement(By.tagName("vaadin-password-field"));
+        WebElement webComponent = findElement(
+                By.tagName("vaadin-password-field"));
 
-        WebElement passwordField = getInShadowRoot(webComponent, By.id("input"));
-        Assert.assertNull(passwordField.getAttribute("readonly"));
+        Assert.assertNull(webComponent.getAttribute("readonly"));
 
         WebElement button = findElement(By.id("read-only"));
         button.click();
 
-        waitUntil(driver -> passwordField.getAttribute("readonly"));
+        waitUntil(
+                driver -> "true".equals(getProperty(webComponent, "readonly")));
 
         button.click();
 
-        waitUntil(driver -> passwordField.getAttribute("readonly") == null);
+        waitUntil(driver -> "false"
+                .equals(getProperty(webComponent, "readonly")));
     }
 
     @Test
     public void assertRequired() {
-        WebElement webComponent = findElement(By.tagName("vaadin-password-field"));
+        WebElement webComponent = findElement(
+                By.tagName("vaadin-password-field"));
 
-        WebElement passwordField = getInShadowRoot(webComponent, By.id("input"));
-        Assert.assertNull(passwordField.getAttribute("required"));
+        Assert.assertNull(webComponent.getAttribute("required"));
 
         WebElement button = findElement(By.id("required"));
         button.click();
-        waitUntil(driver -> passwordField.getAttribute("required"));
+        waitUntil(
+                driver -> "true".equals(getProperty(webComponent, "required")));
 
         button.click();
-        waitUntil(driver -> passwordField.getAttribute("required") == null);
+        waitUntil(driver -> "false"
+                .equals(getProperty(webComponent, "required")));
     }
 }

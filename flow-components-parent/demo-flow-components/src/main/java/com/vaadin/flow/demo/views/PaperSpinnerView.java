@@ -17,7 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
-import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
+import com.vaadin.ui.paper.spinner.GeneratedPaperSpinner;
 
 /**
  * View for {@link GeneratedPaperSpinner} demo.
