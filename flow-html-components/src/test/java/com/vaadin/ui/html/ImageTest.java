@@ -13,29 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.vaadin.ui.html.Label;
-
-public class LabelTest extends ComponentTest {
+public class ImageTest extends ComponentTest {
 
     // Actual test methods in super class
 
     @Override
     protected void addProperties() {
-        addOptionalStringProperty("for");
-    }
-
-    @Test
-    public void setForComponent() {
-        Label otherComponent = new Label();
-        otherComponent.setId("otherC");
-        Label l = (Label) getComponent();
-        l.setFor(otherComponent);
-        Assert.assertEquals(otherComponent.getId().get(), l.getFor().get());
+        addOptionalStringProperty("alt");
+        addStringProperty("src", "");
     }
 
 }

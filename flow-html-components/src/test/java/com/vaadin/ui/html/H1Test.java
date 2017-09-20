@@ -13,9 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
-public class H3Test extends ComponentTest {
+public class H1Test extends ComponentTest {
     // Actual test methods in super class
 
     @Override

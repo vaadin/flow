@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

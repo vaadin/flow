@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,10 +41,8 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.ui.common.Component;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.html.Div;
 import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.html.Label;
 
 public class HtmlComponentSmokeTest {
 

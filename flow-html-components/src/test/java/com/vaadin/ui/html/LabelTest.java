@@ -13,14 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
-public class H2Test extends ComponentTest {
+import org.junit.Assert;
+import org.junit.Test;
+
+public class LabelTest extends ComponentTest {
+
     // Actual test methods in super class
 
     @Override
     protected void addProperties() {
-        // Component defines no new properties
+        addOptionalStringProperty("for");
+    }
+
+    @Test
+    public void setForComponent() {
+        Label otherComponent = new Label();
+        otherComponent.setId("otherC");
+        Label l = (Label) getComponent();
+        l.setFor(otherComponent);
+        Assert.assertEquals(otherComponent.getId().get(), l.getFor().get());
     }
 
 }

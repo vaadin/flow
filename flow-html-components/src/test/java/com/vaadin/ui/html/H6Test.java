@@ -13,16 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
-public class ImageTest extends ComponentTest {
-
+public class H6Test extends ComponentTest {
     // Actual test methods in super class
 
     @Override
     protected void addProperties() {
-        addOptionalStringProperty("alt");
-        addStringProperty("src", "");
+        // Component defines no new properties
     }
 
 }

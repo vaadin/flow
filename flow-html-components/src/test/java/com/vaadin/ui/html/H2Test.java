@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
-public class HrTest extends ComponentTest {
-
+public class H2Test extends ComponentTest {
     // Actual test methods in super class
 
     @Override
     protected void addProperties() {
         // Component defines no new properties
     }
+
 }

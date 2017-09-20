@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.html;
+package com.vaadin.ui.html;
 
-public class AnchorTest extends ComponentTest {
+public class DivTest extends ComponentTest {
 
     // Actual test methods in super class
 
     @Override
     protected void addProperties() {
-        addStringProperty("href", "");
-        addOptionalStringProperty("target");
+        // Component defines no new properties
     }
+
 }
