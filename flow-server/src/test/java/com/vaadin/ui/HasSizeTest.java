@@ -18,7 +18,8 @@ package com.vaadin.ui;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HasSize;
 
 public class HasSizeTest {
 
@@ -55,6 +56,27 @@ public class HasSizeTest {
         c.setHeight("100px");
         c.setHeight(null);
         Assert.assertNull(c.getHeight());
+    }
+
+    @Test
+    public void setSizeFull() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setSizeFull();
+
+        Assert.assertEquals("100%", component.getWidth());
+        Assert.assertEquals("100%", component.getHeight());
+    }
+
+    @Test
+    public void setSizeUndefined() {
+        HasSizeComponent component = new HasSizeComponent();
+        component.setWidth("10px");
+        component.setHeight("5em");
+
+        component.setSizeUndefined();
+
+        Assert.assertNull(component.getWidth());
+        Assert.assertNull(component.getHeight());
     }
 
 }

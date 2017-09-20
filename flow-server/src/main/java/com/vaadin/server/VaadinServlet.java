@@ -33,9 +33,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
+import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.util.AnnotationReader;
+import com.vaadin.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.shared.JsonConstants;

@@ -21,9 +21,9 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.router.Location;
+import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.QueryParameters;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
@@ -31,6 +31,8 @@ import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.util.CurrentInstance;
 
 public class UITest {

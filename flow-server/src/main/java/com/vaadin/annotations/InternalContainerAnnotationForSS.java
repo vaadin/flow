@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.ui.common.StyleSheet;
+
 /**
  * Annotation enabling using multiple {@link StyleSheet @StyleSheet}
  * annotations.

@@ -23,6 +23,9 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.router.Location;
+import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.ui.UI;
 
 /**

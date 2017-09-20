@@ -16,9 +16,9 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Input;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Input;
 import com.vaadin.ui.Text;
 
 public class BasicComponentView extends AbstractDivView {

@@ -45,7 +45,7 @@ import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 import com.vaadin.server.DefaultDeploymentConfiguration;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.SystemMessagesInfo;

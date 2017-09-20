@@ -25,7 +25,6 @@ import org.junit.Test;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateNodeTest;
 import com.vaadin.flow.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
-import com.vaadin.flow.shared.NodeFeatures;
 
 public class NodeFeatureTest {
     private static abstract class UnregisteredNodeFeature extends NodeFeature {

@@ -17,7 +17,6 @@
 package com.vaadin.flow.nodefeature;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.shared.NodeProperties;
 
 /**
  * Map of basic element information.

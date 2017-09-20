@@ -19,8 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.model.TemplateModel;

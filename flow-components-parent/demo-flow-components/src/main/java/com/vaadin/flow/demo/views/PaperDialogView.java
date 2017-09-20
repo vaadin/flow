@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H2;
-import com.vaadin.flow.html.HtmlComponent;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.H2;
+import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.generated.paper.dialog.GeneratedPaperDialog;
 

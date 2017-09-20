@@ -2,7 +2,7 @@
   "name": "MonthCalendarElement",
   "tag": "vaadin-month-calendar",
   "baseUrl": "vaadin-date-picker/vaadin-month-calendar.html",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "properties": [
     {
       "name": "month",

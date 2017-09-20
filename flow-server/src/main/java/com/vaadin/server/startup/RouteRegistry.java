@@ -15,7 +15,10 @@
  */
 package com.vaadin.server.startup;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,10 +26,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.Route;
-import com.vaadin.flow.router.Location;
+import com.vaadin.util.AnnotationReader;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.RoutePrefix;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.Location;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -35,6 +44,7 @@ import com.vaadin.ui.Component;
 public class RouteRegistry {
 
     private final Map<String, Class<? extends Component>> routes = new HashMap<>();
+    private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
 
     boolean initialized;
 
@@ -83,16 +93,47 @@ public class RouteRegistry {
      * 
      * @see Location
      * 
-     * @param location
-     *            the location to get the navigation target for, not
-     *            {@code null}
+     * @param pathString
+     *            the path to get the navigation target for, not {@code null}
      * @return optional of the navigation target corresponding to the given
      *         location
      */
     public Optional<Class<? extends Component>> getNavigationTarget(
-            Location location) {
-        Objects.requireNonNull(location, "Location must not be null.");
-        return Optional.ofNullable(routes.get(location.getPath()));
+            String pathString) {
+        Objects.requireNonNull(pathString, "pathString must not be null.");
+        return Optional.ofNullable(routes.get(pathString));
+    }
+
+    /**
+     * Get the url string for given navigation target.
+     *
+     * @param navigationTarget
+     *            navigation target to get registered route for, not
+     *            {@code null}
+     * @return optional navigation target url string
+     */
+    public Optional<String> getTargetUrl(
+            Class<? extends Component> navigationTarget) {
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        return Optional.ofNullable(collectRequiredParameters(navigationTarget));
+    }
+
+    /**
+     * Append any required parameters as /{param_class} to the route.
+     * 
+     * @param navigationTarget
+     *            navigation target to generate url for
+     * @return route with required parameters
+     */
+    private String collectRequiredParameters(
+            Class<? extends Component> navigationTarget) {
+        String route = targetRoutes.get(navigationTarget);
+        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
+            Class genericInterfaceType = ReflectTools.getGenericInterfaceType(
+                    navigationTarget, HasUrlParameter.class);
+            route = route + "/{" + genericInterfaceType.getSimpleName() + "}";
+        }
+        return route;
     }
 
     /**
@@ -116,7 +157,7 @@ public class RouteRegistry {
                                 + "navigation target component '%s'.",
                         navigationTarget.getName()));
             }
-            String route = navigationTarget.getAnnotation(Route.class).value();
+            String route = getNavigationRoute(navigationTarget);
             if (navigationTargetMap.containsKey(route)) {
                 throw new InvalidRouteConfigurationException(String.format(
                         "Navigation targets must have unique routes, "
@@ -128,16 +169,73 @@ public class RouteRegistry {
         }
     }
 
+    /**
+     * Collect the whole route for the navigation target.
+     * <p>
+     * The whole route is composed of the Route annotation and any
+     * ParentLayout:@RoutePrefix that may be in the navigation chain.
+     * 
+     * @param navigationTarget
+     *            navigation target to get chain route for
+     * @return full navigation route
+     */
+    private String getNavigationRoute(Class<?> navigationTarget) {
+        Route annotation = navigationTarget.getAnnotation(Route.class);
+        if (annotation.absolute()) {
+            return annotation.value();
+        }
+
+        StringBuilder fullRoute = new StringBuilder();
+        List<String> parentRoutePrefixes = getParentRoutePrefixes(
+                navigationTarget);
+        Collections.reverse(parentRoutePrefixes);
+
+        parentRoutePrefixes
+                .forEach(prefix -> fullRoute.append(prefix).append("/"));
+
+        fullRoute.append(annotation.value());
+
+        return fullRoute.toString();
+    }
+
+    private List<String> getParentRoutePrefixes(Class<?> component) {
+        List<String> list = new ArrayList<>();
+
+        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(component, ParentLayout.class);
+        Optional<RoutePrefix> routePrefix = AnnotationReader
+                .getAnnotationFor(component, RoutePrefix.class);
+
+        routePrefix.ifPresent(prefix -> list.add(prefix.value()));
+
+        // break chain on an absolute RoutePrefix or Route
+        if ((routePrefix.isPresent() && routePrefix.get().absolute())
+                || (router.isPresent() && router.get().absolute())) {
+            return list;
+        }
+
+        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
+            list.addAll(getParentRoutePrefixes(router.get().layout()));
+        } else if (parentLayout.isPresent()) {
+            list.addAll(getParentRoutePrefixes(parentLayout.get().value()));
+        }
+
+        return list;
+    }
+
     private void doRegisterNavigationTargets(
             Set<Class<? extends Component>> navigationTargets) {
         routes.clear();
         navigationTargets.forEach(navigationTarget -> {
-            String route = navigationTarget.getAnnotation(Route.class).value();
+            String route = getNavigationRoute(navigationTarget);
             Logger.getLogger(RouteRegistry.class.getName()).log(Level.FINE,
                     String.format(
                             "Registering route '%s' to navigation target '%s'.",
                             route, navigationTarget.getName()));
             routes.put(route, navigationTarget);
+            targetRoutes.put(navigationTarget, route);
         });
     }
 }

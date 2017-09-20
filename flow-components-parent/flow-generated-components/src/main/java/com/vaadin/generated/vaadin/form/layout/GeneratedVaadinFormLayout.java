@@ -16,13 +16,13 @@
 package com.vaadin.generated.vaadin.form.layout;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -98,7 +98,7 @@ import com.vaadin.ui.HasComponents;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.FormLayoutElement#null", "Flow#0.1-SNAPSHOT"})
+		"WebComponent: Vaadin.FormLayoutElement#1.0.1", "Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
@@ -215,7 +215,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	 *            the components to add
 	 * @see HasComponents#add(Component...)
 	 */
-	public GeneratedVaadinFormLayout(com.vaadin.ui.Component... components) {
+	public GeneratedVaadinFormLayout(Component... components) {
 		add(components);
 	}
 

@@ -16,14 +16,14 @@
 package com.vaadin.generated.vaadin.date.picker;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -56,7 +56,7 @@ import com.vaadin.ui.HasComponents;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.DatePickerLightElement#2.0.2",
+		"WebComponent: Vaadin.DatePickerLightElement#2.0.3",
 		"Flow#0.1-SNAPSHOT"})
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
@@ -685,7 +685,7 @@ public class GeneratedVaadinDatePickerLight<R extends GeneratedVaadinDatePickerL
 	 *            the components to add
 	 * @see HasComponents#add(Component...)
 	 */
-	public GeneratedVaadinDatePickerLight(com.vaadin.ui.Component... components) {
+	public GeneratedVaadinDatePickerLight(Component... components) {
 		add(components);
 	}
 

@@ -16,13 +16,13 @@
 package com.vaadin.generated.paper.badge;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.components.NotSupported;
+import com.vaadin.ui.common.NotSupported;
 
 /**
  * <p>

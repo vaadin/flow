@@ -2,11 +2,13 @@ package com.vaadin.flow.uitest.servlet;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
-import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
+import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.ui.html.Div;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
@@ -30,6 +32,20 @@ public class RouterTestServlet extends VaadinServlet {
 
     @Route("foo/bar")
     public static class FooBarNavigationTarget extends ClassNameDiv {
+    }
+
+    @Route("greeting")
+    public static class GreetingNavigationTarget extends Div
+            implements HasUrlParameter<String> {
+        public GreetingNavigationTarget() {
+            setId("greeting-div");
+        }
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            setText(String.format("Hello, %s!", parameter));
+        }
     }
 
     public static class MyRouterLayout extends Div implements RouterLayout {

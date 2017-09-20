@@ -33,7 +33,7 @@ const bowerSrcDir = currentDir + (args.resourcesDir || 'bower_components').repla
 /* This is the directory where the bower resources are downloaded when the --package option has been given. */
 const bowerTargetDir = currentDir + ('dependencies/bower_components/').replace(/,+$/, "");
 
-const skipInheritedAPI = args.skipInheritedAPI || false;
+const skipInheritedAPI = args.skipInheritedAPI || true;
 /* This is the file where the webcomponent dependencies are declared */
 const dependenciesFile = currentDir + (args.dependenciesFile || 'bower.json').replace(/,+$/, "");
 

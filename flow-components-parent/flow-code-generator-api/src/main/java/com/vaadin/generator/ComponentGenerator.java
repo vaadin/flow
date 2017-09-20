@@ -49,15 +49,15 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.EventData;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Tag;
-import com.vaadin.components.JsonSerializable;
-import com.vaadin.components.NotSupported;
-import com.vaadin.components.data.HasValue;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.JsonSerializable;
+import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
@@ -69,11 +69,11 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasText;
 
 import elemental.json.JsonObject;
 
@@ -87,11 +87,11 @@ import elemental.json.JsonObject;
  * @see #generateClass(File, File, String, String)
  */
 public class ComponentGenerator {
-
     private static final String JAVADOC_THROWS = "@throws";
     private static final String JAVADOC_SEE = "@see";
     private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
+    private static final String GENERIC_TYPE_DECLARATION = '<' + GENERIC_TYPE + '>';
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
     private static final Set<String> LIFECYCLE_CALLBACKS = createCallbacks();
 
@@ -321,7 +321,6 @@ public class ComponentGenerator {
      */
     private JavaClassSource generateClassSource(ComponentMetadata metadata,
             String basePackage) {
-
         String targetPackage = basePackage;
         if (StringUtils.isNotBlank(metadata.getBaseUrl())) {
             String subPackage = ComponentGeneratorUtils
@@ -333,15 +332,20 @@ public class ComponentGenerator {
 
         JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(targetPackage).setPublic()
-        .setSuperType(Component.class)
-        .setName(ComponentGeneratorUtils.generateValidJavaClassName(
-                (classNamePrefix == null ? "" : classNamePrefix + "-")
-                + metadata.getTag()));
+                .setName(getGeneratedClassName(metadata.getTag()));
+
+        if (metadata.getParentTagName() != null) {
+            javaClass.setSuperType(
+                    getGeneratedClassName(metadata.getParentTagName())
+                            + GENERIC_TYPE_DECLARATION);
+        } else {
+            javaClass.setSuperType(Component.class);
+            addInterfaces(metadata, javaClass);
+        }
 
         javaClass.addTypeVariable().setName(GENERIC_TYPE)
-        .setBounds(javaClass.getName() + "<" + GENERIC_TYPE + ">");
+                .setBounds(javaClass.getName() + GENERIC_TYPE_DECLARATION);
 
-        addInterfaces(metadata, javaClass);
         addClassAnnotations(metadata, javaClass);
 
         if (metadata.getProperties() != null) {
@@ -355,8 +359,8 @@ public class ComponentGenerator {
 
         if (metadata.getEvents() != null) {
             metadata.getEvents()
-            .forEach(event -> generateEventListenerFor(javaClass,
-                    metadata, event));
+                    .forEach(event -> generateEventListenerFor(javaClass,
+                            metadata, event));
         }
 
         if (metadata.getSlots() != null && !metadata.getSlots().isEmpty()) {
@@ -370,6 +374,12 @@ public class ComponentGenerator {
         generateConstructors(javaClass);
 
         return javaClass;
+    }
+
+    private String getGeneratedClassName(String tagName) {
+        return ComponentGeneratorUtils.generateValidJavaClassName(
+                (classNamePrefix == null ? "" : classNamePrefix + "-")
+                        + tagName);
     }
 
     private void generateConstructors(JavaClassSource javaClass) {
@@ -409,7 +419,7 @@ public class ComponentGenerator {
             JavaClassSource javaClass) {
 
         javaClass.addInterface(
-                ComponentSupplier.class.getName() + "<" + GENERIC_TYPE + ">");
+                ComponentSupplier.class.getName() + GENERIC_TYPE_DECLARATION);
 
         // all components have styles
         javaClass.addInterface(HasStyle.class);
@@ -430,7 +440,7 @@ public class ComponentGenerator {
         interfaces.forEach(clazz -> {
             if (clazz.getTypeParameters().length > 0) {
                 javaClass.addInterface(
-                        clazz.getName() + "<" + GENERIC_TYPE + ">");
+                        clazz.getName() + GENERIC_TYPE_DECLARATION);
             } else {
                 javaClass.addInterface(clazz);
             }
@@ -1125,7 +1135,7 @@ public class ComponentGenerator {
                         + StringUtils.capitalize(eventJavaApiName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
         method.addParameter("ComponentEventListener<" + eventListener.getName()
-        + "<" + GENERIC_TYPE + ">" + ">", "listener");
+        + GENERIC_TYPE_DECLARATION + ">", "listener");
 
         method.setBody(String.format(
                 "return addListener(%s.class, (ComponentEventListener) listener);",

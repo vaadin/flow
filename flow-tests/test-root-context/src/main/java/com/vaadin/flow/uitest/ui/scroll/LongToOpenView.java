@@ -18,8 +18,8 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import java.util.concurrent.TimeUnit;
 
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 /**

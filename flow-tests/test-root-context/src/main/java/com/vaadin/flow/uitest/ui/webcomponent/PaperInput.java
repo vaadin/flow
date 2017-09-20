@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.PropertyDescriptor;
-import com.vaadin.ui.PropertyDescriptors;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
 
 @Tag("paper-input")
 @HtmlImport("/bower_components/paper-input/paper-input.html")

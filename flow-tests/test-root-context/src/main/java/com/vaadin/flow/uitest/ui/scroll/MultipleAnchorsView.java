@@ -16,8 +16,8 @@
 
 package com.vaadin.flow.uitest.ui.scroll;
 
-import com.vaadin.flow.html.Anchor;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Anchor;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 /**

@@ -22,7 +22,7 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.NullOwner;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.ListAddChange;

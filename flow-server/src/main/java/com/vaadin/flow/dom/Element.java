@@ -32,7 +32,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
-import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.OverrideElementData;
 import com.vaadin.flow.nodefeature.TemplateMap;

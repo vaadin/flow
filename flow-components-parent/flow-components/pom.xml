@@ -24,7 +24,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-components-commons</artifactId>
+            <artifactId>flow-data</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
             <version>${flow.version}</version>
