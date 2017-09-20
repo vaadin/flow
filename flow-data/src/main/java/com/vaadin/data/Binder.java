@@ -47,11 +47,11 @@ import com.vaadin.function.SerializablePredicate;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.common.HasValue.ValueChangeEvent;
 import com.vaadin.ui.common.HasValue.ValueChangeListener;
-import com.vaadin.ui.html.Label;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -437,7 +437,7 @@ public class Binder<BEAN> implements Serializable {
          *            label to show validation status for the field
          * @return this binding, for chaining
          */
-        default BindingBuilder<BEAN, TARGET> withStatusLabel(Label label) {
+        default BindingBuilder<BEAN, TARGET> withStatusLabel(HasText label) {
             return withValidationStatusHandler(status -> {
                 label.setText(status.getMessage().orElse(""));
                 // Only show the label when validation has failed
@@ -458,10 +458,10 @@ public class Binder<BEAN> implements Serializable {
          * The method may be called only once. It means there is no chain unlike
          * {@link #withValidator(Validator)} or
          * {@link #withConverter(Converter)}. Also it means that the shorthand
-         * method {@link #withStatusLabel(Label)} also may not be called after
+         * method {@link #withStatusLabel(HasText)} also may not be called after
          * this method.
          *
-         * @see #withStatusLabel(Label)
+         * @see #withStatusLabel(HasText)
          * @param handler
          *            status change handler
          * @return this binding, for chaining
@@ -1053,7 +1053,7 @@ public class Binder<BEAN> implements Serializable {
 
     private EventRouter eventRouter;
 
-    private Label statusLabel;
+    private HasText statusLabel;
 
     private BinderValidationStatusHandler<BEAN> statusHandler;
 
@@ -1670,9 +1670,9 @@ public class Binder<BEAN> implements Serializable {
      * @param statusLabel
      *            the status label to set
      * @see #setValidationStatusHandler(BinderValidationStatusHandler)
-     * @see BindingBuilder#withStatusLabel(Label)
+     * @see BindingBuilder#withStatusLabel(HasText)
      */
-    public void setStatusLabel(Label statusLabel) {
+    public void setStatusLabel(HasText statusLabel) {
         if (statusHandler != null) {
             throw new IllegalStateException("Cannot set status label if a "
                     + BinderValidationStatusHandler.class.getSimpleName()
@@ -1685,9 +1685,9 @@ public class Binder<BEAN> implements Serializable {
      * Gets the status label or an empty optional if none has been set.
      *
      * @return the optional status label
-     * @see #setStatusLabel(Label)
+     * @see #setStatusLabel(HasText)
      */
-    public Optional<Label> getStatusLabel() {
+    public Optional<HasText> getStatusLabel() {
         return Optional.ofNullable(statusLabel);
     }
 
@@ -1697,17 +1697,17 @@ public class Binder<BEAN> implements Serializable {
      * Setting this handler will override the default behavior, which is to let
      * fields show their validation status messages and show binder level
      * validation errors or OK status in the label set with
-     * {@link #setStatusLabel(Label)}.
+     * {@link #setStatusLabel(HasText)}.
      * <p>
      * This handler cannot be set after the status label has been set with
-     * {@link #setStatusLabel(Label)}, or {@link #setStatusLabel(Label)} cannot
+     * {@link #setStatusLabel(HasText)}, or {@link #setStatusLabel(HasText)} cannot
      * be used after this handler has been set.
      *
      * @param statusHandler
      *            the status handler to set, not <code>null</code>
      * @throws NullPointerException
      *             for <code>null</code> status handler
-     * @see #setStatusLabel(Label)
+     * @see #setStatusLabel(HasText)
      * @see BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)
      */
     public void setValidationStatusHandler(
@@ -1890,7 +1890,7 @@ public class Binder<BEAN> implements Serializable {
      * <p>
      * Passes all field related results to the Binding status handlers. All
      * other status changes are displayed in the status label, if one has been
-     * set with {@link #setStatusLabel(Label)}.
+     * set with {@link #setStatusLabel(HasText)}.
      *
      * @param binderStatus
      *            status of validation results from binding and/or bean level
@@ -2367,7 +2367,7 @@ public class Binder<BEAN> implements Serializable {
         return bindings.stream().map(Binding::getField);
     }
 
-    private static void setVisible(Label label, boolean visible) {
+    private static void setVisible(HasText label, boolean visible) {
         if (visible) {
             label.getElement().getStyle().remove("display");
         } else {
