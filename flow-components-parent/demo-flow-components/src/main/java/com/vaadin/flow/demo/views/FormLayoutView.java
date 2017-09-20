@@ -27,6 +27,7 @@ import com.vaadin.data.BindingValidationStatus;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.demo.ComponentDemo;
+import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.Label;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.ui.Button;
@@ -143,9 +144,12 @@ public class FormLayoutView extends DemoView {
     // You can create a custom layout that internally uses FormLayout
     public class MyCustomLayout extends Composite<FormLayout> {
 
-        public void addItemWithLabel(Component item, String label) {
+        public void addItemWithLabel(String label, Component... items) {
+            Div itemWrapper = new Div();
+            // Wrap the given items into a single div
+            itemWrapper.add(items);
             // getContent() returns a wrapped FormLayout
-            getContent().addFormItem(item, label);
+            getContent().addFormItem(itemWrapper, label);
         }
     }
     // end-source-example
@@ -309,9 +313,12 @@ public class FormLayoutView extends DemoView {
         MyCustomLayout layout = new MyCustomLayout();
         TextField name = new TextField();
         TextField email = new TextField();
+        Checkbox emailUpdates = new Checkbox("E-mail me updates");
 
-        layout.addItemWithLabel(name, "Name");
-        layout.addItemWithLabel(email, "E-mail");
+        layout.addItemWithLabel("Name", name);
+        // Both the email field and the emailUpdates checkbox are wrapped inside
+        // the same form item
+        layout.addItemWithLabel("E-mail", email, emailUpdates);
         // end-source-example
 
         addCard("Using form layout inside a composite", layout);
