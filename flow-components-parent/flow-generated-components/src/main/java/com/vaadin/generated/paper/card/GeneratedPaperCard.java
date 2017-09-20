@@ -16,12 +16,12 @@
 package com.vaadin.generated.paper.card;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>
@@ -406,7 +406,7 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 *            the components to add
 	 * @see HasComponents#add(Component...)
 	 */
-	public GeneratedPaperCard(com.vaadin.ui.Component... components) {
+	public GeneratedPaperCard(Component... components) {
 		add(components);
 	}
 

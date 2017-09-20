@@ -31,18 +31,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.BindingValidationStatus.Status;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
-import com.vaadin.flow.html.Label;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Checkbox;
-import com.vaadin.ui.DatePicker;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.checkbox.Checkbox;
+import com.vaadin.ui.datepicker.DatePicker;
+import com.vaadin.ui.textfield.TextField;
 import com.vaadin.ui.UI;
 
 /**

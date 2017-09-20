@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.shared.ApplicationConstants;
 
 /**

@@ -16,10 +16,10 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.generated.vaadin.text.field.GeneratedVaadinPasswordField;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.PasswordField;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.passwordfield.PasswordField;
 
 /**
  * View for {@link GeneratedVaadinPasswordField} demo.

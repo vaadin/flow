@@ -23,6 +23,7 @@ import java.util.function.Function;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.shared.communication.PushMode;
 
 /**

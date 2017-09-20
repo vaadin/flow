@@ -15,6 +15,7 @@
  */
 package com.vaadin.server;
 
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.ui.UI;
 
 /**

@@ -31,7 +31,7 @@ import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.Dependency.Type;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-import com.vaadin.ui.DependencyList;
+import com.vaadin.ui.common.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

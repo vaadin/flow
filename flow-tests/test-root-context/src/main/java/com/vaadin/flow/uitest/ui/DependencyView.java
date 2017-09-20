@@ -19,18 +19,18 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Hr;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Hr;
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
 

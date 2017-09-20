@@ -2,8 +2,8 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.html.Anchor;
-import com.vaadin.flow.html.Image;
+import com.vaadin.ui.html.Anchor;
+import com.vaadin.ui.html.Image;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 

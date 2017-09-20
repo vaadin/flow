@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.template.angular.model.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.EmptyModelTemplate;
-import com.vaadin.flow.template.model.PropertyFilter;
+import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.ui.UI;
 
 public class TemplateModelProxyHandlerTest {

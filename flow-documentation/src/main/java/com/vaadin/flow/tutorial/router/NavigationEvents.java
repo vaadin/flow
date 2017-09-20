@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.tutorial.router;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Route;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Anchor;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.router.event.AfterNavigationEvent;
-import com.vaadin.flow.router.event.AfterNavigationListener;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
-import com.vaadin.flow.router.event.BeforeNavigationListener;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.router.Route;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.html.Anchor;
+import com.vaadin.ui.html.Div;
+import com.vaadin.router.event.AfterNavigationEvent;
+import com.vaadin.router.event.AfterNavigationListener;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")

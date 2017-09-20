@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.tutorial.webcomponent;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
 

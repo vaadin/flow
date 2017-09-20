@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.View;
 
 public class PaperSliderView extends Div implements View {

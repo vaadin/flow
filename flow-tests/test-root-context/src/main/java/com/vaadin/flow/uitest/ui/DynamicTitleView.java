@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.Title;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.router.Title;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.LocationChangeEvent;
 

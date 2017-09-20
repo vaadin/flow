@@ -16,10 +16,12 @@
 
 package com.vaadin.shared.communication;
 
+import com.vaadin.function.DeploymentConfiguration;
+
 /**
  * The mode of bidirectional ("push") communication that is in use.
  *
- * @see com.vaadin.server.DeploymentConfiguration#getPushMode()
+ * @see DeploymentConfiguration#getPushMode()
  *
  * @author Vaadin Ltd
  * @since 7.1
@@ -32,7 +34,7 @@ public enum PushMode {
      * IllegalStateException.
      * <p>
      * This is the default mode unless
-     * {@link com.vaadin.server.DeploymentConfiguration#getPushMode()
+     * {@link DeploymentConfiguration#getPushMode()
      * configured} otherwise.
      */
     DISABLED,

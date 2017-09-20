@@ -26,9 +26,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.ConstantPool;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.Element;
@@ -39,8 +39,8 @@ import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.router.Location;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.server.VaadinService;
@@ -49,6 +49,8 @@ import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.Page.ExecutionCanceler;
+import com.vaadin.ui.common.DependencyList;
+import com.vaadin.ui.common.HasElement;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
