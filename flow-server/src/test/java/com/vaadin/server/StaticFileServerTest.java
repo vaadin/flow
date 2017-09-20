@@ -46,6 +46,8 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import com.vaadin.function.DeploymentConfiguration;
+
 public class StaticFileServerTest implements Serializable {
 
     private static class CapturingServletOutputStream

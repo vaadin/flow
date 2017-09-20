@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.vaadin.router.event.NavigationEvent;
+
 /**
  * An {@link ViewRenderer} where the view types are decided at construction
  * time.

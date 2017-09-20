@@ -22,9 +22,10 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.tests.components.AbstractComponentIT;
 import com.vaadin.testbench.By;
+import com.vaadin.ui.passwordfield.PasswordField;
 
 /**
- * Integration tests for {@link com.vaadin.ui.PasswordField}.
+ * Integration tests for {@link PasswordField}.
  */
 public class PasswordFieldViewIT extends AbstractComponentIT {
 

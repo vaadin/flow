@@ -17,11 +17,11 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.Id;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Input;
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.polymertemplate.Id;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Input;
+import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.View;

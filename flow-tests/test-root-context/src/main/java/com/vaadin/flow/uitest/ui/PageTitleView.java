@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Input;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Input;
 import com.vaadin.flow.router.LocationChangeEvent;
 
 public class PageTitleView extends AbstractDivView {

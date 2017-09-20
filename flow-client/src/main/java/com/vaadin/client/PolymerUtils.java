@@ -19,8 +19,8 @@ package com.vaadin.client;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeFeature;
-import com.vaadin.flow.shared.NodeFeatures;
-import com.vaadin.flow.shared.NodeProperties;
+import com.vaadin.flow.nodefeature.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;

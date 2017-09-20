@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.components.JsonSerializable;
+import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentObjectType;
 import com.vaadin.generator.metadata.ComponentObjectType.ComponentObjectTypeInnerType;

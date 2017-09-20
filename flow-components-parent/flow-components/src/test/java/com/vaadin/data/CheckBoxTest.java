@@ -18,7 +18,7 @@ package com.vaadin.data;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.Checkbox;
+import com.vaadin.ui.checkbox.Checkbox;
 
 public class CheckBoxTest {
 

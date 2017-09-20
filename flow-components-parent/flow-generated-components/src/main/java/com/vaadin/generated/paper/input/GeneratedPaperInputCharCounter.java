@@ -17,12 +17,12 @@ package com.vaadin.generated.paper.input;
 
 import javax.annotation.Generated;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.components.JsonSerializable;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
 
 import elemental.json.JsonObject;
 

@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Id;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.Id;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 public class TemplateInTemplateWithIdView extends AbstractDivView {

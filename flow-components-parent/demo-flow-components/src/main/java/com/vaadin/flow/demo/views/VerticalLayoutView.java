@@ -16,12 +16,12 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.generated.paper.button.GeneratedPaperButton;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.FlexLayout.Alignment;
-import com.vaadin.ui.FlexLayout.JustifyContentMode;
-import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.layout.FlexLayout.Alignment;
+import com.vaadin.ui.layout.FlexLayout.JustifyContentMode;
+import com.vaadin.ui.layout.VerticalLayout;
 
 /**
  * View for the {@link VerticalLayout} component.

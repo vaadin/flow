@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Input;
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.html.Input;
+import com.vaadin.ui.html.NativeButton;
 
 public class CallFunctionBeforeRemoveView extends AbstractDivView {
 

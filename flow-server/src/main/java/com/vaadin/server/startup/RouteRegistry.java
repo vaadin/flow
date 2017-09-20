@@ -26,14 +26,16 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
-import com.vaadin.annotations.RoutePrefix;
-import com.vaadin.flow.router.Location;
+import com.vaadin.util.AnnotationReader;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.RoutePrefix;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.Location;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -42,6 +44,7 @@ import com.vaadin.ui.UI;
 public class RouteRegistry {
 
     private final Map<String, Class<? extends Component>> routes = new HashMap<>();
+    private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
 
     boolean initialized;
 
@@ -99,6 +102,38 @@ public class RouteRegistry {
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
         return Optional.ofNullable(routes.get(pathString));
+    }
+
+    /**
+     * Get the url string for given navigation target.
+     *
+     * @param navigationTarget
+     *            navigation target to get registered route for, not
+     *            {@code null}
+     * @return optional navigation target url string
+     */
+    public Optional<String> getTargetUrl(
+            Class<? extends Component> navigationTarget) {
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        return Optional.ofNullable(collectRequiredParameters(navigationTarget));
+    }
+
+    /**
+     * Append any required parameters as /{param_class} to the route.
+     * 
+     * @param navigationTarget
+     *            navigation target to generate url for
+     * @return route with required parameters
+     */
+    private String collectRequiredParameters(
+            Class<? extends Component> navigationTarget) {
+        String route = targetRoutes.get(navigationTarget);
+        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
+            Class genericInterfaceType = ReflectTools.getGenericInterfaceType(
+                    navigationTarget, HasUrlParameter.class);
+            route = route + "/{" + genericInterfaceType.getSimpleName() + "}";
+        }
+        return route;
     }
 
     /**
@@ -200,6 +235,7 @@ public class RouteRegistry {
                             "Registering route '%s' to navigation target '%s'.",
                             route, navigationTarget.getName()));
             routes.put(route, navigationTarget);
+            targetRoutes.put(navigationTarget, route);
         });
     }
 }

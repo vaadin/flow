@@ -18,12 +18,12 @@ package com.vaadin.flow.uitest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.annotations.ClientDelegate;
+import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.HtmlContainer;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.html.Label;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateOverridesMap;

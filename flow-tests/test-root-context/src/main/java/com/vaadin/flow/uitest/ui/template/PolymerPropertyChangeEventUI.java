@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.event.PropertyChangeEvent;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.event.PropertyChangeEvent;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 

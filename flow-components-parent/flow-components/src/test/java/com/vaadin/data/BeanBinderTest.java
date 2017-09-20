@@ -37,7 +37,7 @@ import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubConstraint;
 import com.vaadin.data.BeanBinderTest.RequiredConstraints.SubSubConstraint;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.tests.data.bean.BeanToValidate;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 public class BeanBinderTest
 extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {

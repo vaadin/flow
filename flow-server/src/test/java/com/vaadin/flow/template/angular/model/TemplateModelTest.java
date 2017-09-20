@@ -13,16 +13,16 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Exclude;
-import com.vaadin.annotations.Include;
+import com.vaadin.flow.model.Exclude;
+import com.vaadin.flow.model.Include;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.InlineTemplate;
-import com.vaadin.flow.template.model.Bean;
-import com.vaadin.flow.template.model.BeanContainingBeans;
-import com.vaadin.flow.template.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.Bean;
+import com.vaadin.flow.model.BeanContainingBeans;
+import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 
