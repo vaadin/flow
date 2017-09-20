@@ -15,7 +15,6 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -23,18 +22,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.vaadin.router.event.NavigationEvent;
+import javax.servlet.http.HttpServletResponse;
+
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.util.AnnotationReader;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.EventUtil;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
-import com.vaadin.util.ReflectTools;
+import com.vaadin.ui.common.HasElement;
+import com.vaadin.util.AnnotationReader;
 
 /**
  * Handles navigation events by rendering a contained NavigationState in the
@@ -77,13 +78,14 @@ public class NavigationStateRenderer implements NavigationHandler {
     @SuppressWarnings("unchecked")
     protected <T extends HasElement> T getRouteTarget(Class<T> routeTargetType,
             NavigationEvent event) {
-        Optional<HasElement> currentInstance = event.getUI().getInternals()
+        UI ui = event.getUI();
+        Optional<HasElement> currentInstance = ui.getInternals()
                 .getActiveRouterTargetsChain().stream()
                 .filter(component -> component.getClass()
                         .equals(routeTargetType))
                 .findAny();
-        return (T) currentInstance
-                .orElseGet(() -> ReflectTools.createInstance(routeTargetType));
+        return (T) currentInstance.orElseGet(() -> Instantiator.get(ui)
+                .createRouteTarget(routeTargetType, event));
     }
 
     @Override
