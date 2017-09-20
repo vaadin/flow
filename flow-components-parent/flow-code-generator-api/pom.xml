@@ -15,7 +15,7 @@
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-components-commons</artifactId>
+            <artifactId>flow-data</artifactId>
             <version>${flow.version}</version>
         </dependency>
         <dependency>

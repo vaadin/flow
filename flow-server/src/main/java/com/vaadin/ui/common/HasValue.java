@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
-//import com.vaadin.data.Binder;
-//import com.vaadin.data.Validator;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.ComponentEvent;
@@ -286,7 +284,7 @@ extends ComponentSupplier<C>, Serializable {
 //     * should be overridden for components with internal value conversion or
 //     * validation, eg. when the user is providing a string that has to be parsed
 //     * into a date. An invalid input from user will be exposed to a
-//     * {@link Binder} and can be seen as a validation failure.
+//     * Binder and can be seen as a validation failure.
 //     *
 //     * @since 8.1
 //     * @return internal state validator

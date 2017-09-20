@@ -13,7 +13,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>flow-components-commons</module>
         <module>flow-code-generator-api</module>
         <module>flow-code-generator</module>
         <module>flow-components</module>

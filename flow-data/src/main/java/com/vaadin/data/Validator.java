@@ -52,7 +52,7 @@ import com.vaadin.server.SerializablePredicate;
  */
 @FunctionalInterface
 public interface Validator<T>
-extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
+        extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
 
     /**
      * Validates the given value. Returns a {@code ValidationResult} instance
@@ -102,7 +102,7 @@ extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
      * @return the new validator using the function
      */
     static <T> Validator<T> from(SerializablePredicate<T> guard,
-                                 String errorMessage) {
+            String errorMessage) {
         Objects.requireNonNull(guard, "guard cannot be null");
         Objects.requireNonNull(errorMessage, "errorMessage cannot be null");
         return from(guard, ctx -> errorMessage);
@@ -123,7 +123,7 @@ extends BiFunction<T, ValueContext, ValidationResult>, Serializable {
      * @return the new validator using the function
      */
     static <T> Validator<T> from(SerializablePredicate<T> guard,
-                                 ErrorMessageProvider errorMessageProvider) {
+            ErrorMessageProvider errorMessageProvider) {
         Objects.requireNonNull(guard, "guard cannot be null");
         Objects.requireNonNull(errorMessageProvider,
                 "errorMessageProvider cannot be null");
