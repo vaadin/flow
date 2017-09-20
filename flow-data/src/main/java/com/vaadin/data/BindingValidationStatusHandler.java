@@ -16,7 +16,7 @@
 package com.vaadin.data;
 
 import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.event.SerializableEventListener;
+import com.vaadin.data.event.SerializableEventListener;
 
 /**
  * Handler for {@link BindingValidationStatus} changes.

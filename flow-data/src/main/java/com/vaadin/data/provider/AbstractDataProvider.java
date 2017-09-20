@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
 import java.util.EventObject;
 
 import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
-import com.vaadin.event.EventRouter;
+import com.vaadin.data.event.EventRouter;
 import com.vaadin.shared.Registration;
 
 /**

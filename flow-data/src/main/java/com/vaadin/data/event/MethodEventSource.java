@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.event;
+package com.vaadin.data.event;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;

@@ -41,7 +41,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
-import com.vaadin.event.EventRouter;
+import com.vaadin.data.event.EventRouter;
 import com.vaadin.server.SerializableFunction;
 import com.vaadin.server.SerializablePredicate;
 import com.vaadin.shared.Registration;
