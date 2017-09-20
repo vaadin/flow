@@ -480,9 +480,9 @@ public class ComponentGeneratorTest {
                 "com.my.test", null);
 
         Assert.assertTrue(
-                "Wrong generated package. It should be com.my.test.some.other.directory",
+                "Wrong generated package. It should be com.my.test.some.otherdirectory",
                 generatedClass.startsWith(
-                        "package com.my.test.some.other.directory;"));
+                        "package com.my.test.some.otherdirectory;"));
     }
 
     @Test
