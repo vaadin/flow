@@ -27,7 +27,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,15 +41,18 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.router.Router;
-import com.vaadin.router.RouterInterface;
+import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.router.Router;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.FaviconHandler;
@@ -58,7 +60,6 @@ import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
-import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Registration;
@@ -174,6 +175,8 @@ public abstract class VaadinService implements Serializable {
 
     private RouterInterface router = new com.vaadin.flow.router.Router();
 
+    private Instantiator instantiator;
+
     /**
      * Creates a new vaadin service based on a deployment configuration.
      *
@@ -215,31 +218,27 @@ public abstract class VaadinService implements Serializable {
      *             if a problem occurs when creating the service
      */
     public void init() throws ServiceException {
+        instantiator = createInstantiator();
+
         List<RequestHandler> handlers = createRequestHandlers();
 
         ServiceInitEvent event = new ServiceInitEvent(this);
 
-        Iterator<VaadinServiceInitListener> initListeners = getServiceInitListeners();
-        while (initListeners.hasNext()) {
-            initListeners.next().serviceInit(event);
-        }
+        instantiator.getServiceInitListeners()
+                .forEach(listener -> listener.serviceInit(event));
 
-        handlers.addAll(event.getAddedRequestHandlers());
+        event.getAddedRequestHandlers().forEach(handlers::add);
 
         Collections.reverse(handlers);
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
 
-        List<DependencyFilter> dependencyFiltersList = processDependencyFilters(
-                new ArrayList<>(event.getAddedDependencyFilters()));
-
-        List<BootstrapListener> bootstrapListenersList = processBootstrapListeners(
-                new ArrayList<>(event.getAddedBootstrapListeners()));
-
-        // the assigned list is a new instance to ensure it is iterable
-        // without chances of raising ConcurrentModificationExceptions
-        dependencyFilters = new ArrayList<>(dependencyFiltersList);
-        bootstrapListeners = new ArrayList<>(bootstrapListenersList);
+        dependencyFilters = instantiator
+                .getDependencyFilters(event.getAddedDependencyFilters())
+                .collect(Collectors.toList());
+        bootstrapListeners = instantiator
+                .getBootstrapListeners(event.getAddedBootstrapListeners())
+                .collect(Collectors.toList());
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
@@ -314,71 +313,50 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Gets all available service init listeners. A custom Vaadin service
-     * implementation can override this method to discover init listeners in
-     * some other way in addition to the default implementation that uses
-     * {@link ServiceLoader}. This could for example be used to allow defining
-     * an init listener as an OSGi service or as a Spring bean.
+     * Creates an instantiator to use with this service. A custom Vaadin service
+     * implementation can override this method to pick an instantiator in some
+     * other way instead of the default implementation that uses
+     * {@link ServiceLoader}.
      *
-     * @return an iterator of available service init listeners
+     * @return an instantiator to use, not <code>null</code>
+     *
+     * @see Instantiator
      */
-    protected Iterator<VaadinServiceInitListener> getServiceInitListeners() {
-        ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
-                .load(VaadinServiceInitListener.class, getClassLoader());
-        return loader.iterator();
+    protected Instantiator createInstantiator() throws ServiceException {
+        ArrayList<Instantiator> candidates = new ArrayList<>();
+        ServiceLoader.load(Instantiator.class, getClassLoader())
+                .forEach(instance -> {
+                    if (instance.init(this)) {
+                        candidates.add(instance);
+                    }
+                });
+
+        switch (candidates.size()) {
+        case 0:
+            DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
+                    this);
+            defaultInstantiator.init(this);
+            return defaultInstantiator;
+        case 1:
+            return candidates.get(0);
+        default:
+            throw new ServiceException(
+                    "Cannot init VaadinService because there are multiple eligible instantiator implementations: "
+                            + candidates);
+        }
     }
 
     /**
-     * Processes the available bootstrap listeners. A custom Vaadin service
-     * implementation can override this method to discover bootstrap listeners
-     * in some other way in addition to the default implementation that uses
-     * {@link ServiceLoader}. This could for example be used to allow defining
-     * an bootstrap listener as an OSGi service or as a Spring bean.
-     * <p>
-     * The default implementation just returns the same listeners received as
-     * parameter.
-     * <p>
-     * The order of the listeners inside the list defines the order of the
-     * execution of those listeners at the
-     * {@link #modifyBootstrapPage(BootstrapPageResponse)} method.
+     * Gets the instantiator used by this service.
      *
-     * @param defaultListeners
-     *            A list with the listeners loaded by the ServiceLoader
-     *            mechanism. This list is safe to be changed and returned if
-     *            needed.
+     * @return the used instantiator, or <code>null</code> if this service has
+     *         not yet been initialized
      *
-     * @return the list of all available service bootstrap listeners.
+     * @see #createInstantiator()
+     * @see Instantiator
      */
-    protected List<BootstrapListener> processBootstrapListeners(
-            List<BootstrapListener> defaultListeners) {
-        assert defaultListeners != null;
-        return defaultListeners;
-    }
-
-    /**
-     * Processes the available dependency filters. A custom Vaadin service
-     * implementation can override this method to discover dependency filters in
-     * some other way in addition to the default implementation that uses
-     * {@link ServiceLoader}. This could for example be used to allow defining
-     * an dependency filter as an OSGi service or as a Spring bean.
-     * <p>
-     * The default implementation just returns the same filters received as
-     * parameter.
-     * <p>
-     * The order of the filters inside the list defines the order of the
-     * execution of those filter at the
-     * {@link UidlWriter#createUidl(UI, boolean)} method.
-     *
-     * @param defaultFilters
-     *            A list with the filters loaded by the ServiceLoader mechanism.
-     *            This list is safe to be changed and returned if needed.
-     *
-     * @return the list of all available dependency filters.
-     */
-    protected List<DependencyFilter> processDependencyFilters(
-            List<DependencyFilter> defaultFilters) {
-        assert defaultFilters != null;
-        return defaultFilters;
+    public Instantiator getInstantiator() {
+        return instantiator;
     }
 
     /**
@@ -524,7 +502,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @param listener
      *            the vaadin service session destroy listener
-     * 
+     *
      * @return a handle that can be used for removing the listener
      */
     public Registration addSessionDestroyListener(
@@ -539,7 +517,7 @@ public abstract class VaadinService implements Serializable {
      * event to all registered {@link BootstrapListener}. This is called
      * internally when the bootstrap page is created, so listeners can intercept
      * the creation and change the result HTML.
-     * 
+     *
      * @param response
      *            The object containing all relevant info needed by listeners to
      *            change the bootstrap page.
@@ -1304,8 +1282,7 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval()
-                : -1;
+                ? session.getSession().getMaxInactiveInterval() : -1;
     }
 
     /**
@@ -1930,7 +1907,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @see #destroy()
      * @see ServiceDestroyListener
-     * 
+     *
      * @return a handle that can be used for removing the listener
      */
     public Registration addServiceDestroyListener(
