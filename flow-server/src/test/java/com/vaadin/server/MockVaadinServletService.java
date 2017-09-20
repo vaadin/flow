@@ -18,13 +18,16 @@ package com.vaadin.server;
 import java.util.Collections;
 import java.util.List;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.function.DeploymentConfiguration;
 
 /**
- * 
+ *
  * @author Vaadin Ltd
  */
 public class MockVaadinServletService extends VaadinServletService {
+
+    private Instantiator instantiator;
 
     public MockVaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration) {
@@ -35,6 +38,20 @@ public class MockVaadinServletService extends VaadinServletService {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         return Collections.emptyList();
+    }
+
+    public void init(Instantiator instantiator) throws ServiceException {
+        this.instantiator = instantiator;
+
+        init();
+    }
+
+    @Override
+    protected Instantiator createInstantiator() throws ServiceException {
+        if (instantiator != null) {
+            return instantiator;
+        }
+        return super.createInstantiator();
     }
 
 }
