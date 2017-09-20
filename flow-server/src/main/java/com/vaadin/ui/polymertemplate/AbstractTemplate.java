@@ -22,7 +22,7 @@ import java.lang.reflect.TypeVariable;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.StateNode;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * @author Vaadin Ltd.

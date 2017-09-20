@@ -39,7 +39,7 @@ import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;

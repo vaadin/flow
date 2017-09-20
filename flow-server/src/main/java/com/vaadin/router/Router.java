@@ -26,7 +26,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**

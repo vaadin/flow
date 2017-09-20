@@ -24,6 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import com.vaadin.annotations.InternalContainerAnnotationForUses;
+import com.vaadin.ui.Component;
 
 /**
  * Marks that a component should load all the dependencies for another

@@ -26,7 +26,7 @@ import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 @CodeFor("routing/tutorial-routing-view-hierarchy.asciidoc")
 public class RoutingViewHierarchy {

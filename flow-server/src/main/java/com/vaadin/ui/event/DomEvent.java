@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Maps a DOM event to a {@link ComponentEvent}.

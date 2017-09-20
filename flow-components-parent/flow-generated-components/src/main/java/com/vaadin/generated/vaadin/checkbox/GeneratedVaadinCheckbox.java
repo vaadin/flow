@@ -25,7 +25,7 @@ import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.Focusable;

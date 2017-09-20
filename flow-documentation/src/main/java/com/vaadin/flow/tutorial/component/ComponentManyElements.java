@@ -18,7 +18,7 @@ package com.vaadin.flow.tutorial.component;
 import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 @CodeFor("creating-components/tutorial-component-many-elements.asciidoc")
 public class ComponentManyElements {

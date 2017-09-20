@@ -33,7 +33,7 @@ import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
 import com.vaadin.server.InvalidRouteConfigurationException;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 

@@ -29,7 +29,7 @@ import com.vaadin.router.Location;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasText;

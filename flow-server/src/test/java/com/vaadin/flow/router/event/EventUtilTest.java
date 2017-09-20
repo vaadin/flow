@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.EventUtil;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Test event util functionality.

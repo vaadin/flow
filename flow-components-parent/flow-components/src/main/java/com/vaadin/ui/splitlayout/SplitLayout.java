@@ -18,7 +18,7 @@ package com.vaadin.ui.splitlayout;
 import java.util.Optional;
 
 import com.vaadin.flow.dom.ElementConstants;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.html.Div;
 import com.vaadin.generated.vaadin.split.layout.GeneratedVaadinSplitLayout;

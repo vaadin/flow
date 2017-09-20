@@ -27,7 +27,7 @@ import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.

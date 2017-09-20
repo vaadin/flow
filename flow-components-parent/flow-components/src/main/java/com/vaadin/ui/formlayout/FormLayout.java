@@ -25,7 +25,7 @@ import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.external.jsoup.helper.StringUtil;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormItem;
 import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormLayout;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasSize;
 

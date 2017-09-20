@@ -16,6 +16,7 @@
 package com.vaadin.ui.common;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.ui.Component;
 
 /**
  * A component to which the user can add and remove child components.

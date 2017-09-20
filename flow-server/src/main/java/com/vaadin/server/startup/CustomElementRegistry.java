@@ -20,7 +20,7 @@ import java.util.Map;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Registry holder for custom elements found on servlet initalization.

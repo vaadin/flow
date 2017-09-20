@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 import com.vaadin.annotations.InternalContainerAnnotationForHtml;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.WebComponents;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Annotation for defining HTML dependencies on a {@link Component} class. For

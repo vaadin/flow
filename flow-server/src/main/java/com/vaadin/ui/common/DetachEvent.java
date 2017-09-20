@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui.common;
 
+import com.vaadin.ui.Component;
+
 /**
  * Event fired before a {@link Component} is detached from the UI.
  * <p>

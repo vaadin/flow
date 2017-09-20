@@ -43,8 +43,8 @@ import com.vaadin.flow.util.JavaScriptSemantics;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.common.Component;
-import com.vaadin.ui.common.ComponentUtil;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 

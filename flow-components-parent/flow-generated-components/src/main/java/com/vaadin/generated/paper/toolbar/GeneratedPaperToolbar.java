@@ -15,7 +15,7 @@
  */
 package com.vaadin.generated.paper.toolbar;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;

@@ -17,6 +17,7 @@ package com.vaadin.ui.common;
 
 import java.util.Optional;
 
+import com.vaadin.ui.Component;
 import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 

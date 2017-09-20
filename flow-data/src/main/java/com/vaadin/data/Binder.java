@@ -46,7 +46,7 @@ import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializablePredicate;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.common.HasValue.ValueChangeEvent;

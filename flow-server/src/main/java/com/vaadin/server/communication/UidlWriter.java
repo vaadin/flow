@@ -65,7 +65,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;

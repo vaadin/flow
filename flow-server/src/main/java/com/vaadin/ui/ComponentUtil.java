@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.common;
+package com.vaadin.ui;
 
 import java.util.Optional;
 import java.util.Set;
@@ -23,10 +23,15 @@ import java.util.stream.Stream;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.util.ReflectionCache;
-import com.vaadin.ui.common.Component.MapToExistingElement;
-import com.vaadin.ui.Composite;
-import com.vaadin.ui.common.ComponentMetaData.DependencyInfo;
-import com.vaadin.ui.common.ComponentMetaData.SynchronizedPropertyInfo;
+import com.vaadin.ui.ComponentMetaData.DependencyInfo;
+import com.vaadin.ui.ComponentMetaData.SynchronizedPropertyInfo;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.common.Uses;
+import com.vaadin.ui.Component.MapToExistingElement;
 import com.vaadin.util.ReflectTools;
 
 /**

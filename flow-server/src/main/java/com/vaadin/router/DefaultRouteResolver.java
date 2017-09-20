@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.server.startup.RouteRegistry;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Default implementation of the {@link RouteResolver} interface.

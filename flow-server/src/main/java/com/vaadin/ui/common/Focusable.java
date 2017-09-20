@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui.common;
 
+import com.vaadin.ui.Component;
+
 /**
  * Interface with the methods implemented by components that can gain and lose
  * focus.

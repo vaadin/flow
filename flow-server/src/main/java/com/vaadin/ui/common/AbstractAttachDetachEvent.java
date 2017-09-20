@@ -16,6 +16,7 @@
 package com.vaadin.ui.common;
 
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.event.ComponentEvent;
 

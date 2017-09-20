@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.event;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 public class ServerNoDataEvent extends ComponentEvent<Component> {
 

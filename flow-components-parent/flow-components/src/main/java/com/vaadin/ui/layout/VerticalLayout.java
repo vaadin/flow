@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.layout;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * VerticalLayout is a component container, which shows the subcomponents in the

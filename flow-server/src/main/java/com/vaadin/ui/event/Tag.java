@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Defines the tag to use for the root element for a component created using the

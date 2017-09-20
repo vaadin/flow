@@ -18,7 +18,7 @@ package com.vaadin.ui.layout;
 import java.util.Arrays;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasOrderedComponents;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasStyle;

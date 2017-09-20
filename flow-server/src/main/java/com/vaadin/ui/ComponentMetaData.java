@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.common;
+package com.vaadin.ui;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -23,6 +23,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.ui.Component;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.common.Uses;
 import com.vaadin.util.AnnotationReader;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.util.ReflectTools;
@@ -39,35 +44,20 @@ public class ComponentMetaData {
      * <p>
      * Framework internal class, thus package-private.
      */
-    public static class DependencyInfo {
+    static class DependencyInfo {
         private final List<HtmlImport> htmlImports = new ArrayList<>();
         private final List<JavaScript> javaScripts = new ArrayList<>();
         private final List<StyleSheet> styleSheets = new ArrayList<>();
 
-        /**
-         * Get unmodifiable list of html imports.
-         * 
-         * @return html import list
-         */
-        public List<HtmlImport> getHtmlImports() {
+        List<HtmlImport> getHtmlImports() {
             return Collections.unmodifiableList(htmlImports);
         }
 
-        /**
-         * Get unmodifiable list of java script.
-         * 
-         * @return java script list
-         */
-        public List<JavaScript> getJavaScripts() {
+        List<JavaScript> getJavaScripts() {
             return Collections.unmodifiableList(javaScripts);
         }
 
-        /**
-         * Get unmodifiable list of style sheets.
-         * 
-         * @return style sheet list
-         */
-        public List<StyleSheet> getStyleSheets() {
+        List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);
         }
 

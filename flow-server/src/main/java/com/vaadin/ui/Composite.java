@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.ui.common.Component;
 import com.vaadin.util.ReflectTools;
 
 /**

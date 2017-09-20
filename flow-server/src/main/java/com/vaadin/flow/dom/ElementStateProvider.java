@@ -25,7 +25,7 @@ import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.server.StreamResource;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Handles storing and retrieval of the state information for an element using a

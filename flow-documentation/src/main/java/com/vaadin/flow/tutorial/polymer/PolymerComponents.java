@@ -23,7 +23,7 @@ import com.vaadin.ui.html.Label;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 @CodeFor("polymer-templates/tutorial-template-components.asciidoc")
 public class PolymerComponents {

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Class containing all relevant information related to a valid navigation.

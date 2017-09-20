@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.vaadin.flow.dom.Style;
+import com.vaadin.ui.Component;
 
 /**
  * Represents {@link Component} which has class attribute and inline styles.

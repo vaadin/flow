@@ -68,7 +68,7 @@ import com.vaadin.generator.metadata.ComponentPropertyBaseData;
 import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasComponents;

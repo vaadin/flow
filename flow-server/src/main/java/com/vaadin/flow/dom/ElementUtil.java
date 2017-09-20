@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.nodes.TextNode;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 
 /**

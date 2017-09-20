@@ -20,7 +20,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.ui.html.Label;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 @CodeFor("element-api/tutorial-shadow-root.asciidoc")
 public class ShadowRootSamples {

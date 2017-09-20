@@ -19,7 +19,7 @@ import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasComponents;
 
 @CodeFor("creating-components/tutorial-component-container.asciidoc")

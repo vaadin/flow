@@ -16,7 +16,6 @@
 package com.vaadin.ui;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.common.Component;
 
 /**
  * A component which encapsulates the given text in a text node.

@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.common.AttachEvent;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.DetachEvent;
 
 @CodeFor("creating-components/tutorial-component-with-dependencies.asciidoc")

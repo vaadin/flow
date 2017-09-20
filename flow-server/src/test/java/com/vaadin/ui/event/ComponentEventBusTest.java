@@ -26,7 +26,7 @@ import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.ComponentTest.TestComponent;
 
 import elemental.json.Json;

@@ -43,7 +43,6 @@ import com.vaadin.flow.template.angular.model.TemplateModelTypeParser;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
 import com.vaadin.ui.common.AttachEvent;
-import com.vaadin.ui.common.Component;
 import com.vaadin.util.ReflectTools;
 
 /**

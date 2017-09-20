@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui.common;
 
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Text;
 
 /**

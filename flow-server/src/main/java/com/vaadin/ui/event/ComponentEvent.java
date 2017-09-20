@@ -17,7 +17,7 @@ package com.vaadin.ui.event;
 
 import java.util.EventObject;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * An event whose source is a {@link Component}.

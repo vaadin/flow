@@ -49,7 +49,7 @@ import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.server.startup.CustomElementRegistryAccess;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 import elemental.json.JsonArray;
 import static org.junit.Assert.assertEquals;

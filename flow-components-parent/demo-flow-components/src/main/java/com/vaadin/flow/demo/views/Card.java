@@ -20,7 +20,7 @@ import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Card to hold components for DemoViews

@@ -24,7 +24,6 @@ import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.external.jsoup.nodes.Attributes;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.common.Component;
 import com.vaadin.ui.common.PropertyDescriptor;
 import com.vaadin.ui.common.PropertyDescriptors;
 

@@ -25,7 +25,7 @@ import java.util.Optional;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.ReflectionCache;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
 /**

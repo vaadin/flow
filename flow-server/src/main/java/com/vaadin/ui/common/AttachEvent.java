@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui.common;
 
+import com.vaadin.ui.Component;
+
 /**
  * Event fired after a {@link Component} is attached to the UI.
  * <p>

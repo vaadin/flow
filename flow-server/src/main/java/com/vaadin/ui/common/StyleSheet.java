@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 import com.vaadin.annotations.InternalContainerAnnotationForSS;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Annotation for defining style sheet dependencies on a {@link Component}

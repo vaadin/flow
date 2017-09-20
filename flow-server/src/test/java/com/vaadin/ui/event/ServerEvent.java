@@ -17,7 +17,7 @@ package com.vaadin.ui.event;
 
 import java.math.BigDecimal;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 public class ServerEvent extends ComponentEvent<Component> {
 

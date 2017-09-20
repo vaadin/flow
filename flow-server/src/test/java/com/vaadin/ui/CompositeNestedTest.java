@@ -10,7 +10,6 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.common.ComponentTest;
 import com.vaadin.ui.common.ComponentTest.TestComponent;
 import com.vaadin.ui.common.ComponentTest.TracksAttachDetach;
-import com.vaadin.ui.common.Component;
 
 public class CompositeNestedTest {
     TestLayout layout;

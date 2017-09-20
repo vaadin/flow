@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.flow.StateNode;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Methods which are published as <code>element.$server.&lt;name&gt;</code> on

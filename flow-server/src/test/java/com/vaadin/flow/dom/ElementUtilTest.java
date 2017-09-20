@@ -22,7 +22,7 @@ import org.mockito.Mockito;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.template.angular.InlineTemplate;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 public class ElementUtilTest {
     @Test

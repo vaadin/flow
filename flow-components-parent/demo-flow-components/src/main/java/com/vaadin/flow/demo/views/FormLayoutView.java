@@ -32,7 +32,7 @@ import com.vaadin.ui.html.Label;
 import com.vaadin.function.SerializablePredicate;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.formlayout.FormLayout;

@@ -29,7 +29,7 @@ import com.vaadin.ui.polymertemplate.RepeatIndex;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * Methods which are published as event-handlers on the client side.

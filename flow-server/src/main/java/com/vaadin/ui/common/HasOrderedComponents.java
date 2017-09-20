@@ -18,6 +18,7 @@ package com.vaadin.ui.common;
 import java.util.Iterator;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.ui.Component;
 
 /**
  * A component which the children components are ordered, so the index of each

@@ -18,6 +18,8 @@ package com.vaadin.ui.common;
 import java.io.Serializable;
 import java.util.function.Supplier;
 
+import com.vaadin.ui.Component;
+
 /**
  * Interface for supplying {@link Component}s. Interfaces that contain fluent
  * APIs should extend this supplier, so then can return the proper types for

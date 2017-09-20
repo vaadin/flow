@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.event.Tag;
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

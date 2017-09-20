@@ -17,7 +17,7 @@ package com.vaadin.router;
 
 import java.util.List;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 /**
  * A builder class for constructing new {@link NavigationState} instances.

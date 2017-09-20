@@ -20,7 +20,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.common.Component;
+import com.vaadin.ui.Component;
 
 public class NavigationStateRendererTest {
 
