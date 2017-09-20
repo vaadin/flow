@@ -6,7 +6,7 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;

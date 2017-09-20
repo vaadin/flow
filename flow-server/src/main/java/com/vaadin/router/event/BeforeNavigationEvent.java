@@ -13,22 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.event;
+package com.vaadin.router.event;
 
 import java.util.Arrays;
 import java.util.EventObject;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.Location;
 import com.vaadin.flow.router.NavigationHandler;
-import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationStateBuilder;
-import com.vaadin.flow.router.NavigationStateRenderer;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.router.NavigationState;
+import com.vaadin.router.NavigationStateBuilder;
+import com.vaadin.router.NavigationStateRenderer;
+import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.common.Component;
 import com.vaadin.util.ReflectTools;

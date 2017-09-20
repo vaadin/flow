@@ -23,7 +23,10 @@ import java.util.Optional;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.StateTree;
-import com.vaadin.flow.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.router.RouteLocation;
+import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.router.Location;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.common.Component;

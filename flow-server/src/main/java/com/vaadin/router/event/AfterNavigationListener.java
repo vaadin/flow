@@ -13,22 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.event;
+package com.vaadin.router.event;
 
 /**
- * Event sent to the active and de-active navigation chain instances
- * implementing this interface before navigation happens.
+ * Event sent to the activated navigation chain instances
+ * implementing this interface after navigation has resolved.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface BeforeNavigationListener {
+public interface AfterNavigationListener {
 
     /**
-     * Method called before navigation is executed.
+     * Method called after navigation has been executed.
      * 
      * @param event
-     *            before navigation event with event details
+     *            after navigation event with event details
      */
-    void beforeNavigation(BeforeNavigationEvent event);
+    void afterNavigation(AfterNavigationEvent event);
 }

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -23,7 +23,7 @@ import org.junit.Before;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.common.Component;
 import com.vaadin.ui.UI;
@@ -74,13 +74,13 @@ public class NewRoutingTestBase {
     }
 
     public static class RouterTestUI extends UI {
-        final NewRouter router;
+        final Router router;
 
         public RouterTestUI() {
-            this(new NewRouter());
+            this(new Router());
         }
 
-        public RouterTestUI(NewRouter router) {
+        public RouterTestUI(Router router) {
             this.router = router;
         }
 
@@ -90,12 +90,12 @@ public class NewRoutingTestBase {
         }
     }
 
-    protected NewRouter router;
+    protected Router router;
 
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        router = new NewRouter();
+        router = new Router();
         Field field = RouteRegistry.getInstance().getClass()
                 .getDeclaredField("initialized");
         field.setAccessible(true);

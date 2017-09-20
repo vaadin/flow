@@ -6,9 +6,9 @@ import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })

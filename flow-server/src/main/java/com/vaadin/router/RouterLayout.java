@@ -13,22 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.event;
+package com.vaadin.router;
+
+import com.vaadin.annotations.Route;
+import com.vaadin.ui.common.HasElement;
 
 /**
- * Event sent to the activated navigation chain instances
- * implementing this interface after navigation has resolved.
+ *
+ * Implementations of this interface represent a parent for a navigation target
+ * components via the {@link Route#layout()} parameter.
  *
  * @author Vaadin Ltd
+ *
  */
-@FunctionalInterface
-public interface AfterNavigationListener {
+public interface RouterLayout extends HasElement {
 
     /**
-     * Method called after navigation has been executed.
-     * 
-     * @param event
-     *            after navigation event with event details
+     * Sets the content of the layout which is the router target component
+     * annotated with a {@link Route}.
+     *
+     * @param content
+     *            the content component
      */
-    void afterNavigation(AfterNavigationEvent event);
+    default void setRouterLayoutContent(HasElement content) {
+        getElement().appendChild(content.getElement());
+    }
+
 }

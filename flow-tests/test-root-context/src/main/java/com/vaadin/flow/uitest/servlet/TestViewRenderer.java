@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.router.ViewRenderer;
 

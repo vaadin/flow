@@ -13,25 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
-
-import java.io.Serializable;
+package com.vaadin.router.event;
 
 /**
- * Callback interface for resolving {@link ResolveRequest}s to new
- * {@link NavigationState}s.
+ * Event sent to the active and de-active navigation chain instances
+ * implementing this interface before navigation happens.
  *
- * @author Vaadin Ltd.
+ * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface RouteResolver extends Serializable {
+public interface BeforeNavigationListener {
 
     /**
-     * Resolves the given request to a new NavigationState.
-     *
-     * @param request
-     *            the request to resolve
-     * @return the newly resolved navigation state instance
+     * Method called before navigation is executed.
+     * 
+     * @param event
+     *            before navigation event with event details
      */
-    NavigationState resolve(ResolveRequest request);
+    void beforeNavigation(BeforeNavigationEvent event);
 }

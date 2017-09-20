@@ -13,30 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
-import com.vaadin.annotations.Route;
-import com.vaadin.ui.common.HasElement;
+import java.io.Serializable;
 
 /**
+ * Callback interface for resolving {@link ResolveRequest}s to new
+ * {@link NavigationState}s.
  *
- * Implementations of this interface represent a parent for a navigation target
- * components via the {@link Route#layout()} parameter.
- *
- * @author Vaadin Ltd
- *
+ * @author Vaadin Ltd.
  */
-public interface RouterLayout extends HasElement {
+@FunctionalInterface
+public interface RouteResolver extends Serializable {
 
     /**
-     * Sets the content of the layout which is the router target component
-     * annotated with a {@link Route}.
+     * Resolves the given request to a new NavigationState.
      *
-     * @param content
-     *            the content component
+     * @param request
+     *            the request to resolve
+     * @return the newly resolved navigation state instance
      */
-    default void setRouterLayoutContent(HasElement content) {
-        getElement().appendChild(content.getElement());
-    }
-
+    NavigationState resolve(ResolveRequest request);
 }

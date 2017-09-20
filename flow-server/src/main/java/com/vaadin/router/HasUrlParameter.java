@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationEvent;
 
 /**
  * Interface for defining url parameters for navigation targets for use in

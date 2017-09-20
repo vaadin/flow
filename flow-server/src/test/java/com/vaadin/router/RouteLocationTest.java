@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,7 +21,7 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
 
 public class RouteLocationTest {
 

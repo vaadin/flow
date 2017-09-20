@@ -13,9 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.util.Optional;
+
+import com.vaadin.flow.router.RouterConfiguration;
 
 /**
  * Location with support for the syntax used in route definitions used with e.g.

@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.ui.UI;
 
 /**

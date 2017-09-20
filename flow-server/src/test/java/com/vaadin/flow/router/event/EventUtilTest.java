@@ -24,6 +24,9 @@ import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.EventUtil;
 import com.vaadin.ui.common.Component;
 
 /**

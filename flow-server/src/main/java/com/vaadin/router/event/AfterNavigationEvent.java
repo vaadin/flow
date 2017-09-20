@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.event;
+package com.vaadin.router.event;
 
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.NewLocationChangeEvent;
-import com.vaadin.flow.router.RouterInterface;
+import com.vaadin.router.Location;
+import com.vaadin.router.LocationChangeEvent;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.ui.common.HasElement;
 
 /**
@@ -32,7 +32,7 @@ import com.vaadin.ui.common.HasElement;
 public class AfterNavigationEvent extends EventObject {
 
     private final Location location;
-    private final NewLocationChangeEvent event;
+    private final LocationChangeEvent event;
 
     /**
      * Construct event from a NavigationEvent.
@@ -40,7 +40,7 @@ public class AfterNavigationEvent extends EventObject {
      * @param event
      *            NavigationEvent that is on going
      */
-    public AfterNavigationEvent(NewLocationChangeEvent event) {
+    public AfterNavigationEvent(LocationChangeEvent event) {
         super(event.getSource());
         location = event.getLocation();
         this.event = event;

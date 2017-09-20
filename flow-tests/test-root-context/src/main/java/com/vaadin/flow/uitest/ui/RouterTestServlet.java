@@ -26,7 +26,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.DefaultErrorView;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.Resolver;
 import com.vaadin.flow.router.RouterConfiguration;

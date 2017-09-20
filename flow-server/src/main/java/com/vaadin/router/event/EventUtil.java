@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.event;
+package com.vaadin.router.event;
 
 import java.util.List;
 import java.util.stream.Collectors;

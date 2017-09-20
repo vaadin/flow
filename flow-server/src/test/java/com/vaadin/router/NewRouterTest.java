@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -31,10 +31,10 @@ import com.vaadin.annotations.Route;
 import com.vaadin.annotations.RoutePrefix;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
-import com.vaadin.flow.router.event.AfterNavigationEvent;
-import com.vaadin.flow.router.event.AfterNavigationListener;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
-import com.vaadin.flow.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.AfterNavigationEvent;
+import com.vaadin.router.event.AfterNavigationListener;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.common.Component;
@@ -80,7 +80,8 @@ public class NewRouterTest extends NewRoutingTestBase {
 
     @Route("param")
     @Tag(Tag.DIV)
-    public static class RouteWithParameter extends Component implements BeforeNavigationListener, HasUrlParameter<String> {
+    public static class RouteWithParameter extends Component implements BeforeNavigationListener,
+            HasUrlParameter<String> {
 
         private String param;
 
@@ -124,13 +125,13 @@ public class NewRouterTest extends NewRoutingTestBase {
     }
 
     public static class RouterTestUI extends UI {
-        final NewRouter router;
+        final Router router;
 
         public RouterTestUI() {
-            this(new NewRouter());
+            this(new Router());
         }
 
-        public RouterTestUI(NewRouter router) {
+        public RouterTestUI(Router router) {
             this.router = router;
         }
 

@@ -20,7 +20,7 @@ import com.vaadin.annotations.Route;
 import com.vaadin.annotations.RoutePrefix;
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.common.Component;
 

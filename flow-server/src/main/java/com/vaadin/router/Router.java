@@ -13,11 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.util.Optional;
 
 import com.vaadin.annotations.Route;
+import com.vaadin.flow.router.ImmutableRouterConfiguration;
+import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.flow.router.RouterConfiguration;
+import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
@@ -33,7 +38,7 @@ import com.vaadin.ui.UI;
  *
  * @see Route
  */
-public class NewRouter implements RouterInterface {
+public class Router implements RouterInterface {
 
     private RouteResolver routeResolver;
 
@@ -47,7 +52,7 @@ public class NewRouter implements RouterInterface {
     /**
      * Constructs a new router with a {@link DefaultRouteResolver}.
      */
-    public NewRouter() {
+    public Router() {
         routeResolver = new DefaultRouteResolver();
     }
 

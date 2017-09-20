@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -23,15 +23,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Title;
-import com.vaadin.flow.router.event.ActivationState;
-import com.vaadin.flow.router.event.AfterNavigationEvent;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
-import com.vaadin.flow.router.event.BeforeNavigationListener;
-import com.vaadin.flow.router.event.EventUtil;
+import com.vaadin.router.event.ActivationState;
+import com.vaadin.router.event.AfterNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.EventUtil;
 import com.vaadin.ui.common.Component;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
@@ -140,7 +142,7 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         updatePageTitle(event, routeTargetType, routeLayoutTypes);
 
-        NewLocationChangeEvent locationChangeEvent = createEvent(event, chain);
+        LocationChangeEvent locationChangeEvent = createEvent(event, chain);
 
         if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
             fireAfterNavigationListeners(chain,
@@ -252,9 +254,9 @@ public class NavigationStateRenderer implements NavigationHandler {
         }
     }
 
-    private NewLocationChangeEvent createEvent(NavigationEvent event,
+    private LocationChangeEvent createEvent(NavigationEvent event,
             List<HasElement> routeTargetChain) {
-        return new NewLocationChangeEvent(event.getSource(), event.getUI(),
+        return new LocationChangeEvent(event.getSource(), event.getUI(),
                 event.getTrigger(), event.getLocation(), routeTargetChain);
     }
 

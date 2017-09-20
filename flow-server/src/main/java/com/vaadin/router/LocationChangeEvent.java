@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.util.Collections;
 import java.util.EventObject;
@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
 
@@ -32,7 +33,7 @@ import com.vaadin.ui.UI;
  * {@link NavigationTrigger}.
  * 
  */
-public class NewLocationChangeEvent extends EventObject {
+public class LocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;
     private final Location location;
@@ -57,7 +58,7 @@ public class NewLocationChangeEvent extends EventObject {
      * @param location
      *            the new location, not {@code null}
      */
-    public NewLocationChangeEvent(RouterInterface router, UI ui,
+    public LocationChangeEvent(RouterInterface router, UI ui,
             NavigationTrigger trigger, Location location,
             List<HasElement> routeTargetChain) {
         super(router);
@@ -113,7 +114,7 @@ public class NewLocationChangeEvent extends EventObject {
     /**
      * Gets the query parameters used for navigation. If only the first value of
      * parameter list is important, please use
-     * {@link LocationChangeEvent#getQueryParameter(String)}
+     * {@link com.vaadin.flow.router.LocationChangeEvent#getQueryParameter(String)}
      *
      * @return the query parameters, not {@code null}
      */
@@ -125,7 +126,7 @@ public class NewLocationChangeEvent extends EventObject {
      * Gets first parameter that corresponds to specified {@code parameterName}.
      * If there are multiple parameters corresponding to the same
      * {@code parameterName}, the first one will be returned. To access all
-     * parameters, use {@link LocationChangeEvent#getQueryParameters()} method.
+     * parameters, use {@link com.vaadin.flow.router.LocationChangeEvent#getQueryParameters()} method.
      *
      * @param parameterName
      *            the name of a parameter to get

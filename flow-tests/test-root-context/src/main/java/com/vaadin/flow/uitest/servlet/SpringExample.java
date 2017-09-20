@@ -26,7 +26,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.NavigationEvent;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;

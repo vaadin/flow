@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -189,7 +189,7 @@ public class Location implements Serializable {
      *
      * @return new {@link Location} instance with updated path
      */
-    Location toggleTrailingSlash() {
+    public Location toggleTrailingSlash() {
         // Even Location for "" still contains one (empty) segment
         assert !segments.isEmpty();
 

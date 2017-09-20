@@ -13,10 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router.event;
 
 import java.util.EventObject;
 
+import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.RouterInterface;
+import com.vaadin.router.Location;
 import com.vaadin.ui.UI;
 
 /**

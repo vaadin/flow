@@ -13,10 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.router.ImmutableRouterConfiguration;
+import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.router.Location;
+import com.vaadin.router.NavigationTrigger;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
