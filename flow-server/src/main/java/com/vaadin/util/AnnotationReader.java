@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -22,6 +22,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.Push;
+import com.vaadin.annotations.StyleSheet;
+import com.vaadin.annotations.Title;
 import com.vaadin.flow.router.View;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;

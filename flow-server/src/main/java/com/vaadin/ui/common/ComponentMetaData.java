@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;

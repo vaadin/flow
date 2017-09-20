@@ -21,7 +21,7 @@ import javax.validation.metadata.PropertyDescriptor;
 
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.BeanPropertySet.NestedBeanPropertyDefinition;
-import com.vaadin.data.util.BeanUtil;
+import com.vaadin.util.BeanUtil;
 import com.vaadin.data.validator.BeanValidator;
 
 /**

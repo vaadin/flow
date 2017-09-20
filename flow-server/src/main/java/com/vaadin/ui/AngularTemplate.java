@@ -22,7 +22,7 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.annotations.Id;
 import com.vaadin.flow.StateNode;

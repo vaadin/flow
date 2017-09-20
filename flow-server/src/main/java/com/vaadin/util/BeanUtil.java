@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data.util;
+package com.vaadin.util;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.vaadin.data.validator.BeanValidator;
 
 /**
  * Utility class for Java Beans information access.
@@ -187,17 +185,15 @@ public final class BeanUtil implements Serializable {
 
     private static PropertyDescriptor fixPropertyDescriptor(
             PropertyDescriptor descriptor) throws IntrospectionException {
-        Method readMethod = getMethodFromBridge(
-                descriptor.getReadMethod());
+        Method readMethod = getMethodFromBridge(descriptor.getReadMethod());
         if (readMethod != null) {
             Method writeMethod = getMethodFromBridge(
-                    descriptor.getWriteMethod(),
-                    readMethod.getReturnType());
+                    descriptor.getWriteMethod(), readMethod.getReturnType());
             if (writeMethod == null) {
                 writeMethod = descriptor.getWriteMethod();
             }
-            return new PropertyDescriptor(
-                    descriptor.getName(), readMethod, writeMethod);
+            return new PropertyDescriptor(descriptor.getName(), readMethod,
+                    writeMethod);
         } else {
             return descriptor;
         }
@@ -248,11 +244,10 @@ public final class BeanUtil implements Serializable {
                 return true;
             } catch (ClassNotFoundException | NoSuchMethodException
                     | InvocationTargetException e) {
-                Logger.getLogger(BeanValidator.class.getName()).log(Level.INFO,
-                        "A JSR-303 bean validation implementation not found on the classpath or could not be initialized. "
-                                + BeanValidator.class.getSimpleName()
-                                + " cannot be used.",
-                                e);
+                Logger.getLogger("com.vaadin.validator.BeanValidator").log(
+                        Level.INFO,
+                        "A JSR-303 bean validation implementation not found on the classpath or could not be initialized. BeanValidator cannot be used.",
+                        e);
                 return false;
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 throw new RuntimeException(

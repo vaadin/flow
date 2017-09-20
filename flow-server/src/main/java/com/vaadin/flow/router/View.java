@@ -17,7 +17,7 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
-import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.common.Component;

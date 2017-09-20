@@ -31,7 +31,7 @@ import javax.validation.metadata.ConstraintDescriptor;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;
 import com.vaadin.data.ValueContext;
-import com.vaadin.data.util.BeanUtil;
+import com.vaadin.util.BeanUtil;
 
 /**
  * A {@code Validator} using the JSR-303 (javax.validation) annotation-based

@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.annotations.WebComponents;

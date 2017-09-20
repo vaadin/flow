@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.RoutePrefix;

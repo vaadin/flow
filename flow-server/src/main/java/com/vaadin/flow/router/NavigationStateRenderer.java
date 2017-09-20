@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Title;

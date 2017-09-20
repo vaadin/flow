@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
 
-import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.external.jsoup.nodes.Comment;
