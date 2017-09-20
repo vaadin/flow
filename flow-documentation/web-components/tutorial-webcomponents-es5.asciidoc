@@ -47,7 +47,7 @@ In your `${frontend.working.directory}` directory, you have to update `package.j
 ==== package.json
 
 Initial file state is described in <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
-We have added `gulp` and `polymer-cli` dependencies that will process our web files and have added two tasks: `prodMode` and `devMode`
+We have added and `polymer-cli` dependencies that will process our web files and have added two tasks: `prodMode` and `devMode`
 Both tasks run `bower install` to install dependencies from `bower.json` and `prodMode` also runs `polymer build` that
 uses installed `polymer-cli` tool to transpile the sources to ES5 (see next file description for details).
 
@@ -59,7 +59,6 @@ uses installed `polymer-cli` tool to transpile the sources to ES5 (see next file
   "main": "",
   "dependencies": {
     "bower": "~1.8.2",
-    "gulp": "~3.9.1",
     "polymer-cli": "~1.5.2"
   },
   "scripts": {
@@ -386,7 +385,7 @@ Those files and directories are:
 
 * bower_components/ – the folder where web components and their dependencies from `bower.json` are downloaded to, result of `bower install` command
 * build/ – the folder where transpiled and minified files are added to, based on rules from `polymer.json`, result of `polymer build` operation
-* etc/ – this and the next two folders are `node` and `npm` output folders that are downloading dependencies from `package.json` (`bower`, `gulp`, `polymer-cli`)
+* etc/ – this and the next two folders are `node` and `npm` output folders that are downloading dependencies from `package.json` (`bower`, `polymer-cli`)
 * node/
 * node_modules/
 
