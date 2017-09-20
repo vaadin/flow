@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.polymertemplate.model;
+package com.vaadin.flow.model;
 
 /**
  * Exception thrown when encountering an invalid type in a template model.

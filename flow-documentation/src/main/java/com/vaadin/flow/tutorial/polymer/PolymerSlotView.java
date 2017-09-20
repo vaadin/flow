@@ -24,7 +24,7 @@ import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.CompanyView;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.HomeView;

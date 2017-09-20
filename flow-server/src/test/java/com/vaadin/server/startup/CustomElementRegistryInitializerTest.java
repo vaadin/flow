@@ -32,7 +32,7 @@ import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.server.VaadinService;

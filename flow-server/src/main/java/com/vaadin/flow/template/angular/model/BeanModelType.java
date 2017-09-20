@@ -29,12 +29,12 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.ui.polymertemplate.model.BasicModelType;
-import com.vaadin.ui.polymertemplate.model.ComplexModelType;
-import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
-import com.vaadin.ui.polymertemplate.model.ModelType;
-import com.vaadin.ui.polymertemplate.model.PropertyFilter;
-import com.vaadin.ui.polymertemplate.model.TemplateModelUtil;
+import com.vaadin.flow.model.BasicModelType;
+import com.vaadin.flow.model.ComplexModelType;
+import com.vaadin.flow.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.model.PropertyFilter;
+import com.vaadin.flow.model.TemplateModelUtil;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;

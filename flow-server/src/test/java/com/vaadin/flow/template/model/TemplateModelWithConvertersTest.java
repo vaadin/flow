@@ -21,9 +21,9 @@ import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModelTest.EmptyDivTemplate;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
-import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
-import com.vaadin.ui.polymertemplate.model.ModelConverter;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.ModelConverter;
+import com.vaadin.flow.model.TemplateModel;
 
 public class TemplateModelWithConvertersTest {
 

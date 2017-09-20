@@ -49,14 +49,14 @@ import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExcludeOnLis
 import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithInclude.ModelWithInclude;
 import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean;
 import com.vaadin.flow.template.model.TemplateModelTest.TemplateWithIncludeOnList.ModelWithIncludeOnList;
-import com.vaadin.ui.polymertemplate.model.BasicComplexModelType;
-import com.vaadin.ui.polymertemplate.model.BasicModelType;
-import com.vaadin.ui.polymertemplate.model.BeanModelType;
-import com.vaadin.ui.polymertemplate.model.ComplexModelType;
-import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
-import com.vaadin.ui.polymertemplate.model.ListModelType;
-import com.vaadin.ui.polymertemplate.model.ModelDescriptor;
-import com.vaadin.ui.polymertemplate.model.ModelType;
+import com.vaadin.flow.model.BasicComplexModelType;
+import com.vaadin.flow.model.BasicModelType;
+import com.vaadin.flow.model.BeanModelType;
+import com.vaadin.flow.model.ComplexModelType;
+import com.vaadin.flow.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.ListModelType;
+import com.vaadin.flow.model.ModelDescriptor;
+import com.vaadin.flow.model.ModelType;
 
 public class ModelDescriptorTest {
 

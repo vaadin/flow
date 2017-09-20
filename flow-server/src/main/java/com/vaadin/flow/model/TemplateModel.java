@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.polymertemplate.model;
+package com.vaadin.flow.model;
 
 import java.io.Serializable;
 import java.util.List;

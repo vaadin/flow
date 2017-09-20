@@ -27,7 +27,7 @@ import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 
 /**
  * @author Vaadin Ltd.

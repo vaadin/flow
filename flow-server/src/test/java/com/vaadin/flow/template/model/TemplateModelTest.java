@@ -27,8 +27,8 @@ import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
-import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {

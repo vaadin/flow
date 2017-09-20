@@ -11,11 +11,11 @@ import com.vaadin.flow.template.model.TemplateModelTest.EmptyModelTemplate;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.polymertemplate.model.BeanModelType;
-import com.vaadin.ui.polymertemplate.model.ModelDescriptor;
-import com.vaadin.ui.polymertemplate.model.PropertyFilter;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
-import com.vaadin.ui.polymertemplate.model.TemplateModelProxyHandler;
+import com.vaadin.flow.model.BeanModelType;
+import com.vaadin.flow.model.ModelDescriptor;
+import com.vaadin.flow.model.PropertyFilter;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModelProxyHandler;
 
 public class TemplateModelProxyHandlerTest {
 

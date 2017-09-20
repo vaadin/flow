@@ -25,8 +25,8 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.ModelConverter;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.ModelConverter;
+import com.vaadin.flow.model.TemplateModel;
 
 @Tag("convert-to-bean")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/ConvertToBean.html")

@@ -25,8 +25,8 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.ui.polymertemplate.model.ComplexModelType;
-import com.vaadin.ui.polymertemplate.model.PropertyFilter;
+import com.vaadin.flow.model.ComplexModelType;
+import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.util.ReflectTools;
 

@@ -22,7 +22,7 @@ import com.vaadin.ui.common.ComponentTest;
 import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.tests.util.TestUtil;

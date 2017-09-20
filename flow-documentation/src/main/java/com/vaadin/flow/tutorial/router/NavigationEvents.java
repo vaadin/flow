@@ -25,7 +25,7 @@ import com.vaadin.flow.router.event.AfterNavigationListener;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationListener;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")

@@ -25,7 +25,7 @@ import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 

@@ -33,7 +33,7 @@ import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.ModelType;
+import com.vaadin.flow.model.ModelType;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.common.Component;
 import com.vaadin.util.ReflectTools;

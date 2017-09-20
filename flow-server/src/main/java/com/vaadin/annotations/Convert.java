@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.template.angular.model.TemplateModel;
-import com.vaadin.ui.polymertemplate.model.ModelConverter;
+import com.vaadin.flow.model.ModelConverter;
 
 /**
  * Defines a ModelConverter on a template model property found through

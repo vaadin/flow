@@ -19,8 +19,8 @@ import java.util.AbstractList;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.ui.polymertemplate.model.ComplexModelType;
-import com.vaadin.ui.polymertemplate.model.PropertyFilter;
+import com.vaadin.flow.model.ComplexModelType;
+import com.vaadin.flow.model.PropertyFilter;
 
 /**
  * A list implementation which uses a {@link ModelList} in a {@link StateNode}

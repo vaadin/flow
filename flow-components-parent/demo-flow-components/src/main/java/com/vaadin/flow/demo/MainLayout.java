@@ -30,7 +30,7 @@ import com.vaadin.flow.demo.views.DemoView;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 
 /**
  * Main layout of the application. It contains the menu, header and the main

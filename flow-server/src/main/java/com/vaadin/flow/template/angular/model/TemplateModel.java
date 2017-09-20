@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.vaadin.ui.polymertemplate.model.PropertyFilter;
+import com.vaadin.flow.model.PropertyFilter;
 
 /**
  * Interface for a template model. Extending this interface and adding getters

@@ -22,7 +22,7 @@ import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.flow.template.model.Bean;
 import com.vaadin.flow.template.model.BeanContainingBeans;
-import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 

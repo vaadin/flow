@@ -24,9 +24,9 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
-import com.vaadin.ui.polymertemplate.model.ModelType;
-import com.vaadin.ui.polymertemplate.model.PropertyFilter;
+import com.vaadin.flow.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.util.ReflectTools;
 

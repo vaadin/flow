@@ -20,7 +20,7 @@ import com.vaadin.annotations.Id;
 import com.vaadin.ui.html.Input;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModel;
 
 public abstract class AbstractAttachExistingElementByIdTemplate
         extends PolymerTemplate<TemplateModel> {

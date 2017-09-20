@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.ui.polymertemplate.model.ListModelType;
-import com.vaadin.ui.polymertemplate.model.ModelDescriptor;
-import com.vaadin.ui.polymertemplate.model.ModelType;
-import com.vaadin.ui.polymertemplate.model.TemplateModel;
-import com.vaadin.ui.polymertemplate.model.TemplateModelProxyHandler;
+import com.vaadin.flow.model.ListModelType;
+import com.vaadin.flow.model.ModelDescriptor;
+import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.model.TemplateModelProxyHandler;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
