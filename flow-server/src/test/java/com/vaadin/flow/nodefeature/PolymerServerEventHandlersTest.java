@@ -42,8 +42,8 @@ import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 

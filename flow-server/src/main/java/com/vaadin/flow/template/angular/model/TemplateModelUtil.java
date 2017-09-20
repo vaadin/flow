@@ -26,7 +26,7 @@ import com.vaadin.annotations.Include;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.ui.polymertemplate.model.ModelType;
 
 /**
  * Utility class for mapping Bean values to {@link TemplateModel} values.

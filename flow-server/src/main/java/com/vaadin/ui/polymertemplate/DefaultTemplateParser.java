@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template;
+package com.vaadin.ui.polymertemplate;
 
 import java.io.IOException;
 import java.io.InputStream;

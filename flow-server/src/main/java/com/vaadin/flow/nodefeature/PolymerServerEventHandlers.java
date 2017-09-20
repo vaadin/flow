@@ -28,7 +28,7 @@ import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.common.Component;
 
 /**

@@ -14,12 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.template;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+package com.vaadin.ui.polymertemplate;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -30,9 +25,14 @@ import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vaadin Ltd.
@@ -88,14 +88,13 @@ public class TemplateInitializerTest {
         String outsideTemplateElementId = OutsideTemplateClass.class
                 .getField("element").getAnnotation(Id.class).value();
 
-        templateParser = (clazz,
-                tag) -> Jsoup.parse(String.format(
-                        "<dom-module id='%s'><template>"
-                                + "    <template><div id='%s'>Test</div></template>"
-                                + "    <div id='%s'></div>"
-                                + "</template></dom-module>",
-                        parentTemplateId, inTemplateElementId,
-                        outsideTemplateElementId));
+        templateParser = (clazz, tag) -> Jsoup.parse(String.format(
+                "<dom-module id='%s'><template>"
+                        + "    <template><div id='%s'>Test</div></template>"
+                        + "    <div id='%s'></div>"
+                        + "</template></dom-module>",
+                parentTemplateId, inTemplateElementId,
+                outsideTemplateElementId));
     }
 
     @Test(expected = IllegalStateException.class)

@@ -20,7 +20,7 @@ import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Label;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 

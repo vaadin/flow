@@ -29,7 +29,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.template.angular.model.BeanModelType;
-import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.ui.polymertemplate.model.ModelType;
 
 import elemental.json.JsonValue;
 

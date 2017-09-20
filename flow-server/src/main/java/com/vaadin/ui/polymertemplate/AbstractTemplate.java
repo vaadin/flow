@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.template;
+package com.vaadin.ui.polymertemplate;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

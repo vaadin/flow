@@ -20,8 +20,8 @@ import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.common.Component;
 

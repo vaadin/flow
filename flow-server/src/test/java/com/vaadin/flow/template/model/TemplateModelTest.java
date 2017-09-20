@@ -24,9 +24,11 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
+import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
@@ -286,7 +288,7 @@ public class TemplateModelTest {
     EmptyDivTemplate<TemplateWithExcludeForSubBean.ModelWithExcludeForSubBean> {
 
         public interface ModelWithExcludeForSubBean
-        extends com.vaadin.flow.template.model.TemplateModel {
+        extends TemplateModel {
             BeanContainingBeans getBeanContainingBeans();
 
             @Exclude({ "bean1.booleanObject", "bean2" })

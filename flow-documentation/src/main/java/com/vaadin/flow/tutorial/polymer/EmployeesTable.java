@@ -5,8 +5,8 @@ import java.util.List;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Include;
 import com.vaadin.annotations.RepeatIndex;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.polymer.EmployeesTable.EmployeesModel;
 

@@ -6,7 +6,7 @@ import java.util.List;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.ui.template.DomRepeatView;
 import com.vaadin.flow.uitest.ui.template.EventHandlerView;
 import com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingView;

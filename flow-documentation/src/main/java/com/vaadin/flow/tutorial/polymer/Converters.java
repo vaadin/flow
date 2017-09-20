@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.vaadin.annotations.Convert;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("polymer-templates/tutorial-template-model-converters.asciidoc")

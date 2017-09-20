@@ -18,8 +18,8 @@ package com.vaadin.flow.tutorial.polymer;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("polymer-templates/tutorial-template-subtemplate.asciidoc")

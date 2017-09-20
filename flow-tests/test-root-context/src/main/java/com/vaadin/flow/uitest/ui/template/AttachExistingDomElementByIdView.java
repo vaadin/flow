@@ -21,8 +21,8 @@ import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/AttachExistingDomElementById.html")
 @Tag("existing-dom-element")

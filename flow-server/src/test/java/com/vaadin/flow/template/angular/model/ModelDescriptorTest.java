@@ -45,10 +45,10 @@ import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithExcl
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithInclude.ModelWithInclude;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean;
 import com.vaadin.flow.template.angular.model.TemplateModelTest.TemplateWithIncludeOnList.ModelWithIncludeOnList;
-import com.vaadin.flow.template.model.BasicModelType;
+import com.vaadin.ui.polymertemplate.model.BasicModelType;
 import com.vaadin.flow.template.model.Bean;
-import com.vaadin.flow.template.model.InvalidTemplateModelException;
-import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.ui.polymertemplate.model.InvalidTemplateModelException;
+import com.vaadin.ui.polymertemplate.model.ModelType;
 
 public class ModelDescriptorTest {
 

@@ -32,7 +32,7 @@ import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.AbstractTemplate;
+import com.vaadin.ui.polymertemplate.AbstractTemplate;
 import com.vaadin.flow.template.angular.RelativeFileResolver;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.TemplateParseException;

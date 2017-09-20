@@ -29,8 +29,8 @@ import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 
 /**
  * Main layout of the application. It contains the menu, header and the main

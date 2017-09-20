@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.ui.polymertemplate.model;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -310,7 +310,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return null;
         }
         if (modelValue instanceof StateNode) {
-            return com.vaadin.flow.template.model.TemplateModelProxyHandler
+            return TemplateModelProxyHandler
                     .createModelProxy((StateNode) modelValue, this);
         } else if (modelValue instanceof JsonObject) {
             throw new IllegalArgumentException(String.format(

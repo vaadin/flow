@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template;
+package com.vaadin.ui.polymertemplate;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.empty;
@@ -38,7 +38,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.nodes.Comment;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
-import com.vaadin.flow.template.PolymerTemplateTest.ModelClass;
+import com.vaadin.ui.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;

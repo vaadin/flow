@@ -7,6 +7,9 @@ import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
+import com.vaadin.ui.polymertemplate.model.BeanModelType;
+import com.vaadin.ui.polymertemplate.model.PropertyFilter;
+import com.vaadin.ui.polymertemplate.model.TemplateModelListProxy;
 
 public class TemplateModelListProxyTest {
 

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template;
+package com.vaadin.ui.polymertemplate;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.template.model.ListModelType;
-import com.vaadin.flow.template.model.ModelDescriptor;
-import com.vaadin.flow.template.model.ModelType;
-import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.flow.template.model.TemplateModelProxyHandler;
+import com.vaadin.ui.polymertemplate.model.ListModelType;
+import com.vaadin.ui.polymertemplate.model.ModelDescriptor;
+import com.vaadin.ui.polymertemplate.model.ModelType;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.model.TemplateModelProxyHandler;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML

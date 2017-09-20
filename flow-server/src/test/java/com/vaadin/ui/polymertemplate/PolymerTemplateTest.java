@@ -14,12 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.template;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+package com.vaadin.ui.polymertemplate;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,16 +43,20 @@ import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.shared.NodeProperties;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.server.startup.CustomElementRegistryAccess;
-import com.vaadin.ui.common.Component;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.Component;
 
 import elemental.json.JsonArray;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Vaadin Ltd.
@@ -126,7 +125,7 @@ public class PolymerTemplateTest {
 
     @Tag(TAG)
     public static class TestPolymerTemplate
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
         public TestPolymerTemplate() {
             super(new SimpleTemplateParser());
         }
@@ -161,7 +160,7 @@ public class PolymerTemplateTest {
 
     @Tag("parent-template")
     private static class TemplateInTemplate
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
@@ -179,22 +178,21 @@ public class PolymerTemplateTest {
 
     @Tag("parent-inject-child")
     private static class BundledTemplateInTemplate
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
 
         public BundledTemplateInTemplate() {
-            super((clazz, tag) -> Jsoup
-                    .parse("<dom-module id='child-template'>"
-                            + "<template><ffs></template></dom-module>"
-                            + "<dom-module id='ffs'><template></template></dom-module>"
-                            + "<dom-module id='" + tag
-                            + "'><template><div><ffs></div><span></span><child-template></template></dom-module>"));
+            super((clazz, tag) -> Jsoup.parse("<dom-module id='child-template'>"
+                    + "<template><ffs></template></dom-module>"
+                    + "<dom-module id='ffs'><template></template></dom-module>"
+                    + "<dom-module id='" + tag
+                    + "'><template><div><ffs></div><span></span><child-template></template></dom-module>"));
         }
 
     }
 
     @Tag("parent-inject-child")
     private static class TemplateInjectTemplate
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
 
         @Id("child")
         private TemplateChild child;
@@ -208,20 +206,20 @@ public class PolymerTemplateTest {
 
     @Tag("parent-template")
     private static class TemplateWithChildInDomRepeat
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
 
         public TemplateWithChildInDomRepeat() {
-            super((clazz, tag) -> Jsoup
-                    .parse("<dom-module id='" + tag + "'><template><div>"
-                            + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
-                            + "</div></template></dom-module>"));
+            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><template><div>"
+                    + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
+                    + "</div></template></dom-module>"));
         }
 
     }
 
     @Tag("parent-template")
     private static class TemplateWithDomRepeat
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
@@ -241,7 +239,7 @@ public class PolymerTemplateTest {
 
     @Tag(TAG)
     private static class TextNodesInHtmlTemplate
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
 
         private final TestTemplateParser parser;
 
@@ -311,7 +309,7 @@ public class PolymerTemplateTest {
     }
 
     private static class TemplateWithoutTagAnnotation
-    extends PolymerTemplate<ModelClass> {
+            extends PolymerTemplate<ModelClass> {
     }
 
     @Tag(TAG)
@@ -336,7 +334,7 @@ public class PolymerTemplateTest {
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(service.getDeploymentConfiguration())
-        .thenReturn(configuration);
+                .thenReturn(configuration);
         VaadinService.setCurrent(service);
     }
 
@@ -661,8 +659,7 @@ public class PolymerTemplateTest {
         assertEquals(1, counter.get());
 
         Assert.assertEquals("child", com.vaadin.flow.dom.Element
-                .get(injected.get())
-                .getAttribute(NodeProperties.ID));
+                .get(injected.get()).getAttribute(NodeProperties.ID));
     }
 
     private void doParseTemplate_hasChildTemplate_elementsAreCreatedAndRequestIsSent(
