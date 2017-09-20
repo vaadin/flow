@@ -20,7 +20,7 @@ import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeFeatures;
 
 /**
  * Tracks the reconnect dialog configuration stored in the root node and

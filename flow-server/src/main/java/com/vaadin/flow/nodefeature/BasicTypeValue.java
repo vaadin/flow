@@ -18,7 +18,6 @@ package com.vaadin.flow.nodefeature;
 import java.io.Serializable;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.shared.NodeProperties;
 
 /**
  * The feature contains a value of the basic type.

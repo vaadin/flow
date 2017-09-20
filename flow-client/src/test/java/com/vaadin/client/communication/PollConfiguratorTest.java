@@ -25,7 +25,7 @@ import com.vaadin.client.UILifecycle;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeFeatures;
 
 public class PollConfiguratorTest {
 

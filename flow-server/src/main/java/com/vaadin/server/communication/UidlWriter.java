@@ -51,7 +51,7 @@ import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.shared.NodeProperties;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.DependencyFilter;

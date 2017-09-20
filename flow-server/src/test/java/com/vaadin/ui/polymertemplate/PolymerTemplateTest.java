@@ -42,7 +42,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.shared.NodeProperties;
+import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.ui.polymertemplate.model.TemplateModel;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
