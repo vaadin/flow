@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.annotations.Id;
+import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Input;
-import com.vaadin.flow.html.Span;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Input;
+import com.vaadin.ui.html.Span;
 import com.vaadin.ui.AngularTemplate;
 
 public class TemplateComponentMappingView extends AngularTemplate {

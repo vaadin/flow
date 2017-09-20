@@ -24,7 +24,7 @@ public class PathComponent extends Div {
 
 public class Menu extends Div {
     public Menu() {
-        String route = ((NewRouter) UI.getCurrent().getRouter().get())
+        String route = ((Router) UI.getCurrent().getRouter().get())
                 .getUrl(PathComponent.class);
         Anchor link = new Anchor(route, "Path");
     }
@@ -54,7 +54,7 @@ public class GreetingComponent extends Div
 
 public class ParameterMenu extends Div {
     public ParameterMenu() {
-        String route = ((NewRouter) UI.getCurrent().getRouter().get())
+        String route = ((Router) UI.getCurrent().getRouter().get())
                 .getUrl(GreetingComponent.class, "anonymous");
         Anchor link = new Anchor(route, "Greeting");
     }

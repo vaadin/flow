@@ -31,16 +31,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.NotEmptyValidator;
-import com.vaadin.flow.html.Label;
-import com.vaadin.server.SerializablePredicate;
+import com.vaadin.ui.html.Label;
+import com.vaadin.function.SerializablePredicate;
 import com.vaadin.tests.data.bean.Person;
-import com.vaadin.ui.HasValidation;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.common.HasValidation;
+import com.vaadin.ui.textfield.TextField;
 
 public class BinderConverterValidatorTest
         extends BinderTestBase<Binder<Person>, Person> {

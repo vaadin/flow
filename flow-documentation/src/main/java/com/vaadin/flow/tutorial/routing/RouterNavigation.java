@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.CompanyView;

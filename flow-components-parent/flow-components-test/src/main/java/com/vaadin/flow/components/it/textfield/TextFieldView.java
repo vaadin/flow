@@ -16,9 +16,9 @@
 package com.vaadin.flow.components.it.textfield;
 
 import com.vaadin.flow.components.it.TestView;
-import com.vaadin.flow.html.Div;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * Test view for {@link TextField}.

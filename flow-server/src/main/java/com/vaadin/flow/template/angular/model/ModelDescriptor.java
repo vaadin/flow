@@ -17,8 +17,8 @@ package com.vaadin.flow.template.angular.model;
 
 import java.util.Map;
 
-import com.vaadin.flow.template.model.ModelType;
-import com.vaadin.flow.template.model.PropertyFilter;
+import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.flow.util.ReflectionCache;
 
 /**

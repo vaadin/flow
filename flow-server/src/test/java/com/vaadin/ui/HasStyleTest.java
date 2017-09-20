@@ -23,7 +23,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HasStyle;
 
 public class HasStyleTest {
 

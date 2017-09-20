@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.View;
 
 public class ClientSideExceptionHandlingView extends Div implements View {

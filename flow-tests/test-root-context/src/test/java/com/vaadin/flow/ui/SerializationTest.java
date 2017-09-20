@@ -27,9 +27,9 @@ import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.router.Location;
+import com.vaadin.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.uitest.servlet.ViewClassLocator;

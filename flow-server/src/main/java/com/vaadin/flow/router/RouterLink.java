@@ -21,17 +21,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.StateTree;
-import com.vaadin.flow.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.router.RouteLocation;
+import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.router.Location;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.HasText;
-import com.vaadin.ui.PropertyDescriptor;
-import com.vaadin.ui.PropertyDescriptors;
+import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasText;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
 import com.vaadin.ui.UI;
 
 /**

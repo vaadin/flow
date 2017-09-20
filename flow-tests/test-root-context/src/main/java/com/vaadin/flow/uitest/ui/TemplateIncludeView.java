@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.annotations.HtmlTemplate;
+import com.vaadin.flow.template.angular.HtmlTemplate;
 import com.vaadin.ui.AngularTemplate;
 
 @HtmlTemplate("main.html")

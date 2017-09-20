@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.scroll;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 
 @Tag("server-request")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/ServerRequest.html")

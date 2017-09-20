@@ -19,9 +19,9 @@ import java.util.function.BiConsumer;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.event.ClickEvent;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.event.ClickEvent;
 import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History;

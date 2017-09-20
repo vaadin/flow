@@ -26,6 +26,9 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.router.Location;
+import com.vaadin.router.RouteLocation;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Page;
 
 /**
