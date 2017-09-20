@@ -19,10 +19,10 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.vaadin.annotations.Convert;
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.flow.model.Convert;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.ModelConverter;

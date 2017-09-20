@@ -20,9 +20,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 
-import com.vaadin.annotations.Route;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.Title;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.common.Component;

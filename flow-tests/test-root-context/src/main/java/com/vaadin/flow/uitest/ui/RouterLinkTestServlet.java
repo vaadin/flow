@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.RouterConfiguration;

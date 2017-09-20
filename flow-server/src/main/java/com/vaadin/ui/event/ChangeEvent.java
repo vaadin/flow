@@ -15,9 +15,7 @@
  */
 package com.vaadin.ui.event;
 
-import com.vaadin.annotations.DomEvent;
 import com.vaadin.ui.common.HtmlComponent;
-import com.vaadin.ui.event.ComponentEvent;
 
 /**
  * Event fired when the value of a component has changed. The new value can be

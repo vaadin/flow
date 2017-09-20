@@ -19,7 +19,7 @@ import java.util.Properties;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
 import com.vaadin.server.Constants;
 import com.vaadin.function.DeploymentConfiguration;

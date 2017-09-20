@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.annotations.Id;
+import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.combo.box.GeneratedVaadinComboBox;

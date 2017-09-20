@@ -13,34 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.ui.polymertemplate;
 
-package com.vaadin.annotations;
-
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.AngularTemplate;
 
 /**
- * Defines the HTML page title for a {@link View}.
+ * Defines the id of an element to map to inside a {@link AngularTemplate}.
+ *
+ * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Title {
-
+@Target(ElementType.FIELD)
+@Documented
+public @interface Id {
     /**
-     * Gets the HTML title that should be used.
-     * <p>
-     * Empty string will clear any previous page title. In that case the browser
-     * will decide what to show as the title, most likely the url.
-     * <p>
-     * You may dynamically update the title for a view by overriding the
-     * {@link View#getTitle(com.vaadin.flow.router.LocationChangeEvent)
-     * View.getTitle(LocationChangeEvent)} method.
+     * The id of the element to map to.
      *
-     * @return a page title string
+     * @return the id of the element to map to
      */
     String value();
 }

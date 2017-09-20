@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.flow.model;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.annotations.InternalContainerAnnotationForConvert;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.model.ModelConverter;
 

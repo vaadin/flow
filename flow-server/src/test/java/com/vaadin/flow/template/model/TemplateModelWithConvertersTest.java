@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.annotations.Convert;
+import com.vaadin.flow.model.Convert;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModelTest.EmptyDivTemplate;

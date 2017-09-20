@@ -13,35 +13,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
 
-import java.lang.annotation.Documented;
+package com.vaadin.router;
+
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.router.View;
+
 /**
- * Defines a viewport tag that will be added to the HTML of the host page of a
- * UI class.
- * <p>
- * If you want to dynamically provide different viewport values for different
- * browser, you should use {@link ViewportGeneratorClass} instead.
- *
- * @since 7.4
- *
- * @author Vaadin Ltd
+ * Defines the HTML page title for a {@link View}.
  */
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-public @interface Viewport {
+@Target(ElementType.TYPE)
+public @interface Title {
+
     /**
-     * Gets the viewport tag content.
+     * Gets the HTML title that should be used.
+     * <p>
+     * Empty string will clear any previous page title. In that case the browser
+     * will decide what to show as the title, most likely the url.
+     * <p>
+     * You may dynamically update the title for a view by overriding the
+     * {@link View#getTitle(com.vaadin.flow.router.LocationChangeEvent)
+     * View.getTitle(LocationChangeEvent)} method.
      *
-     * @return the viewport tag content
+     * @return a page title string
      */
     String value();
 }

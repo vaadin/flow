@@ -15,8 +15,6 @@
  */
 package com.vaadin.ui.event;
 
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.EventData;
 import com.vaadin.ui.common.Component;
 
 @DomEvent("dom-event")

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.annotations;
+package com.vaadin.server;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,11 +25,7 @@ import java.util.function.Function;
 
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.server.Constants;
-import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 
 /**

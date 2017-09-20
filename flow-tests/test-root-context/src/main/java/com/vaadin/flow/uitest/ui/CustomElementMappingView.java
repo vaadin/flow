@@ -3,8 +3,8 @@ package com.vaadin.flow.uitest.ui;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.Title;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.router.Title;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.ui.template.DomRepeatView;

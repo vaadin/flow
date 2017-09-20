@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.event;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.common.Component;
-import com.vaadin.ui.event.ComponentEvent;
 
 /**
  * Maps a DOM event to a {@link ComponentEvent}.

@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.Id;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;

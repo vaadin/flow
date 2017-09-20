@@ -13,10 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.flow.template.angular;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -24,18 +25,26 @@ import java.lang.annotation.Target;
 import com.vaadin.ui.AngularTemplate;
 
 /**
- * Defines the id of an element to map to inside a {@link AngularTemplate}.
+ * Allows to map a specific html file for {@link AngularTemplate}.
  *
+ * @see AngularTemplate
  * @author Vaadin Ltd
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Documented
-public @interface Id {
+@Inherited
+public @interface HtmlTemplate {
+
     /**
-     * The id of the element to map to.
+     * The HTML file path in the classpath.
+     * <p>
+     * It the path starts from "/" then it defines absolute path from the root
+     * otherwise the path is considered as a relative to the package of
+     * annotated class.
      *
-     * @return the id of the element to map to
+     * @return the HTML file path
      */
     String value();
 }

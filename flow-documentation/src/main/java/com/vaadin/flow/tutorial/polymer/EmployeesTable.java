@@ -2,9 +2,9 @@ package com.vaadin.flow.tutorial.polymer;
 
 import java.util.List;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.Include;
-import com.vaadin.annotations.RepeatIndex;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.model.Include;
+import com.vaadin.ui.polymertemplate.RepeatIndex;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;

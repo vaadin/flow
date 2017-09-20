@@ -20,8 +20,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
 import com.vaadin.ui.common.Component;
 
 public class NavigationStateRendererTest {

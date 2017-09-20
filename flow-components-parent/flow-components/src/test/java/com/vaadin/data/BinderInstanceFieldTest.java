@@ -21,7 +21,7 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.StringLengthValidator;

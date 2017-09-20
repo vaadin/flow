@@ -27,9 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.util.AnnotationReader;
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
-import com.vaadin.annotations.RoutePrefix;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
 import com.vaadin.server.InvalidRouteConfigurationException;

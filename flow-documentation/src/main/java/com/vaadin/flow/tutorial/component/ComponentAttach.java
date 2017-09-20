@@ -3,7 +3,7 @@ package com.vaadin.flow.tutorial.component;
 import java.util.EventObject;
 import java.util.function.Consumer;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.Component;

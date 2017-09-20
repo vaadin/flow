@@ -13,27 +13,42 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package com.vaadin.annotations;
+package com.vaadin.ui;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.server.ViewportGenerator;
+
 /**
- * Allows to receive index of an element in dom-repeat Polymer template section.
+ * Defines a viewport tag generator class that will be used for generating the
+ * content of a viewport tag that will be added to the HTML of the host page of
+ * a UI class.
+ * <p>
+ * If you want to use the same viewport values for all requests, you can use the
+ * simpler {@link Viewport} annotation instead.
  *
- * Can be applied on parameters of {@code int} and {@link Integer} types.
+ * @see ViewportGenerator
  *
- * This is a shorthand for {@code @EventData("event.model.index")}, for more
- * information, refer to {@link EventData}.
+ * @since 7.4
  *
  * @author Vaadin Ltd
  */
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.PARAMETER })
+@Inherited
 @Documented
-public @interface RepeatIndex {
+public @interface ViewportGeneratorClass {
+    /**
+     * Gets the viewport generator class to use. Please note that the class must
+     * be public and have a default constructor. It must additionally be
+     * declared as static if it's declared as an inner class.
+     *
+     * @return the viewport generator class
+     */
+    Class<? extends ViewportGenerator> value();
 }

@@ -28,7 +28,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.change.ListAddChange;
 import com.vaadin.flow.change.ListRemoveChange;
 import com.vaadin.flow.change.MapPutChange;

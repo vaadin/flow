@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;

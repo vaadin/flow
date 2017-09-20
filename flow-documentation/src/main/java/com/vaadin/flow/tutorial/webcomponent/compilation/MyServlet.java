@@ -3,7 +3,7 @@ package com.vaadin.flow.tutorial.webcomponent.compilation;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
 

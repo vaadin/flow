@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.common;
 
-import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;

@@ -33,8 +33,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.nodes.Comment;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;

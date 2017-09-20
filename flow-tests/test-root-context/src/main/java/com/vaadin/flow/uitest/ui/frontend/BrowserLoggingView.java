@@ -16,8 +16,8 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 import com.vaadin.flow.router.View;

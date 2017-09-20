@@ -26,10 +26,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.ui.common.Component;
+import com.vaadin.ui.event.Tag;
 
 /**
  * A class to store the data about element
- * name({@link com.vaadin.annotations.Tag} annotation name value) relation to
+ * name({@link Tag} annotation name value) relation to
  * all unique classes with corresponding annotation.
  *
  * @author Vaadin Ltd.

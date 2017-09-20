@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Hr;
 import com.vaadin.ui.common.Component;

@@ -22,7 +22,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.ui.common.Component;

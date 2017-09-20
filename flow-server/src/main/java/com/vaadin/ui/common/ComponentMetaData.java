@@ -24,11 +24,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.util.AnnotationReader;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Uses;
+import com.vaadin.ui.event.Synchronize;
 import com.vaadin.util.ReflectTools;
 
 /**

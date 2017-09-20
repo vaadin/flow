@@ -23,8 +23,8 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.common.Component;

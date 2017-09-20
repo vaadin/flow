@@ -2,7 +2,7 @@ package com.vaadin.flow.tutorial.webcomponent.compilation;
 
 import java.util.Optional;
 
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;

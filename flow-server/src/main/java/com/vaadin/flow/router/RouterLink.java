@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.StateTree;
 import com.vaadin.router.RouteLocation;
 import com.vaadin.router.RouteLocation.RouteSegmentVisitor;

@@ -1,6 +1,6 @@
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.annotations.Title;
+import com.vaadin.router.Title;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.DefaultPageTitleGenerator;
 import com.vaadin.flow.router.LocationChangeEvent;

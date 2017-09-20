@@ -18,8 +18,8 @@ package com.vaadin.ui.html;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.ui.event.ChangeEvent;
 import com.vaadin.ui.event.ChangeNotifier;

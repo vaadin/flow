@@ -21,8 +21,8 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-import com.vaadin.annotations.Exclude;
-import com.vaadin.annotations.Include;
+import com.vaadin.flow.model.Exclude;
+import com.vaadin.flow.model.Include;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;

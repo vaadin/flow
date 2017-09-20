@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.event;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,28 +21,30 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.dom.Element;
+
 /**
- * Allows to receive Model class item from the client side instead of a index of
- * an element in dom-repeat Polymer template section, or string representation.
+ * Maps data from a DOM event to a {@link ComponentEvent}.
  * <p>
- * Can be applied on parameters with classes found in the {@code TemplateModel}.
- * <p>
- * This is by default a shorthand for {@code @EventData("event.model.item")}
- * that works with {@code List} type model items. For other Model items define
- * the value to be the methodName e.g. for {@code setSubItem(...)} use
- * {@code @ModelItem("subItem")}.
+ * This annotation should be added to the DOM event constructor in a
+ * {@link ComponentEvent}, mapped using @{@link DomEvent}. See the @
+ * {@link DomEvent} documentation for more information.
  *
+ * @see DomEvent
+ * @see Element#addEventListener(String,
+ *      com.vaadin.flow.dom.DomEventListener, String...)
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })
 @Documented
-public @interface ModelItem {
-
+public @interface EventData {
     /**
-     * Path value for ModelItem.
-     * 
-     * @return Given Path or default value
+     * The identifier used in
+     * {@link Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener, String...)}
+     * to identify the event data.
+     *
+     * @return the identifier to use for fetching event data
      */
-    String value() default "event.model.item";
+    String value();
 }

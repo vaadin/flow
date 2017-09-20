@@ -22,10 +22,10 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.EventData;
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.ModelItem;
-import com.vaadin.annotations.RepeatIndex;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.polymertemplate.ModelItem;
+import com.vaadin.ui.polymertemplate.RepeatIndex;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;

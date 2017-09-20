@@ -13,38 +13,36 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.polymertemplate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.AngularTemplate;
-
 /**
- * Allows to map a specific html file for {@link AngularTemplate}.
+ * Allows to receive Model class item from the client side instead of a index of
+ * an element in dom-repeat Polymer template section, or string representation.
+ * <p>
+ * Can be applied on parameters with classes found in the {@code TemplateModel}.
+ * <p>
+ * This is by default a shorthand for {@code @EventData("event.model.item")}
+ * that works with {@code List} type model items. For other Model items define
+ * the value to be the methodName e.g. for {@code setSubItem(...)} use
+ * {@code @ModelItem("subItem")}.
  *
- * @see AngularTemplate
  * @author Vaadin Ltd
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ ElementType.PARAMETER })
 @Documented
-@Inherited
-public @interface HtmlTemplate {
+public @interface ModelItem {
 
     /**
-     * The HTML file path in the classpath.
-     * <p>
-     * It the path starts from "/" then it defines absolute path from the root
-     * otherwise the path is considered as a relative to the package of
-     * annotated class.
-     *
-     * @return the HTML file path
+     * Path value for ModelItem.
+     * 
+     * @return Given Path or default value
      */
-    String value();
+    String value() default "event.model.item";
 }

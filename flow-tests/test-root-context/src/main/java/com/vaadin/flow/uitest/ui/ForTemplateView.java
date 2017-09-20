@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.annotations.ClientDelegate;
+import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.flow.StateNode;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;

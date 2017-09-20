@@ -17,7 +17,6 @@ package com.vaadin.router;
 
 import java.util.Optional;
 
-import com.vaadin.annotations.Route;
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;

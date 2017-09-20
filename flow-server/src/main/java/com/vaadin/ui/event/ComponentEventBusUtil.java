@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.annotations.EventData;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.ReflectionCache;
@@ -233,8 +232,8 @@ public class ComponentEventBusUtil {
      */
     public static Optional<String> getDomEventType(
             Class<? extends ComponentEvent<?>> eventType) {
-        com.vaadin.annotations.DomEvent domEvent = eventType
-                .getAnnotation(com.vaadin.annotations.DomEvent.class);
+        com.vaadin.ui.event.DomEvent domEvent = eventType
+                .getAnnotation(com.vaadin.ui.event.DomEvent.class);
         if (domEvent == null) {
             return Optional.empty();
         } else {

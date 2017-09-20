@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.ui.html.Div;

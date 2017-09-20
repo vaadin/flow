@@ -13,24 +13,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.router;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.router.RouterLayout;
+
 /**
- * Publishes the annotated method so it can be invoked from the client side
- * using the notation <code>this.$server.method()</code> in template methods.
- *
- * @author Vaadin Ltd
- *
+ * Defines the parent layout for components in routing hierarchy.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
+@Inherited
 @Documented
-public @interface ClientDelegate {
+public @interface ParentLayout {
 
+    /**
+     * Sets the parent component for the route target component.
+     * <p>
+     * When navigating between components that use the same layout, the same
+     * component instance is reused.
+     *
+     * @return the layout component class used by the route target component.
+     */
+    Class<? extends RouterLayout> value();
 }

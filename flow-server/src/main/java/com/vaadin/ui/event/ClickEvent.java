@@ -15,10 +15,7 @@
  */
 package com.vaadin.ui.event;
 
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.EventData;
 import com.vaadin.ui.common.HtmlComponent;
-import com.vaadin.ui.event.ComponentEvent;
 
 /**
  * Event fired when a component is clicked.

@@ -267,6 +267,6 @@ public interface DeploymentConfiguration extends Serializable {
      * @return whether to use the new annotation based routing implementation
      */
     default boolean isUsingNewRouting() {
-        return true;
+        return false;
     }
 }

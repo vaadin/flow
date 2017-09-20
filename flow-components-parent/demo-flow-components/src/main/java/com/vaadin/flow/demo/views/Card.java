@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.common.HtmlContainer;

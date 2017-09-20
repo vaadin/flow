@@ -15,7 +15,6 @@
  */
 package com.vaadin.router;
 
-import com.vaadin.annotations.Route;
 import com.vaadin.ui.common.HasElement;
 
 /**

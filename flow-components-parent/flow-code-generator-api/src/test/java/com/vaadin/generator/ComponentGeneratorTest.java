@@ -323,7 +323,7 @@ public class ComponentGeneratorTest {
                 matcher.find());
 
         Assert.assertTrue("Missing DomEvent import", generatedClass
-                .contains("import com.vaadin.annotations.DomEvent;"));
+                .contains("import com.vaadin.ui.event.DomEvent;"));
         Assert.assertTrue("Missing ComponentEvent import", generatedClass
                 .contains("import com.vaadin.ui.event.ComponentEvent;"));
         Assert.assertTrue("Missing ComponentEventListener import",
@@ -331,7 +331,7 @@ public class ComponentGeneratorTest {
                         "import com.vaadin.ui.event.ComponentEventListener;"));
         Assert.assertFalse("EventData imported even without events",
                 generatedClass
-                .contains("import com.vaadin.annotations.EventData;"));
+                .contains("import com.vaadin.ui.event.EventData;"));
     }
 
     @Test
@@ -367,7 +367,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void setButton("));
 
         Assert.assertTrue("Missing EventData import", generatedClass
-                .contains("import com.vaadin.annotations.EventData;"));
+                .contains("import com.vaadin.ui.event.EventData;"));
     }
 
     @Test
@@ -403,7 +403,7 @@ public class ComponentGeneratorTest {
                 generatedClass.contains("public void setDetailsProperty("));
 
         Assert.assertTrue("Missing EventData import", generatedClass
-                .contains("import com.vaadin.annotations.EventData;"));
+                .contains("import com.vaadin.ui.event.EventData;"));
     }
 
     @Test

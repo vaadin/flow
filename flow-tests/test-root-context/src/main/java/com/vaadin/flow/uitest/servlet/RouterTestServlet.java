@@ -2,9 +2,9 @@ package com.vaadin.flow.uitest.servlet;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
-import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.ui.html.Div;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.RouterLayout;

@@ -1,7 +1,7 @@
 package com.vaadin.flow.tutorial.polymer;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.Exclude;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.model.Exclude;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;

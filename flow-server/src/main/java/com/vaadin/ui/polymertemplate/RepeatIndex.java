@@ -13,33 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+
+package com.vaadin.ui.polymertemplate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.router.RouterLayout;
+import com.vaadin.ui.event.EventData;
 
 /**
- * Defines the parent layout for components in routing hierarchy.
+ * Allows to receive index of an element in dom-repeat Polymer template section.
+ *
+ * Can be applied on parameters of {@code int} and {@link Integer} types.
+ *
+ * This is a shorthand for {@code @EventData("event.model.index")}, for more
+ * information, refer to {@link EventData}.
+ *
+ * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
+@Target({ ElementType.PARAMETER })
 @Documented
-public @interface ParentLayout {
-
-    /**
-     * Sets the parent component for the route target component.
-     * <p>
-     * When navigating between components that use the same layout, the same
-     * component instance is reused.
-     *
-     * @return the layout component class used by the route target component.
-     */
-    Class<? extends RouterLayout> value();
+public @interface RepeatIndex {
 }

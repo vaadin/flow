@@ -20,7 +20,6 @@ import java.lang.reflect.Constructor;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.DomEvent;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.common.Component;
 import com.vaadin.ui.common.ComponentTest.TestComponent;

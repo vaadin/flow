@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.flow.model;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 
 /**
- * Defines which properties to include when importing a bean into a template
+ * Defines which properties to exclude when importing a bean into a template
  * model.
  * <p>
  * Use this annotation on bean setters in your {@link TemplateModel} class to
@@ -35,23 +35,23 @@ import com.vaadin.flow.template.angular.model.TemplateModel;
  * {@link TemplateModel#importBean(String, Object, java.util.function.Predicate)}
  * and define a custom filter.
  * <p>
- * Note that <code>@Include</code> annotations are not inherited.
+ * Note that <code>@Exclude</code> annotations are not inherited.
  *
- * @see Exclude
+ * @see Include
  *
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
-public @interface Include {
+public @interface Exclude {
 
     /**
-     * Properties to include from a bean when importing into a template model.
+     * Properties to exclude from a bean when importing into a template model.
      * <p>
-     * By default all properties are included.
+     * By default no properties are excluded.
      *
-     * @return the properties to include from a bean when importing into a
+     * @return the properties to exclude from a bean when importing into a
      *         template model
      */
     String[] value();

@@ -15,13 +15,17 @@
  */
 package com.vaadin.shared.ui;
 
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+
 /**
  * Class that determines a way that dependency is loaded. This mode can be
  * specified when importing dependency either via annotations:
  * <ul>
- * <li>{@link com.vaadin.annotations.JavaScript},
- * <li>{@link com.vaadin.annotations.StyleSheet},
- * <li>{@link com.vaadin.annotations.HtmlImport}
+ * <li>{@link JavaScript},
+ * <li>{@link StyleSheet},
+ * <li>{@link HtmlImport}
  * </ul>
  * or via {@link com.vaadin.ui.Page} methods:
  * <ul>

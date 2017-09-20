@@ -13,8 +13,8 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Exclude;
-import com.vaadin.annotations.Include;
+import com.vaadin.flow.model.Exclude;
+import com.vaadin.flow.model.Include;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ModelList;

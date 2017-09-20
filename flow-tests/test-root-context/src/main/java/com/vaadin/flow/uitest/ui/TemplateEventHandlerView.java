@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.ClientDelegate;
+import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.html.Label;

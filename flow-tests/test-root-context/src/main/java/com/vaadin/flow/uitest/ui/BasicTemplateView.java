@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.Id;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Input;
 import com.vaadin.ui.html.NativeButton;

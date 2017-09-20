@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.common;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 
 /**
  * Base class for a {@link Component} that represents a single built-in HTML

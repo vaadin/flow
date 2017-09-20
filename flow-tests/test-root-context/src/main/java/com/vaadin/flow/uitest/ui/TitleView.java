@@ -1,6 +1,6 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.annotations.Title;
+import com.vaadin.router.Title;
 import com.vaadin.ui.html.Div;
 
 @Title("Title view")

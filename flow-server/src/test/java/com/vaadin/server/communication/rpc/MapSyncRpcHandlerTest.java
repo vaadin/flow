@@ -20,14 +20,12 @@ import java.io.Serializable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Id;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
-import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.common.ComponentTest.TestComponent;
 import com.vaadin.ui.UI;

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.polymertemplate;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,31 +21,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.EventData;
 
 /**
- * Maps data from a DOM event to a {@link ComponentEvent}.
- * <p>
- * This annotation should be added to the DOM event constructor in a
- * {@link ComponentEvent}, mapped using @{@link DomEvent}. See the @
- * {@link DomEvent} documentation for more information.
+ * Publishes the annotated method so it can be invoked from the client side as
+ * template event handlers.
  *
- * @see DomEvent
- * @see Element#addEventListener(String,
- *      com.vaadin.flow.dom.DomEventListener, String...)
+ * @see EventData
  * @author Vaadin Ltd
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.PARAMETER })
+@Target(ElementType.METHOD)
 @Documented
-public @interface EventData {
-    /**
-     * The identifier used in
-     * {@link Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener, String...)}
-     * to identify the event data.
-     *
-     * @return the identifier to use for fetching event data
-     */
-    String value();
+public @interface EventHandler {
+
 }

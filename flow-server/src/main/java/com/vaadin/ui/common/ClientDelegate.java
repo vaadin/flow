@@ -13,37 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.common;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines the route prefix that a Parent layout adds to a route when used in
- * the active view chain.
+ * Publishes the annotated method so it can be invoked from the client side
+ * using the notation <code>this.$server.method()</code> in template methods.
+ *
+ * @author Vaadin Ltd
+ *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
+@Target(ElementType.METHOD)
 @Documented
-public @interface RoutePrefix {
+public @interface ClientDelegate {
 
-    /**
-     * Get the route prefix defined for class.
-     * 
-     * @return route prefix to add
-     */
-    String value();
-
-    /**
-     * Have the rout chain break on defined class and not take into notice any
-     * more parent layout route prefixes.
-     * 
-     * @return route up to here should be absolute
-     */
-    boolean absolute() default false;
 }

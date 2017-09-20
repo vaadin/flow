@@ -21,7 +21,7 @@ import java.util.Map;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.StateNode;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;

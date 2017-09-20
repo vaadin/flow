@@ -28,8 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.vaadin.util.AnnotationReader;
-import com.vaadin.annotations.Id;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;

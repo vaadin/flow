@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.router;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,33 +22,28 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.server.ViewportGenerator;
-
 /**
- * Defines a viewport tag generator class that will be used for generating the
- * content of a viewport tag that will be added to the HTML of the host page of
- * a UI class.
- * <p>
- * If you want to use the same viewport values for all requests, you can use the
- * simpler {@link Viewport} annotation instead.
- *
- * @see ViewportGenerator
- *
- * @since 7.4
- *
- * @author Vaadin Ltd
+ * Defines the route prefix that a Parent layout adds to a route when used in
+ * the active view chain.
  */
-@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
 @Inherited
 @Documented
-public @interface ViewportGeneratorClass {
+public @interface RoutePrefix {
+
     /**
-     * Gets the viewport generator class to use. Please note that the class must
-     * be public and have a default constructor. It must additionally be
-     * declared as static if it's declared as an inner class.
-     *
-     * @return the viewport generator class
+     * Get the route prefix defined for class.
+     * 
+     * @return route prefix to add
      */
-    Class<? extends ViewportGenerator> value();
+    String value();
+
+    /**
+     * Have the rout chain break on defined class and not take into notice any
+     * more parent layout route prefixes.
+     * 
+     * @return route up to here should be absolute
+     */
+    boolean absolute() default false;
 }

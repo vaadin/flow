@@ -19,8 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Hr;

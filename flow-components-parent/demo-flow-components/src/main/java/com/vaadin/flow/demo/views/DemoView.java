@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.demo.SourceContentResolver;
 import com.vaadin.flow.demo.model.SourceCodeExample;

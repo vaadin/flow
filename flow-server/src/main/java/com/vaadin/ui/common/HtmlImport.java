@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui.common;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,12 +23,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.annotations.InternalContainerAnnotationForHtml;
 import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.ui.WebComponents;
 import com.vaadin.ui.common.Component;
 
 /**
- * Annotation for defining JavaScript dependencies on a {@link Component} class.
- * For adding multiple JavaScript files for a single component, you can use this
+ * Annotation for defining HTML dependencies on a {@link Component} class. For
+ * adding multiple HTML files for a single component, you can use this
  * annotation multiple times.
  * <p>
  * It is guaranteed that dependencies will be loaded only once.
@@ -43,19 +45,31 @@ import com.vaadin.ui.common.Component;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Repeatable(InternalContainerAnnotationForJS.class)
-public @interface JavaScript {
+@Repeatable(InternalContainerAnnotationForHtml.class)
+public @interface HtmlImport {
 
     /**
-     * JavaScript file URL to load before using the annotated {@link Component}
-     * in the browser.
+     * HTML file URL to load before using the annotated {@link Component} in the
+     * browser.
      * <p>
      * Relative URLs are interpreted as relative to the service (servlet) path.
      * You can prefix the URL with {@literal context://} to make it relative to
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
+     * <p>
+     * When using compiled web components, you can prefix the URL with
+     * {@literal frontend://} to serve different files to different browsers,
+     * based on their ES6 support. For example, when using
+     * {@literal frontend://MyComponent.html}, the evaluated URL will be:
+     * <ul>
+     * <li>{@literal context://VAADIN/static/frontend/es6/MyComponent.html} for
+     * ES6 capable browsers;</li>
+     * <li>{@literal context://VAADIN/static/frontend/es5/MyComponent.html} for
+     * other browsers.</li>
+     * </ul>
      *
-     * @return a JavaScript file URL
+     * @return a html file URL
+     * @see WebComponents
      */
     String value();
 

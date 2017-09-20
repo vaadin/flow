@@ -13,25 +13,35 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.annotations;
+package com.vaadin.ui;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Publishes the annotated method so it can be invoked from the client side as
- * template event handlers.
+ * Defines a viewport tag that will be added to the HTML of the host page of a
+ * UI class.
+ * <p>
+ * If you want to dynamically provide different viewport values for different
+ * browser, you should use {@link ViewportGeneratorClass} instead.
  *
- * @see EventData
+ * @since 7.4
+ *
  * @author Vaadin Ltd
- *
  */
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Inherited
 @Documented
-public @interface EventHandler {
-
+public @interface Viewport {
+    /**
+     * Gets the viewport tag content.
+     *
+     * @return the viewport tag content
+     */
+    String value();
 }

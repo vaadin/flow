@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.annotations.Convert;
 
 /**
  * Interface for implementing type conversions in template models together with

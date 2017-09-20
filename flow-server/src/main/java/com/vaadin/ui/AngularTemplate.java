@@ -23,8 +23,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.util.AnnotationReader;
-import com.vaadin.annotations.HtmlTemplate;
-import com.vaadin.annotations.Id;
+import com.vaadin.flow.template.angular.HtmlTemplate;
+import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.annotations;
+package com.vaadin.ui;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

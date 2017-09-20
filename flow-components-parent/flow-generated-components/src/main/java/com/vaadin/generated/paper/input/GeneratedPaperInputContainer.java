@@ -17,10 +17,10 @@ package com.vaadin.generated.paper.input;
 
 import javax.annotation.Generated;
 
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.Component;
