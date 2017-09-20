@@ -26,6 +26,7 @@ import com.vaadin.ui.event.Tag;
  * <a href="https://vaadin.com/icons">Vaadin Icons</a> collection.
  * 
  * @author Vaadin Ltd
+ * @see VaadinIcons
  */
 @Tag("iron-icon")
 @HtmlImport("frontend://bower_components/vaadin-icons/vaadin-icons.html")
