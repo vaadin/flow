@@ -16,18 +16,18 @@
 package com.vaadin.generated.vaadin.date.picker;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.HasClickListeners;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasClickListeners;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.NotSupported;
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.ui.ComponentEvent;
-import com.vaadin.flow.event.ComponentEventListener;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
 /**
@@ -960,7 +960,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 *      website about slots</a>
 	 * @return this instance, for method chaining
 	 */
-	public R addToPrefix(com.vaadin.ui.Component... components) {
+	public R addToPrefix(Component... components) {
 		for (Component component : components) {
 			component.getElement().setAttribute("slot", "prefix");
 			getElement().appendChild(component.getElement());
@@ -976,7 +976,7 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * @throws IllegalArgumentException
 	 *             if any of the components is not a child of this component.
 	 */
-	public void remove(com.vaadin.ui.Component... components) {
+	public void remove(Component... components) {
 		for (Component component : components) {
 			if (getElement().equals(component.getElement().getParent())) {
 				component.getElement().removeAttribute("slot");

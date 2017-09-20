@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 

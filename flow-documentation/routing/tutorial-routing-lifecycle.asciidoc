@@ -70,3 +70,29 @@ public class BlogList extends Div implements BeforeNavigationListener {
   }
 }
 ----
+
+== AfterNavigationEvent
+
+A component can also listen to the `AfterNavigationEvent` that is sent when the
+old state has been deactivated and the new state has been attached and configured.
+
+A good use case for this event is when you need to update menu selections.
+When this method is triggered, it is guaranteed that there will be no further redirects,
+so you can safely use the location returned by the `AfterNavigationEvent`.
+
+As with `BeforeNavigationEvent`, `AfterNavigationEvent` can be set to any `Component` in
+the activating chain.
+
+[source,java]
+----
+public class SideMenu extends Div implements AfterNavigationListener {
+    Anchor blog = new Anchor("blog", "Blog");
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        boolean active = event.getLocation().getFirstSegment()
+                .equals(blog.getHref());
+        blog.getElement().getClassList().set("≥active", active);
+    }
+}
+----

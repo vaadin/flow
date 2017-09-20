@@ -23,12 +23,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Synchronize;
-import com.vaadin.annotations.Uses;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.common.Uses;
+import com.vaadin.util.AnnotationReader;
+import com.vaadin.ui.event.Synchronize;
 import com.vaadin.util.ReflectTools;
 
 /**

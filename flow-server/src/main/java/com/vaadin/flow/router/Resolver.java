@@ -18,6 +18,8 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Optional;
 
+import com.vaadin.router.event.NavigationEvent;
+
 /**
  * Resolves the details in a navigation event to find a handler for the event.
  *

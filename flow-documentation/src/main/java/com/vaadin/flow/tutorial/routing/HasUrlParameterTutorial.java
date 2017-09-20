@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.annotations.Route;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.router.Route;
+import com.vaadin.ui.html.Div;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-router-url-parameters.asciidoc")

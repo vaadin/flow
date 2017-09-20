@@ -16,9 +16,9 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.Checkbox;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.checkbox.Checkbox;
 
 /**
  * View for {@link Checkbox} demo.

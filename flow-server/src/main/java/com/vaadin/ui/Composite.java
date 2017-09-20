@@ -109,7 +109,7 @@ public abstract class Composite<T extends Component> extends Component {
      *
      * @return the content for the composite, never {@code null}
      */
-    protected T getContent() {
+    public T getContent() {
         if (content == null) {
             T newContent = initContent();
             if (newContent == null) {

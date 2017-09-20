@@ -20,10 +20,10 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.H1;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.H1;
+import com.vaadin.ui.html.Label;
 import com.vaadin.ui.Component;
 
 public class AttachExistingElementView extends AbstractDivView {

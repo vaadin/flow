@@ -16,15 +16,15 @@
 package com.vaadin.generated.vaadin.button;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentSupplier;
-import com.vaadin.ui.HasStyle;
-import com.vaadin.ui.HasClickListeners;
-import com.vaadin.ui.HasText;
-import com.vaadin.ui.Focusable;
+import com.vaadin.ui.common.ComponentSupplier;
+import com.vaadin.ui.common.HasStyle;
+import com.vaadin.ui.common.HasClickListeners;
+import com.vaadin.ui.common.HasText;
+import com.vaadin.ui.common.Focusable;
 import javax.annotation.Generated;
-import com.vaadin.annotations.Tag;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.ui.HasComponents;
+import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.HasComponents;
 
 /**
  * <p>

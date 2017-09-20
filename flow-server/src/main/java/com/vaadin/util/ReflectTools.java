@@ -535,8 +535,7 @@ public class ReflectTools implements Serializable {
      *            the sub type, e.g. {@code Bean}
      * @return a parameterized type
      */
-    public static Type createParameterizedType(Class<?> rawType,
-            Type subType) {
+    public static Type createParameterizedType(Class<?> rawType, Type subType) {
         return new ParameterizedType() {
 
             @Override
@@ -554,6 +553,44 @@ public class ReflectTools implements Serializable {
                 return new Type[] { subType };
             }
         };
+    }
+
+    /**
+     * Finds the Class type for the generic interface class extended by given
+     * class if exists.
+     * 
+     * @param clazz
+     *            class that should extend interface
+     * @param interfaceType
+     *            class type of interface to get generic for
+     * @return Class if found else {@code null}
+     */
+    public static Class getGenericInterfaceType(Class clazz,
+            Class interfaceType) {
+        Type[] genericInterfaces = clazz.getGenericInterfaces();
+        ParameterizedType parameterizedType = null;
+        for (Type genericInterface : genericInterfaces) {
+            Class interfaceClass;
+            if (genericInterface instanceof ParameterizedType) {
+                interfaceClass = (Class) ((ParameterizedType) genericInterface)
+                        .getRawType();
+            } else if (genericInterface instanceof Class) {
+                interfaceClass = (Class) genericInterface;
+            } else {
+                interfaceClass = genericInterface.getClass();
+            }
+            if (interfaceType.isAssignableFrom(interfaceClass)) {
+                parameterizedType = (ParameterizedType) genericInterface;
+            }
+        }
+        if (parameterizedType == null) {
+            return null;
+        }
+        Type[] typeArguments = parameterizedType.getActualTypeArguments();
+        if (typeArguments[0] instanceof Class) {
+            return (Class<?>) typeArguments[0];
+        }
+        return null;
     }
 
     /**

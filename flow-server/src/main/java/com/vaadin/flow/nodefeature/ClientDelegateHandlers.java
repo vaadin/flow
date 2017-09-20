@@ -19,7 +19,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.ClientDelegate;
+import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.flow.StateNode;
 import com.vaadin.ui.Component;
 

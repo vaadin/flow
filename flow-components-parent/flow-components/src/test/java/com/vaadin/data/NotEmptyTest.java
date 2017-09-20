@@ -27,7 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.tests.data.bean.BeanToValidate;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * @author Vaadin Ltd

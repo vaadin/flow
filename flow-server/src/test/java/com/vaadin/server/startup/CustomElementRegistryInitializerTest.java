@@ -27,13 +27,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.TemplateParser;
-import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.TemplateParser;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.server.VaadinService;
 

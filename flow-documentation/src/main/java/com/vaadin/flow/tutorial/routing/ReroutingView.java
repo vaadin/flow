@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.tutorial.annotations.CodeFor;

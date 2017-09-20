@@ -17,11 +17,11 @@ package com.vaadin.flow.tutorial.component;
 
 import java.util.Optional;
 
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.PropertyDescriptor;
-import com.vaadin.ui.PropertyDescriptors;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
 
 @CodeFor("creating-components/tutorial-component-property-descriptor.asciidoc")
 public class ComponentPropertyDescriptor {

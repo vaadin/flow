@@ -35,10 +35,11 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.Viewport;
-import com.vaadin.annotations.ViewportGeneratorClass;
-import com.vaadin.annotations.WebComponents;
+import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.util.AnnotationReader;
+import com.vaadin.ui.Viewport;
+import com.vaadin.ui.ViewportGeneratorClass;
+import com.vaadin.ui.WebComponents;
 import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;

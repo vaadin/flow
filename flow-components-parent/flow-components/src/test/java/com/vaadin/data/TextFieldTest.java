@@ -18,7 +18,7 @@ package com.vaadin.data;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 public class TextFieldTest {
 

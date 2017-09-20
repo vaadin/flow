@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.model.Convert;
+
 /**
  * Annotation enabling use of multiple {@link Convert} annotations.
  * <p>

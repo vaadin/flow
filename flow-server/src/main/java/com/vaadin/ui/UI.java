@@ -31,12 +31,12 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.RouterInterface;
-import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.router.Location;
+import com.vaadin.router.RouterInterface;
+import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.QueryParameters;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingCommand;
@@ -46,6 +46,9 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.common.HasComponents;
 import com.vaadin.util.CurrentInstance;
 
 /**

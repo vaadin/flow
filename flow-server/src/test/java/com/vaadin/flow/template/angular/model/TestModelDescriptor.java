@@ -17,9 +17,7 @@ package com.vaadin.flow.template.angular.model;
 
 import java.util.Map;
 
-import com.vaadin.flow.template.angular.model.ModelDescriptor;
-import com.vaadin.flow.template.angular.model.TemplateModel;
-import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.flow.model.ModelType;
 
 public class TestModelDescriptor extends ModelDescriptor<TemplateModel> {
     public TestModelDescriptor(Map<String, ModelType> properties) {

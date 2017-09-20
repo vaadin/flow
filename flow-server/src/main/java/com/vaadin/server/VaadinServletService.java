@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.communication.PushRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
 

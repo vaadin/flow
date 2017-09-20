@@ -27,13 +27,13 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ComponentMapping;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.ModelType;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;

@@ -13,6 +13,7 @@
         <module>flow</module>
         <module>flow-server</module>
         <module>flow-push</module>
+        <module>flow-data</module>
         <module>flow-client</module>
         <module>flow-html-components</module>
         <module>flow-documentation</module>
