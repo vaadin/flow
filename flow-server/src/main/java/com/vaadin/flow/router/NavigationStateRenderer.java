@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import com.vaadin.annotations.ParentLayout;
 import com.vaadin.annotations.Route;
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.router.event.ActivationState;
+import com.vaadin.flow.router.event.AfterNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.router.event.BeforeNavigationListener;
 import com.vaadin.flow.router.event.EventUtil;
@@ -116,8 +118,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         }
 
         BeforeNavigationEvent beforeNavigationActivating = new BeforeNavigationEvent(
-                event, routeTargetType,
-                ActivationState.ACTIVATING);
+                event, routeTargetType, ActivationState.ACTIVATING);
 
         navigationState.getUrlParameters().ifPresent(urlParameters -> {
             HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
@@ -140,7 +141,18 @@ public class NavigationStateRenderer implements NavigationHandler {
         updatePageTitle(event, routeTargetType, routeLayoutTypes);
 
         NewLocationChangeEvent locationChangeEvent = createEvent(event, chain);
+
+        if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
+            fireAfterNavigationListeners(chain,
+                    new AfterNavigationEvent(locationChangeEvent));
+        }
         return locationChangeEvent.getStatusCode();
+    }
+
+    private void fireAfterNavigationListeners(List<HasElement> chain,
+            AfterNavigationEvent event) {
+        EventUtil.collectAfterNavigationListeners(chain)
+                .forEach(listener -> listener.afterNavigation(event));
     }
 
     /**
