@@ -18,9 +18,12 @@ package com.vaadin.flow.template;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
@@ -32,11 +35,15 @@ import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.util.ReflectionCache;
+import com.vaadin.server.DependencyFilter;
+import com.vaadin.server.DependencyFilter.FilterContext;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinUriResolverFactory;
 import com.vaadin.server.WrappedHttpSession;
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.shared.ui.Dependency.Type;
 
 /**
  * Default template parser implementation.
@@ -56,7 +63,7 @@ public class DefaultTemplateParser implements TemplateParser {
 
     @Override
     public Element getTemplateContent(Class<? extends PolymerTemplate<?>> clazz,
-                                      String tag) {
+            String tag) {
         VaadinRequest request = VaadinService.getCurrentRequest();
         WrappedHttpSession session = (WrappedHttpSession) request
                 .getWrappedSession();
@@ -66,28 +73,42 @@ public class DefaultTemplateParser implements TemplateParser {
 
         boolean logEnabled = LOG_CACHE.get(clazz).compareAndSet(false, true);
 
-        for (HtmlImport htmlImport : AnnotationReader.getAnnotationsFor(clazz,
-                HtmlImport.class)) {
-            String path = resolvePath(request, htmlImport.value());
+        List<Dependency> dependencies = AnnotationReader
+                .getAnnotationsFor(clazz, HtmlImport.class).stream()
+                .map(htmlImport -> new Dependency(Type.HTML_IMPORT,
+                        htmlImport.value(), htmlImport.loadMode()))
+                .collect(Collectors.toList());
 
-            log(logEnabled, Level.CONFIG,
-                    String.format("Html import path '%s' is resolved to '%s'",
-                            htmlImport.value(), path));
+        FilterContext filterContext = new FilterContext(
+                VaadinSession.getCurrent());
+        for (DependencyFilter filter : VaadinService.getCurrent()
+                .getDependencyFilters()) {
+            dependencies = filter.filter(new ArrayList<>(dependencies),
+                    filterContext);
+        }
+
+        for (Dependency dependency : dependencies) {
+            if (dependency.getType() != Type.HTML_IMPORT) {
+                continue;
+            }
+
+            String url = dependency.getUrl();
+            String path = resolvePath(request, url);
+
+            log(logEnabled, Level.CONFIG, String.format(
+                    "Html import path '%s' is resolved to '%s'", url, path));
             try (InputStream content = context.getResourceAsStream(path)) {
                 if (content == null) {
-                    throw new IllegalStateException(String.format(
-                            "Can't find resource '%s' "
-                                    + "via the servlet context",
-                            htmlImport.value()));
+                    throw new IllegalStateException(
+                            String.format("Can't find resource '%s' "
+                                    + "via the servlet context", url));
                 }
-                Element templateElement = parseHtmlImport(content,
-                        htmlImport.value());
+                Element templateElement = parseHtmlImport(content, url);
                 if (isTemplateImport(templateElement, tag)) {
-                    log(logEnabled, Level.CONFIG,
-                            String.format(
-                                    "Found a template file containing template "
-                                            + "definition for the tag '%s' by the path '%s'",
-                                    tag, htmlImport.value()));
+                    log(logEnabled, Level.CONFIG, String.format(
+                            "Found a template file containing template "
+                                    + "definition for the tag '%s' by the path '%s'",
+                            tag, url));
                     return templateElement;
                 }
             } catch (IOException exception) {
@@ -96,15 +117,14 @@ public class DefaultTemplateParser implements TemplateParser {
                         "Couldn't close template input stream", exception);
             }
         }
-        throw new IllegalStateException(String.format(
-                "Couldn't find the "
-                        + "definition of the element with tag '%s' "
-                        + "in any template file declared using @'%s' annotations. "
-                        + "Check the availability of the template files in your WAR "
-                        + "file or provide alternative implementation of the "
-                        + "method getTemplateContent() which should return an element "
-                        + "representing the content of the template file",
-                tag, HtmlImport.class.getSimpleName()));
+        throw new IllegalStateException(String.format("Couldn't find the "
+                + "definition of the element with tag '%s' "
+                + "in any template file declared using @'%s' annotations. "
+                + "Check the availability of the template files in your WAR "
+                + "file or provide alternative implementation of the "
+                + "method getTemplateContent() which should return an element "
+                + "representing the content of the template file", tag,
+                HtmlImport.class.getSimpleName()));
     }
 
     private static String resolvePath(VaadinRequest request, String path) {
@@ -115,7 +135,8 @@ public class DefaultTemplateParser implements TemplateParser {
         return uriResolverFactory.toServletContextPath(request, path);
     }
 
-    private static boolean isTemplateImport(Element contentElement, String tag) {
+    private static boolean isTemplateImport(Element contentElement,
+            String tag) {
         if (contentElement == null) {
             return false;
         }
@@ -126,7 +147,8 @@ public class DefaultTemplateParser implements TemplateParser {
     private static Element parseHtmlImport(InputStream content, String path) {
         assert content != null;
         try {
-            Document parsedDocument = Jsoup.parse(content, StandardCharsets.UTF_8.name(), "");
+            Document parsedDocument = Jsoup.parse(content,
+                    StandardCharsets.UTF_8.name(), "");
             removeCommentsRecursively(parsedDocument);
             return parsedDocument;
         } catch (IOException exception) {
