@@ -48,16 +48,6 @@ import org.jboss.forge.roaster.model.source.ParameterSource;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.event.Tag;
-import com.vaadin.ui.common.JsonSerializable;
-import com.vaadin.ui.common.NotSupported;
-import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
@@ -69,11 +59,20 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasText;
+import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JsonSerializable;
+import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.event.Tag;
 
 import elemental.json.JsonObject;
 
@@ -91,7 +90,8 @@ public class ComponentGenerator {
     private static final String JAVADOC_SEE = "@see";
     private static final String JAVADOC_PARAM = "@param";
     private static final String GENERIC_TYPE = "R";
-    private static final String GENERIC_TYPE_DECLARATION = '<' + GENERIC_TYPE + '>';
+    private static final String GENERIC_TYPE_DECLARATION = '<' + GENERIC_TYPE
+            + '>';
     private static final String PROPERTY_CHANGE_EVENT_POSTFIX = "-changed";
     private static final Set<String> LIFECYCLE_CALLBACKS = createCallbacks();
 
@@ -326,6 +326,17 @@ public class ComponentGenerator {
             String subPackage = ComponentGeneratorUtils
                     .convertFilePathToPackage(metadata.getBaseUrl());
             if (StringUtils.isNotBlank(subPackage)) {
+
+                int firstDot = subPackage.indexOf('.');
+                if (firstDot > 0) {
+                    String firstSegment = subPackage.substring(0, firstDot);
+                    String lastSegment = subPackage.substring(firstDot + 1);
+                    subPackage = lastSegment.replace(".", "");
+                    if (!"vaadin".equals(firstSegment)) {
+                        subPackage = firstSegment + "." + subPackage;
+                    }
+                }
+
                 targetPackage += "." + subPackage;
             }
         }
@@ -391,8 +402,8 @@ public class ComponentGenerator {
             constructor.addParameter(String.class, "text");
             constructor.getJavaDoc().setText(
                     "Sets the given string as the content of this component.")
-            .addTagValue(JAVADOC_PARAM, "the text content to set")
-            .addTagValue(JAVADOC_SEE, "HasText#setText(String)");
+                    .addTagValue(JAVADOC_PARAM, "the text content to set")
+                    .addTagValue(JAVADOC_SEE, "HasText#setText(String)");
 
         } else if (javaClass.hasInterface(HasComponents.class)) {
             generateDefaultConstructor = true;
@@ -400,18 +411,18 @@ public class ComponentGenerator {
                     .setConstructor(true).setPublic()
                     .setBody("add(components);");
             constructor.addParameter(Component.class, "components")
-            .setVarArgs(true);
+                    .setVarArgs(true);
             constructor.getJavaDoc().setText(
                     "Adds the given components as children of this component.")
-            .addTagValue(JAVADOC_PARAM,
-                    "components the components to add")
-            .addTagValue(JAVADOC_SEE,
-                    "HasComponents#add(Component...)");
+                    .addTagValue(JAVADOC_PARAM,
+                            "components the components to add")
+                    .addTagValue(JAVADOC_SEE,
+                            "HasComponents#add(Component...)");
         }
 
         if (generateDefaultConstructor) {
             javaClass.addMethod().setConstructor(true).setPublic().setBody("")
-            .getJavaDoc().setText("Default constructor.");
+                    .getJavaDoc().setText("Default constructor.");
         }
     }
 
@@ -496,11 +507,11 @@ public class ComponentGenerator {
         method.getJavaDoc().setText(String.format(
                 "Adds the given components as children of this component at the slot '%s'.",
                 slot))
-        .addTagValue(JAVADOC_PARAM, "components The components to add.")
-        .addTagValue(JAVADOC_SEE,
-                "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
-        .addTagValue(JAVADOC_SEE,
-                "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
+                .addTagValue(JAVADOC_PARAM, "components The components to add.")
+                .addTagValue(JAVADOC_SEE,
+                        "<a href=\"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/slot\">MDN page about slots</a>")
+                .addTagValue(JAVADOC_SEE,
+                        "<a href=\"https://html.spec.whatwg.org/multipage/scripting.html#the-slot-element\">Spec website about slots</a>");
         addFluentReturnToMethod(method);
     }
 
@@ -510,7 +521,7 @@ public class ComponentGenerator {
         MethodSource<JavaClassSource> removeMethod = javaClass.addMethod()
                 .setPublic().setReturnTypeVoid().setName("remove");
         removeMethod.addParameter(Component.class, "components")
-        .setVarArgs(true);
+                .setVarArgs(true);
         removeMethod.setBody(
                 String.format("for (Component component : components) {%n"
                         + "if (getElement().equals(component.getElement().getParent())) {%n"
@@ -525,10 +536,10 @@ public class ComponentGenerator {
         } else {
             removeMethod.getJavaDoc().setText(String.format(
                     "Removes the given child components from this component."))
-            .addTagValue(JAVADOC_PARAM,
-                    "components The components to remove.")
-            .addTagValue(JAVADOC_THROWS,
-                    "IllegalArgumentException if any of the components is not a child of this component.");
+                    .addTagValue(JAVADOC_PARAM,
+                            "components The components to remove.")
+                    .addTagValue(JAVADOC_THROWS,
+                            "IllegalArgumentException if any of the components is not a child of this component.");
         }
 
         MethodSource<JavaClassSource> removeAllMethod = javaClass.addMethod()
@@ -578,7 +589,7 @@ public class ComponentGenerator {
                 flow };
 
         javaClass.addAnnotation(Generated.class)
-        .setStringArrayValue(generatedValue);
+                .setStringArrayValue(generatedValue);
 
         javaClass.addAnnotation(Tag.class).setStringValue(metadata.getTag());
 
@@ -632,8 +643,8 @@ public class ComponentGenerator {
         } catch (IOException ex) {
             throw new ComponentGenerationException(
                     "Error writing the generated Java source file \"" + fileName
-                    + "\" at \"" + targetPath + "\" for component \""
-                    + metadata.getName() + "\"",
+                            + "\" at \"" + targetPath + "\" for component \""
+                            + metadata.getName() + "\"",
                     ex);
         }
     }
@@ -701,7 +712,7 @@ public class ComponentGenerator {
                             + (postfixWithVariableType
                                     ? StringUtils.capitalize(
                                             basicType.name().toLowerCase())
-                                            : ""));
+                                    : ""));
                 }
 
                 if (method.getVisibility() == Visibility.PROTECTED) {
@@ -797,8 +808,8 @@ public class ComponentGenerator {
 
         if (containsChangedEventForProperty(property.getName(), events)) {
             method.addAnnotation(Synchronize.class)
-            .setStringValue("property", property.getName())
-            .setStringValue(property.getName() + "-changed");
+                    .setStringValue("property", property.getName())
+                    .setStringValue(property.getName() + "-changed");
 
             synchronizationDescription = "This property is synchronized automatically from client side when a '"
                     + property.getName() + "-changed' event happens.";
@@ -841,16 +852,16 @@ public class ComponentGenerator {
 
         if (metadata.getProperties().stream()
                 .anyMatch(property -> "value"
-                .equals(getJavaNameForProperty(metadata,
-                        property.getName()))
-                && !property.isReadOnly()
-                && (containsObjectType(property)
-                        || property.getType().size() == 1))) {
+                        .equals(getJavaNameForProperty(metadata,
+                                property.getName()))
+                        && !property.isReadOnly()
+                        && (containsObjectType(property)
+                                || property.getType().size() == 1))) {
 
             return metadata.getEvents().stream()
                     .anyMatch(event -> "value-changed"
-                    .equals(getJavaNameForPropertyChangeEvent(metadata,
-                            event.getName())));
+                            .equals(getJavaNameForPropertyChangeEvent(metadata,
+                                    event.getName())));
         }
         return false;
     }
@@ -937,8 +948,7 @@ public class ComponentGenerator {
                     method.addAnnotation(Override.class);
                     if (setterType.isPrimitive()) {
                         implementHasValueSetterWithPimitiveType(javaClass,
-                                property, method, setterType,
-                                parameterName);
+                                property, method, setterType, parameterName);
                     }
                 }
             }
@@ -1025,7 +1035,7 @@ public class ComponentGenerator {
                 method.addAnnotation(NotSupported.class);
                 method.getJavaDoc().addTagValue("@return",
                         "It would return a " + ComponentGeneratorUtils
-                        .toJavaType(function.getReturns()));
+                                .toJavaType(function.getReturns()));
                 method.setBody("");
             } else {
                 setMethodVisibility(method, typeVariant);
@@ -1068,7 +1078,7 @@ public class ComponentGenerator {
             String formattedName = StringUtils.uncapitalize(
                     ComponentGeneratorUtils.formatStringToValidJavaIdentifier(
                             function.getParameters().get(paramIndex)
-                            .getName()));
+                                    .getName()));
             paramIndex++;
 
             if (paramType.isBasicType()) {
@@ -1087,8 +1097,8 @@ public class ComponentGenerator {
                                         "Class that encapsulates the data to be sent to the {@link %s#%s(%s)} method.",
                                         javaClass.getName(), method.getName(),
                                         ComponentGeneratorUtils
-                                        .generateValidJavaClassName(
-                                                nameHint))));
+                                                .generateValidJavaClassName(
+                                                        nameHint))));
                 sb.append(", ").append(formattedName).append(".toJson()");
                 method.getJavaDoc().addTagValue(JAVADOC_SEE,
                         nestedClass.getName());
@@ -1135,7 +1145,7 @@ public class ComponentGenerator {
                         + StringUtils.capitalize(eventJavaApiName + "Listener"))
                 .setPublic().setReturnType(Registration.class);
         method.addParameter("ComponentEventListener<" + eventListener.getName()
-        + GENERIC_TYPE_DECLARATION + ">", "listener");
+                + GENERIC_TYPE_DECLARATION + ">", "listener");
 
         method.setBody(String.format(
                 "return addListener(%s.class, (ComponentEventListener) listener);",
@@ -1188,13 +1198,13 @@ public class ComponentGenerator {
                 propertyJavaType = JsonObject.class;
 
                 eventListener.addField().setType(propertyJavaType).setPrivate()
-                .setFinal(true).setName(normalizedProperty);
+                        .setFinal(true).setName(normalizedProperty);
 
                 eventListener.addMethod().setName(ComponentGeneratorUtils
                         .generateMethodNameForProperty("get", propertyName))
-                .setPublic().setReturnType(nestedClass)
-                .setBody(String.format("return new %s().readJson(%s);",
-                        nestedClass.getName(), normalizedProperty));
+                        .setPublic().setReturnType(nestedClass)
+                        .setBody(String.format("return new %s().readJson(%s);",
+                                nestedClass.getName(), normalizedProperty));
             } else {
                 if (!property.getType().isEmpty()) {
                     // for varying types, using the first type declared in the
@@ -1208,13 +1218,13 @@ public class ComponentGenerator {
 
                 // Create private field
                 eventListener.addProperty(propertyJavaType, normalizedProperty)
-                .setAccessible(true).setMutable(false);
+                        .setAccessible(true).setMutable(false);
             }
 
             ParameterSource<JavaClassSource> parameter = eventConstructor
                     .addParameter(propertyJavaType, normalizedProperty);
             parameter.addAnnotation(EventData.class)
-            .setStringValue(String.format("event.%s", propertyName));
+                    .setStringValue(String.format("event.%s", propertyName));
 
             // Set value to private field
             eventConstructor.setBody(String.format("%s%nthis.%s = %s;",
@@ -1225,7 +1235,7 @@ public class ComponentGenerator {
         }
 
         eventListener.addAnnotation(DomEvent.class)
-        .setStringValue(event.getName());
+                .setStringValue(event.getName());
 
         // Add event imports.
         javaClass.addImport(DomEvent.class);
@@ -1297,7 +1307,7 @@ public class ComponentGenerator {
                 + PROPERTY_CHANGE_EVENT_POSTFIX;
     }
 
-    private static Set<String> createCallbacks(){
+    private static Set<String> createCallbacks() {
         return Collections.unmodifiableSet(Stream
                 .of("connectedCallback", "disconnectedCallback",
                         "attributeChangedCallback")
