@@ -16,6 +16,8 @@
 package com.vaadin.server.communication.rpc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
@@ -38,6 +40,8 @@ import elemental.json.JsonObject;
  *
  */
 public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
+
+    private List<Runnable> pendingChangeEvents = new ArrayList<>();
 
     @Override
     public String getRpcType() {
@@ -62,7 +66,20 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         value = tryConvert(value, node);
 
-        ((NodeMap) node.getFeature(feature)).updateFromClient(property, value);
+        ElementPropertyMap elementPropertyMap = (ElementPropertyMap) node
+                .getFeature(feature);
+        Runnable changeEventRunnable = elementPropertyMap
+                .updateFromClientWithDeferredChangeEvent(property, value);
+        pendingChangeEvents.add(changeEventRunnable);
+    }
+
+    /**
+     * Triggers and clears all pending property change events that have been
+     * accumulated during the handling of nodes.
+     */
+    public void flushPendingChangeEvents() {
+        pendingChangeEvents.forEach(Runnable::run);
+        pendingChangeEvents.clear();
     }
 
     private Serializable tryConvert(Serializable value, StateNode context) {

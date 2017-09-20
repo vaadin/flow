@@ -381,6 +381,9 @@ public class ServerRpcHandler implements Serializable {
             }
         }
 
+        if (mapSyncHandler instanceof MapSyncRpcHandler) {
+            ((MapSyncRpcHandler) mapSyncHandler).flushPendingChangeEvents();
+        }
         data.forEach(json -> handleInvocationData(ui, json));
     }
 
