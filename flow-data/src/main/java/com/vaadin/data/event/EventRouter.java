@@ -31,11 +31,12 @@ import com.vaadin.shared.Registration;
 /**
  * <code>EventRouter</code> class implementing the inheritable event listening
  * model. For more information on the event model see the
- * {@link com.vaadin.event package documentation}.
+ * {@link com.vaadin.data.event package documentation}.
  *
  * @author Vaadin Ltd.
  * @since 3.0
  */
+@Deprecated
 public class EventRouter implements MethodEventSource {
 
     /**

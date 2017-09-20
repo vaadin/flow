@@ -28,12 +28,13 @@ import com.vaadin.shared.Registration;
  *
  * <p>
  * For more information on the inheritable event mechanism see the
- * {@link com.vaadin.event com.vaadin.event package documentation}.
+ * {@link com.vaadin.data.event com.vaadin.event package documentation}.
  * </p>
  *
  * @author Vaadin Ltd.
  * @since 3.0
  */
+@Deprecated
 public interface MethodEventSource extends Serializable {
 
     /**
@@ -46,7 +47,7 @@ public interface MethodEventSource extends Serializable {
      *
      * <p>
      * For more information on the inheritable event mechanism see the
-     * {@link com.vaadin.event com.vaadin.event package documentation}.
+     * {@link com.vaadin.data.event com.vaadin.event package documentation}.
      * </p>
      *
      * @param eventType
@@ -72,7 +73,7 @@ public interface MethodEventSource extends Serializable {
      *
      * <p>
      * For more information on the inheritable event mechanism see the
-     * {@link com.vaadin.event com.vaadin.event package documentation}.
+     * {@link com.vaadin.data.event com.vaadin.event package documentation}.
      * </p>
      *
      * @param eventType
@@ -90,7 +91,7 @@ public interface MethodEventSource extends Serializable {
      *
      * <p>
      * For more information on the inheritable event mechanism see the
-     * {@link com.vaadin.event com.vaadin.event package documentation}.
+     * {@link com.vaadin.data.event com.vaadin.event package documentation}.
      * </p>
      *
      * @param eventType

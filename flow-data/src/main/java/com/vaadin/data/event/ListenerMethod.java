@@ -50,6 +50,7 @@ import java.util.logging.Logger;
  * @author Vaadin Ltd.
  * @since 3.0
  */
+@Deprecated
 public class ListenerMethod implements EventListener, Serializable {
 
     /**
