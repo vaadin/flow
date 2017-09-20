@@ -26,7 +26,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 import com.vaadin.flow.uitest.ui.RPCLoggerUI;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.VaadinServlet;

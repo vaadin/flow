@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.function.Function;
 
 import com.vaadin.data.Binder.BindingBuilder;
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableFunction;
 
 /**
  * Interface that implements conversion between a model and a presentation type.

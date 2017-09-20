@@ -19,7 +19,7 @@ import com.vaadin.annotations.Convert;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModelTest.EmptyDivTemplate;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.flow.model.ModelConverter;

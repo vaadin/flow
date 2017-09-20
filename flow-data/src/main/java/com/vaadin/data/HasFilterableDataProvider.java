@@ -16,7 +16,7 @@
 package com.vaadin.data;
 
 import com.vaadin.data.provider.DataProvider;
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableFunction;
 
 /**
  * A generic interface for listing components that use a filterable data

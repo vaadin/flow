@@ -25,7 +25,7 @@ import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.flow.model.InvalidTemplateModelException;
 import com.vaadin.flow.model.TemplateModel;

@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableFunction;
 
 /**
  * An abstract base class for typed validators.

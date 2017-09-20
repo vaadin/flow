@@ -13,17 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data.event;
+package com.vaadin.function;
 
 import java.io.Serializable;
-import java.util.EventListener;
+import java.util.function.BiPredicate;
 
 /**
- * Event listener interface that is serializable.
+ * A {@link BiPredicate} that is also {@link Serializable}.
  *
- * @since 8.0
  * @author Vaadin Ltd
+ *
+ * @param <T>
+ *            the type of the first input to the predicate
+ * @param <U>
+ *            the type of the second input to the predicate
  */
-public interface SerializableEventListener extends EventListener, Serializable {
-
+public interface SerializableBiPredicate<T, U>
+        extends BiPredicate<T, U>, Serializable {
+    // Only method inherited from BiPredicate
 }

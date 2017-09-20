@@ -26,7 +26,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 
 import static org.hamcrest.MatcherAssert.assertThat;

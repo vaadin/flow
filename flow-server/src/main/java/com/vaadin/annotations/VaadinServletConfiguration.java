@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.Constants;
 import com.vaadin.server.DefaultDeploymentConfiguration;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;

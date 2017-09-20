@@ -51,6 +51,7 @@ import com.vaadin.flow.router.NewRouter;
 import com.vaadin.flow.router.RouterInterface;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.FaviconHandler;

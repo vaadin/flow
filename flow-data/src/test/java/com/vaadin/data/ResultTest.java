@@ -18,7 +18,7 @@ package com.vaadin.data;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableFunction;
 
 /**
  * @author Vaadin Ltd

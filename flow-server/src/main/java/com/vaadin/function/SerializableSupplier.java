@@ -13,23 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.function;
 
 import java.io.Serializable;
-import java.util.function.BiFunction;
-
-import javax.servlet.ServletContext;
+import java.util.function.Supplier;
 
 /**
- * Content type resolver.
- * <p>
- * Allows to get content type for the given {@link StreamResource} instance
- * using the current {@link ServletContext}.
+ * A {@link Supplier} that is also {@link Serializable}.
  *
+ * @see Supplier
  * @author Vaadin Ltd
- *
+ * @since 8.0
+ * @param <T>
+ *            the type of the input to the function
  */
-public interface ContentTypeResolver extends
-        BiFunction<StreamResource, ServletContext, String>, Serializable {
-
+@FunctionalInterface
+public interface SerializableSupplier<T> extends Supplier<T>, Serializable {
+    // Only method inherited from Supplier
 }

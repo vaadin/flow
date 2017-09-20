@@ -15,7 +15,7 @@
  */
 package com.vaadin.data;
 
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableFunction;
 
 /**
  * Provider interface for generating localizable error messages using

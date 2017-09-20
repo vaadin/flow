@@ -8,7 +8,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.template.model.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.template.model.TemplateModelTest.EmptyModelTemplate;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
 import com.vaadin.flow.model.BeanModelType;

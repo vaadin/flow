@@ -22,7 +22,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
 import com.vaadin.server.Constants;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.shared.ApplicationConstants;
 
 /**

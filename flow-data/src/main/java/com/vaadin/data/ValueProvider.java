@@ -15,7 +15,7 @@
  */
 package com.vaadin.data;
 
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableFunction;
 
 /**
  * A callback interface for providing values from a given source.

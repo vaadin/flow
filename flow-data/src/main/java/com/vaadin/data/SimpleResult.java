@@ -18,8 +18,8 @@ package com.vaadin.data;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.server.SerializableConsumer;
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableConsumer;
+import com.vaadin.function.SerializableFunction;
 
 /**
  * An internal implementation of {@code Result}.

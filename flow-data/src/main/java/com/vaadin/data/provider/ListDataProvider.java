@@ -21,8 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.server.SerializableComparator;
-import com.vaadin.server.SerializablePredicate;
+import com.vaadin.function.SerializableComparator;
+import com.vaadin.function.SerializablePredicate;
 
 /**
  * {@link DataProvider} wrapper for {@link Collection}s.

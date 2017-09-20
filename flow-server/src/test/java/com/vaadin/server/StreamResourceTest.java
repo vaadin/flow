@@ -24,6 +24,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.function.ContentTypeResolver;
+
 public class StreamResourceTest {
 
     @Test

@@ -29,7 +29,7 @@ import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
-import com.vaadin.server.SerializablePredicate;
+import com.vaadin.function.SerializablePredicate;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
 import com.vaadin.ui.common.Component;

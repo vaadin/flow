@@ -19,9 +19,9 @@ import java.util.Locale;
 import java.util.Objects;
 
 import com.vaadin.data.ValueProvider;
-import com.vaadin.server.SerializableBiPredicate;
-import com.vaadin.server.SerializableComparator;
-import com.vaadin.server.SerializablePredicate;
+import com.vaadin.function.SerializableBiPredicate;
+import com.vaadin.function.SerializableComparator;
+import com.vaadin.function.SerializablePredicate;
 import com.vaadin.ui.UI;
 
 /**

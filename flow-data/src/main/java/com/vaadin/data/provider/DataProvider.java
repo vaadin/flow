@@ -26,8 +26,8 @@ import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.HasFilterableDataProvider;
 import com.vaadin.data.provider.CallbackDataProvider.CountCallback;
 import com.vaadin.data.provider.CallbackDataProvider.FetchCallback;
-import com.vaadin.server.SerializableBiFunction;
-import com.vaadin.server.SerializableFunction;
+import com.vaadin.function.SerializableBiFunction;
+import com.vaadin.function.SerializableFunction;
 import com.vaadin.shared.Registration;
 
 /**

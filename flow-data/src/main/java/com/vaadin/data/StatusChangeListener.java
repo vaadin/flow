@@ -15,7 +15,7 @@
  */
 package com.vaadin.data;
 
-import com.vaadin.data.event.SerializableEventListener;
+import com.vaadin.function.SerializableEventListener;
 
 /**
  * Listener interface for status change events from binder.
