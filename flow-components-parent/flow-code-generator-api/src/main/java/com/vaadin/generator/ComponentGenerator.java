@@ -56,7 +56,7 @@ import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.ui.common.NotSupported;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.generator.exception.ComponentGenerationException;
 import com.vaadin.generator.metadata.ComponentBasicType;

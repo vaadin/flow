@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.generated.vaadin.date.picker.GeneratedVaadinDatePicker;
 import com.vaadin.shared.Registration;
@@ -72,7 +72,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      *
      * @param listener
      *            the listener to receive value change events
-     * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
+     * @see #addValueChangeListener(HasValue.ValueChangeListener)
      */
     public DatePicker(ValueChangeListener<DatePicker, LocalDate> listener) {
         this();
@@ -88,7 +88,7 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      * @param listener
      *            the listener to receive value change events
      * @see #setValue(LocalDate)
-     * @see #addValueChangeListener(com.vaadin.components.data.HasValue.ValueChangeListener)
+     * @see #addValueChangeListener(HasValue.ValueChangeListener)
      */
     public DatePicker(LocalDate initialDate,
             ValueChangeListener<DatePicker, LocalDate> listener) {

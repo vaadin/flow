@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.Binding;
 import com.vaadin.data.Binder.BindingBuilder;
 

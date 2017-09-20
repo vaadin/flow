@@ -17,7 +17,7 @@ package com.vaadin.data.validator;
 
 import java.util.Objects;
 
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.data.Validator;

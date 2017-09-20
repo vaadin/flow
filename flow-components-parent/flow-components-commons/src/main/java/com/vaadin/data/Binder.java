@@ -40,9 +40,9 @@ import java.util.stream.Stream;
 import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.annotations.PropertyId;
-import com.vaadin.components.data.HasValue;
-import com.vaadin.components.data.HasValue.ValueChangeEvent;
-import com.vaadin.components.data.HasValue.ValueChangeListener;
+import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.HasValue.ValueChangeEvent;
+import com.vaadin.ui.common.HasValue.ValueChangeListener;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.event.EventRouter;

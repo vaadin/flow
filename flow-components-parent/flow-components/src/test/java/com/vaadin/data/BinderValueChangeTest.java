@@ -23,8 +23,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.components.data.HasValue;
-import com.vaadin.components.data.HasValue.ValueChangeEvent;
+import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.common.HasValue.ValueChangeEvent;
 import com.vaadin.data.Binder.BindingBuilder;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;

@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import com.vaadin.annotations.PropertyId;
 import com.vaadin.annotations.Tag;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.tests.data.bean.Person;

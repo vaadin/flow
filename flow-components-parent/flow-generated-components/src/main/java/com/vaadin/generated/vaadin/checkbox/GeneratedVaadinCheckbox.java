@@ -22,7 +22,7 @@ import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.Component;

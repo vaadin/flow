@@ -23,7 +23,7 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.annotations.Synchronize;
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import elemental.json.JsonArray;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.annotations.DomEvent;

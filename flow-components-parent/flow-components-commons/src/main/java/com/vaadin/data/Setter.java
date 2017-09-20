@@ -18,7 +18,7 @@ package com.vaadin.data;
 import java.io.Serializable;
 import java.util.function.BiConsumer;
 
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 
 /**
  * The function to write the field value to the bean property

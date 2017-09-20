@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.components.data.HasValue;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.common.Component;
 import com.vaadin.ui.UI;
 
