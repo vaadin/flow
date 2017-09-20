@@ -18,11 +18,11 @@ package com.vaadin.flow.tutorial.webcomponent;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.event.ComponentEvent;
 
 @CodeFor("web-components/tutorial-webcomponent-events.asciidoc")

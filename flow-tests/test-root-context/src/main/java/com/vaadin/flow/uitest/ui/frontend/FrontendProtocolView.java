@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.frontend;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HasComponents;
 
 /**

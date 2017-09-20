@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.event;
+package com.vaadin.ui;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,8 +21,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import com.vaadin.ui.Component;
 
 /**
  * Defines the tag to use for the root element for a component created using the
