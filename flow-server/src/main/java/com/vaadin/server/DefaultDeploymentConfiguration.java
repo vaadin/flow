@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 
@@ -125,8 +126,8 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public <T> T getApplicationOrSystemProperty(String propertyName, T defaultValue,
-                                                Function<String, T> converter) {
+    public <T> T getApplicationOrSystemProperty(String propertyName,
+            T defaultValue, Function<String, T> converter) {
         // Try system properties
         String val = getSystemProperty(propertyName);
         if (val != null) {
@@ -334,9 +335,10 @@ public class DefaultDeploymentConfiguration
 
     private void checkPushMode() {
         try {
-            pushMode = getApplicationOrSystemProperty(Constants.SERVLET_PARAMETER_PUSH_MODE,
-                    PushMode.DISABLED, stringMode -> Enum
-                            .valueOf(PushMode.class, stringMode.toUpperCase()));
+            pushMode = getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
+                    stringMode -> Enum.valueOf(PushMode.class,
+                            stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
             getLogger().warning(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -357,8 +359,7 @@ public class DefaultDeploymentConfiguration
 
     private void checkUsingNewRouting() {
         usingNewRouting = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
-                false);
+                Constants.SERVLET_PARAMETER_USING_NEW_ROUTING, false);
     }
 
     private Logger getLogger() {
@@ -391,7 +392,8 @@ public class DefaultDeploymentConfiguration
                 return getEs6BuildUrl();
             }
         };
-        String scanBase = uriResolver.resolveVaadinUri("frontend://");
+        String scanBase = uriResolver.resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         if (!scanBase.startsWith("/")) {
             // Has protocol or isn't relative to the context root -> no can do
             getLogger().log(Level.WARNING,
@@ -409,13 +411,15 @@ public class DefaultDeploymentConfiguration
             }
 
             // Don't traverse some potentially huge but pointless directories
-            return !name.startsWith("node/") && !name.startsWith("node_modules/");
+            return !name.startsWith("node/")
+                    && !name.startsWith("node_modules/");
         });
 
         if (foundPolyfills.isEmpty()) {
             getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
-                    "Webcomponents polyfill will not be used because none was found in frontend:// (resolved to "
-                            + scanBase + ')'));
+                    "Webcomponents polyfill will not be used because none was found in '"
+                            + ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                            + "' (resolved to " + scanBase + ')'));
             return null;
         }
         if (foundPolyfills.size() > 1) {
@@ -430,14 +434,14 @@ public class DefaultDeploymentConfiguration
 
         getLogger().log(Level.INFO, () -> formatDefaultPolyfillMessage(
                 "Will use webcomponents polyfill discovered in " + dirName));
-        return "frontend://" + dirName + '/';
+        return ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + dirName + '/';
     }
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {
-        return String.format(
-                "%1$s%n" + "Configure %2$s with an empty value to explicitly disable Web Components polyfill loading.%n"
-                        + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
-                        baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
+        return String.format("%1$s%n"
+                + "Configure %2$s with an empty value to explicitly disable Web Components polyfill loading.%n"
+                + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
+                baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }
 
 }
