@@ -21,6 +21,13 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("binding-data/tutorial-flow-components-binder.asciidoc")
 public class Person implements Serializable {
+
+    public static class Department {
+
+    }
+
+    private long id;
+
     private String name;
     private String lastName;
     private String email;
@@ -29,6 +36,8 @@ public class Person implements Serializable {
     private int yearOfBirth;
 
     private Gender gender;
+
+    private Department department;
 
     public enum Gender {
         MALE, FEMALE;
@@ -84,6 +93,22 @@ public class Person implements Serializable {
 
     public void setGender(Gender gender) {
         this.gender = gender;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
 }
