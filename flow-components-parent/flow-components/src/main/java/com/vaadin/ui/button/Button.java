@@ -114,16 +114,19 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      * a new text node with the given content.
      *
      * @param text
-     *            the text content to set
+     *            the text content to set, may be <code>null</code> to only
+     *            remove existing text
      */
     @Override
     public void setText(String text) {
         getElement().removeChild(getTextNodes());
 
-        if (iconComponent != null && !iconAfterText) {
-            getElement().appendChild(Element.createText(text));
-        } else {
-            getElement().insertChild(0, Element.createText(text));
+        if (text != null) {
+            if (iconComponent != null && !iconAfterText) {
+                getElement().appendChild(Element.createText(text));
+            } else {
+                getElement().insertChild(0, Element.createText(text));
+            }
         }
     }
 
@@ -134,7 +137,8 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      * options are {@link Icon} and {@link Image}.
      * 
      * @param icon
-     *            component to be used as an icon, can't be a text-node
+     *            component to be used as an icon, may be <code>null</code> to
+     *            only remove the current icon, can't be a text-node
      * @see #setIconAfterText(boolean)
      */
     public void setIcon(Component icon) {

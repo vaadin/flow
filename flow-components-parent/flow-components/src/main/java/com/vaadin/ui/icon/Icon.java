@@ -63,7 +63,7 @@ public class Icon extends Component implements HasStyle {
      * "2.5em".
      *
      * @param size
-     *            the size to set
+     *            the size to set, may be <code>null</code> to clear the value
      */
     public void setSize(String size) {
         if (size == null) {
@@ -82,7 +82,8 @@ public class Icon extends Component implements HasStyle {
      * "#FF9E2C" or "rgb(255, 158, 44)".
      * 
      * @param color
-     *            the fill color to set
+     *            the fill color to set, may be <code>null</code> to clear the
+     *            value
      */
     public void setColor(String color) {
         if (color == null) {
