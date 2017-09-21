@@ -16,7 +16,7 @@
 package com.vaadin.ui.common;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.Tag;
 
 /**
  * Base class for a {@link Component} that represents a single built-in HTML

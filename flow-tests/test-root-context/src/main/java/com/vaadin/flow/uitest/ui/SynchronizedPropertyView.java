@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.Text;
 
 public class SynchronizedPropertyView extends AbstractDivView {

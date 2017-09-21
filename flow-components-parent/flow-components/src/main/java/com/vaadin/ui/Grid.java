@@ -28,7 +28,6 @@ import java.util.function.Function;
 
 import javax.swing.SingleSelectionModel;
 
-import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.ValueProvider;
 import com.vaadin.data.provider.DataProvider;
@@ -41,7 +40,6 @@ import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.event.Tag;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -321,12 +319,12 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
     }
 
     @ClientDelegate
-    public void confirmUpdate(int id) {
+    private void confirmUpdate(int id) {
         dataCommunicator.confirmUpdate(id);
     }
 
     @ClientDelegate
-    public void setRequestedRange(int start, int length) {
+    private void setRequestedRange(int start, int length) {
         dataCommunicator.setRequestedRange(start, length);
     }
 
@@ -423,7 +421,7 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
      */
     public SingleSelect<? extends Grid<T>, T> asSingleSelect() {
         GridSelectionModel<T> model = getSelectionModel();
-        if (!(model instanceof SingleSelectionModel)) {
+        if (!(model instanceof GridSingleSelectionModel)) {
             throw new IllegalStateException(
                     "Grid is not in single select mode, it needs to be explicitly set to such with setSelectionModel(SingleSelectionModel) before being able to use single selection features.");
         }

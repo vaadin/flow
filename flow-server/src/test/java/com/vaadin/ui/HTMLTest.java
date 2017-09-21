@@ -21,7 +21,6 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 
 public class HTMLTest {

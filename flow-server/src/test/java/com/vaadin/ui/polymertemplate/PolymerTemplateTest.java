@@ -34,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.StateNode;
@@ -48,6 +47,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.server.startup.CustomElementRegistryAccess;
 import com.vaadin.ui.Page;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Component;
 

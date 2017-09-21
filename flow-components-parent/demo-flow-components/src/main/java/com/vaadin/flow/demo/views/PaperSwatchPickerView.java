@@ -18,8 +18,8 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.ui.html.Label;
-import com.vaadin.generated.paper.spinner.GeneratedPaperSpinner;
-import com.vaadin.generated.paper.swatch.picker.GeneratedPaperSwatchPicker;
+import com.vaadin.ui.paper.spinner.GeneratedPaperSpinner;
+import com.vaadin.ui.paper.swatchpicker.GeneratedPaperSwatchPicker;
 
 /**
  * View for {@link GeneratedPaperSpinner} demo.

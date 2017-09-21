@@ -16,7 +16,6 @@
 package com.vaadin.ui.dialog;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.generated.vaadin.dialog.GeneratedVaadinDialog;
 
 /**
  * Server-side component for the {@code <vaadin-dialog>} element.

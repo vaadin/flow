@@ -19,11 +19,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 public class BasicTypeInListUI extends UI {

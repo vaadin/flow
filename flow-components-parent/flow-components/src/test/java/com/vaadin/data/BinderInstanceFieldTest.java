@@ -21,12 +21,12 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.common.HasValue;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.tests.data.bean.Person;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.formlayout.FormLayout;
 import com.vaadin.ui.textfield.TextField;

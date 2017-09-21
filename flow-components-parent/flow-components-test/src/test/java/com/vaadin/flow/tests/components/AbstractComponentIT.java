@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.tests.components;
 
+import org.openqa.selenium.WebElement;
+
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
@@ -41,5 +43,11 @@ public abstract class AbstractComponentIT extends ChromeBrowserTest {
     @Override
     protected int getDeploymentPort() {
         return 8080;
+    }
+
+    public String getProperty(WebElement element, String propertyName) {
+        Object result = executeScript(
+                "return arguments[0]." + propertyName + ";", element);
+        return result == null ? null : String.valueOf(result);
     }
 }
