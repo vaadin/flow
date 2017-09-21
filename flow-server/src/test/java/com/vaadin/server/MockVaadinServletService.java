@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
  *
@@ -28,6 +29,15 @@ import com.vaadin.function.DeploymentConfiguration;
 public class MockVaadinServletService extends VaadinServletService {
 
     private Instantiator instantiator;
+
+    public MockVaadinServletService() {
+        this(new MockDeploymentConfiguration());
+    }
+
+    public MockVaadinServletService(
+            DeploymentConfiguration deploymentConfiguration) {
+        this(new VaadinServlet(), deploymentConfiguration);
+    }
 
     public MockVaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration) {
