@@ -278,16 +278,19 @@ public class RouteRegistry {
         Logger logger = Logger.getLogger(RouteRegistry.class.getName());
 
         routes.clear();
+        parameterRoutes.clear();
+        targetRoutes.clear();
         navigationTargets.forEach(navigationTarget -> {
             String route = getNavigationRoute(navigationTarget);
+            targetRoutes.put(navigationTarget, route);
             if (routes.containsKey(route)) {
-                if (!route.equals(getTargetUrl(navigationTarget))) {
+                if (!route.equals(getTargetUrl(navigationTarget).get())) {
                     logger.log(Level.FINE, String.format(
                             "Registering route '%s' also to parametrized navigation target '%s'.",
                             route, navigationTarget.getName()));
 
                     parameterRoutes.put(route, navigationTarget);
-                } else if (!route.equals(getTargetUrl(routes.get(route)))) {
+                } else if (!route.equals(getTargetUrl(routes.get(route)).get())) {
                     logger.log(Level.FINE, String.format(
                             "Registering '%s' to route '%s' together with parametrized navigation target '%s'.",
                             navigationTarget.getName(), route,
@@ -303,7 +306,6 @@ public class RouteRegistry {
 
                 routes.put(route, navigationTarget);
             }
-            targetRoutes.put(navigationTarget, route);
         });
     }
 }
