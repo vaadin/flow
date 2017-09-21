@@ -21,7 +21,9 @@ import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,18 +35,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.external.jsoup.nodes.Comment;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
-import com.vaadin.ui.polymertemplate.PolymerTemplateTest.ModelClass;
+import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinUriResolverFactory;
 import com.vaadin.server.WrappedHttpSession;
 import com.vaadin.shared.VaadinUriResolver;
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.shared.ui.Dependency.Type;
+import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.util.CurrentInstance;
 
 public class DefaultTemplateParserTest {
@@ -68,10 +75,17 @@ public class DefaultTemplateParserTest {
 
     private VaadinUriResolver resolver;
 
+    private VaadinService service;
+
     @Before
     public void setUp() {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         VaadinSession session = Mockito.mock(VaadinSession.class);
+        service = Mockito.mock(VaadinService.class);
+
+        Mockito.when(service.getDependencyFilters())
+                .thenReturn(Collections.emptyList());
+
         WrappedHttpSession wrappedSession = Mockito
                 .mock(WrappedHttpSession.class);
         HttpSession httpSession = Mockito.mock(HttpSession.class);
@@ -83,6 +97,8 @@ public class DefaultTemplateParserTest {
                 .thenReturn("bar.html");
         Mockito.when(resolver.resolveVaadinUri("bar1.html"))
                 .thenReturn("bar1.html");
+        Mockito.when(resolver.resolveVaadinUri("bundle.html"))
+                .thenReturn("bundle.html");
 
         VaadinUriResolverFactory factory = rqst -> resolver;
         Mockito.when(session.getAttribute(VaadinUriResolverFactory.class))
@@ -100,9 +116,14 @@ public class DefaultTemplateParserTest {
         Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(context.getResourceAsStream("/bundle.html"))
+                .thenReturn(new ByteArrayInputStream(
+                        "<dom-module id='bar'></dom-module><dom-module id='foo'></dom-module>"
+                                .getBytes(StandardCharsets.UTF_8)));
 
         CurrentInstance.set(VaadinRequest.class, request);
         CurrentInstance.set(VaadinSession.class, session);
+        CurrentInstance.set(VaadinService.class, service);
     }
 
     @Test
@@ -236,6 +257,64 @@ public class DefaultTemplateParserTest {
     public void defaultParser_templateResourceIsNotFound_throws() {
         Mockito.when(context.getResourceAsStream("/bar1.html"))
                 .thenReturn(null);
+
+        DefaultTemplateParser parser = new DefaultTemplateParser();
+        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+    }
+
+    @Test
+    public void defaultParser_useDependencyFilters_returnBundle() {
+        AtomicInteger calls = new AtomicInteger();
+        DependencyFilter filter = (list, context) -> {
+            list.clear();
+            list.add(new Dependency(Type.HTML_IMPORT, "bundle.html",
+                    LoadMode.EAGER));
+            calls.incrementAndGet();
+            return list;
+        };
+
+        Mockito.when(service.getDependencyFilters())
+                .thenReturn(Collections.singletonList(filter));
+
+        DefaultTemplateParser parser = new DefaultTemplateParser();
+        Element element = parser
+                .getTemplateContent(ImportsInspectTemplate.class, "foo");
+
+        Assert.assertEquals(
+                "The DependencyFilter should be called exactly once", 1,
+                calls.get());
+
+        Assert.assertTrue(element.getElementById("foo") != null);
+        Assert.assertTrue(element.getElementById("bar") != null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void defaultParser_useDependencyFilters_noDependencies_throws() {
+        DependencyFilter filter = (list, context) -> {
+            list.clear();
+            return list;
+        };
+
+        Mockito.when(service.getDependencyFilters())
+                .thenReturn(Collections.singletonList(filter));
+
+        DefaultTemplateParser parser = new DefaultTemplateParser();
+        parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void defaultParser_useDependencyFilters_noHtmlDependencies_throws() {
+        DependencyFilter filter = (list, context) -> {
+            list.clear();
+            list.add(new Dependency(Type.STYLESHEET, "something.css",
+                    LoadMode.EAGER));
+            list.add(new Dependency(Type.JAVASCRIPT, "something.js",
+                    LoadMode.EAGER));
+            return list;
+        };
+
+        Mockito.when(service.getDependencyFilters())
+                .thenReturn(Collections.singletonList(filter));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
         parser.getTemplateContent(ImportsInspectTemplate.class, "foo");
