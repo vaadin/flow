@@ -142,7 +142,7 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      * @see #setIconAfterText(boolean)
      */
     public void setIcon(Component icon) {
-        if (icon.getElement().isTextNode()) {
+        if (icon != null && icon.getElement().isTextNode()) {
             throw new IllegalArgumentException(
                     "Text node can't be used as an icon.");
         }
