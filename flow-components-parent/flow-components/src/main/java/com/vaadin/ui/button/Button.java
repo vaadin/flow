@@ -121,12 +121,14 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     public void setText(String text) {
         getElement().removeChild(getTextNodes());
 
-        if (text != null) {
-            if (iconComponent != null && !iconAfterText) {
-                getElement().appendChild(Element.createText(text));
-            } else {
-                getElement().insertChild(0, Element.createText(text));
-            }
+        if (text == null) {
+            return;
+        }
+
+        if (iconComponent != null && !iconAfterText) {
+            getElement().appendChild(Element.createText(text));
+        } else {
+            getElement().insertChild(0, Element.createText(text));
         }
     }
 
@@ -149,13 +151,16 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
         if (iconComponent != null) {
             remove(iconComponent);
         }
+
         iconComponent = icon;
-        if (iconComponent != null) {
-            if (iconAfterText) {
-                add(iconComponent);
-            } else {
-                getElement().insertChild(0, iconComponent.getElement());
-            }
+        if (iconComponent == null) {
+            return;
+        }
+
+        if (iconAfterText) {
+            add(iconComponent);
+        } else {
+            getElement().insertChild(0, iconComponent.getElement());
         }
     }
 
