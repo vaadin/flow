@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.Tag;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.ValueProvider;
 import com.vaadin.data.provider.ArrayUpdater;
@@ -35,6 +31,10 @@ import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

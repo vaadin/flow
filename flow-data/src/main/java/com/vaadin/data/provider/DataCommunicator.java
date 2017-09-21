@@ -31,8 +31,8 @@ import java.util.stream.Stream;
 
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.StateNode;
+import com.vaadin.function.SerializableConsumer;
 import com.vaadin.server.KeyMapper;
-import com.vaadin.server.SerializableConsumer;
 import com.vaadin.shared.Range;
 
 import elemental.json.JsonObject;
