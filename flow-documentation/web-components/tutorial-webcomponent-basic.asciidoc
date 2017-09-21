@@ -66,10 +66,10 @@ If you use maven then just add  the following snippet in your `pom.xml` file ins
 ----
 
 This plugin will install for you tools for webcomponents management (`npm` and `bower`) assuming you are using
-`${frontend.working.directory}` directory as a web resource folder in your project.
+`${frontend.working.directory}` directory as a web resource directory in your project.
 
 [NOTE]
-Current default for `${frontend.working.directory}` is `src/main/webapp/frontend`, but you can pick any directory you want.
+The default for `${frontend.working.directory}` is `src/main/webapp/frontend`, but you can pick any directory you want.
 
 This directory should have files `bower.json` and `package.json`.
 
@@ -123,14 +123,14 @@ The file contents looks the following way:
 ----
 
 [NOTE]
-Current situation (using different files for downloading dependencies) would be different in future, when https://www.polymer-project.org/blog/2017-08-23-hands-on-30-preview[Polymer 3.0] will be released.
+Current situation (using different files for downloading dependencies) will be different in future, when https://www.polymer-project.org/blog/2017-08-23-hands-on-30-preview[Polymer 3.0] will be released.
 For further info on the file contents, please refer to https://docs.npmjs.com/files/package.json[package.json file specification]
 
 [NOTE] Workflows not using Maven are not supported at the moment. If your project doesn't use Maven, you will need to install and run `bower` directly, which is described bellow.
 
-In this example it is assumed that you are using bower and have a `bower_components` folder in the root of you `WAR` file.
+In this example it is assumed that you are using bower and have a `bower_components` directory in the root of you `WAR` file.
 
-You can set up the `bower_components` and `bower.json` manually by folder by running
+You can set up the `bower_components` and `bower.json` manually by running
 
 [source,sh]
 ----
