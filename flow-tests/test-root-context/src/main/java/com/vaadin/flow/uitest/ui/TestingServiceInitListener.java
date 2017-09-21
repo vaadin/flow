@@ -49,6 +49,7 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         });
 
         event.addDependencyFilter((dependencies, context) -> {
+            // used by DependencyFilterUI
             if (dependencies.stream().anyMatch(dependency -> dependency.getUrl()
                     .startsWith("replaceme://"))) {
                 List<Dependency> newList = new ArrayList<>();
@@ -59,6 +60,15 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                         .filter(dependency -> !dependency.getUrl()
                                 .startsWith("replaceme://"))
                         .forEach(newList::add);
+                dependencies = newList;
+            }
+            // used by BundledTemplateInTemplateWithIdView
+            else if (dependencies.stream().anyMatch(dependency -> dependency
+                    .getUrl().startsWith("bundle://"))) {
+                List<Dependency> newList = new ArrayList<>();
+                newList.add(new Dependency(Dependency.Type.HTML_IMPORT,
+                        "/com/vaadin/flow/uitest/ui/template/BundleIdTemplate.html",
+                        LoadMode.EAGER));
                 dependencies = newList;
             }
             return dependencies;

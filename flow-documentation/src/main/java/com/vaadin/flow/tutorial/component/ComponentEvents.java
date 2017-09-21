@@ -17,12 +17,12 @@ package com.vaadin.flow.tutorial.component;
 
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.event.ComponentEvent;
 
 @CodeFor("creating-components/tutorial-component-events.asciidoc")

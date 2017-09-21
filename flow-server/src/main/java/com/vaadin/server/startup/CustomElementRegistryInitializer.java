@@ -22,10 +22,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.util.CustomElementNameValidator;
 
 /**

@@ -17,11 +17,11 @@ package com.vaadin.flow.uitest.ui.template.imports;
 
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.AttachEvent;
 
 @Tag("x-lazy-widget")

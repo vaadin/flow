@@ -15,12 +15,23 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-@Tag("router-link")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/RouterLinks.html")
-public class RouterLinksTemplate extends PolymerTemplate<TemplateModel> {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class BundledTemplateInTemplateWithIdIT extends ChromeBrowserTest {
+
+    @Test
+    public void childTemplateInstanceHandlesEvent() {
+        open();
+
+        WebElement template = findElement(By.id("template"));
+        WebElement child = getInShadowRoot(template, By.id("child"));
+
+        WebElement text = getInShadowRoot(child, By.id("text"));
+        Assert.assertEquals("@Id injected!", text.getText());
+    }
 }

@@ -15,24 +15,30 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.polymertemplate.Id;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.polymertemplate.Id;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-public class TemplateInTemplateWithIdView extends AbstractDivView {
+public class BundledTemplateInTemplateWithIdView extends AbstractDivView {
 
-    @Tag("parent-id-template")
+    @Tag("parent-id-template-bundled")
     @HtmlImport("/com/vaadin/flow/uitest/ui/template/ParentIdTemplate.html")
+    // This will make the DependencyFilter remove all other imports and add the
+    // proper bundle
+    @HtmlImport("bundle://something.html")
     public static class ParentTemplate extends PolymerTemplate<TemplateModel> {
 
     }
 
-    @Tag("child-id-template")
+    @Tag("child-id-template-bundled")
     @HtmlImport("/com/vaadin/flow/uitest/ui/template/ChildIdTemplate.html")
+    // This will make the DependencyFilter remove all other imports and add the
+    // proper bundle
+    @HtmlImport("bundle://something.html")
     public static class ChildTemplate extends PolymerTemplate<TemplateModel> {
         @Id("text")
         Div div;

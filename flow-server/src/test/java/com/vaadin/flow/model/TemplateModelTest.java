@@ -16,12 +16,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
