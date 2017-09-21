@@ -160,6 +160,16 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     }
 
     /**
+     * Gets the component that is defined as the icon of this button.
+     * 
+     * @return the icon of this button, or <code>null</code> if the icon is not
+     *         set
+     */
+    public Component getIcon() {
+        return iconComponent;
+    }
+
+    /**
      * Sets whether this button's icon should be positioned after it's text
      * content or the other way around.
      * <p>
