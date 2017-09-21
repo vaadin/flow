@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.data.provider;
+package com.vaadin.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,11 +29,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.data.provider.ArrayUpdater.Update;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.Query;
+import com.vaadin.data.provider.QuerySortOrder;
 import com.vaadin.flow.StateNode;
 import com.vaadin.function.SerializableConsumer;
-import com.vaadin.server.KeyMapper;
-import com.vaadin.shared.Range;
+import com.vaadin.ui.ArrayUpdater.Update;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;

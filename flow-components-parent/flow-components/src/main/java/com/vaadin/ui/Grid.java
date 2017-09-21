@@ -17,24 +17,31 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.Tag;
+import javax.swing.SingleSelectionModel;
+
+import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.ValueProvider;
-import com.vaadin.data.provider.ArrayUpdater;
-import com.vaadin.data.provider.ArrayUpdater.Update;
-import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.ArrayUpdater.Update;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.event.Tag;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -84,6 +91,167 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
         }
     }
 
+    /**
+     * Selection mode representing the built-in selection models in grid.
+     * <p>
+     * These enums can be used in {@link Grid#setSelectionMode(SelectionMode)}
+     * to easily switch between the build-in selection models.
+     *
+     * @see Grid#setSelectionMode(SelectionMode)
+     * @see Grid#setSelectionModel(GridSelectionModel)
+     */
+    public enum SelectionMode {
+
+        /**
+         * Single selection mode that maps to built-in
+         * {@link SingleSelectionModel}.
+         *
+         * @see SingleSelectionModelImpl
+         */
+        SINGLE {
+            @Override
+            protected <T> GridSelectionModel<T> createModel() {
+                return new GridSingleSelectionModel<T>() {
+
+                    @Override
+                    public Set<T> getSelectedItems() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public Optional<T> getFirstSelectedItem() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public void select(T item) {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public void deselect(T item) {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public void deselectAll() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public Registration addSelectionListener(
+                            SelectionListener<T> listener) {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public Optional<T> getSelectedItem() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public void setDeselectAllowed(boolean deselectAllowed) {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public boolean isDeselectAllowed() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public SingleSelect<? extends Grid<T>, T> asSingleSelect() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+                };
+            }
+        },
+
+        /**
+         * Multiselection mode that maps to built-in {@link MultiSelectionModel}
+         * .
+         *
+         * @see MultiSelectionModelImpl
+         */
+        MULTI {
+            @Override
+            protected <T> GridSelectionModel<T> createModel() {
+                throw new UnsupportedOperationException("Not implemented yet.");
+            }
+        },
+
+        /**
+         * Selection model that doesn't allow selection.
+         *
+         * @see NoSelectionModel
+         */
+        NONE {
+            @Override
+            protected <T> GridSelectionModel<T> createModel() {
+                return new GridSelectionModel<T>() {
+
+                    @Override
+                    public Set<T> getSelectedItems() {
+                        return Collections.emptySet();
+                    }
+
+                    @Override
+                    public Optional<T> getFirstSelectedItem() {
+                        return Optional.empty();
+                    }
+
+                    @Override
+                    public void select(T item) {
+                    }
+
+                    @Override
+                    public void deselect(T item) {
+                    }
+
+                    @Override
+                    public void deselectAll() {
+                    }
+
+                    @Override
+                    public Registration addSelectionListener(
+                            SelectionListener<T> listener) {
+                        throw new UnsupportedOperationException(
+                                "This selection model doesn't allow selection, cannot add selection listeners to it");
+                    }
+
+                    @Override
+                    public void remove() {
+                    }
+                };
+            }
+        };
+
+        /**
+         * Creates the selection model to use with this enum.
+         *
+         * @param <T>
+         *            the type of items in the grid
+         * @return the selection model
+         */
+        protected abstract <T> GridSelectionModel<T> createModel();
+    }
+
     private int pageSize = 100;
 
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
@@ -93,6 +261,9 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
             this::generateItemJson, arrayUpdater, getElement().getNode());
 
     private int nextColumnId = 0;
+
+    private GridSelectionModel<T> selectionModel = SelectionMode.SINGLE
+            .createModel();
 
     public Grid() {
         dataCommunicator.setRequestedRange(0, pageSize);
@@ -184,4 +355,78 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
         dataCommunicator.setRequestedRange(0, pageSize);
     }
 
+    /**
+     * Returns the selection model for this grid.
+     *
+     * @return the selection model, not null
+     */
+    public GridSelectionModel<T> getSelectionModel() {
+        assert selectionModel != null : "No selection model set by "
+                + getClass().getName() + " constructor";
+        return selectionModel;
+    }
+
+    /**
+     * Sets the selection model for the grid.
+     * <p>
+     * This method is for setting a custom selection model, and is
+     * {@code protected} because {@link #setSelectionMode(SelectionMode)} should
+     * be used for easy switching between built-in selection models.
+     * <p>
+     * The default selection model is {@link GridSingleSelectionModel}.
+     * <p>
+     * To use a custom selection model, you can e.g. extend the grid call this
+     * method with your custom selection model.
+     *
+     * @param model
+     *            the selection model to use, not {@code null}
+     *
+     * @see #setSelectionMode(SelectionMode)
+     */
+    protected void setSelectionModel(GridSelectionModel<T> model) {
+        Objects.requireNonNull(model, "selection model cannot be null");
+        selectionModel.remove();
+        selectionModel = model;
+    }
+
+    /**
+     * Sets the grid's selection mode.
+     * <p>
+     * To use your custom selection model, you can use
+     * {@link #setSelectionModel(GridSelectionModel)}, see existing selection
+     * model implementations for example.
+     *
+     * @param selectionMode
+     *            the selection mode to switch to, not {@code null}
+     * @return the used selection model
+     *
+     * @see SelectionMode
+     * @see GridSelectionModel
+     * @see #setSelectionModel(GridSelectionModel)
+     */
+    public GridSelectionModel<T> setSelectionMode(SelectionMode selectionMode) {
+        Objects.requireNonNull(selectionMode, "Selection mode cannot be null.");
+        GridSelectionModel<T> model = selectionMode.createModel();
+        setSelectionModel(model);
+        return model;
+    }
+
+    /**
+     * Use this grid as a single select in {@link Binder}.
+     * <p>
+     * Throws {@link IllegalStateException} if the grid is not using a
+     * {@link SingleSelectionModel}.
+     *
+     * @return the single select wrapper that can be used in binder
+     * @throws IllegalStateException
+     *             if not using a single selection model
+     */
+    public SingleSelect<? extends Grid<T>, T> asSingleSelect() {
+        GridSelectionModel<T> model = getSelectionModel();
+        if (!(model instanceof SingleSelectionModel)) {
+            throw new IllegalStateException(
+                    "Grid is not in single select mode, it needs to be explicitly set to such with setSelectionModel(SingleSelectionModel) before being able to use single selection features.");
+        }
+        return ((GridSingleSelectionModel<T>) model).asSingleSelect();
+    }
 }
