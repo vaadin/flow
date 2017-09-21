@@ -34,10 +34,6 @@ cache:
   - flow-tests/test-root-context/frontend/node
   - flow-tests/test-root-context/frontend/node_modules
   - flow-tests/test-root-context/frontend/bower_components
-  - flow-tests/test-expense-manager-imperative/frontend/node
-  - flow-tests/test-expense-manager-imperative/frontend/node_modules
-  - flow-tests/test-expense-manager-imperative/frontend/bower_components
-  - flow-tests/test-polymer2/driver
 before_cache:
   # remove all build artifacts
   - rm -rf $HOME/.m2/repository/com/vaadin/flow
