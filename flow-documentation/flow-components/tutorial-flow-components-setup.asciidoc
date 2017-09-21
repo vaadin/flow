@@ -39,7 +39,8 @@ To enable compilation to ES5 (for browsers that lack of ES6 support, such as
 
 == bower.json configuration
 
-In your `bower.json` file, which is located at `src/main/frontend`, you
+In your `bower.json` file, which is located at `${frontend.working.directory}`
+(see <<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>> for details), you
 need to add the webcomponent dependencies to each desired webcomponent. Here is
 an example that adds all supported elements:
 

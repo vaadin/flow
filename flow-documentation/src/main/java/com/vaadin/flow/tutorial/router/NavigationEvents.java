@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.tutorial.router;
 
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.router.Route;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.html.Anchor;
 import com.vaadin.ui.html.Div;
 import com.vaadin.router.event.AfterNavigationEvent;

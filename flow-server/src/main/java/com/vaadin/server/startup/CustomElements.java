@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.Tag;
 
 /**
  * A class to store the data about element

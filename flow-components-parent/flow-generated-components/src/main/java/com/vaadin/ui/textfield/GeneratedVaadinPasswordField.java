@@ -16,7 +16,8 @@
 package com.vaadin.ui.textfield;
 
 import javax.annotation.Generated;
-import com.vaadin.ui.event.Tag;
+
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",

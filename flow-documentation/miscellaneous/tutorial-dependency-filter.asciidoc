@@ -32,7 +32,12 @@ public class BundleFilter implements DependencyFilter {
 }
 ----
 [TIP]
-You can also use the `frontend://` and `context://` protocols on dependencies returned by the DependencyFilter. These protocols are resolved after the filters are applied. To know more about `frontend://` and `context://` protocols, read ** <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>.
+You can also use the `frontend://` and `context://` protocols on dependencies returned by the DependencyFilter. These protocols are resolved after the filters are applied. To know more about `frontend://` and `context://` protocols, read <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>.
+
+The DependencyFilters are called in two particular situations: when a <<../polymer-templates/tutorial-template-basic#,PolymerTemplate>> is parsed for the first time, and when a set of dependencies are about to be sent to the client.
+
+* When a polymer template is parsed, all `@HtmlImport` of the class are analyzed and sent to the DependencyFilters for evaluation. The filter must return a dependency that contains the definition of the template, so it can be parsed. In the example provided above, the `my-bundle.html` file must contain the definition of the polymer templates needed by the application.
+* When a route changes and a new set of components are requested, all dependencies are gathered in a list and sent to the filters for evaluation. The filters can change, remove or add new dependencies as needed.
 
 [WARNING]
 DependencyFilters allow you to change, add and remove any dependencies. You may leave your application in a broken state if you remove a required dependency for your project without providing a suitable replacement. With great power comes great responsibility.

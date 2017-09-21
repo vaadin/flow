@@ -59,6 +59,7 @@ import com.vaadin.generator.metadata.ComponentPropertyData;
 import com.vaadin.generator.metadata.ComponentType;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasStyle;
@@ -72,7 +73,6 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.event.Tag;
 
 import elemental.json.JsonObject;
 

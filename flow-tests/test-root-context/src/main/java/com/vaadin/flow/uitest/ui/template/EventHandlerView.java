@@ -17,11 +17,11 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.Locale;
 
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.View;

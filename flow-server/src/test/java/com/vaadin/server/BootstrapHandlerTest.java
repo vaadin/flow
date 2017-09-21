@@ -20,14 +20,11 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.router.Title;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.flow.template.angular.InlineTemplate;
+import com.vaadin.router.Title;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
@@ -37,6 +34,9 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 
 public class BootstrapHandlerTest {
 
@@ -77,8 +77,8 @@ public class BootstrapHandlerTest {
 
         deploymentConfiguration = new MockDeploymentConfiguration();
 
-        service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
-                deploymentConfiguration));
+        service = Mockito
+                .spy(new MockVaadinServletService(deploymentConfiguration));
 
         session = Mockito.spy(new MockVaadinSession(service));
         session.lock();
@@ -158,7 +158,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void testBootstrapListener() {
+    public void testBootstrapListener() throws ServiceException {
         List<BootstrapListener> listeners = new ArrayList<>(3);
         AtomicReference<VaadinUriResolver> resolver = new AtomicReference<>();
         listeners.add(evt -> evt.getDocument().head().getElementsByTag("script")
@@ -171,8 +171,8 @@ public class BootstrapHandlerTest {
         listeners.add(evt -> evt.getDocument().head().appendElement("script")
                 .attr("src", "testing.2"));
 
-        Mockito.when(service.processBootstrapListeners(Mockito.anyList()))
-                .thenReturn(listeners);
+        Mockito.when(service.createInstantiator()).thenReturn(new MockInstantiator(
+                event -> listeners.forEach(event::addBootstrapListener)));
 
         initUI(testUI);
 
@@ -187,12 +187,11 @@ public class BootstrapHandlerTest {
 
         Assert.assertNotNull(resolver.get());
         Assert.assertEquals(bootstrapContext.getUriResolver(), resolver.get());
-
-        Mockito.verify(service).processBootstrapListeners(Mockito.anyList());
     }
 
     @Test
-    public void useDependencyFilters_removeDependenciesAndAddNewOnes() {
+    public void useDependencyFilters_removeDependenciesAndAddNewOnes()
+            throws ServiceException {
         List<DependencyFilter> filters = new ArrayList<>(5);
         filters.add((list, context) -> {
             list.clear(); // remove everything
@@ -220,8 +219,8 @@ public class BootstrapHandlerTest {
             return list;
         });
 
-        Mockito.when(service.processDependencyFilters(Mockito.anyList()))
-                .thenReturn(filters);
+        Mockito.when(service.createInstantiator()).thenReturn(new MockInstantiator(
+                event -> filters.forEach(event::addDependencyFilter)));
 
         initUI(testUI);
 
@@ -259,8 +258,6 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 "imported-by-filter.html should be in the head of the page",
                 found);
-
-        Mockito.verify(service).processDependencyFilters(Mockito.anyList());
     }
 
     @Test
