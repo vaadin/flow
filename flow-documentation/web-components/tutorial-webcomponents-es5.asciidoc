@@ -9,10 +9,13 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 According to the native custom element specification, ECMAScript 6 is required
 to define webcomponents. But when deploying an application to IE11 and Safari 9,
- you need to compile the files to ECMAScript 5 (ES5 for short), since those
-browsers don't support ECMAScript 6. Luckily there's a library that can compile
+ you need to transpile the files to ECMAScript 5 (ES5 for short), since those
+browsers don't support ECMAScript 6. Luckily there's a library that can transpile
 and optimize the ES6 files to ES5, which is provided by the Polymer project:
 polymer-build.
+
+[TIP]
+Transpilation in current context is converting ES6 JavaScript code to ES5 that is performed for older browsers be able to run it
 
 [TIP]
 The same library can also be used to optimize ES6 scripts, by using minification.
@@ -49,7 +52,7 @@ In your `${frontend.working.directory}` directory, you have to update `package.j
 Initial file state is described in <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
 We have added and `polymer-cli` dependencies that will process our web files and have added two tasks: `prodMode` and `devMode`
 Both tasks run `bower install` to install dependencies from `bower.json` and `prodMode` also runs `polymer build` that
-uses installed `polymer-cli` tool to transpile the sources to ES5 (see next file description for details).
+uses installed `polymer-cli` tool to transpile the sources to ES5:.
 
 [source,json]
 ----
@@ -73,7 +76,7 @@ and create two more files:
 ==== polymer.json
 
 This file defines how the project will be built, used by `polymer-cli`. Here is where you set the
-compilation parameters. The entire structure of the file is described
+transpilation parameters. The entire structure of the file is described
 https://www.polymer-project.org/2.0/docs/tools/polymer-json[here].
 
 [source,json]
@@ -102,7 +105,7 @@ https://www.polymer-project.org/2.0/docs/tools/polymer-json[here].
 ----
 
 Here, we have added two configurations: `frontend-es5` and `frontend-es6`.
-Both configuration will minify all html, css and js files and, additionally, `frontend-es6` will transpile js files.
+Both configuration will minify all html, css and js files and, additionally, `frontend-es5` will transpile js files.
 Which files are subject to transpilation is determined in `index.html`: all urls are recursively analyzed and processed,
 this file is considered in the next session.
 
@@ -247,7 +250,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
           </configuration>
       </plugin>
 
-      <!-- Configures the frontend plugin to compile the web components source -->
+      <!-- Configures the frontend plugin to transpile the web components source -->
       <plugin>
           <groupId>com.github.eirslett</groupId>
           <artifactId>frontend-maven-plugin</artifactId>
@@ -353,14 +356,14 @@ sources and see the changes right away upon refreshing the browser.
 
 For example, when running the Jetty server from Maven, by using the
 `mvn jetty:run` command, you can modify any webcomponent source file and just
-refresh the browser to see the changes. No compilation is required.
+refresh the browser to see the changes. No transpilation is required.
 
 [WARNING]
 You can only develop in that way when using an ES6 compatible browser. Older
-browsers such as Safari 9 and Internet Explorer 11 require compilation to work
+browsers such as Safari 9 and Internet Explorer 11 require transpilation to work
 properly with webcomponents.
 
-To effectively compile and minify your resources for production deployment, you
+To effectively transpile and minify your resources for production deployment, you
 must run the packaging using the `-Dvaadin.productionMode` flag. For example:
 
 [source,bash]
@@ -377,11 +380,11 @@ mvn jetty:run -Dvaadin.productionMode
 
 === Directories created by the process
 
-When resolving dependencies and compiling your components, several directories
-and files are created inside your `${frontend.working.directory}`. Those file can be
+When resolving dependencies and transpiling your components, several directories
+and files are created inside your `${frontend.working.directory}`. Those files can be
 safely ignored in you SCM, since they are generated from the build.
 
-Those files and directories are:
+The ignorable files and directories are:
 
 * bower_components/ – the folder where web components and their dependencies from `bower.json` are downloaded to, result of `bower install` command
 * build/ – the folder where transpiled and minified files are added to, based on rules from `polymer.json`, result of `polymer build` operation
@@ -389,9 +392,9 @@ Those files and directories are:
 * node/
 * node_modules/
 
-== Manual compilation
+== Manual transpilation
 
-If you don't want to use Maven to compile your components for you, you can use
+If you don't want to use Maven to transpile your components for you, you can use
 the Polymer CLI directly (which uses polymer-build internally).
 
 First step is to install the Polymer CLI tool. To do that, please
@@ -406,7 +409,7 @@ command from the `${frontend.working.directory}` directory:
 polymer build
 ----
 
-This will generate the `build` directory, which contains the compiled files.
+This will generate the `build` directory, which contains the transpiled files.
 
 == Linking both ES6 and ES5 files in your application
 
@@ -427,9 +430,9 @@ public class MyComponent extends PolymerTemplate<MyModel> {
 
 In production, the Flow application will determine whether the browser supports ES6 or
 not. When the browser supports ES6, the linked file will be served from
-`(context)/es6/components/my-component.html`. When it
+`(context)/frontend-es6/components/my-component.html`. When it
 doesn`t, the served file will be
-`(context)/es5/components/my-component.html`.
+`(context)/frontend-es5/components/my-component.html`.
 
 That way you can support ES5 browsers without compromising ES6 capable browsers.
 
