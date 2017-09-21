@@ -7,8 +7,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.ui.Tag;
 
 public abstract class AbstractBasicElementComponentIT extends ChromeBrowserTest {
 

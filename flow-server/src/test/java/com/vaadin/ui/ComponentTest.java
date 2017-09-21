@@ -42,7 +42,6 @@ import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
 import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ElementUtil;

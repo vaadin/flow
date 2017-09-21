@@ -28,7 +28,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.change.ListAddChange;
 import com.vaadin.flow.change.ListRemoveChange;
 import com.vaadin.flow.change.MapPutChange;
@@ -42,6 +41,7 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.tests.util.TestUtil;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 public class StateTreeTest {

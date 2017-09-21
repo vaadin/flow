@@ -17,10 +17,10 @@ package com.vaadin.flow.uitest.ui.webcomponent;
 
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.event.ComponentEvent;
 
 @Tag("paper-slider")

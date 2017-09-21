@@ -35,7 +35,6 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.ComponentEventNotifier;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.util.AnnotationReader;
 
 /**

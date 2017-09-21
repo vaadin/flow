@@ -20,10 +20,10 @@ import java.util.Optional;
 
 import org.junit.Before;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 public class NewRoutingTestBase {

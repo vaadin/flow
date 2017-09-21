@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.html;
 
-import com.vaadin.ui.event.Tag;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.ClickEvent;
