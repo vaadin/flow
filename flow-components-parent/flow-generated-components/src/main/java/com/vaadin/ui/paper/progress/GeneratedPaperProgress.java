@@ -16,10 +16,11 @@
 package com.vaadin.ui.paper.progress;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-import com.vaadin.ui.event.Tag;
+
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.common.HasValue;

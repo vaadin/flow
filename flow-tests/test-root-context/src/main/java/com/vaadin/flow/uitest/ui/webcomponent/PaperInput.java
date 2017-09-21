@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui.webcomponent;
 
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.PropertyDescriptor;
 import com.vaadin.ui.common.PropertyDescriptors;
 

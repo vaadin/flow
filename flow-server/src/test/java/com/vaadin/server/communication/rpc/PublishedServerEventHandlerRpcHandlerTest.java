@@ -20,8 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

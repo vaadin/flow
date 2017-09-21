@@ -26,12 +26,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonValue;

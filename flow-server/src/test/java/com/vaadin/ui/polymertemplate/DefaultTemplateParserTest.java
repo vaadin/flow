@@ -49,8 +49,8 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.Dependency.Type;
 import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.util.CurrentInstance;
 

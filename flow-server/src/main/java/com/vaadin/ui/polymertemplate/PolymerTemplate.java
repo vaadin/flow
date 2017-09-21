@@ -19,8 +19,8 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.model.ListModelType;
 import com.vaadin.flow.model.ModelDescriptor;
 import com.vaadin.flow.model.ModelType;

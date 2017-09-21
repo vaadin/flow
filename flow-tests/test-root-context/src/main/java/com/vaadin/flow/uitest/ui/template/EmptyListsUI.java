@@ -29,7 +29,7 @@ import com.vaadin.ui.UI;
 public class EmptyListsUI extends UI {
 
     @HtmlImport("/com/vaadin/flow/uitest/ui/template/EmptyLists.html")
-    @com.vaadin.ui.event.Tag("empty-list")
+    @com.vaadin.ui.Tag("empty-list")
     public static class EmptyLists extends PolymerTemplate<EmptyListsModel> {
         public EmptyLists() {
             Item item = new Item();
