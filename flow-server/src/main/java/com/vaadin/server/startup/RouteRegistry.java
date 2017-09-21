@@ -184,10 +184,11 @@ public class RouteRegistry {
                         navigationTarget.getName()));
             }
             String route = getNavigationRoute(navigationTarget);
+            targetRoutes.put(navigationTarget, route);
             if (navigationTargetMap.containsKey(route)) {
                 // neither route has parameters
-                if (route.equals(getTargetUrl(navigationTarget)) && route
-                        .equals(getTargetUrl(navigationTargetMap.get(route)))) {
+                if (route.equals(getTargetUrl(navigationTarget).get()) && route
+                        .equals(getTargetUrl(navigationTargetMap.get(route)).get())) {
                     throw new InvalidRouteConfigurationException(String.format(
                             "Navigation targets must have unique routes, "
                                     + "found navigation targets '%s' and '%s' with the same route.",
