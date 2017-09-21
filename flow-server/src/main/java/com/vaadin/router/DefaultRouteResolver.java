@@ -39,7 +39,15 @@ public class DefaultRouteResolver implements RouteResolver {
         }
 
         NavigationStateBuilder builder = new NavigationStateBuilder();
-        Class<? extends Component> navigationTarget = getNavigationTarget(path);
+        Class<? extends Component> navigationTarget;
+        if (path.split("/").length < request.getLocation().getSegments()
+                .size()) {
+            // If we have parameters we try to first get the parameterized
+            // target over the possible non-parameterized
+            navigationTarget = getNavigationTargetWithParameter(path);
+        } else {
+            navigationTarget = getNavigationTarget(path);
+        }
 
         if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             List<String> pathParameters = getPathParameters(
@@ -72,7 +80,9 @@ public class DefaultRouteResolver implements RouteResolver {
             String currentPath = paths.get(paths.size() - 1);
             Optional<?> target = RouteRegistry.getInstance()
                     .getNavigationTarget(currentPath);
-            if (target.isPresent()) {
+            if (target.isPresent() || RouteRegistry.getInstance()
+                    .getNavigationTargetWithParameter(currentPath)
+                    .isPresent()) {
                 return currentPath;
             }
             paths.remove(paths.size() - 1);
@@ -82,6 +92,14 @@ public class DefaultRouteResolver implements RouteResolver {
 
     private Class<? extends Component> getNavigationTarget(String path) {
         return RouteRegistry.getInstance().getNavigationTarget(path)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "No navigation target found for path '%s'.", path)));
+    }
+
+    private Class<? extends Component> getNavigationTargetWithParameter(
+            String path) {
+        return RouteRegistry.getInstance()
+                .getNavigationTargetWithParameter(path)
                 .orElseThrow(() -> new IllegalArgumentException(String.format(
                         "No navigation target found for path '%s'.", path)));
     }

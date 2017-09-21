@@ -18,10 +18,10 @@ package com.vaadin.router;
 import java.util.Optional;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
-import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
@@ -136,13 +136,12 @@ public class Router implements RouterInterface {
      * @return url for the navigation target
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
-        Optional<String> targetUrl = RouteRegistry.getInstance()
-                .getTargetUrl(navigationTarget);
-        if (!targetUrl.isPresent()) {
-            throw new IllegalArgumentException(
-                    "No route found for given navigation target!");
+        String routeString = getUrlForTarget(navigationTarget);
+        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)
+                && HasUrlParameter.isOptionalParameter(navigationTarget)) {
+            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
         }
-        return targetUrl.get();
+        return routeString;
     }
 
     /**
@@ -161,13 +160,19 @@ public class Router implements RouterInterface {
      */
     public <T> String getUrl(
             Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
-        String routeString = getUrl(
-                (Class<? extends Component>) navigationTarget).replace(
-                        "{" + parameter.getClass().getSimpleName() + "}",
-                        parameter.toString());
+        String routeString = getUrlForTarget(
+                (Class<? extends Component>) navigationTarget);
+        if (parameter == null
+                && HasUrlParameter.isOptionalParameter(navigationTarget)) {
+            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+        } else {
+            routeString = routeString.replace(
+                    "{" + parameter.getClass().getSimpleName() + "}",
+                    parameter.toString());
+        }
 
         Optional<Class<? extends Component>> registryTarget = RouteRegistry
-                .getInstance().getNavigationTarget(routeString);
+                .getInstance().getNavigationTargetWithParameter(routeString);
 
         if (registryTarget.isPresent()
                 && !hasUrlParameters(registryTarget.get())
@@ -177,6 +182,16 @@ public class Router implements RouterInterface {
                     registryTarget.get().getName()));
         }
         return routeString;
+    }
+
+    private String getUrlForTarget(Class<? extends Component> navigationTarget) {
+        Optional<String> targetUrl = RouteRegistry.getInstance()
+                .getTargetUrl(navigationTarget);
+        if (!targetUrl.isPresent()) {
+            throw new IllegalArgumentException(
+                    "No route found for given navigation target!");
+        }
+        return targetUrl.get();
     }
 
     private boolean hasUrlParameters(

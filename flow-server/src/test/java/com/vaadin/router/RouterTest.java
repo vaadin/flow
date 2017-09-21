@@ -38,7 +38,7 @@ import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
-public class NewRouterTest extends NewRoutingTestBase {
+public class RouterTest extends RoutingTestBase {
 
     private UI ui;
     private static List<String> eventCollector = new ArrayList<>(0);
@@ -77,8 +77,13 @@ public class NewRouterTest extends NewRoutingTestBase {
 
     @Route("param")
     @Tag(Tag.DIV)
-    public static class RouteWithParameter extends Component implements BeforeNavigationListener,
-            HasUrlParameter<String> {
+    public static class ParameterRouteNoParameter extends Component {
+    }
+
+    @Route("param")
+    @Tag(Tag.DIV)
+    public static class RouteWithParameter extends Component
+            implements BeforeNavigationListener, HasUrlParameter<String> {
 
         private String param;
 
@@ -95,9 +100,32 @@ public class NewRouterTest extends NewRoutingTestBase {
         }
     }
 
+    @Route("param/static")
+    @Tag(Tag.DIV)
+    public static class StaticParameter extends Component {
+    }
+
+    @Route("optional")
+    @Tag(Tag.DIV)
+    public static class OptionalNoParameter extends Component {
+    }
+
+    @Route("optional")
+    @Tag(Tag.DIV)
+    public static class OptionalParameter extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @com.vaadin.router.OptionalParameter String parameter) {
+            eventCollector.add(parameter == null ? "No parameter" : parameter);
+        }
+    }
+
     @Route("redirect/to/param")
     @Tag(Tag.DIV)
-    public static class RerouteToRouteWithParam extends Component implements BeforeNavigationListener {
+    public static class RerouteToRouteWithParam extends Component
+            implements BeforeNavigationListener {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -107,7 +135,8 @@ public class NewRouterTest extends NewRoutingTestBase {
 
     @Route("fail/param")
     @Tag(Tag.DIV)
-    public static class FailRerouteWithParam extends Component implements BeforeNavigationListener {
+    public static class FailRerouteWithParam extends Component
+            implements BeforeNavigationListener {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -296,8 +325,9 @@ public class NewRouterTest extends NewRoutingTestBase {
     @Test
     public void after_event_not_fired_on_detach()
             throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
-                Stream.of(NavigationEvents.class, FooNavigationTarget.class)
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream
+                        .of(NavigationEvents.class, FooNavigationTarget.class)
                         .collect(Collectors.toSet()));
 
         router.navigate(ui, new Location("navigationEvents"),
@@ -336,41 +366,137 @@ public class NewRouterTest extends NewRoutingTestBase {
     public void nested_layouts_url_resolving()
             throws InvalidRouteConfigurationException {
         RouteRegistry.getInstance().setNavigationTargets(
-                Stream.of(RouteChild.class, LoneRoute.class).collect(Collectors.toSet()));
+                Stream.of(RouteChild.class, LoneRoute.class)
+                        .collect(Collectors.toSet()));
 
         Assert.assertEquals("parent/child", router.getUrl(RouteChild.class));
         Assert.assertEquals("single", router.getUrl(LoneRoute.class));
     }
 
     @Test
-    public void layout_with_url_parameter_url_resolving() throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
-                Stream.of(GreetingNavigationTarget.class, OtherGreetingNavigationTarget.class).collect(Collectors.toSet()));
+    public void layout_with_url_parameter_url_resolving()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                OtherGreetingNavigationTarget.class)
+                        .collect(Collectors.toSet()));
 
-        Assert.assertEquals("greeting/my_param", router.getUrl(GreetingNavigationTarget.class, "my_param"));
-        Assert.assertEquals("greeting/true", router.getUrl(GreetingNavigationTarget.class, "true"));
+        Assert.assertEquals("greeting/my_param",
+                router.getUrl(GreetingNavigationTarget.class, "my_param"));
+        Assert.assertEquals("greeting/true",
+                router.getUrl(GreetingNavigationTarget.class, "true"));
 
-        Assert.assertEquals("greeting/other", router.getUrl(GreetingNavigationTarget.class, "other"));
+        Assert.assertEquals("greeting/other",
+                router.getUrl(GreetingNavigationTarget.class, "other"));
     }
 
     @Test
-    public void test_reroute_with_url_parameter() throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
-                Stream.of(GreetingNavigationTarget.class, RouteWithParameter.class, RerouteToRouteWithParam.class).collect(Collectors.toSet()));
+    public void test_reroute_with_url_parameter()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithParameter.class, RerouteToRouteWithParam.class)
+                        .collect(Collectors.toSet()));
 
-        router.navigate(ui, new Location("redirect/to/param"), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location("redirect/to/param"),
+                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
-        Assert.assertEquals("Before navigation event was wrong.", "Stored parameter: hello", eventCollector.get(1));
+        Assert.assertEquals("Before navigation event was wrong.",
+                "Stored parameter: hello", eventCollector.get(1));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void fail_reroute_with_faulty_url_parameter() throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
-                Stream.of(GreetingNavigationTarget.class, RouteWithParameter.class, FailRerouteWithParam.class).collect(Collectors.toSet()));
+    public void fail_reroute_with_faulty_url_parameter()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithParameter.class, FailRerouteWithParam.class)
+                        .collect(Collectors.toSet()));
 
-        router.navigate(ui, new Location("fail/param"), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location("fail/param"),
+                NavigationTrigger.PROGRAMMATIC);
+    }
+
+    @Test
+    public void test_route_precedence_when_one_has_parameter()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream
+                        .of(RouteWithParameter.class, StaticParameter.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("param/param"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals(RouteWithParameter.class, getUIComponent());
+
+        // Expectation of 2 events is due to parameter and BeforeNavigation
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "Stored parameter: param", eventCollector.get(1));
+
+        router.navigate(ui, new Location("param/static"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals(
+                "Did not get correct class even though StaticParameter should have precedence over RouteWithParameter due to exact url match.",
+                StaticParameter.class, getUIComponent());
+    }
+
+    @Test
+    public void test_optional_parameter_gets_parameter()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Stream.of(OptionalParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("optional/parameter"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.", "parameter",
+                eventCollector.get(0));
+    }
+
+    @Test
+    public void test_optional_parameter_matches_no_parameter()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance().setNavigationTargets(
+                Stream.of(OptionalParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("optional"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "No parameter", eventCollector.get(0));
+    }
+
+    @Test
+    public void correctly_return_route_with_one_base_route_with_optionals()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream
+                        .of(RouteWithParameter.class,
+                                ParameterRouteNoParameter.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("param/parameter"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Failed", RouteWithParameter.class,
+                getUIComponent());
+    }
+
+    @Test(expected = InvalidRouteConfigurationException.class)
+    public void base_route_and_optional_parameter_throws_configuration_error()
+            throws InvalidRouteConfigurationException {
+        RouteRegistry.getInstance()
+                .setNavigationTargets(Stream
+                        .of(OptionalParameter.class, OptionalNoParameter.class)
+                        .collect(Collectors.toSet()));
     }
 
     private Class<? extends Component> getUIComponent() {
