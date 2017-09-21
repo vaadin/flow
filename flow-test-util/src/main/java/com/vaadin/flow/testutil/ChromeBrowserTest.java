@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.testutil;
 
+import java.lang.management.ManagementFactory;
 import java.util.List;
 
 import org.junit.Before;
@@ -57,11 +58,16 @@ public class ChromeBrowserTest extends ViewOrUITest {
     @Before
     @Override
     public void setup() throws Exception {
-        if (Browser.CHROME == getRunLocallyBrowser()) {
+        if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
             setDriver(createHeadlessChromeDriver());
         } else {
             super.setup();
         }
+    }
+
+    private boolean isJavaInDebugMode() {
+        return ManagementFactory.getRuntimeMXBean().getInputArguments()
+                .toString().contains("jdwp");
     }
 
     private WebDriver createHeadlessChromeDriver() {

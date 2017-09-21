@@ -38,6 +38,7 @@ else
             chrome_default_url="http://dl.google.com/dl/linux/direct/google-chrome-stable_current_amd64.deb"
         fi
         wget -O ${custom_chrome_dir} ${chrome_default_url}
+        echo "Using Chrome of version $(dpkg-deb -f ${custom_chrome_dir}/${chrome_package_name} Version)"
     fi
 
     sudo dpkg -i --force-all ${custom_chrome_dir}/${chrome_package_name}
