@@ -1,0 +1,49 @@
+---
+title: Grid
+order: 2
+layout: page
+---
+
+= Grid
+
+== Overview
+
+`Grid` is for displaying and editing tabular data laid out in rows
+and columns. At the top, a __header__ can be shown, and a __footer__ at the
+bottom. In addition to plain text, the header and footer can contain HTML and
+components. Having components in the header allows implementing filtering
+easily. The grid data can be sorted by clicking on a column header;
+shift-clicking a column header enables secondary sorting criteria.
+
+The data area can be scrolled both vertically and horizontally. The leftmost
+columns can be frozen, so that they are never scrolled out of the view. The data
+is loaded lazily from the server, so that only the visible data is loaded. The
+smart lazy loading functionality gives excellent user experience even with low
+bandwidth, such as mobile devices.
+
+== Binding to Data
+
+`Grid` is normally used by binding it to a data provider,
+described in <<../data-provider/tutorial-flow-data-provider#,Data Providers>>.
+By default, it is bound to List of items. You can set the items with the `setItems()` method.
+
+For example, if you have a list of beans, you show them in a `Grid` as follows
+
+
+[source, java]
+----
+// Have some data
+List<Person> people = Arrays.asList(
+        new Person("Nicolaus Copernicus", 1543),
+        new Person("Galileo Galilei", 1564),
+        new Person("Johannes Kepler", 1571));
+
+// Create a grid bound to the list
+Grid<Person> grid = new Grid<>();
+grid.setItems(people);
+grid.addColumn("Name", Person::getName);
+grid.addColumn("Year of birth",
+        person -> Integer.toString(person.getYearOfBirth()));
+
+layout.add(grid);
+----
