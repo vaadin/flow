@@ -25,8 +25,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.shared.util.SharedUtil;
@@ -626,6 +628,26 @@ public class ReflectTools implements Serializable {
     public static boolean isCheckedException(Class<?> exceptionClass) {
         return !RuntimeException.class.isAssignableFrom(exceptionClass)
                 && !Error.class.isAssignableFrom(exceptionClass);
+    }
+
+    /**
+     * Get the functional interface method name defined for given interface
+     * class.
+     *
+     * @return functional interface method
+     */
+    public static Method getFunctionalMethod(Class<?> functionalClass) {
+        assert functionalClass.getAnnotation(FunctionalInterface.class) != null;
+        Method[] methods = functionalClass.getMethods();
+        if (methods.length == 1) {
+            return methods[0];
+        }
+        List<Method> filteredMethods = Stream.of(methods)
+                .filter(method -> !Modifier.isStatic(method.getModifiers())
+                        && !method.isDefault())
+                .collect(Collectors.toList());
+        assert filteredMethods.size() == 1;
+        return filteredMethods.get(0);
     }
 
 }
