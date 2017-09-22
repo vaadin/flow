@@ -162,13 +162,16 @@ public class Router implements RouterInterface {
             Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
         String routeString = getUrlForTarget(
                 (Class<? extends Component>) navigationTarget);
-        if (parameter == null
-                && HasUrlParameter.isOptionalParameter(navigationTarget)) {
-            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
-        } else {
+        if (parameter != null) {
             routeString = routeString.replace(
                     "{" + parameter.getClass().getSimpleName() + "}",
                     parameter.toString());
+        } else if (HasUrlParameter.isOptionalParameter(navigationTarget)) {
+            routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "The navigation target '%s' has a non optional parameter that needs to be given.",
+                    navigationTarget.getName()));
         }
 
         Optional<Class<? extends Component>> registryTarget = RouteRegistry
@@ -184,7 +187,8 @@ public class Router implements RouterInterface {
         return routeString;
     }
 
-    private String getUrlForTarget(Class<? extends Component> navigationTarget) {
+    private String getUrlForTarget(
+            Class<? extends Component> navigationTarget) {
         Optional<String> targetUrl = RouteRegistry.getInstance()
                 .getTargetUrl(navigationTarget);
         if (!targetUrl.isPresent()) {

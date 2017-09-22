@@ -111,7 +111,7 @@ public interface HasUrlParameter<T> {
     }
 
     /**
-     * Check if the parameter value is annotated as Optional
+     * Check if the parameter value is annotated as OptionalParameter.
      * 
      * @param navigationTarget
      *            navigation target to check for optional
