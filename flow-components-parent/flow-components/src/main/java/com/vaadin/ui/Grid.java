@@ -84,7 +84,7 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
         }
     }
 
-    private final int pageSize = 100;
+    private static final int pageSize = 100;
 
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
 
@@ -94,6 +94,9 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
 
     private int nextColumnId = 0;
 
+    /**
+     * Creates a new instance.
+     */
     public Grid() {
         dataCommunicator.setRequestedRange(0, pageSize);
     }
