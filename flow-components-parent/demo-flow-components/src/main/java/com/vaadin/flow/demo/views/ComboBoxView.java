@@ -17,16 +17,17 @@ package com.vaadin.flow.demo.views;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.dom.ElementConstants;
-import com.vaadin.ui.html.Div;
 import com.vaadin.ui.combobox.ComboBox;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link ComboBox} demo.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-combo-box.html")
 @ComponentDemo(name = "ComboBox", href = "vaadin-combo-box")
 public class ComboBoxView extends DemoView {
     /**
@@ -84,49 +85,6 @@ public class ComboBoxView extends DemoView {
         }
     }
 
-    /**
-     * Another example object.
-     */
-    public static class Fruit {
-        private String name;
-        private String color;
-
-        /**
-         * Default constructor.
-         */
-        public Fruit() {
-        }
-
-        /**
-         * Construct a fruit with the given name and color.
-         * 
-         * @param name
-         *            name of the fruit
-         * @param color
-         *            color of the fruit
-         */
-        public Fruit(String name, String color) {
-            this.name = name;
-            this.color = color;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getColor() {
-            return color;
-        }
-
-        public void setColor(String color) {
-            this.color = color;
-        }
-    }
-
     private static final String WIDTH_STRING = "250px";
 
     @Override
@@ -134,7 +92,6 @@ public class ComboBoxView extends DemoView {
         createStringComboBox();
         createObjectComboBox();
         createComboBoxWithObjectStringSimpleValue();
-        createComboBoxWithCustomFilter();
     }
 
     private void createStringComboBox() {
@@ -219,49 +176,6 @@ public class ComboBoxView extends DemoView {
         addCard("Value selection from objects", comboBox, message);
     }
 
-    private void createComboBoxWithCustomFilter() {
-        Div message = createMessageDiv("custom-filter-message");
-
-        // begin-source-example
-        // source-example-heading: Custom filtering
-        ComboBox<Fruit> comboBox = new ComboBox<>(
-                "Filter fruits by color (e.g. red, green, yellow...)");
-        comboBox.setItemLabelPath("name");
-        comboBox.setItemTemplate(
-                "Fruit: [[item.name]]<br>Color: <b>[[item.color]]</b>");
-
-        // when using custom filter, you don't need to call setItems
-        List<Fruit> listOfFruits = createListOfFruits();
-
-        comboBox.addFilterChangeListener(event -> {
-            String filter = comboBox.getFilter();
-            if (filter.isEmpty()) {
-                comboBox.setFilteredItems(listOfFruits);
-            } else {
-                message.setText("Filter used: " + filter);
-                List<Fruit> filtered = listOfFruits.stream()
-                        .filter(fruit -> fruit.getColor().toLowerCase()
-                                .startsWith(filter.toLowerCase()))
-                        .collect(Collectors.toList());
-                comboBox.setFilteredItems(filtered);
-            }
-        });
-
-        comboBox.addSelectedItemChangeListener(event -> {
-            if (event.getSource().isEmpty()) {
-                message.setText("No fruit selected");
-            } else {
-                message.setText("Selected fruit: "
-                        + event.getSource().getSelectedItem().getName());
-            }
-        });
-        // end-source-example
-
-        comboBox.getStyle().set(ElementConstants.STYLE_WIDTH, WIDTH_STRING);
-        comboBox.setId("custom-filter-box");
-        addCard("Custom filtering", comboBox, message);
-    }
-
     private List<Song> createListOfSongs() {
         List<Song> listOfSongs = new ArrayList<>();
         listOfSongs.add(new Song("A V Club Disagrees", "Haircuts for Men",
@@ -270,18 +184,6 @@ public class ComboBoxView extends DemoView {
         listOfSongs.add(
                 new Song("Voices of a Distant Star", "Killigrew", "Animus II"));
         return listOfSongs;
-    }
-
-    private List<Fruit> createListOfFruits() {
-        List<Fruit> listOfFruits = new ArrayList<>();
-        listOfFruits.add(new Fruit("Banana", "Yellow"));
-        listOfFruits.add(new Fruit("Apple", "Red"));
-        listOfFruits.add(new Fruit("Strawberry", "Red"));
-        listOfFruits.add(new Fruit("Grape", "Purple"));
-        listOfFruits.add(new Fruit("Lemon", "Green"));
-        listOfFruits.add(new Fruit("Watermelon", "Green"));
-        listOfFruits.add(new Fruit("Orange", "Orange"));
-        return listOfFruits;
     }
 
     private Div createMessageDiv(String id) {
