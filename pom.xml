@@ -352,7 +352,8 @@
                                 <Implementation-Version>${project.version}</Implementation-Version>
                             </manifestEntries>
                         </archive>
-                        <warSourceExcludes>**/node_modules/,**/node/,**/build/,**/etc/</warSourceExcludes>
+                        <warSourceExcludes>**/node_modules/,**/node/,**/etc/</warSourceExcludes>
+                        <packagingExcludes>**/node_modules/,**/node/,**/etc/</packagingExcludes>
                     </configuration>
                 </plugin>
                 <plugin>
