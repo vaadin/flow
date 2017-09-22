@@ -22,15 +22,13 @@ import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonArray;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.common.HasValue;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.event.EventData;
 
 /**
  * <p>
@@ -136,11 +134,7 @@ import com.vaadin.ui.event.EventData;
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
 public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 		extends
-			Component
-		implements
-			ComponentSupplier<R>,
-			HasStyle,
-			HasValue<R, String> {
+			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
 	 * <p>
@@ -325,55 +319,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The {@code String} value for the selected item of the combo box. Provides
-	 * the value for {@code iron-form}.
-	 * </p>
-	 * <p>
-	 * When there’s no item selected, the value is an empty string.
-	 * </p>
-	 * <p>
-	 * Use {@code selectedItem} property to get the raw selected item from the
-	 * {@code items} array.
-	 * <p>
-	 * This property is synchronized automatically from client side when a
-	 * 'value-changed' event happens.
-	 * </p>
-	 */
-	@Synchronize(property = "value", value = "value-changed")
-	@Override
-	public String getValue() {
-		return getElement().getProperty("value");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The {@code String} value for the selected item of the combo box. Provides
-	 * the value for {@code iron-form}.
-	 * </p>
-	 * <p>
-	 * When there’s no item selected, the value is an empty string.
-	 * </p>
-	 * <p>
-	 * Use {@code selectedItem} property to get the raw selected item from the
-	 * {@code items} array.
-	 * </p>
-	 * 
-	 * @param value
-	 *            the String value to set
-	 */
-	@Override
-	public void setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * A read-only property indicating whether this combo box has a value
 	 * selected or not. It can be used for example in styling of the component.
 	 * <p>
@@ -445,36 +390,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 */
 	public void setFilter(java.lang.String filter) {
 		getElement().setProperty("filter", filter == null ? "" : filter);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The selected item from the {@code items} array.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	protected JsonObject protectedGetSelectedItem() {
-		return (JsonObject) getElement().getPropertyRaw("selectedItem");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * The selected item from the {@code items} array.
-	 * </p>
-	 * 
-	 * @param selectedItem
-	 *            the JsonObject value to set
-	 */
-	protected void setSelectedItem(elemental.json.JsonObject selectedItem) {
-		getElement().setPropertyJson("selectedItem", selectedItem);
 	}
 
 	/**
@@ -1007,7 +922,7 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * @return It would return a boolean
 	 */
 	@NotSupported
-	protected void validate(elemental.json.JsonObject value) {
+	protected void validate(JsonObject value) {
 	}
 
 	/**
@@ -1027,20 +942,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 */
 	protected void checkValidity(elemental.json.JsonObject value) {
 		getElement().callFunction("checkValidity", value);
-	}
-
-	@DomEvent("change")
-	public static class ChangeEvent<R extends GeneratedVaadinComboBox<R>>
-			extends
-				ComponentEvent<R> {
-		public ChangeEvent(R source, boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
-
-	public Registration addChangeListener(
-			ComponentEventListener<ChangeEvent<R>> listener) {
-		return addListener(ChangeEvent.class, (ComponentEventListener) listener);
 	}
 
 	@DomEvent("custom-value-set")
@@ -1063,38 +964,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	public Registration addCustomValueSetListener(
 			ComponentEventListener<CustomValueSetEvent<R>> listener) {
 		return addListener(CustomValueSetEvent.class,
-				(ComponentEventListener) listener);
-	}
-
-	@DomEvent("selected-item-changed")
-	public static class SelectedItemChangeEvent<R extends GeneratedVaadinComboBox<R>>
-			extends
-				ComponentEvent<R> {
-		private final JsonObject detail;
-		private final JsonObject detailValue;
-
-		public SelectedItemChangeEvent(
-				R source,
-				boolean fromClient,
-				@EventData("event.detail") elemental.json.JsonObject detail,
-				@EventData("event.detail.value") elemental.json.JsonObject detailValue) {
-			super(source, fromClient);
-			this.detail = detail;
-			this.detailValue = detailValue;
-		}
-
-		public JsonObject getDetail() {
-			return detail;
-		}
-
-		public JsonObject getDetailValue() {
-			return detailValue;
-		}
-	}
-
-	public Registration addSelectedItemChangeListener(
-			ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
-		return addListener(SelectedItemChangeEvent.class,
 				(ComponentEventListener) listener);
 	}
 

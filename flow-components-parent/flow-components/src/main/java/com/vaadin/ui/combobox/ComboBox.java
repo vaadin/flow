@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui.combobox;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.util.JsonSerializer;
 
@@ -51,8 +53,8 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the type of the items to be inserted in the combo box
  */
-public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
-        implements HasSize, HasItems<T>, HasValidation {
+public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
+        HasSize, HasItems<T>, HasValidation, HasValue<ComboBox<T>, T> {
 
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
@@ -258,30 +260,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     }
 
     /**
-     * Gets the selected object of this combo box.
-     *
-     * @return the selected object, or <code>null</code> if none was selected
-     */
-    public T getSelectedItem() {
-        return JsonSerializer.toObject(itemType,
-                checkWhetherItemTypeIsSetIfNeeded(protectedGetSelectedItem()));
-    }
-
-    /**
-     * Manually sets the selected object of this combo box (without user
-     * interaction). This can be used to set a default value of the combo box.
-     *
-     * @param item
-     *            the selected object, or <code>null</code> to clear the
-     *            selection
-     */
-    public void setSelectedItem(T item) {
-        tryToSetItemTypeIfNeeded(item);
-        JsonValue json = JsonSerializer.toJson(item);
-        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
-    }
-
-    /**
      * Gets the list of items which were filtered by the user input.
      *
      * @return the list of filtered items, or empty list if none were filtered
@@ -350,7 +328,26 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     }
 
     @Override
-    public String getEmptyValue() {
-        return "";
+    public T getEmptyValue() {
+        return null;
+    }
+
+    @Override
+    public void setValue(T value) {
+        tryToSetItemTypeIfNeeded(value);
+        JsonValue json = JsonSerializer.toJson(value);
+        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
+    }
+
+    @Override
+    public T getValue() {
+        Serializable property = getElement()
+                .getPropertyRaw(SELECTED_ITEM_PROPERTY_NAME);
+        if (property instanceof JsonValue) {
+            return JsonSerializer.toObject(itemType,
+                    checkWhetherItemTypeIsSetIfNeeded((JsonValue) property));
+        }
+        return null;
+
     }
 }

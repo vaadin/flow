@@ -36,7 +36,8 @@ public class ExclusionRegistry {
     private static final Map<String, Set<String>> METHOD_EXCLUSION_REGISTRY = new HashMap<>();
 
     static {
-        excludeProperty("vaadin-combo-box", "selected-item");
+        excludeProperty("vaadin-combo-box", "value");
+        excludeProperty("vaadin-combo-box", "selectedItem");
         excludeEvent("vaadin-combo-box", "selected-item-changed");
         excludeEvent("vaadin-combo-box", "change");
 
