@@ -26,7 +26,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
-public class NewRoutingTestBase {
+public class RoutingTestBase {
 
     @Route("")
     @Tag(Tag.DIV)

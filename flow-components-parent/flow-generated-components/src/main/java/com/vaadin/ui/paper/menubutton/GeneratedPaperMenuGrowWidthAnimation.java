@@ -16,17 +16,16 @@
 package com.vaadin.ui.paper.menubutton;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
 
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
 		"WebComponent: paper-menu-grow-width-animation#UNKNOWN",
-		"Flow#0.1-SNAPSHOT"})
+		"Flow#1.0-SNAPSHOT"})
 @Tag("paper-menu-grow-width-animation")
 @HtmlImport("frontend://bower_components/paper-menu-button/paper-menu-button-animations.html")
 public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGrowWidthAnimation<R>>

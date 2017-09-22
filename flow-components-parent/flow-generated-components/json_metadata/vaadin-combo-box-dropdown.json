@@ -1,0 +1,104 @@
+{
+  "name": "Vaadin.DropdownElement",
+  "tag": "vaadin-combo-box-dropdown",
+  "baseUrl": "vaadin-combo-box/vaadin-combo-box-dropdown.html",
+  "version": "3.0.0-alpha5",
+  "properties": [
+    {
+      "name": "opened",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "template",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": ""
+    },
+    {
+      "name": "touchDevice",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "True if the device supports touch events.\n           "
+    },
+    {
+      "name": "positionTarget",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "The element to position/align the dropdown by.\n           "
+    },
+    {
+      "name": "verticalOffset",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Vertical offset for the overlay position.\n           "
+    },
+    {
+      "name": "alignedAbove",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "If `true`, overlay is aligned above the `positionTarget`\n           "
+    }
+  ],
+  "methods": [
+    {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "disconnectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "notifyResize",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
+  "events": [
+    {
+      "name": "vaadin-combo-box-dropdown-closed",
+      "description": "vaadin-combo-box-dropdown-closed",
+      "properties": []
+    },
+    {
+      "name": "vaadin-combo-box-dropdown-opened",
+      "description": "vaadin-combo-box-dropdown-opened",
+      "properties": []
+    },
+    {
+      "name": "opened-changed",
+      "description": "Fired when the `opened` property changes.",
+      "properties": []
+    },
+    {
+      "name": "template-changed",
+      "description": "Fired when the `template` property changes.",
+      "properties": []
+    }
+  ],
+  "slots": [
+    ""
+  ],
+  "behaviors": [],
+  "mixins": [],
+  "description": "`<vaadin-combo-box-dropdown>` is a Polymer element for creating dropdowns."
+}

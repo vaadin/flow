@@ -82,27 +82,6 @@ public class ComboBoxIT extends AbstractChromeTest {
                 "Selected artist: Haircuts for Men\nThe old selection was: Haywyre"));
     }
 
-    @Test
-    public void openCustomFilterBoxAndTypeAColor() {
-        WebElement comboBox = layout.findElement(By.id("custom-filter-box"));
-        WebElement message = layout.findElement(By.id("custom-filter-message"));
-
-        executeScript("arguments[0].filter = 'red'", comboBox);
-
-        waitUntil(driver -> message.getText().equals("Filter used: red"));
-
-        Assert.assertEquals("Apple", executeScript(
-                "return arguments[0].filteredItems[0].name", comboBox));
-        Assert.assertEquals("Red", executeScript(
-                "return arguments[0].filteredItems[0].color", comboBox));
-
-        executeScript(
-                "arguments[0].selectedItem = arguments[0].filteredItems[0]",
-                comboBox);
-
-        waitUntil(driver -> message.getText().equals("Selected fruit: Apple"));
-    }
-
     @Override
     protected String getTestPath() {
         return "/vaadin-combo-box";

@@ -26,15 +26,15 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.util.AnnotationReader;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.Location;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RoutePrefix;
-import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.Location;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -44,6 +44,7 @@ import com.vaadin.util.ReflectTools;
 public class RouteRegistry {
 
     private final Map<String, Class<? extends Component>> routes = new HashMap<>();
+    private final Map<String, Class<? extends Component>> parameterRoutes = new HashMap<>();
     private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
 
     boolean initialized;
@@ -61,6 +62,12 @@ public class RouteRegistry {
      */
     public static RouteRegistry getInstance() {
         return INSTANCE;
+    }
+
+    private void clear() {
+        routes.clear();
+        parameterRoutes.clear();
+        targetRoutes.clear();
     }
 
     /**
@@ -101,6 +108,31 @@ public class RouteRegistry {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
+        return Optional.ofNullable(routes.get(pathString));
+    }
+
+    /**
+     * Gets the optional navigation target class for a given Location. Returns
+     * an empty optional if no navigation target corresponds to the given
+     * Location.
+     * <p>
+     * In cases where we have a parametrized and non parametrized navigation
+     * target for the given location the parametrized version is returned.
+     * 
+     * @see Location
+     * 
+     * @param pathString
+     *            the path to get the navigation target for, not {@code null}
+     * @return optional of the navigation target corresponding to the given
+     *         location with precedence to parametrized navigation target
+     */
+    public Optional<Class<? extends Component>> getNavigationTargetWithParameter(
+            String pathString) {
+        Objects.requireNonNull(pathString, "pathString must not be null.");
+
+        if (parameterRoutes.containsKey(pathString)) {
+            return Optional.of(parameterRoutes.get(pathString));
+        }
         return Optional.ofNullable(routes.get(pathString));
     }
 
@@ -149,8 +181,8 @@ public class RouteRegistry {
     private void validateNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
-        Map<String, Class<?>> navigationTargetMap = new HashMap<>();
-        for (Class<?> navigationTarget : navigationTargets) {
+        Map<String, Class<? extends Component>> navigationTargetMap = new HashMap<>();
+        for (Class<? extends Component> navigationTarget : navigationTargets) {
             if (!navigationTarget.isAnnotationPresent(Route.class)) {
                 throw new InvalidRouteConfigurationException(String.format(
                         "No Route annotation is present for the given "
@@ -158,15 +190,62 @@ public class RouteRegistry {
                         navigationTarget.getName()));
             }
             String route = getNavigationRoute(navigationTarget);
+            targetRoutes.put(navigationTarget, route);
             if (navigationTargetMap.containsKey(route)) {
-                throw new InvalidRouteConfigurationException(String.format(
-                        "Navigation targets must have unique routes, "
-                                + "found navigation targets '%s' and '%s' with the same route.",
-                        navigationTargetMap.get(route).getName(),
-                        navigationTarget.getName()));
+                checkForInvalidConfiguration(navigationTargetMap.get(route),
+                        navigationTarget, route);
             }
             navigationTargetMap.put(route, navigationTarget);
         }
+    }
+
+    /**
+     * Check that the targets that define the same route are actually able to do
+     * so.
+     * <p>
+     * The same route targets need to have:
+     * <p>
+     * Clearly different end URLs which means that one has a required url
+     * parameter. so they then match for the URLs `route` and `route/{param}`
+     * 
+     * @param existingTarget
+     *            already mapped navigation target for route
+     * @param newTarget
+     *            new navigation target for route
+     * @param route
+     *            route
+     * @throws InvalidRouteConfigurationException
+     *             in cases where the configuration is wrong
+     */
+    private void checkForInvalidConfiguration(
+            Class<? extends Component> existingTarget,
+            Class<? extends Component> newTarget, String route)
+            throws InvalidRouteConfigurationException {
+
+        // neither route has parameters
+        if (route.equals(collectRequiredParameters(newTarget))
+                && route.equals(collectRequiredParameters(existingTarget))) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Navigation targets must have unique routes, "
+                            + "found navigation targets '%s' and '%s' with the same route.",
+                    existingTarget.getName(), newTarget.getName()));
+            // Found parameter is optional
+        } else if (checkIfOptionalParameter(newTarget, existingTarget)) {
+            String optional = HasUrlParameter.isOptionalParameter(newTarget)
+                    ? newTarget.getName()
+                    : existingTarget.getName();
+
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
+                    existingTarget.getName(), newTarget.getName(), optional));
+        }
+    }
+
+    private boolean checkIfOptionalParameter(
+            Class<? extends Component> navigationTarget,
+            Class<? extends Component> previousTarget) {
+        return HasUrlParameter.isOptionalParameter(navigationTarget)
+                || HasUrlParameter.isOptionalParameter(previousTarget);
     }
 
     /**
@@ -227,15 +306,40 @@ public class RouteRegistry {
 
     private void doRegisterNavigationTargets(
             Set<Class<? extends Component>> navigationTargets) {
-        routes.clear();
-        navigationTargets.forEach(navigationTarget -> {
+        Logger logger = Logger.getLogger(RouteRegistry.class.getName());
+
+        clear();
+        for (Class<? extends Component> navigationTarget : navigationTargets) {
             String route = getNavigationRoute(navigationTarget);
-            Logger.getLogger(RouteRegistry.class.getName()).log(Level.FINE,
-                    String.format(
-                            "Registering route '%s' to navigation target '%s'.",
-                            route, navigationTarget.getName()));
-            routes.put(route, navigationTarget);
             targetRoutes.put(navigationTarget, route);
-        });
+            if (routes.containsKey(route)) {
+                if (!route
+                        .equals(collectRequiredParameters(navigationTarget))) {
+                    String message = String.format(
+                            "Registering route '%s' also to parametrized navigation target '%s'.",
+                            route, navigationTarget.getName());
+                    logger.log(Level.FINE, message);
+
+                    parameterRoutes.put(route, navigationTarget);
+                } else if (!route
+                        .equals(collectRequiredParameters(routes.get(route)))) {
+                    String message = String.format(
+                            "Registering '%s' to route '%s' together with parametrized navigation target '%s'.",
+                            navigationTarget.getName(), route,
+                            routes.get(route).getName());
+                    logger.log(Level.FINE, message);
+
+                    parameterRoutes.put(route, routes.get(route));
+                    routes.put(route, navigationTarget);
+                }
+            } else {
+                String message = String.format(
+                        "Registering route '%s' to navigation target '%s'.",
+                        route, navigationTarget.getName());
+                logger.log(Level.FINE, message);
+
+                routes.put(route, navigationTarget);
+            }
+        }
     }
 }

@@ -79,8 +79,6 @@ public interface DataKeyMapper<T> extends Serializable {
      * @param dataObject
      *            the data object to update
      *
-     * @since 8.1
-     *
      */
     void refresh(T dataObject);
 
@@ -92,7 +90,6 @@ public interface DataKeyMapper<T> extends Serializable {
      *            key has to follow general {@code hashCode()} and
      *            {@code equals()} contract, see {@link Object#hashCode()} for
      *            details.
-     * @since 8.1
      */
     void setIdentifierGetter(ValueProvider<T, Object> identifierGetter);
 }
