@@ -22,7 +22,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.router.RouterLink;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.uitest.ui.RouterLinkTestServlet.MyRouterConfigurator;
 import com.vaadin.server.VaadinServlet;

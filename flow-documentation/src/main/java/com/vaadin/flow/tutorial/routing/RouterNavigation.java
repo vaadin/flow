@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.NotFoundException;
+import com.vaadin.router.Route;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.router.RouterLink;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.CompanyView;
 import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.HomeView;
@@ -35,8 +39,23 @@ public class RouterNavigation {
 
     void routerLink() {
         Div menu = new Div();
-        menu.add(new RouterLink("Home", HomeView.class));
-        menu.add(new RouterLink("Company", CompanyView.class));
+        try {
+            menu.add(new RouterLink("Home", HomeView.class));
+            menu.add(new RouterLink("Greeting", GreetingComponent.class, "default"));
+        } catch (NotFoundException e) {
+            // Handle target not found exception.
+        }
     }
 
+
+    @Route(value = "greet")
+    public class GreetingComponent extends Div
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            setText(String.format("Hello, %s!", parameter));
+        }
+    }
 }

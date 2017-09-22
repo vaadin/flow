@@ -22,7 +22,7 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.router.RouterLink;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinServlet;
