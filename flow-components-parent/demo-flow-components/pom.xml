@@ -171,6 +171,23 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>${frontend.working.directory}</directory>
+                            <excludes>
+                                <exclude>**/node/</exclude>
+                                <exclude>**/node_modules/</exclude>
+                                <exclude>**/etc/</exclude>
+                            </excludes>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>${maven.deploy.plugin.version}</version>
                 <configuration>

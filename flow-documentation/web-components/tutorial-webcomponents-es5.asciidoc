@@ -221,8 +221,10 @@ Jetty Plugin by using the `mvn jetty:run` command.
 ----
 <properties>
   <frontend.working.directory>${project.basedir}/src/main/webapp/frontend</frontend.working.directory>
+
   <jetty.extra.resource.base>${frontend.working.directory}</jetty.extra.resource.base>
   <npm.build.goal>run devMode</npm.build.goal>
+  <war.excludes>**/node_modules/,**/node/,**/build/,**/etc/</war.excludes>
 </properties>
 
 <build>
@@ -265,7 +267,6 @@ Jetty Plugin by using the `mvn jetty:run` command.
                   <goals>
                       <goal>install-node-and-npm</goal>
                       <goal>npm</goal> <!-- runs 'install' by default -->
-                      <goal>bower</goal> <!-- runs 'install' by default -->
                   </goals>
                   <configuration>
                       <workingDirectory>${frontend.working.directory}</workingDirectory>
@@ -283,7 +284,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
           </executions>
       </plugin>
 
-     <!-- Configures the Jetty plugin to use the right resource path, that is different depending on the approach -->
+      <!-- Configures the Jetty plugin to use the right resource path, that is different depending on the approach -->
       <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
@@ -296,6 +297,33 @@ Jetty Plugin by using the `mvn jetty:run` command.
                       <resourceBase>${jetty.extra.resource.base}</resourceBase>
                   </resourceBases>
               </webAppConfig>
+          </configuration>
+      </plugin>
+
+      <!-- Package the war with web components -->
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>${maven.war.plugin.version}</version>
+          <configuration>
+              <archive>
+                  <manifestEntries>
+                      <Implementation-Title>${project.name}</Implementation-Title>
+                      <Implementation-Version>${project.version}</Implementation-Version>
+                  </manifestEntries>
+              </archive>
+              <webResources>
+                  <resource>
+                      <directory>${jetty.extra.resource.base}</directory>
+                      <excludes>
+                          <exclude>**/node/</exclude>
+                          <exclude>**/node_modules/</exclude>
+                          <exclude>**/etc/</exclude>
+                      </excludes>
+                  </resource>
+              </webResources>
+              <warSourceExcludes>${war.excludes}</warSourceExcludes>
+              <packagingExcludes>${war.excludes}</packagingExcludes>
           </configuration>
       </plugin>
   </plugins>
@@ -314,6 +342,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
         <!-- Overrides properties that are different for produciton mode -->
         <npm.build.goal>run prodMode</npm.build.goal>
         <jetty.extra.resource.base>${frontend.working.directory}/build</jetty.extra.resource.base>
+        <war.excludes>**/frontend/bower_components/,**/node_modules/,**/node/,**/build/,**/etc/</war.excludes>
     </properties>
 
     <!-- Makes the package run in production mode when deployed, without the need of setting extra properties on the server -->
@@ -324,25 +353,6 @@ Jetty Plugin by using the `mvn jetty:run` command.
             <version>${flow.version}</version>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <!-- Add trasnpiled and minified files as an extra resource folder -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${maven.war.plugin.version}</version>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>${frontend.working.directory}/build</directory>
-                        </resource>
-                    </webResources>
-                    <warSourceExcludes>**/frontend/bower_components/,**/node_modules/,**/node/,**/build/,**/etc/</warSourceExcludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
   </profile>
 </profiles>
 ----
