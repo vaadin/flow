@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
@@ -62,6 +64,9 @@ public class DefaultRouteResolver implements RouteResolver {
                 builder.withTarget(navigationTarget);
             }
         } catch (NotFoundException nfe) {
+            String message = "Exception while navigation to path " + path;
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
+                    message, nfe);
             builder.withTarget(RouteNotFoundError.class);
         }
 
