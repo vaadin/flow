@@ -40,25 +40,29 @@ public class DefaultRouteResolver implements RouteResolver {
 
         NavigationStateBuilder builder = new NavigationStateBuilder();
         Class<? extends Component> navigationTarget;
-        if (path.split("/").length < request.getLocation().getSegments()
-                .size()) {
-            // If we have parameters we try to first get the parameterized
-            // target over the possible non-parameterized
-            navigationTarget = getNavigationTargetWithParameter(path);
-        } else {
-            navigationTarget = getNavigationTarget(path);
-        }
-
-        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
-            List<String> pathParameters = getPathParameters(
-                    request.getLocation().getPath(), path);
-            if (!HasUrlParameter.verifyParameters(navigationTarget,
-                    pathParameters)) {
-                return null;
+        try {
+            if (path.split("/").length < request.getLocation().getSegments()
+                    .size()) {
+                // If we have parameters we try to first get the parameterized
+                // target over the possible non-parameterized
+                navigationTarget = getNavigationTargetWithParameter(path);
+            } else {
+                navigationTarget = getNavigationTarget(path);
             }
-            builder.withTarget(navigationTarget, pathParameters);
-        } else {
-            builder.withTarget(navigationTarget);
+
+            if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
+                List<String> pathParameters = getPathParameters(
+                        request.getLocation().getPath(), path);
+                if (!HasUrlParameter.verifyParameters(navigationTarget,
+                        pathParameters)) {
+                    return null;
+                }
+                builder.withTarget(navigationTarget, pathParameters);
+            } else {
+                builder.withTarget(navigationTarget);
+            }
+        } catch (NotFoundException nfe) {
+            builder.withTarget(RouteNotFoundError.class);
         }
 
         return builder.build();
@@ -90,14 +94,15 @@ public class DefaultRouteResolver implements RouteResolver {
         return null;
     }
 
-    private Class<? extends Component> getNavigationTarget(String path) {
+    private Class<? extends Component> getNavigationTarget(String path)
+            throws NotFoundException {
         return RouteRegistry.getInstance().getNavigationTarget(path)
                 .orElseThrow(() -> new NotFoundException(String.format(
                         "No navigation target found for path '%s'.", path)));
     }
 
     private Class<? extends Component> getNavigationTargetWithParameter(
-            String path) {
+            String path) throws NotFoundException {
         return RouteRegistry.getInstance()
                 .getNavigationTargetWithParameter(path)
                 .orElseThrow(() -> new NotFoundException(String.format(

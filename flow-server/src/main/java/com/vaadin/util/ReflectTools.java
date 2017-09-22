@@ -634,6 +634,9 @@ public class ReflectTools implements Serializable {
      * Get the functional interface method name defined for given interface
      * class.
      *
+     * @param functionalClass
+     *            interface class to get the functional method for
+     * 
      * @return functional interface method
      */
     public static Method getFunctionalMethod(Class<?> functionalClass) {

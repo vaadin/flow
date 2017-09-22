@@ -315,25 +315,28 @@ public class RouteRegistry {
             if (routes.containsKey(route)) {
                 if (!route
                         .equals(collectRequiredParameters(navigationTarget))) {
-                    logger.log(Level.FINE, String.format(
+                    String message = String.format(
                             "Registering route '%s' also to parametrized navigation target '%s'.",
-                            route, navigationTarget.getName()));
+                            route, navigationTarget.getName());
+                    logger.log(Level.FINE, message);
 
                     parameterRoutes.put(route, navigationTarget);
                 } else if (!route
                         .equals(collectRequiredParameters(routes.get(route)))) {
-                    logger.log(Level.FINE, String.format(
+                    String message = String.format(
                             "Registering '%s' to route '%s' together with parametrized navigation target '%s'.",
                             navigationTarget.getName(), route,
-                            routes.get(route).getName()));
+                            routes.get(route).getName());
+                    logger.log(Level.FINE, message);
 
                     parameterRoutes.put(route, routes.get(route));
                     routes.put(route, navigationTarget);
                 }
             } else {
-                logger.log(Level.FINE, String.format(
+                String message = String.format(
                         "Registering route '%s' to navigation target '%s'.",
-                        route, navigationTarget.getName()));
+                        route, navigationTarget.getName());
+                logger.log(Level.FINE, message);
 
                 routes.put(route, navigationTarget);
             }

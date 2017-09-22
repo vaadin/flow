@@ -350,7 +350,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     public void basic_url_resolving()
-            throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException, NotFoundException {
         RouteRegistry.getInstance()
                 .setNavigationTargets(Stream.of(RootNavigationTarget.class,
                         FooNavigationTarget.class, FooBarNavigationTarget.class)
@@ -364,7 +364,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void nested_layouts_url_resolving()
-            throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException, NotFoundException {
         RouteRegistry.getInstance().setNavigationTargets(
                 Stream.of(RouteChild.class, LoneRoute.class)
                         .collect(Collectors.toSet()));
@@ -375,7 +375,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void layout_with_url_parameter_url_resolving()
-            throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException, NotFoundException {
         RouteRegistry.getInstance()
                 .setNavigationTargets(Stream
                         .of(GreetingNavigationTarget.class,

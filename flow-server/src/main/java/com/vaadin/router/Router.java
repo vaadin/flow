@@ -135,7 +135,7 @@ public class Router implements RouterInterface {
      *            navigation target to get url for
      * @return url for the navigation target
      */
-    public String getUrl(Class<? extends Component> navigationTarget) {
+    public String getUrl(Class<? extends Component> navigationTarget) throws NotFoundException {
         String routeString = getUrlForTarget(navigationTarget);
         if (HasUrlParameter.class.isAssignableFrom(navigationTarget)
                 && HasUrlParameter.isOptionalParameter(navigationTarget)) {
@@ -159,7 +159,7 @@ public class Router implements RouterInterface {
      * @return url for the naviagtion target with parameter
      */
     public <T> String getUrl(
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) throws NotFoundException {
         String routeString = getUrlForTarget(
                 (Class<? extends Component>) navigationTarget);
         if (parameter != null) {
@@ -188,7 +188,7 @@ public class Router implements RouterInterface {
     }
 
     private String getUrlForTarget(
-            Class<? extends Component> navigationTarget) {
+            Class<? extends Component> navigationTarget) throws NotFoundException {
         Optional<String> targetUrl = RouteRegistry.getInstance()
                 .getTargetUrl(navigationTarget);
         if (!targetUrl.isPresent()) {
