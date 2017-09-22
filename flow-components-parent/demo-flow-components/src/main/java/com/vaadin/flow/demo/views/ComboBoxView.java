@@ -18,11 +18,11 @@ package com.vaadin.flow.demo.views;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.flow.dom.ElementConstants;
-import com.vaadin.ui.html.Div;
 import com.vaadin.ui.combobox.ComboBox;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link ComboBox} demo.

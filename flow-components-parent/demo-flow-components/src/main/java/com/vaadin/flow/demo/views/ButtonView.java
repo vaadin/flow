@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Image;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HasClickListeners.ClickEvent;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Image;
 
 /**
  * View for {@link Button} demo.

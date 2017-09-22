@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.dialog.Dialog;
+import com.vaadin.ui.html.Label;
 import com.vaadin.ui.layout.HorizontalLayout;
 
 /**

@@ -18,11 +18,11 @@ package com.vaadin.flow.demo.views;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Div;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.datepicker.DatePicker.DatePickerI18n;
+import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link DatePicker} demo.

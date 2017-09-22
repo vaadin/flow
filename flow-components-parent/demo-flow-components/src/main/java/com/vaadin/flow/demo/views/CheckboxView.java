@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Div;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.checkbox.Checkbox;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link Checkbox} demo.
