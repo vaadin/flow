@@ -177,6 +177,20 @@ public class StateTreeTest {
     }
 
     @Test
+    public void sendNodePropertySyncToServer_nodeDetached_propertyNotIsSent() {
+        tree.registerNode(node);
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty property = new MapProperty("foo", map);
+        property.setValue("bar");
+        connector.clear();
+        tree.unregisterNode(node);
+
+        tree.sendNodePropertySyncToServer(property);
+
+        connector.assertMessage(null, null, null);
+    }
+
+    @Test
     public void sendNodePropertySyncToServer_initialProperty_propertyIsNoSent() {
         tree.registerNode(node);
         NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
