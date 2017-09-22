@@ -16,43 +16,32 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 
 /**
  * Integration tests for {@link SplitLayoutView}.
  */
-public class SplitLayoutIT extends AbstractChromeTest {
-
+public class SplitLayoutIT extends ComponentDemoTest {
     private static String SPLIT_LAYOUT_TAG = "vaadin-split-layout";
-
-    private WebElement mainLayout;
 
     @Override
     protected String getTestPath() {
         return "/vaadin-split-layout";
     }
 
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        mainLayout = findElement(By.tagName("main-layout"));
-    }
-
     @Test
     public void combined_layouts() {
-        WebElement layout = mainLayout
+        WebElement splitLayout = layout
                 .findElements(By.tagName(SPLIT_LAYOUT_TAG)).get(2);
-        WebElement firstComponent = layout
+        WebElement firstComponent = splitLayout
                 .findElement(By.id("first-component"));
-        WebElement nestedLayout = layout.findElement(By.id("nested-layout"));
+        WebElement nestedLayout = splitLayout.findElement(By.id("nested-layout"));
         WebElement secondComponent = nestedLayout
                 .findElement(By.id("second-component"));
         WebElement thirdComponent = nestedLayout
@@ -70,11 +59,11 @@ public class SplitLayoutIT extends AbstractChromeTest {
     @Test
     @Ignore // Due to drag and drop issues with selenium.
     public void resize_events_fired() {
-        WebElement layout = mainLayout
+        WebElement splitLayout = layout
                 .findElements(By.tagName(SPLIT_LAYOUT_TAG)).get(3);
-        WebElement resizeMessage = mainLayout
+        WebElement resizeMessage = layout
                 .findElement(By.id("resize-message"));
-        WebElement splitter = getInShadowRoot(layout, By.id("splitter"))
+        WebElement splitter = getInShadowRoot(splitLayout, By.id("splitter"))
                 .findElement(By.tagName("div"));
 
         new Actions(getDriver()).dragAndDropBy(splitter, 1, 1).clickAndHold()
@@ -88,8 +77,6 @@ public class SplitLayoutIT extends AbstractChromeTest {
 
     @Test
     public void initial_splitter_position() {
-        WebElement layout = mainLayout
-                .findElements(By.tagName(SPLIT_LAYOUT_TAG)).get(4);
         WebElement primaryComponent = findElement(
                 By.id("initial-sp-first-component"));
         WebElement secondaryComponent = findElement(
@@ -104,9 +91,9 @@ public class SplitLayoutIT extends AbstractChromeTest {
     @Test
     @Ignore // Due to drag and drop issues with selenium.
     public void min_and_max_width_splitter() {
-        WebElement layout = mainLayout
+        WebElement splitLayout = layout
                 .findElements(By.tagName(SPLIT_LAYOUT_TAG)).get(5);
-        WebElement splitter = getInShadowRoot(layout, By.id("splitter"))
+        WebElement splitter = getInShadowRoot(splitLayout, By.id("splitter"))
                 .findElement(By.tagName("div"));
         WebElement primaryComponent = findElement(
                 By.id("min-max-first-component"));

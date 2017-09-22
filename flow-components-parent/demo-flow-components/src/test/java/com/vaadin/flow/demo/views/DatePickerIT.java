@@ -22,23 +22,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link DatePickerView}.
  */
-public class DatePickerIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
+public class DatePickerIT extends ComponentDemoTest {
     @Before
     public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
         waitForElementPresent(By.tagName("vaadin-date-picker"));
-        layout = findElement(By.tagName("main-layout"));
-        Assert.assertNotNull(layout);
     }
 
     @Test

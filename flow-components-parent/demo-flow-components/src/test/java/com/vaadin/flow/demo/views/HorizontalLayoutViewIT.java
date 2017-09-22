@@ -16,30 +16,19 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Tests for the {@link HorizontalLayoutView}.
  */
-public class HorizontalLayoutViewIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
+public class HorizontalLayoutViewIT extends ComponentDemoTest {
     @Override
     protected String getTestPath() {
         return "/horizontal-layout";
-    }
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
     }
 
     @Test
