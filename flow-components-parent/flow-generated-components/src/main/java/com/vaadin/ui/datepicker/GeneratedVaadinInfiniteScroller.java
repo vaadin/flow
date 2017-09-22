@@ -26,7 +26,7 @@ import elemental.json.JsonArray;
 import com.vaadin.ui.common.NotSupported;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: InfiniteScrollerElement#2.0.3", "Flow#1.0-SNAPSHOT"})
+		"WebComponent: InfiniteScrollerElement#2.0.4", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-infinite-scroller")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-infinite-scroller.html")
 public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
@@ -349,8 +349,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Root object from which the path is evaluated. When specified,
 	 *            no notification will occur.
 	 */
-	protected void set(elemental.json.JsonObject path,
-			elemental.json.JsonObject value, elemental.json.JsonObject root) {
+	protected void set(java.lang.String path, elemental.json.JsonObject value,
+			elemental.json.JsonObject root) {
 		getElement().callFunction("set", path, value, root);
 	}
 
@@ -382,8 +382,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Root object from which the path is evaluated. When specified,
 	 *            no notification will occur.
 	 */
-	protected void set(java.lang.String path, elemental.json.JsonObject value,
-			elemental.json.JsonObject root) {
+	protected void set(elemental.json.JsonObject path,
+			elemental.json.JsonObject value, elemental.json.JsonObject root) {
 		getElement().callFunction("set", path, value, root);
 	}
 
@@ -409,7 +409,57 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @return It would return a double
 	 */
 	@NotSupported
+	protected void push(elemental.json.JsonObject path,
+			elemental.json.JsonObject _Items) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Adds items onto the end of the array at the path specified.
+	 * </p>
+	 * <p>
+	 * The arguments after {@code path} and return value match that of
+	 * {@code Array.prototype.push}.
+	 * </p>
+	 * <p>
+	 * This method notifies other paths to the same array that a splice occurred
+	 * to the array.
+	 * </p>
+	 * 
+	 * @param path
+	 *            Path to array.
+	 * @param ...items Missing documentation!
+	 * @return It would return a double
+	 */
+	@NotSupported
 	protected void push(java.lang.String path, elemental.json.JsonObject _Items) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Removes an item from the end of array at the path specified.
+	 * </p>
+	 * <p>
+	 * The arguments after {@code path} and return value match that of
+	 * {@code Array.prototype.pop}.
+	 * </p>
+	 * <p>
+	 * This method notifies other paths to the same array that a splice occurred
+	 * to the array.
+	 * </p>
+	 * 
+	 * @param path
+	 *            Path to array.
+	 * @return It would return a interface elemental.json.JsonObject
+	 */
+	@NotSupported
+	protected void pop(elemental.json.JsonObject path) {
 	}
 
 	/**
@@ -472,6 +522,61 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
+	 * Starting from the start index specified, removes 0 or more items from the
+	 * array and inserts 0 or more new items in their place.
+	 * </p>
+	 * <p>
+	 * The arguments after {@code path} and return value match that of
+	 * {@code Array.prototype.splice}.
+	 * </p>
+	 * <p>
+	 * This method notifies other paths to the same array that a splice occurred
+	 * to the array.
+	 * </p>
+	 * 
+	 * @param path
+	 *            Path to array.
+	 * @param start
+	 *            Index from which to start removing/inserting.
+	 * @param deleteCount
+	 *            Number of items to remove.
+	 * @param ...items Missing documentation!
+	 * @return It would return a interface elemental.json.JsonArray
+	 */
+	@NotSupported
+	protected void splice(elemental.json.JsonObject path, double start,
+			double deleteCount, elemental.json.JsonObject _Items) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Removes an item from the beginning of array at the path specified.
+	 * </p>
+	 * <p>
+	 * The arguments after {@code path} and return value match that of
+	 * {@code Array.prototype.pop}.
+	 * </p>
+	 * <p>
+	 * This method notifies other paths to the same array that a splice occurred
+	 * to the array.
+	 * </p>
+	 * 
+	 * @param path
+	 *            Path to array.
+	 * @return It would return a interface elemental.json.JsonObject
+	 */
+	@NotSupported
+	protected void shift(elemental.json.JsonObject path) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
 	 * Removes an item from the beginning of array at the path specified.
 	 * </p>
 	 * <p>
@@ -489,6 +594,32 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 */
 	@NotSupported
 	protected void shift(java.lang.String path) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Adds items onto the beginning of the array at the path specified.
+	 * </p>
+	 * <p>
+	 * The arguments after {@code path} and return value match that of
+	 * {@code Array.prototype.push}.
+	 * </p>
+	 * <p>
+	 * This method notifies other paths to the same array that a splice occurred
+	 * to the array.
+	 * </p>
+	 * 
+	 * @param path
+	 *            Path to array.
+	 * @param ...items Missing documentation!
+	 * @return It would return a double
+	 */
+	@NotSupported
+	protected void unshift(elemental.json.JsonObject path,
+			elemental.json.JsonObject _Items) {
 	}
 
 	/**

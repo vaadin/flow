@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxElement",
   "tag": "vaadin-combo-box",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box.html",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha5",
   "properties": [
     {
       "name": "opened",
@@ -110,15 +110,6 @@
       "description": "Path for the value of the item. If `items` is an array of objects, the\n`itemValuePath:` is used to fetch the string value for the selected\nitem.\n\nThe item value is used in the `value` property of the combo box,\nto provide the form value.\n         "
     },
     {
-      "name": "inputElement",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "Returns a reference to the native input element.",
-      "readOnly": true
-    },
-    {
       "name": "required",
       "type": [
         "BOOLEAN"
@@ -133,6 +124,14 @@
       ],
       "objectType": [],
       "description": "The name of this element.\n         "
+    },
+    {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true if the value is invalid.\n         "
     },
     {
       "name": "label",
@@ -221,15 +220,6 @@
       ],
       "objectType": [],
       "description": ""
-    },
-    {
-      "name": "focused",
-      "type": [
-        "BOOLEAN"
-      ],
-      "objectType": [],
-      "description": "True when the input field has focus.\n             ",
-      "readOnly": true
     }
   ],
   "methods": [
@@ -290,18 +280,6 @@
     {
       "name": "disconnectedCallback",
       "description": "",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "focus",
-      "description": "Sets focus on the input field.\n         ",
-      "parameters": [],
-      "returns": "UNDEFINED"
-    },
-    {
-      "name": "blur",
-      "description": "Removes focus from the input field.\n         ",
       "parameters": [],
       "returns": "UNDEFINED"
     }
@@ -370,11 +348,6 @@
           "description": "the combobox value"
         }
       ]
-    },
-    {
-      "name": "focused-changed",
-      "description": "Fired when the `focused` property changes.",
-      "properties": []
     }
   ],
   "slots": [

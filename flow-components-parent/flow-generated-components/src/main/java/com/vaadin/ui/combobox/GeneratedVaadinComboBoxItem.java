@@ -32,7 +32,7 @@ import elemental.json.JsonObject;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxItemElement#3.0.0-alpha3",
+		"WebComponent: Vaadin.ComboBoxItemElement#3.0.0-alpha5",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")

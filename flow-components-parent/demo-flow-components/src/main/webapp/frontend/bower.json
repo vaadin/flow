@@ -34,23 +34,13 @@
     "iron-media-query": "~2.0.0",
     "iron-selector": "~2.0.0",
     "vaadin-text-field": "~1.1.0-alpha4",
-    "vaadin-button": "~1.0.1",
-    "vaadin-checkbox": "~1.0.0-alpha4",
-    "vaadin-combo-box": "~3.0.0-alpha3",
+    "vaadin-button": "~1.0.3",
+    "vaadin-checkbox": "~1.0.0-alpha6",
+    "vaadin-combo-box": "~3.0.0-alpha5",
     "vaadin-form-layout": "~1.0.1",
-    "vaadin-split-layout": "~3.0.0-alpha1",
-<<<<<<< HEAD:flow-components-parent/demo-flow-components/src/main/frontend/bower.json
+    "vaadin-split-layout": "~3.0.0-alpha2",
     "vaadin-date-picker": "~2.0.3",
-    "vaadin-dialog": "~1.0.0-alpha2",
+    "vaadin-dialog": "~1.0.0-alpha3",
     "vaadin-valo-theme": "vaadin/vaadin-valo-theme#^0.3.0"
-  },
-  "resolutions": {
-    "iron-flex-layout": "1 - 2",
-    "iron-media-query": "1 - 2",
-    "iron-scroll-target-behavior": "1 - 2"
-=======
-    "vaadin-date-picker": "~2.0.0",
-    "vaadin-dialog": "~1.0.0-alpha2"
->>>>>>> master:flow-components-parent/demo-flow-components/src/main/webapp/frontend/bower.json
   }
 }

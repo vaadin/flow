@@ -23,7 +23,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxSpinnerElement#3.0.0-alpha3",
+		"WebComponent: Vaadin.ComboBoxSpinnerElement#3.0.0-alpha5",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-spinner")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-spinner.html")

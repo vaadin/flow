@@ -56,7 +56,7 @@ import com.vaadin.ui.common.HasComponents;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.DatePickerLightElement#2.0.3",
+		"WebComponent: Vaadin.DatePickerLightElement#2.0.4",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-date-picker-light")
 @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")

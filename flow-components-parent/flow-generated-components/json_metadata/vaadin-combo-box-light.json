@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxLightElement",
   "tag": "vaadin-combo-box-light",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-light.html",
-  "version": "3.0.0-alpha3",
+  "version": "3.0.0-alpha5",
   "properties": [
     {
       "name": "opened",
@@ -110,15 +110,6 @@
       "description": "Path for the value of the item. If `items` is an array of objects, the\n`itemValuePath:` is used to fetch the string value for the selected\nitem.\n\nThe item value is used in the `value` property of the combo box,\nto provide the form value.\n         "
     },
     {
-      "name": "inputElement",
-      "type": [
-        "OBJECT"
-      ],
-      "objectType": [],
-      "description": "Returns a reference to the native input element.",
-      "readOnly": true
-    },
-    {
       "name": "required",
       "type": [
         "BOOLEAN"
@@ -135,6 +126,14 @@
       "description": "The name of this element.\n         "
     },
     {
+      "name": "invalid",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true if the value is invalid.\n         "
+    },
+    {
       "name": "attrForValue",
       "type": [
         "STRING"
@@ -149,6 +148,15 @@
       ],
       "objectType": [],
       "description": "Number of pixels used as the vertical offset in positioning of\nthe dropdown.\n           "
+    },
+    {
+      "name": "inputElement",
+      "type": [
+        "OBJECT"
+      ],
+      "objectType": [],
+      "description": "",
+      "readOnly": true
     }
   ],
   "methods": [

@@ -130,7 +130,7 @@ import com.vaadin.ui.event.EventData;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxElement#3.0.0-alpha3",
+		"WebComponent: Vaadin.ComboBoxElement#3.0.0-alpha5",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
@@ -578,21 +578,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Returns a reference to the native input element.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	protected JsonObject protectedGetInputElement() {
-		return (JsonObject) getElement().getPropertyRaw("inputElement");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * Set to true to mark the input as required.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
@@ -646,6 +631,36 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 */
 	public void setName(java.lang.String name) {
 		getElement().setProperty("name", name == null ? "" : name);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true if the value is invalid.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 */
+	public boolean isInvalid() {
+		return getElement().getProperty("invalid", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true if the value is invalid.
+	 * </p>
+	 * 
+	 * @param invalid
+	 *            the boolean value to set
+	 */
+	public void setInvalid(boolean invalid) {
+		getElement().setProperty("invalid", invalid);
 	}
 
 	/**
@@ -947,22 +962,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * True when the input field has focus.
-	 * <p>
-	 * This property is synchronized automatically from client side when a
-	 * 'focused-changed' event happens.
-	 * </p>
-	 */
-	@Synchronize(property = "focused", value = "focused-changed")
-	public boolean isFocused() {
-		return getElement().getProperty("focused", false);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * Opens the dropdown list.
 	 * </p>
 	 */
@@ -1028,30 +1027,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 */
 	protected void checkValidity(elemental.json.JsonObject value) {
 		getElement().callFunction("checkValidity", value);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Sets focus on the input field.
-	 * </p>
-	 */
-	public void focus() {
-		getElement().callFunction("focus");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes focus from the input field.
-	 * </p>
-	 */
-	public void blur() {
-		getElement().callFunction("blur");
 	}
 
 	@DomEvent("change")
@@ -1120,21 +1095,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	public Registration addSelectedItemChangeListener(
 			ComponentEventListener<SelectedItemChangeEvent<R>> listener) {
 		return addListener(SelectedItemChangeEvent.class,
-				(ComponentEventListener) listener);
-	}
-
-	@DomEvent("focused-changed")
-	public static class FocusedChangeEvent<R extends GeneratedVaadinComboBox<R>>
-			extends
-				ComponentEvent<R> {
-		public FocusedChangeEvent(R source, boolean fromClient) {
-			super(source, fromClient);
-		}
-	}
-
-	public Registration addFocusedChangeListener(
-			ComponentEventListener<FocusedChangeEvent<R>> listener) {
-		return addListener(FocusedChangeEvent.class,
 				(ComponentEventListener) listener);
 	}
 

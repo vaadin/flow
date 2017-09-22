@@ -23,6 +23,8 @@ import java.util.Optional;
 
 import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.ui.common.HasSize;
+import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.util.JsonSerializer;
 
@@ -350,15 +352,5 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     @Override
     public String getEmptyValue() {
         return "";
-    }
-
-    @Override
-    public void setInvalid(boolean invalid) {
-        getElement().setProperty("invalid", invalid);
-    }
-
-    @Override
-    public boolean isInvalid() {
-        return Boolean.parseBoolean(getElement().getProperty("invalid"));
     }
 }

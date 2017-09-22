@@ -104,7 +104,7 @@ import com.vaadin.ui.common.HasComponents;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha4",
+		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha6",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")

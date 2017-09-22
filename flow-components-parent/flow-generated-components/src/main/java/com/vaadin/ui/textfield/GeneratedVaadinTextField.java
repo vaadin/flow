@@ -73,7 +73,7 @@ import com.vaadin.shared.Registration;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha4",
+		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha5",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
