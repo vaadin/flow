@@ -16,12 +16,11 @@
 package com.vaadin.ui.textfield;
 
 import javax.annotation.Generated;
-
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: PasswordFieldElement#1.1.0-alpha4", "Flow#0.1-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: PasswordFieldElement#1.1.0-alpha5", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-password-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-password-field.html")
 public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField<R>>

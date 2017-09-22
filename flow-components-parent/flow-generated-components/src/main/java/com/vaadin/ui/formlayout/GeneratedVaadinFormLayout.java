@@ -16,11 +16,10 @@
 package com.vaadin.ui.formlayout;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.HasComponents;
@@ -98,8 +97,8 @@ import com.vaadin.ui.common.HasComponents;
  * </tbody>
  * </table>
  */
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: Vaadin.FormLayoutElement#1.0.1", "Flow#0.1-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: Vaadin.FormLayoutElement#1.0.2", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>

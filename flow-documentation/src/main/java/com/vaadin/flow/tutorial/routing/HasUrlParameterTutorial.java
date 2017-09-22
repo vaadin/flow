@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
+import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
 import com.vaadin.router.HasUrlParameter;
@@ -32,6 +33,20 @@ public class HasUrlParameterTutorial {
         public void setParameter(BeforeNavigationEvent event,
                 String parameter) {
             setText(String.format("Hello, %s!", parameter));
+        }
+    }
+
+    @Route("greet")
+    public class OptionalGreeting extends Div implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @OptionalParameter String parameter) {
+            if(parameter == null) {
+                setText("Welcome anonymous.");
+            } else {
+                setText(String.format("Welcome %s.", parameter));
+            }
         }
     }
 }

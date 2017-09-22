@@ -16,11 +16,10 @@
 package com.vaadin.ui.paper.tabs;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
 import elemental.json.JsonObject;
@@ -153,8 +152,8 @@ import com.vaadin.ui.common.HasComponents;
  * </tbody>
  * </table>
  */
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-tabs#2.0.0", "Flow#0.1-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: paper-tabs#2.0.0", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-tabs")
 @HtmlImport("frontend://bower_components/paper-tabs/paper-tabs.html")
 public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
@@ -1085,7 +1084,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(java.lang.String value) {
+	public void select(double value) {
 		getElement().callFunction("select", value);
 	}
 
@@ -1102,7 +1101,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(double value) {
+	public void select(java.lang.String value) {
 		getElement().callFunction("select", value);
 	}
 

@@ -30,9 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.select.Elements;
@@ -41,6 +38,9 @@ import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 
 public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
@@ -231,8 +231,8 @@ public class BootstrapHandlerDependenciesTest {
 
         DeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
 
-        service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
-                deploymentConfiguration));
+        service = Mockito
+                .spy(new MockVaadinServletService(deploymentConfiguration));
 
         ServletContext servletContextMock = mock(ServletContext.class);
         when(servletContextMock.getResourceAsStream(anyString()))

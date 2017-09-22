@@ -16,11 +16,10 @@
 package com.vaadin.ui.paper.dropdownmenu;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
 import com.vaadin.ui.event.Synchronize;
@@ -131,8 +130,8 @@ import com.vaadin.shared.Registration;
  * internal input and menu button respectively.
  * </p>
  */
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-dropdown-menu#2.0.0", "Flow#0.1-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: paper-dropdown-menu#2.0.0", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-dropdown-menu")
 @HtmlImport("frontend://bower_components/paper-dropdown-menu/paper-dropdown-menu.html")
 public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
