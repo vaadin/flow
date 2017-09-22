@@ -36,16 +36,23 @@ public class GridViewIT extends AbstractChromeTest {
     }
 
     @Test
-    public void dataIsShown() {
+    public void dataIsShown() throws InterruptedException {
         WebElement grid = findElement(By.id("basic"));
         WebElement header = grid
                 .findElement(By.id("vaadin-grid-cell-content-0"));
 
         Assert.assertEquals("Name", header.getText());
 
-        WebElement cell = grid.findElement(By.id("vaadin-grid-cell-content-2"));
+        WebElement cell1 = grid
+                .findElement(By.id("vaadin-grid-cell-content-2"));
 
-        Assert.assertEquals("Person 1", cell.getText());
+        Assert.assertEquals("Person 1", cell1.getText());
+
+        scrollDown(grid, 12);
+
+        waitUntil(driver -> findElements(By.tagName("vaadin-grid-cell-content"))
+                .stream().filter(cell -> "Person 189".equals(cell.getText()))
+                .findFirst().isPresent());
     }
 
     @Test
@@ -58,17 +65,21 @@ public class GridViewIT extends AbstractChromeTest {
 
         Assert.assertEquals("Name", header.getText());
 
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 50; i++) {
-            builder.append(
-                    "arguments[0]._scrollPageDown();arguments[0]._scrollPageDown();");
-        }
-        getCommandExecutor().executeScript(builder.toString(), grid);
+        scrollDown(grid, 50);
 
         WebElement cell = grid
                 .findElements(By.tagName("vaadin-grid-cell-content")).get(2);
 
         waitUntil(driver -> "Person 1020".equals(cell.getText()));
+    }
+
+    private void scrollDown(WebElement grid, int pageNumbers) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < pageNumbers; i++) {
+            builder.append(
+                    "arguments[0]._scrollPageDown();arguments[0]._scrollPageDown();");
+        }
+        getCommandExecutor().executeScript(builder.toString(), grid);
     }
 
     @Override

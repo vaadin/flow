@@ -26,8 +26,8 @@ window.gridConnector = {
             var lastNeededPage = Math.max(page, grid._getPageForIndex(grid.$.scroller._virtualEnd));
 
             var first = Math.max(0,  firstNeededPage - extraPageBuffer);
-            var last = Math.min(lastNeededPage + extraPageBuffer, Math.max(0, Math.floor(grid.size / grid.pageSize) - 1));
-
+            var last = Math.min(lastNeededPage + extraPageBuffer, Math.max(0, Math.floor(grid.size / grid.pageSize) + 1));
+            
             if (lastRequestedRange[0] != first || lastRequestedRange[1] != last) {
                 lastRequestedRange = [first, last];
 
@@ -37,7 +37,7 @@ window.gridConnector = {
                 setTimeout(() => grid.$server.setRequestedRange(first * grid.pageSize, count * grid.pageSize), 0);
             }
         }
-
+        
         var updateGridCache = function(page) {
             if (!grid._cache[page]) {
                 return;
