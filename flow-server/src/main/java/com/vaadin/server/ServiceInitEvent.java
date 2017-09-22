@@ -16,10 +16,10 @@
 package com.vaadin.server;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 /**
  * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
@@ -93,33 +93,33 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
-     * Gets an unmodifiable list of all custom request handlers that have been
-     * added for the service.
+     * Gets a stream of all custom request handlers that have been added for the
+     * service.
      *
-     * @return the current list of added request handlers
+     * @return the stream of added request handlers
      */
-    public List<RequestHandler> getAddedRequestHandlers() {
-        return Collections.unmodifiableList(addedRequestHandlers);
+    public Stream<RequestHandler> getAddedRequestHandlers() {
+        return addedRequestHandlers.stream();
     }
 
     /**
-     * Gets an unmodifiable list of all bootstrap listeners that have been added
-     * for the service.
+     * Gets a stream of all bootstrap listeners that have been added for the
+     * service.
      *
-     * @return the current list of added bootstrap listeners
+     * @return the stream of added bootstrap listeners
      */
-    public List<BootstrapListener> getAddedBootstrapListeners() {
-        return Collections.unmodifiableList(addedBootstrapListeners);
+    public Stream<BootstrapListener> getAddedBootstrapListeners() {
+        return addedBootstrapListeners.stream();
     }
 
     /**
-     * Gets an unmodifiable list of all dependency filters that have been added
-     * for the service.
+     * Gets a stream of all dependency filters that have been added for the
+     * service.
      *
-     * @return the current list of added dependency filters
+     * @return the stream of added dependency filters
      */
-    public List<DependencyFilter> getAddedDependencyFilters() {
-        return Collections.unmodifiableList(addedDependencyFilters);
+    public Stream<DependencyFilter> getAddedDependencyFilters() {
+        return addedDependencyFilters.stream();
     }
 
     @Override

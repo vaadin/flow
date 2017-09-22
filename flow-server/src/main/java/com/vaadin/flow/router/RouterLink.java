@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.ui.event.Tag;
 import com.vaadin.flow.StateTree;
 import com.vaadin.router.RouteLocation;
 import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
@@ -30,6 +29,7 @@ import com.vaadin.router.RouterInterface;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasStyle;
 import com.vaadin.ui.common.HasText;

@@ -17,12 +17,12 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.html.Div;
 import com.vaadin.ui.layout.FlexLayout.Alignment;
 import com.vaadin.ui.layout.FlexLayout.JustifyContentMode;
 import com.vaadin.ui.layout.VerticalLayout;
+import com.vaadin.ui.paper.button.GeneratedPaperButton;
 
 /**
  * View for the {@link VerticalLayout} component.
@@ -142,8 +142,7 @@ public class VerticalLayoutView extends DemoView {
         layout.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
         Component component1 = createComponent(1, "#78909C");
-        layout.setHorizontalComponentAlignment(Alignment.START,
-                component1);
+        layout.setHorizontalComponentAlignment(Alignment.START, component1);
 
         Component component2 = createComponent(2, "#546E7A");
         layout.setHorizontalComponentAlignment(Alignment.CENTER, component2);
@@ -226,9 +225,8 @@ public class VerticalLayoutView extends DemoView {
             Alignment alignment) {
         Button button = new Button(alignment.name());
         button.setId(id);
-        button.addClickListener(
-                event -> layout
-                        .setDefaultHorizontalComponentAlignment(alignment));
+        button.addClickListener(event -> layout
+                .setDefaultHorizontalComponentAlignment(alignment));
         return button;
     }
 

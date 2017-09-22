@@ -21,13 +21,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.ui.common.JsonSerializable;
 import com.vaadin.external.jsoup.helper.StringUtil;
-import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormItem;
-import com.vaadin.generated.vaadin.form.layout.GeneratedVaadinFormLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasSize;
+import com.vaadin.ui.common.JsonSerializable;
+import com.vaadin.ui.html.Label;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -244,5 +243,39 @@ public class FormLayout extends GeneratedVaadinFormLayout<FormLayout>
      */
     public FormLayout setResponsiveSteps(ResponsiveStep... steps) {
         return setResponsiveSteps(Arrays.asList(steps));
+    }
+
+    /**
+     * Convenience method for creating and adding a new FormItem to this layout
+     * that wraps the given field with a label. Shorthand for
+     * {@code addFormItem(field, new Label(label))}.
+     *
+     * @see #addFormItem(Component, Component)
+     *
+     * @param field
+     *            the field component to wrap
+     * @param label
+     *            the label text to set
+     * @return the created form item
+     */
+    public FormItem addFormItem(Component field, String label) {
+        return addFormItem(field, new Label(label));
+    }
+
+    /**
+     * Convenience method for creating and adding a new FormItem to this layout
+     * that wraps the given field with a component as its label.
+     *
+     * @param field
+     *            the field component to wrap
+     * @param label
+     *            the label component to set
+     * @return the created form item
+     */
+    public FormItem addFormItem(Component field, Component label) {
+        FormItem formItem = new FormItem(field);
+        formItem.addToLabel(label);
+        add(formItem);
+        return formItem;
     }
 }

@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.UUID;
 
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.uitest.ui.AbstractDivView;

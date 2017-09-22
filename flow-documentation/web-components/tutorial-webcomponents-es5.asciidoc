@@ -9,42 +9,50 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 According to the native custom element specification, ECMAScript 6 is required
 to define webcomponents. But when deploying an application to IE11 and Safari 9,
- you need to compile the files to ECMAScript 5 (ES5 for short), since those
-browsers don't support ECMAScript 6. Luckily there's a library that can compile
+ you need to transpile the files to ECMAScript 5 (ES5 for short), since those
+browsers don't support ECMAScript 6. Luckily there's a library that can transpile
 and optimize the ES6 files to ES5, which is provided by the Polymer project:
 polymer-build.
+
+[TIP]
+Transpilation in current context is converting ES6 JavaScript code to ES5 that is performed for older browsers be able to run it
 
 [TIP]
 The same library can also be used to optimize ES6 scripts, by using minification.
 
 == Project structure
 
-To ease the process of compiling your project, you should avoid placing your
-webcomponents at `src/main/webapp` or any other source directory. The source files
-won't be used by the project, just the compiled ones.
+After following the steps described in <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+the project has `bower.json`, `package.json` files and `bower_components` folder with all web components and their dependencies in `${frontend.working.directory}` folder.
+You can also have a separate folder for your static files with other html/css/js files, usually that one is located in `src/main/webapp/` folder of the application.
+We will consider this folder further, since the code from there would like to use dependencies from `${frontend.working.directory}/bower_components` folder.
 
-The suggested project structure, which complies to the Maven standards, is the
-following:
+If we consider `${frontend.working.directory}` to be located at `src/main/webapp/frontend`, we get the following structure:
 
 * project-root/
 ** src/main/
 *** java/ - Your Java code
-*** webapp/ - Static files not associated to webcomponents (such as images, favicon,
-  files for download and so on)
-*** frontend/ - Root path of your webcomponents
+*** webapp/ - Static files not associated to webcomponents (such as images, favicon, files for download and so on)
+**** static_file.js – should be able to reference files from `bower_components`
+**** frontend/ - Root path of your webcomponents
+***** bower_components/ - `bower` output directory containing all web components declared in `bower.json`
+***** bower.json - a file with dependencies' declaration
+***** package.json - a file for automatic `bower` downloading
 ** src/test/java/ - Your tests
 ** target/ - Your output directory
 ** pom.xml - Your project definition Maven file
 
-=== Javascript dependencies
-
-In your `src/main/frontend` directory, you have to create 4 files:
+=== Next steps
+So, we have the static files and the dependencies, what's next?
+We may want to post-process all the web files to
+In your `${frontend.working.directory}` directory, you have to update `package.json` file:
 
 ==== package.json
 
-This file defines the core versions of bower, gulp and polymer-build packages,
-and what to run when the packages have been installed. Once created, you don't have
-to change this file anymore.
+Initial file state is described in <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+We have added and `polymer-cli` dependencies that will process our web files and have added two tasks: `prodMode` and `devMode`
+Both tasks run `bower install` to install dependencies from `bower.json` and `prodMode` also runs `polymer build` that
+uses installed `polymer-cli` tool to transpile the sources to ES5:.
 
 [source,json]
 ----
@@ -53,8 +61,7 @@ to change this file anymore.
   "version": "1.0.0",
   "main": "",
   "dependencies": {
-    "bower": "~1.8.0",
-    "gulp": "~3.9.1",
+    "bower": "~1.8.2",
     "polymer-cli": "~1.5.2"
   },
   "scripts": {
@@ -64,40 +71,12 @@ to change this file anymore.
 }
 ----
 
-==== bower.json
-
-This file defines the webcomponent dependencies you have in your project. Keep
-this file updated every time you make changes in your javascript dependencies,
-just like you do in your `pom.xml` with Java dependencies.
-
-[source,json]
-----
-{
-  "name": "my-project",
-  "description": "",
-  "main": "",
-  "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-    "polymer": "~2.0.2",
-    "other-dependency" : "version"
-  }
-}
-----
-
-[NOTE]
-The most important dependency in this file is the Polymer version.
+and create two more files:
 
 ==== polymer.json
 
-This file defines how the project will be built. Here is where you set the
-compilation parameters. The entire structure of the file is described
+This file defines how the project will be built, used by `polymer-cli`. Here is where you set the
+transpilation parameters. The entire structure of the file is described
 https://www.polymer-project.org/2.0/docs/tools/polymer-json[here].
 
 [source,json]
@@ -111,19 +90,24 @@ https://www.polymer-project.org/2.0/docs/tools/polymer-json[here].
     "bower_components/webcomponentsjs/webcomponents-lite.js"
   ],
   "builds": [{
-    "name": "es5",
+    "name": "frontend-es5",
     "js": {"compile": true, "minify": true},
     "css": {"minify": true},
     "html": {"minify": true}
   },
   {
-    "name": "es6",
+    "name": "frontend-es6",
     "js": {"minify": true},
     "css": {"minify": true},
     "html": {"minify": true}
   }]
 }
 ----
+
+Here, we have added two configurations: `frontend-es5` and `frontend-es6`.
+Both configuration will minify all html, css and js files and, additionally, `frontend-es5` will transpile js files.
+Which files are subject to transpilation is determined in `index.html`: all urls are recursively analyzed and processed,
+this file is considered in the next session.
 
 [NOTE]
 Change the `minify` property to `false` if you want to skip minification of your
@@ -192,7 +176,7 @@ In the `index.html` file you only add your own dependencies, using HTML imports:
 
 [source,xml]
 ----
-<!-- Assuming your files are located at src/main/frontend/components -->
+<!-- Assuming your files are located at ${frontend.working.directory}/components -->
 <link rel="import" href="components/my-component1.html">
 <link rel="import" href="components/my-component2.html">
 ----
@@ -201,14 +185,24 @@ In the `index.html` file you only add your own dependencies, using HTML imports:
 When creating a new component, don't forget to declare its dependencies in the
 `bower.json` file and the component location in the `index.html` file.
 
-In summary, the distribution of files inside `src/main/frontend` should be:
+After all changes and package being run, the project structure would be the following:
 
-* src/main/frontend/
-** bower.json
-** package.json
-** polymer.json
-** index.html
-** components/ -> that's where you put your webcomponents
+* project-root/
+** src/main/
+*** java/ - Your Java code
+*** webapp/ - Static files not associated to webcomponents (such as images, favicon, files for download and so on)
+**** static_file.js – should be able to reference files from `bower_components`
+**** frontend/ - Root path of your webcomponents
+***** bower_components/ - `bower` output directory containing all web components declared in `bower.json`
+***** bower.json - a file with dependencies' declaration
+***** package.json - a file for automatic `bower` downloading
+***** polymer.json - a file that describes how the resources should be processed (minified and/or transpiled)
+***** index.html - a file that contains urls to all dependencies that are needed to be processed
+***** build/frontend-es5/ - transpiled and minified files for older browsers
+***** build/frontend-es6/ - minified files for newer browsers
+** src/test/java/ - Your tests
+** target/ - Your output directory
+** pom.xml - Your project definition Maven file
 
 == Using Maven plugins to compile your project
 
@@ -226,15 +220,14 @@ Jetty Plugin by using the `mvn jetty:run` command.
 [source,xml]
 ----
 <properties>
-  <flow.version>FLOW VERSION HERE</flow.version>
-  <jetty.version>9.4.5.v20170502</jetty.version>
-  <frontend.working.directory>src/main/frontend</frontend.working.directory>
-  <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
+  <frontend.working.directory>${project.basedir}/src/main/webapp/frontend</frontend.working.directory>
+  <jetty.extra.resource.base>${frontend.working.directory}</jetty.extra.resource.base>
+  <npm.build.goal>run devMode</npm.build.goal>
 </properties>
 
 <build>
   <plugins>
-      <!--1-->
+      <!-- Configures the cleanup process for JS dependencies and build -->
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
@@ -257,7 +250,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
           </configuration>
       </plugin>
 
-      <!--2-->
+      <!-- Configures the frontend plugin to transpile the web components source -->
       <plugin>
           <groupId>com.github.eirslett</groupId>
           <artifactId>frontend-maven-plugin</artifactId>
@@ -290,7 +283,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
           </executions>
       </plugin>
 
-     <!--3-->
+     <!-- Configures the Jetty plugin to use the right resource path, that is different depending on the approach -->
       <plugin>
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-maven-plugin</artifactId>
@@ -300,7 +293,6 @@ Jetty Plugin by using the `mvn jetty:run` command.
                   <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                   <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                   <resourceBases>
-                      <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
                       <resourceBase>${jetty.extra.resource.base}</resourceBase>
                   </resourceBases>
               </webAppConfig>
@@ -319,11 +311,12 @@ Jetty Plugin by using the `mvn jetty:run` command.
     </activation>
 
     <properties>
+        <!-- Overrides properties that are different for produciton mode -->
         <npm.build.goal>run prodMode</npm.build.goal>
-        <jetty.extra.resource.base>${project.build.directory}/jetty-extra-resources</jetty.extra.resource.base>
+        <jetty.extra.resource.base>${frontend.working.directory}/build</jetty.extra.resource.base>
     </properties>
 
-    <!--4-->
+    <!-- Makes the package run in production mode when deployed, without the need of setting extra properties on the server -->
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -334,7 +327,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
 
     <build>
         <plugins>
-            <!--5-->
+            <!-- Add trasnpiled and minified files as an extra resource folder -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -343,91 +336,16 @@ Jetty Plugin by using the `mvn jetty:run` command.
                     <webResources>
                         <resource>
                             <directory>${frontend.working.directory}/build</directory>
-                            <targetPath>${vaadin.frontend.path}</targetPath>
                         </resource>
                     </webResources>
+                    <warSourceExcludes>**/frontend/bower_components/,**/node_modules/,**/node/,**/build/,**/etc/</warSourceExcludes>
                 </configuration>
-            </plugin>
-
-            <!--6-->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven.resources.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${jetty.extra.resource.base}/${vaadin.frontend.path}</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>${project.basedir}/${frontend.working.directory}/build</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
   </profile>
-
-  <profile>
-      <id>debugMode</id>
-      <activation>
-          <property>
-              <name>!vaadin.productionMode</name>
-          </property>
-      </activation>
-
-      <properties>
-          <npm.build.goal>run devMode</npm.build.goal>
-          <jetty.extra.resource.base>${project.basedir}/${frontend.working.directory}</jetty.extra.resource.base>
-      </properties>
-
-      <build>
-          <plugins>
-              <!--7-->
-              <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-war-plugin</artifactId>
-                  <version>${maven.war.plugin.version}</version>
-                  <configuration>
-                      <webResources>
-                          <resource>
-                              <directory>${frontend.working.directory}</directory>
-                              <excludes>
-                                  <exclude>build/**</exclude>
-                              </excludes>
-                          </resource>
-                      </webResources>
-                  </configuration>
-              </plugin>
-          </plugins>
-      </build>
-  </profile>
 </profiles>
 ----
-
-<1> Configures the cleanup process for JS dependencies and build
-<2> Configures the frontend plugin to compile the web components source
-<3> Configures the Jetty plugin to use the right resource path when running in
-either production or debug modes
-<4> Makes the package run in production mode when deployed, without the need
-of setting extra properties on the server
-<5> Copies the files compiled by Polymer to a directory from where it can be
-served (root of the WAR) when in production mode
-<6> Copies the files compiled by Polymer to a directory where jetty:run can
-use as resource folder
-<7> Adds the files from src/main/frontend directly into the WAR when in
-debug mode
-
-[WARNING]
-Don't forget to set the proper Flow version inside the `<flow.version>` property.
 
 === Production mode
 
@@ -438,14 +356,14 @@ sources and see the changes right away upon refreshing the browser.
 
 For example, when running the Jetty server from Maven, by using the
 `mvn jetty:run` command, you can modify any webcomponent source file and just
-refresh the browser to see the changes. No compilation is required.
+refresh the browser to see the changes. No transpilation is required.
 
 [WARNING]
 You can only develop in that way when using an ES6 compatible browser. Older
-browsers such as Safari 9 and Internet Explorer 11 require compilation to work
+browsers such as Safari 9 and Internet Explorer 11 require transpilation to work
 properly with webcomponents.
 
-To effectively compile and minify your resources for production deployment, you
+To effectively transpile and minify your resources for production deployment, you
 must run the packaging using the `-Dvaadin.productionMode` flag. For example:
 
 [source,bash]
@@ -462,23 +380,21 @@ mvn jetty:run -Dvaadin.productionMode
 
 === Directories created by the process
 
-When resolving dependencies and compiling your components, several directories
-and files are created inside your `src/main/frontend`. Those file can be
+When resolving dependencies and transpiling your components, several directories
+and files are created inside your `${frontend.working.directory}`. Those files can be
 safely ignored in you SCM, since they are generated from the build.
 
-Those files and directories are:
+The ignorable files and directories are:
 
-* bin/
-* bower_components/
-* build/
-* etc/
-* lib/
+* bower_components/ – the folder where web components and their dependencies from `bower.json` are downloaded to, result of `bower install` command
+* build/ – the folder where transpiled and minified files are added to, based on rules from `polymer.json`, result of `polymer build` operation
+* etc/ – this and the next two folders are `node` and `npm` output folders that are downloading dependencies from `package.json` (`bower`, `polymer-cli`)
 * node/
 * node_modules/
 
-== Manual compilation
+== Manual transpilation
 
-If you don't want to use Maven to compile your components for you, you can use
+If you don't want to use Maven to transpile your components for you, you can use
 the Polymer CLI directly (which uses polymer-build internally).
 
 First step is to install the Polymer CLI tool. To do that, please
@@ -486,19 +402,19 @@ follow the steps mentioned at the https://www.polymer-project.org/2.0/docs/tools
 page.
 
 Using the same project structure and configuration files, you can run this
-command from the `src/main/frontend` directory:
+command from the `${frontend.working.directory}` directory:
 
 [source,bash]
 ----
 polymer build
 ----
 
-This will generate the `build` directory, which contains the compiled files.
+This will generate the `build` directory, which contains the transpiled files.
 
 == Linking both ES6 and ES5 files in your application
 
 By using the `polymer.json` build configuration described above, two directories
-are created: `build/es6` and `build/es5`. Those directories contain the ES6
+are created: `build/frontend-es6` and `build/frontend-es5`. Those directories contain the ES6
 optimized files and the ES5 optimized files respectively. You can serve both
 build in your project, depending on the capabilities of the target browser.
 
@@ -514,9 +430,9 @@ public class MyComponent extends PolymerTemplate<MyModel> {
 
 In production, the Flow application will determine whether the browser supports ES6 or
 not. When the browser supports ES6, the linked file will be served from
-`(context)/VAADIN/static/frontend/es6/components/my-component.html`. When it
+`(context)/frontend-es6/components/my-component.html`. When it
 doesn`t, the served file will be
-`(context)/VAADIN/static/frontend/es5/components/my-component.html`.
+`(context)/frontend-es5/components/my-component.html`.
 
 That way you can support ES5 browsers without compromising ES6 capable browsers.
 
@@ -524,7 +440,7 @@ That way you can support ES5 browsers without compromising ES6 capable browsers.
 The differentiation between ES5 and ES6 paths only occur when `productionMode` is
 `true`. When running in debug (or development) mode, the `frontend://` protocol
 behaves exactly like the `context://` protocol, and the files are served directly
-from `src/main/frontend`.
+from `${frontend.working.directory}`.
 
 === Changing the target of `frontend://` served files
 

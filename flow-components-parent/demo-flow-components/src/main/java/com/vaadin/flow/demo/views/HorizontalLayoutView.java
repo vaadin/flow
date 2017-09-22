@@ -17,12 +17,12 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.html.Div;
 import com.vaadin.ui.layout.FlexLayout.Alignment;
 import com.vaadin.ui.layout.FlexLayout.JustifyContentMode;
 import com.vaadin.ui.layout.HorizontalLayout;
+import com.vaadin.ui.paper.button.GeneratedPaperButton;
 
 /**
  * View for the {@link HorizontalLayout} component.
@@ -226,9 +226,8 @@ public class HorizontalLayoutView extends DemoView {
             Alignment alignment) {
         Button button = new Button(alignment.name());
         button.setId(id);
-        button.addClickListener(
-                event -> layout
-                        .setDefaultVerticalComponentAlignment(alignment));
+        button.addClickListener(event -> layout
+                .setDefaultVerticalComponentAlignment(alignment));
         return button;
     }
 

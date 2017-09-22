@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components-parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-generated-components</artifactId>
     <name>Flow Generated Component</name>
@@ -69,7 +69,7 @@
                                     <goal>generate</goal>
                                 </goals>
                                 <configuration>
-                                    <basePackage>com.vaadin.generated</basePackage>
+                                    <basePackage>com.vaadin.ui</basePackage>
                                     <classNamePrefix>Generated</classNamePrefix>
                                     <licenseFile>license_header</licenseFile>
                                 </configuration>

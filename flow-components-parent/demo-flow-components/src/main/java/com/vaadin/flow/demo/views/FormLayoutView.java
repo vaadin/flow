@@ -150,12 +150,12 @@ public class FormLayoutView extends DemoView {
     // You can create a custom layout that internally uses FormLayout
     public class MyCustomLayout extends Composite<FormLayout> {
 
-        public void addItemWithLabel(String label, Component item) {
-            FormItem formItem = new FormItem(item);
-            formItem.addToLabel(new Label(label));
-
+        public void addItemWithLabel(String label, Component... items) {
+            Div itemWrapper = new Div();
+            // Wrap the given items into a single div
+            itemWrapper.add(items);
             // getContent() returns a wrapped FormLayout
-            getContent().add(formItem);
+            getContent().addFormItem(itemWrapper, label);
         }
     }
     // end-source-example
@@ -180,7 +180,7 @@ public class FormLayoutView extends DemoView {
         
         nameLayout.setResponsiveSteps(
                 new ResponsiveStep("0", 1),
-                new ResponsiveStep("20em", 2),
+                new ResponsiveStep("21em", 2),
                 new ResponsiveStep("22em", 3));
         // end-source-example
         // @formatter:on
@@ -193,23 +193,13 @@ public class FormLayoutView extends DemoView {
         // source-example-heading: A form layout with fields wrapped in items
         FormLayout layoutWithFormItems = new FormLayout();
 
-        TextField name = new TextField();
-        name.setPlaceholder("John");
-        FormItem firstItem = new FormItem(name);
+        TextField firstName = new TextField();
+        firstName.setPlaceholder("John");
+        layoutWithFormItems.addFormItem(firstName, "First name");
+
         TextField lastName = new TextField();
         lastName.setPlaceholder("Doe");
-        FormItem secondItem = new FormItem(lastName);
-
-        Div firstItemLabelComponent = new Div();
-        firstItemLabelComponent.setText("First name");
-
-        Div secondItemLabelComponent = new Div();
-        secondItemLabelComponent.setText("Last name");
-
-        firstItem.addToLabel(firstItemLabelComponent);
-        secondItem.addToLabel(secondItemLabelComponent);
-
-        layoutWithFormItems.add(firstItem, secondItem);
+        layoutWithFormItems.addFormItem(lastName, "Last name");
         // end-source-example
 
         addCard("A form layout with fields wrapped in items",
@@ -236,25 +226,17 @@ public class FormLayoutView extends DemoView {
         Button save = new Button("Save");
         Button reset = new Button("Reset");
 
-        // Create the form items to proper align the fields
-        FormItem firstNameItem = new FormItem(firstName);
-        firstNameItem.addToLabel(new Label("First name"));
-        FormItem lastNameItem = new FormItem(lastName);
-        lastNameItem.addToLabel(new Label("Last name"));
-        FormItem birthDateItem = new FormItem(birthDate);
-        birthDateItem.addToLabel(new Label("Birthdate"));
-        FormItem emailItem = new FormItem(email);
-        emailItem.addToLabel(new Label("E-mail"));
-        FormItem phoneItem = new FormItem(phone, doNotCall);
-        phoneItem.addToLabel(new Label("Phone"));
+        layoutWithBinder.addFormItem(firstName, "First name");
+        layoutWithBinder.addFormItem(lastName, "Last name");
+        layoutWithBinder.addFormItem(birthDate, "Birthdate");
+        layoutWithBinder.addFormItem(email, "E-mail");
+        FormItem phoneItem = layoutWithBinder.addFormItem(phone, "Phone");
+        phoneItem.add(doNotCall);
 
         // Button bar
         HorizontalLayout actions = new HorizontalLayout();
         actions.add(save, reset);
         save.getStyle().set("marginRight", "10px");
-
-        layoutWithBinder.add(firstNameItem, lastNameItem, birthDateItem,
-                emailItem, phoneItem);
 
         SerializablePredicate<String> phoneOrEmailPredicate = value -> !phone
                 .getValue().trim().isEmpty()
@@ -337,9 +319,12 @@ public class FormLayoutView extends DemoView {
         MyCustomLayout layout = new MyCustomLayout();
         TextField name = new TextField();
         TextField email = new TextField();
+        Checkbox emailUpdates = new Checkbox("E-mail me updates");
 
         layout.addItemWithLabel("Name", name);
-        layout.addItemWithLabel("E-mail", email);
+        // Both the email field and the emailUpdates checkbox are wrapped inside
+        // the same form item
+        layout.addItemWithLabel("E-mail", email, emailUpdates);
         // end-source-example
 
         addCard("Using form layout inside a composite", layout);

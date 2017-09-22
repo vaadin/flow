@@ -20,9 +20,9 @@ import java.util.Locale;
 
 import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.ModelItem;
-import com.vaadin.ui.event.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;

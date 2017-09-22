@@ -7,7 +7,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
 
     <modules>
         <module>flow</module>
@@ -67,7 +67,7 @@
 
         <!-- Plugins -->
         <driver.binary.downloader.maven.plugin.version>1.0.14</driver.binary.downloader.maven.plugin.version>
-        <frontend.maven.plugin.version>1.4</frontend.maven.plugin.version>
+        <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
         <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>2.20</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
@@ -81,9 +81,8 @@
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
         <node.version>v7.10.1</node.version>
         <npm.version>5.3.0</npm.version>
-        <frontend.working.directory>src/main/frontend</frontend.working.directory>
-        <webapp.directory>src/main/webapp</webapp.directory>
-        <vaadin.frontend.path>VAADIN/static/frontend</vaadin.frontend.path>
+
+        <frontend.working.directory>${project.basedir}/src/main/webapp/frontend</frontend.working.directory>
 
         <maven.test.skip>false</maven.test.skip>
     </properties>
@@ -239,16 +238,13 @@
                     </dependency>
                 </dependencies>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.3</version>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven.resources.plugin.version}</version>
-            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -262,8 +258,8 @@
                         </goals>
                     </execution>
                 </executions>
-
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
@@ -280,8 +276,36 @@
                 <configuration>
                     <quiet>true</quiet>
                 </configuration>
-
             </plugin>
+
+            <plugin>
+                <groupId>org.commonjava.maven.plugins</groupId>
+                <artifactId>directory-maven-plugin</artifactId>
+                <version>0.1</version>
+                <executions>
+                    <execution>
+                        <id>set-root-dir-for-common-lifecycle</id>
+                        <goals>
+                            <goal>highest-basedir</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <property>project.rootdir</property>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>set-root-dir-for-clean-lifecycle</id>
+                        <goals>
+                            <goal>highest-basedir</goal>
+                        </goals>
+                        <phase>pre-clean</phase>
+                        <configuration>
+                            <property>project.rootdir</property>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -309,24 +333,6 @@
                     </filesets>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.commonjava.maven.plugins</groupId>
-                <artifactId>directory-maven-plugin</artifactId>
-                <version>0.1</version>
-                <executions>
-                    <execution>
-                        <id>directories</id>
-                        <goals>
-                            <goal>highest-basedir</goal>
-                        </goals>
-                        <phase>initialize</phase>
-                        <configuration>
-                            <property>project.rootdir</property>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
         <pluginManagement>
             <plugins>
@@ -346,8 +352,7 @@
                                 <Implementation-Version>${project.version}</Implementation-Version>
                             </manifestEntries>
                         </archive>
-                        <packagingExcludes>**/node_modules/,**/node/,**/etc/,**/bower.json,**/package.json
-                        </packagingExcludes>
+                        <warSourceExcludes>**/node_modules/,**/node/,**/build/,**/etc/</warSourceExcludes>
                     </configuration>
                 </plugin>
                 <plugin>
