@@ -206,16 +206,14 @@ public class RouterTest extends RoutingTestBase {
     public static class LoneRoute extends Component {
     }
 
+    @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         super.init();
         ui = new RouterTestUI(router);
         eventCollector.clear();
-        Field field = RouteRegistry.getInstance().getClass()
-                .getDeclaredField("initialized");
-        field.setAccessible(true);
-        field.set(RouteRegistry.getInstance(), false);
+        allowRouterRegistryModification();
     }
 
     @Test
@@ -499,8 +497,28 @@ public class RouterTest extends RoutingTestBase {
                         .collect(Collectors.toSet()));
     }
 
+    @Test
+    public void navigateToRoot_errorCode_dontRedirect()
+            throws NoSuchFieldException, IllegalAccessException,
+            InvalidRouteConfigurationException {
+        allowRouterRegistryModification();
+        RouteRegistry.getInstance().setNavigationTargets(
+                Collections.singleton(FooNavigationTarget.class));
+
+        Assert.assertEquals(404, router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC));
+    }
+
     private Class<? extends Component> getUIComponent() {
         return ComponentUtil.findParentComponent(ui.getElement().getChild(0))
                 .get().getClass();
+    }
+
+    private void allowRouterRegistryModification()
+            throws NoSuchFieldException, IllegalAccessException {
+        Field field = RouteRegistry.getInstance().getClass()
+                .getDeclaredField("initialized");
+        field.setAccessible(true);
+        field.set(RouteRegistry.getInstance(), false);
     }
 }
