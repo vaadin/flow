@@ -19,5 +19,5 @@ public interface GridSingleSelectionModel<T>
      *
      * @return the single select wrapper
      */
-    SingleSelect<? extends Grid<T>, T> asSingleSelect();
+    SingleSelect<Grid<T>, T> asSingleSelect();
 }

@@ -41,7 +41,21 @@ public class GridView extends TestView {
                 event -> setProvider(grid));
         updateProvider.setId("update-provider");
 
-        add(updateProvider);
+        Button toggleSelect = new Button("toggle select");
+        toggleSelect.addClickListener(event -> {
+            if (grid.getSelectionModel().isSelected("600")) {
+                grid.getSelectionModel().deselect("600");
+            } else {
+                grid.getSelectionModel().select("600");
+            }
+        });
+        add(grid, toggleSelect);
+
+        grid.asSingleSelect()
+                .addValueChangeListener(event -> System.out.println(String
+                        .format("Selection changed from %s to %s, isFromClient: %s",
+                                event.getOldValue(), event.getValue(),
+                                event.isFromClient())));
     }
 
     private void setProvider(Grid<String> grid) {

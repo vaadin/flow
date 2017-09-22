@@ -24,8 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.shared.Registration;
-
 /**
  * Models the selection logic of a {@code Listing} component. Determines how
  * items can be selected and deselected.
@@ -36,7 +34,8 @@ import com.vaadin.shared.Registration;
  *            the type of the items to select
  * @since 8.0
  */
-public interface SelectionModel<T> extends Serializable {
+public interface SelectionModel<T>
+        extends Serializable {
 
     /**
      * A selection model in which at most one item can be selected at a time.
@@ -279,14 +278,4 @@ public interface SelectionModel<T> extends Serializable {
     public default boolean isSelected(T item) {
         return getSelectedItems().contains(item);
     }
-
-    /**
-     * Adds a generic listener to this selection model, accepting both single
-     * and multiselection events.
-     *
-     * @param listener
-     *            the listener to add
-     * @return a registration handle for removing the listener
-     */
-    public Registration addSelectionListener(SelectionListener<T> listener);
 }

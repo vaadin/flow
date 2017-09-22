@@ -201,6 +201,17 @@ public class DataCommunicator<T> {
     }
 
     /**
+     * Gets the {@link DataKeyMapper} used by this {@link DataCommunicator}. Key
+     * mapper can be used to map keys sent to the client-side back to their
+     * respective data objects.
+     *
+     * @return key mapper
+     */
+    public DataKeyMapper<T> getKeyMapper() {
+        return keyMapper;
+    }
+
+    /**
      * Getter method for finding the size of DataProvider. Can be overridden by
      * a subclass that uses a specific type of DataProvider and/or query.
      *

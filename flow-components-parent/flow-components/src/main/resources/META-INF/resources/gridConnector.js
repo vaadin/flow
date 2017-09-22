@@ -4,6 +4,7 @@ window.gridConnector = {
         var pageCallbacks = {};
         var cache = {};
         var lastRequestedRange = [0, 0];
+        var selectedKeys = {};
 
         grid.pageSize = pageSize;
         grid.size = 0; // To avoid NaN here and there before we get proper data
@@ -35,26 +36,26 @@ window.gridConnector = {
         }
 
         var updateGridCache = function(page) {
-            if (!grid._cache[page]) {
-                return;
-            }
-            var items = cache[page];
-
-            if (!items) {
-                delete grid._cache[page];
-            }
-
-            // Force update unless there's a callback waiting
-            if (!pageCallbacks[page]) {
-                if (items) {
-                    // Replace existing cache page
-                    grid._cache[page] = items;
-                } else {
-                    // Fake page to pass to _updateItems
-                    items = new Array(grid.pageSize);
-                }
-                grid._updateItems(page, items);
-            }
+              if (!grid._cache[page]) {
+                  return;
+              }   
+              var items = cache[page];
+  
+              if (!items) {
+                  delete grid._cache[page];
+              }   
+  
+              // Force update unless there's a callback waiting
+              if (!pageCallbacks[page]) {
+                  if (items) {
+                      // Replace existing cache page
+                      grid._cache[page] = items;
+                  } else {
+                      // Fake page to pass to _updateItems
+                      items = new Array(grid.pageSize);
+                  }   
+                  grid._updateItems(page, items);
+              }   
         }
 
         grid.connectorSet = function(index, items) {
@@ -65,9 +66,23 @@ window.gridConnector = {
             var firstPage = index / grid.pageSize;
             var updatedPageCount = Math.ceil(items.length / grid.pageSize);
 
+
             for (var i = 0; i < updatedPageCount; i++) {
                 var page = firstPage + i;
-                cache[page] = items.slice(i * grid.pageSize, (i + 1) * grid.pageSize);
+                var items = items.slice(i * grid.pageSize, (i + 1) * grid.pageSize);
+                cache[page] = items;
+
+                for(var j = 0; j < items.length; j++) {
+                    var item = items[j]
+                    if (item.selected && !selectedKeys[item.key]) {
+                        grid.selectItem(item);
+                        selectedKeys[item.key] = item;
+                    } else if (selectedKeys[item.key]) {
+                        grid.deselectItem(item);
+                        delete selectedKeys[item.key];
+                    }
+                }
+
                 updateGridCache(page);
             }
         };
@@ -82,6 +97,14 @@ window.gridConnector = {
 
             for (var i = 0; i < updatedPageCount; i++) {
                 var page = firstPage + i;
+                var items = cache[page];
+                for (var j = 0; j < items.length; j++) {
+                    var item = items[j];
+                    if (selectedKeys[item.key]) {
+                        grid.deselectItem(item);
+                        delete selectedKeys[item.key];
+                    }
+                }
                 delete cache[page];
                 updateGridCache(page);
             }

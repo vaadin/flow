@@ -28,6 +28,7 @@ import com.vaadin.ui.common.HasValue;
  *            the selection value type
  *
  */
-public interface SingleSelect<C extends Component, T> extends HasValue<C, T> {
+public interface SingleSelect<C extends AbstractListing<T>, T>
+        extends HasValue<C, T> {
 
 }

@@ -11,5 +11,19 @@ public interface GridSelectionModel<T> extends SelectionModel<T> {
     /**
      * Removes this selection model from the grid.
      */
-    public void remove();
+    void remove();
+
+    /**
+     * TODO
+     *
+     * @param item
+     */
+    void selectFromClient(T item);
+
+    /**
+     * TODO
+     *
+     * @param item
+     */
+    void deselectFromClient(T item);
 }

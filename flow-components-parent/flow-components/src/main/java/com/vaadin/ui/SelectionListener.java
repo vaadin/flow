@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.ui.event.ComponentEventListener;
+
 /**
  * A listener for {@code SelectionEvent}.
  * <p>
@@ -23,13 +25,16 @@ package com.vaadin.ui;
  *
  * @author Vaadin Ltd.
  *
+ * @param <L>
+ *            the type of the listing component
  * @param <T>
  *            the type of the selected item
  *
  * @see SelectionEvent
  */
 @FunctionalInterface
-public interface SelectionListener<T> extends SerializableEventListener {
+public interface SelectionListener<L extends AbstractListing<T>, T>
+        extends ComponentEventListener<SelectionEvent<L, T>> {
 
     /**
      * Invoked when the selection has changed by user or programmatically.
@@ -37,5 +42,6 @@ public interface SelectionListener<T> extends SerializableEventListener {
      * @param event
      *            the selection event
      */
-    public void selectionChange(SelectionEvent<T> event);
+    @Override
+    public void onComponentEvent(SelectionEvent<L, T> event);
 }

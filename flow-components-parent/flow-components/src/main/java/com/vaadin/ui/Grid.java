@@ -17,29 +17,30 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 import javax.swing.SingleSelectionModel;
 
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.ValueProvider;
+import com.vaadin.data.provider.ArrayUpdater;
+import com.vaadin.data.provider.ArrayUpdater.Update;
+import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.ArrayUpdater.Update;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.event.ComponentEventListener;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -57,7 +58,7 @@ import elemental.json.JsonValue;
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
 @JavaScript("context://gridConnector.js")
-public class Grid<T> extends Component implements HasDataProvider<T> {
+public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
     private final class UpdateQueue implements Update {
         private List<Runnable> queue = new ArrayList<>();
@@ -108,74 +109,91 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
          */
         SINGLE {
             @Override
-            protected <T> GridSelectionModel<T> createModel() {
+            protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
                 return new GridSingleSelectionModel<T>() {
 
-                    @Override
-                    public Set<T> getSelectedItems() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
-                    }
+                    private T selectedItem = null;
+                    private boolean deselectAllowed = true;
 
                     @Override
-                    public Optional<T> getFirstSelectedItem() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                    public void selectFromClient(T item) {
+                        T oldValue = selectedItem;
+                        selectedItem = item;
+                        grid.fireEvent(new SelectionEvent<Grid<T>, T>(grid,
+                                grid.asSingleSelect(), oldValue, true));
                     }
 
                     @Override
                     public void select(T item) {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                        T oldValue = selectedItem;
+                        selectedItem = item;
+                        grid.getDataCommunicator().reset();
+                        grid.fireEvent(new SelectionEvent<Grid<T>, T>(grid,
+                                grid.asSingleSelect(), oldValue, false));
+                    }
+
+                    @Override
+                    public void deselectFromClient(T item) {
+                        if (isSelected(item)) {
+                            selectFromClient(null);
+                        }
                     }
 
                     @Override
                     public void deselect(T item) {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
-                    }
-
-                    @Override
-                    public void deselectAll() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
-                    }
-
-                    @Override
-                    public Registration addSelectionListener(
-                            SelectionListener<T> listener) {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                        if (isSelected(item)) {
+                            select(null);
+                        }
                     }
 
                     @Override
                     public void remove() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                        deselectAll();
                     }
 
                     @Override
                     public Optional<T> getSelectedItem() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                        return Optional.ofNullable(selectedItem);
                     }
 
                     @Override
                     public void setDeselectAllowed(boolean deselectAllowed) {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                        this.deselectAllowed = deselectAllowed;
                     }
 
                     @Override
                     public boolean isDeselectAllowed() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                        return deselectAllowed;
                     }
 
                     @Override
-                    public SingleSelect<? extends Grid<T>, T> asSingleSelect() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                    public SingleSelect<Grid<T>, T> asSingleSelect() {
+                        return new SingleSelect<Grid<T>, T>() {
+
+                            @Override
+                            public void setValue(T value) {
+                                setSelectedItem(value);
+                            }
+
+                            @Override
+                            public T getValue() {
+                                return getSelectedItem()
+                                        .orElse(getEmptyValue());
+                            }
+
+                            @SuppressWarnings({ "unchecked", "rawtypes" })
+                            @Override
+                            public Registration addValueChangeListener(
+                                    ValueChangeListener<Grid<T>, T> listener) {
+                                return grid.addListener(SelectionEvent.class,
+                                        (ComponentEventListener) listener);
+                            }
+
+                            @Override
+                            public Grid<T> get() {
+                                return grid;
+                            }
+                        };
                     }
                 };
             }
@@ -189,7 +207,7 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
          */
         MULTI {
             @Override
-            protected <T> GridSelectionModel<T> createModel() {
+            protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
                 throw new UnsupportedOperationException("Not implemented yet.");
             }
         },
@@ -201,42 +219,8 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
          */
         NONE {
             @Override
-            protected <T> GridSelectionModel<T> createModel() {
-                return new GridSelectionModel<T>() {
-
-                    @Override
-                    public Set<T> getSelectedItems() {
-                        return Collections.emptySet();
-                    }
-
-                    @Override
-                    public Optional<T> getFirstSelectedItem() {
-                        return Optional.empty();
-                    }
-
-                    @Override
-                    public void select(T item) {
-                    }
-
-                    @Override
-                    public void deselect(T item) {
-                    }
-
-                    @Override
-                    public void deselectAll() {
-                    }
-
-                    @Override
-                    public Registration addSelectionListener(
-                            SelectionListener<T> listener) {
-                        throw new UnsupportedOperationException(
-                                "This selection model doesn't allow selection, cannot add selection listeners to it");
-                    }
-
-                    @Override
-                    public void remove() {
-                    }
-                };
+            protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
+                return new GridNoneSelectionModel<>();
             }
         };
 
@@ -247,7 +231,7 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
          *            the type of items in the grid
          * @return the selection model
          */
-        protected abstract <T> GridSelectionModel<T> createModel();
+        protected abstract <T> GridSelectionModel<T> createModel(Grid<T> grid);
     }
 
     private int pageSize = 100;
@@ -261,10 +245,10 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
     private int nextColumnId = 0;
 
     private GridSelectionModel<T> selectionModel = SelectionMode.SINGLE
-            .createModel();
+            .createModel(this);
 
     public Grid() {
-        dataCommunicator.setRequestedRange(0, pageSize);
+        getDataCommunicator().setRequestedRange(0, pageSize);
     }
 
     @Override
@@ -294,7 +278,7 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
         nextColumnId++;
         String columnKey = "col" + id;
         columnGenerators.put(columnKey, valueProvider.andThen(Json::create));
-        dataCommunicator.reset();
+        getDataCommunicator().reset();
 
         // Use innerHTML to set document fragment instead of DOM children
         Element headerTemplate = new Element("template")
@@ -310,27 +294,14 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
         getElement().appendChild(colElement);
     }
 
-    private JsonValue generateItemJson(String key, T item) {
-        JsonObject json = Json.createObject();
-        json.put("key", key);
-        columnGenerators.forEach((columnKey, generator) -> json.put(columnKey,
-                generator.apply(item)));
-        return json;
-    }
-
-    @ClientDelegate
-    private void confirmUpdate(int id) {
-        dataCommunicator.confirmUpdate(id);
-    }
-
-    @ClientDelegate
-    private void setRequestedRange(int start, int length) {
-        dataCommunicator.setRequestedRange(start, length);
+    @Override
+    public void setDataProvider(DataProvider<T, ?> dataProvider) {
+        getDataCommunicator().setDataProvider(dataProvider, null);
     }
 
     @Override
-    public void setDataProvider(DataProvider<T, ?> dataProvider) {
-        dataCommunicator.setDataProvider(dataProvider, null);
+    public DataCommunicator<T> getDataCommunicator() {
+        return dataCommunicator;
     }
 
     /**
@@ -350,7 +321,7 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
      */
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
-        dataCommunicator.setRequestedRange(0, pageSize);
+        getDataCommunicator().setRequestedRange(0, pageSize);
     }
 
     /**
@@ -404,7 +375,7 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
      */
     public GridSelectionModel<T> setSelectionMode(SelectionMode selectionMode) {
         Objects.requireNonNull(selectionMode, "Selection mode cannot be null.");
-        GridSelectionModel<T> model = selectionMode.createModel();
+        GridSelectionModel<T> model = selectionMode.createModel(this);
         setSelectionModel(model);
         return model;
     }
@@ -419,12 +390,54 @@ public class Grid<T> extends Component implements HasDataProvider<T> {
      * @throws IllegalStateException
      *             if not using a single selection model
      */
-    public SingleSelect<? extends Grid<T>, T> asSingleSelect() {
+    public SingleSelect<Grid<T>, T> asSingleSelect() {
         GridSelectionModel<T> model = getSelectionModel();
         if (!(model instanceof GridSingleSelectionModel)) {
             throw new IllegalStateException(
-                    "Grid is not in single select mode, it needs to be explicitly set to such with setSelectionModel(SingleSelectionModel) before being able to use single selection features.");
+                    "Grid is not in single select mode, "
+                            + "it needs to be explicitly set to such with "
+                            + "setSelectionModel(SingleSelectionModel) before "
+                            + "being able to use single selection features.");
         }
         return ((GridSingleSelectionModel<T>) model).asSingleSelect();
+    }
+
+    @ClientDelegate
+    private void select(int key) {
+        getSelectionModel().selectFromClient(findByKey(key));
+    }
+
+    @ClientDelegate
+    private void deselect(int key) {
+        getSelectionModel().deselectFromClient(findByKey(key));
+    }
+
+    private T findByKey(int key) {
+        T item = getDataCommunicator().getKeyMapper().get(String.valueOf(key));
+        if (item == null) {
+            throw new IllegalStateException("Unkonwn key: " + key);
+        }
+        return item;
+    }
+
+    private JsonValue generateItemJson(String key, T item) {
+        JsonObject json = Json.createObject();
+        json.put("key", key);
+        columnGenerators.forEach((columnKey, generator) -> json.put(columnKey,
+                generator.apply(item)));
+        if (getSelectionModel().isSelected(item)) {
+            json.put("selected", true);
+        }
+        return json;
+    }
+
+    @ClientDelegate
+    private void confirmUpdate(int id) {
+        getDataCommunicator().confirmUpdate(id);
+    }
+
+    @ClientDelegate
+    private void setRequestedRange(int start, int length) {
+        getDataCommunicator().setRequestedRange(start, length);
     }
 }
