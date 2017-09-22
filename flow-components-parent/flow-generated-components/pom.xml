@@ -23,8 +23,6 @@
     <properties>
         <!-- Skip javadoc for generated components -->
         <maven.javadoc.skip>true</maven.javadoc.skip>
-        <!-- Skip Sonar for generated components for now -->
-        <sonar.exclusions>**/*.java</sonar.exclusions>
     </properties>
 
     <build>

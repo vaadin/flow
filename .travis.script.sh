@@ -8,7 +8,7 @@
 # USE_SELENOID == use Docker and Selenoid to run IT tests in personal hub
 
 # Exclude third party code from Sonar analysis
-SONAR_EXCLUSIONS=**/bower_components/**,**/node_modules/**,**/node/**,**/src/main/webapp/**
+SONAR_EXCLUSIONS=**/bower_components/**,**/node_modules/**,**/node/**,**/src/main/webapp/**,**/flow-generated-components/**
 
 # Get all changes to branch (no-merges)
 actualCommits=`git log --no-merges --pretty=oneline master^..HEAD`
