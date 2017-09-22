@@ -92,7 +92,7 @@ public class DefaultRouteResolver implements RouteResolver {
 
     private Class<? extends Component> getNavigationTarget(String path) {
         return RouteRegistry.getInstance().getNavigationTarget(path)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                .orElseThrow(() -> new NavigationException(String.format(
                         "No navigation target found for path '%s'.", path)));
     }
 
@@ -100,7 +100,7 @@ public class DefaultRouteResolver implements RouteResolver {
             String path) {
         return RouteRegistry.getInstance()
                 .getNavigationTargetWithParameter(path)
-                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                .orElseThrow(() -> new NavigationException(String.format(
                         "No navigation target found for path '%s'.", path)));
     }
 

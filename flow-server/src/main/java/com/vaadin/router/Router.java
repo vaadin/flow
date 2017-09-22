@@ -169,7 +169,7 @@ public class Router implements RouterInterface {
         } else if (HasUrlParameter.isOptionalParameter(navigationTarget)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
         } else {
-            throw new IllegalArgumentException(String.format(
+            throw new NavigationException(String.format(
                     "The navigation target '%s' has a non optional parameter that needs to be given.",
                     navigationTarget.getName()));
         }
@@ -180,7 +180,7 @@ public class Router implements RouterInterface {
         if (registryTarget.isPresent()
                 && !hasUrlParameters(registryTarget.get())
                 && !registryTarget.get().equals(navigationTarget)) {
-            throw new IllegalArgumentException(String.format(
+            throw new NavigationException(String.format(
                     "Url matches existing navigation target '%s' with higher priority.",
                     registryTarget.get().getName()));
         }
@@ -192,7 +192,7 @@ public class Router implements RouterInterface {
         Optional<String> targetUrl = RouteRegistry.getInstance()
                 .getTargetUrl(navigationTarget);
         if (!targetUrl.isPresent()) {
-            throw new IllegalArgumentException(
+            throw new NavigationException(
                     "No route found for given navigation target!");
         }
         return targetUrl.get();
