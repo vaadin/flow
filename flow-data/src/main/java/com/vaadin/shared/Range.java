@@ -351,10 +351,10 @@ public final class Range implements Serializable {
      *            the length at which to split this range into two
      * @return an array of two ranges, having the <code>length</code>-first
      *         elements of this range, and the second range having the rest. If
-     *         <code>length</code> &leq; 0, the first element will be empty, and
+     *         <code>length</code> &le; 0, the first element will be empty, and
      *         the second element will be this range. If <code>length</code>
-     *         &geq; {@link #length()}, the first element will be this range,
-     *         and the second element will be empty.
+     *         &ge; {@link #length()}, the first element will be this range, and
+     *         the second element will be empty.
      */
     public Range[] splitAtFromStart(final int length) {
         return splitAt(getStart() + length);
