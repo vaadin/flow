@@ -19,7 +19,7 @@ package com.vaadin.router;
  * Exception indicating that something went wrong while resolving navigation
  * routes.
  */
-public class NavigationException extends RuntimeException {
+public class NotFoundException extends RuntimeException {
 
     /**
      * Navigation exception thrown when routing fails due to a faulty navigation
@@ -29,7 +29,7 @@ public class NavigationException extends RuntimeException {
      *            the detail message. The detail message is saved for later
      *            retrieval by the {@link #getMessage()} method.
      */
-    public NavigationException(String message) {
+    public NotFoundException(String message) {
         super(message);
     }
 }
