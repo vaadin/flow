@@ -16,6 +16,7 @@
 package com.vaadin.router;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
@@ -122,7 +123,7 @@ public interface HasUrlParameter<T> {
             return false;
         }
         try {
-            Method setParameter = navigationTarget.getMethod("setParameter",
+            Method setParameter = navigationTarget.getMethod(getMethodName(),
                     BeforeNavigationEvent.class, Object.class);
             return setParameter.getParameters()[1]
                     .isAnnotationPresent(OptionalParameter.class);
@@ -132,5 +133,25 @@ public interface HasUrlParameter<T> {
         }
 
         return false;
+    }
+
+    /**
+     * Get the functional interface method name defined for HasUrlParameter.
+     * 
+     * @return name of the interface method
+     */
+    static String getMethodName() {
+        assert HasUrlParameter.class
+                .getAnnotation(FunctionalInterface.class) != null;
+        Method[] methods = HasUrlParameter.class.getMethods();
+        if (methods.length == 1) {
+            return methods[0].getName();
+        }
+        List<Method> filteredMethods = Stream.of(methods)
+                .filter(method -> !Modifier.isStatic(method.getModifiers())
+                        && !method.isDefault())
+                .collect(Collectors.toList());
+        assert filteredMethods.size() == 1;
+        return filteredMethods.get(0).getName();
     }
 }

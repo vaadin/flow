@@ -309,7 +309,7 @@ public class RouteRegistry {
         Logger logger = Logger.getLogger(RouteRegistry.class.getName());
 
         clear();
-        navigationTargets.forEach(navigationTarget -> {
+        for (Class<? extends Component> navigationTarget : navigationTargets) {
             String route = getNavigationRoute(navigationTarget);
             targetRoutes.put(navigationTarget, route);
             if (routes.containsKey(route)) {
@@ -337,6 +337,6 @@ public class RouteRegistry {
 
                 routes.put(route, navigationTarget);
             }
-        });
+        }
     }
 }
