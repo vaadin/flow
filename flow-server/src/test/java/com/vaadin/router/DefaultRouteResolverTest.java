@@ -26,7 +26,7 @@ import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 
-public class DefaultRouteResolverTest extends NewRoutingTestBase {
+public class DefaultRouteResolverTest extends RoutingTestBase {
 
     private RouteResolver resolver;
 

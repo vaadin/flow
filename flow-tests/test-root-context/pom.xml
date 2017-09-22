@@ -86,14 +86,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <packagingExcludes>**/node_modules/,**/node/,**/build/,**/etc/</packagingExcludes>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
