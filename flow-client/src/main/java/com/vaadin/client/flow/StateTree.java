@@ -201,9 +201,10 @@ public class StateTree {
      */
     public void sendEventToServer(StateNode node, String eventType,
             JsonObject eventData) {
-        assert assertValidNode(node);
-        registry.getServerConnector().sendEventMessage(node, eventType,
-                eventData);
+        if (isValidNode(node)) {
+            registry.getServerConnector().sendEventMessage(node, eventType,
+                    eventData);
+        }
     }
 
     /**
@@ -224,9 +225,10 @@ public class StateTree {
             return;
         }
 
-        assert assertValidNode(node);
-        registry.getServerConnector().sendNodeSyncMessage(node, nodeMap.getId(),
-                property.getName(), property.getValue());
+        if (isValidNode(node)) {
+            registry.getServerConnector().sendNodeSyncMessage(node,
+                    nodeMap.getId(), property.getName(), property.getValue());
+        }
     }
 
     /**
