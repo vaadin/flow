@@ -25,14 +25,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.components.data.HasValue;
 import com.vaadin.generator.ComponentGenerator;
 import com.vaadin.generator.ComponentGeneratorTestUtils;
 import com.vaadin.generator.metadata.ComponentBasicType;
 import com.vaadin.generator.metadata.ComponentEventData;
 import com.vaadin.generator.metadata.ComponentMetadata;
 import com.vaadin.generator.metadata.ComponentPropertyData;
-import com.vaadin.generator.registry.PropertyNameRemapRegistry;
+import com.vaadin.ui.common.HasValue;
 
 /**
  * Unit tests for {@link PropertyNameRemapRegistryTest}.
@@ -73,7 +72,7 @@ public class PropertyNameRemapRegistryTest {
         propertyData.setName("original-property-name");
         propertyData.setType(Arrays.asList(ComponentBasicType.STRING));
         componentMetadata.setProperties(Arrays.asList(propertyData));
-        
+
         ComponentEventData eventData = new ComponentEventData();
         eventData.setName("original-property-name-changed");
         componentMetadata.setEvents(Arrays.asList(eventData));
@@ -99,7 +98,7 @@ public class PropertyNameRemapRegistryTest {
         Assert.assertTrue(
                 "Getter should use the original property name for accessing the value through the element API",
                 generatedSource.contains(
-                "return getElement().getProperty(\"original-property-name\");"));
+                        "return getElement().getProperty(\"original-property-name\");"));
 
         Assert.assertTrue("Setter for renamed property should be present",
                 generatedSource
@@ -115,7 +114,7 @@ public class PropertyNameRemapRegistryTest {
         Assert.assertTrue(
                 "Change event class name for renamed property should be renamed",
                 generatedSource
-                .contains("public static class RenamedChangeEvent"));
+                        .contains("public static class RenamedChangeEvent"));
         Assert.assertTrue(
                 "Renamed change event class should still be bound to the original property name",
                 generatedSource.contains(
@@ -176,8 +175,7 @@ public class PropertyNameRemapRegistryTest {
         Assert.assertFalse(
                 "Remapped value change event should not be generated",
                 generated.contains("ValueChangeEvent"));
-        Assert.assertTrue(
-                "HasValue getClientValuePropertyName overridden",
+        Assert.assertTrue("HasValue getClientValuePropertyName overridden",
                 generated.contains("String getClientValuePropertyName()"));
         Assert.assertTrue("HasValue getClientValuePropertyName overridden",
                 generated.contains("return \"map-to-value\";"));

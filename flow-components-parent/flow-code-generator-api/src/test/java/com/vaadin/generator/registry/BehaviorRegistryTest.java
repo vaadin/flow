@@ -22,9 +22,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.generator.registry.BehaviorRegistry;
-import com.vaadin.ui.HasClickListeners;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.common.HasClickListeners;
+import com.vaadin.ui.common.HasText;
 
 /**
  * Unit tests for the {@link BehaviorRegistry}.
