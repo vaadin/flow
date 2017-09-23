@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.startup;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +26,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.servlet.ServletContext;
 
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
@@ -41,27 +44,51 @@ import com.vaadin.util.ReflectTools;
  * Registry for holding navigation target components found on servlet
  * initialization.
  */
-public class RouteRegistry {
+public class RouteRegistry implements Serializable {
 
     private final Map<String, Class<? extends Component>> routes = new HashMap<>();
     private final Map<String, Class<? extends Component>> parameterRoutes = new HashMap<>();
     private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
 
-    boolean initialized;
+    private boolean initialized;
 
-    private static final RouteRegistry INSTANCE = new RouteRegistry();
-
-    private RouteRegistry() {
+    /**
+     * Creates a new uninitialized route registry.
+     */
+    protected RouteRegistry() {
         initialized = false;
     }
 
     /**
-     * Get the singleton instance of RouteRegistry.
+     * Gets the route registry for the given servlet context. If the servlet
+     * context has no route registry, a new instance is created and assigned to
+     * the context.
      *
-     * @return the singleton instance of the registry
+     * @param servletContext
+     *            the servlet context for which to get a route registry, not
+     *            <code>null</code>
+     *
+     * @return a registry instance for the given servlet context, not
+     *         <code>null</code>
      */
-    public static RouteRegistry getInstance() {
-        return INSTANCE;
+    public static RouteRegistry getInstance(ServletContext servletContext) {
+        assert servletContext != null;
+
+        Object attribute = servletContext
+                .getAttribute(RouteRegistry.class.getName());
+
+        if (attribute == null) {
+            attribute = new RouteRegistry();
+            servletContext.setAttribute(RouteRegistry.class.getName(),
+                    attribute);
+        }
+
+        if (attribute instanceof RouteRegistry) {
+            return (RouteRegistry) attribute;
+        } else {
+            throw new IllegalStateException(
+                    "Unknown servlet context attribute value: " + attribute);
+        }
     }
 
     private void clear() {
@@ -118,9 +145,9 @@ public class RouteRegistry {
      * <p>
      * In cases where we have a parametrized and non parametrized navigation
      * target for the given location the parametrized version is returned.
-     * 
+     *
      * @see Location
-     * 
+     *
      * @param pathString
      *            the path to get the navigation target for, not {@code null}
      * @return optional of the navigation target corresponding to the given
@@ -207,7 +234,7 @@ public class RouteRegistry {
      * <p>
      * Clearly different end URLs which means that one has a required url
      * parameter. so they then match for the URLs `route` and `route/{param}`
-     * 
+     *
      * @param existingTarget
      *            already mapped navigation target for route
      * @param newTarget
@@ -232,8 +259,7 @@ public class RouteRegistry {
             // Found parameter is optional
         } else if (checkIfOptionalParameter(newTarget, existingTarget)) {
             String optional = HasUrlParameter.isOptionalParameter(newTarget)
-                    ? newTarget.getName()
-                    : existingTarget.getName();
+                    ? newTarget.getName() : existingTarget.getName();
 
             throw new InvalidRouteConfigurationException(String.format(
                     "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
