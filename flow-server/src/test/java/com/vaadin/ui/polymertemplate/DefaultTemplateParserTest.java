@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,6 +125,13 @@ public class DefaultTemplateParserTest {
         CurrentInstance.set(VaadinRequest.class, request);
         CurrentInstance.set(VaadinSession.class, session);
         CurrentInstance.set(VaadinService.class, service);
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.set(VaadinRequest.class, null);
+        CurrentInstance.set(VaadinSession.class, null);
+        CurrentInstance.set(VaadinService.class, null);
     }
 
     @Test

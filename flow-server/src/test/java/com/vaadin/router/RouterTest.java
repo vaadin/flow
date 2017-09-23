@@ -32,7 +32,12 @@ import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.MockVaadinServletService;
+import com.vaadin.server.MockVaadinSession;
+import com.vaadin.server.ServiceException;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.server.startup.RouteRegistry;
+import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Tag;
@@ -150,7 +155,7 @@ public class RouterTest extends RoutingTestBase {
     public static class NavigationTargetWithTitle extends Component {
     }
 
-    public static class RouterTestUI extends UI {
+    public static class RouterTestUI extends MockUI {
         final Router router;
 
         public RouterTestUI() {
@@ -158,7 +163,18 @@ public class RouterTest extends RoutingTestBase {
         }
 
         public RouterTestUI(Router router) {
+            super(createMockSession());
             this.router = router;
+        }
+
+        private static VaadinSession createMockSession() {
+            MockVaadinServletService service = new MockVaadinServletService();
+            try {
+                service.init();
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
+            }
+            return new MockVaadinSession(service);
         }
 
         @Override
@@ -206,16 +222,14 @@ public class RouterTest extends RoutingTestBase {
     public static class LoneRoute extends Component {
     }
 
+    @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         super.init();
         ui = new RouterTestUI(router);
         eventCollector.clear();
-        Field field = RouteRegistry.getInstance().getClass()
-                .getDeclaredField("initialized");
-        field.setAccessible(true);
-        field.set(RouteRegistry.getInstance(), false);
+        allowRouterRegistryModification();
     }
 
     @Test
@@ -497,10 +511,33 @@ public class RouterTest extends RoutingTestBase {
                 .setNavigationTargets(Stream
                         .of(OptionalParameter.class, OptionalNoParameter.class)
                         .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("fail/param"),
+                NavigationTrigger.PROGRAMMATIC);
+    }
+
+    @Test
+    public void navigateToRoot_errorCode_dontRedirect()
+            throws NoSuchFieldException, IllegalAccessException,
+            InvalidRouteConfigurationException {
+        allowRouterRegistryModification();
+        RouteRegistry.getInstance().setNavigationTargets(
+                Collections.singleton(FooNavigationTarget.class));
+
+        Assert.assertEquals(404, router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC));
     }
 
     private Class<? extends Component> getUIComponent() {
         return ComponentUtil.findParentComponent(ui.getElement().getChild(0))
                 .get().getClass();
+    }
+
+    private void allowRouterRegistryModification()
+            throws NoSuchFieldException, IllegalAccessException {
+        Field field = RouteRegistry.getInstance().getClass()
+                .getDeclaredField("initialized");
+        field.setAccessible(true);
+        field.set(RouteRegistry.getInstance(), false);
     }
 }
