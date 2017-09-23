@@ -34,7 +34,6 @@ import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.MockVaadinServletService;
 import com.vaadin.server.MockVaadinSession;
-import com.vaadin.server.ServiceException;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.tests.util.MockUI;
@@ -169,11 +168,7 @@ public class RouterTest extends RoutingTestBase {
 
         private static VaadinSession createMockSession() {
             MockVaadinServletService service = new MockVaadinServletService();
-            try {
-                service.init();
-            } catch (ServiceException e) {
-                throw new RuntimeException(e);
-            }
+            service.init();
             return new MockVaadinSession(service);
         }
 
