@@ -223,7 +223,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private VaadinSession session;
-    private VaadinServletService service;
+    private MockVaadinServletService service;
 
     @Before
     public void setup() {
@@ -567,12 +567,7 @@ public class BootstrapHandlerDependenciesTest {
         ui.getInternals().setSession(session);
         VaadinRequest request = new VaadinServletRequest(createRequest(),
                 service);
-        try {
-            service.init();
-        } catch (ServiceException e) {
-            throw new RuntimeException("Error initializing the VaadinService",
-                    e);
-        }
+        service.init();
         ui.doInit(request, 0);
         return BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, ui));
