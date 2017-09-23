@@ -32,7 +32,12 @@ import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.MockVaadinServletService;
+import com.vaadin.server.MockVaadinSession;
+import com.vaadin.server.ServiceException;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.server.startup.RouteRegistry;
+import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Tag;
@@ -150,7 +155,7 @@ public class RouterTest extends RoutingTestBase {
     public static class NavigationTargetWithTitle extends Component {
     }
 
-    public static class RouterTestUI extends UI {
+    public static class RouterTestUI extends MockUI {
         final Router router;
 
         public RouterTestUI() {
@@ -158,7 +163,18 @@ public class RouterTest extends RoutingTestBase {
         }
 
         public RouterTestUI(Router router) {
+            super(createMockSession());
             this.router = router;
+        }
+
+        private static VaadinSession createMockSession() {
+            MockVaadinServletService service = new MockVaadinServletService();
+            try {
+                service.init();
+            } catch (ServiceException e) {
+                throw new RuntimeException(e);
+            }
+            return new MockVaadinSession(service);
         }
 
         @Override
@@ -495,6 +511,9 @@ public class RouterTest extends RoutingTestBase {
                 .setNavigationTargets(Stream
                         .of(OptionalParameter.class, OptionalNoParameter.class)
                         .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("fail/param"),
+                NavigationTrigger.PROGRAMMATIC);
     }
 
     @Test
