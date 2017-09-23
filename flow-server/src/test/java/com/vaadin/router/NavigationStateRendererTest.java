@@ -89,8 +89,9 @@ public class NavigationStateRendererTest {
         });
         MockUI ui = new MockUI(new MockVaadinSession(service));
 
-        NavigationEvent event = new NavigationEvent(new Router(),
-                new Location(""), ui, NavigationTrigger.PAGE_LOAD);
+        NavigationEvent event = new NavigationEvent(
+                new Router(new TestRouteRegistry()), new Location(""), ui,
+                NavigationTrigger.PAGE_LOAD);
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 navigationStateFromTarget(ChildConfiguration.class));
 

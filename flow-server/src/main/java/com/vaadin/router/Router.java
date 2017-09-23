@@ -48,10 +48,18 @@ public class Router implements RouterInterface {
         }
     };
 
+    final private RouteRegistry registry;
+
     /**
-     * Constructs a new router with a {@link DefaultRouteResolver}.
+     * Constructs a new router with the given route registry and a
+     * {@link DefaultRouteResolver}.
+     *
+     * @param registry
+     *            the route registry to use, not <code>null</code>
      */
-    public Router() {
+    public Router(RouteRegistry registry) {
+        assert registry != null;
+        this.registry = registry;
         routeResolver = new DefaultRouteResolver();
     }
 
@@ -138,7 +146,8 @@ public class Router implements RouterInterface {
      *            navigation target to get url for
      * @return url for the navigation target
      */
-    public String getUrl(Class<? extends Component> navigationTarget) throws NotFoundException {
+    public String getUrl(Class<? extends Component> navigationTarget)
+            throws NotFoundException {
         String routeString = getUrlForTarget(navigationTarget);
         if (HasUrlParameter.class.isAssignableFrom(navigationTarget)
                 && HasUrlParameter.isOptionalParameter(navigationTarget)) {
@@ -162,7 +171,8 @@ public class Router implements RouterInterface {
      * @return url for the naviagtion target with parameter
      */
     public <T> String getUrl(
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) throws NotFoundException {
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter)
+            throws NotFoundException {
         String routeString = getUrlForTarget(
                 (Class<? extends Component>) navigationTarget);
         if (parameter != null) {
@@ -177,8 +187,8 @@ public class Router implements RouterInterface {
                     navigationTarget.getName()));
         }
 
-        Optional<Class<? extends Component>> registryTarget = RouteRegistry
-                .getInstance().getNavigationTargetWithParameter(routeString);
+        Optional<Class<? extends Component>> registryTarget = getRegistry()
+                .getNavigationTargetWithParameter(routeString);
 
         if (registryTarget.isPresent()
                 && !hasUrlParameters(registryTarget.get())
@@ -190,9 +200,9 @@ public class Router implements RouterInterface {
         return routeString;
     }
 
-    private String getUrlForTarget(
-            Class<? extends Component> navigationTarget) throws NotFoundException {
-        Optional<String> targetUrl = RouteRegistry.getInstance()
+    private String getUrlForTarget(Class<? extends Component> navigationTarget)
+            throws NotFoundException {
+        Optional<String> targetUrl = getRegistry()
                 .getTargetUrl(navigationTarget);
         if (!targetUrl.isPresent()) {
             throw new NotFoundException(
@@ -204,5 +214,10 @@ public class Router implements RouterInterface {
     private boolean hasUrlParameters(
             Class<? extends Component> navigationTarget) {
         return HasUrlParameter.class.isAssignableFrom(navigationTarget);
+    }
+
+    @Override
+    public RouteRegistry getRegistry() {
+        return registry;
     }
 }
