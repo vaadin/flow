@@ -19,9 +19,8 @@ import java.io.Serializable;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
-import com.vaadin.router.Location;
-import com.vaadin.router.NavigationTrigger;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.UI;
 
 /**
@@ -72,4 +71,11 @@ public interface RouterInterface extends Serializable {
      * @return the currently used router configuration
      */
     ImmutableRouterConfiguration getConfiguration();
+
+    /**
+     * Gets the route registry used by this router.
+     *
+     * @return the route registry used by this router
+     */
+    RouteRegistry getRegistry();
 }

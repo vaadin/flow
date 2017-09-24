@@ -35,7 +35,9 @@ public class DefaultRouteResolver implements RouteResolver {
 
     @Override
     public NavigationState resolve(ResolveRequest request) {
-        String path = findPathString(request.getLocation().getSegments());
+        RouteRegistry registry = request.getRouter().getRegistry();
+        String path = findPathString(registry,
+                request.getLocation().getSegments());
         if (path == null) {
             return null;
         }
@@ -47,9 +49,10 @@ public class DefaultRouteResolver implements RouteResolver {
                     .size()) {
                 // If we have parameters we try to first get the parameterized
                 // target over the possible non-parameterized
-                navigationTarget = getNavigationTargetWithParameter(path);
+                navigationTarget = getNavigationTargetWithParameter(registry,
+                        path);
             } else {
-                navigationTarget = getNavigationTarget(path);
+                navigationTarget = getNavigationTarget(registry, path);
             }
 
             if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
@@ -73,7 +76,8 @@ public class DefaultRouteResolver implements RouteResolver {
         return builder.build();
     }
 
-    private String findPathString(List<String> pathSegments) {
+    private String findPathString(RouteRegistry registry,
+            List<String> pathSegments) {
         if (pathSegments.isEmpty()) {
             return null;
         }
@@ -87,11 +91,10 @@ public class DefaultRouteResolver implements RouteResolver {
         }
         while (!paths.isEmpty()) {
             String currentPath = paths.get(paths.size() - 1);
-            Optional<?> target = RouteRegistry.getInstance()
-                    .getNavigationTarget(currentPath);
-            if (target.isPresent() || RouteRegistry.getInstance()
-                    .getNavigationTargetWithParameter(currentPath)
-                    .isPresent()) {
+            Optional<?> target = registry.getNavigationTarget(currentPath);
+            if (target.isPresent()
+                    || registry.getNavigationTargetWithParameter(currentPath)
+                            .isPresent()) {
                 return currentPath;
             }
             paths.remove(paths.size() - 1);
@@ -99,17 +102,16 @@ public class DefaultRouteResolver implements RouteResolver {
         return null;
     }
 
-    private Class<? extends Component> getNavigationTarget(String path)
-            throws NotFoundException {
-        return RouteRegistry.getInstance().getNavigationTarget(path)
+    private Class<? extends Component> getNavigationTarget(
+            RouteRegistry registry, String path) throws NotFoundException {
+        return registry.getNavigationTarget(path)
                 .orElseThrow(() -> new NotFoundException(String.format(
                         "No navigation target found for path '%s'.", path)));
     }
 
     private Class<? extends Component> getNavigationTargetWithParameter(
-            String path) throws NotFoundException {
-        return RouteRegistry.getInstance()
-                .getNavigationTargetWithParameter(path)
+            RouteRegistry registry, String path) throws NotFoundException {
+        return registry.getNavigationTargetWithParameter(path)
                 .orElseThrow(() -> new NotFoundException(String.format(
                         "No navigation target found for path '%s'.", path)));
     }

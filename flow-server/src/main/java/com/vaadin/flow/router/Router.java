@@ -27,6 +27,7 @@ import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.UI;
 
 /**
@@ -202,5 +203,22 @@ public class Router implements RouterInterface {
 
         assert !currentConfig.isModifiable();
         return currentConfig;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <b>This implementation always throws
+     * {@link UnsupportedOperationException}.</b>
+     */
+    @Override
+    public RouteRegistry getRegistry() {
+        /*
+         * Throwing of this exception is not mentioned in the inherited JavaDocs
+         * of this method since this implementation is expected to be removed or
+         * deprecated after the other implementation is completed.
+         */
+        throw new UnsupportedOperationException(
+                "This router implementation doesn't use a route registry");
     }
 }

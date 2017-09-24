@@ -47,7 +47,8 @@ public class ServletDeployer implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        if (!RouteRegistry.getInstance().hasNavigationTargets()) {
+        if (!RouteRegistry.getInstance(sce.getServletContext())
+                .hasNavigationTargets()) {
             getLogger()
                     .config(() -> SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE
                             + "there are no navigation targets annotated with @Route");

@@ -20,15 +20,14 @@ import java.util.EventObject;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.router.NavigationState;
 import com.vaadin.router.NavigationStateBuilder;
 import com.vaadin.router.NavigationStateRenderer;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
-import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
@@ -50,7 +49,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Construct event from a NavigationEvent.
-     * 
+     *
      * @param event
      *            NavigationEvent that is on going
      * @param navigationTarget
@@ -121,7 +120,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Check if we have a reroute target.
-     * 
+     *
      * @return reroute target exists
      */
     public boolean hasRerouteTarget() {
@@ -150,7 +149,7 @@ public class BeforeNavigationEvent extends EventObject {
      */
     public void rerouteTo(NavigationHandler rerouteTarget,
             NavigationState targetState) {
-        this.rerouteTargetState = targetState;
+        rerouteTargetState = targetState;
         this.rerouteTarget = rerouteTarget;
     }
 
@@ -182,12 +181,12 @@ public class BeforeNavigationEvent extends EventObject {
     /**
      * Reroute to navigation component registered for given location string
      * instead of the component about to be displayed.
-     * 
+     *
      * @param route
      *            reroute target location string
      */
     public void rerouteTo(String route) {
-        RouteRegistry.getInstance().getNavigationTarget(route)
+        getSource().getRegistry().getNavigationTarget(route)
                 .ifPresent(routeTarget -> rerouteTo(routeTarget));
     }
 
@@ -201,8 +200,8 @@ public class BeforeNavigationEvent extends EventObject {
      *            route parameter
      */
     public <T> void rerouteTo(String route, T routeParam) {
-        Optional<Class<? extends Component>> optionalTarget = RouteRegistry
-                .getInstance().getNavigationTarget(route);
+        Optional<Class<? extends Component>> optionalTarget = getSource()
+                .getRegistry().getNavigationTarget(route);
 
         if (optionalTarget.isPresent()) {
             boolean hasUrlParameter = HasUrlParameter.class
@@ -237,7 +236,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Get the route target for rerouting.
-     * 
+     *
      * @return route target
      */
     public Class<?> getRouteTargetType() {
@@ -246,7 +245,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Get the navigation target.
-     * 
+     *
      * @return navigation target
      */
     public Class<?> getNavigationTarget() {
@@ -255,7 +254,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Get current navigation state change direction.
-     * 
+     *
      * @return activating or deactivating
      */
     public ActivationState getActivationState() {
