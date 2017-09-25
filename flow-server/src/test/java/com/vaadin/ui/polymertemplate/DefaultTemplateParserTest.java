@@ -30,15 +30,15 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
+import org.jsoup.nodes.Comment;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.nodes.Comment;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
