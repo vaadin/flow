@@ -412,8 +412,7 @@ public class DefaultDeploymentConfiguration
             }
 
             // Don't traverse some potentially huge but pointless directories
-            return !name.startsWith("node/")
-                    && !name.startsWith("node_modules/");
+            return !name.contains("node/") && !name.contains("node_modules/");
         });
 
         if (foundPolyfills.isEmpty()) {
@@ -433,7 +432,7 @@ public class DefaultDeploymentConfiguration
         String dirName = fileName.substring(0, fileName.lastIndexOf('/'));
         assert !dirName.endsWith("/");
 
-        getLogger().log(Level.INFO, () -> formatDefaultPolyfillMessage(
+        getLogger().log(Level.CONFIG, () -> formatDefaultPolyfillMessage(
                 "Will use webcomponents polyfill discovered in " + dirName));
         return ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + dirName + '/';
     }

@@ -124,8 +124,15 @@ public class RouterLink extends Component
         this();
         setText(text);
         if (View.class.isAssignableFrom(navigationTarget)) {
-            setRoute((com.vaadin.flow.router.Router) getRouter(),
-                    (Class<? extends View>) navigationTarget);
+            try {
+                setRoute((com.vaadin.flow.router.Router) getRouter(),
+                        (Class<? extends View>) navigationTarget);
+            } catch (ClassCastException cce) {
+                String message = String.format(
+                        "Only navigation targets for old Router should implement 'View'. Remove 'implements View' from '%s'",
+                        navigationTarget.getName());
+                throw new IllegalArgumentException(message, cce);
+            }
         } else {
             setRoute((com.vaadin.router.Router) getRouter(), navigationTarget);
         }

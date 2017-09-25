@@ -10,27 +10,25 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
+import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
-
     public interface EmptyModel extends TemplateModel {
-
     }
 
     public interface BasicTypeModel extends TemplateModel {

@@ -16,30 +16,20 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link CheckboxView}.
  */
-public class CheckboxIT extends AbstractChromeTest {
-
-    private WebElement layout;
+public class CheckboxIT extends ComponentDemoTest {
 
     @Override
     protected String getTestPath() {
         return "/vaadin-checkbox";
-    }
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
     }
 
     @Test
