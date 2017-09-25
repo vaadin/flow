@@ -66,7 +66,7 @@ public class BootstrapHandlerTest {
     private BootstrapContext context;
     private VaadinRequest request;
     private VaadinSession session;
-    private VaadinServletService service;
+    private MockVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration;
     private WebBrowser browser;
 
@@ -97,12 +97,7 @@ public class BootstrapHandlerTest {
 
     private void initUI(UI ui, VaadinRequest request) {
         this.request = request;
-        try {
-            service.init();
-        } catch (ServiceException e) {
-            throw new RuntimeException("Error initializing the VaadinService",
-                    e);
-        }
+        service.init();
         ui.doInit(request, 0);
         context = new BootstrapContext(request, null, session, ui);
     }
@@ -171,8 +166,9 @@ public class BootstrapHandlerTest {
         listeners.add(evt -> evt.getDocument().head().appendElement("script")
                 .attr("src", "testing.2"));
 
-        Mockito.when(service.createInstantiator()).thenReturn(new MockInstantiator(
-                event -> listeners.forEach(event::addBootstrapListener)));
+        Mockito.when(service.createInstantiator())
+                .thenReturn(new MockInstantiator(event -> listeners
+                        .forEach(event::addBootstrapListener)));
 
         initUI(testUI);
 
@@ -219,8 +215,9 @@ public class BootstrapHandlerTest {
             return list;
         });
 
-        Mockito.when(service.createInstantiator()).thenReturn(new MockInstantiator(
-                event -> filters.forEach(event::addDependencyFilter)));
+        Mockito.when(service.createInstantiator())
+                .thenReturn(new MockInstantiator(
+                        event -> filters.forEach(event::addDependencyFilter)));
 
         initUI(testUI);
 
