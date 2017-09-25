@@ -18,7 +18,7 @@ package com.vaadin.flow.template.angular.parser;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.Node;
 
 import com.vaadin.flow.template.angular.TemplateNodeBuilder;
 

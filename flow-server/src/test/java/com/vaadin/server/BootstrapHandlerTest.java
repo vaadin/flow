@@ -14,15 +14,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.nodes.Document;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.router.Title;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
