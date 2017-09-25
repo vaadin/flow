@@ -43,11 +43,13 @@ These tutorials show how the different features are used.
 ** <<web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
 * Flow components
 ** <<flow-components/tutorial-flow-components-setup#,Setup your project to use Flow components>>
+** <<flow-components/tutorial-flow-grid#,Grid>>
 ** Binding Data to Forms
 *** <<binding-data/tutorial-flow-components-binder#,Binder overview>>
 *** <<binding-data/tutorial-flow-components-binder-validation#,Validating and Converting User Input>>
 *** <<binding-data/tutorial-flow-components-binder-load#,Loading from and Saving to Business Objects>>
 *** <<binding-data/tutorial-flow-components-binder-beans#,Binding Beans to Forms>>
+**  <<data-provider/tutorial-flow-data-provider#,Data Providers>>
 * Creating your own components
 ** <<creating-components/tutorial-component-basic#,Creating A Simple Component Using the Element API>>
 ** <<creating-components/tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
