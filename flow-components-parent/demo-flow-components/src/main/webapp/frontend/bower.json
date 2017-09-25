@@ -42,6 +42,7 @@
     "vaadin-split-layout": "~3.0.0-alpha2",
     "vaadin-date-picker": "~2.0.3",
     "vaadin-dialog": "~1.0.0-alpha3",
+    "vaadin-icons": "~4.1.1",
     "vaadin-valo-theme": "vaadin/vaadin-valo-theme#^0.3.0"
   }
 }
