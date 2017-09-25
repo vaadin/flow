@@ -22,11 +22,14 @@ import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterTest.RouterTestUI;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.InvalidRouteConfigurationException;
@@ -331,6 +334,30 @@ public class RouterLinkTest {
         Assert.assertEquals("greeting/hello", link.getHref());
     }
 
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
+
+    @Test
+    public void testFailForWrongImplementation()
+            throws InvalidRouteConfigurationException {
+        registry.setNavigationTargets(
+                Stream.of(FaultySetup.class).collect(Collectors.toSet()));
+
+        com.vaadin.router.Router router = new com.vaadin.router.Router(
+                registry);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getRouter()).thenReturn(router);
+        CurrentInstance.set(VaadinService.class, service);
+
+        expectedEx.expect(RuntimeException.class);
+        expectedEx.expectMessage(
+                "Only navigation targets for old Router should implement 'View'. Remove 'implements View' from '"
+                        + FaultySetup.class.getName() + "'");
+
+        RouterLink faulty = new RouterLink("Faulty", FaultySetup.class);
+    }
+
     @Route("foo")
     @Tag(Tag.DIV)
     public static class FooNavigationTarget extends Component {
@@ -345,5 +372,10 @@ public class RouterLinkTest {
         public void setParameter(BeforeNavigationEvent event,
                 String parameter) {
         }
+    }
+
+    @Route("faulty")
+    @Tag(Tag.DIV)
+    public static class FaultySetup extends Component implements View {
     }
 }
