@@ -91,6 +91,7 @@
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
                             <resourceBase>${frontend.working.directory}</resourceBase>
+                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
                         </resourceBases>
                     </webAppConfig>
                 </configuration>

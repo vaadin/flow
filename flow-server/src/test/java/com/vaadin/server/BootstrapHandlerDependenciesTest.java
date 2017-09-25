@@ -25,14 +25,14 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.external.jsoup.nodes.Document;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ui.LoadMode;
@@ -223,7 +223,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private VaadinSession session;
-    private VaadinServletService service;
+    private MockVaadinServletService service;
 
     @Before
     public void setup() {
@@ -567,12 +567,7 @@ public class BootstrapHandlerDependenciesTest {
         ui.getInternals().setSession(session);
         VaadinRequest request = new VaadinServletRequest(createRequest(),
                 service);
-        try {
-            service.init();
-        } catch (ServiceException e) {
-            throw new RuntimeException("Error initializing the VaadinService",
-                    e);
-        }
+        service.init();
         ui.doInit(request, 0);
         return BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, ui));

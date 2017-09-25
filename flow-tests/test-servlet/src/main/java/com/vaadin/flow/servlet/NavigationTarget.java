@@ -13,18 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.demo;
+package com.vaadin.flow.servlet;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.router.Route;
+import com.vaadin.ui.html.Div;
 
 /**
- * Base class for the integration tests of this project.
+ * Navigation target for which a servlet should automatically be registered.
  *
+ * @author Vaadin Ltd
  */
-public abstract class AbstractChromeTest extends ChromeBrowserTest {
-
-    @Override
-    protected int getDeploymentPort() {
-        return 8080;
+@Route("")
+public class NavigationTarget extends Div {
+    public NavigationTarget() {
+        setText("Hello world");
+        setId("navigationTarget");
     }
 }

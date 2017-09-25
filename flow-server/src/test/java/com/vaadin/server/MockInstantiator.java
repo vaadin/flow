@@ -18,6 +18,8 @@ package com.vaadin.server;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.ui.common.HasElement;
 
 public class MockInstantiator implements Instantiator {
 
@@ -35,5 +37,11 @@ public class MockInstantiator implements Instantiator {
     @Override
     public Stream<VaadinServiceInitListener> getServiceInitListeners() {
         return Stream.of(serviceInitListeners);
+    }
+
+    @Override
+    public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
+            NavigationEvent event) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -16,24 +16,17 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link GridView}.
  *
  */
-public class GridViewIT extends AbstractChromeTest {
-
-    @Before
-    public void setUp() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-    }
+public class GridViewIT extends ComponentDemoTest {
 
     @Test
     public void dataIsShown() throws InterruptedException {

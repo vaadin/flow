@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.communication.PushRequestHandler;
+import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.shared.ApplicationConstants;
 
 /**
@@ -150,6 +151,11 @@ public class VaadinServletService extends VaadinService {
 
     private static final Logger getLogger() {
         return Logger.getLogger(VaadinServletService.class.getName());
+    }
+
+    @Override
+    protected RouteRegistry getRouteRegistry() {
+        return RouteRegistry.getInstance(getServlet().getServletContext());
     }
 
 }

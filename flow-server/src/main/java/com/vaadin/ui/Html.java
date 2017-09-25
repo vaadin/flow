@@ -20,9 +20,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.logging.Logger;
 
-import com.vaadin.external.jsoup.Jsoup;
-import com.vaadin.external.jsoup.nodes.Attributes;
-import com.vaadin.external.jsoup.nodes.Document;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.Document;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.common.PropertyDescriptor;
 import com.vaadin.ui.common.PropertyDescriptors;
@@ -109,7 +110,7 @@ public class Html extends Component {
                             + nrChildren);
         }
 
-        com.vaadin.external.jsoup.nodes.Element root = doc.body().child(0);
+        org.jsoup.nodes.Element root = doc.body().child(0);
         Attributes attrs = root.attributes();
 
         Component.setElement(this, new Element(root.tagName()));

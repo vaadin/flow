@@ -15,16 +15,16 @@
  */
 package com.vaadin.ui.polymertemplate;
 
-import com.vaadin.external.jsoup.nodes.Element;
+import org.jsoup.nodes.Element;
 
 /**
  * Template content parser.
  * <p>
  * It returns a JSOUP element representing the content of template for the given
  * template class.
- * 
+ *
  * @see DefaultTemplateParser
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -33,7 +33,7 @@ public interface TemplateParser {
 
     /**
      * Gets a JSOUP {@link Element} representing the template content.
-     * 
+     *
      * @param clazz
      *            the template class
      * @param tag

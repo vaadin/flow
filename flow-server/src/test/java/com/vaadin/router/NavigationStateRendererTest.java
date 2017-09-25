@@ -20,7 +20,15 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.server.MockInstantiator;
+import com.vaadin.server.MockVaadinServletService;
+import com.vaadin.server.MockVaadinSession;
+import com.vaadin.server.ServiceException;
+import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Text;
+import com.vaadin.ui.common.HasElement;
 
 public class NavigationStateRendererTest {
 
@@ -47,7 +55,8 @@ public class NavigationStateRendererTest {
 
         Assert.assertEquals("Not all expected layouts were found", 1,
                 routerLayoutTypes.size());
-        Assert.assertEquals("Wrong class found", RouteParentLayout.class, routerLayoutTypes.get(0));
+        Assert.assertEquals("Wrong class found", RouteParentLayout.class,
+                routerLayoutTypes.get(0));
     }
 
     @Test
@@ -60,8 +69,35 @@ public class NavigationStateRendererTest {
 
         Assert.assertEquals("Not all expected layouts were found", 2,
                 routerLayoutTypes.size());
-        Assert.assertEquals("Wrong class found as first in array", MiddleLayout.class, routerLayoutTypes.get(0));
-        Assert.assertEquals("Wrong class found as second in array", RouteParentLayout.class, routerLayoutTypes.get(1));
+        Assert.assertEquals("Wrong class found as first in array",
+                MiddleLayout.class, routerLayoutTypes.get(0));
+        Assert.assertEquals("Wrong class found as second in array",
+                RouteParentLayout.class, routerLayoutTypes.get(1));
+    }
+
+    @Test
+    public void instantiatorUse() throws ServiceException {
+
+        MockVaadinServletService service = new MockVaadinServletService();
+        service.init(new MockInstantiator() {
+            @Override
+            public <T extends HasElement> T createRouteTarget(
+                    Class<T> routeTargetType, NavigationEvent event) {
+                Assert.assertEquals(Component.class, routeTargetType);
+                return (T) new Text("foo");
+            }
+        });
+        MockUI ui = new MockUI(new MockVaadinSession(service));
+
+        NavigationEvent event = new NavigationEvent(
+                new Router(new TestRouteRegistry()), new Location(""), ui,
+                NavigationTrigger.PAGE_LOAD);
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(ChildConfiguration.class));
+
+        Component routeTarget = renderer.getRouteTarget(Component.class, event);
+
+        Assert.assertEquals(Text.class, routeTarget.getClass());
     }
 
     @Route("parent")

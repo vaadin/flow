@@ -15,19 +15,18 @@
  */
 package com.vaadin.flow.tutorial.polymer;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.flow.router.View;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.CompanyView;
-import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.HomeView;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @CodeFor("polymer-templates/tutorial-template-components-in-slot.asciidoc")
 public class PolymerSlotView {
@@ -66,5 +65,11 @@ public class PolymerSlotView {
             configuration.setRoute("company", CompanyView.class, MainLayout.class);
             //@formatter:on
         }
+    }
+
+    private class HomeView extends Component implements View {
+    }
+
+    private class CompanyView extends Component implements View {
     }
 }

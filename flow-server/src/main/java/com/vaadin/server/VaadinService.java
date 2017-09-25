@@ -60,6 +60,7 @@ import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
+import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Registration;
@@ -243,7 +244,7 @@ public abstract class VaadinService implements Serializable {
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
         if (deploymentConf.isUsingNewRouting()) {
-            router = new Router();
+            router = new Router(getRouteRegistry());
         } else {
             String routerConfiguratorClassName = deploymentConf
                     .getRouterConfiguratorClassName();
@@ -257,6 +258,13 @@ public abstract class VaadinService implements Serializable {
 
         initialized = true;
     }
+
+    /**
+     * Find a route registry to use for this service.
+     *
+     * @return the route registry to use, not <code>null</code>
+     */
+    protected abstract RouteRegistry getRouteRegistry();
 
     private void configureRouter(String configuratorClassName)
             throws ServiceException {

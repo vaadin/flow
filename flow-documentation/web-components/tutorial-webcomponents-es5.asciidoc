@@ -295,6 +295,7 @@ Jetty Plugin by using the `mvn jetty:run` command.
                   <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                   <resourceBases>
                       <resourceBase>${jetty.extra.resource.base}</resourceBase>
+                      <resourceBase>${project.basedir}src/main/webapp</resourceBase>
                   </resourceBases>
               </webAppConfig>
           </configuration>

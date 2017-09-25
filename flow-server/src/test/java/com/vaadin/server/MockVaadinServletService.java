@@ -50,7 +50,7 @@ public class MockVaadinServletService extends VaadinServletService {
         return Collections.emptyList();
     }
 
-    public void init(Instantiator instantiator) throws ServiceException {
+    public void init(Instantiator instantiator) {
         this.instantiator = instantiator;
 
         init();
@@ -62,6 +62,15 @@ public class MockVaadinServletService extends VaadinServletService {
             return instantiator;
         }
         return super.createInstantiator();
+    }
+
+    @Override
+    public void init() {
+        try {
+            super.init();
+        } catch (ServiceException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
