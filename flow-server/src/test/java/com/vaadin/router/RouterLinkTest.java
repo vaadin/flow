@@ -16,7 +16,6 @@
 package com.vaadin.router;
 
 import javax.servlet.ServletException;
-import java.lang.reflect.Field;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,17 +41,12 @@ import com.vaadin.util.CurrentInstance;
 
 public class RouterLinkTest {
 
+    private RouteRegistry registry;
+
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
         Assert.assertNull(CurrentInstance.get(VaadinService.class));
-
-        if (RouteRegistry.getInstance().isInitialized()) {
-            Field field = RouteRegistry.getInstance().getClass()
-                    .getDeclaredField("initialized");
-            field.setAccessible(true);
-            field.set(RouteRegistry.getInstance(), false);
-        }
-
+        registry = new TestRouteRegistry();
     }
 
     @After
@@ -311,10 +305,11 @@ public class RouterLinkTest {
     public void testRouterLinkCreationForNormatRouteTarget()
             throws InvalidRouteConfigurationException {
 
-        RouteRegistry.getInstance().setNavigationTargets(Stream
-                .of(FooNavigationTarget.class).collect(Collectors.toSet()));
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
 
-        com.vaadin.router.Router router = new com.vaadin.router.Router();
+        com.vaadin.router.Router router = new com.vaadin.router.Router(
+                registry);
 
         RouterLink link = new RouterLink(router, "Foo",
                 FooNavigationTarget.class);
@@ -325,11 +320,11 @@ public class RouterLinkTest {
     public void testRouterLinkCreationForUrlParameterRouteTarget()
             throws InvalidRouteConfigurationException {
 
-        RouteRegistry.getInstance()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class)
-                        .collect(Collectors.toSet()));
+        registry.setNavigationTargets(Stream.of(GreetingNavigationTarget.class)
+                .collect(Collectors.toSet()));
 
-        com.vaadin.router.Router router = new com.vaadin.router.Router();
+        com.vaadin.router.Router router = new com.vaadin.router.Router(
+                registry);
 
         RouterLink link = new RouterLink(router, "Greeting",
                 GreetingNavigationTarget.class, "hello");
