@@ -316,14 +316,9 @@ public class RouterLinkTest {
 
         com.vaadin.router.Router router = new com.vaadin.router.Router();
 
-        try {
-            RouterLink link = new RouterLink(router, "Foo",
-                    FooNavigationTarget.class);
-            Assert.assertEquals("foo", link.getHref());
-        } catch (NotFoundException e) {
-            Assert.fail("Failed on NotFoundException when creating link 'Foo' "
-                    + e.getMessage());
-        }
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+        Assert.assertEquals("foo", link.getHref());
     }
 
     @Test
@@ -336,15 +331,9 @@ public class RouterLinkTest {
 
         com.vaadin.router.Router router = new com.vaadin.router.Router();
 
-        try {
-            RouterLink link = new RouterLink(router, "Greeting",
-                    GreetingNavigationTarget.class, "hello");
-            Assert.assertEquals("greeting/hello", link.getHref());
-        } catch (NotFoundException e) {
-            Assert.fail(
-                    "Failed on NotFoundException when creating link 'Greeting' "
-                            + e.getMessage());
-        }
+        RouterLink link = new RouterLink(router, "Greeting",
+                GreetingNavigationTarget.class, "hello");
+        Assert.assertEquals("greeting/hello", link.getHref());
     }
 
     @Route("foo")

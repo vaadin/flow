@@ -13,12 +13,8 @@ You can use the `RouterLink` component to create links that lead to route target
 ----
 void routerLink() {
     Div menu = new Div();
-    try {
-        menu.add(new RouterLink("Home", HomeView.class));
-        menu.add(new RouterLink("Greeting", GreetingComponent.class, "default"));
-    } catch (NotFoundException e) {
-        // Handle target not found exception.
-    }
+    menu.add(new RouterLink("Home", HomeView.class));
+    menu.add(new RouterLink("Greeting", GreetingComponent.class, "default"));
 }
 ----
 

@@ -46,7 +46,7 @@ import com.vaadin.ui.common.PropertyDescriptors;
  *
  * @author Vaadin Ltd
  */
-@Tag("a")
+@Tag(Tag.A)
 public class RouterLink extends Component
         implements HasText, HasComponents, HasStyle {
 
@@ -118,14 +118,17 @@ public class RouterLink extends Component
      *            link text
      * @param navigationTarget
      *            navigation target
-     * @throws NotFoundException
-     *             throws exception when navigationTarget is not in registry
      */
-    public RouterLink(String text, Class<? extends Component> navigationTarget)
-            throws NotFoundException {
+    public RouterLink(String text,
+            Class<? extends Component> navigationTarget) {
         this();
         setText(text);
-        setRoute((com.vaadin.router.Router) getRouter(), navigationTarget);
+        if (View.class.isAssignableFrom(navigationTarget)) {
+            setRoute((com.vaadin.flow.router.Router) getRouter(),
+                    (Class<? extends View>) navigationTarget);
+        } else {
+            setRoute((com.vaadin.router.Router) getRouter(), navigationTarget);
+        }
     }
 
     /**
@@ -140,12 +143,9 @@ public class RouterLink extends Component
      *            url parameter for navigation target
      * @param <T>
      *            url parameter type
-     * @throws NotFoundException
-     *             throws exception when navigationTarget is not in registry
      */
     public <T> RouterLink(String text,
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter)
-            throws NotFoundException {
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
         this();
         setText(text);
         setRoute((com.vaadin.router.Router) getRouter(), navigationTarget,
@@ -162,12 +162,9 @@ public class RouterLink extends Component
      *            link text
      * @param navigationTarget
      *            navigation target
-     * @throws NotFoundException
-     *             throws exception when navigationTarget is not in registry
      */
     public RouterLink(com.vaadin.router.Router router, String text,
-            Class<? extends Component> navigationTarget)
-            throws NotFoundException {
+            Class<? extends Component> navigationTarget) {
         this();
         setText(text);
         setRoute(router, navigationTarget);
@@ -187,12 +184,9 @@ public class RouterLink extends Component
      *            url parameter for navigation target
      * @param <T>
      *            url parameter type
-     * @throws NotFoundException
-     *             throws exception when navigationTarget is not in registry
      */
     public <T> RouterLink(com.vaadin.router.Router router, String text,
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter)
-            throws NotFoundException {
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
         this();
         setText(text);
         setRoute(router, navigationTarget, parameter);
@@ -205,17 +199,16 @@ public class RouterLink extends Component
      *            router used for navigation
      * @param navigationTarget
      *            navigation target
-     * @throws NotFoundException
-     *             throws exception when navigationTarget is not in registry
      */
     public void setRoute(com.vaadin.router.Router router,
-            Class<? extends Component> navigationTarget)
-            throws NotFoundException {
-        if (router == null) {
-            throw new IllegalArgumentException("Router must not be null");
+            Class<? extends Component> navigationTarget) {
+        validateRouteParameters(router, navigationTarget);
+        try {
+            String url = router.getUrl(navigationTarget);
+            HREF.set(this, url);
+        } catch (NotFoundException nfe) {
+            throw new IllegalArgumentException(nfe);
         }
-        String url = router.getUrl(navigationTarget);
-        HREF.set(this, url);
     }
 
     /**
@@ -229,17 +222,26 @@ public class RouterLink extends Component
      *            url parameter for navigation target
      * @param <T>
      *            url parameter type
-     * @throws NotFoundException
-     *             throws exception when navigationTarget is not in registry
      */
     public <T> void setRoute(com.vaadin.router.Router router,
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter)
-            throws NotFoundException {
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+        validateRouteParameters(router, navigationTarget);
+        try {
+            String url = router.getUrl(navigationTarget, parameter);
+            HREF.set(this, url);
+        } catch (NotFoundException nfe) {
+            throw new IllegalArgumentException(nfe);
+        }
+    }
+
+    private void validateRouteParameters(com.vaadin.router.Router router,
+            Class<?> navigationTarget) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");
+        } else if (!navigationTarget.isAnnotationPresent(Route.class)) {
+            throw new IllegalArgumentException(
+                    "Given navigation target is not an @Route target!");
         }
-        String url = router.getUrl(navigationTarget, parameter);
-        HREF.set(this, url);
     }
 
     /**
