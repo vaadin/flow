@@ -16,11 +16,11 @@
 package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.tutorial.routing.RoutingRouterConfiguration.HomeView;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLink;
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
 
@@ -51,4 +51,6 @@ public class RouterNavigation {
             setText(String.format("Hello, %s!", parameter));
         }
     }
+
+    private class HomeView extends Component {}
 }

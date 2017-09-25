@@ -1,0 +1,29 @@
+---
+title: Updating Page Title on Navigation
+order: 7
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+== Updating Page Title on Navigation
+
+The simplest way to update the
+https://developer.mozilla.org/en-US/docs/Web/API/Document/title[Page Title] is
+to use the `@Title` annotation on your `View` class.
+[source,java]
+----
+@Title("home")
+class HomeView extends Div implements View {
+
+  HomeView(){
+    setText("This is the home view");
+  }
+}
+----
+The `@Title` annotation is only read from the actually used view, parent views
+are not considered.
+
+See also:
+
+* <<tutorial-routing-annotation#,Defining Routes With RouterConfiguration>>
+* <<tutorial-router-layout#,Router Layouts and Nested Router Targets>>
