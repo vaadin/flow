@@ -32,7 +32,7 @@ If there are multiple router target components using the same parent layout, the
 
 See also:
 
-* <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
+* <<tutorial-routing-page-titles#,Updating Page Title on Navigation>>
 
 === Multiple parent layouts with @ParentLayout
 In some cases there might be a need to have a parent layout for a parent layout in the application.
