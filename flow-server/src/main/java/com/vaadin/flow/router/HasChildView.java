@@ -19,7 +19,9 @@ package com.vaadin.flow.router;
  * A {@link View} that has a slot for a child view.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public interface HasChildView extends View {
     /**
      * Sets the child view to show. This method is invoked for each parent view

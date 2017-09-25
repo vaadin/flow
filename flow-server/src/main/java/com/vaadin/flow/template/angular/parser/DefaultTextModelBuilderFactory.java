@@ -37,8 +37,9 @@ import com.vaadin.flow.template.angular.TextTemplateBuilder;
  * The factory that is default for JSOUP {@link TextNode}s.
  *
  * @author Vaadin Ltd
- *
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class DefaultTextModelBuilderFactory
         extends AbstractTemplateBuilderFactory<TextNode> {
 

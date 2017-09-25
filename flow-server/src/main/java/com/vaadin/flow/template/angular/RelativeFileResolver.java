@@ -25,7 +25,9 @@ import com.vaadin.flow.template.angular.parser.TemplateResolver;
  * file and a reference class.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class RelativeFileResolver implements TemplateResolver {
 
     private Class<?> referenceClass;

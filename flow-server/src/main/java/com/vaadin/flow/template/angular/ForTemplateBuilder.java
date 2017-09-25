@@ -22,7 +22,9 @@ import java.util.List;
  * Builder for {@link ForTemplateNode}.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class ForTemplateBuilder implements TemplateNodeBuilder {
 
     private final ElementTemplateBuilder childBuilder;

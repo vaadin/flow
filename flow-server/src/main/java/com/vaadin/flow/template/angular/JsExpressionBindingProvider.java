@@ -38,7 +38,9 @@ import elemental.json.JsonValue;
  * expression.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
 
     /**

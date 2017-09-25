@@ -15,7 +15,6 @@
  */
 package com.vaadin.router;
 
-import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.UI;
 

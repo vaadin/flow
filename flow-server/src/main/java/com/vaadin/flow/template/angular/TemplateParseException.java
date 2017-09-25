@@ -19,7 +19,9 @@ package com.vaadin.flow.template.angular;
  * Exception thrown when there's a problem parsing a template.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class TemplateParseException extends RuntimeException {
     /**
      * Creates a new template parse exception with the given message.

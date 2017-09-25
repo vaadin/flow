@@ -25,7 +25,9 @@ import elemental.json.JsonValue;
  * model.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class ModelValueBindingProvider extends AbstractBindingValueProvider {
 
     /**

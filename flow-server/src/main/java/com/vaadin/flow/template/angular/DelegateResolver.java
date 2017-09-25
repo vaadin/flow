@@ -25,7 +25,9 @@ import com.vaadin.flow.template.angular.parser.TemplateResolver;
  * before passing on to another resolver.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class DelegateResolver implements TemplateResolver {
     private TemplateResolver parentResolver;
     private String relativeFolder;

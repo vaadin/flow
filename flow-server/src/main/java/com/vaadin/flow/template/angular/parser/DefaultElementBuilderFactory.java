@@ -33,8 +33,9 @@ import com.vaadin.flow.template.angular.TemplateParseException;
  * The factory that is default for JSOUP {@link Element}s.
  *
  * @author Vaadin Ltd
- *
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class DefaultElementBuilderFactory
         extends AbstractTemplateBuilderFactory<Element> {
 

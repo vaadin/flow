@@ -37,7 +37,9 @@ import elemental.json.JsonValue;
  * A template AST node representing a regular element.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class ElementTemplateNode extends AbstractElementTemplateNode {
     /**
      * Type value for element template nodes in JSON messages.

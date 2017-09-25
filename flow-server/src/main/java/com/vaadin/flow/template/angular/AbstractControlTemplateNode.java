@@ -25,7 +25,9 @@ import com.vaadin.flow.dom.Element;
  * on state node contents.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public abstract class AbstractControlTemplateNode extends TemplateNode {
 
     /**

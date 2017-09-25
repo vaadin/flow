@@ -29,7 +29,9 @@ import com.vaadin.flow.model.PropertyFilter;
  * @author Vaadin Ltd
  * @param <T>
  *            the type of items in the list
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class TemplateModelListProxy<T> extends AbstractList<T> {
     private StateNode stateNode;
     private ComplexModelType<T> itemType;

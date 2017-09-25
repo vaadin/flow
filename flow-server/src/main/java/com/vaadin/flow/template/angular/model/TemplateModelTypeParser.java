@@ -24,7 +24,9 @@ import com.vaadin.ui.AngularTemplate;
  * Parses and stores template model type information.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class TemplateModelTypeParser {
 
     protected static final ReflectionCache<AngularTemplate, Class<? extends TemplateModel>> cache = new ReflectionCache<>(

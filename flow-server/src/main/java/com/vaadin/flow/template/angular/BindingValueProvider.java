@@ -27,7 +27,9 @@ import elemental.json.JsonValue;
  * in a text node.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public interface BindingValueProvider extends Serializable {
 
     String TYPE_PROPERTY = "type";

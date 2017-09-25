@@ -28,7 +28,9 @@ import com.vaadin.ui.UI;
  * A view that can be shown in a {@link UI} or {@link HasChildView}.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 @FunctionalInterface
 public interface View extends HasElement, Serializable {
 

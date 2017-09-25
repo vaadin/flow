@@ -27,7 +27,9 @@ import java.util.stream.Stream;
  * Builder for element template nodes.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class ElementTemplateBuilder implements TemplateNodeBuilder {
 
     private final String tag;

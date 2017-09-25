@@ -38,7 +38,9 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @param <T>
  *            the proxy type used by the bean type of this type
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class ListModelType<T> implements ComplexModelType<T> {
 
     private ComplexModelType<T> itemType;

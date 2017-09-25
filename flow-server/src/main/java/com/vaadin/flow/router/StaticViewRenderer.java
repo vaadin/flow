@@ -25,7 +25,9 @@ import com.vaadin.router.event.NavigationEvent;
  * views configured for it.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class StaticViewRenderer extends ViewRenderer {
 
     private final String route;

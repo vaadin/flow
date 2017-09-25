@@ -25,7 +25,9 @@ import java.util.Map;
  * node in the tree corresponds to the options for a specific path.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class RouteTreeNode implements Serializable {
     /**
      * Special segment name used for identifying a placeholder child or route.

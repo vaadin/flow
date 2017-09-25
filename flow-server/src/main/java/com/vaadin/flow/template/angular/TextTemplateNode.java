@@ -24,7 +24,9 @@ import elemental.json.JsonObject;
  * A template AST node representing a text node.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class TextTemplateNode extends AbstractElementTemplateNode {
     /**
      * Type value for text template nodes in JSON messages.

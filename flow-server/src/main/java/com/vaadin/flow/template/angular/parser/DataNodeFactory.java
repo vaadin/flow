@@ -30,7 +30,9 @@ import com.vaadin.flow.template.angular.TextTemplateBuilder;
  * &lt;style&gt;.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public class DataNodeFactory extends AbstractTemplateBuilderFactory<DataNode> {
 
     protected DataNodeFactory() {

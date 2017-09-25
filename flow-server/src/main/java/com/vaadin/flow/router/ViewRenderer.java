@@ -37,7 +37,9 @@ import com.vaadin.util.ReflectTools;
  * target UI. The view can optionally be nested in a chain of parent views.
  *
  * @author Vaadin Ltd
+ * @deprecated feature will be moved to a legacy package.
  */
+@Deprecated
 public abstract class ViewRenderer implements NavigationHandler {
 
     /**
