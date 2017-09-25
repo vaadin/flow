@@ -16,27 +16,20 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link DialogView}.
  */
-public class DialogIT extends AbstractChromeTest {
+public class DialogIT extends ComponentDemoTest {
 
     private static final String DIALOG_OVERLAY_TAG = "vaadin-dialog-overlay";
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-    }
 
     @Test
     public void openAndCloseBasicDialog() {
