@@ -24,9 +24,11 @@ import java.util.Optional;
 
 import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
+import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.util.JsonSerializer;
 
@@ -60,6 +62,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
     private static final String TEMPLATE_TAG_NAME = "template";
 
     private Class<T> itemType;
+    private T oldValue;
 
     /**
      * Default constructor. Creates an empty combo box.
@@ -70,7 +73,35 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME,
                 "selected-item-changed");
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME, "change");
-        getElement().synchronizeProperty("value", "change");
+        getElement().synchronizeProperty("value", "value-changed");
+
+        /*
+         * The webcomponent have properties and events depending on the type of
+         * the items inside the combo-box:
+         * 
+         * - selected-item and selected-item-changed for objects
+         * 
+         * - value and value-changed for strings
+         * 
+         * The Java API only uses the ValueChangeEvent/Listener, so we need to
+         * intercept both low level events and fire a single high level
+         * ValueChangeEvent
+         */
+        getElement().addEventListener("selected-item-changed", event -> {
+            if (itemType != String.class) {
+                fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
+                oldValue = getValue();
+            }
+        });
+
+        getElement().addEventListener("value-changed", event -> {
+            if (itemType == String.class) {
+                String value = getElement().getProperty("value");
+                setValue((T) value);
+                fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
+                oldValue = getValue();
+            }
+        });
     }
 
     /**
@@ -348,6 +379,15 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
                     checkWhetherItemTypeIsSetIfNeeded((JsonValue) property));
         }
         return null;
+    }
 
+    @Override
+    public Registration addValueChangeListener(
+            ValueChangeListener<ComboBox<T>, T> listener) {
+
+        ComponentEventListener<ValueChangeEvent> wrapper = event -> listener
+                .onComponentEvent(event);
+
+        return addListener(ValueChangeEvent.class, wrapper);
     }
 }

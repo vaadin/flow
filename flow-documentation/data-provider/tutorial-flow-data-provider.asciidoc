@@ -84,8 +84,8 @@ ListDataProvider<Person> dataProvider = DataProvider
 Grid<Person> grid = new Grid<>();
 grid.setDataProvider(dataProvider);
 
-departmentSelect.addSelectedItemChangeListener(event -> {
-    Department selectedDepartment = departmentSelect.getSelectedItem();
+departmentSelect.addValueChangeListener(event -> {
+    Department selectedDepartment = event.getValue();
     if (selectedDepartment != null) {
         dataProvider.setFilterByValue(Person::getDepartment,
                 selectedDepartment);

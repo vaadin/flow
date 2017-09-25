@@ -129,8 +129,8 @@ public class ComboBoxView extends DemoView {
         List<Song> listOfSongs = createListOfSongs();
 
         comboBox.setItems(listOfSongs);
-        comboBox.addSelectedItemChangeListener(event -> {
-            Song song = comboBox.getSelectedItem();
+        comboBox.addValueChangeListener(event -> {
+            Song song = comboBox.getValue();
             if (song != null) {
                 message.setText("Selected song: " + song.getName()
                         + "\nFrom album: " + song.getAlbum() + "\nBy artist: "
@@ -162,11 +162,14 @@ public class ComboBoxView extends DemoView {
         comboBox.addValueChangeListener(event -> {
             if (event.getSource().isEmpty()) {
                 message.setText("No artist selected");
-            } else if (event.getOldValue().isEmpty()) {
-                message.setText("Selected artist: " + event.getValue());
+            } else if (event.getOldValue() == null) {
+                message.setText(
+                        "Selected artist: " + event.getValue().getArtist());
             } else {
-                message.setText("Selected artist: " + event.getValue()
-                        + "\nThe old selection was: " + event.getOldValue());
+                message.setText(
+                        "Selected artist: " + event.getValue().getArtist()
+                                + "\nThe old selection was: "
+                                + event.getOldValue().getArtist());
             }
         });
         // end-source-example
