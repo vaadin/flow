@@ -179,14 +179,9 @@ public class DefaultDeploymentConfiguration
         val = System.getProperty(
                 pkgName + parameterName.toLowerCase(Locale.ENGLISH));
 
-        if (val != null) {
-            return val;
-        }
-
-        // version prefixed with just "vaadin."
-        val = System.getProperty("vaadin." + parameterName);
-
-        return val;
+        return val == null
+                ? AbstractDeploymentConfiguration.getVaadinSystemProperty(parameterName, null)
+                : val;
     }
 
     /**
