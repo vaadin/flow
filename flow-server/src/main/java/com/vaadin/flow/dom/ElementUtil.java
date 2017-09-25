@@ -19,9 +19,10 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import com.vaadin.external.jsoup.nodes.Document;
-import com.vaadin.external.jsoup.nodes.Node;
-import com.vaadin.external.jsoup.nodes.TextNode;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 
@@ -236,7 +237,7 @@ public class ElementUtil {
             return new TextNode(element.getText(), document.baseUri());
         }
 
-        com.vaadin.external.jsoup.nodes.Element target = document
+        org.jsoup.nodes.Element target = document
                 .createElement(element.getTag());
         if (element.hasProperty("innerHTML")) {
             target.html((String) element.getPropertyRaw("innerHTML"));
