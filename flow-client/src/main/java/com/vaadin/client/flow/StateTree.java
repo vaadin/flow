@@ -221,14 +221,12 @@ public class StateTree {
         StateNode node = nodeMap.getNode();
 
         if (getRegistry().getInitialPropertiesHandler()
-                .handlePropertyUpdate(property)) {
+                .handlePropertyUpdate(property) || !isValidNode(node)) {
             return;
         }
 
-        if (isValidNode(node)) {
-            registry.getServerConnector().sendNodeSyncMessage(node,
-                    nodeMap.getId(), property.getName(), property.getValue());
-        }
+        registry.getServerConnector().sendNodeSyncMessage(node, nodeMap.getId(),
+                property.getName(), property.getValue());
     }
 
     /**
