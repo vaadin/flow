@@ -16,32 +16,21 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 import com.vaadin.ui.passwordfield.PasswordField;
 
 /**
  * Integration tests for the {@link PasswordField}.
  */
-public class PasswordFieldIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
+public class PasswordFieldIT extends ComponentDemoTest {
     @Override
     protected String getTestPath() {
         return "/vaadin-password-field";
-    }
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
     }
 
     @Test

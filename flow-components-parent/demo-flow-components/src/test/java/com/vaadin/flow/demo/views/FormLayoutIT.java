@@ -23,21 +23,15 @@ import org.junit.Test;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link FormLayoutView}.
  */
-public class FormLayoutIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
+public class FormLayoutIT extends ComponentDemoTest {
     @Before
     public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
         Assert.assertTrue(isElementPresent(By.tagName("vaadin-form-layout")));
     }
 

@@ -24,15 +24,12 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
-public class PaperDialogIT extends AbstractChromeTest {
-
+public class PaperDialogIT extends ComponentDemoTest {
     @Before
     public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
         Assert.assertFalse(isElementPresent(By.tagName("paper-dialog")));
     }
 
