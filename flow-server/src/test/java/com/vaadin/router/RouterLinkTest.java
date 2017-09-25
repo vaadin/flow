@@ -13,29 +13,43 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import javax.servlet.ServletException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterTest.RouterTestUI;
+import com.vaadin.flow.router.View;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.util.CurrentInstance;
 
 public class RouterLinkTest {
 
+    private RouteRegistry registry;
+
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchFieldException, IllegalAccessException {
         Assert.assertNull(CurrentInstance.get(VaadinService.class));
+        registry = new TestRouteRegistry();
     }
 
     @After
@@ -82,7 +96,7 @@ public class RouterLinkTest {
 
     @Test
     public void buildUrlWithRouter() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
         router.reconfigure(c -> c.setRoute("foo/{bar}", TestView.class));
 
         String url = RouterLink.buildUrl(router, TestView.class, "asdf");
@@ -92,7 +106,7 @@ public class RouterLinkTest {
 
     @Test
     public void buildEmptyUrlWithRouter() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
         router.reconfigure(c -> c.setRoute("", TestView.class));
 
         String url = RouterLink.buildUrl(router, TestView.class);
@@ -105,14 +119,14 @@ public class RouterLinkTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void buildUrlWithRouter_noRoutes() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
 
         RouterLink.buildUrl(router, TestView.class, "asdf");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void buildUrlWithRouter_multipleRoutes() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
         router.reconfigure(c -> {
             c.setRoute("foo/{bar}", TestView.class);
             c.setRoute("another/route", TestView.class);
@@ -143,7 +157,7 @@ public class RouterLinkTest {
 
     @Test
     public void setRoute_attachedLink() {
-        RouterTestUI ui = new RouterTestUI(new Router());
+        RouterTestUI ui = new RouterTestUI(new com.vaadin.flow.router.Router());
         ui.getRouter().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
@@ -159,7 +173,7 @@ public class RouterLinkTest {
 
     @Test
     public void createRouterLink_explicitRouter() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
         router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink(router, "Show something",
@@ -198,7 +212,7 @@ public class RouterLinkTest {
 
     @Test
     public void createReconfigureRouterLink_explicitRouter() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
         router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink(router, "Show something",
@@ -217,7 +231,7 @@ public class RouterLinkTest {
 
     @Test
     public void reconfigureRouterLink_attachedLink() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
         RouterTestUI ui = new RouterTestUI(router);
         router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
@@ -248,7 +262,7 @@ public class RouterLinkTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidRoute_explicitRouter() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new com.vaadin.flow.router.Router();
         router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
         new RouterLink(router, "Show something", TestView.class);
@@ -256,7 +270,7 @@ public class RouterLinkTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void invalidRoute_attachedLink() {
-        Router router = new Router();
+        com.vaadin.flow.router.Router router = new Router();
         RouterTestUI ui = new RouterTestUI(router);
         router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
@@ -290,4 +304,78 @@ public class RouterLinkTest {
         return ui;
     }
 
+    @Test
+    public void testRouterLinkCreationForNormatRouteTarget()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(FooNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.router.Router router = new com.vaadin.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Foo",
+                FooNavigationTarget.class);
+        Assert.assertEquals("foo", link.getHref());
+    }
+
+    @Test
+    public void testRouterLinkCreationForUrlParameterRouteTarget()
+            throws InvalidRouteConfigurationException {
+
+        registry.setNavigationTargets(Stream.of(GreetingNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        com.vaadin.router.Router router = new com.vaadin.router.Router(
+                registry);
+
+        RouterLink link = new RouterLink(router, "Greeting",
+                GreetingNavigationTarget.class, "hello");
+        Assert.assertEquals("greeting/hello", link.getHref());
+    }
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
+
+    @Test
+    public void testFailForWrongImplementation()
+            throws InvalidRouteConfigurationException {
+        registry.setNavigationTargets(
+                Stream.of(FaultySetup.class).collect(Collectors.toSet()));
+
+        com.vaadin.router.Router router = new com.vaadin.router.Router(
+                registry);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getRouter()).thenReturn(router);
+        CurrentInstance.set(VaadinService.class, service);
+
+        expectedEx.expect(RuntimeException.class);
+        expectedEx.expectMessage(
+                "Only navigation targets for old Router should implement 'View'. Remove 'implements View' from '"
+                        + FaultySetup.class.getName() + "'");
+
+        RouterLink faulty = new RouterLink("Faulty", FaultySetup.class);
+    }
+
+    @Route("foo")
+    @Tag(Tag.DIV)
+    public static class FooNavigationTarget extends Component {
+    }
+
+    @Route("greeting")
+    @Title("Custom Title")
+    @Tag(Tag.DIV)
+    public static class GreetingNavigationTarget extends Component
+            implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+        }
+    }
+
+    @Route("faulty")
+    @Tag(Tag.DIV)
+    public static class FaultySetup extends Component implements View {
+    }
 }

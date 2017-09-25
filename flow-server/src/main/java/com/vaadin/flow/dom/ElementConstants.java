@@ -30,6 +30,10 @@ public class ElementConstants {
      * The style property for height.
      */
     public static final String STYLE_HEIGHT = "height";
+    /**
+     * The style property for color.
+     */
+    public static final String STYLE_COLOR = "color";
 
     private ElementConstants() {
         // Constants only

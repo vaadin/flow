@@ -23,10 +23,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.server.InvalidRouteConfigurationException;
-import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 
-public class DefaultRouteResolverTest extends NewRoutingTestBase {
+public class DefaultRouteResolverTest extends RoutingTestBase {
 
     private RouteResolver resolver;
 
@@ -40,7 +39,7 @@ public class DefaultRouteResolverTest extends NewRoutingTestBase {
     @Test
     public void basic_route_navigation_target_resolved_correctly()
             throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance()
+        router.getRegistry()
                 .setNavigationTargets(Stream.of(RootNavigationTarget.class,
                         FooNavigationTarget.class, FooBarNavigationTarget.class,
                         GreetingNavigationTarget.class)
@@ -65,7 +64,7 @@ public class DefaultRouteResolverTest extends NewRoutingTestBase {
     @Test
     public void string_url_parameter_correctly_set_to_state()
             throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
+        router.getRegistry().setNavigationTargets(
                 Collections.singleton(GreetingNavigationTarget.class));
 
         Assert.assertEquals(Collections.singletonList("World"),
@@ -76,7 +75,7 @@ public class DefaultRouteResolverTest extends NewRoutingTestBase {
     @Test
     public void route_precedence_with_parameters()
             throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance()
+        router.getRegistry()
                 .setNavigationTargets(Stream
                         .of(GreetingNavigationTarget.class,
                                 OtherGreetingNavigationTarget.class)
@@ -91,7 +90,7 @@ public class DefaultRouteResolverTest extends NewRoutingTestBase {
     @Test
     public void wrong_number_of_parameters_does_not_match()
             throws InvalidRouteConfigurationException {
-        RouteRegistry.getInstance().setNavigationTargets(
+        router.getRegistry().setNavigationTargets(
                 Collections.singleton(GreetingNavigationTarget.class));
 
         Assert.assertEquals(null,

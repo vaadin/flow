@@ -19,13 +19,15 @@ import java.time.LocalDate;
 import java.util.Arrays;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Div;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.datepicker.DatePicker.DatePickerI18n;
+import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link DatePicker} demo.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-date-picker.html")
 @ComponentDemo(name = "Date Picker", href = "vaadin-date-picker")
 public class DatePickerView extends DemoView {
 

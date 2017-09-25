@@ -15,18 +15,16 @@
  */
 package com.vaadin.router;
 
-import java.lang.reflect.Field;
 import java.util.Optional;
 
 import org.junit.Before;
 
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
-public class NewRoutingTestBase {
+public class RoutingTestBase {
 
     @Route("")
     @Tag(Tag.DIV)
@@ -74,10 +72,6 @@ public class NewRoutingTestBase {
     public static class RouterTestUI extends UI {
         final Router router;
 
-        public RouterTestUI() {
-            this(new Router());
-        }
-
         public RouterTestUI(Router router) {
             this.router = router;
         }
@@ -93,10 +87,6 @@ public class NewRoutingTestBase {
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
-        router = new Router();
-        Field field = RouteRegistry.getInstance().getClass()
-                .getDeclaredField("initialized");
-        field.setAccessible(true);
-        field.set(RouteRegistry.getInstance(), false);
+        router = new Router(new TestRouteRegistry());
     }
 }

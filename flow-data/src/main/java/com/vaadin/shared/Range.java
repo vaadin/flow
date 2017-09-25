@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,48 @@ import java.util.stream.IntStream;
 public final class Range implements Serializable {
     private final int start;
     private final int end;
+
+    /**
+     * Overlay this range with another one, and partition the ranges according
+     * to how they position relative to each other.
+     * <p>
+     * The three partitions are returned as a three-element Range array:
+     * <ul>
+     * <li>Elements in this range that occur before elements in
+     * <code>other</code>.
+     * <li>Elements that are shared between the two ranges.
+     * <li>Elements in this range that occur after elements in
+     * <code>other</code>.
+     * </ul>
+     *
+     * @param other
+     *            the other range to act as delimiters.
+     * @return a three-element Range array of partitions depicting the elements
+     *         before (index 0), shared/inside (index 1) and after (index 2).
+     */
+    public Range[] partitionWith(final Range other) {
+        final Range[] splitBefore = splitAt(other.getStart());
+        final Range rangeBefore = splitBefore[0];
+        final Range[] splitAfter = splitBefore[1].splitAt(other.getEnd());
+        final Range rangeInside = splitAfter[0];
+        final Range rangeAfter = splitAfter[1];
+        return new Range[] { rangeBefore, rangeInside, rangeAfter };
+    }
+
+    /**
+     * Get a range that is based on this one, but offset by a number.
+     *
+     * @param offset
+     *            the number to offset by
+     * @return a copy of this range, offset by <code>offset</code>
+     */
+    public Range offsetBy(final int offset) {
+        if (offset == 0) {
+            return this;
+        } else {
+            return new Range(start + offset, end + offset);
+        }
+    }
 
     /**
      * Creates a range object representing a single integer.
@@ -173,6 +215,8 @@ public final class Range implements Serializable {
     /**
      * Checks whether this range is a subset of another range.
      *
+     * @param other
+     *            the range to check against of
      * @return <code>true</code> iff <code>other</code> completely wraps this
      *         range
      */
@@ -182,48 +226,6 @@ public final class Range implements Serializable {
         }
 
         return other.getStart() <= getStart() && getEnd() <= other.getEnd();
-    }
-
-    /**
-     * Overlay this range with another one, and partition the ranges according
-     * to how they position relative to each other.
-     * <p>
-     * The three partitions are returned as a three-element Range array:
-     * <ul>
-     * <li>Elements in this range that occur before elements in
-     * <code>other</code>.
-     * <li>Elements that are shared between the two ranges.
-     * <li>Elements in this range that occur after elements in
-     * <code>other</code>.
-     * </ul>
-     *
-     * @param other
-     *            the other range to act as delimiters.
-     * @return a three-element Range array of partitions depicting the elements
-     *         before (index 0), shared/inside (index 1) and after (index 2).
-     */
-    public Range[] partitionWith(final Range other) {
-        final Range[] splitBefore = splitAt(other.getStart());
-        final Range rangeBefore = splitBefore[0];
-        final Range[] splitAfter = splitBefore[1].splitAt(other.getEnd());
-        final Range rangeInside = splitAfter[0];
-        final Range rangeAfter = splitAfter[1];
-        return new Range[] { rangeBefore, rangeInside, rangeAfter };
-    }
-
-    /**
-     * Get a range that is based on this one, but offset by a number.
-     *
-     * @param offset
-     *            the number to offset by
-     * @return a copy of this range, offset by <code>offset</code>
-     */
-    public Range offsetBy(final int offset) {
-        if (offset == 0) {
-            return this;
-        } else {
-            return new Range(start + offset, end + offset);
-        }
     }
 
     @Override
@@ -351,10 +353,10 @@ public final class Range implements Serializable {
      *            the length at which to split this range into two
      * @return an array of two ranges, having the <code>length</code>-first
      *         elements of this range, and the second range having the rest. If
-     *         <code>length</code> &leq; 0, the first element will be empty, and
+     *         <code>length</code> &le; 0, the first element will be empty, and
      *         the second element will be this range. If <code>length</code>
-     *         &geq; {@link #length()}, the first element will be this range,
-     *         and the second element will be empty.
+     *         &ge; {@link #length()}, the first element will be this range, and
+     *         the second element will be empty.
      */
     public Range[] splitAtFromStart(final int length) {
         return splitAt(getStart() + length);

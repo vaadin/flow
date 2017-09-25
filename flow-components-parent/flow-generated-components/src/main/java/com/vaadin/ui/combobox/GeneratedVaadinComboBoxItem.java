@@ -16,16 +16,24 @@
 package com.vaadin.ui.combobox;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonObject;
 
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: vaadin-combo-box-item#2.0.0", "Flow#0.1-SNAPSHOT"})
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * The default element used for items in the vaadin-combobox.
+ * </p>
+ */
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: Vaadin.ComboBoxItemElement#3.0.0-alpha5",
+		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")
 public class GeneratedVaadinComboBoxItem<R extends GeneratedVaadinComboBoxItem<R>>

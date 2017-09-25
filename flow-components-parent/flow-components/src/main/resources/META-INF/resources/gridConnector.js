@@ -24,8 +24,9 @@ window.gridConnector = {
             // what grid asked for
             var firstNeededPage = Math.min(page, grid._getPageForIndex(grid.$.scroller._virtualStart));
             var lastNeededPage = Math.max(page, grid._getPageForIndex(grid.$.scroller._virtualEnd));
+
             var first = Math.max(0,  firstNeededPage - extraPageBuffer);
-            var last = Math.min(lastNeededPage + extraPageBuffer, Math.max(0, Math.floor(grid.size / grid.pageSize) - 1));
+            var last = Math.min(lastNeededPage + extraPageBuffer, Math.max(0, Math.floor(grid.size / grid.pageSize) + 1));
 
             if (lastRequestedRange[0] != first || lastRequestedRange[1] != last) {
                 lastRequestedRange = [first, last];
@@ -36,26 +37,28 @@ window.gridConnector = {
         }
 
         var updateGridCache = function(page) {
-              if (!grid._cache[page]) {
-                  return;
-              }   
-              var items = cache[page];
-  
-              if (!items) {
-                  delete grid._cache[page];
-              }   
-  
-              // Force update unless there's a callback waiting
-              if (!pageCallbacks[page]) {
-                  if (items) {
-                      // Replace existing cache page
-                      grid._cache[page] = items;
-                  } else {
-                      // Fake page to pass to _updateItems
-                      items = new Array(grid.pageSize);
-                  }   
-                  grid._updateItems(page, items);
-              }   
+            if (!grid._cache[page]) {
+                return;
+            }
+
+            var items = cache[page];
+
+            if (!items) {
+                delete grid._cache[page];
+            }
+
+            // Force update unless there's a callback waiting
+            if (!pageCallbacks[page]) {
+                if (items) {
+                    // Replace existing cache page
+                    grid._cache[page] = items;
+                } else {
+                    // Fake page to pass to _updateItems
+                    items = new Array(grid.pageSize);
+                }
+
+                grid._updateItems(page, items);
+            }
         }
 
         grid.connectorSet = function(index, items) {
@@ -66,12 +69,10 @@ window.gridConnector = {
             var firstPage = index / grid.pageSize;
             var updatedPageCount = Math.ceil(items.length / grid.pageSize);
 
-
             for (var i = 0; i < updatedPageCount; i++) {
                 var page = firstPage + i;
                 var items = items.slice(i * grid.pageSize, (i + 1) * grid.pageSize);
                 cache[page] = items;
-
                 for(var j = 0; j < items.length; j++) {
                     var item = items[j]
                     if (item.selected && !selectedKeys[item.key]) {
@@ -82,7 +83,6 @@ window.gridConnector = {
                         delete selectedKeys[item.key];
                     }
                 }
-
                 updateGridCache(page);
             }
         };

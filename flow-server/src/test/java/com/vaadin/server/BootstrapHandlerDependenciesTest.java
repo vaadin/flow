@@ -25,22 +25,22 @@ import java.util.stream.Stream;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.external.jsoup.nodes.Document;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 
 public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
@@ -223,7 +223,7 @@ public class BootstrapHandlerDependenciesTest {
     }
 
     private VaadinSession session;
-    private VaadinServletService service;
+    private MockVaadinServletService service;
 
     @Before
     public void setup() {
@@ -231,8 +231,8 @@ public class BootstrapHandlerDependenciesTest {
 
         DeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
 
-        service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
-                deploymentConfiguration));
+        service = Mockito
+                .spy(new MockVaadinServletService(deploymentConfiguration));
 
         ServletContext servletContextMock = mock(ServletContext.class);
         when(servletContextMock.getResourceAsStream(anyString()))
@@ -567,12 +567,7 @@ public class BootstrapHandlerDependenciesTest {
         ui.getInternals().setSession(session);
         VaadinRequest request = new VaadinServletRequest(createRequest(),
                 service);
-        try {
-            service.init();
-        } catch (ServiceException e) {
-            throw new RuntimeException("Error initializing the VaadinService",
-                    e);
-        }
+        service.init();
         ui.doInit(request, 0);
         return BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, ui));

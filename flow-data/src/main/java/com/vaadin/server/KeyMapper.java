@@ -27,6 +27,9 @@ import com.vaadin.data.provider.DataKeyMapper;
  * <code>KeyMapper</code> is the simple two-way map for generating textual keys
  * for objects and retrieving the objects later with the key.
  *
+ * @param <V>
+ *            the type of mapped objects
+ *
  * @author Vaadin Ltd.
  */
 public class KeyMapper<V> implements DataKeyMapper<V>, Serializable {
@@ -40,14 +43,13 @@ public class KeyMapper<V> implements DataKeyMapper<V>, Serializable {
     private ValueProvider<V, Object> identifierGetter;
 
     /**
-     * Constructs a new mapper
+     * Constructs a new mapper.
      *
      * @param identifierGetter
      *            has to return a unique key for every bean, and the returned
      *            key has to follow general {@code hashCode()} and
      *            {@code equals()} contract, see {@link Object#hashCode()} for
      *            details.
-     * @since 8.1
      */
     public KeyMapper(ValueProvider<V, Object> identifierGetter) {
         this.identifierGetter = identifierGetter;
@@ -94,7 +96,6 @@ public class KeyMapper<V> implements DataKeyMapper<V>, Serializable {
      * This method can be overridden to customize the keys used.
      *
      * @return new key
-     * @since 8.1.2
      */
     protected String createKey() {
         return String.valueOf(++lastKey);
@@ -148,7 +149,6 @@ public class KeyMapper<V> implements DataKeyMapper<V>, Serializable {
      *            the key to check
      * @return <code>true</code> if the key is currently mapped,
      *         <code>false</code> otherwise
-     * @since 7.7
      */
     public boolean containsKey(String key) {
         return keyObjectMap.containsKey(key);

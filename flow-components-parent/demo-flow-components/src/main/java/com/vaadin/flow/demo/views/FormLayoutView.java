@@ -27,17 +27,18 @@ import com.vaadin.data.BindingValidationStatus;
 import com.vaadin.data.validator.EmailValidator;
 import com.vaadin.data.validator.StringLengthValidator;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Label;
 import com.vaadin.function.SerializablePredicate;
-import com.vaadin.ui.button.Button;
-import com.vaadin.ui.checkbox.Checkbox;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.checkbox.Checkbox;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.datepicker.DatePicker;
 import com.vaadin.ui.formlayout.FormLayout;
 import com.vaadin.ui.formlayout.FormLayout.FormItem;
 import com.vaadin.ui.formlayout.FormLayout.ResponsiveStep;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
 import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.textfield.TextField;
 
@@ -46,6 +47,11 @@ import com.vaadin.ui.textfield.TextField;
  * 
  * @author Vaadin Ltd
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-text-field.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-form-layout.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-date-picker.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-checkbox.html")
 @ComponentDemo(name = "Form Layout", href = "vaadin-form-layout", subcategory = "Layouts")
 public class FormLayoutView extends DemoView {
 

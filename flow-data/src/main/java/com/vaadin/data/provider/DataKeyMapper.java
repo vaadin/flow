@@ -78,19 +78,18 @@ public interface DataKeyMapper<T> extends Serializable {
      *
      * @param dataObject
      *            the data object to update
-     *
-     * @since 8.1
-     *
      */
     void refresh(T dataObject);
 
     /**
      * Takes identifier getter into use and updates existing mappings
      *
-     * @param identifierGetter has to return a unique key for every bean, and the returned key has to
-     *                         follow general {@code hashCode()} and {@code equals()} contract,
-     *                         see {@link Object#hashCode()} for details.
-     * @since 8.1
+     * @param identifierGetter
+     *            has to return a unique key for every bean, and the returned
+     *            key has to follow general {@code hashCode()} and
+     *            {@code equals()} contract, see {@link Object#hashCode()} for
+     *            details.
      */
     void setIdentifierGetter(ValueProvider<T, Object> identifierGetter);
 }
+

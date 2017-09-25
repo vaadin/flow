@@ -20,23 +20,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link ComboBoxView}.
  */
-public class ComboBoxIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
+public class ComboBoxIT extends ComponentDemoTest {
     @Before
     public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
         waitForElementPresent(By.tagName("vaadin-combo-box"));
-        layout = findElement(By.tagName("main-layout"));
-        Assert.assertNotNull(layout);
     }
 
     @Test
@@ -80,27 +73,6 @@ public class ComboBoxIT extends AbstractChromeTest {
 
         waitUntil(driver -> message.getText().equals(
                 "Selected artist: Haircuts for Men\nThe old selection was: Haywyre"));
-    }
-
-    @Test
-    public void openCustomFilterBoxAndTypeAColor() {
-        WebElement comboBox = layout.findElement(By.id("custom-filter-box"));
-        WebElement message = layout.findElement(By.id("custom-filter-message"));
-
-        executeScript("arguments[0].filter = 'red'", comboBox);
-
-        waitUntil(driver -> message.getText().equals("Filter used: red"));
-
-        Assert.assertEquals("Apple", executeScript(
-                "return arguments[0].filteredItems[0].name", comboBox));
-        Assert.assertEquals("Red", executeScript(
-                "return arguments[0].filteredItems[0].color", comboBox));
-
-        executeScript(
-                "arguments[0].selectedItem = arguments[0].filteredItems[0]",
-                comboBox);
-
-        waitUntil(driver -> message.getText().equals("Selected fruit: Apple"));
     }
 
     @Override

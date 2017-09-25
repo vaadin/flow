@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.demo.views;
 
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.common.StyleSheet;
 
 /**
  * Card to hold components for DemoViews

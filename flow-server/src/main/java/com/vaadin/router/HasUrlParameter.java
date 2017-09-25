@@ -15,14 +15,19 @@
  */
 package com.vaadin.router;
 
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Interface for defining url parameters for navigation targets for use in
@@ -76,8 +81,7 @@ public interface HasUrlParameter<T> {
      *            the list of url parameters to verify
      * @return {@code true} if the parameters are valid, otherwise {@code false}
      */
-    static boolean verifyParameters(
-            Class<?> navigationTarget,
+    static boolean verifyParameters(Class<?> navigationTarget,
             List<String> urlParameters) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             throw new IllegalArgumentException(String.format(
@@ -96,11 +100,40 @@ public interface HasUrlParameter<T> {
                 .of(Long.class, Integer.class, String.class)
                 .collect(Collectors.toSet());
         if (supportedTypes.contains(parameterType)) {
+            if (isOptionalParameter(navigationTarget)) {
+                return urlParameters.size() <= 1;
+            }
             return urlParameters.size() == 1;
         }
         throw new UnsupportedOperationException(String.format(
                 "Currently HasUrlParameter only supports the following parameter types: %s.",
                 supportedTypes.stream().map(Class::getName)
                         .collect(Collectors.joining(", "))));
+    }
+
+    /**
+     * Check if the parameter value is annotated as OptionalParameter.
+     * 
+     * @param navigationTarget
+     *            navigation target to check for optional
+     * @return parameter is optional
+     */
+    static boolean isOptionalParameter(Class<?> navigationTarget) {
+        if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
+            return false;
+        }
+        try {
+            Method setParameter = navigationTarget.getMethod(
+                    ReflectTools.getFunctionalMethod(HasUrlParameter.class)
+                            .getName(),
+                    BeforeNavigationEvent.class, Object.class);
+            return setParameter.getParameters()[1]
+                    .isAnnotationPresent(OptionalParameter.class);
+        } catch (NoSuchMethodException e) {
+            Logger.getLogger(HasUrlParameter.class.getName()).log(Level.WARNING,
+                    "Failed to get setParameter method for checking for @Optional");
+        }
+
+        return false;
     }
 }

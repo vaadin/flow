@@ -24,9 +24,14 @@ public class PathComponent extends Div {
 
 public class Menu extends Div {
     public Menu() {
-        String route = ((Router) UI.getCurrent().getRouter().get())
-                .getUrl(PathComponent.class);
-        Anchor link = new Anchor(route, "Path");
+        try {
+            String route = ((Router) UI.getCurrent().getRouter().get())
+                    .getUrl(PathComponent.class);
+            Anchor link = new Anchor(route, "Path");
+            add(link);
+        } catch (NotFoundException e) {
+            // Omitted
+        }
     }
 }
 ----
@@ -54,9 +59,14 @@ public class GreetingComponent extends Div
 
 public class ParameterMenu extends Div {
     public ParameterMenu() {
-        String route = ((Router) UI.getCurrent().getRouter().get())
-                .getUrl(GreetingComponent.class, "anonymous");
-        Anchor link = new Anchor(route, "Greeting");
+        try {
+            String route = ((Router) UI.getCurrent().getRouter().get())
+                    .getUrl(GreetingComponent.class, "anonymous");
+            Anchor link = new Anchor(route, "Greeting");
+            add(link);
+        } catch (NotFoundException e) {
+            // Omitted
+        }
     }
 }
 ----

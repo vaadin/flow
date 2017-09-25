@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.util;
 
-import com.vaadin.external.jsoup.nodes.TextNode;
+import org.jsoup.nodes.TextNode;
 
 /**
  * Helpers for HTML related aspects.

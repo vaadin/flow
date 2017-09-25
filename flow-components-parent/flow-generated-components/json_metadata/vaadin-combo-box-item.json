@@ -1,8 +1,8 @@
 {
-  "name": "vaadin-combo-box-item",
+  "name": "Vaadin.ComboBoxItemElement",
   "tag": "vaadin-combo-box-item",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-item.html",
-  "version": "2.0.0",
+  "version": "3.0.0-alpha5",
   "properties": [
     {
       "name": "index",
@@ -10,7 +10,7 @@
         "NUMBER"
       ],
       "objectType": [],
-      "description": "The index of the item\n       "
+      "description": "The index of the item\n           "
     },
     {
       "name": "item",
@@ -27,7 +27,7 @@
         "STRING"
       ],
       "objectType": [],
-      "description": "The text label corresponding to the item\n       "
+      "description": "The text label corresponding to the item\n           "
     },
     {
       "name": "selected",
@@ -35,7 +35,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True when item is selected\n       "
+      "description": "True when item is selected\n           "
     },
     {
       "name": "focused",
@@ -43,13 +43,22 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "True when item is focused\n       "
+      "description": "True when item is focused\n           "
     }
   ],
-  "methods": [],
+  "methods": [
+    {
+      "name": "connectedCallback",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    }
+  ],
   "events": [],
   "slots": [],
   "behaviors": [],
-  "mixins": [],
-  "description": ""
+  "mixins": [
+    "Vaadin.ThemableMixin"
+  ],
+  "description": "The default element used for items in the vaadin-combobox."
 }

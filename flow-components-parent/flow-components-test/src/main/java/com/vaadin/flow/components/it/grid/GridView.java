@@ -22,7 +22,14 @@ import com.vaadin.flow.components.it.TestView;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.button.Button;
 
+/**
+ * @author Vaadin Ltd.
+ */
 public class GridView extends TestView {
+
+    /**
+     * Creates a view with a grid.
+     */
     public GridView() {
         Grid<String> grid = new Grid<>();
 

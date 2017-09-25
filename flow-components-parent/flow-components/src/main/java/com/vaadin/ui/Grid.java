@@ -234,7 +234,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         protected abstract <T> GridSelectionModel<T> createModel(Grid<T> grid);
     }
 
-    private int pageSize = 100;
+    private static final int PAGE_SIZE = 100;
 
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
 
@@ -247,8 +247,11 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     private GridSelectionModel<T> selectionModel = SelectionMode.SINGLE
             .createModel(this);
 
+    /**
+     * Creates a new instance.
+     */
     public Grid() {
-        getDataCommunicator().setRequestedRange(0, pageSize);
+        getDataCommunicator().setRequestedRange(0, PAGE_SIZE);
     }
 
     @Override
@@ -257,7 +260,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
         attachEvent.getUI().getPage().executeJavaScript(
                 "window.gridConnector.initLazy($0, $1)", getElement(),
-                pageSize);
+                PAGE_SIZE);
     }
 
     /**
@@ -310,18 +313,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * @return the current page size
      */
     public int getPageSize() {
-        return pageSize;
-    }
-
-    /**
-     * Sets the page size.
-     *
-     * @param pageSize
-     *            the page size
-     */
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-        getDataCommunicator().setRequestedRange(0, pageSize);
+        return PAGE_SIZE;
     }
 
     /**
@@ -396,7 +388,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
             throw new IllegalStateException(
                     "Grid is not in single select mode, "
                             + "it needs to be explicitly set to such with "
-                            + "setSelectionModel(SingleSelectionModel) before "
+                            + "setSelectionMode(SelectionMode.SINGLE) before "
                             + "being able to use single selection features.");
         }
         return ((GridSingleSelectionModel<T>) model).asSingleSelect();

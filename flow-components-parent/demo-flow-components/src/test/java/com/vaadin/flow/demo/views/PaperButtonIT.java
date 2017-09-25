@@ -16,28 +16,17 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link PaperButtonView}.
  *
  */
-public class PaperButtonIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
-    }
-
+public class PaperButtonIT extends ComponentDemoTest {
     @Test
     public void clickOnRaisedButton_textIsDisaplayed() {
         WebElement button = layout.findElement(By.id("raised-button"));

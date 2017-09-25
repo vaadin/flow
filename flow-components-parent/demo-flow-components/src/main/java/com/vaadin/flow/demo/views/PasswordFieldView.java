@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.passwordfield.PasswordField;
 import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
@@ -24,6 +25,8 @@ import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
 /**
  * View for {@link GeneratedVaadinPasswordField} demo.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-text-field.html")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Password Field", href = "vaadin-password-field")
 public class PasswordFieldView extends DemoView {
     @Override

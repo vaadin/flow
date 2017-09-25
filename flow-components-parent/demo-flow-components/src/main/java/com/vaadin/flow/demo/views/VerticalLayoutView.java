@@ -17,15 +17,17 @@ package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.layout.FlexLayout.Alignment;
 import com.vaadin.ui.layout.FlexLayout.JustifyContentMode;
 import com.vaadin.ui.layout.VerticalLayout;
-import com.vaadin.ui.paper.button.GeneratedPaperButton;
 
 /**
  * View for the {@link VerticalLayout} component.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Vertical Layout", href = "vertical-layout", subcategory = "Layouts")
 public class VerticalLayoutView extends DemoView {
 
@@ -221,10 +223,8 @@ public class VerticalLayoutView extends DemoView {
 
     private Component createAlignmentButton(VerticalLayout layout, String id,
             Alignment alignment) {
-        GeneratedPaperButton button = new GeneratedPaperButton(
-                alignment.name());
+        Button button = new Button(alignment.name());
         button.setId(id);
-        button.setRaised(true);
         button.addClickListener(event -> layout
                 .setDefaultHorizontalComponentAlignment(alignment));
         return button;
@@ -232,9 +232,8 @@ public class VerticalLayoutView extends DemoView {
 
     private Component createSpacingButton(VerticalLayout layout, String id,
             JustifyContentMode spacing) {
-        GeneratedPaperButton button = new GeneratedPaperButton(spacing.name());
+        Button button = new Button(spacing.name());
         button.setId(id);
-        button.setRaised(true);
         button.addClickListener(event -> layout.setJustifyContentMode(spacing));
         return button;
     }

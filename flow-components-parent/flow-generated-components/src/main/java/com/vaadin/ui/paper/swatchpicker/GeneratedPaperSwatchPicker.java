@@ -16,11 +16,10 @@
 package com.vaadin.ui.paper.swatchpicker;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ComponentSupplier;
 import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
-
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
 import elemental.json.JsonArray;
@@ -88,8 +87,8 @@ import com.vaadin.shared.Registration;
  * </tbody>
  * </table>
  */
-@Generated({"Generator: com.vaadin.generator.ComponentGenerator#0.1-SNAPSHOT",
-		"WebComponent: paper-swatch-picker#2.0.1", "Flow#0.1-SNAPSHOT"})
+@Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
+		"WebComponent: paper-swatch-picker#2.0.1", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-swatch-picker")
 @HtmlImport("frontend://bower_components/paper-swatch-picker/paper-swatch-picker.html")
 public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
