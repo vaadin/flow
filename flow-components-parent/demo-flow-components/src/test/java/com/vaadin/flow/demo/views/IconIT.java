@@ -18,27 +18,17 @@ package com.vaadin.flow.demo.views;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 import com.vaadin.ui.icon.VaadinIcons;
 
 /**
  * Integration tests for the {@link IconView}.
  */
-public class IconIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
-    }
+public class IconIT extends ComponentDemoTest {
 
     @Test
     public void basicIcons() {
