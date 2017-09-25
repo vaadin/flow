@@ -46,6 +46,36 @@ public class ButtonIT extends AbstractChromeTest {
     }
 
     @Test
+    public void clickOnIconButtons_textIsDisplayed() {
+        WebElement leftButton = layout.findElement(By.id("left-icon-button"));
+        WebElement icon = leftButton.findElement(By.tagName("iron-icon"));
+        Assert.assertEquals("vaadin:arrow-left", icon.getAttribute("icon"));
+
+        // the icon is before the text
+        Assert.assertTrue(getCenterX(leftButton) > getCenterX(icon));
+
+        WebElement rightButton = layout.findElement(By.id("right-icon-button"));
+        icon = rightButton.findElement(By.tagName("iron-icon"));
+        Assert.assertEquals("vaadin:arrow-right", icon.getAttribute("icon"));
+
+        // the icon is after the text
+        Assert.assertTrue(getCenterX(rightButton) < getCenterX(icon));
+
+        WebElement thumbButton = layout.findElement(By.id("thumb-icon-button"));
+        icon = thumbButton.findElement(By.tagName("iron-icon"));
+        Assert.assertEquals("vaadin:thumbs-up", icon.getAttribute("icon"));
+
+        scrollIntoViewAndClick(leftButton);
+        waitUntilMessageIsChangedForClickedButton("Left");
+
+        scrollIntoViewAndClick(rightButton);
+        waitUntilMessageIsChangedForClickedButton("Right");
+
+        scrollIntoViewAndClick(thumbButton);
+        waitUntilMessageIsChangedForClickedButton("thumbs up");
+    }
+
+    @Test
     public void clickOnImageButton_textIsDisplayed() {
         WebElement button = layout.findElement(By.id("image-button"));
 
@@ -108,6 +138,10 @@ public class ButtonIT extends AbstractChromeTest {
         WebElement message = layout.findElement(By.id("buttonMessage"));
         waitUntil(driver -> message.getText()
                 .equals("Button " + messageString + " was clicked."));
+    }
+
+    private int getCenterX(WebElement element) {
+        return element.getLocation().getX() + element.getSize().getWidth() / 2;
     }
 
     @Override
