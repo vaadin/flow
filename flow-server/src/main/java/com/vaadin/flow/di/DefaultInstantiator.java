@@ -19,8 +19,11 @@ import java.util.ServiceLoader;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
+import com.vaadin.ui.common.HasElement;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Default instantiator that is used if no other instantiator has been
@@ -64,5 +67,11 @@ public class DefaultInstantiator implements Instantiator {
         ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
                 .load(VaadinServiceInitListener.class, classloader);
         return StreamSupport.stream(loader.spliterator(), false);
+    }
+
+    @Override
+    public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
+            NavigationEvent event) {
+        return ReflectTools.createInstance(routeTargetType);
     }
 }

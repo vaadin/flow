@@ -8,11 +8,29 @@ layout: page
 
 You can use the `RouterLink` component to create links that lead to route targets in the application.
 
+.RouterLink sample for navgation target with and without URL parameter
 [source,java]
 ----
-Div menu = new Div();
-menu.add(new RouterLink("Home", HomeView.class));
-menu.add(new RouterLink("Company", CompanyView.class));
+void routerLink() {
+    Div menu = new Div();
+    menu.add(new RouterLink("Home", HomeView.class));
+    menu.add(new RouterLink("Greeting", GreetingComponent.class, "default"));
+}
+----
+
+.GreetingComponent with URL parameter
+[source,java]
+----
+@Route(value = "greet")
+public class GreetingComponent extends Div
+        implements HasUrlParameter<String> {
+
+    @Override
+    public void setParameter(BeforeNavigationEvent event,
+            String parameter) {
+        setText(String.format("Hello, %s!", parameter));
+    }
+}
 ----
 
 It is also possible to navigate with normal `<a href="company">` type links but these will cause a page reload.
@@ -36,6 +54,5 @@ Router links will work even if the session has expired so you should prefer to u
 
 See also:
 
-* <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
-* <<tutorial-routing-view-parameters#,Using View Parameters>>
-* <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
+* <<tutorial-router-layout#,Router Layouts and Nested Router Targets>>
+* <<tutorial-router-url-parameters#,URL Parameters for Navigation Targets>>
