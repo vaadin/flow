@@ -377,7 +377,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
             return JsonSerializer.toObject(itemType,
                     checkWhetherItemTypeIsSetIfNeeded((JsonValue) property));
         }
-        return null;
+        return getEmptyValue();
     }
 
     @Override

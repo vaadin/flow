@@ -52,14 +52,14 @@ public class ExclusionRegistry {
 
     private static void put(String elementTag, String name,
             Map<String, Set<String>> map) {
-        Objects.requireNonNull(name, "propertyNameToMap cannot be null.");
+        Objects.requireNonNull(name, "elementTag cannot be null.");
 
         map.computeIfAbsent(elementTag, element -> new HashSet<>()).add(name);
     }
 
     /**
      * Excludes a property from being generated for a specific element denoted
-     * by it's tag.
+     * by its tag.
      * 
      * @param elementTag
      *            the tag of the element which the property should be excluded
