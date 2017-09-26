@@ -32,10 +32,10 @@ import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
-import com.vaadin.data.selection.SelectionEvent;
 import com.vaadin.data.selection.SelectionModel;
 import com.vaadin.data.selection.SelectionModel.Single;
 import com.vaadin.data.selection.SingleSelect;
+import com.vaadin.data.selection.SingleSelectionEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
@@ -123,7 +123,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                     public void selectFromClient(T item) {
                         T oldValue = selectedItem;
                         selectedItem = item;
-                        grid.fireEvent(new SelectionEvent<Grid<T>, T>(grid,
+                        grid.fireEvent(
+                                new SingleSelectionEvent<Grid<T>, T>(grid,
                                 grid.asSingleSelect(), oldValue, true));
                     }
 
@@ -132,7 +133,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                         T oldValue = selectedItem;
                         selectedItem = item;
                         grid.getDataCommunicator().reset();
-                        grid.fireEvent(new SelectionEvent<Grid<T>, T>(grid,
+                        grid.fireEvent(
+                                new SingleSelectionEvent<Grid<T>, T>(grid,
                                 grid.asSingleSelect(), oldValue, false));
                     }
 
@@ -189,7 +191,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                             @Override
                             public Registration addValueChangeListener(
                                     ValueChangeListener<Grid<T>, T> listener) {
-                                return grid.addListener(SelectionEvent.class,
+                                return grid.addListener(
+                                        SingleSelectionEvent.class,
                                         (ComponentEventListener) listener);
                             }
 

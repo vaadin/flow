@@ -15,12 +15,9 @@
  */
 package com.vaadin.data.selection;
 
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
-
-import com.vaadin.data.AbstractListing;
-import com.vaadin.ui.common.HasValue;
 
 /**
  * A selection event that unifies the way to access to selection event for multi
@@ -33,65 +30,26 @@ import com.vaadin.ui.common.HasValue;
  * @param <T>
  *            the data type of the selection model
  */
-public class SelectionEvent<L extends AbstractListing<T>, T>
-        extends HasValue.ValueChangeEvent<L, T> {
+public interface SelectionEvent<T> extends Serializable {
 
     /**
-     * Creates a new selection change event in a component.
-     *
-     * @param component
-     *            the component where the event originated
-     * @param source
-     *            the single select source
-     * @param oldSelection
-     *            the item that was previously selected
-     * @param userOriginated
-     *            {@code true} if this event originates from the client,
-     *            {@code false} otherwise.
-     */
-    public SelectionEvent(L listing, SingleSelect<L, T> source, T oldSelection,
-            boolean userOriginated) {
-        super(listing, source, oldSelection, userOriginated);
-    }
-
-    /**
-     * Returns an optional of the item that was selected, or an empty optional
-     * if a previously selected item was deselected.
+     * Get first selected data item.
      * <p>
-     * The result is the current selection of the source
-     * {@link AbstractSingleSelect} object. So it's always exactly the same as
-     * optional describing {@link AbstractSingleSelect#getValue()}.
+     * This is the same as {@link SingleSelectionEvent#getSelectedItem()} in
+     * case of single selection and the first selected item from
+     * {@link MultiSelectionEvent#getNewSelection()} in case of multi selection.
      *
-     * @see #getValue()
-     *
-     * @return the selected item or an empty optional if deselected
-     *
-     * @see SelectionModel.Single#getSelectedItem()
+     * @return the first selected item.
      */
-    public Optional<T> getSelectedItem() {
-        return Optional.ofNullable(getValue());
-    }
+    Optional<T> getFirstSelectedItem();
 
     /**
-     * The listing component on which the Event initially occurred.
+     * Gets all the currently selected items.
+     * <p>
+     * This method applies more to multiselection - for single select it returns
+     * either an empty set or a set containing the only selected item.
      *
-     * @return The listing component on which the Event initially occurred.
+     * @return return all the selected items, if any, never {@code null}
      */
-    @Override
-    public L getSource() {
-        return super.getSource();
-    }
-
-    public Optional<T> getFirstSelectedItem() {
-        return getSelectedItem();
-    }
-
-    public Set<T> getAllSelectedItems() {
-        Optional<T> selectedItem = getSelectedItem();
-        if (selectedItem.isPresent()) {
-            return Collections.singleton(selectedItem.get());
-        } else {
-            return Collections.emptySet();
-        }
-    }
+    Set<T> getAllSelectedItems();
 }
