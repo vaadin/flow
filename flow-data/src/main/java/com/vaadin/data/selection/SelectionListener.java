@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.data.selection;
 
+import com.vaadin.data.AbstractListing;
 import com.vaadin.ui.event.ComponentEventListener;
 
 /**

@@ -13,9 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.grid;
 
 import com.vaadin.data.Binder;
+import com.vaadin.data.selection.SelectionModel;
+import com.vaadin.data.selection.SingleSelect;
 
 /**
  * Single selection model interface for Grid.

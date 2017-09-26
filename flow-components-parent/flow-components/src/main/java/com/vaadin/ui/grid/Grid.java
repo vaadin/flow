@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.grid;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,18 +24,23 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-import javax.swing.SingleSelectionModel;
-
+import com.vaadin.data.AbstractListing;
+import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.ValueProvider;
 import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.selection.SelectionEvent;
+import com.vaadin.data.selection.SelectionModel;
+import com.vaadin.data.selection.SelectionModel.Single;
+import com.vaadin.data.selection.SingleSelect;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
@@ -94,7 +99,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * Selection mode representing the built-in selection models in grid.
      * <p>
      * These enums can be used in {@link Grid#setSelectionMode(SelectionMode)}
-     * to easily switch between the build-in selection models.
+     * to easily switch between the built-in selection models.
      *
      * @see Grid#setSelectionMode(SelectionMode)
      * @see Grid#setSelectionModel(GridSelectionModel)
@@ -102,10 +107,9 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     public enum SelectionMode {
 
         /**
-         * Single selection mode that maps to built-in
-         * {@link SingleSelectionModel}.
+         * Single selection mode that maps to built-in {@link Single}.
          *
-         * @see SingleSelectionModelImpl
+         * @see GridSingleSelectionModel
          */
         SINGLE {
             @Override
@@ -200,10 +204,10 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         },
 
         /**
-         * Multiselection mode that maps to built-in {@link MultiSelectionModel}
-         * .
+         * Multiselection mode that maps to built-in
+         * {@link SelectionModel.Multi}.
          *
-         * @see MultiSelectionModelImpl
+         * @see GridMultiSelectionModel
          */
         MULTI {
             @Override
@@ -215,7 +219,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         /**
          * Selection model that doesn't allow selection.
          *
-         * @see NoSelectionModel
+         * @see GridNoSelectionModel
          */
         NONE {
             @Override
@@ -376,7 +380,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * Use this grid as a single select in {@link Binder}.
      * <p>
      * Throws {@link IllegalStateException} if the grid is not using a
-     * {@link SingleSelectionModel}.
+     * {@link GridSingleSelectionModel}.
      *
      * @return the single select wrapper that can be used in binder
      * @throws IllegalStateException

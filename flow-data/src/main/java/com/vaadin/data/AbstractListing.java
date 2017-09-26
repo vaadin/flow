@@ -13,12 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.data;
 
-import com.vaadin.data.HasDataProvider;
-import com.vaadin.data.HasFilterableDataProvider;
-import com.vaadin.data.HasItems;
 import com.vaadin.data.provider.DataCommunicator;
+import com.vaadin.ui.Component;
 
 /**
  * A base class for listing components. Provides common handling for fetching

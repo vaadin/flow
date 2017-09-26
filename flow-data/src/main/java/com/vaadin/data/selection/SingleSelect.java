@@ -13,26 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.data.selection;
 
-import com.vaadin.data.Binder;
+import com.vaadin.data.AbstractListing;
+import com.vaadin.ui.common.HasValue;
 
 /**
- * Multiselection model interface for Grid.
+ * Single selection component whose selection is treated as a value.
  *
  * @author Vaadin Ltd
  *
+ * @param <L>
+ *            the listing component type
  * @param <T>
- *            the type of items in grid
+ *            the selection value type
+ *
  */
-public interface GridMultiSelectionModel<T>
-        extends GridSelectionModel<T>, SelectionModel.Multi<T> {
+public interface SingleSelect<L extends AbstractListing<T>, T>
+        extends HasValue<L, T> {
 
-    /**
-     * Gets a wrapper to use this multiselection model as a multiselect in
-     * {@link Binder}.
-     *
-     * @return the multiselect wrapper
-     */
-    MultiSelect<? extends Grid<T>, T> asMultiSelect();
 }

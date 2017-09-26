@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.data.selection;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.data.AbstractListing;
 import com.vaadin.ui.common.HasValue;
 
 /**

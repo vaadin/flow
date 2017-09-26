@@ -23,9 +23,9 @@ import java.util.stream.IntStream;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.Grid;
-import com.vaadin.ui.GridSelectionModel;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
 
 /**

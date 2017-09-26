@@ -13,34 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.ui.grid;
+
+import com.vaadin.data.Binder;
+import com.vaadin.data.selection.MultiSelect;
+import com.vaadin.data.selection.SelectionModel;
 
 /**
- * The server-side interface that controls Grid's selection state.
+ * Multiselection model interface for Grid.
+ *
+ * @author Vaadin Ltd
  *
  * @param <T>
- *            the grid bean type
+ *            the type of items in grid
  */
-public interface GridSelectionModel<T> extends SelectionModel<T> {
+public interface GridMultiSelectionModel<T>
+        extends GridSelectionModel<T>, SelectionModel.Multi<T> {
 
     /**
-     * Removes this selection model from the grid.
-     */
-    void remove();
-
-    /**
-     * Handles the selection of an item that originates from the client.
+     * Gets a wrapper to use this multiselection model as a multiselect in
+     * {@link Binder}.
      *
-     * @param item
-     *            the item being selected
+     * @return the multiselect wrapper
      */
-    void selectFromClient(T item);
-
-    /**
-     * Handles the deselection of an item that originates from the client.
-     *
-     * @param item
-     *            the item beign deselected
-     */
-    void deselectFromClient(T item);
+    MultiSelect<? extends Grid<T>, T> asMultiSelect();
 }
