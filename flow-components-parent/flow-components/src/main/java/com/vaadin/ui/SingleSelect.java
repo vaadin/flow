@@ -22,13 +22,13 @@ import com.vaadin.ui.common.HasValue;
  *
  * @author Vaadin Ltd
  *
- * @param <C>
- *            the component type
+ * @param <L>
+ *            the listing component type
  * @param <T>
  *            the selection value type
  *
  */
-public interface SingleSelect<C extends AbstractListing<T>, T>
-        extends HasValue<C, T> {
+public interface SingleSelect<L extends AbstractListing<T>, T>
+        extends HasValue<L, T> {
 
 }

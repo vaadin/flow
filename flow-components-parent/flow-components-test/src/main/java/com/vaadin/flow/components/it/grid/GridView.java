@@ -50,10 +50,10 @@ public class GridView extends TestView {
 
         Button toggleSelect = new Button("toggle select");
         toggleSelect.addClickListener(event -> {
-            if (grid.getSelectionModel().isSelected("600")) {
-                grid.getSelectionModel().deselect("600");
+            if (grid.getSelectionModel().isSelected("3")) {
+                grid.getSelectionModel().deselect("3");
             } else {
-                grid.getSelectionModel().select("600");
+                grid.getSelectionModel().select("3");
             }
         });
         add(grid, toggleSelect);

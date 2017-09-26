@@ -9,6 +9,37 @@ window.gridConnector = {
         grid.pageSize = pageSize;
         grid.size = 0; // To avoid NaN here and there before we get proper data
 
+        var doSelection = function(item, userOriginated) {
+            grid.selectedItems = [];
+            grid.selectItem(item);
+            selectedKeys = {};
+            selectedKeys[item.key] = item;
+            if (userOriginated) {
+                grid.$server.select(item.key);
+            }
+        };
+
+        var doDeselection = function(item, userOriginated) {
+            grid.deselectItem(item);
+            delete selectedKeys[item.key];
+            if (userOriginated) {
+                grid.$server.deselect(item.key);
+            }
+        };
+
+        // $connector postfix to reduce 
+        grid._activeItemChanged$connector = function(newVal, oldVal) {
+            if (!newVal) {
+                return;
+            }
+            if (!selectedKeys[newVal.key]) {
+                doSelection(newVal, true);
+            } else {
+                doDeselection(newVal, true);
+            }
+        };
+        grid._createPropertyObserver('activeItem', '_activeItemChanged$connector', true);
+
         grid.dataProvider = function(params, callback) {
             if (params.pageSize != grid.pageSize) { 
                 throw "Invalid pageSize"; 
@@ -37,22 +68,14 @@ window.gridConnector = {
         }
 
         var updateGridCache = function(page) {
-            if (!grid._cache[page]) {
-                return;
-            }
-
             var items = cache[page];
-
-            if (!items) {
-                delete grid._cache[page];
-            }
-
             // Force update unless there's a callback waiting
             if (!pageCallbacks[page]) {
                 if (items) {
                     // Replace existing cache page
                     grid._cache[page] = items;
                 } else {
+                    delete grid._cache[page];
                     // Fake page to pass to _updateItems
                     items = new Array(grid.pageSize);
                 }
@@ -71,16 +94,14 @@ window.gridConnector = {
 
             for (var i = 0; i < updatedPageCount; i++) {
                 var page = firstPage + i;
-                var items = items.slice(i * grid.pageSize, (i + 1) * grid.pageSize);
-                cache[page] = items;
-                for(var j = 0; j < items.length; j++) {
-                    var item = items[j]
+                var slice = items.slice(i * grid.pageSize, (i + 1) * grid.pageSize);
+                cache[page] = slice;
+                for(var j = 0; j < slice.length; j++) {
+                    var item = slice[j]
                     if (item.selected && !selectedKeys[item.key]) {
-                        grid.selectItem(item);
-                        selectedKeys[item.key] = item;
+                        doSelection(item);
                     } else if (selectedKeys[item.key]) {
-                        grid.deselectItem(item);
-                        delete selectedKeys[item.key];
+                        doDeselection(item);
                     }
                 }
                 updateGridCache(page);
@@ -101,8 +122,7 @@ window.gridConnector = {
                 for (var j = 0; j < items.length; j++) {
                     var item = items[j];
                     if (selectedKeys[item.key]) {
-                        grid.deselectItem(item);
-                        delete selectedKeys[item.key];
+                        doDeselection(item);
                     }
                 }
                 delete cache[page];
