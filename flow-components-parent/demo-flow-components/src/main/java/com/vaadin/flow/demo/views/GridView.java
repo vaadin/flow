@@ -15,13 +15,17 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.GridSelectionModel;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link Grid} demo.
@@ -54,6 +58,10 @@ public class GridView extends DemoView {
             this.age = age;
         }
 
+        @Override
+        public String toString() {
+            return String.format("[Person name: %s, age: %s]", name, age);
+        }
     }
 
     @Override
@@ -62,6 +70,7 @@ public class GridView extends DemoView {
 
         createBasicUsage();
         createCallBackDataProvider();
+        createSingleSelect();
     }
 
     private void createBasicUsage() {
@@ -107,8 +116,44 @@ public class GridView extends DemoView {
         addCard("Grid with lazy loading", grid);
     }
 
-    private Stream<Person> createItems() {
-        return IntStream.range(1, 200).mapToObj(this::createPerson);
+    private void createSingleSelect() {
+        Div messageDiv = new Div();
+        // begin-source-example
+        // source-example-heading: Grid Single Selection
+        List<Person> items = createItems();
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(items);
+
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+
+        grid.asSingleSelect()
+                .addValueChangeListener(event -> messageDiv
+                        .setText(String.format(
+                                "Selection changed from %s to %s, selection is from client: %s",
+                                event.getOldValue(),
+                                event.getValue(), event.isFromClient())));
+
+        Button toggleSelect = new Button(
+                "Toggle selection of the first person");
+        Person firstItem = items.get(0);
+        toggleSelect.addClickListener(event -> {
+            GridSelectionModel<Person> selectionModel = grid
+                    .getSelectionModel();
+            if (selectionModel.isSelected(firstItem)) {
+                selectionModel.deselect(firstItem);
+            } else {
+                selectionModel.select(firstItem);
+            }
+        });
+        // end-source-example
+        grid.setId("single-selection");
+        addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
+    }
+
+    private List<Person> createItems() {
+        return IntStream.range(1, 200).mapToObj(this::createPerson)
+                .collect(Collectors.toList());
     }
 
     private Person createPerson(int index) {
