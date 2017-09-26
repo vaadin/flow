@@ -39,7 +39,9 @@ import com.vaadin.ui.Page;
  * you should never need to create your own configuration instances.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class RouterConfiguration
         implements Serializable, ImmutableRouterConfiguration {
     private final boolean modifiable;

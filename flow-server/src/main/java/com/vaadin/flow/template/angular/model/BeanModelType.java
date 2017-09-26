@@ -47,7 +47,9 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @param <T>
  *            the proxy type used by this bean type
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class BeanModelType<T> implements ComplexModelType<T> {
 
     private static class PropertyMapBuilder {

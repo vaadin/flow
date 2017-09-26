@@ -24,7 +24,9 @@ import com.vaadin.router.event.NavigationEvent;
  * Resolves the details in a navigation event to find a handler for the event.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 @FunctionalInterface
 public interface Resolver extends Serializable {
     /**

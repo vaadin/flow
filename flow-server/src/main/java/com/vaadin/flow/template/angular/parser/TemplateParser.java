@@ -46,7 +46,9 @@ import com.vaadin.flow.util.MessageDigestUtil;
  * Parser for an Angular 2-like template syntax.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class TemplateParser {
 
     private static final String ROOT_CLARIFICATION = "If the template contains <html> and <body> tags,"

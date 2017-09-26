@@ -26,7 +26,9 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  *
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public abstract class AbstractBindingValueProvider
         implements BindingValueProvider {
 

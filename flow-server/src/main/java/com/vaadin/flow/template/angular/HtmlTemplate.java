@@ -30,7 +30,9 @@ import com.vaadin.ui.AngularTemplate;
  * @see AngularTemplate
  * @author Vaadin Ltd
  *
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

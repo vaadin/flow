@@ -27,7 +27,9 @@ import com.vaadin.ui.Page;
  * used by a {@link Router}.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public interface ImmutableRouterConfiguration {
     /**
      * Gets the resolver to use for resolving what to show for a given

@@ -23,7 +23,9 @@ import elemental.json.JsonValue;
  * A template binding value provider that always produces the same value.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class StaticBindingValueProvider extends AbstractBindingValueProvider {
     /**
      * Type identifier used for static bindings in JSON messages.

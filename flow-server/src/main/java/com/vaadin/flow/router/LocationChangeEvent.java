@@ -33,7 +33,9 @@ import com.vaadin.ui.UI;
  * context in which a view will be used changes.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class LocationChangeEvent extends EventObject {
     private final UI ui;
     private final NavigationTrigger trigger;

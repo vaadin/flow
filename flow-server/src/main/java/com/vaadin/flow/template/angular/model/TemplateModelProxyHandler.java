@@ -47,7 +47,9 @@ import net.bytebuddy.implementation.bind.annotation.This;
  * Invocation handler for {@link TemplateModel} proxy objects.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class TemplateModelProxyHandler implements Serializable {
 
     /**

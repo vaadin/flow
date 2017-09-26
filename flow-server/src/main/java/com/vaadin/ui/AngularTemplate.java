@@ -67,7 +67,9 @@ import com.vaadin.util.ReflectTools;
  * @see HtmlTemplate
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public abstract class AngularTemplate extends AbstractTemplate<TemplateModel>
         implements HasChildView {
 

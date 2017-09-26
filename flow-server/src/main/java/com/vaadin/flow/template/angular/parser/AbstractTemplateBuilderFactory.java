@@ -31,8 +31,9 @@ import com.vaadin.flow.template.angular.TemplateParseException;
  *            the node type which factory is able to handle
  *
  * @author Vaadin Ltd
- *
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public abstract class AbstractTemplateBuilderFactory<T extends Node>
         implements TemplateNodeBuilderFactory<T> {
 

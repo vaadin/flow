@@ -35,7 +35,9 @@ import com.vaadin.ui.UI;
  * site or an application.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class Router implements RouterInterface {
     /**
      * The live configuration instance. All changes to the configuration are

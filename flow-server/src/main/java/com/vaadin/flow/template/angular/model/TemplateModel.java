@@ -39,7 +39,9 @@ import com.vaadin.flow.model.PropertyFilter;
  * </ul>
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public interface TemplateModel extends Serializable {
 
     /**

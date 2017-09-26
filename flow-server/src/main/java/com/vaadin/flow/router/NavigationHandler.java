@@ -32,7 +32,9 @@ import com.vaadin.ui.UI;
  * everything related to it will be locked.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 @FunctionalInterface
 public interface NavigationHandler extends Serializable {
     /**

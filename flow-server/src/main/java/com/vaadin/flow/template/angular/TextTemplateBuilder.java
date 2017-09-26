@@ -22,7 +22,9 @@ import java.util.List;
  * Builder for text template nodes.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class TextTemplateBuilder implements TemplateNodeBuilder {
 
     private BindingValueProvider binding;

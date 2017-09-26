@@ -32,7 +32,9 @@ import com.vaadin.flow.model.ModelType;
  * Utility class for mapping Bean values to {@link TemplateModel} values.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class TemplateModelUtil {
 
     private TemplateModelUtil() {

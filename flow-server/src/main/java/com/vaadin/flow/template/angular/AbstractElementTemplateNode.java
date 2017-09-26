@@ -23,7 +23,9 @@ import com.vaadin.flow.dom.ElementStateProvider;
  * A template node that always represents one element in the DOM tree.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public abstract class AbstractElementTemplateNode extends TemplateNode {
 
     private final ElementStateProvider stateProvider;
