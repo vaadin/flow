@@ -226,7 +226,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	public void setValue(java.lang.Boolean value) {
 		Objects.requireNonNull(value,
 				"GeneratedVaadinCheckbox value must not be null");
-		getElement().setProperty("checked", value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("checked", value);
+		}
 	}
 
 	/**

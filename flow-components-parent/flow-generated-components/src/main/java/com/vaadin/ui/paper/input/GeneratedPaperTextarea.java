@@ -24,6 +24,7 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
@@ -272,7 +273,9 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 */
 	@Override
 	public void setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("value", value == null ? "" : value);
+		}
 	}
 
 	/**
