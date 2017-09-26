@@ -16,52 +16,54 @@
 package com.vaadin.ui.combobox;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import com.vaadin.data.HasDataProvider;
 import com.vaadin.data.HasItems;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.Query;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.server.KeyMapper;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.ItemCaptionGenerator;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.polymertemplate.Id;
-import com.vaadin.util.JsonSerializer;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.JsonNull;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
  * Server-side component for the {@code vaadin-combo-box} webcomponent. It
  * contains the same features of the webcomponent, such as item filtering,
  * object selection and item templating.
- * <p>
- * Please note that for the object deserialization (from json to a Java object),
- * this component must know the {@link Class} of the deserialized object. This
- * is done automatically when the {@link #setItems(Collection)} or
- * {@link #setFilteredItems(Collection)} methods are called with a non-empty
- * collection, but if an empty combo box is created, then the
- * {@link #setItemType(Class)} should be called to set the Class of the items
- * (before any deserialization is done, like on {@link #getValue()} or
- * {@link #getItems()}). This is needed when the items are set from the
- * client-side and the component is created by hooking up to a model using the
- * {@link Id} annotation.
  *
  * @param <T>
  *            the type of the items to be inserted in the combo box
  */
-public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
-        HasSize, HasItems<T>, HasValidation, HasValue<ComboBox<T>, T> {
 
+public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
+        implements HasSize, HasItems<T>, HasValidation,
+        HasValue<ComboBox<T>, T>, HasDataProvider<T> {
+    private static final String KEY_PROPERTY = "key";
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
 
     private Class<T> itemType;
     private T oldValue;
+    private ItemCaptionGenerator<T> itemCaptionGenerator = String::valueOf;
+
+    private DataProvider<T, ?> dataProvider;
+
+    private final KeyMapper<T> keyMapper = new KeyMapper<>();
 
     /**
      * Default constructor. Creates an empty combo box.
@@ -74,18 +76,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME, "change");
         getElement().synchronizeProperty("value", "value-changed");
 
-        /*
-         * The webcomponent have properties and events depending on the type of
-         * the items inside the combo-box:
-         * 
-         * - selected-item and selected-item-changed for objects
-         * 
-         * - value and value-changed for strings
-         * 
-         * The Java API only uses the ValueChangeEvent/Listener, so we need to
-         * intercept both low level events and fire a single high level
-         * ValueChangeEvent
-         */
         getElement().addEventListener("selected-item-changed", event -> {
             if (itemType != String.class) {
                 fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
@@ -93,14 +83,9 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
             }
         });
 
-        getElement().addEventListener("value-changed", event -> {
-            if (itemType == String.class) {
-                String value = getElement().getProperty("value");
-                setValue((T) value);
-                fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
-                oldValue = getValue();
-            }
-        });
+        getElement().synchronizeProperty("value", "change");
+        setItemLabelPath("caption");
+        setItemValuePath("caption");
     }
 
     /**
@@ -112,34 +97,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
      */
     public ComboBox(String label) {
         this();
-        setLabel(label);
-    }
-
-    /**
-     * Creates an empty combo box with the defined {@link Class} for the items.
-     *
-     * @param itemType
-     *            the Class of the items. This class definition is used when
-     *            deserializing json to Java objects
-     */
-    public ComboBox(Class<T> itemType) {
-        this();
-        setItemType(itemType);
-    }
-
-    /**
-     * Creates an empty combo box with the defined {@link Class} for the items
-     * and a label.
-     *
-     * @param itemType
-     *            the Class of the items. This class definition is used when
-     *            deserializing json to Java objects
-     * @param label
-     *            the label describing the combo box
-     */
-    public ComboBox(Class<T> itemType, String label) {
-        this();
-        setItemType(itemType);
         setLabel(label);
     }
 
@@ -201,7 +158,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
      *            the template to be used to render the items inside the list of
      *            this combo box
      */
-    public void setItemTemplate(String template) {
+    private void setItemTemplate(String template) {
         getElement().getChildren()
                 .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
                 .findFirst().ifPresent(element -> element.removeFromParent());
@@ -216,7 +173,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
      *
      * @return the current item template, or <code>null</code> if it wasn't set
      */
-    public String getItemTemplate() {
+    private String getItemTemplate() {
         Optional<Element> optionalTemplate = getElement().getChildren()
                 .filter(child -> TEMPLATE_TAG_NAME.equals(child.getTag()))
                 .findFirst();
@@ -227,30 +184,10 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
         return null;
     }
 
-    /**
-     * Gets the current items set on the combo box. To deserialize from json to
-     * the type of the object expected by the combo box, the item type must be
-     * set. See {@link #setItemType(Class)} for instructions.
-     *
-     * @return the current items in the combo box, or empty list if there are
-     *         none
-     */
-    public List<T> getItems() {
-        return JsonSerializer.toObjects(itemType,
-                checkWhetherItemTypeIsSetIfNeeded(protectedGetItems()));
-    }
-
-    /**
-     * Sets the selectable items in this combo box. Objects are serialized to
-     * json using the {@link JsonSerializer#toJson(Collection)}.
-     *
-     * @param items
-     *            the selectable items in this combo box
-     */
     @Override
-    public void setItems(Collection<T> items) {
-        tryToSetItemTypeIfNeeded(items);
-        setItems(JsonSerializer.toJson(items));
+    public void setDataProvider(DataProvider<T, ?> dataProvider) {
+        this.dataProvider = dataProvider;
+        refresh();
     }
 
     /**
@@ -259,12 +196,8 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
      * methods {@link #setValue(Object)}, {@link #setItems(Collection)} or
      * {@link #setFilteredItems(Collection)} are called with a non-empty
      * collection of items.
-     * <p>
-     * The item type is needed when deserializing objects from json, which occur
-     * when calling {@link #getValue()}, {@link #getItems()} and
-     * {@link #getFilteredItems()} methods.
      *
-     * @return the type of the items inside the combo box
+     * @return the data provider
      */
     public Class<T> getItemType() {
         return itemType;
@@ -289,14 +222,22 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
         this.itemType = itemType;
     }
 
+    public DataProvider<T, ?> getDataProvider() {
+        return dataProvider;
+    }
+
     /**
      * Gets the list of items which were filtered by the user input.
      *
      * @return the list of filtered items, or empty list if none were filtered
      */
     public List<T> getFilteredItems() {
-        return JsonSerializer.toObjects(itemType,
-                checkWhetherItemTypeIsSetIfNeeded(protectedGetFilteredItems()));
+        JsonArray items = protectedGetFilteredItems();
+        List<T> result = new ArrayList<>(items.length());
+        for (int i = 0; i < items.length(); i++) {
+            result.add(getData(items.get(i)));
+        }
+        return result;
     }
 
     /**
@@ -317,44 +258,33 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
      *            the items to show in response of a filter input
      */
     public void setFilteredItems(Collection<T> filteredItems) {
-        tryToSetItemTypeIfNeeded(filteredItems);
-        setFilteredItems(JsonSerializer.toJson(filteredItems));
+        setFilteredItems(generateJson(filteredItems.stream()));
     }
 
-    /*
-     * Method that checks if the item type is set if needed. The item type is
-     * not needed to deserialize null objects and empty arrays.
+    /**
+     * Sets the item caption generator that is used to produce the strings shown
+     * in the combo box for each item. By default,
+     * {@link String#valueOf(Object)} is used.
+     *
+     * @param itemCaptionGenerator
+     *            the item caption provider to use, not null
      */
-    private <I extends JsonValue> I checkWhetherItemTypeIsSetIfNeeded(I value) {
-        if (itemType != null || value == null || value instanceof JsonNull) {
-            return value;
-        }
-        if (value instanceof JsonArray && ((JsonArray) value).length() == 0) {
-            return value;
-        }
-        throw new IllegalStateException(
-                "Error: itemType is null. Set the type by using setItemType(Class<T>) method or by setting items using the "
-                        + "setItems(Collection<T>) or setFilteredItems(Collection<T>) methods");
+    public void setItemCaptionGenerator(
+            ItemCaptionGenerator<T> itemCaptionGenerator) {
+        Objects.requireNonNull(itemCaptionGenerator,
+                "Item caption generators must not be null");
+        this.itemCaptionGenerator = itemCaptionGenerator;
+        refresh();
     }
 
-    /*
-     * Method that does the best effort to get the actual Class of the elements
-     * inside the combo box, since it's not possible to get it directly due to
-     * limitations on Java generics.
+    /**
+     * Gets the item caption generator that is used to produce the strings shown
+     * in the combo box for each item.
+     *
+     * @return the item caption generator used, not null
      */
-    private void tryToSetItemTypeIfNeeded(Collection<T> items) {
-        if (itemType == null && items != null && !items.isEmpty()) {
-            setItemType((Class<T>) items.iterator().next().getClass());
-        }
-    }
-
-    /*
-     * Same as the overloaded method, but for a single item.
-     */
-    private void tryToSetItemTypeIfNeeded(T item) {
-        if (itemType == null && item != null) {
-            setItemType((Class<T>) item.getClass());
-        }
+    public ItemCaptionGenerator<T> getItemCaptionGenerator() {
+        return itemCaptionGenerator;
     }
 
     @Override
@@ -364,18 +294,18 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
 
     @Override
     public void setValue(T value) {
-        tryToSetItemTypeIfNeeded(value);
-        JsonValue json = JsonSerializer.toJson(value);
-        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
+        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME,
+                generateJson(value));
     }
 
     @Override
     public T getValue() {
         Serializable property = getElement()
                 .getPropertyRaw(SELECTED_ITEM_PROPERTY_NAME);
-        if (property instanceof JsonValue) {
-            return JsonSerializer.toObject(itemType,
-                    checkWhetherItemTypeIsSetIfNeeded((JsonValue) property));
+        if (property instanceof JsonObject) {
+            JsonObject selected = (JsonObject) property;
+            assert selected.hasKey(KEY_PROPERTY);
+            return keyMapper.get(selected.getString(KEY_PROPERTY));
         }
         return getEmptyValue();
     }
@@ -386,5 +316,39 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
 
         return addListener(ValueChangeEvent.class,
                 (ValueChangeListener) listener);
+    }
+
+    private JsonArray generateJson(Stream<T> data) {
+        JsonArray array = Json.createArray();
+        data.map(this::generateJson)
+                .forEachOrdered(json -> array.set(array.length(), json));
+        return array;
+    }
+
+    private JsonValue generateJson(T item) {
+        JsonObject json = Json.createObject();
+        json.put(KEY_PROPERTY, keyMapper.key(item));
+
+        json.put("caption", itemCaptionGenerator.apply(item));
+
+        return json;
+    }
+
+    private T getData(JsonObject item) {
+        if (item == null) {
+            return null;
+        }
+        assert item.hasKey(KEY_PROPERTY);
+        JsonValue key = item.get(KEY_PROPERTY);
+        return keyMapper.get(key.asString());
+    }
+
+    private void refresh() {
+        keyMapper.removeAll();
+        if (getDataProvider() != null) {
+            JsonArray array = generateJson(
+                    getDataProvider().fetch(new Query<>()));
+            setItems(array);
+        }
     }
 }
