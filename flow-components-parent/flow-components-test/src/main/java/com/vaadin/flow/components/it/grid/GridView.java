@@ -26,7 +26,6 @@ import com.vaadin.ui.button.Button;
  * @author Vaadin Ltd.
  */
 public class GridView extends TestView {
-
     /**
      * Creates a view with a grid.
      */
@@ -48,21 +47,7 @@ public class GridView extends TestView {
                 event -> setProvider(grid));
         updateProvider.setId("update-provider");
 
-        Button toggleSelect = new Button("toggle select");
-        toggleSelect.addClickListener(event -> {
-            if (grid.getSelectionModel().isSelected("3")) {
-                grid.getSelectionModel().deselect("3");
-            } else {
-                grid.getSelectionModel().select("3");
-            }
-        });
-        add(grid, toggleSelect);
-
-        grid.asSingleSelect()
-                .addValueChangeListener(event -> System.out.println(String
-                        .format("Selection changed from %s to %s, isFromClient: %s",
-                                event.getOldValue(), event.getValue(),
-                                event.isFromClient())));
+        add(updateProvider);
     }
 
     private void setProvider(Grid<String> grid) {
