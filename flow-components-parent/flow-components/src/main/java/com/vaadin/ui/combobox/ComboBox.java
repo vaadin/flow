@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui.combobox;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -23,8 +24,10 @@ import java.util.Optional;
 
 import com.vaadin.data.HasItems;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
+import com.vaadin.ui.common.HasValue;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.util.JsonSerializer;
 
@@ -43,7 +46,7 @@ import elemental.json.JsonValue;
  * {@link #setFilteredItems(Collection)} methods are called with a non-empty
  * collection, but if an empty combo box is created, then the
  * {@link #setItemType(Class)} should be called to set the Class of the items
- * (before any deserialization is done, like on {@link #getSelectedItem()} or
+ * (before any deserialization is done, like on {@link #getValue()} or
  * {@link #getItems()}). This is needed when the items are set from the
  * client-side and the component is created by hooking up to a model using the
  * {@link Id} annotation.
@@ -51,13 +54,14 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the type of the items to be inserted in the combo box
  */
-public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
-        implements HasSize, HasItems<T>, HasValidation {
+public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
+        HasSize, HasItems<T>, HasValidation, HasValue<ComboBox<T>, T> {
 
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
 
     private Class<T> itemType;
+    private T oldValue;
 
     /**
      * Default constructor. Creates an empty combo box.
@@ -68,7 +72,35 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME,
                 "selected-item-changed");
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME, "change");
-        getElement().synchronizeProperty("value", "change");
+        getElement().synchronizeProperty("value", "value-changed");
+
+        /*
+         * The webcomponent have properties and events depending on the type of
+         * the items inside the combo-box:
+         * 
+         * - selected-item and selected-item-changed for objects
+         * 
+         * - value and value-changed for strings
+         * 
+         * The Java API only uses the ValueChangeEvent/Listener, so we need to
+         * intercept both low level events and fire a single high level
+         * ValueChangeEvent
+         */
+        getElement().addEventListener("selected-item-changed", event -> {
+            if (itemType != String.class) {
+                fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
+                oldValue = getValue();
+            }
+        });
+
+        getElement().addEventListener("value-changed", event -> {
+            if (itemType == String.class) {
+                String value = getElement().getProperty("value");
+                setValue((T) value);
+                fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
+                oldValue = getValue();
+            }
+        });
     }
 
     /**
@@ -224,12 +256,12 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Gets the {@link Class} representation of the items in the combo box. The
      * item type can be set manually or be automatically detected when the
-     * methods {@link #setSelectedItem(Object)}, {@link #setItems(Collection)}
-     * or {@link #setFilteredItems(Collection)} are called with a non-empty
+     * methods {@link #setValue(Object)}, {@link #setItems(Collection)} or
+     * {@link #setFilteredItems(Collection)} are called with a non-empty
      * collection of items.
      * <p>
      * The item type is needed when deserializing objects from json, which occur
-     * when calling {@link #getSelectedItem()}, {@link #getItems()} and
+     * when calling {@link #getValue()}, {@link #getItems()} and
      * {@link #getFilteredItems()} methods.
      *
      * @return the type of the items inside the combo box
@@ -241,12 +273,12 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Sets the {@link Class} representation of the items in the combo box. The
      * item type can be automatically detected when the methods
-     * {@link #setSelectedItem(Object)}, {@link #setItems(Collection)} or
+     * {@link #setValue(Object)}, {@link #setItems(Collection)} or
      * {@link #setFilteredItems(Collection)} are called with a non-empty
      * collection of items.
      * <p>
      * The item type is needed when deserializing objects from json, which occur
-     * when calling {@link #getSelectedItem()}, {@link #getItems()} and
+     * when calling {@link #getValue()}, {@link #getItems()} and
      * {@link #getFilteredItems()} methods.
      *
      * @param itemType
@@ -255,30 +287,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     public void setItemType(Class<T> itemType) {
         Objects.requireNonNull(itemType, "itemType can not be null");
         this.itemType = itemType;
-    }
-
-    /**
-     * Gets the selected object of this combo box.
-     *
-     * @return the selected object, or <code>null</code> if none was selected
-     */
-    public T getSelectedItem() {
-        return JsonSerializer.toObject(itemType,
-                checkWhetherItemTypeIsSetIfNeeded(protectedGetSelectedItem()));
-    }
-
-    /**
-     * Manually sets the selected object of this combo box (without user
-     * interaction). This can be used to set a default value of the combo box.
-     *
-     * @param item
-     *            the selected object, or <code>null</code> to clear the
-     *            selection
-     */
-    public void setSelectedItem(T item) {
-        tryToSetItemTypeIfNeeded(item);
-        JsonValue json = JsonSerializer.toJson(item);
-        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
     }
 
     /**
@@ -350,7 +358,33 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     }
 
     @Override
-    public String getEmptyValue() {
-        return "";
+    public T getEmptyValue() {
+        return null;
+    }
+
+    @Override
+    public void setValue(T value) {
+        tryToSetItemTypeIfNeeded(value);
+        JsonValue json = JsonSerializer.toJson(value);
+        getElement().setPropertyJson(SELECTED_ITEM_PROPERTY_NAME, json);
+    }
+
+    @Override
+    public T getValue() {
+        Serializable property = getElement()
+                .getPropertyRaw(SELECTED_ITEM_PROPERTY_NAME);
+        if (property instanceof JsonValue) {
+            return JsonSerializer.toObject(itemType,
+                    checkWhetherItemTypeIsSetIfNeeded((JsonValue) property));
+        }
+        return getEmptyValue();
+    }
+
+    @Override
+    public Registration addValueChangeListener(
+            ValueChangeListener<ComboBox<T>, T> listener) {
+
+        return addListener(ValueChangeEvent.class,
+                (ValueChangeListener) listener);
     }
 }

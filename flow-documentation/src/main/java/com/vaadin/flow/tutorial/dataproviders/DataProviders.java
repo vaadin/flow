@@ -79,10 +79,7 @@ public class DataProviders {
 
         int getPersonCount(String namePrefix);
 
-        List<Person> fetchPersons(
-                int offset,
-                int limit,
-                String namePrefix,
+        List<Person> fetchPersons(int offset, int limit, String namePrefix,
                 Department department);
 
         // @formatter:off
@@ -129,7 +126,7 @@ public class DataProviders {
         Grid<Person> grid = new Grid<>();
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Year of birth",
-                        person -> Integer.toString(person.getYearOfBirth()));
+                person -> Integer.toString(person.getYearOfBirth()));
     }
 
     public void setItems() {
@@ -146,7 +143,7 @@ public class DataProviders {
         // @formatter:on
     }
 
-    public void listDataProvider(){
+    public void listDataProvider() {
         List<Person> persons = Collections.emptyList();
         Button button = new Button();
 
@@ -180,8 +177,8 @@ public class DataProviders {
         Grid<Person> grid = new Grid<>();
         grid.setDataProvider(dataProvider);
 
-        departmentSelect.addSelectedItemChangeListener(event -> {
-            Department selectedDepartment = departmentSelect.getSelectedItem();
+        departmentSelect.addValueChangeListener(event -> {
+            Department selectedDepartment = event.getValue();
             if (selectedDepartment != null) {
                 dataProvider.setFilterByValue(Person::getDepartment,
                         selectedDepartment);
@@ -314,48 +311,37 @@ public class DataProviders {
       //@formatter:on
     }
 
-    public void moreFiltering(){
-        DataProvider<Person, String> dataProvider =
-                DataProvider.fromFilteringCallbacks(
-                query -> {
-                  // getFilter returns Optional<String>
-                  String filter = query.getFilter().orElse(null);
-                  return getPersonService().fetchPersons(
-                    query.getOffset(),
-                    query.getLimit(),
-                    filter
-                  ).stream();
-                },
-                query -> {
-                  String filter = query.getFilter().orElse(null);
-                  return getPersonService().getPersonCount(filter);
-                }
-                );
+    public void moreFiltering() {
+        DataProvider<Person, String> dataProvider = DataProvider
+                .fromFilteringCallbacks(query -> {
+                    // getFilter returns Optional<String>
+                    String filter = query.getFilter().orElse(null);
+                    return getPersonService().fetchPersons(query.getOffset(),
+                            query.getLimit(), filter).stream();
+                }, query -> {
+                    String filter = query.getFilter().orElse(null);
+                    return getPersonService().getPersonCount(filter);
+                });
     }
 
     public void multipleFilteringParameters() {
         String someText = null;
         Department someDepartment = null;
 
-        DataProvider<Person, PersonFilter> dataProvider =
-                DataProvider.fromFilteringCallbacks(
-                query -> {
-                  PersonFilter filter = query.getFilter().orElse(null);
-                  return getPersonService().fetchPersons(
-                    query.getOffset(),
-                    query.getLimit(),
-                    filter != null ? filter.namePrefix : null,
-                    filter != null ? filter.department : null
-                  ).stream();
-                },
-                query -> {
-                  PersonFilter filter = query.getFilter().orElse(null);
-                  return getPersonService().getPersonCount(
-                    filter != null ? filter.namePrefix : null,
-                    filter != null ? filter.department : null
-                  );
-                }
-              );
+        DataProvider<Person, PersonFilter> dataProvider = DataProvider
+                .fromFilteringCallbacks(query -> {
+                    PersonFilter filter = query.getFilter().orElse(null);
+                    return getPersonService()
+                            .fetchPersons(query.getOffset(), query.getLimit(),
+                                    filter != null ? filter.namePrefix : null,
+                                    filter != null ? filter.department : null)
+                            .stream();
+                }, query -> {
+                    PersonFilter filter = query.getFilter().orElse(null);
+                    return getPersonService().getPersonCount(
+                            filter != null ? filter.namePrefix : null,
+                            filter != null ? filter.department : null);
+                });
 
         // For use with Grid without any department filter
         // @formatter:off

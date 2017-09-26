@@ -84,8 +84,8 @@ ListDataProvider<Person> dataProvider = DataProvider
 Grid<Person> grid = new Grid<>();
 grid.setDataProvider(dataProvider);
 
-departmentSelect.addSelectedItemChangeListener(event -> {
-    Department selectedDepartment = departmentSelect.getSelectedItem();
+departmentSelect.addValueChangeListener(event -> {
+    Department selectedDepartment = event.getValue();
     if (selectedDepartment != null) {
         dataProvider.setFilterByValue(Person::getDepartment,
                 selectedDepartment);
@@ -312,22 +312,16 @@ It would then look for a string to filter by in the query and pass it to the ser
 
 [source, java]
 ----
-DataProvider<Person, String> dataProvider =
-  DataProvider.fromFilteringCallbacks(
-  query -> {
-    // getFilter returns Optional<String>
-    String filter = query.getFilter().orElse(null);
-    return getPersonService().fetchPersons(
-      query.getOffset(),
-      query.getLimit(),
-      filter
-    ).stream();
-  },
-  query -> {
-    String filter = query.getFilter().orElse(null);
-    return getPersonService().getPersonCount(filter);
-  }
-);
+DataProvider<Person, String> dataProvider = DataProvider
+    .fromFilteringCallbacks(query -> {
+        // getFilter returns Optional<String>
+        String filter = query.getFilter().orElse(null);
+        return getPersonService().fetchPersons(query.getOffset(),
+            query.getLimit(), filter).stream();
+    }, query -> {
+        String filter = query.getFilter().orElse(null);
+        return getPersonService().getPersonCount(filter);
+    });
 ----
 
 If we instead have a service that expects multiple different filtering parameters, we can use two different alternatives depending on how the data provider would be used. Both cases would be based on this example service API:
@@ -365,25 +359,20 @@ public class PersonFilter {
 We can then define a data provider that is natively filtered by `PersonFilter`.
 [source, java]
 ----
-DataProvider<Person, PersonFilter> dataProvider =
-  DataProvider.fromFilteringCallbacks(
-  query -> {
-    PersonFilter filter = query.getFilter().orElse(null);
-    return getPersonService().fetchPersons(
-      query.getOffset(),
-      query.getLimit(),
-      filter != null ? filter.namePrefix : null,
-      filter != null ? filter.department : null
-    ).stream();
-  },
-  query -> {
-    PersonFilter filter = query.getFilter().orElse(null);
-    return getPersonService().getPersonCount(
-      filter != null ? filter.namePrefix : null,
-      filter != null ? filter.department : null
-    );
-  }
-);
+DataProvider<Person, PersonFilter> dataProvider = DataProvider
+    .fromFilteringCallbacks(query -> {
+        PersonFilter filter = query.getFilter().orElse(null);
+            return getPersonService()
+                .fetchPersons(query.getOffset(), query.getLimit(),
+                    filter != null ? filter.namePrefix : null,
+                    filter != null ? filter.department : null)
+                .stream();
+        }, query -> {
+            PersonFilter filter = query.getFilter().orElse(null);
+                return getPersonService().getPersonCount(
+                    filter != null ? filter.namePrefix : null,
+                    filter != null ? filter.department : null);
+        });
 ----
 
 This data provider can then be used in different ways with `withConvertedFilter` or `withConfigurableFilter`.
