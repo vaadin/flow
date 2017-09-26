@@ -61,7 +61,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     private T oldValue;
     private ItemCaptionGenerator<T> itemCaptionGenerator = String::valueOf;
 
-    private DataProvider<T, ?> dataProvider;
+    private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
 
     private final KeyMapper<T> keyMapper = new KeyMapper<>();
 
@@ -186,6 +186,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     @Override
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
+        Objects.requireNonNull(dataProvider);
         this.dataProvider = dataProvider;
         refresh();
     }
@@ -345,10 +346,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
 
     private void refresh() {
         keyMapper.removeAll();
-        if (getDataProvider() != null) {
-            JsonArray array = generateJson(
-                    getDataProvider().fetch(new Query<>()));
-            setItems(array);
-        }
+        JsonArray array = generateJson(getDataProvider().fetch(new Query<>()));
+        setItems(array);
     }
 }
