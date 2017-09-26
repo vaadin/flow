@@ -28,7 +28,6 @@ import com.vaadin.shared.Registration;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
-import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.util.JsonSerializer;
 
@@ -385,9 +384,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
     public Registration addValueChangeListener(
             ValueChangeListener<ComboBox<T>, T> listener) {
 
-        ComponentEventListener<ValueChangeEvent> wrapper = event -> listener
-                .onComponentEvent(event);
-
-        return addListener(ValueChangeEvent.class, wrapper);
+        return addListener(ValueChangeEvent.class,
+                (ValueChangeListener) listener);
     }
 }
