@@ -57,7 +57,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
 
-    private Class<T> itemType;
     private T oldValue;
     private ItemCaptionGenerator<T> itemCaptionGenerator = String::valueOf;
 
@@ -74,16 +73,12 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME,
                 "selected-item-changed");
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME, "change");
-        getElement().synchronizeProperty("value", "value-changed");
 
         getElement().addEventListener("selected-item-changed", event -> {
-            if (itemType != String.class) {
-                fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
-                oldValue = getValue();
-            }
+            fireEvent(new ValueChangeEvent<>(this, this, oldValue, true));
+            oldValue = getValue();
         });
 
-        getElement().synchronizeProperty("value", "change");
         setItemLabelPath("caption");
         setItemValuePath("caption");
     }
@@ -189,38 +184,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         Objects.requireNonNull(dataProvider);
         this.dataProvider = dataProvider;
         refresh();
-    }
-
-    /**
-     * Gets the {@link Class} representation of the items in the combo box. The
-     * item type can be set manually or be automatically detected when the
-     * methods {@link #setValue(Object)}, {@link #setItems(Collection)} or
-     * {@link #setFilteredItems(Collection)} are called with a non-empty
-     * collection of items.
-     *
-     * @return the data provider
-     */
-    public Class<T> getItemType() {
-        return itemType;
-    }
-
-    /**
-     * Sets the {@link Class} representation of the items in the combo box. The
-     * item type can be automatically detected when the methods
-     * {@link #setValue(Object)}, {@link #setItems(Collection)} or
-     * {@link #setFilteredItems(Collection)} are called with a non-empty
-     * collection of items.
-     * <p>
-     * The item type is needed when deserializing objects from json, which occur
-     * when calling {@link #getValue()}, {@link #getItems()} and
-     * {@link #getFilteredItems()} methods.
-     *
-     * @param itemType
-     *            the type of the items inside the combo box
-     */
-    public void setItemType(Class<T> itemType) {
-        Objects.requireNonNull(itemType, "itemType can not be null");
-        this.itemType = itemType;
     }
 
     public DataProvider<T, ?> getDataProvider() {
