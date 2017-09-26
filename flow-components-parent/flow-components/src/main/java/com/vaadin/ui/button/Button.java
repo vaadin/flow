@@ -62,6 +62,9 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
     /**
      * Creates a button with a text and an icon inside.
+     * <p>
+     * Use {@link #setIconAfterText(boolean)} to change the order of the text
+     * and the icon.
      * 
      * @param text
      *            the text inside the button
@@ -136,12 +139,13 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      * Sets the given component as the icon of this button.
      * <p>
      * Even though you can use almost any component as an icon, some good
-     * options are {@link Icon} and {@link Image}.
+     * options are {@link Icon} and {@link Image}. Use
+     * {@link #setIconAfterText(boolean)} to change the icon's position relative
+     * to the button's text content.
      * 
      * @param icon
      *            component to be used as an icon, may be <code>null</code> to
      *            only remove the current icon, can't be a text-node
-     * @see #setIconAfterText(boolean)
      */
     public void setIcon(Component icon) {
         if (icon != null && icon.getElement().isTextNode()) {

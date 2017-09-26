@@ -28,8 +28,23 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * The overlay element.
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * See <a href=
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
+ * {@code <vaadin-overlay>} documentation</a> for
+ * {@code <vaadin-dialog-overlay>} parts.
+ * </p>
+ */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: VaadinDialogOverlay#UNKNOWN", "Flow#1.0-SNAPSHOT"})
+		"WebComponent: Vaadin.VaadinDialogOverlay#UNKNOWN", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-dialog-overlay")
 @HtmlImport("frontend://bower_components/vaadin-dialog/vaadin-dialog.html")
 public class GeneratedVaadinDialogOverlay<R extends GeneratedVaadinDialogOverlay<R>>

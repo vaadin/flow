@@ -24,7 +24,7 @@
   "methods": [
     {
       "name": "attributeChangedCallback",
-      "description": "Provides a default implementation of the standard Custom Elements\n`attributeChangedCallback`.\n\nBy default, attributes declared in `properties` metadata are\ndeserialized using their `type` information to properties of the\nsame name.  \"Dash-cased\" attributes are deserialized to \"camelCase\"\nproperties.",
+      "description": "Provides a default implementation of the standard Custom Elements\n`attributeChangedCallback`.\n\nBy default, attributes declared in `properties` metadata are\ndeserialized using their `type` information to properties of the\nsame name.  \"Dash-cased\" attributes are deserialzed to \"camelCase\"\nproperties.",
       "parameters": [
         {
           "name": "name",
@@ -208,9 +208,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
-            "OBJECT",
-            "OBJECT"
+            "STRING"
           ],
           "objectType": [],
           "description": "Path to array."
@@ -233,9 +231,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
-            "OBJECT",
-            "OBJECT"
+            "STRING"
           ],
           "objectType": [],
           "description": "Path to array."
@@ -250,9 +246,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
-            "OBJECT",
-            "OBJECT"
+            "STRING"
           ],
           "objectType": [],
           "description": "Path to array."
@@ -291,9 +285,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
-            "OBJECT",
-            "OBJECT"
+            "STRING"
           ],
           "objectType": [],
           "description": "Path to array."
@@ -308,9 +300,7 @@
         {
           "name": "path",
           "type": [
-            "STRING",
-            "OBJECT",
-            "OBJECT"
+            "STRING"
           ],
           "objectType": [],
           "description": "Path to array."

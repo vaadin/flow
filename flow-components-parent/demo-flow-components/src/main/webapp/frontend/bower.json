@@ -34,14 +34,15 @@
     "iron-media-query": "~2.0.0",
     "iron-selector": "~2.0.0",
     "vaadin-grid": "~3.0.1",
-    "vaadin-text-field": "~1.1.0-alpha4",
+    "vaadin-text-field": "~1.1.0-alpha5",
     "vaadin-button": "~1.0.3",
     "vaadin-checkbox": "~1.0.0-alpha6",
     "vaadin-combo-box": "~3.0.0-alpha5",
-    "vaadin-form-layout": "~1.0.1",
+    "vaadin-form-layout": "~1.0.2",
     "vaadin-split-layout": "~3.0.0-alpha2",
-    "vaadin-date-picker": "~2.0.3",
+    "vaadin-date-picker": "~2.0.4",
     "vaadin-dialog": "~1.0.0-alpha3",
+    "vaadin-icons": "~4.1.1",
     "vaadin-valo-theme": "vaadin/vaadin-valo-theme#^0.3.0"
   }
 }

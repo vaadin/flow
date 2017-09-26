@@ -180,24 +180,6 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * @param from
 	 *            Source path to link.
 	 */
-	public void linkPaths(java.lang.String to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
 	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
@@ -217,6 +199,24 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 *            Source path to link.
 	 */
 	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
+	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -254,7 +254,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	protected void unlinkPaths(elemental.json.JsonObject path) {
+	public void unlinkPaths(java.lang.String path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -273,7 +273,7 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	public void unlinkPaths(java.lang.String path) {
+	protected void unlinkPaths(elemental.json.JsonObject path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -474,56 +474,6 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Adds items onto the end of the array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.push}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @param ...items Missing documentation!
-	 * @return It would return a double
-	 */
-	@NotSupported
-	protected void push(elemental.json.JsonObject path,
-			elemental.json.JsonObject _Items) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes an item from the end of array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.pop}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
-	protected void pop(elemental.json.JsonObject path) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
 	 * Removes an item from the end of array at the path specified.
 	 * </p>
 	 * <p>
@@ -541,37 +491,6 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 */
 	@NotSupported
 	protected void pop(java.lang.String path) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Starting from the start index specified, removes 0 or more items from the
-	 * array and inserts 0 or more new items in their place.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.splice}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @param start
-	 *            Index from which to start removing/inserting.
-	 * @param deleteCount
-	 *            Number of items to remove.
-	 * @param ...items Missing documentation!
-	 * @return It would return a interface elemental.json.JsonArray
-	 */
-	@NotSupported
-	protected void splice(elemental.json.JsonObject path, double start,
-			double deleteCount, elemental.json.JsonObject _Items) {
 	}
 
 	/**
@@ -626,30 +545,6 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void shift(elemental.json.JsonObject path) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes an item from the beginning of array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.pop}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
 	protected void shift(java.lang.String path) {
 	}
 
@@ -676,32 +571,6 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 */
 	@NotSupported
 	protected void unshift(java.lang.String path,
-			elemental.json.JsonObject _Items) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Adds items onto the beginning of the array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.push}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @param ...items Missing documentation!
-	 * @return It would return a double
-	 */
-	@NotSupported
-	protected void unshift(elemental.json.JsonObject path,
 			elemental.json.JsonObject _Items) {
 	}
 

@@ -1,0 +1,16 @@
+.all-icons-layout {
+    flex-wrap: wrap;
+}
+
+.icon-with-name {
+    margin: 5px;
+    width: 140px;
+    font-size: 12px;
+}
+
+.icon-with-name > iron-icon {
+    color: #00b4f0;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 3px;
+}
