@@ -25,8 +25,6 @@ import java.util.Set;
  * item is required).
  *
  * @author Vaadin Ltd
- * @param <L>
- *            the listing component type
  * @param <T>
  *            the data type of the selection model
  */
@@ -36,8 +34,7 @@ public interface SelectionEvent<T> extends Serializable {
      * Get first selected data item.
      * <p>
      * This is the same as {@link SingleSelectionEvent#getSelectedItem()} in
-     * case of single selection and the first selected item from
-     * {@link MultiSelectionEvent#getNewSelection()} in case of multi selection.
+     * case of single selection.
      *
      * @return the first selected item.
      */

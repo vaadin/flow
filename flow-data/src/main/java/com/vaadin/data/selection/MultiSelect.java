@@ -26,7 +26,7 @@ import com.vaadin.ui.common.HasValue;
  *
  * @author Vaadin Ltd
  *
- * @param <C>
+ * @param <L>
  *            the listing component type
  * @param <T>
  *            the type of the items to select

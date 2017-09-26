@@ -13,8 +13,8 @@ public class SingleSelectionEvent<L extends AbstractListing<T>, T>
     /**
      * Creates a new selection change event in a component.
      *
-     * @param component
-     *            the component where the event originated
+     * @param listing
+     *            the listing component where the event originated
      * @param source
      *            the single select source
      * @param oldSelection
@@ -31,10 +31,6 @@ public class SingleSelectionEvent<L extends AbstractListing<T>, T>
     /**
      * Returns an optional of the item that was selected, or an empty optional
      * if a previously selected item was deselected.
-     * <p>
-     * The result is the current selection of the source
-     * {@link AbstractSingleSelect} object. So it's always exactly the same as
-     * optional describing {@link AbstractSingleSelect#getValue()}.
      *
      * @see #getValue()
      *

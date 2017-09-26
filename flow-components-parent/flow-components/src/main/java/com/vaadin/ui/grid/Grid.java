@@ -222,7 +222,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         /**
          * Selection model that doesn't allow selection.
          *
-         * @see GridNoSelectionModel
+         * @see GridNoneSelectionModel
          */
         NONE {
             @Override
@@ -236,6 +236,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
          *
          * @param <T>
          *            the type of items in the grid
+         * @param grid
+         *            the grid to create the selection model for
          * @return the selection model
          */
         protected abstract <T> GridSelectionModel<T> createModel(Grid<T> grid);
