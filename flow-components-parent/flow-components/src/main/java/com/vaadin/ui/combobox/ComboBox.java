@@ -46,7 +46,7 @@ import elemental.json.JsonValue;
  * {@link #setFilteredItems(Collection)} methods are called with a non-empty
  * collection, but if an empty combo box is created, then the
  * {@link #setItemType(Class)} should be called to set the Class of the items
- * (before any deserialization is done, like on {@link #getSelectedItem()} or
+ * (before any deserialization is done, like on {@link #getValue()} or
  * {@link #getItems()}). This is needed when the items are set from the
  * client-side and the component is created by hooking up to a model using the
  * {@link Id} annotation.
@@ -256,12 +256,12 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
     /**
      * Gets the {@link Class} representation of the items in the combo box. The
      * item type can be set manually or be automatically detected when the
-     * methods {@link #setSelectedItem(Object)}, {@link #setItems(Collection)}
-     * or {@link #setFilteredItems(Collection)} are called with a non-empty
+     * methods {@link #setValue(Object)}, {@link #setItems(Collection)} or
+     * {@link #setFilteredItems(Collection)} are called with a non-empty
      * collection of items.
      * <p>
      * The item type is needed when deserializing objects from json, which occur
-     * when calling {@link #getSelectedItem()}, {@link #getItems()} and
+     * when calling {@link #getValue()}, {@link #getItems()} and
      * {@link #getFilteredItems()} methods.
      *
      * @return the type of the items inside the combo box
@@ -273,12 +273,12 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>> implements
     /**
      * Sets the {@link Class} representation of the items in the combo box. The
      * item type can be automatically detected when the methods
-     * {@link #setSelectedItem(Object)}, {@link #setItems(Collection)} or
+     * {@link #setValue(Object)}, {@link #setItems(Collection)} or
      * {@link #setFilteredItems(Collection)} are called with a non-empty
      * collection of items.
      * <p>
      * The item type is needed when deserializing objects from json, which occur
-     * when calling {@link #getSelectedItem()}, {@link #getItems()} and
+     * when calling {@link #getValue()}, {@link #getItems()} and
      * {@link #getFilteredItems()} methods.
      *
      * @param itemType
