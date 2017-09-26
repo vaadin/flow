@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -32,8 +33,13 @@ import com.vaadin.ui.html.Div;
  */
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
 public class GridView extends DemoView {
-
-    private Random random;
+    
+    static List<Person> items = new ArrayList<>();
+    private static Random random = new Random(0);
+    static {
+        items = IntStream.range(1, 500).mapToObj(GridView::createPerson)
+                .collect(Collectors.toList());
+    }
 
     /**
      * Example object.
@@ -66,8 +72,6 @@ public class GridView extends DemoView {
 
     @Override
     void initView() {
-        random = new Random();
-
         createBasicUsage();
         createCallBackDataProvider();
         createSingleSelect();
@@ -103,7 +107,7 @@ public class GridView extends DemoView {
             return IntStream
                     .range(query.getOffset(),
                             query.getOffset() + query.getLimit())
-                    .mapToObj(this::createPerson);
+                    .mapToObj(GridView::createPerson);
         }, query -> 10000));
 
         grid.addColumn("Name", Person::getName);
@@ -148,15 +152,16 @@ public class GridView extends DemoView {
         });
         // end-source-example
         grid.setId("single-selection");
+        toggleSelect.setId("single-selection-toggle");
+        messageDiv.setId("single-selection-message");
         addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
     }
 
     private List<Person> createItems() {
-        return IntStream.range(1, 200).mapToObj(this::createPerson)
-                .collect(Collectors.toList());
+        return items;
     }
 
-    private Person createPerson(int index) {
+    private static Person createPerson(int index) {
         Person person = new Person();
         person.setName("Person " + index);
         person.setAge(13 + random.nextInt(50));
