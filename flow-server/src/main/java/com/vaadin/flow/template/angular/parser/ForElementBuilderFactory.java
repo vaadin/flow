@@ -33,7 +33,7 @@ import com.vaadin.flow.template.angular.TemplateParseException;
  * The factory that handles *ngFor template elements.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public class ForElementBuilderFactory

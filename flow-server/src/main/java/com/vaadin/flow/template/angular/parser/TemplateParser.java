@@ -46,7 +46,7 @@ import com.vaadin.flow.util.MessageDigestUtil;
  * Parser for an Angular 2-like template syntax.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public class TemplateParser {

@@ -26,7 +26,7 @@ import com.vaadin.ui.common.HasText;
  * <p>
  * The error view can changed using
  * {@link RouterConfiguration#setErrorView(Class)}.
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 @Tag("div")

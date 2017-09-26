@@ -27,7 +27,7 @@ import com.vaadin.flow.util.ReflectionCache;
  * @author Vaadin Ltd
  * @param <T>
  *            the template model type used by this descriptor
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {

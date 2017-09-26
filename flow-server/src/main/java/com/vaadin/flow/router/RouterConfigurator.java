@@ -19,7 +19,7 @@ package com.vaadin.flow.router;
  * Callback interface for updating the configuration for a {@link Router}.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 @FunctionalInterface

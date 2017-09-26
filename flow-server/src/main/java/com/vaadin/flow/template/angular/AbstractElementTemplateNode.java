@@ -23,7 +23,7 @@ import com.vaadin.flow.dom.ElementStateProvider;
  * A template node that always represents one element in the DOM tree.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public abstract class AbstractElementTemplateNode extends TemplateNode {

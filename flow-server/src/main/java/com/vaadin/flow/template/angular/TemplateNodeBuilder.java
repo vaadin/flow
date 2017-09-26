@@ -21,7 +21,7 @@ import java.util.List;
  * Mutable builder for immutable template nodes.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 @FunctionalInterface

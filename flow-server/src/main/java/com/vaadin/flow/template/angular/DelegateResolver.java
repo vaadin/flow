@@ -25,7 +25,7 @@ import com.vaadin.flow.template.angular.parser.TemplateResolver;
  * before passing on to another resolver.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public class DelegateResolver implements TemplateResolver {

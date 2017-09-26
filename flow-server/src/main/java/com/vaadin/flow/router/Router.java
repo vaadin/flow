@@ -35,7 +35,7 @@ import com.vaadin.ui.UI;
  * site or an application.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public class Router implements RouterInterface {

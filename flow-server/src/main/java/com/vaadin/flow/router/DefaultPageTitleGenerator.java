@@ -24,7 +24,7 @@ package com.vaadin.flow.router;
  * {@link RouterConfiguration#setPageTitleGenerator(PageTitleGenerator)}.
  *
  * @see View#getTitle(LocationChangeEvent)
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public class DefaultPageTitleGenerator implements PageTitleGenerator {

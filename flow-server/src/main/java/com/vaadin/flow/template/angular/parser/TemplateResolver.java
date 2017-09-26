@@ -22,7 +22,7 @@ import java.io.InputStream;
  * Interface for resolving template files.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 @FunctionalInterface

@@ -28,7 +28,7 @@ import com.vaadin.ui.UI;
  * A view that can be shown in a {@link UI} or {@link HasChildView}.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 @FunctionalInterface

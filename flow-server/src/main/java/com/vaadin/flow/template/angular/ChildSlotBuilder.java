@@ -23,7 +23,7 @@ import java.util.Optional;
  * Builder for {@link ChildSlotNode}.
  *
  * @author Vaadin Ltd
- * @deprecated feature will be moved to a legacy package.
+ * @deprecated do not use! feature is to be removed in the near future
  */
 @Deprecated
 public class ChildSlotBuilder implements TemplateNodeBuilder {
