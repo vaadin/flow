@@ -75,7 +75,7 @@ public class ExclusionRegistry {
 
     /**
      * Excludes an event from being generated for a specific element denoted by
-     * it's tag.
+     * its tag.
      * 
      * @param elementTag
      *            the tag of the element which the event should be excluded from
@@ -91,7 +91,7 @@ public class ExclusionRegistry {
 
     /**
      * Excludes a method from being generated for a specific element denoted by
-     * it's tag.
+     * its tag.
      * 
      * @param elementTag
      *            the tag of the element which the method should be excluded
