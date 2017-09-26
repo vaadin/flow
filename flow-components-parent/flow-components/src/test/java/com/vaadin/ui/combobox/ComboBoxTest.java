@@ -44,8 +44,8 @@ public class ComboBoxTest {
 
         Assert.assertEquals(2, comboBox.items.length());
 
-        assertItems(comboBox, 0, "foo");
-        assertItems(comboBox, 1, "bar");
+        assertItem(comboBox, 0, "foo");
+        assertItem(comboBox, 1, "bar");
     }
 
     @Test
@@ -57,8 +57,8 @@ public class ComboBoxTest {
         comboBox.setItemCaptionGenerator(
                 item -> String.valueOf(item.hashCode()));
 
-        assertItems(comboBox, 0, "101574");
-        assertItems(comboBox, 1, "97299");
+        assertItem(comboBox, 0, "101574");
+        assertItem(comboBox, 1, "97299");
     }
 
     @Test(expected = NullPointerException.class)
@@ -67,7 +67,7 @@ public class ComboBoxTest {
         comboBox.setDataProvider(null);
     }
 
-    private void assertItems(TestComboBox comboBox, int index, String caption) {
+    private void assertItem(TestComboBox comboBox, int index, String caption) {
         JsonValue value1 = comboBox.items.get(index);
         Assert.assertEquals(caption,
                 ((JsonObject) value1).get("caption").asString());
