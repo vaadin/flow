@@ -16,8 +16,8 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Label;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.View;
 

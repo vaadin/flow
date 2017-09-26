@@ -33,7 +33,9 @@ import elemental.json.JsonObject;
  * A node in the AST parsed from a template file. A template node is immutable.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public abstract class TemplateNode implements Serializable {
     /**
      * Key for the node type in JSON messages.

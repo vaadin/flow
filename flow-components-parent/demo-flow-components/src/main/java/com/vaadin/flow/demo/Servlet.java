@@ -19,7 +19,7 @@ import java.util.List;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.demo.Servlet.MyRouterConfigurator;
 import com.vaadin.flow.demo.views.DemoView;
 import com.vaadin.flow.router.RouterConfiguration;

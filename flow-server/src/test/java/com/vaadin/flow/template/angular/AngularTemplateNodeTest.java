@@ -20,7 +20,6 @@ import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.TemplateElementStateProviderTest;

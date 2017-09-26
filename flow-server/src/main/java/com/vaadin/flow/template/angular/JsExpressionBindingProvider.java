@@ -29,7 +29,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.template.angular.model.BeanModelType;
-import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.flow.model.ModelType;
 
 import elemental.json.JsonValue;
 
@@ -38,7 +38,9 @@ import elemental.json.JsonValue;
  * expression.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
 
     /**

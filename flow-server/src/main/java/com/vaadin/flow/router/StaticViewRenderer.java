@@ -18,12 +18,16 @@ package com.vaadin.flow.router;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.router.event.NavigationEvent;
+
 /**
  * A simple view renderer that always uses the given view type with the parent
  * views configured for it.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class StaticViewRenderer extends ViewRenderer {
 
     private final String route;

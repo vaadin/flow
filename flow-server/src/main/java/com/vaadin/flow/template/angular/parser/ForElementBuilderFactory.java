@@ -21,8 +21,9 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.function.Function;
 
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+
 import com.vaadin.flow.template.angular.ElementTemplateBuilder;
 import com.vaadin.flow.template.angular.ForTemplateBuilder;
 import com.vaadin.flow.template.angular.TemplateNodeBuilder;
@@ -32,8 +33,9 @@ import com.vaadin.flow.template.angular.TemplateParseException;
  * The factory that handles *ngFor template elements.
  *
  * @author Vaadin Ltd
- *
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class ForElementBuilderFactory
         extends AbstractTemplateBuilderFactory<Element> {
 

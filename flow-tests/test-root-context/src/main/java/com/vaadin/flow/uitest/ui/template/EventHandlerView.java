@@ -17,16 +17,16 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.Locale;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.EventData;
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 
 @Tag("event-handler")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/EventHandler.html")

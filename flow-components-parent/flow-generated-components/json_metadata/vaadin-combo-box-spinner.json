@@ -1,0 +1,24 @@
+{
+  "name": "Vaadin.ComboBoxSpinnerElement",
+  "tag": "vaadin-combo-box-spinner",
+  "baseUrl": "vaadin-combo-box/vaadin-combo-box-spinner.html",
+  "version": "3.0.0-alpha5",
+  "properties": [
+    {
+      "name": "active",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": ""
+    }
+  ],
+  "methods": [],
+  "events": [],
+  "slots": [],
+  "behaviors": [],
+  "mixins": [
+    "Vaadin.ThemableMixin"
+  ],
+  "description": ""
+}

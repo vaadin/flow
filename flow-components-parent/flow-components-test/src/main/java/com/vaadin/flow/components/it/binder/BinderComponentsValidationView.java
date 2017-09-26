@@ -18,8 +18,8 @@ package com.vaadin.flow.components.it.binder;
 
 import com.vaadin.data.Binder;
 import com.vaadin.flow.components.it.TestView;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * @author Vaadin Ltd.

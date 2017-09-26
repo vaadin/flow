@@ -19,9 +19,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

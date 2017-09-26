@@ -25,7 +25,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.vaadin.flow.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.router.RouteLocation;
+import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
+import com.vaadin.router.Location;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
@@ -34,7 +37,9 @@ import com.vaadin.util.ReflectTools;
  * target UI. The view can optionally be nested in a chain of parent views.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public abstract class ViewRenderer implements NavigationHandler {
 
     /**

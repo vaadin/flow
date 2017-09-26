@@ -20,14 +20,22 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.ShadowRoot;
-import com.vaadin.flow.event.ComponentEventBus;
-import com.vaadin.flow.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.AttachNotifier;
+import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.common.DetachNotifier;
+import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventBus;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.ComponentEventNotifier;
+import com.vaadin.util.AnnotationReader;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a

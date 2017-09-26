@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui.template.imports;
 
-import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.AttachEvent;
 
 @Tag("x-lazy-widget")
 @HtmlImport(value = "/com/vaadin/flow/uitest/ui/template/imports/x-lazy-widget.html", loadMode = LoadMode.LAZY)

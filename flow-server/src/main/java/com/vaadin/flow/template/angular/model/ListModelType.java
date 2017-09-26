@@ -25,8 +25,8 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.template.model.ComplexModelType;
-import com.vaadin.flow.template.model.PropertyFilter;
+import com.vaadin.flow.model.ComplexModelType;
+import com.vaadin.flow.model.PropertyFilter;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.util.ReflectTools;
 
@@ -38,7 +38,9 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @param <T>
  *            the proxy type used by the bean type of this type
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class ListModelType<T> implements ComplexModelType<T> {
 
     private ComplexModelType<T> itemType;

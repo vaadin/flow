@@ -22,7 +22,7 @@ import com.vaadin.data.BinderValidationStatus;
 import com.vaadin.data.ValidationException;
 import com.vaadin.data.ValidationResult;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Button;
+import com.vaadin.ui.button.Button;
 
 @CodeFor("binding-data/tutorial-flow-components-binder-load.asciidoc")
 public class BinderLoadSave {

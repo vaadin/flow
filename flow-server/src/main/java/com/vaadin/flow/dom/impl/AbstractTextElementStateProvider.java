@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.server.StreamResource;
 import com.vaadin.shared.Registration;
 

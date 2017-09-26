@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.tutorial.webcomponent;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 
 @CodeFor("web-components/tutorial-webcomponent-attributes-and-properties.asciidoc")
 public class WebComponentProperties {

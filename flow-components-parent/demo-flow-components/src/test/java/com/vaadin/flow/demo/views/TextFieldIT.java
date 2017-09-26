@@ -16,32 +16,21 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * Integration tests for the {@link TextField}.
  */
-public class TextFieldIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
+public class TextFieldIT extends ComponentDemoTest {
     @Override
     protected String getTestPath() {
         return "/vaadin-text-field";
-    }
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
     }
 
     @Test

@@ -35,15 +35,13 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.Viewport;
-import com.vaadin.annotations.ViewportGeneratorClass;
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.external.jsoup.nodes.DataNode;
-import com.vaadin.external.jsoup.nodes.Document;
-import com.vaadin.external.jsoup.nodes.DocumentType;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.parser.Tag;
+import org.jsoup.nodes.DataNode;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.DocumentType;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
+
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -53,6 +51,10 @@ import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.Viewport;
+import com.vaadin.ui.ViewportGeneratorClass;
+import com.vaadin.ui.WebComponents;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;

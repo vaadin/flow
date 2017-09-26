@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-root-context</artifactId>
     <name>Flow root context tests</name>
@@ -15,13 +15,12 @@
         <skip.npm>${maven.test.skip}</skip.npm>
         <skip.bower>${maven.test.skip}</skip.bower>
     </properties>
-    <!-- uses default ports 8888 and 8889 -->
 
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-resources</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -50,6 +49,20 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <scanIntervalSeconds>-1</scanIntervalSeconds>
+                    <stopPort>8081</stopPort>
+                    <stopWait>5</stopWait>
+                    <stopKey>foo</stopKey>
+                    <webAppConfig>
+                        <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
+                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                        <resourceBases>
+                            <resourceBase>${frontend.working.directory}</resourceBase>
+                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                        </resourceBases>
+                    </webAppConfig>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
@@ -72,23 +85,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>${frontend.working.directory}</directory>
-                            <excludes>
-                                <exclude>build/**</exclude>
-                                <exclude>node/**</exclude>
-                                <exclude>node_modules/**</exclude>
-                            </excludes>
-                        </resource>
-                    </webResources>
-                </configuration>
             </plugin>
         </plugins>
     </build>

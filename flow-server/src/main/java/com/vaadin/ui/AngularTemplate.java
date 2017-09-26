@@ -22,9 +22,9 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.HtmlTemplate;
-import com.vaadin.annotations.Id;
+import com.vaadin.util.AnnotationReader;
+import com.vaadin.flow.template.angular.HtmlTemplate;
+import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
@@ -32,7 +32,7 @@ import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.AbstractTemplate;
+import com.vaadin.ui.polymertemplate.AbstractTemplate;
 import com.vaadin.flow.template.angular.RelativeFileResolver;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.TemplateParseException;
@@ -42,6 +42,7 @@ import com.vaadin.flow.template.angular.model.TemplateModelProxyHandler;
 import com.vaadin.flow.template.angular.model.TemplateModelTypeParser;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
+import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -66,7 +67,9 @@ import com.vaadin.util.ReflectTools;
  * @see HtmlTemplate
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public abstract class AngularTemplate extends AbstractTemplate<TemplateModel>
         implements HasChildView {
 

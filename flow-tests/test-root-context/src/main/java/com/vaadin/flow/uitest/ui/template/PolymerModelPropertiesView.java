@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.DomEvent;
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.ui.AttachEvent;
-import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.event.ComponentEvent;
 
 @Tag("model-properties")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/PolymerModelProperties.html")

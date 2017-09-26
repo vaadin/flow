@@ -17,9 +17,9 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.function.Consumer;
 
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Div;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;

@@ -54,7 +54,7 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
 
         Assert.assertEquals(
                 getRootURL()
-                        + "/VAADIN/static/frontend/es6/components/frontend-protocol.html",
+                        + "/frontend-es6/components/frontend-protocol.html",
                 executeClientSideResolveUri());
     }
 

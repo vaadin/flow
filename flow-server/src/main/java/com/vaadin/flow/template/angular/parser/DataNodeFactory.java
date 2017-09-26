@@ -18,8 +18,9 @@ package com.vaadin.flow.template.angular.parser;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.vaadin.external.jsoup.nodes.DataNode;
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.DataNode;
+import org.jsoup.nodes.Node;
+
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;
 import com.vaadin.flow.template.angular.TemplateNodeBuilder;
 import com.vaadin.flow.template.angular.TextTemplateBuilder;
@@ -29,7 +30,9 @@ import com.vaadin.flow.template.angular.TextTemplateBuilder;
  * &lt;style&gt;.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class DataNodeFactory extends AbstractTemplateBuilderFactory<DataNode> {
 
     protected DataNodeFactory() {

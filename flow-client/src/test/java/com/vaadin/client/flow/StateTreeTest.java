@@ -27,7 +27,7 @@ import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeFeatures;
 
 import elemental.events.EventRemover;
 
@@ -174,6 +174,20 @@ public class StateTreeTest {
         tree.sendNodePropertySyncToServer(property);
 
         connector.assertMessage(node, "foo", "bar");
+    }
+
+    @Test
+    public void sendNodePropertySyncToServer_nodeDetached_propertyNotIsSent() {
+        tree.registerNode(node);
+        NodeMap map = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        MapProperty property = new MapProperty("foo", map);
+        property.setValue("bar");
+        connector.clear();
+        tree.unregisterNode(node);
+
+        tree.sendNodePropertySyncToServer(property);
+
+        connector.assertMessage(null, null, null);
     }
 
     @Test

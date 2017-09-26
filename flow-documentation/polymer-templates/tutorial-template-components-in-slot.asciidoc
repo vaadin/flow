@@ -98,7 +98,7 @@ added it will "override/replace" the `firstName, lastName` data.
 
 === Using a PolymerTemplate as a Parent View
 
-For general info about parent views, see <<../routing/tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>. For general information about templates, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
+For general info about parent views, see <<../routing/tutorial-router-layout#,Router Layouts and Nested Router Targets>>. For general information about templates, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
 
 A `PolymerTemplate` class can be used as a parent view by using the `<slot></slot>` in the position where the child view should be displayed.
 

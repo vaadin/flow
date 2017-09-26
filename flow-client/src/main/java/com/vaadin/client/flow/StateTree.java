@@ -23,7 +23,7 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeFeatures;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -201,9 +201,10 @@ public class StateTree {
      */
     public void sendEventToServer(StateNode node, String eventType,
             JsonObject eventData) {
-        assert assertValidNode(node);
-        registry.getServerConnector().sendEventMessage(node, eventType,
-                eventData);
+        if (isValidNode(node)) {
+            registry.getServerConnector().sendEventMessage(node, eventType,
+                    eventData);
+        }
     }
 
     /**
@@ -220,11 +221,10 @@ public class StateTree {
         StateNode node = nodeMap.getNode();
 
         if (getRegistry().getInitialPropertiesHandler()
-                .handlePropertyUpdate(property)) {
+                .handlePropertyUpdate(property) || !isValidNode(node)) {
             return;
         }
 
-        assert assertValidNode(node);
         registry.getServerConnector().sendNodeSyncMessage(node, nodeMap.getId(),
                 property.getName(), property.getValue());
     }

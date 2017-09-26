@@ -18,9 +18,16 @@ package com.vaadin.flow.router;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.router.InternalRedirectHandler;
+import com.vaadin.router.Location;
+import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.QueryParameters;
+import com.vaadin.router.RouterInterface;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.UI;
 
 /**
@@ -28,7 +35,9 @@ import com.vaadin.ui.UI;
  * site or an application.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class Router implements RouterInterface {
     /**
      * The live configuration instance. All changes to the configuration are
@@ -196,5 +205,22 @@ public class Router implements RouterInterface {
 
         assert !currentConfig.isModifiable();
         return currentConfig;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * <b>This implementation always throws
+     * {@link UnsupportedOperationException}.</b>
+     */
+    @Override
+    public RouteRegistry getRegistry() {
+        /*
+         * Throwing of this exception is not mentioned in the inherited JavaDocs
+         * of this method since this implementation is expected to be removed or
+         * deprecated after the other implementation is completed.
+         */
+        throw new UnsupportedOperationException(
+                "This router implementation doesn't use a route registry");
     }
 }

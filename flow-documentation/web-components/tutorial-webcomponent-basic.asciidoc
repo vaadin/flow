@@ -33,7 +33,7 @@ You specify the tag name of the element using the `@Tag` annotation, just like y
 == Configuring the Project
 
 [NOTE]
-If you are using some skeleton project or a demo such as `flow-hello-world` as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
+If you are using some skeleton project or a demo such as https://github.com/vaadin/flow-application-skeleton[`flow-application-skeleton`] as a starting point, you probably have everything already configured. In this case, you can skip to <<Installing the Web Component>>.
 
 The imported file `paper-slider.html` contains a client side code which needs to be available as a web resource. So it should be
 fetched and saved in some directory which is served by your server.
@@ -61,24 +61,19 @@ If you use maven then just add  the following snippet in your `pom.xml` file ins
                     <workingDirectory>${frontend.working.directory}</workingDirectory>
                 </configuration>
             </execution>
-            <execution>
-                <id>npm run</id>
-                <goals>
-                    <goal>npm</goal>
-                </goals>
-                <configuration>
-                    <arguments>${npm.build.goal}</arguments>
-                </configuration>
-            </execution>
         </executions>
     </plugin>
 ----
 
 This plugin will install for you tools for webcomponents management (`npm` and `bower`) assuming you are using
-`src/main/frontend` directory as a web resource folder in your project. This directory should have files `bower.json` and
-`package.json`.
+`${frontend.working.directory}` directory as a web resource directory in your project.
 
-The `bower.json` content is:
+[NOTE]
+The default for `${frontend.working.directory}` is `src/main/webapp/frontend`, but you can pick any directory you want.
+
+This directory should have files `bower.json` and `package.json`.
+
+The `bower.json` content is a file where you list all the dependencies you need from the frontend part of the application:
 
 [source,json]
 ----
@@ -104,7 +99,12 @@ The `bower.json` content is:
 }
 ----
 
-The `package.json` content is:
+[NOTE]
+This file is processed with `bower` utility to download web components. If you have it preinstalled, you may want to skip the next step.
+For further info on the file contents, please refer to https://github.com/bower/spec/blob/master/json.md[bower.json file specification]
+
+To download `bower`, another file is used: `package.json`
+The file contents looks the following way:
 
 [source,json]
 ----
@@ -113,7 +113,7 @@ The `package.json` content is:
   "version": "1.0.0",
   "main": "",
   "dependencies": {
-    "bower": "~1.8.0"
+    "bower": "~1.8.2"
   },
   "scripts": {
   },
@@ -123,30 +123,14 @@ The `package.json` content is:
 ----
 
 [NOTE]
-You should take care explicitly about availability of your `src/main/frontend` folder
-as a _Web resource_ served by your Web server.  It means that some additional configuration
-might be required. E.g. jetty requires this kind of configuration:
+Current situation (using different files for downloading dependencies) will be different in future, when https://www.polymer-project.org/blog/2017-08-23-hands-on-30-preview[Polymer 3.0] will be released.
+For further info on the file contents, please refer to https://docs.npmjs.com/files/package.json[package.json file specification]
 
-[source,json]
-----
-    <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <configuration>
-            <webAppConfig>
-                <resourceBases>
-                    <resourceBase>src/main/frontend</resourceBase>
-                </resourceBases>
-            </webAppConfig>
-        </configuration>
-    </plugin>
-----
+[NOTE] Workflows not using Maven are not supported at the moment. If your project doesn't use Maven, you will need to install and run `bower` directly, which is described bellow.
 
-[NOTE] Workflows not using Maven are not supported at the moment. If your project doesn't use Maven, you will need to install and run bower directly, which is described bellow.
+In this example it is assumed that you are using bower and have a `bower_components` directory in the root of you `WAR` file.
 
-In this example it is assumed that you are using bower and have a `bower_components` folder in the root of you `WAR` file.
-
-You can set up the `bower_components` folder by running
+You can set up the `bower_components` and `bower.json` manually by running
 
 [source,sh]
 ----
@@ -162,7 +146,7 @@ The default answers for all the questions are suitable for this kind of integrat
 
 == Installing the Web Component
 
-Running the following command in `src/main/frontend` will install the `paper-slider` component.
+Running the following command in `${frontend.working.directory}` will install the `paper-slider` component.
 
 [source,sh]
 ----
@@ -189,3 +173,7 @@ For listening to events from a web component, see
 
 [NOTE]
 Web components implemented using Polymer should be used with Polymer's own https://www.polymer-project.org/1.0/docs/devguide/local-dom[DOM API]. Flow will automatically use the Polymer DOM API when appropriate.
+
+== Preparing downloaded dependencies for production release
+
+This topic is covered in <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>

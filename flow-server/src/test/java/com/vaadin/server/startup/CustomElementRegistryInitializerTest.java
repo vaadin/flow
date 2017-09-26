@@ -21,21 +21,21 @@ import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 
+import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.TemplateParser;
-import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.server.VaadinService;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.TemplateParser;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.

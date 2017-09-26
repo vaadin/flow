@@ -16,26 +16,16 @@
 package com.vaadin.flow.demo.views;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link ButtonView}.
  */
-public class ButtonIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
-    @Before
-    public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
-    }
+public class ButtonIT extends ComponentDemoTest {
 
     @Test
     public void clickOnDefaultButton_textIsDisplayed() {
@@ -43,6 +33,36 @@ public class ButtonIT extends AbstractChromeTest {
 
         scrollIntoViewAndClick(button);
         waitUntilMessageIsChangedForClickedButton("Vaadin button");
+    }
+
+    @Test
+    public void clickOnIconButtons_textIsDisplayed() {
+        WebElement leftButton = layout.findElement(By.id("left-icon-button"));
+        WebElement icon = leftButton.findElement(By.tagName("iron-icon"));
+        Assert.assertEquals("vaadin:arrow-left", icon.getAttribute("icon"));
+
+        // the icon is before the text
+        Assert.assertTrue(getCenterX(leftButton) > getCenterX(icon));
+
+        WebElement rightButton = layout.findElement(By.id("right-icon-button"));
+        icon = rightButton.findElement(By.tagName("iron-icon"));
+        Assert.assertEquals("vaadin:arrow-right", icon.getAttribute("icon"));
+
+        // the icon is after the text
+        Assert.assertTrue(getCenterX(rightButton) < getCenterX(icon));
+
+        WebElement thumbButton = layout.findElement(By.id("thumb-icon-button"));
+        icon = thumbButton.findElement(By.tagName("iron-icon"));
+        Assert.assertEquals("vaadin:thumbs-up", icon.getAttribute("icon"));
+
+        scrollIntoViewAndClick(leftButton);
+        waitUntilMessageIsChangedForClickedButton("Left");
+
+        scrollIntoViewAndClick(rightButton);
+        waitUntilMessageIsChangedForClickedButton("Right");
+
+        scrollIntoViewAndClick(thumbButton);
+        waitUntilMessageIsChangedForClickedButton("thumbs up");
     }
 
     @Test
@@ -95,7 +115,10 @@ public class ButtonIT extends AbstractChromeTest {
                 button.getAttribute("disabled").equals("")
                         || button.getAttribute("disabled").equals("true"));
 
-        scrollIntoViewAndClick(button);
+        // valo theme adds the pointer-events: none CSS property, which makes
+        // the button unclickable by selenium.
+        Assert.assertEquals("none", button.getCssValue("pointer-events"));
+
         WebElement message = layout.findElement(By.id("buttonMessage"));
         Assert.assertEquals("", message.getText());
     }
@@ -105,6 +128,10 @@ public class ButtonIT extends AbstractChromeTest {
         WebElement message = layout.findElement(By.id("buttonMessage"));
         waitUntil(driver -> message.getText()
                 .equals("Button " + messageString + " was clicked."));
+    }
+
+    private int getCenterX(WebElement element) {
+        return element.getLocation().getX() + element.getSize().getWidth() / 2;
     }
 
     @Override

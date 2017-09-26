@@ -22,9 +22,12 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.EventUtil;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 
 /**
  * Test event util functionality.

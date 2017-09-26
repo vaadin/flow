@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Id;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Label;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.Id;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 
 public class RestoreViewWithAttachedByIdView extends AbstractDivView {
 

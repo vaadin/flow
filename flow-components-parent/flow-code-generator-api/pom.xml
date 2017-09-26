@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components-parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-code-generator-api</artifactId>
     <name>Flow code generator API</name>
@@ -15,7 +15,7 @@
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-components-commons</artifactId>
+            <artifactId>flow-data</artifactId>
             <version>${flow.version}</version>
         </dependency>
         <dependency>

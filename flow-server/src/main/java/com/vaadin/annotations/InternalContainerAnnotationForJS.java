@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.ui.common.JavaScript;
+
 /**
  * Annotation enabling using multiple {@link JavaScript @JavaScript}
  * annotations.

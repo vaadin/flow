@@ -22,7 +22,6 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.Tag;
 import com.vaadin.flow.NullOwner;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.ListAddChange;
@@ -38,6 +37,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Registration;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.Html;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 

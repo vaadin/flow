@@ -29,12 +29,12 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.template.model.BasicModelType;
-import com.vaadin.flow.template.model.ComplexModelType;
-import com.vaadin.flow.template.model.InvalidTemplateModelException;
-import com.vaadin.flow.template.model.ModelType;
-import com.vaadin.flow.template.model.PropertyFilter;
-import com.vaadin.flow.template.model.TemplateModelUtil;
+import com.vaadin.flow.model.BasicModelType;
+import com.vaadin.flow.model.ComplexModelType;
+import com.vaadin.flow.model.InvalidTemplateModelException;
+import com.vaadin.flow.model.ModelType;
+import com.vaadin.flow.model.PropertyFilter;
+import com.vaadin.flow.model.TemplateModelUtil;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
@@ -47,7 +47,9 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @param <T>
  *            the proxy type used by this bean type
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class BeanModelType<T> implements ComplexModelType<T> {
 
     private static class PropertyMapBuilder {

@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.shared.NodeProperties;
 import com.vaadin.flow.template.angular.ChildSlotNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.model.ModelDescriptor;

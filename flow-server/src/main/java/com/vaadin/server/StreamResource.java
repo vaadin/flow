@@ -24,6 +24,8 @@ import java.util.UUID;
 
 import javax.servlet.ServletContext;
 
+import com.vaadin.function.ContentTypeResolver;
+
 /**
  * Represents dynamically generated data.
  * <p>

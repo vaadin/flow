@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.vaadin.external.jsoup.nodes.Document;
+import org.jsoup.nodes.Document;
+
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
-import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.OverrideElementData;
 import com.vaadin.flow.nodefeature.TemplateMap;
@@ -47,6 +47,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.event.PropertyChangeListener;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;

@@ -15,16 +15,17 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.annotations.ParentLayout;
-import com.vaadin.annotations.Route;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.HandlesTypes;
+
+import com.vaadin.router.ParentLayout;
+import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
@@ -41,7 +42,7 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
             throws ServletException {
         try {
             if (classSet == null) {
-                RouteRegistry.getInstance()
+                RouteRegistry.getInstance(servletContext)
                         .setNavigationTargets(Collections.emptySet());
                 return;
             }
@@ -51,7 +52,8 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
                     .peek(this::checkForConflictingAnnotations)
                     .collect(Collectors.toSet());
 
-            RouteRegistry.getInstance().setNavigationTargets(routes);
+            RouteRegistry.getInstance(servletContext)
+                    .setNavigationTargets(routes);
         } catch (InvalidRouteConfigurationException irce) {
             throw new ServletException(
                     "Exception while registering Routes on servlet startup",

@@ -22,7 +22,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.tests.components.AbstractComponentIT;
 import com.vaadin.testbench.By;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * Integration tests for {@link TextField}.
@@ -38,31 +38,33 @@ public class TextFieldViewIT extends AbstractComponentIT {
     public void assertReadOnly() {
         WebElement webComponent = findElement(By.tagName("vaadin-text-field"));
 
-        WebElement textField = getInShadowRoot(webComponent, By.id("input"));
-        Assert.assertNull(textField.getAttribute("readonly"));
+        Assert.assertNull(webComponent.getAttribute("readonly"));
 
         WebElement button = findElement(By.id("read-only"));
         button.click();
 
-        waitUntil(driver -> textField.getAttribute("readonly"));
+        waitUntil(
+                driver -> "true".equals(getProperty(webComponent, "readonly")));
 
         button.click();
 
-        waitUntil(driver -> textField.getAttribute("readonly") == null);
+        waitUntil(driver -> "false"
+                .equals(getProperty(webComponent, "readonly")));
     }
 
     @Test
     public void assertRequired() {
         WebElement webComponent = findElement(By.tagName("vaadin-text-field"));
 
-        WebElement textField = getInShadowRoot(webComponent, By.id("input"));
-        Assert.assertNull(textField.getAttribute("required"));
+        Assert.assertNull(webComponent.getAttribute("required"));
 
         WebElement button = findElement(By.id("required"));
         button.click();
-        waitUntil(driver -> textField.getAttribute("required"));
+        waitUntil(
+                driver -> "true".equals(getProperty(webComponent, "required")));
 
         button.click();
-        waitUntil(driver -> textField.getAttribute("required") == null);
+        waitUntil(driver -> "false"
+                .equals(getProperty(webComponent, "required")));
     }
 }

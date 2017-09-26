@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components-parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-components</artifactId>
     <name>Flow server side components</name>
@@ -24,7 +24,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-components-commons</artifactId>
+            <artifactId>flow-data</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
             <version>${flow.version}</version>

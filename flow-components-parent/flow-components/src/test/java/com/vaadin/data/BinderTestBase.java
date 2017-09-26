@@ -27,16 +27,15 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.vaadin.ui.HasValidation;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HasValidation;
+import com.vaadin.ui.textfield.TextField;
 
 /**
  * A base class for {@code Binder} unit tests.
  *
  * @author Vaadin Ltd.
  *
- * @since 8.0
  */
 public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
         implements Serializable {

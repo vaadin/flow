@@ -6,25 +6,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.event.ComponentEventListener;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.ComponentTest.TracksAttachDetach;
 import com.vaadin.ui.CompositeNestedTest.TestLayout;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class CompositeTest {
 

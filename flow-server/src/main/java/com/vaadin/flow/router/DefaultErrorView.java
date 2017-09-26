@@ -17,16 +17,18 @@ package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasText;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HasText;
 
 /**
  * The default error view shown to the user. Corresponds to the 404 page.
  * <p>
  * The error view can changed using
  * {@link RouterConfiguration#setErrorView(Class)}.
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 @Tag("div")
 public final class DefaultErrorView extends Component implements HasText, View {
 

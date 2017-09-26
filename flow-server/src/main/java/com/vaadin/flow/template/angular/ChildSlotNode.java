@@ -30,7 +30,9 @@ import elemental.json.JsonObject;
  * represented as <code>@child@</code> in the template file.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class ChildSlotNode extends AbstractControlTemplateNode {
     /**
      * Type value for child slot template nodes in JSON messages.

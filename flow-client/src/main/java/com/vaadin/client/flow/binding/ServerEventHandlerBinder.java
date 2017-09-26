@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.nodefeature.NodeList;
-import com.vaadin.flow.shared.NodeFeatures;
+import com.vaadin.flow.nodefeature.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.events.EventRemover;

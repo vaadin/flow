@@ -29,23 +29,23 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.annotations.EventData;
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.RepeatIndex;
-import com.vaadin.annotations.Tag;
-import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.RepeatIndex;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

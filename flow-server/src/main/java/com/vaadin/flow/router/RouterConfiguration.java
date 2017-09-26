@@ -26,6 +26,9 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.router.Location;
+import com.vaadin.router.RouteLocation;
+import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Page;
 
 /**
@@ -36,7 +39,9 @@ import com.vaadin.ui.Page;
  * you should never need to create your own configuration instances.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class RouterConfiguration
         implements Serializable, ImmutableRouterConfiguration {
     private final boolean modifiable;

@@ -17,18 +17,20 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.Title;
+import com.vaadin.util.AnnotationReader;
+import com.vaadin.router.Title;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.HasElement;
+import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
 
 /**
  * A view that can be shown in a {@link UI} or {@link HasChildView}.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 @FunctionalInterface
 public interface View extends HasElement, Serializable {
 

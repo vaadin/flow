@@ -45,10 +45,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Test;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.HasChildView;
@@ -63,10 +62,12 @@ import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinUriResolverFactory;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
@@ -76,7 +77,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 public class UidlWriterTest {
-    private static final String FRONTEND = "frontend://";
     private static final String JS_TYPE_NAME = Dependency.Type.JAVASCRIPT
             .name();
     private static final String HTML_TYPE_NAME = Dependency.Type.HTML_IMPORT
@@ -158,9 +158,9 @@ public class UidlWriterTest {
     }
 
     @Tag("test")
-    @JavaScript(value = FRONTEND + "inline.js", loadMode = LoadMode.INLINE)
-    @StyleSheet(value = FRONTEND + "inline.css", loadMode = LoadMode.INLINE)
-    @HtmlImport(value = FRONTEND + "inline.html", loadMode = LoadMode.INLINE)
+    @JavaScript(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "inline.js", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "inline.css", loadMode = LoadMode.INLINE)
+    @HtmlImport(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "inline.html", loadMode = LoadMode.INLINE)
     public static class ComponentWithFrontendProtocol extends Component {
     }
 
@@ -349,8 +349,8 @@ public class UidlWriterTest {
 
         doAnswer(invocation -> {
             String path = (String) invocation.getArguments()[1];
-            if (path.startsWith(FRONTEND)) {
-                return path.substring(FRONTEND.length());
+            if (path.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
+                return path.substring(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
             }
             return path;
         }).when(factory).toServletContextPath(any(), anyString());

@@ -20,8 +20,8 @@ import com.vaadin.data.Setter;
 import com.vaadin.data.ValidationException;
 import com.vaadin.data.ValueProvider;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.TextField;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.textfield.TextField;
 
 @CodeFor("binding-data/tutorial-flow-components-binder.asciidoc")
 public class BinderBasic {

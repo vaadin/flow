@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.vaadin.flow.template.model.PropertyFilter;
+import com.vaadin.flow.model.PropertyFilter;
 
 /**
  * Interface for a template model. Extending this interface and adding getters
@@ -39,7 +39,9 @@ import com.vaadin.flow.template.model.PropertyFilter;
  * </ul>
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public interface TemplateModel extends Serializable {
 
     /**

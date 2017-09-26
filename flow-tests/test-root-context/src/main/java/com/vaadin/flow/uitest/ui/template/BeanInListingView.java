@@ -18,11 +18,11 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.template.BeanInListingView.ListModel;
 
 @Tag("listing-bean-view")

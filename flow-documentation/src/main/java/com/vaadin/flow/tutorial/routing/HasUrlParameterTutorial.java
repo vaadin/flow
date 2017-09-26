@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.tutorial.routing;
 
-import com.vaadin.annotations.Route;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.event.BeforeNavigationEvent;
+import com.vaadin.router.OptionalParameter;
+import com.vaadin.router.Route;
+import com.vaadin.ui.html.Div;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-router-url-parameters.asciidoc")
@@ -32,6 +33,20 @@ public class HasUrlParameterTutorial {
         public void setParameter(BeforeNavigationEvent event,
                 String parameter) {
             setText(String.format("Hello, %s!", parameter));
+        }
+    }
+
+    @Route("greet")
+    public class OptionalGreeting extends Div implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @OptionalParameter String parameter) {
+            if(parameter == null) {
+                setText("Welcome anonymous.");
+            } else {
+                setText(String.format("Welcome %s.", parameter));
+            }
         }
     }
 }

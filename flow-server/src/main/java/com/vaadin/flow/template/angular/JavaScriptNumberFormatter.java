@@ -19,7 +19,9 @@ package com.vaadin.flow.template.angular;
  * Handles conversions/formatting of values from Java to JavaScript.
  *
  * @author Vaadin Ltd
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class JavaScriptNumberFormatter {
 
     private JavaScriptNumberFormatter() {

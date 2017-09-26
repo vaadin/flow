@@ -16,14 +16,19 @@
 package com.vaadin.flow.demo.views;
 
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.flow.html.Div;
-import com.vaadin.flow.html.Image;
-import com.vaadin.ui.Button;
-import com.vaadin.ui.HasClickListeners.ClickEvent;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.common.HasClickListeners.ClickEvent;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Image;
+import com.vaadin.ui.icon.Icon;
+import com.vaadin.ui.icon.VaadinIcons;
 
 /**
  * View for {@link Button} demo.
  */
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Button", href = "vaadin-button")
 public class ButtonView extends DemoView {
 
@@ -32,6 +37,7 @@ public class ButtonView extends DemoView {
     @Override
     void initView() {
         createDefaultButton();
+        createButtonsWithIcons();
         createImageButtonWithAutofocus();
         createImageButtonWithAccessibleLabel();
         createButtonsWithTabIndex();
@@ -52,6 +58,29 @@ public class ButtonView extends DemoView {
 
         addCard("Default button", button);
         button.setId("default-button");
+    }
+
+    private void createButtonsWithIcons() {
+        // begin-source-example
+        // source-example-heading: Buttons with icons
+        Button leftButton = new Button("Left",
+                new Icon(VaadinIcons.ARROW_LEFT));
+
+        Button rightButton = new Button("Right",
+                new Icon(VaadinIcons.ARROW_RIGHT));
+        rightButton.setIconAfterText(true);
+
+        Button thumbsUpButton = new Button(new Icon(VaadinIcons.THUMBS_UP));
+        // end-source-example
+
+        leftButton.addClickListener(this::showButtonClickedMessage);
+        rightButton.addClickListener(this::showButtonClickedMessage);
+        thumbsUpButton.addClickListener(this::showButtonClickedMessage);
+
+        addCard("Buttons with icons", leftButton, rightButton, thumbsUpButton);
+        leftButton.setId("left-icon-button");
+        rightButton.setId("right-icon-button");
+        thumbsUpButton.setId("thumb-icon-button");
     }
 
     private void createImageButtonWithAutofocus() {
@@ -123,11 +152,19 @@ public class ButtonView extends DemoView {
                 .ifPresent(parent -> parent.getElement().insertChild(
                         parent.getElement().getChildCount() - 2,
                         message.getElement()));
-        if (source.getElement().getChildCount() > 0
-                && !source.getElement().getChild(0).isTextNode()) {
-            message.setText("Button with image was clicked.");
-        } else {
-            message.setText("Button " + source.getText() + " was clicked.");
+
+        String text = source.getText();
+        if (text.isEmpty() && containsChild(source, "img")) {
+            text = "with image";
+        } else if (text.isEmpty() && containsChild(source, "iron-icon")) {
+            text = "thumbs up";
         }
+
+        message.setText("Button " + text + " was clicked.");
+    }
+
+    private boolean containsChild(Component parent, String tagName) {
+        return parent.getElement().getChildren()
+                .anyMatch(element -> element.getTag().equals(tagName));
     }
 }

@@ -21,24 +21,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.AbstractChromeTest;
+import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
 /**
  * Integration tests for the {@link FormLayoutView}.
  */
-public class FormLayoutIT extends AbstractChromeTest {
-
-    private WebElement layout;
-
+public class FormLayoutIT extends ComponentDemoTest {
     @Before
     public void init() {
-        open();
-        waitForElementPresent(By.tagName("main-layout"));
-        layout = findElement(By.tagName("main-layout"));
         Assert.assertTrue(isElementPresent(By.tagName("vaadin-form-layout")));
     }
 
@@ -87,25 +80,20 @@ public class FormLayoutIT extends AbstractChromeTest {
         // Empty form validation: there is an error
         WebElement info = findElement(By.id("binder-info"));
         WebElement save = findElement(By.id("binder-save"));
-        scrollIntoViewAndClick(save);
+        forceClick(save);
 
         waitUntil(
                 driver -> "There are errors: Both phone and email cannot be empty, Please add the first name, Please add the last name"
                         .equals(info.getText()));
 
         // Fill form: there shouldn't be an error
-        findFirstNameInput().sendKeys("foo");
-        findLastNameInput().sendKeys("bar");
-        findPhoneInput().sendKeys("123-456-789");
-        findEmailInput().sendKeys("example@foo.bar");
-        findBirthDayInput().sendKeys("01/02/2003");
-        findBirthDayInput().sendKeys(Keys.ENTER);
-
-        WebElement doNotCall = findElement(By.id("binder-do-not-call"));
-        WebElement checkBox = getInShadowRoot(doNotCall,
-                By.id("nativeCheckbox"));
-        scrollIntoViewAndClick(checkBox);
-        scrollIntoViewAndClick(save);
+        setValue("binder-first-name", "foo");
+        setValue("binder-last-name", "bar");
+        setValue("binder-phone", "123-456-789");
+        setValue("binder-email", "example@foo.bar");
+        setValue("binder-birth-date", "2003-01-02");
+        setChecked("binder-do-not-call", true);
+        forceClick(save);
 
         waitUntil(driver -> info.getText().startsWith("Saved bean values"));
 
@@ -116,55 +104,60 @@ public class FormLayoutIT extends AbstractChromeTest {
         Assert.assertTrue(info.getText().contains(", born on 2003-01-02"));
 
         // Make email address incorrect
-        findEmailInput().clear();
-        findEmailInput().sendKeys("abc");
-        scrollIntoViewAndClick(save);
+        setValue("binder-email", "abc");
+        forceClick(save);
 
         waitUntil(driver -> info.getText().startsWith("There are errors"));
         Assert.assertEquals("There are errors: Incorrect email address",
                 info.getText());
 
-        // there's a bug preventing invalid fields from being cleared. See
-        // https://github.com/vaadin/flow-demo/issues/344
-        findEmailInput().clear();
-
         // reset
-        scrollIntoViewAndClick(findElement(By.id("binder-reset")));
+        forceClick(findElement(By.id("binder-reset")));
+
+        // there's a bug preventing invalid fields from being cleared You need
+        // to reset twice. See https://github.com/vaadin/flow-demo/issues/344
+        forceClick(findElement(By.id("binder-reset")));
 
         // Wait for everything to update.
         waitUntil(driver -> info.getText().isEmpty());
 
-        Assert.assertEquals("", findFirstNameInput().getAttribute("value"));
-        Assert.assertEquals("", findLastNameInput().getAttribute("value"));
-        Assert.assertEquals("", findPhoneInput().getAttribute("value"));
-        Assert.assertEquals("", findEmailInput().getAttribute("value"));
-        Assert.assertEquals("", findBirthDayInput().getAttribute("value"));
-        Assert.assertFalse(checkBox.isSelected());
+        Assert.assertEquals("", getValue("binder-first-name"));
+        Assert.assertEquals("", getValue("binder-last-name"));
+        Assert.assertEquals("", getValue("binder-phone"));
+        Assert.assertEquals("", getValue("binder-email"));
+        Assert.assertEquals("", getValue("binder-birth-date"));
+        Assert.assertEquals(false, isChecked("binder-do-not-call"));
     }
 
-    private WebElement findBirthDayInput() {
-        return getInShadowRoot(findElement(By.id("binder-birth-date")),
-                By.id("input"));
+    private void setChecked(String id, boolean checked) {
+        WebElement element = findElement(By.id(id));
+        executeScript("arguments[0].checked = arguments[1];", element, checked);
     }
 
-    private WebElement findEmailInput() {
-        return getInShadowRoot(findElement(By.id("binder-email")),
-                By.id("input"));
+    private void setValue(String id, String keys) {
+        WebElement element = findElement(By.id(id));
+        executeScript("arguments[0].value = arguments[1];", element, keys);
     }
 
-    private WebElement findLastNameInput() {
-        return getInShadowRoot(findElement(By.id("binder-last-name")),
-                By.id("input"));
+    private String getValue(String id) {
+        WebElement element = findElement(By.id(id));
+        return String
+                .valueOf(executeScript("return arguments[0].value;", element));
     }
 
-    private WebElement findFirstNameInput() {
-        return getInShadowRoot(findElement(By.id("binder-first-name")),
-                By.id("input"));
+    private boolean isChecked(String id) {
+        WebElement element = findElement(By.id(id));
+        return Boolean.parseBoolean(String.valueOf(
+                executeScript("return arguments[0].checked;", element)));
     }
 
-    private WebElement findPhoneInput() {
-        return getInShadowRoot(findElement(By.id("binder-phone")),
-                By.id("input"));
+    private void clearInput(String id) {
+        WebElement element = findElement(By.id(id));
+        executeScript("arguments[0].value = '';", element);
+    }
+
+    private void forceClick(WebElement element) {
+        executeScript("arguments[0].click();", element);
     }
 
     @Override

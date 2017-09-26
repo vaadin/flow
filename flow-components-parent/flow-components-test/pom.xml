@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-components-parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-components-test</artifactId>
     <name>Flow component API integration test module</name>
@@ -47,19 +47,14 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>install-node-and-npm</id>
+                        <id>install-bower-dependencies</id>
                         <goals>
                             <goal>install-node-and-npm</goal>
                             <goal>npm</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>npm run</id>
-                        <goals>
-                            <goal>npm</goal>
+                            <goal>bower</goal>
                         </goals>
                         <configuration>
-                            <arguments>${npm.build.goal}</arguments>
+                            <workingDirectory>${frontend.working.directory}</workingDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -95,8 +90,7 @@
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                         <resourceBases>
-                            <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
-                            <resourceBase>${jetty.extra.resource.base}</resourceBase>
+                            <resourceBase>${frontend.working.directory}</resourceBase>
                         </resourceBases>
                     </webAppConfig>
                 </configuration>
@@ -132,110 +126,6 @@
 
     <profiles>
         <profile>
-            <id>productionMode</id>
-            <activation>
-                <property>
-                    <name>vaadin.productionMode</name>
-                </property>
-            </activation>
-
-            <properties>
-                <npm.build.goal>run prodMode</npm.build.goal>
-                <jetty.extra.resource.base>${project.build.directory}/jetty-extra-resources</jetty.extra.resource.base>
-            </properties>
-
-            <dependencies>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server-production-mode</artifactId>
-                    <version>${flow.version}</version>
-                </dependency>
-            </dependencies>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <version>${maven.war.plugin.version}</version>
-                        <configuration>
-                            <webResources>
-                                <resource>
-                                    <directory>${project.basedir}/${webapp.directory}</directory>
-                                </resource>
-                                <resource>
-                                    <directory>${frontend.working.directory}/build</directory>
-                                    <targetPath>${vaadin.frontend.path}</targetPath>
-                                </resource>
-                            </webResources>
-                        </configuration>
-                    </plugin>
-
-                    <plugin>
-                        <artifactId>maven-resources-plugin</artifactId>
-                        <version>${maven.resources.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>copy-resources</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>copy-resources</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${project.build.directory}/jetty-extra-resources/${vaadin.frontend.path}</outputDirectory>
-                                    <overwrite>true</overwrite>
-                                    <resources>
-                                        <resource>
-                                            <directory>${project.basedir}/${frontend.working.directory}/build</directory>
-                                        </resource>
-                                    </resources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>debugMode</id>
-            <activation>
-                <property>
-                    <name>!vaadin.productionMode</name>
-                </property>
-            </activation>
-
-            <properties>
-                <npm.build.goal>run devMode</npm.build.goal>
-                <jetty.extra.resource.base>${project.basedir}/${frontend.working.directory}</jetty.extra.resource.base>
-            </properties>
-
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <webResources>
-                                <resource>
-                                    <directory>${project.basedir}/${webapp.directory}</directory>
-                                </resource>
-                                <resource>
-                                    <directory>${frontend.working.directory}</directory>
-                                    <excludes>
-                                        <exclude>build/**</exclude>
-                                        <exclude>node/**</exclude>
-                                        <exclude>node_modules/**</exclude>
-                                    </excludes>
-                                </resource>
-                            </webResources>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
             <id>local-run</id>
             <activation>
                 <property>
@@ -266,6 +156,43 @@
                 </plugins>
             </build>
         </profile>
+        
+        <profile>
+            <id>eclipse</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <version>${jetty.version}</version>
+                        <configuration>
+                            <webAppConfig>
+                                <webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
+                                <!-- Configure all project META-INF/resources
+                                    directories for Jetty as resource folders as Jetty inside Eclipse is run
+                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty
+                                    only scans JARs for META-INF/resources folders -->
+                                <resourceBases>
+                                    <!-- these paths are relative to the
+                                        project where the profile is triggered -->
+                                    <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
+                                    <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
+                                    <resourceBase>${project.basedir}/../flow-components/target/classes/META-INF/resources</resourceBase>
+                                    <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
+                                    <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>
+                                </resourceBases>
+                            </webAppConfig>
+                            <!-- force default ports so that running IT tests
+                                from IDE work -->
+                            <httpConnector>
+                                <port>8080</port>
+                            </httpConnector>
+                            <stopPort>8081</stopPort>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>        
 
     </profiles>
 </project>

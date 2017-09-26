@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.NativeButton;
-import com.vaadin.flow.html.Label;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 public class UpgradeElementUI extends UI {

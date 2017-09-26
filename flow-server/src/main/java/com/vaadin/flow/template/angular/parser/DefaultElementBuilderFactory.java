@@ -19,9 +19,10 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.vaadin.external.jsoup.nodes.Attribute;
-import com.vaadin.external.jsoup.nodes.Element;
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+
 import com.vaadin.flow.template.angular.AbstractBindingValueProvider;
 import com.vaadin.flow.template.angular.ElementTemplateBuilder;
 import com.vaadin.flow.template.angular.StaticBindingValueProvider;
@@ -32,8 +33,9 @@ import com.vaadin.flow.template.angular.TemplateParseException;
  * The factory that is default for JSOUP {@link Element}s.
  *
  * @author Vaadin Ltd
- *
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public class DefaultElementBuilderFactory
         extends AbstractTemplateBuilderFactory<Element> {
 

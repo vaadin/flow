@@ -18,7 +18,7 @@ package com.vaadin.flow.template.angular.parser;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.vaadin.external.jsoup.nodes.Node;
+import org.jsoup.nodes.Node;
 
 import com.vaadin.flow.template.angular.TemplateNodeBuilder;
 
@@ -30,8 +30,9 @@ import com.vaadin.flow.template.angular.TemplateNodeBuilder;
  *            the node type which factory is able to handle
  *
  * @author Vaadin Ltd
- *
+ * @deprecated do not use! feature is to be removed in the near future
  */
+@Deprecated
 public interface TemplateNodeBuilderFactory<T extends Node> {
 
     /**
