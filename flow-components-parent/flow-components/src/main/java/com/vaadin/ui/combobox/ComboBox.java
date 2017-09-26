@@ -31,7 +31,7 @@ import com.vaadin.data.provider.Query;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.server.KeyMapper;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.ItemCaptionGenerator;
+import com.vaadin.ui.ItemLabelGenerator;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.common.HasValue;
@@ -53,12 +53,13 @@ import elemental.json.JsonValue;
 public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         implements HasSize, HasItems<T>, HasValidation,
         HasValue<ComboBox<T>, T>, HasDataProvider<T> {
+    private static final String ITEM_CAPTION_PROPERTY = "caption";
     private static final String KEY_PROPERTY = "key";
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
 
     private T oldValue;
-    private ItemCaptionGenerator<T> itemCaptionGenerator = String::valueOf;
+    private ItemLabelGenerator<T> itemLabelGenerator = String::valueOf;
 
     private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
 
@@ -67,7 +68,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     /**
      * Default constructor. Creates an empty combo box.
      *
-     * @see #setItemType(Class)
      */
     public ComboBox() {
         getElement().synchronizeProperty(SELECTED_ITEM_PROPERTY_NAME,
@@ -79,8 +79,8 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
             oldValue = getValue();
         });
 
-        setItemLabelPath("caption");
-        setItemValuePath("caption");
+        setItemLabelPath(ITEM_CAPTION_PROPERTY);
+        setItemValuePath(ITEM_CAPTION_PROPERTY);
     }
 
     /**
@@ -88,7 +88,6 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
      *
      * @param label
      *            the label describing the combo box
-     * @see #setItemType(Class)
      */
     public ComboBox(String label) {
         this();
@@ -226,29 +225,29 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
     }
 
     /**
-     * Sets the item caption generator that is used to produce the strings shown
+     * Sets the item label generator that is used to produce the strings shown
      * in the combo box for each item. By default,
      * {@link String#valueOf(Object)} is used.
      *
-     * @param itemCaptionGenerator
-     *            the item caption provider to use, not null
+     * @param itemLabelGenerator
+     *            the item label provider to use, not null
      */
-    public void setItemCaptionGenerator(
-            ItemCaptionGenerator<T> itemCaptionGenerator) {
-        Objects.requireNonNull(itemCaptionGenerator,
-                "Item caption generators must not be null");
-        this.itemCaptionGenerator = itemCaptionGenerator;
+    public void setItemLabelGenerator(
+            ItemLabelGenerator<T> itemLabelGenerator) {
+        Objects.requireNonNull(itemLabelGenerator,
+                "Item label generators must not be null");
+        this.itemLabelGenerator = itemLabelGenerator;
         refresh();
     }
 
     /**
-     * Gets the item caption generator that is used to produce the strings shown
+     * Gets the item label generator that is used to produce the strings shown
      * in the combo box for each item.
      *
-     * @return the item caption generator used, not null
+     * @return the item label generator used, not null
      */
-    public ItemCaptionGenerator<T> getItemCaptionGenerator() {
-        return itemCaptionGenerator;
+    public ItemLabelGenerator<T> getItemLabelGenerator() {
+        return itemLabelGenerator;
     }
 
     @Override
@@ -293,7 +292,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         JsonObject json = Json.createObject();
         json.put(KEY_PROPERTY, keyMapper.key(item));
 
-        json.put("caption", itemCaptionGenerator.apply(item));
+        json.put(ITEM_CAPTION_PROPERTY, itemLabelGenerator.apply(item));
 
         return json;
     }

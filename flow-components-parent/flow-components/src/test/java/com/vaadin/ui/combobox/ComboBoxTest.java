@@ -54,7 +54,7 @@ public class ComboBoxTest {
 
         comboBox.setItems(Arrays.asList("foo", "bar"));
 
-        comboBox.setItemCaptionGenerator(
+        comboBox.setItemLabelGenerator(
                 item -> String.valueOf(item.hashCode()));
 
         assertItem(comboBox, 0, "101574");

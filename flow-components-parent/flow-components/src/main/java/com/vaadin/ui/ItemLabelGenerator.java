@@ -19,17 +19,16 @@ import com.vaadin.function.SerializableFunction;
 import com.vaadin.ui.combobox.ComboBox;
 
 /**
- * {@link ItemCaptionGenerator} can be used to customize the string shown to the
+ * {@link ItemLabelGenerator} can be used to customize the string shown to the
  * user for an item.
  *
- * @see ComboBox#setItemCaptionGenerator(ItemCaptionGenerator)
+ * @see ComboBox#setItemLabelGenerator(ItemLabelGenerator)
  * @param <T>
  *            item type
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface ItemCaptionGenerator<T>
-        extends SerializableFunction<T, String> {
+public interface ItemLabelGenerator<T> extends SerializableFunction<T, String> {
 
     /**
      * Gets a caption for the {@code item}.

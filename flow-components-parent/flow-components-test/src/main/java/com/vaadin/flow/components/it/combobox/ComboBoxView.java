@@ -41,7 +41,7 @@ public class ComboBoxView extends TestView {
         setProvider.setId("update-provider");
 
         Button setItemCaptionGenerator = new Button("Update caption generator",
-                event -> comboBox.setItemCaptionGenerator(
+                event -> comboBox.setItemLabelGenerator(
                         item -> String.valueOf(item.length())));
         setItemCaptionGenerator.setId("update-caption-gen");
 
