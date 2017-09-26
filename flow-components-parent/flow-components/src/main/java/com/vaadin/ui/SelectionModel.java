@@ -49,6 +49,9 @@ public interface SelectionModel<T>
         /**
          * Selects the given item. If another item was already selected, that
          * item is deselected.
+         *
+         * @param item
+         *            the item to select
          */
         @Override
         public void select(T item);
