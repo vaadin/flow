@@ -15,11 +15,11 @@
  */
 package com.vaadin.ui.button;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.Image;
+import com.vaadin.ui.html.Span;
 import com.vaadin.ui.icon.Icon;
 
 /**
@@ -29,6 +29,7 @@ import com.vaadin.ui.icon.Icon;
  */
 public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
+    private Span textComponent;
     private Component iconComponent;
     private boolean iconAfterText;
 
@@ -113,8 +114,8 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     /**
      * Sets the given string as the text content of this component.
      * <p>
-     * This method removes any existing text nodes from this component and adds
-     * a new text node with the given content.
+     * This method replaces any text that has been set previously either via a
+     * constructor or this method.
      *
      * @param text
      *            the text content to set, may be <code>null</code> to only
@@ -122,17 +123,38 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      */
     @Override
     public void setText(String text) {
-        getElement().removeChild(getTextNodes());
-
         if (text == null) {
+            if (textComponent != null) {
+                remove(textComponent);
+            }
+            textComponent = null;
             return;
         }
 
-        if (iconComponent != null && !iconAfterText) {
-            getElement().appendChild(Element.createText(text));
-        } else {
-            getElement().insertChild(0, Element.createText(text));
+        if (textComponent != null) {
+            textComponent.setText(text);
+            return;
         }
+
+        textComponent = new Span(text);
+        if (!iconAfterText) {
+            add(textComponent);
+        } else {
+            getElement().insertChild(0, textComponent.getElement());
+        }
+    }
+
+    /**
+     * Gets the text content of this component.
+     * <p>
+     * This method only considers the text set by the user via a constructor or
+     * {@link #setText(String)}.
+     *
+     * @return the text content of this component, not <code>null</code>
+     */
+    @Override
+    public String getText() {
+        return textComponent != null ? textComponent.getText() : "";
     }
 
     /**
@@ -142,6 +164,9 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      * options are {@link Icon} and {@link Image}. Use
      * {@link #setIconAfterText(boolean)} to change the icon's position relative
      * to the button's text content.
+     * <p>
+     * This method also sets or removes this button's <code>theme=icon</code>
+     * attribute for better theming support.
      * 
      * @param icon
      *            component to be used as an icon, may be <code>null</code> to
@@ -158,9 +183,11 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
         iconComponent = icon;
         if (iconComponent == null) {
+            getElement().removeAttribute("theme");
             return;
         }
 
+        getElement().setAttribute("theme", "icon");
         if (iconAfterText) {
             add(iconComponent);
         } else {
@@ -190,33 +217,20 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      *            or not
      */
     public void setIconAfterText(boolean iconAfterText) {
-        if (this.iconAfterText == iconAfterText) {
-            return;
-        }
         this.iconAfterText = iconAfterText;
 
-        Element[] textNodes = getTextNodes();
-        if (iconComponent == null || textNodes.length == 0) {
+        if (textComponent == null || iconComponent == null) {
             return;
         }
 
-        // reordering text and icon if necessary
+        int textIndex = getElement().indexOfChild(textComponent.getElement());
         int iconIndex = getElement().indexOfChild(iconComponent.getElement());
-        if (iconAfterText) {
-            int lastTextIndex = getElement()
-                    .indexOfChild(textNodes[textNodes.length - 1]);
-            if (iconIndex < lastTextIndex) {
-                remove(iconComponent);
-                getElement().insertChild(lastTextIndex,
-                        iconComponent.getElement());
-            }
-        } else {
-            int firstTextIndex = getElement().indexOfChild(textNodes[0]);
-            if (iconIndex > firstTextIndex) {
-                remove(iconComponent);
-                getElement().insertChild(firstTextIndex,
-                        iconComponent.getElement());
-            }
+
+        // reorder if necessary
+        if (iconAfterText && iconIndex < textIndex) {
+            add(iconComponent);
+        } else if (!iconAfterText && textIndex < iconIndex) {
+            add(textComponent);
         }
     }
 
@@ -242,9 +256,10 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     /**
      * Adds the given components as children of this component.
      * <p>
-     * Note that using this method together with {@link #setText(String)},
-     * {@link #setIcon(Component)} and {@link #setIconAfterText(boolean)} may
-     * result in an unexpected order of child components.
+     * Note that using this method together with convenience methods, such as
+     * {@link #setText(String)} and {@link #setIcon(Component)}, may have
+     * unexpected results, mainly in the order of child elements. Also
+     * {@link #getText()} doesn't consider any content added with this method.
      *
      * @param components
      *            the components to add
@@ -252,11 +267,6 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     @Override
     public void add(Component... components) {
         super.add(components);
-    }
-
-    private Element[] getTextNodes() {
-        return getElement().getChildren().filter(Element::isTextNode)
-                .toArray(Element[]::new);
     }
 
 }
