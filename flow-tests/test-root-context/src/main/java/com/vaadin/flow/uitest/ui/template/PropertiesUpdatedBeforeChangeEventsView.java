@@ -1,9 +1,9 @@
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class PropertiesUpdatedBeforeChangeEventsView extends AbstractDivView {
 
