@@ -917,6 +917,7 @@ public class ComponentGenerator {
             if ("value".equals(propertyJavaName)
                     && shouldImplementHasValue(metadata)) {
                 method.addAnnotation(Override.class);
+                preventSettingTheSameValue(javaClass, "property", method);
             }
 
         } else {
@@ -955,6 +956,8 @@ public class ComponentGenerator {
                         && shouldImplementHasValue(metadata)) {
 
                     method.addAnnotation(Override.class);
+                    preventSettingTheSameValue(javaClass, parameterName,
+                            method);
                     if (setterType.isPrimitive()) {
                         implementHasValueSetterWithPimitiveType(javaClass,
                                 property, method, setterType, parameterName);
@@ -979,10 +982,7 @@ public class ComponentGenerator {
         method.removeParameter(setterType, parameterName);
         setterType = ClassUtils.primitiveToWrapper(setterType);
         method.addParameter(setterType, parameterName);
-        method.setBody(String.format("Objects.requireNonNull(%s, \"%s\");",
-                parameterName, javaClass.getName() + " value must not be null")
-                + method.getBody());
-        javaClass.addImport(Objects.class);
+        preventNullArgument(javaClass, parameterName, method);
 
         if (setterType.equals(Double.class)) {
             MethodSource<JavaClassSource> overloadMethod = javaClass.addMethod()
@@ -1002,10 +1002,29 @@ public class ComponentGenerator {
             overloadMethod.getJavaDoc().addTagValue(JAVADOC_SEE,
                     "#setValue(Double)");
 
+            preventSettingTheSameValue(javaClass, parameterName,
+                    overloadMethod);
+            preventNullArgument(javaClass, parameterName, overloadMethod);
+
             if (fluentSetters) {
                 addFluentReturnToMethod(overloadMethod);
             }
         }
+    }
+
+    private void preventSettingTheSameValue(JavaClassSource javaClass,
+            String parameterName, MethodSource<JavaClassSource> method) {
+        javaClass.addImport(Objects.class);
+        method.setBody(String.format("if (!Objects.equals(%s, getValue())) {",
+                parameterName) + method.getBody() + "}");
+    }
+
+    private void preventNullArgument(JavaClassSource javaClass,
+            String parameterName, MethodSource<JavaClassSource> method) {
+        javaClass.addImport(Objects.class);
+        method.setBody(String.format("Objects.requireNonNull(%s, \"%s\");",
+                parameterName, javaClass.getName() + " value must not be null")
+                + method.getBody());
     }
 
     private void addFluentReturnToMethod(MethodSource<JavaClassSource> method) {
