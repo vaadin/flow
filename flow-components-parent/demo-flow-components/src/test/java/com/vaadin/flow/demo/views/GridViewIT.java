@@ -44,10 +44,7 @@ public class GridViewIT extends ComponentDemoTest {
 
         scrollDown(grid, 9);
 
-        waitUntil(driver -> grid
-                .findElements(By.tagName("vaadin-grid-cell-content")).stream()
-                .filter(cell -> "Person 189".equals(cell.getText())).findFirst()
-                .isPresent());
+        waitUntilCellHasText(grid, "Person 189");
     }
 
     @Test
@@ -103,14 +100,16 @@ public class GridViewIT extends ComponentDemoTest {
 
         // scroll to bottom
         scrollDown(grid, 50);
+        waitUntilCellHasText(grid, "Person 499");
         // select item that is not in cache
         toggleButton.click();
         // scroll back up
         scrollUp(grid, 50);
+        waitUntilCellHasText(grid, "Person 1");
+        waitUntil(driver -> isRowSelected(grid, 0));
         Assert.assertEquals(
                 getSelectionMessage(null, GridView.items.get(0), false),
                 messageDiv.getText());
-        Assert.assertTrue(isRowSelected(grid, 0));
     }
 
     private static String getSelectionMessage(Person oldSelection,
@@ -136,6 +135,13 @@ public class GridViewIT extends ComponentDemoTest {
                     "arguments[0]._scrollPageUp();arguments[0]._scrollPageUp();");
         }
         getCommandExecutor().executeScript(builder.toString(), grid);
+    }
+
+    private void waitUntilCellHasText(WebElement grid, String text) {
+        waitUntil(driver -> grid
+                .findElements(By.tagName("vaadin-grid-cell-content")).stream()
+                .filter(cell -> text.equals(cell.getText())).findFirst()
+                .isPresent());
     }
 
     private boolean isRowSelected(WebElement grid, int row) {
