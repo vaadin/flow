@@ -10,9 +10,9 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
 
-    WebElement firstPropInput;
-    WebElement secondPropDiv;
-    WebElement serverSetTextDiv;
+    private WebElement firstPropInput;
+    private WebElement secondPropDiv;
+    private WebElement serverSetTextDiv;
 
     @Before
     public void init() {
@@ -25,8 +25,9 @@ public class PropertiesUpdatedBeforeChangeEventsIT extends ChromeBrowserTest {
     @Test
     public void all_properties_update_before_change_event_handlers_are_called() {
         assertTextsCorrect("");
-        firstPropInput.sendKeys("abcdefg");
-        assertTextsCorrect("abcdefg");
+        String textToSet = "abcdefg";
+        firstPropInput.sendKeys(textToSet);
+        assertTextsCorrect(textToSet);
     }
 
     private void assertTextsCorrect(String expected) {

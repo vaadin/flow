@@ -69,7 +69,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         ElementPropertyMap elementPropertyMap = (ElementPropertyMap) node
                 .getFeature(feature);
         Runnable changeEventRunnable = elementPropertyMap
-                .updateFromClientWithDeferredChangeEvent(property, value);
+                .deferredUpdateFromClient(property, value);
         pendingChangeEvents.add(changeEventRunnable);
     }
 

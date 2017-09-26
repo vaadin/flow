@@ -65,7 +65,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            the value to store
      * @return a runnable for firing the deferred change event
      */
-    public Runnable updateFromClientWithDeferredChangeEvent(String key,
+    public Runnable deferredUpdateFromClient(String key,
             Serializable value) {
         if (!mayUpdateFromClient(key, value)) {
             throw new IllegalArgumentException(String.format(
