@@ -311,4 +311,12 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         JsonArray array = generateJson(getDataProvider().fetch(new Query<>()));
         setItems(array);
     }
+
+    private void setItemLabelPath(String path) {
+        getElement().setProperty("itemLabelPath", path == null ? "" : path);
+    }
+
+    private void setItemValuePath(String path) {
+        getElement().setProperty("itemValuePath", path == null ? "" : path);
+    }
 }
