@@ -30,9 +30,33 @@ import elemental.json.JsonObject;
  * <p>
  * The default element used for items in the vaadin-combobox.
  * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * The following state attributes are exposed for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code selected}</td>
+ * <td>Set when the item is selected</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Set when the item is focused</td>
+ * <td>:host</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxItemElement#3.0.0-alpha5",
+		"WebComponent: Vaadin.ComboBoxItemElement#3.0.0-alpha7",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-item")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-item.html")

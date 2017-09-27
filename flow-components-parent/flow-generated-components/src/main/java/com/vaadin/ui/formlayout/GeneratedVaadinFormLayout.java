@@ -98,7 +98,7 @@ import com.vaadin.ui.common.HasComponents;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.FormLayoutElement#1.0.2", "Flow#1.0-SNAPSHOT"})
+		"WebComponent: Vaadin.FormLayoutElement#1.0.3", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-form-layout")
 @HtmlImport("frontend://bower_components/vaadin-form-layout/vaadin-form-layout.html")
 public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>

@@ -1,24 +1,40 @@
 {
-  "name": "InfiniteScrollerElement",
-  "tag": "vaadin-infinite-scroller",
-  "baseUrl": "vaadin-date-picker/vaadin-infinite-scroller.html",
-  "version": "2.0.5",
+  "name": "Vaadin.ComboBoxOverlayElement",
+  "tag": "vaadin-combo-box-dropdown-wrapper",
+  "baseUrl": "vaadin-combo-box/vaadin-combo-box-dropdown-wrapper.html",
+  "version": "3.0.0-alpha7",
   "properties": [
     {
-      "name": "bufferSize",
+      "name": "touchDevice",
       "type": [
-        "NUMBER"
+        "BOOLEAN"
       ],
       "objectType": [],
-      "description": "Count of individual items in each buffer.\nThe scroller has 2 buffers altogether so bufferSize of 20\nwill result in 40 buffered DOM items in total.\nChanging after initialization not supported.\n           "
+      "description": "True if the device supports touch events.\n           "
     },
     {
-      "name": "active",
+      "name": "opened",
       "type": [
         "BOOLEAN"
       ],
       "objectType": [],
       "description": ""
+    },
+    {
+      "name": "loading",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "`true` when new items are being loaded.\n           "
+    },
+    {
+      "name": "verticalOffset",
+      "type": [
+        "NUMBER"
+      ],
+      "objectType": [],
+      "description": "Vertical offset for the overlay position.\n           "
     }
   ],
   "methods": [
@@ -398,11 +414,59 @@
         }
       ],
       "returns": "STRING"
+    },
+    {
+      "name": "indexOfLabel",
+      "description": "Gets the index of the item with the provided label.",
+      "parameters": [
+        {
+          "name": "label",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "NUMBER"
+    },
+    {
+      "name": "getItemLabel",
+      "description": "Gets the label string for the item based on the `_itemLabelPath`.",
+      "parameters": [
+        {
+          "name": "item",
+          "type": [
+            "OBJECT"
+          ],
+          "objectType": [],
+          "description": "Missing documentation!"
+        }
+      ],
+      "returns": "STRING"
+    },
+    {
+      "name": "ensureItemsRendered",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "adjustScrollPosition",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
+    },
+    {
+      "name": "updateViewportBoundaries",
+      "description": "",
+      "parameters": [],
+      "returns": "UNDEFINED"
     }
   ],
   "events": [],
   "slots": [],
   "behaviors": [],
   "mixins": [],
-  "description": ""
+  "description": "Element for internal use only."
 }
