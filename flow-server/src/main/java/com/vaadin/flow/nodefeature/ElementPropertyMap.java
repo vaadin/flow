@@ -28,9 +28,9 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeEvent;
 import com.vaadin.ui.event.PropertyChangeListener;
-import com.vaadin.shared.Registration;
 
 /**
  * Map for element property values.
@@ -134,6 +134,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             return () -> fireEvent(event);
         }
         return () -> {
+            // NO-OP
         };
     }
 
