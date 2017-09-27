@@ -35,9 +35,9 @@ import com.vaadin.data.provider.SortOrder;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
 import com.vaadin.flow.tutorial.binder.Person.Department;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.combobox.ComboBox;
+import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.textfield.TextField;
 
 @CodeFor("data-provider/tutorial-flow-data-provider.asciidoc")

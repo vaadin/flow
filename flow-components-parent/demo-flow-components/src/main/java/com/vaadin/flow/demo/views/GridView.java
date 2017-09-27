@@ -15,21 +15,31 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
-import com.vaadin.ui.Grid;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.grid.GridSelectionModel;
+import com.vaadin.ui.html.Div;
 
 /**
  * View for {@link Grid} demo.
  */
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
 public class GridView extends DemoView {
-
-    private Random random;
+    
+    static List<Person> items = new ArrayList<>();
+    private static Random random = new Random(0);
+    static {
+        items = IntStream.range(1, 500).mapToObj(GridView::createPerson)
+                .collect(Collectors.toList());
+    }
 
     /**
      * Example object.
@@ -54,14 +64,18 @@ public class GridView extends DemoView {
             this.age = age;
         }
 
+        @Override
+        public String toString() {
+            return String.format("[Person name: %s, age: %s]", name, age);
+        }
     }
 
     @Override
     void initView() {
-        random = new Random();
-
         createBasicUsage();
         createCallBackDataProvider();
+        createSingleSelect();
+        createNoneSelect();
     }
 
     private void createBasicUsage() {
@@ -94,7 +108,7 @@ public class GridView extends DemoView {
             return IntStream
                     .range(query.getOffset(),
                             query.getOffset() + query.getLimit())
-                    .mapToObj(this::createPerson);
+                    .mapToObj(GridView::createPerson);
         }, query -> 10000));
 
         grid.addColumn("Name", Person::getName);
@@ -107,11 +121,63 @@ public class GridView extends DemoView {
         addCard("Grid with lazy loading", grid);
     }
 
-    private Stream<Person> createItems() {
-        return IntStream.range(1, 200).mapToObj(this::createPerson);
+    private void createSingleSelect() {
+        Div messageDiv = new Div();
+        // begin-source-example
+        // source-example-heading: Grid Single Selection
+        List<Person> people = createItems();
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(people);
+
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+
+        grid.asSingleSelect()
+                .addValueChangeListener(event -> messageDiv
+                        .setText(String.format(
+                                "Selection changed from %s to %s, selection is from client: %s",
+                                event.getOldValue(),
+                                event.getValue(), event.isFromClient())));
+
+        Button toggleSelect = new Button(
+                "Toggle selection of the first person");
+        Person firstPerson = people.get(0);
+        toggleSelect.addClickListener(event -> {
+            GridSelectionModel<Person> selectionModel = grid
+                    .getSelectionModel();
+            if (selectionModel.isSelected(firstPerson)) {
+                selectionModel.deselect(firstPerson);
+            } else {
+                selectionModel.select(firstPerson);
+            }
+        });
+        // end-source-example
+        grid.setId("single-selection");
+        toggleSelect.setId("single-selection-toggle");
+        messageDiv.setId("single-selection-message");
+        addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
     }
 
-    private Person createPerson(int index) {
+    private void createNoneSelect() {
+        // begin-source-example
+        // source-example-heading: Grid with No Selection Enabled
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
+
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+
+        grid.setSelectionMode(Grid.SelectionMode.NONE);
+        // end-source-example
+        grid.setId("none-selection");
+        addCard("Grid with No Selection Enabled", grid);
+    }
+
+    private List<Person> createItems() {
+        return items;
+    }
+
+    private static Person createPerson(int index) {
         Person person = new Person();
         person.setName("Person " + index);
         person.setAge(13 + random.nextInt(50));
