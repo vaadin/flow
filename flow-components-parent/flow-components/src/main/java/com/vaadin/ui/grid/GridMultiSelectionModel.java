@@ -36,5 +36,5 @@ public interface GridMultiSelectionModel<T>
      *
      * @return the multiselect wrapper
      */
-    MultiSelect<? extends Grid<T>, T> asMultiSelect();
+    MultiSelect<Grid<T>, T> asMultiSelect();
 }

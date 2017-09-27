@@ -125,9 +125,9 @@ public class GridView extends DemoView {
         Div messageDiv = new Div();
         // begin-source-example
         // source-example-heading: Grid Single Selection
-        List<Person> items = createItems();
+        List<Person> people = createItems();
         Grid<Person> grid = new Grid<>();
-        grid.setItems(items);
+        grid.setItems(people);
 
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", person -> Integer.toString(person.getAge()));
@@ -141,14 +141,14 @@ public class GridView extends DemoView {
 
         Button toggleSelect = new Button(
                 "Toggle selection of the first person");
-        Person firstItem = items.get(0);
+        Person firstPerson = people.get(0);
         toggleSelect.addClickListener(event -> {
             GridSelectionModel<Person> selectionModel = grid
                     .getSelectionModel();
-            if (selectionModel.isSelected(firstItem)) {
-                selectionModel.deselect(firstItem);
+            if (selectionModel.isSelected(firstPerson)) {
+                selectionModel.deselect(firstPerson);
             } else {
-                selectionModel.select(firstItem);
+                selectionModel.select(firstPerson);
             }
         });
         // end-source-example
