@@ -24,16 +24,8 @@ import com.vaadin.ui.common.HasValidation;
  * {@link HasValidation}.
  */
 public abstract class ValidationTestView extends TestView {
-
     /**
-     * Gets the component to be tested.
-     * 
-     * @return a component that implements {@link HasValidation}
-     */
-    protected abstract HasValidation getValidationComponent();
-
-    /**
-     * Default constructor
+     * Default constructor.
      */
     public ValidationTestView() {
         initView();
@@ -61,4 +53,10 @@ public abstract class ValidationTestView extends TestView {
         add(button);
     }
 
+    /**
+     * Gets the component to be tested.
+     * 
+     * @return a component that implements {@link HasValidation}
+     */
+    protected abstract HasValidation getValidationComponent();
 }
