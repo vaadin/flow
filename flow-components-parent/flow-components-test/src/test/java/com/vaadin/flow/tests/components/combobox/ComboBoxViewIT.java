@@ -59,11 +59,11 @@ public class ComboBoxViewIT extends AbstractComponentIT {
 
     private void assertItem(List<?> items, int index, String caption) {
         Map<?, ?> map = (Map<?, ?>) items.get(index);
-        Assert.assertEquals(caption, map.get("caption"));
+        Assert.assertEquals(caption, map.get("label"));
     }
 
     private Object getItem(List<?> items, int index) {
         Map<?, ?> map = (Map<?, ?>) items.get(index);
-        return map.get("caption");
+        return map.get("label");
     }
 }

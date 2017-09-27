@@ -53,7 +53,7 @@ import elemental.json.JsonValue;
 public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         implements HasSize, HasItems<T>, HasValidation,
         HasValue<ComboBox<T>, T>, HasDataProvider<T> {
-    private static final String ITEM_CAPTION_PROPERTY = "caption";
+    private static final String ITEM_LABEL_PROPERTY = "label";
     private static final String KEY_PROPERTY = "key";
     private static final String SELECTED_ITEM_PROPERTY_NAME = "selectedItem";
     private static final String TEMPLATE_TAG_NAME = "template";
@@ -79,8 +79,8 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
             oldValue = getValue();
         });
 
-        setItemLabelPath(ITEM_CAPTION_PROPERTY);
-        setItemValuePath(ITEM_CAPTION_PROPERTY);
+        setItemLabelPath(ITEM_LABEL_PROPERTY);
+        setItemValuePath(ITEM_LABEL_PROPERTY);
     }
 
     /**
@@ -292,7 +292,7 @@ public class ComboBox<T> extends GeneratedVaadinComboBox<ComboBox<T>>
         JsonObject json = Json.createObject();
         json.put(KEY_PROPERTY, keyMapper.key(item));
 
-        json.put(ITEM_CAPTION_PROPERTY, itemLabelGenerator.apply(item));
+        json.put(ITEM_LABEL_PROPERTY, itemLabelGenerator.apply(item));
 
         return json;
     }

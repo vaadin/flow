@@ -54,8 +54,7 @@ public class ComboBoxTest {
 
         comboBox.setItems(Arrays.asList("foo", "bar"));
 
-        comboBox.setItemLabelGenerator(
-                item -> String.valueOf(item.hashCode()));
+        comboBox.setItemLabelGenerator(item -> String.valueOf(item.hashCode()));
 
         assertItem(comboBox, 0, "101574");
         assertItem(comboBox, 1, "97299");
@@ -70,6 +69,6 @@ public class ComboBoxTest {
     private void assertItem(TestComboBox comboBox, int index, String caption) {
         JsonValue value1 = comboBox.items.get(index);
         Assert.assertEquals(caption,
-                ((JsonObject) value1).get("caption").asString());
+                ((JsonObject) value1).get("label").asString());
     }
 }
