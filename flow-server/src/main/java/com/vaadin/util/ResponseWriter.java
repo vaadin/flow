@@ -164,7 +164,7 @@ public class ResponseWriter implements Serializable {
         return accept.contains("*") && !isQZero(accept, "*");
     }
 
-    private void writeContentType(String filenameWithPath,
+    void writeContentType(String filenameWithPath,
             ServletRequest request, ServletResponse response) {
         // Set type mime type if we can determine it based on the filename
         String mimetype = request.getServletContext()
