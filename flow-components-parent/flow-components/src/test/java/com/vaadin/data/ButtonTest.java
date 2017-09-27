@@ -23,7 +23,6 @@ import org.junit.Test;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.button.Button;
-import com.vaadin.ui.html.Span;
 import com.vaadin.ui.icon.Icon;
 
 public class ButtonTest {
@@ -74,7 +73,8 @@ public class ButtonTest {
 
         button.setIcon(null);
         Assert.assertNull(button.getIcon());
-        Assert.assertEquals(1, button.getChildren().count()); // icon removed
+        Assert.assertFalse(
+                button.getChildren().anyMatch(child -> child.equals(icon)));
         assertButtonHasThemeAttribute(false);
     }
 
@@ -86,14 +86,11 @@ public class ButtonTest {
     @Test
     public void setText() {
         button = new Button("foo", new Icon());
-        button.add(new Text("bar"), new Span("baz"));
-        Assert.assertEquals("foo", button.getText());
-
         button.setText(null);
         Assert.assertEquals("", button.getText());
 
-        button.setText("qux");
-        Assert.assertEquals("qux", button.getText());
+        button.setText("bar");
+        Assert.assertEquals("bar", button.getText());
 
         button.setText("");
         Assert.assertEquals("", button.getText());
@@ -125,6 +122,46 @@ public class ButtonTest {
         assertIconAfterText();
         button.setIconAfterText(false);
         assertIconBeforeText();
+    }
+
+    @Test
+    public void wrappingTextInSpan() {
+        button = new Button();
+        button.setText(TEST_STRING);
+
+        assertOnlyChildIsText();
+        button.setIcon(new Icon());
+        assertIconAndSpan(false);
+        button.setIconAfterText(true);
+        assertIconAndSpan(true);
+
+        button = new Button();
+        button.setIconAfterText(true);
+        button.setText(TEST_STRING);
+
+        assertOnlyChildIsText();
+        button.setIcon(new Icon());
+        assertIconAndSpan(true);
+        button.setIconAfterText(false);
+        assertIconAndSpan(false);
+    }
+
+    private void assertOnlyChildIsText() {
+        Assert.assertEquals(1, button.getElement().getChildCount());
+        Element child = getButtonChild(0);
+        Assert.assertTrue(child.isTextNode());
+        Assert.assertEquals(TEST_STRING, child.getText());
+    }
+
+    private void assertIconAndSpan(boolean iconAfterText) {
+        Assert.assertEquals(2, button.getElement().getChildCount());
+
+        Element icon = getButtonChild(iconAfterText ? 1 : 0);
+        Element span = getButtonChild(iconAfterText ? 0 : 1);
+
+        Assert.assertEquals("iron-icon", icon.getTag());
+        Assert.assertEquals("span", span.getTag());
+        Assert.assertEquals(TEST_STRING, span.getText());
     }
 
     private void assertButtonHasThemeAttribute(boolean hasThemeAttribute) {
