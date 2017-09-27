@@ -22,11 +22,13 @@ import java.util.stream.Stream;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.Grid;
+import com.vaadin.ui.common.HtmlImport;
 
 /**
  * View for {@link Grid} demo.
  */
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-grid.html")
 public class GridView extends DemoView {
 
     private Random random;
