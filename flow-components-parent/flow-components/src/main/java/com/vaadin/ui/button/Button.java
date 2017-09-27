@@ -120,6 +120,10 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      * <p>
      * If an icon has been set, the text will be wrapped in a
      * <code>span</code>-element.
+     * <p>
+     * This method also sets or removes this button's <code>theme=icon</code>
+     * attribute based on whether this button contains only an icon after this
+     * operation or not.
      *
      * @param text
      *            the text content to set, may be <code>null</code> to only
@@ -134,25 +138,25 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
                 getElement().removeChild(span);
                 span = null;
             }
-            return;
         }
 
-        if (span != null) {
+        else if (span != null) {
             span.setText(text);
-            return;
         }
 
-        if (iconComponent == null) {
+        else if (iconComponent == null) {
             getElement().appendChild(Element.createText(text));
-            return;
         }
 
-        span = ElementFactory.createSpan(text);
-        if (iconAfterText) {
-            getElement().insertChild(0, span);
-        } else {
-            getElement().appendChild(span);
+        else {
+            span = ElementFactory.createSpan(text);
+            if (iconAfterText) {
+                getElement().insertChild(0, span);
+            } else {
+                getElement().appendChild(span);
+            }
         }
+        updateThemeAttribute();
     }
 
     /**
@@ -202,11 +206,9 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
         iconComponent = icon;
         if (iconComponent == null) {
-            getElement().removeAttribute("theme");
+            updateThemeAttribute();
             return;
         }
-
-        getElement().setAttribute("theme", "icon");
 
         if (iconAfterText) {
             add(iconComponent);
@@ -217,6 +219,7 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
         if (span == null && !getText().isEmpty()) {
             wrapTextInSpan();
         }
+        updateThemeAttribute();
     }
 
     /**
@@ -322,5 +325,15 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     private Element[] getTextNodes() {
         return getElement().getChildren().filter(Element::isTextNode)
                 .toArray(Element[]::new);
+    }
+
+    private void updateThemeAttribute() {
+        // set attribute theme="icon" when the button contains only an icon to
+        // fully support themes like Valo
+        if (getElement().getChildCount() == 1 && iconComponent != null) {
+            getElement().setAttribute("theme", "icon");
+        } else {
+            getElement().removeAttribute("theme");
+        }
     }
 }

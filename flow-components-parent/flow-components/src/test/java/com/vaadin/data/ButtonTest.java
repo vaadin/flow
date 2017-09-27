@@ -65,7 +65,6 @@ public class ButtonTest {
     @Test
     public void setIcon() {
         button = new Button("foo", new Icon());
-        assertButtonHasThemeAttribute(true);
 
         icon = new Icon();
         button.setIcon(icon);
@@ -75,7 +74,6 @@ public class ButtonTest {
         Assert.assertNull(button.getIcon());
         Assert.assertFalse(
                 button.getChildren().anyMatch(child -> child.equals(icon)));
-        assertButtonHasThemeAttribute(false);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -122,6 +120,31 @@ public class ButtonTest {
         assertIconAfterText();
         button.setIconAfterText(false);
         assertIconBeforeText();
+    }
+
+    @Test
+    public void updatingThemeAttribute() {
+        button = new Button();
+        assertButtonHasThemeAttribute(false);
+
+        button.setIcon(new Icon());
+        assertButtonHasThemeAttribute(true);
+
+        button.setText("foo");
+        assertButtonHasThemeAttribute(false);
+
+        button.setIcon(null);
+        assertButtonHasThemeAttribute(false);
+
+        button = new Button("foo", new Icon());
+        assertButtonHasThemeAttribute(false);
+
+        button.setText("");
+        assertButtonHasThemeAttribute(true);
+
+        button = new Button("foo", new Icon());
+        button.setText(null);
+        assertButtonHasThemeAttribute(true);
     }
 
     @Test
