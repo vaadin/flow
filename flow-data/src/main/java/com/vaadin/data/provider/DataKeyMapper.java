@@ -78,7 +78,6 @@ public interface DataKeyMapper<T> extends Serializable {
      *
      * @param dataObject
      *            the data object to update
-     *
      */
     void refresh(T dataObject);
 
@@ -93,3 +92,4 @@ public interface DataKeyMapper<T> extends Serializable {
      */
     void setIdentifierGetter(ValueProvider<T, Object> identifierGetter);
 }
+

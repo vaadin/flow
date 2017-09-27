@@ -25,9 +25,9 @@ import java.util.Set;
 /**
  * Registry for all exclusions in the generated files. Excluded properties,
  * events or methods are not generated.
- * 
+ *
  * @author Vaadin Ltd
- * 
+ *
  */
 public class ExclusionRegistry {
 
@@ -38,6 +38,8 @@ public class ExclusionRegistry {
     static {
         excludeProperty("vaadin-combo-box", "value");
         excludeProperty("vaadin-combo-box", "selectedItem");
+        excludeProperty("vaadin-combo-box", "itemLabelPath");
+        excludeProperty("vaadin-combo-box", "itemValuePath");
         excludeEvent("vaadin-combo-box", "selected-item-changed");
         excludeEvent("vaadin-combo-box", "change");
 
@@ -60,14 +62,14 @@ public class ExclusionRegistry {
     /**
      * Excludes a property from being generated for a specific element denoted
      * by its tag.
-     * 
+     *
      * @param elementTag
      *            the tag of the element which the property should be excluded
      *            from generation. Setting <code>null</code> makes the exclusion
      *            apply to all elements
      * @param propertyName
      *            the name of the property to be excluded
-     * 
+     *
      */
     public static void excludeProperty(String elementTag, String propertyName) {
         put(elementTag, propertyName, PROPERTY_EXCLUSION_REGISTRY);
@@ -76,12 +78,12 @@ public class ExclusionRegistry {
     /**
      * Excludes an event from being generated for a specific element denoted by
      * its tag.
-     * 
+     *
      * @param elementTag
      *            the tag of the element which the event should be excluded from
      *            generation. Setting <code>null</code> makes the exclusion
      *            apply to all elements
-     * 
+     *
      * @param eventName
      *            the name of the event to be excluded
      */
@@ -92,7 +94,7 @@ public class ExclusionRegistry {
     /**
      * Excludes a method from being generated for a specific element denoted by
      * its tag.
-     * 
+     *
      * @param elementTag
      *            the tag of the element which the method should be excluded
      *            from generation. Setting <code>null</code> makes the exclusion
@@ -115,7 +117,7 @@ public class ExclusionRegistry {
 
     /**
      * Gets whether a property should be excluded or not from the generation.
-     * 
+     *
      * @param elementTag
      *            the tag of the element
      * @param propertyName
@@ -131,7 +133,7 @@ public class ExclusionRegistry {
 
     /**
      * Gets whether an event should be excluded or not from the generation.
-     * 
+     *
      * @param elementTag
      *            the tag of the element
      * @param eventName
@@ -145,7 +147,7 @@ public class ExclusionRegistry {
 
     /**
      * Gets whether a method should be excluded or not from the generation.
-     * 
+     *
      * @param elementTag
      *            the tag of the element
      * @param methodName

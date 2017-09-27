@@ -38,7 +38,8 @@ public class ComboBoxIT extends ComponentDemoTest {
         WebElement message = layout
                 .findElement(By.id("string-selection-message"));
 
-        executeScript("arguments[0].selectedItem = 'Opera'", comboBox);
+        executeScript("arguments[0].selectedItem = arguments[0].items[2]",
+                comboBox);
 
         Assert.assertEquals("Selected browser: Opera", message.getText());
     }
