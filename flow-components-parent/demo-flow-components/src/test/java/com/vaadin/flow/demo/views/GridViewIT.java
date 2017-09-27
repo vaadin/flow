@@ -77,7 +77,7 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertFalse(isRowSelected(grid, 0));
 
         // should be the cell in the first column's second row
-        grid.findElement(By.id("vaadin-grid-cell-content-111")).click();
+        getCell(grid, "Person 2").click();
         Assert.assertTrue(isRowSelected(grid, 1));
         Assert.assertEquals(
                 getSelectionMessage(null, GridView.items.get(1), true),
@@ -133,16 +133,20 @@ public class GridViewIT extends ComponentDemoTest {
     }
 
     private boolean isRowSelected(WebElement grid, int row) {
-        return (boolean) getCommandExecutor().executeScript(
-                "return arguments[0].shadowRoot.querySelectorAll('vaadin-grid-table-row')[arguments[1]].selected;",
-                grid, row);
+        WebElement gridRow = getInShadowRoot(grid, By.id("items"))
+                .findElements(By.cssSelector("tr")).get(row);
+        return gridRow.getAttribute("selected") != null;
     }
 
     private boolean hasCell(WebElement grid, String text) {
+        return getCell(grid, text) != null;
+    }
+
+    private WebElement getCell(WebElement grid, String text) {
         List<WebElement> cells = grid
                 .findElements(By.tagName("vaadin-grid-cell-content"));
         return cells.stream().filter(cell -> text.equals(cell.getText()))
-                .findAny().isPresent();
+                .findAny().orElse(null);
     }
 
     @Override

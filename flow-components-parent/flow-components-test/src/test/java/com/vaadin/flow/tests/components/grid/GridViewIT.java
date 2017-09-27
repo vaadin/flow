@@ -48,6 +48,10 @@ public class GridViewIT extends AbstractComponentIT {
 
     @Test
     @Ignore
+    /**
+     * Ignored because it doesn't work in Grid v4. See
+     * https://github.com/vaadin/flow/issues/2518
+     */
     public void changeDataProvider() {
         open();
 
