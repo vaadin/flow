@@ -51,6 +51,23 @@ public class ComboBoxViewIT extends AbstractComponentIT {
         assertItem(getItems(combo), 1, "6");
     }
 
+    @Test
+    public void selectedValue() {
+        open();
+
+        WebElement combo = findElement(By.id("titles"));
+
+        executeScript("arguments[0].selectedItem = arguments[0].items[0]",
+                combo);
+
+        WebElement selectionInfo = findElement(By.id("selected-titles"));
+        Assert.assertEquals("MR", selectionInfo.getText());
+
+        executeScript("arguments[0].selectedItem = arguments[0].items[1]",
+                combo);
+        Assert.assertEquals("MRS", selectionInfo.getText());
+    }
+
     private List<?> getItems(WebElement combo) {
         List<?> items = (List<?>) getCommandExecutor()
                 .executeScript("return arguments[0].items;", combo);
