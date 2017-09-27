@@ -134,6 +134,8 @@ public class ButtonTest {
         assertIconAndSpan(false);
         button.setIconAfterText(true);
         assertIconAndSpan(true);
+        button.setText(null);
+        assertOnlyChildIsIcon();
 
         button = new Button();
         button.setIconAfterText(true);
@@ -144,6 +146,8 @@ public class ButtonTest {
         assertIconAndSpan(true);
         button.setIconAfterText(false);
         assertIconAndSpan(false);
+        button.setText("");
+        assertOnlyChildIsIcon();
     }
 
     private void assertOnlyChildIsText() {
@@ -151,6 +155,12 @@ public class ButtonTest {
         Element child = getButtonChild(0);
         Assert.assertTrue(child.isTextNode());
         Assert.assertEquals(TEST_STRING, child.getText());
+    }
+
+    private void assertOnlyChildIsIcon() {
+        Assert.assertEquals(1, button.getElement().getChildCount());
+        Element child = getButtonChild(0);
+        Assert.assertEquals("iron-icon", child.getTag());
     }
 
     private void assertIconAndSpan(boolean iconAfterText) {
