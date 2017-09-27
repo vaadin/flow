@@ -45,6 +45,11 @@ import com.vaadin.shared.Registration;
  * </p>
  * <h3>Styling</h3>
  * <p>
+ * <a href=
+ * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
+ * >Generic styling/theming documentation</a>
+ * </p>
+ * <p>
  * The following shadow DOM parts are available for styling:
  * </p>
  * <table>
@@ -72,9 +77,47 @@ import com.vaadin.shared.Registration;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * The following state attributes are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code disabled}</td>
+ * <td>Set to a disabled text field</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code has-value}</td>
+ * <td>Set when the element has a value</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code invalid}</td>
+ * <td>Set when the element is invalid</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Set when the element is focused</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focus-ring}</td>
+ * <td>Set when the element is keyboard focused</td>
+ * <td>:host</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha5",
+		"WebComponent: Vaadin.TextFieldElement#1.1.0-beta1",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")

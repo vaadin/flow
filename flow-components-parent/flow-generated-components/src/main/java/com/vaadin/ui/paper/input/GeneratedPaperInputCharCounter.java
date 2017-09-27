@@ -63,7 +63,7 @@ import com.vaadin.ui.common.JsonSerializable;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: paper-input-char-counter#2.0.1", "Flow#1.0-SNAPSHOT"})
+		"WebComponent: paper-input-char-counter#2.0.2", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-input-char-counter")
 @HtmlImport("frontend://bower_components/paper-input/paper-input-char-counter.html")
 public class GeneratedPaperInputCharCounter<R extends GeneratedPaperInputCharCounter<R>>

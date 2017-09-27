@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.datepicker;
+package com.vaadin.ui.combobox;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.ComponentSupplier;
@@ -25,11 +25,20 @@ import elemental.json.JsonObject;
 import elemental.json.JsonArray;
 import com.vaadin.ui.common.NotSupported;
 
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * Element for internal use only.
+ * </p>
+ */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: InfiniteScrollerElement#2.0.5", "Flow#1.0-SNAPSHOT"})
-@Tag("vaadin-infinite-scroller")
-@HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-infinite-scroller.html")
-public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteScroller<R>>
+		"WebComponent: Vaadin.ComboBoxOverlayElement#3.0.0-alpha7",
+		"Flow#1.0-SNAPSHOT"})
+@Tag("vaadin-combo-box-dropdown-wrapper")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown-wrapper.html")
+public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinComboBoxDropdownWrapper<R>>
 		extends
 			Component implements ComponentSupplier<R>, HasStyle {
 
@@ -38,16 +47,14 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Count of individual items in each buffer. The scroller has 2 buffers
-	 * altogether so bufferSize of 20 will result in 40 buffered DOM items in
-	 * total. Changing after initialization not supported.
+	 * True if the device supports touch events.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
 	 */
-	public double getBufferSize() {
-		return getElement().getProperty("bufferSize", 0.0);
+	public boolean isTouchDevice() {
+		return getElement().getProperty("touchDevice", false);
 	}
 
 	/**
@@ -55,32 +62,90 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Count of individual items in each buffer. The scroller has 2 buffers
-	 * altogether so bufferSize of 20 will result in 40 buffered DOM items in
-	 * total. Changing after initialization not supported.
+	 * True if the device supports touch events.
 	 * </p>
 	 * 
-	 * @param bufferSize
-	 *            the double value to set
+	 * @param touchDevice
+	 *            the boolean value to set
 	 */
-	public void setBufferSize(double bufferSize) {
-		getElement().setProperty("bufferSize", bufferSize);
+	public void setTouchDevice(boolean touchDevice) {
+		getElement().setProperty("touchDevice", touchDevice);
 	}
 
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 */
-	public boolean isActive() {
-		return getElement().getProperty("active", false);
+	public boolean isOpened() {
+		return getElement().getProperty("opened", false);
 	}
 
 	/**
-	 * @param active
+	 * @param opened
 	 *            the boolean value to set
 	 */
-	public void setActive(boolean active) {
-		getElement().setProperty("active", active);
+	public void setOpened(boolean opened) {
+		getElement().setProperty("opened", opened);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * {@code true} when new items are being loaded.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 */
+	public boolean isLoading() {
+		return getElement().getProperty("loading", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * {@code true} when new items are being loaded.
+	 * </p>
+	 * 
+	 * @param loading
+	 *            the boolean value to set
+	 */
+	public void setLoading(boolean loading) {
+		getElement().setProperty("loading", loading);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Vertical offset for the overlay position.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 */
+	public double getVerticalOffset() {
+		return getElement().getProperty("verticalOffset", 0.0);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Vertical offset for the overlay position.
+	 * </p>
+	 * 
+	 * @param verticalOffset
+	 *            the double value to set
+	 */
+	public void setVerticalOffset(double verticalOffset) {
+		getElement().setProperty("verticalOffset", verticalOffset);
 	}
 
 	/**
@@ -724,5 +789,49 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	@NotSupported
 	protected void resolveUrl(java.lang.String url,
 			elemental.json.JsonObject base) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Gets the index of the item with the provided label.
+	 * </p>
+	 * 
+	 * @param label
+	 *            Missing documentation!
+	 * @return It would return a double
+	 */
+	@NotSupported
+	protected void indexOfLabel(elemental.json.JsonObject label) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Gets the label string for the item based on the {@code _itemLabelPath}.
+	 * </p>
+	 * 
+	 * @param item
+	 *            Missing documentation!
+	 * @return It would return a class java.lang.String
+	 */
+	@NotSupported
+	protected void getItemLabel(elemental.json.JsonObject item) {
+	}
+
+	public void ensureItemsRendered() {
+		getElement().callFunction("ensureItemsRendered");
+	}
+
+	public void adjustScrollPosition() {
+		getElement().callFunction("adjustScrollPosition");
+	}
+
+	public void updateViewportBoundaries() {
+		getElement().callFunction("updateViewportBoundaries");
 	}
 }
