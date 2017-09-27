@@ -24,6 +24,7 @@ import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonArray;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
@@ -329,7 +330,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 */
 	@Override
 	public void setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("value", value == null ? "" : value);
+		}
 	}
 
 	/**

@@ -854,6 +854,27 @@ public class ComponentGeneratorTest {
     }
 
     @Test
+    public void componentContainsValueProperty_generatedSetValuePreventsSettingTheSameValue() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Collections.singletonList(ComponentBasicType.STRING));
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Collections.singletonList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public void setValue(java.lang.String value) { if (!Objects.equals(value, getValue())) {"));
+    }
+
+    @Test
     public void componentContainsNumberValueProperty_generatedClassImplementsHasValueWithoutPrimitiveTypes() {
         ComponentPropertyData property = new ComponentPropertyData();
         property.setName("value");
@@ -878,6 +899,29 @@ public class ComponentGeneratorTest {
                 "@Override public void setValue(java.lang.Double value)"));
         Assert.assertTrue(generatedClass
                 .contains("public void setValue(java.lang.Number value)"));
+    }
+
+    @Test
+    public void componentContainsNumberValueProperty_generatedSetValuesPreventSettingTheSameValue() {
+        ComponentPropertyData property = new ComponentPropertyData();
+        property.setName("value");
+        property.setType(Collections.singletonList(ComponentBasicType.NUMBER));
+        componentMetadata.setProperties(Collections.singletonList(property));
+
+        ComponentEventData event = new ComponentEventData();
+        event.setName("value-changed");
+        componentMetadata.setEvents(Collections.singletonList(event));
+
+        String generatedClass = generator.generateClass(componentMetadata,
+                "com.my.test", null);
+
+        generatedClass = ComponentGeneratorTestUtils
+                .removeIndentation(generatedClass);
+
+        Assert.assertTrue(generatedClass.contains(
+                "@Override public void setValue(java.lang.Double value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
+        Assert.assertTrue(generatedClass.contains(
+                "public void setValue(java.lang.Number value) { Objects.requireNonNull(value, \"MyComponent value must not be null\"); if (!Objects.equals(value, getValue())) {"));
     }
 
     @Test
