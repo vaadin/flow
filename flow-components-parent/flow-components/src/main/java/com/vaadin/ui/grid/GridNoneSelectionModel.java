@@ -20,8 +20,10 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
+ * Selection model implementation for disabling selection in Grid.
  *
  * @param <T>
+ *            the grid bean type
  */
 public class GridNoneSelectionModel<T> implements GridSelectionModel<T> {
 
@@ -37,18 +39,22 @@ public class GridNoneSelectionModel<T> implements GridSelectionModel<T> {
 
     @Override
     public void select(T item) {
+        // NO-OP
     }
 
     @Override
     public void deselect(T item) {
+        // NO-OP
     }
 
     @Override
     public void deselectAll() {
+        // NO-OP
     }
 
     @Override
     public void remove() {
+        // NO-OP
     }
 
     @Override

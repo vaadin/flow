@@ -7,6 +7,16 @@ import java.util.Set;
 import com.vaadin.data.AbstractListing;
 import com.vaadin.ui.common.HasValue;
 
+/**
+ * Fired when the selection changes in a listing component.
+ *
+ * @author Vaadin Ltd.
+ *
+ * @param <L>
+ *            the listing component type
+ * @param <T>
+ *            the type of the selected item
+ */
 public class SingleSelectionEvent<L extends AbstractListing<T>, T>
         extends HasValue.ValueChangeEvent<L, T> implements SelectionEvent<T> {
 
