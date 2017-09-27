@@ -64,9 +64,14 @@ public interface HasUrlParameter<T> {
      * @return the deserialized url parameter, can be {@code null}
      */
     @SuppressWarnings("unchecked")
-    default T deserializeUrlParameters(List<String> urlParameters) {
+    default T deserializeUrlParameters(Class<?> navigationTarget,
+            List<String> urlParameters) {
         if (urlParameters.isEmpty()) {
-            return null;
+            return isAnnotatedParameter(navigationTarget,
+                    WildcardParameter.class) ? (T) "" : null;
+        }
+        if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
+            return (T) urlParameters.stream().collect(Collectors.joining("/"));
         }
         return (T) urlParameters.get(0);
     }
@@ -100,7 +105,11 @@ public interface HasUrlParameter<T> {
                 .of(Long.class, Integer.class, String.class)
                 .collect(Collectors.toSet());
         if (supportedTypes.contains(parameterType)) {
-            if (isOptionalParameter(navigationTarget)) {
+            if (isAnnotatedParameter(navigationTarget,
+                    WildcardParameter.class)) {
+                return true;
+            } else if (isAnnotatedParameter(navigationTarget,
+                    OptionalParameter.class)) {
                 return urlParameters.size() <= 1;
             }
             return urlParameters.size() == 1;
@@ -118,7 +127,8 @@ public interface HasUrlParameter<T> {
      *            navigation target to check for optional
      * @return parameter is optional
      */
-    static boolean isOptionalParameter(Class<?> navigationTarget) {
+    static boolean isAnnotatedParameter(Class<?> navigationTarget,
+            Class parameterClass) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             return false;
         }
@@ -128,7 +138,7 @@ public interface HasUrlParameter<T> {
                             .getName(),
                     BeforeNavigationEvent.class, Object.class);
             return setParameter.getParameters()[1]
-                    .isAnnotationPresent(OptionalParameter.class);
+                    .isAnnotationPresent(parameterClass);
         } catch (NoSuchMethodException e) {
             Logger.getLogger(HasUrlParameter.class.getName()).log(Level.WARNING,
                     "Failed to get setParameter method for checking for @Optional");

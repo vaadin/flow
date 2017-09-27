@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.router.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
 import com.vaadin.router.Location;
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.router.event.NavigationEvent;

@@ -25,7 +25,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -124,7 +123,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         navigationState.getUrlParameters().ifPresent(urlParameters -> {
             HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
             hasUrlParameter.setParameter(beforeNavigationActivating,
-                    hasUrlParameter.deserializeUrlParameters(urlParameters));
+                    hasUrlParameter.deserializeUrlParameters(routeTargetType, urlParameters));
         });
 
         listeners = EventUtil.collectBeforeNavigationListeners(chain);
