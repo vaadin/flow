@@ -105,11 +105,13 @@ class WebJarServer implements Serializable {
     }
 
     /**
+     * Searches for file requested in the webjars.
+     * If found, the file contents is written into request.
      *
-     * @param request
-     * @param response
-     * @return
-     * @throws IOException
+     * @param request the servlet request
+     * @param response the servlet response
+     * @return {@code true} if response was populated with webjar contents, {@code false} otherwise
+     * @throws IOException if response population fails
      */
     boolean tryServeWebJarResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
