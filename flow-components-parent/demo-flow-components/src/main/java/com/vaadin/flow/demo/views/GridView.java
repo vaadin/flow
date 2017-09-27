@@ -75,6 +75,7 @@ public class GridView extends DemoView {
         createBasicUsage();
         createCallBackDataProvider();
         createSingleSelect();
+        createNoneSelect();
     }
 
     private void createBasicUsage() {
@@ -155,6 +156,21 @@ public class GridView extends DemoView {
         toggleSelect.setId("single-selection-toggle");
         messageDiv.setId("single-selection-message");
         addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
+    }
+
+    private void createNoneSelect() {
+        // begin-source-example
+        // source-example-heading: Grid with No Selection Enabled
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
+
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+
+        grid.setSelectionMode(Grid.SelectionMode.NONE);
+        // end-source-example
+        grid.setId("none-selection");
+        addCard("Grid with No Selection Enabled", grid);
     }
 
     private List<Person> createItems() {

@@ -112,6 +112,15 @@ public class GridViewIT extends ComponentDemoTest {
                 messageDiv.getText());
     }
 
+    @Test
+    public void gridWithDisabledSelection() {
+        WebElement grid = findElement(By.id("none-selection"));
+        scrollToElement(grid);
+        grid.findElements(By.tagName("vaadin-grid-cell-content")).get(3)
+                .click();
+        Assert.assertFalse(isRowSelected(grid, 1));
+    }
+
     private static String getSelectionMessage(Person oldSelection,
             Person newSelection, boolean isFromClient) {
         return String.format(

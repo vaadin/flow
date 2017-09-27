@@ -5,29 +5,34 @@ window.gridConnector = {
         var cache = {};
         var lastRequestedRange = [0, 0];
         var selectedKeys = {};
+        var selectionMode = 'SINGLE';
 
         grid.pageSize = pageSize;
         grid.size = 0; // To avoid NaN here and there before we get proper data
 
         var doSelection = function(item, userOriginated) {
-            grid.selectedItems = [];
-            grid.selectItem(item);
-            selectedKeys = {};
-            selectedKeys[item.key] = item;
-            if (userOriginated) {
-                grid.$server.select(item.key);
+            if (selectionMode === 'SINGLE') {
+                grid.selectedItems = [];
+                grid.selectItem(item);
+                selectedKeys = {};
+                selectedKeys[item.key] = item;
+                if (userOriginated) {
+                    grid.$server.select(item.key);
+                }
             }
         };
 
         var doDeselection = function(item, userOriginated) {
-            grid.deselectItem(item);
-            delete selectedKeys[item.key];
-            if (userOriginated) {
-                grid.$server.deselect(item.key);
+            if (selectionMode === 'SINGLE') {
+                grid.deselectItem(item);
+                delete selectedKeys[item.key];
+                if (userOriginated) {
+                    grid.$server.deselect(item.key);
+                }
             }
         };
 
-        // $connector postfix to reduce 
+        // $connector postfix to reduce change of name collision
         grid._activeItemChanged$connector = function(newVal, oldVal) {
             if (!newVal) {
                 return;
@@ -150,6 +155,16 @@ window.gridConnector = {
 
             // Let server know we're done
             grid.$server.confirmUpdate(id);
+        }
+
+        var validSelectionModes = ['SINGLE', 'NONE'];
+        grid.setSelectionMode = function(mode) {
+            if ((typeof mode === 'string' || mode instanceof String)
+                && validSelectionModes.indexOf(mode) >= 0) {
+                selectionMode = mode;
+            } else {
+                throw 'Attempted to set an invalid selection mode';
+            }
         }
     }
 }

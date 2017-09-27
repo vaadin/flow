@@ -350,13 +350,19 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *
      * @param model
      *            the selection model to use, not {@code null}
+     * @param selectionMode
+     *            the selection mode this selection model corresponds to, not
+     *            {@code null}
      *
      * @see #setSelectionMode(SelectionMode)
      */
-    protected void setSelectionModel(GridSelectionModel<T> model) {
+    protected void setSelectionModel(GridSelectionModel<T> model,
+            SelectionMode selectionMode) {
         Objects.requireNonNull(model, "selection model cannot be null");
+        Objects.requireNonNull(selectionMode, "selection mode cannot be null");
         selectionModel.remove();
         selectionModel = model;
+        getElement().callFunction("setSelectionMode", selectionMode.name());
     }
 
     /**
@@ -377,7 +383,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     public GridSelectionModel<T> setSelectionMode(SelectionMode selectionMode) {
         Objects.requireNonNull(selectionMode, "Selection mode cannot be null.");
         GridSelectionModel<T> model = selectionMode.createModel(this);
-        setSelectionModel(model);
+        setSelectionModel(model, selectionMode);
         return model;
     }
 
