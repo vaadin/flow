@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.binder.Person;
-import com.vaadin.ui.Grid;
+import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.layout.HorizontalLayout;
 
 @CodeFor("flow-components/tutorial-flow-grid.asciidoc")

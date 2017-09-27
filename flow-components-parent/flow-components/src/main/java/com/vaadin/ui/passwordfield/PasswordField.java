@@ -16,8 +16,6 @@
 
 package com.vaadin.ui.passwordfield;
 
-import java.util.Objects;
-
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
@@ -75,12 +73,5 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     @Override
     public String getEmptyValue() {
         return "";
-    }
-
-    @Override
-    public void setValue(String value) {
-        if (!Objects.equals(value, getValue())) {
-            super.setValue(value);
-        }
     }
 }

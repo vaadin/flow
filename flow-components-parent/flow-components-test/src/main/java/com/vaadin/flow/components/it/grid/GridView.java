@@ -19,8 +19,8 @@ import java.util.stream.IntStream;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.components.it.TestView;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.grid.Grid;
 
 /**
  * @author Vaadin Ltd.

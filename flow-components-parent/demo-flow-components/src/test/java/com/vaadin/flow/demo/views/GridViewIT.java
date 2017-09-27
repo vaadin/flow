@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.ComponentDemoTest;
+import com.vaadin.flow.demo.views.GridView.Person;
 import com.vaadin.testbench.By;
 
 /**
@@ -31,48 +34,119 @@ public class GridViewIT extends ComponentDemoTest {
     @Test
     public void dataIsShown() throws InterruptedException {
         WebElement grid = findElement(By.id("basic"));
-        WebElement header = grid
-                .findElement(By.id("vaadin-grid-cell-content-0"));
 
-        Assert.assertEquals("Name", header.getText());
+        Assert.assertTrue(hasCell(grid, "Name"));
 
-        WebElement cell1 = grid
-                .findElement(By.id("vaadin-grid-cell-content-2"));
+        Assert.assertTrue(hasCell(grid, "Person 1"));
 
-        Assert.assertEquals("Person 1", cell1.getText());
+        scroll(grid, 185);
 
-        scrollDown(grid, 12);
-
-        waitUntil(driver -> findElements(By.tagName("vaadin-grid-cell-content"))
-                .stream().filter(cell -> "Person 189".equals(cell.getText()))
-                .findFirst().isPresent());
+        waitUntil(driver -> hasCell(grid, "Person 189"));
     }
 
     @Test
-    public void lalzyDataIsShown() throws InterruptedException {
+    public void lazyDataIsShown() throws InterruptedException {
         WebElement grid = findElement(By.id("lazy-loading"));
 
         scrollToElement(grid);
-        WebElement header = grid
-                .findElement(By.tagName("vaadin-grid-cell-content"));
 
-        Assert.assertEquals("Name", header.getText());
+        Assert.assertTrue(hasCell(grid, "Name"));
 
-        scrollDown(grid, 50);
+        scroll(grid, 1010);
 
-        WebElement cell = grid
-                .findElements(By.tagName("vaadin-grid-cell-content")).get(2);
-
-        waitUntil(driver -> "Person 1020".equals(cell.getText()));
+        Assert.assertTrue(hasCell(grid, "Person 1020"));
     }
 
-    private void scrollDown(WebElement grid, int pageNumbers) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < pageNumbers; i++) {
-            builder.append(
-                    "arguments[0]._scrollPageDown();arguments[0]._scrollPageDown();");
-        }
-        getCommandExecutor().executeScript(builder.toString(), grid);
+    @Test
+    public void gridAsSingleSelect() {
+        WebElement grid = findElement(By.id("single-selection"));
+        scrollToElement(grid);
+
+        WebElement toggleButton = findElement(By.id("single-selection-toggle"));
+        WebElement messageDiv = findElement(By.id("single-selection-message"));
+
+        toggleButton.click();
+        Assert.assertEquals(
+                getSelectionMessage(null, GridView.items.get(0), false),
+                messageDiv.getText());
+        Assert.assertTrue(isRowSelected(grid, 0));
+        toggleButton.click();
+        Assert.assertEquals(
+                getSelectionMessage(GridView.items.get(0), null, false),
+                messageDiv.getText());
+        Assert.assertFalse(isRowSelected(grid, 0));
+
+        // should be the cell in the first column's second row
+        getCell(grid, "Person 2").click();
+        Assert.assertTrue(isRowSelected(grid, 1));
+        Assert.assertEquals(
+                getSelectionMessage(null, GridView.items.get(1), true),
+                messageDiv.getText());
+        toggleButton.click();
+        Assert.assertTrue(isRowSelected(grid, 0));
+        Assert.assertFalse(isRowSelected(grid, 1));
+        Assert.assertEquals(getSelectionMessage(GridView.items.get(1),
+                GridView.items.get(0), false), messageDiv.getText());
+        toggleButton.click();
+        Assert.assertFalse(isRowSelected(grid, 0));
+
+        // scroll to bottom
+        scroll(grid, 495);
+        waitUntilCellHasText(grid, "Person 499");
+        // select item that is not in cache
+        toggleButton.click();
+        // scroll back up
+        scroll(grid, 0);
+        waitUntilCellHasText(grid, "Person 1");
+        waitUntil(driver -> isRowSelected(grid, 0));
+        Assert.assertEquals(
+                getSelectionMessage(null, GridView.items.get(0), false),
+                messageDiv.getText());
+    }
+
+    @Test
+    public void gridWithDisabledSelection() {
+        WebElement grid = findElement(By.id("none-selection"));
+        scrollToElement(grid);
+        grid.findElements(By.tagName("vaadin-grid-cell-content")).get(3)
+                .click();
+        Assert.assertFalse(isRowSelected(grid, 1));
+    }
+
+    private static String getSelectionMessage(Person oldSelection,
+            Person newSelection, boolean isFromClient) {
+        return String.format(
+                "Selection changed from %s to %s, selection is from client: %s",
+                oldSelection, newSelection, isFromClient);
+    }
+
+    private void scroll(WebElement grid, int index) {
+        getCommandExecutor().executeScript(
+                "arguments[0].scrollToIndex(" + index + ")", grid);
+    }
+
+    private void waitUntilCellHasText(WebElement grid, String text) {
+        waitUntil(driver -> grid
+                .findElements(By.tagName("vaadin-grid-cell-content")).stream()
+                .filter(cell -> text.equals(cell.getText())).findFirst()
+                .isPresent());
+    }
+
+    private boolean isRowSelected(WebElement grid, int row) {
+        WebElement gridRow = getInShadowRoot(grid, By.id("items"))
+                .findElements(By.cssSelector("tr")).get(row);
+        return gridRow.getAttribute("selected") != null;
+    }
+
+    private boolean hasCell(WebElement grid, String text) {
+        return getCell(grid, text) != null;
+    }
+
+    private WebElement getCell(WebElement grid, String text) {
+        List<WebElement> cells = grid
+                .findElements(By.tagName("vaadin-grid-cell-content"));
+        return cells.stream().filter(cell -> text.equals(cell.getText()))
+                .findAny().orElse(null);
     }
 
     @Override
