@@ -138,17 +138,11 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
                 getElement().removeChild(span);
                 span = null;
             }
-        }
-
-        else if (span != null) {
+        } else if (span != null) {
             span.setText(text);
-        }
-
-        else if (iconComponent == null) {
+        } else if (iconComponent == null) {
             getElement().appendChild(Element.createText(text));
-        }
-
-        else {
+        } else {
             span = ElementFactory.createSpan(text);
             if (iconAfterText) {
                 getElement().insertChild(0, span);
