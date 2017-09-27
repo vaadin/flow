@@ -19,6 +19,9 @@ import com.vaadin.flow.components.it.ValidationTestView;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.passwordfield.PasswordField;
 
+/**
+ * View for testing validation with {@link PasswordField}.
+ */
 public class PasswordFieldValidationView extends ValidationTestView {
 
     @Override

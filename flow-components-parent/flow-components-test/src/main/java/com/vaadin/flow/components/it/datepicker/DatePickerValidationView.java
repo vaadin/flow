@@ -19,6 +19,9 @@ import com.vaadin.flow.components.it.ValidationTestView;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.datepicker.DatePicker;
 
+/**
+ * View for testing validation with {@link DatePicker}.
+ */
 public class DatePickerValidationView extends ValidationTestView {
 
     @Override

@@ -16,7 +16,11 @@
 package com.vaadin.flow.tests.components.datepicker;
 
 import com.vaadin.flow.tests.components.AbstractValidationTest;
+import com.vaadin.ui.datepicker.DatePicker;
 
+/**
+ * Integration tests for {@link DatePicker} validation.
+ */
 public class DatePickerValidationViewIT extends AbstractValidationTest {
 
 }

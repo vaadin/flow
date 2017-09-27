@@ -19,6 +19,9 @@ import com.vaadin.flow.components.it.ValidationTestView;
 import com.vaadin.ui.common.HasValidation;
 import com.vaadin.ui.textfield.TextField;
 
+/**
+ * View for testing validation with {@link TextField}.
+ */
 public class TextFieldValidationView extends ValidationTestView {
 
     @Override
