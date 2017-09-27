@@ -21,53 +21,42 @@ import com.vaadin.ui.common.HasStyle;
 import javax.annotation.Generated;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.Synchronize;
 import elemental.json.JsonObject;
-import elemental.json.JsonArray;
-import com.vaadin.ui.common.NotSupported;
+import com.vaadin.ui.event.DomEvent;
+import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.shared.Registration;
 
+/**
+ * <p>
+ * Description copied from corresponding location in WebComponent:
+ * </p>
+ * <p>
+ * The overlay element.
+ * </p>
+ * <h3>Styling</h3>
+ * <p>
+ * See <a href=
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
+ * {@code <vaadin-overlay>} documentation</a> for
+ * {@code <vaadin-combo-box-overlay>} parts.
+ * </p>
+ */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxOverlayElement#3.0.0-alpha5",
+		"WebComponent: Vaadin.VaadinComboBoxOverlay#UNKNOWN",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-overlay")
-@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-overlay.html")
+@HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown.html")
 public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOverlay<R>>
 		extends
 			Component implements ComponentSupplier<R>, HasStyle {
 
 	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * True if the device supports touch events.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
+	 * This property is synchronized automatically from client side when a
+	 * 'opened-changed' event happens.
 	 */
-	public boolean isTouchDevice() {
-		return getElement().getProperty("touchDevice", false);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * True if the device supports touch events.
-	 * </p>
-	 * 
-	 * @param touchDevice
-	 *            the boolean value to set
-	 */
-	public void setTouchDevice(boolean touchDevice) {
-		getElement().setProperty("touchDevice", touchDevice);
-	}
-
-	/**
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 */
+	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
 	}
@@ -81,33 +70,53 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	}
 
 	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * {@code true} when new items are being loaded.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
+	 * This property is synchronized automatically from client side when a
+	 * 'template-changed' event happens.
 	 */
-	public boolean isLoading() {
-		return getElement().getProperty("loading", false);
+	@Synchronize(property = "template", value = "template-changed")
+	protected JsonObject protectedGetTemplate() {
+		return (JsonObject) getElement().getPropertyRaw("template");
 	}
 
 	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * {@code true} when new items are being loaded.
-	 * </p>
-	 * 
-	 * @param loading
+	 * @param template
+	 *            the JsonObject value to set
+	 */
+	protected void setTemplate(elemental.json.JsonObject template) {
+		getElement().setPropertyJson("template", template);
+	}
+
+	/**
+	 * This property is synchronized automatically from client side when a
+	 * 'content-changed' event happens.
+	 */
+	@Synchronize(property = "content", value = "content-changed")
+	protected JsonObject protectedGetContent() {
+		return (JsonObject) getElement().getPropertyRaw("content");
+	}
+
+	/**
+	 * @param content
+	 *            the JsonObject value to set
+	 */
+	protected void setContent(elemental.json.JsonObject content) {
+		getElement().setPropertyJson("content", content);
+	}
+
+	/**
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 */
+	public boolean isWithBackdrop() {
+		return getElement().getProperty("withBackdrop", false);
+	}
+
+	/**
+	 * @param withBackdrop
 	 *            the boolean value to set
 	 */
-	public void setLoading(boolean loading) {
-		getElement().setProperty("loading", loading);
+	public void setWithBackdrop(boolean withBackdrop) {
+		getElement().setProperty("withBackdrop", withBackdrop);
 	}
 
 	/**
@@ -115,14 +124,15 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Vertical offset for the overlay position.
+	 * When true move focus to the first focusable element in the overlay, or to
+	 * the overlay if there are no focusable elements.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
 	 */
-	public double getVerticalOffset() {
-		return getElement().getProperty("verticalOffset", 0.0);
+	public boolean isFocusTrap() {
+		return getElement().getProperty("focusTrap", false);
 	}
 
 	/**
@@ -130,569 +140,127 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Vertical offset for the overlay position.
+	 * When true move focus to the first focusable element in the overlay, or to
+	 * the overlay if there are no focusable elements.
 	 * </p>
 	 * 
-	 * @param verticalOffset
-	 *            the double value to set
+	 * @param focusTrap
+	 *            the boolean value to set
 	 */
-	public void setVerticalOffset(double verticalOffset) {
-		getElement().setProperty("verticalOffset", verticalOffset);
+	public void setFocusTrap(boolean focusTrap) {
+		getElement().setProperty("focusTrap", focusTrap);
 	}
 
 	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Sets a bag of property changes to this instance, and synchronously
-	 * processes all effects of the properties as a batch.
-	 * </p>
-	 * <p>
-	 * Property names must be simple properties, not paths. Batched path
-	 * propagation is not supported.
-	 * </p>
-	 * 
-	 * @param props
-	 *            Bag of one or more key-value pairs whose key is a property and
-	 *            value is the new value to set for that property.
-	 * @param setReadOnly
-	 *            When true, any private values set in `props` will be set. By
-	 *            default, `setProperties` will not set `readOnly: true` root
-	 *            properties.
-	 */
-	protected void setProperties(JsonObject props,
-			elemental.json.JsonObject setReadOnly) {
-		getElement().callFunction("setProperties", props, setReadOnly);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	protected void linkPaths(elemental.json.JsonObject to,
-			elemental.json.JsonObject from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	public void linkPaths(java.lang.String to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes a data path alias previously established with {@code _linkPaths}.
-	 * </p>
-	 * <p>
-	 * Note, the path to unlink should be the target ({@code to}) used when
-	 * linking the paths.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Target path to unlink.
-	 */
-	public void unlinkPaths(java.lang.String path) {
-		getElement().callFunction("unlinkPaths", path);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes a data path alias previously established with {@code _linkPaths}.
-	 * </p>
-	 * <p>
-	 * Note, the path to unlink should be the target ({@code to}) used when
-	 * linking the paths.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Target path to unlink.
-	 */
-	protected void unlinkPaths(elemental.json.JsonObject path) {
-		getElement().callFunction("unlinkPaths", path);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Notify that an array has changed.
-	 * </p>
-	 * <p>
-	 * Example:
-	 * </p>
-	 * 
-	 * <pre>
-	 * <code>this.items = [ {name: 'Jim'}, {name: 'Todd'}, {name: 'Bill'} ];
-	 * 	...
-	 * 	this.items.splice(1, 1, {name: 'Sam'});
-	 * 	this.items.push({name: 'Bob'});
-	 * 	this.notifySplices('items', [
-	 * 	  { index: 1, removed: [{name: 'Todd'}], addedCount: 1, obect: this.items, type: 'splice' },
-	 * 	  { index: 3, removed: [], addedCount: 1, object: this.items, type: 'splice'}
-	 * 	]);
-	 * 	</code>
-	 * </pre>
-	 * 
-	 * @param path
-	 *            Path that should be notified.
-	 * @param splices
-	 *            Array of splice records indicating ordered changes that
-	 *            occurred to the array. Each record should have the following
-	 *            fields: index: index at which the change occurred removed:
-	 *            array of items that were removed from this index addedCount:
-	 *            number of new items added at this index object: a reference to
-	 *            the array in question type: the string literal 'splice'
-	 * 
-	 *            Note that splice records _must_ be normalized such that they
-	 *            are reported in index order (raw results from `Object.observe`
-	 *            are not ordered and must be normalized/merged before
-	 *            notifying).
-	 */
-	protected void notifySplices(java.lang.String path, JsonArray splices) {
-		getElement().callFunction("notifySplices", path, splices);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Convenience method for reading a value from a path.
-	 * </p>
-	 * <p>
-	 * Note, if any part in the path is undefined, this method returns
-	 * {@code undefined} (this method does not throw when dereferencing
-	 * undefined paths).
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to the value to read. The path may be specified as a
-	 *            string (e.g. `foo.bar.baz`) or an array of path parts (e.g.
-	 *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-	 *            supported; string-based path parts must* be separated by dots.
-	 *            Note that when dereferencing array indices, the index may be
-	 *            used as a dotted part directly (e.g. `users.12.name` or
-	 *            `['users', 12, 'name']`).
-	 * @param root
-	 *            Root object from which the path is evaluated.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Convenience method for reading a value from a path.
-	 * </p>
-	 * <p>
-	 * Note, if any part in the path is undefined, this method returns
-	 * {@code undefined} (this method does not throw when dereferencing
-	 * undefined paths).
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to the value to read. The path may be specified as a
-	 *            string (e.g. `foo.bar.baz`) or an array of path parts (e.g.
-	 *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-	 *            supported; string-based path parts must* be separated by dots.
-	 *            Note that when dereferencing array indices, the index may be
-	 *            used as a dotted part directly (e.g. `users.12.name` or
-	 *            `['users', 12, 'name']`).
-	 * @param root
-	 *            Root object from which the path is evaluated.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Convenience method for setting a value to a path and notifying any
-	 * elements bound to the same path.
-	 * </p>
-	 * <p>
-	 * Note, if any part in the path except for the last is undefined, this
-	 * method does nothing (this method does not throw when dereferencing
-	 * undefined paths).
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to the value to write. The path may be specified as a
-	 *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
-	 *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-	 *            supported; string-based path parts must* be separated by dots.
-	 *            Note that when dereferencing array indices, the index may be
-	 *            used as a dotted part directly (e.g. `'users.12.name'` or
-	 *            `['users', 12, 'name']`).
-	 * @param value
-	 *            Value to set at the specified path.
-	 * @param root
-	 *            Root object from which the path is evaluated. When specified,
-	 *            no notification will occur.
-	 */
-	protected void set(java.lang.String path, elemental.json.JsonObject value,
-			elemental.json.JsonObject root) {
-		getElement().callFunction("set", path, value, root);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Convenience method for setting a value to a path and notifying any
-	 * elements bound to the same path.
-	 * </p>
-	 * <p>
-	 * Note, if any part in the path except for the last is undefined, this
-	 * method does nothing (this method does not throw when dereferencing
-	 * undefined paths).
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to the value to write. The path may be specified as a
-	 *            string (e.g. `'foo.bar.baz'`) or an array of path parts (e.g.
-	 *            `['foo.bar', 'baz']`). Note that bracketed expressions are not
-	 *            supported; string-based path parts must* be separated by dots.
-	 *            Note that when dereferencing array indices, the index may be
-	 *            used as a dotted part directly (e.g. `'users.12.name'` or
-	 *            `['users', 12, 'name']`).
-	 * @param value
-	 *            Value to set at the specified path.
-	 * @param root
-	 *            Root object from which the path is evaluated. When specified,
-	 *            no notification will occur.
-	 */
-	protected void set(elemental.json.JsonObject path,
-			elemental.json.JsonObject value, elemental.json.JsonObject root) {
-		getElement().callFunction("set", path, value, root);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Adds items onto the end of the array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.push}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @param ...items Missing documentation!
-	 * @return It would return a double
-	 */
-	@NotSupported
-	protected void push(java.lang.String path, elemental.json.JsonObject _Items) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes an item from the end of array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.pop}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
-	protected void pop(java.lang.String path) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Starting from the start index specified, removes 0 or more items from the
-	 * array and inserts 0 or more new items in their place.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.splice}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @param start
-	 *            Index from which to start removing/inserting.
-	 * @param deleteCount
-	 *            Number of items to remove.
-	 * @param ...items Missing documentation!
-	 * @return It would return a interface elemental.json.JsonArray
-	 */
-	@NotSupported
-	protected void splice(java.lang.String path, double start,
-			double deleteCount, elemental.json.JsonObject _Items) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes an item from the beginning of array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.pop}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
-	protected void shift(java.lang.String path) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Adds items onto the beginning of the array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.push}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @param ...items Missing documentation!
-	 * @return It would return a double
-	 */
-	@NotSupported
-	protected void unshift(java.lang.String path,
-			elemental.json.JsonObject _Items) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Notify that a path has changed.
-	 * </p>
-	 * <p>
-	 * Example:
-	 * </p>
-	 * 
-	 * <pre>
-	 * <code>this.item.user.name = 'Bob';
-	 * 	this.notifyPath('item.user.name');
-	 * 	</code>
-	 * </pre>
-	 * 
-	 * @param path
-	 *            Path that should be notified.
-	 * @param value
-	 *            Value at the path (optional).
-	 */
-	protected void notifyPath(java.lang.String path,
-			elemental.json.JsonObject value) {
-		getElement().callFunction("notifyPath", path, value);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * When using the ShadyCSS scoping and custom property shim, causes all
-	 * shimmed styles in this element (and its subtree) to be updated based on
-	 * current custom property values.
-	 * </p>
-	 * <p>
-	 * The optional parameter overrides inline custom property styles with an
-	 * object of properties where the keys are CSS properties, and the values
-	 * are strings.
-	 * </p>
-	 * <p>
-	 * Example: {@code this.updateStyles( '--color': 'blue'})}
-	 * </p>
-	 * <p>
-	 * These properties are retained unless a value of {@code null} is set.
-	 * </p>
-	 * 
-	 * @param properties
-	 *            Bag of custom property key/values to apply to this element.
-	 */
-	protected void updateStyles(elemental.json.JsonObject properties) {
-		getElement().callFunction("updateStyles", properties);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Rewrites a given URL relative to a base URL. The base URL defaults to the
-	 * original location of the document containing the {@code dom-module} for
-	 * this element. This method will return the same URL before and after
-	 * bundling.
-	 * </p>
-	 * 
-	 * @param url
-	 *            URL to resolve.
-	 * @param base
-	 *            Optional base URL to resolve against, defaults to the
-	 *            element's `importPath`
-	 * @return It would return a class java.lang.String
-	 */
-	@NotSupported
-	protected void resolveUrl(java.lang.String url,
-			elemental.json.JsonObject base) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Gets the index of the item with the provided label.
-	 * </p>
-	 * 
-	 * @param label
+	 * @param sourceEvent
 	 *            Missing documentation!
-	 * @return It would return a double
 	 */
-	@NotSupported
-	protected void indexOfLabel(elemental.json.JsonObject label) {
+	protected void close(elemental.json.JsonObject sourceEvent) {
+		getElement().callFunction("close", sourceEvent);
 	}
 
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Gets the label string for the item based on the {@code _itemLabelPath}.
-	 * </p>
-	 * 
-	 * @param item
-	 *            Missing documentation!
-	 * @return It would return a class java.lang.String
-	 */
-	@NotSupported
-	protected void getItemLabel(elemental.json.JsonObject item) {
+	@DomEvent("vaadin-overlay-close")
+	public static class VaadinOverlayCloseEvent<R extends GeneratedVaadinComboBoxOverlay<R>>
+			extends
+				ComponentEvent<R> {
+		public VaadinOverlayCloseEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
-	public void ensureItemsRendered() {
-		getElement().callFunction("ensureItemsRendered");
+	public Registration addVaadinOverlayCloseListener(
+			ComponentEventListener<VaadinOverlayCloseEvent<R>> listener) {
+		return addListener(VaadinOverlayCloseEvent.class,
+				(ComponentEventListener) listener);
 	}
 
-	public void adjustScrollPosition() {
-		getElement().callFunction("adjustScrollPosition");
+	@DomEvent("vaadin-overlay-escape-press")
+	public static class VaadinOverlayEscapePressEvent<R extends GeneratedVaadinComboBoxOverlay<R>>
+			extends
+				ComponentEvent<R> {
+		public VaadinOverlayEscapePressEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
 	}
 
-	public void updateViewportBoundaries() {
-		getElement().callFunction("updateViewportBoundaries");
+	public Registration addVaadinOverlayEscapePressListener(
+			ComponentEventListener<VaadinOverlayEscapePressEvent<R>> listener) {
+		return addListener(VaadinOverlayEscapePressEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("vaadin-overlay-open")
+	public static class VaadinOverlayOpenEvent<R extends GeneratedVaadinComboBoxOverlay<R>>
+			extends
+				ComponentEvent<R> {
+		public VaadinOverlayOpenEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addVaadinOverlayOpenListener(
+			ComponentEventListener<VaadinOverlayOpenEvent<R>> listener) {
+		return addListener(VaadinOverlayOpenEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("vaadin-overlay-outside-click")
+	public static class VaadinOverlayOutsideClickEvent<R extends GeneratedVaadinComboBoxOverlay<R>>
+			extends
+				ComponentEvent<R> {
+		public VaadinOverlayOutsideClickEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addVaadinOverlayOutsideClickListener(
+			ComponentEventListener<VaadinOverlayOutsideClickEvent<R>> listener) {
+		return addListener(VaadinOverlayOutsideClickEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("opened-changed")
+	public static class OpenedChangeEvent<R extends GeneratedVaadinComboBoxOverlay<R>>
+			extends
+				ComponentEvent<R> {
+		public OpenedChangeEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addOpenedChangeListener(
+			ComponentEventListener<OpenedChangeEvent<R>> listener) {
+		return addListener(OpenedChangeEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("template-changed")
+	public static class TemplateChangeEvent<R extends GeneratedVaadinComboBoxOverlay<R>>
+			extends
+				ComponentEvent<R> {
+		public TemplateChangeEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addTemplateChangeListener(
+			ComponentEventListener<TemplateChangeEvent<R>> listener) {
+		return addListener(TemplateChangeEvent.class,
+				(ComponentEventListener) listener);
+	}
+
+	@DomEvent("content-changed")
+	public static class ContentChangeEvent<R extends GeneratedVaadinComboBoxOverlay<R>>
+			extends
+				ComponentEvent<R> {
+		public ContentChangeEvent(R source, boolean fromClient) {
+			super(source, fromClient);
+		}
+	}
+
+	public Registration addContentChangeListener(
+			ComponentEventListener<ContentChangeEvent<R>> listener) {
+		return addListener(ContentChangeEvent.class,
+				(ComponentEventListener) listener);
 	}
 }

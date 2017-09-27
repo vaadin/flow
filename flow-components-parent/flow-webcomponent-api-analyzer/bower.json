@@ -39,13 +39,13 @@
     "paper-tabs": "~2.0.0",
     "paper-toolbar": "~2.0.0",
     "paper-tooltip": "~2.0.0",
-    "vaadin-text-field": "~1.1.0-alpha5",
-    "vaadin-button": "~1.0.3",
-    "vaadin-checkbox": "~1.0.0-alpha6",
-    "vaadin-combo-box": "~3.0.0-alpha5",
-    "vaadin-form-layout": "~1.0.2",
-    "vaadin-split-layout": "~3.0.0-alpha2",
-    "vaadin-date-picker": "~2.0.4",
-    "vaadin-dialog": "~1.0.0-alpha3"
+    "vaadin-text-field": "~1.1.0-beta1",
+    "vaadin-button": "~1.0.4",
+    "vaadin-checkbox": "~1.0.0-beta1",
+    "vaadin-combo-box": "~3.0.0-alpha7",
+    "vaadin-form-layout": "~1.0.3",
+    "vaadin-split-layout": "~3.0.0-beta1",
+    "vaadin-date-picker": "~2.0.5",
+    "vaadin-dialog": "~1.0.0-beta1"
   }
 }

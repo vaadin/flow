@@ -34,12 +34,11 @@ import com.vaadin.ui.common.HasComponents;
  * Description copied from corresponding location in WebComponent:
  * </p>
  * <p>
- * {@code <vaadin-combo-box-dropdown>} is a Polymer element for creating
- * dropdowns.
+ * Element for internal use only.
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.DropdownElement#3.0.0-alpha5",
+		"WebComponent: Vaadin.DropdownElement#3.0.0-alpha7",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-dropdown")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown.html")
