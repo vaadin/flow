@@ -40,8 +40,8 @@ import elemental.json.Json;
 /**
  * Handles requests that may require webjars contents. In this case, writes the
  * required resource contents from a webjar into the response.
- *
- * Does not applicable to the production mode if user have not enforced the
+ * <p>
+ * Is not applicable to the production mode if user have not enforced the
  * webjars to be enabled with {@link Constants#DISABLE_WEBJARS} param.
  *
  * @author Vaadin Ltd.
