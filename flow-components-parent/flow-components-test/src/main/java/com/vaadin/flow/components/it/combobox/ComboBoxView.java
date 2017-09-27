@@ -15,15 +15,24 @@
  */
 package com.vaadin.flow.components.it.combobox;
 
+import java.util.stream.Stream;
+
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.components.it.TestView;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.combobox.ComboBox;
+import com.vaadin.ui.html.Label;
 
 /**
  * Test view for {@link ComboBox}.
  */
 public class ComboBoxView extends TestView {
+
+    public enum Title {
+        MR, MRS;
+    }
+
+    private Label selectedTitle = new Label();
 
     /**
      * Creates a new instance.
@@ -46,5 +55,19 @@ public class ComboBoxView extends TestView {
         setItemCaptionGenerator.setId("update-caption-gen");
 
         add(comboBox, setProvider, setItemCaptionGenerator);
+
+        ComboBox<Title> titles = new ComboBox<>();
+
+        titles.setItems(Stream.of(Title.values()));
+
+        titles.setId("titles");
+        selectedTitle.setId("selected-titles");
+        titles.addValueChangeListener(event -> handleSelection(titles));
+        add(titles, selectedTitle);
+    }
+
+    private void handleSelection(ComboBox<Title> titles) {
+        Title title = titles.getValue();
+        selectedTitle.setText(title.name());
     }
 }
