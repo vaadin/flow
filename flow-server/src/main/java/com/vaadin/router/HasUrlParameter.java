@@ -19,8 +19,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,18 +59,15 @@ public interface HasUrlParameter<T> {
      *
      * @param urlParameters
      *            the list of url parameters to deserialize
-     * @param navigationTarget
-     *            navigation target to deserialize parameters for
      * @return the deserialized url parameter, can be {@code null}
      */
     @SuppressWarnings("unchecked")
-    default T deserializeUrlParameters(Class<?> navigationTarget,
-            List<String> urlParameters) {
+    default T deserializeUrlParameters(List<String> urlParameters) {
         if (urlParameters.isEmpty()) {
-            return isAnnotatedParameter(navigationTarget,
+            return isAnnotatedParameter(this.getClass(),
                     WildcardParameter.class) ? (T) "" : null;
         }
-        if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
+        if (isAnnotatedParameter(this.getClass(), WildcardParameter.class)) {
             return (T) urlParameters.stream().collect(Collectors.joining("/"));
         }
         return (T) urlParameters.get(0);
@@ -144,10 +139,10 @@ public interface HasUrlParameter<T> {
             return setParameter.getParameters()[1]
                     .isAnnotationPresent(parameterAnnotation);
         } catch (NoSuchMethodException e) {
-            Logger.getLogger(HasUrlParameter.class.getName()).log(Level.WARNING,
-                    "Failed to get setParameter method for checking for @Optional");
+            String msg = String.format(
+                    "Failed to find HasUrlParameter::setParameter method when checking for @%s",
+                    parameterAnnotation.getSimpleName());
+            throw new IllegalStateException(msg, e);
         }
-
-        return false;
     }
 }

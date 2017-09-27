@@ -37,7 +37,7 @@ public class DefaultRouteResolver implements RouteResolver {
     @Override
     public NavigationState resolve(ResolveRequest request) {
         RouteRegistry registry = request.getRouter().getRegistry();
-        String path = findPathString(registry,
+        PathDetails path = findPathString(registry,
                 request.getLocation().getSegments());
         if (path == null) {
             return null;
@@ -46,22 +46,16 @@ public class DefaultRouteResolver implements RouteResolver {
         NavigationStateBuilder builder = new NavigationStateBuilder();
         Class<? extends Component> navigationTarget;
         try {
-            if (path.split("/").length < request.getLocation().getSegments()
-                    .size()) {
-                // If we have parameters we try to first get the parameterized
-                // target over the possible non-parameterized
-                List<String> segments = request.getLocation().getSegments();
-                segments = segments.subList(path.split("/").length,
-                        segments.size());
+            if (!path.segments.isEmpty()) {
                 navigationTarget = getNavigationTargetWithParameter(registry,
-                        path, segments);
+                        path.path, path.segments);
             } else {
-                navigationTarget = getNavigationTarget(registry, path);
+                navigationTarget = getNavigationTarget(registry, path.path);
             }
 
             if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
                 List<String> pathParameters = getPathParameters(
-                        request.getLocation().getPath(), path);
+                        request.getLocation().getPath(), path.path);
                 if (!HasUrlParameter.verifyParameters(navigationTarget,
                         pathParameters)) {
                     return null;
@@ -80,45 +74,45 @@ public class DefaultRouteResolver implements RouteResolver {
         return builder.build();
     }
 
-    private class Path {
+    private static class PathDetails {
         private final String path;
         private final List<String> segments;
 
         /**
-         * Create a Path with any required segments.
+         * Constructor for path with segment details.
          * 
          * @param path
          *            path
          * @param segments
          *            segments for path
          */
-        public Path(String path, List<String> segments) {
+        public PathDetails(String path, List<String> segments) {
             this.path = path;
             this.segments = segments;
         }
     }
 
-    private String findPathString(RouteRegistry registry,
+    private PathDetails findPathString(RouteRegistry registry,
             List<String> pathSegments) {
         if (pathSegments.isEmpty()) {
             return null;
         }
 
-        Deque<Path> paths = new ArrayDeque<>();
+        Deque<PathDetails> paths = new ArrayDeque<>();
         StringBuilder pathBuilder = new StringBuilder(pathSegments.get(0));
-        paths.push(new Path(pathBuilder.toString(),
+        paths.push(new PathDetails(pathBuilder.toString(),
                 pathSegments.subList(1, pathSegments.size())));
         for (int i = 1; i < pathSegments.size(); i++) {
             pathBuilder.append("/").append(pathSegments.get(i));
-            paths.push(new Path(pathBuilder.toString(),
+            paths.push(new PathDetails(pathBuilder.toString(),
                     pathSegments.subList(i + 1, pathSegments.size())));
         }
         while (!paths.isEmpty()) {
-            Path currentPath = paths.pop();
-            Optional<?> target = registry.getNavigationTarget(currentPath.path,
-                    currentPath.segments);
+            PathDetails pathDetails = paths.pop();
+            Optional<?> target = registry.getNavigationTarget(pathDetails.path,
+                    pathDetails.segments);
             if (target.isPresent()) {
-                return currentPath.path;
+                return pathDetails;
             }
         }
         return null;

@@ -60,7 +60,7 @@ public class OptionalGreeting extends Div implements HasUrlParameter<String> {
 
 == Wildcard URL parameters for Navigation Targets
 
-In cases where more parameters is wanted the URL parameter can also be annotated with `@WildcardParameter`
+In cases where more parameters are wanted the URL parameter can also be annotated with `@WildcardParameter`
 to have the route match *greet* and anything after for instance *greet/one/five/three*
 
 [source,java]

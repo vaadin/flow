@@ -149,14 +149,23 @@ public class Router implements RouterInterface {
     public String getUrl(Class<? extends Component> navigationTarget)
             throws NotFoundException {
         String routeString = getUrlForTarget(navigationTarget);
-        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)
-                && (HasUrlParameter.isAnnotatedParameter(navigationTarget,
-                        OptionalParameter.class)
-                        || HasUrlParameter.isAnnotatedParameter(
-                                navigationTarget, WildcardParameter.class))) {
+        if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
+                WildcardParameter.class)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
         }
         return routeString;
+    }
+
+    private boolean isAnnotatedParameter(
+            Class<? extends Component> navigationTarget,
+            Class... parameterAnnotations) {
+        for (Class annotation : parameterAnnotations) {
+            if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                    annotation)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -195,7 +204,7 @@ public class Router implements RouterInterface {
 
         Optional<Class<? extends Component>> registryTarget = getRegistry()
                 .getNavigationTarget(routeString,
-                        Arrays.asList((String)parameter));
+                        Arrays.asList((String) parameter));
 
         if (registryTarget.isPresent()
                 && !hasUrlParameters(registryTarget.get())

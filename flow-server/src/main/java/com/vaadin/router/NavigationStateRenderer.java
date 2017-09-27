@@ -123,7 +123,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         navigationState.getUrlParameters().ifPresent(urlParameters -> {
             HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
             hasUrlParameter.setParameter(beforeNavigationActivating,
-                    hasUrlParameter.deserializeUrlParameters(routeTargetType, urlParameters));
+                    hasUrlParameter.deserializeUrlParameters(urlParameters));
         });
 
         listeners = EventUtil.collectBeforeNavigationListeners(chain);
