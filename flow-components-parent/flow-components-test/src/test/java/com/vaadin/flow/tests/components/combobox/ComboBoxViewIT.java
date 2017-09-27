@@ -64,6 +64,6 @@ public class ComboBoxViewIT extends AbstractComponentIT {
 
     private Object getItem(List<?> items, int index) {
         Map<?, ?> map = (Map<?, ?>) items.get(index);
-        return map.get("caption");
+        return map.get("label");
     }
 }
