@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.server.startup;
 
@@ -60,7 +59,7 @@ public class WebJarFilter implements Filter {
                         .put(bowerName, webJarAndVersion);
 
                 if (oldWebJarAndVersion != null) {
-                    Logger.getLogger(getClass().getName()).config(String.format(
+                    Logger.getLogger(getClass().getName()).config(() -> String.format(
                             "Have found multiple webjars with name '%s' and version '%s' for module '%s', using the one that was found last",
                             webJar, version, bowerName));
                 }
@@ -129,5 +128,6 @@ public class WebJarFilter implements Filter {
 
     @Override
     public void destroy() {
+        // A nested comment for Sonar: this method is empty because we don't need to free any resources
     }
 }

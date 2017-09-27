@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.server.startup;
 
@@ -55,7 +54,7 @@ public class WebjarFilterInitializer implements ServletContainerInitializer {
                 && shouldAddFilter(servletRegistration.get())) {
             addWebjarFilter(servletContext, servletRegistration.get());
         } else if (!servletRegistration.isPresent()) {
-            Logger.getLogger(getClass().getName()).config(String.format(
+            Logger.getLogger(getClass().getName()).warning(() -> String.format(
                     "Could not find exactly one Vaadin Servlet, not registering webjar filters. Servlets: '%s'",
                     classSet));
         }
