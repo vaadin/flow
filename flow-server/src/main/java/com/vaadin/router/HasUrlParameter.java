@@ -61,6 +61,8 @@ public interface HasUrlParameter<T> {
      *
      * @param urlParameters
      *            the list of url parameters to deserialize
+     * @param navigationTarget
+     *            navigation target to deserialize parameters for
      * @return the deserialized url parameter, can be {@code null}
      */
     @SuppressWarnings("unchecked")
@@ -125,10 +127,12 @@ public interface HasUrlParameter<T> {
      * 
      * @param navigationTarget
      *            navigation target to check for optional
+     * @param parameterAnnotation
+     *            annotation to check parameter for
      * @return parameter is optional
      */
     static boolean isAnnotatedParameter(Class<?> navigationTarget,
-            Class parameterClass) {
+            Class parameterAnnotation) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             return false;
         }
@@ -138,7 +142,7 @@ public interface HasUrlParameter<T> {
                             .getName(),
                     BeforeNavigationEvent.class, Object.class);
             return setParameter.getParameters()[1]
-                    .isAnnotationPresent(parameterClass);
+                    .isAnnotationPresent(parameterAnnotation);
         } catch (NoSuchMethodException e) {
             Logger.getLogger(HasUrlParameter.class.getName()).log(Level.WARNING,
                     "Failed to get setParameter method for checking for @Optional");

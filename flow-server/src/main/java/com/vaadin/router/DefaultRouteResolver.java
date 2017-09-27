@@ -81,9 +81,17 @@ public class DefaultRouteResolver implements RouteResolver {
     }
 
     private class Path {
-        public String path;
-        public List<String> segments;
+        private final String path;
+        private final List<String> segments;
 
+        /**
+         * Create a Path with any required segments.
+         * 
+         * @param path
+         *            path
+         * @param segments
+         *            segments for path
+         */
         public Path(String path, List<String> segments) {
             this.path = path;
             this.segments = segments;

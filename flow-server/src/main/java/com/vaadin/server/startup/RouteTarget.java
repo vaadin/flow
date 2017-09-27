@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.startup;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.router.HasUrlParameter;
@@ -27,7 +28,7 @@ import com.vaadin.ui.Component;
  * Route target holder that handles getting the correct type of has parameter
  * target.
  */
-public class RouteTarget {
+public class RouteTarget implements Serializable {
     private Class<? extends Component> normal;
     private Class<? extends Component> parameter;
     private Class<? extends Component> optionalParameter;
@@ -64,52 +65,67 @@ public class RouteTarget {
             throws InvalidRouteConfigurationException {
         if (!HasUrlParameter.class.isAssignableFrom(target)
                 && !isAnnotatedParameter(target)) {
-            if (normal != null) {
-                throw new InvalidRouteConfigurationException(String.format(
-                        "Navigation targets must have unique routes, "
-                                + "found navigation targets '%s' and '%s' with the same route.",
-                        normal.getName(), target.getName()));
-            } else if(optionalParameter != null) {
-                throw new InvalidRouteConfigurationException(String.format(
-                        "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                        target.getName(), optionalParameter.getName(),
-                        optionalParameter.getName()));
-            }
+            validateNormalTarget(target);
             normal = target;
         } else {
             if (HasUrlParameter.isAnnotatedParameter(target,
                     OptionalParameter.class)) {
-                if (normal != null) {
-                    throw new InvalidRouteConfigurationException(String.format(
-                            "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-                            normal.getName(), target.getName(),
-                            target.getName()));
-                } else if (optionalParameter != null) {
-                    String message = String.format(
-                            "Navigation targets must have unique routes, "
-                                    + "found navigation targets '%s' and '%s' with parameter have the same route.",
-                            parameter.getName(), target.getName());
-                    throw new InvalidRouteConfigurationException(message);
-                }
+                validateOptionalParameter(target);
                 optionalParameter = target;
             } else if (HasUrlParameter.isAnnotatedParameter(target,
                     WildcardParameter.class)) {
-                if (wildParameter != null) {
-                    throw new InvalidRouteConfigurationException(String.format(
-                            "Navigation targets must have unique routes, "
-                                    + "found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
-                            parameter.getName(), target.getName()));
-                }
+                validateWildcard(target);
                 wildParameter = target;
             } else {
-                if (parameter != null) {
-                    throw new InvalidRouteConfigurationException(String.format(
-                            "Navigation targets must have unique routes, "
-                                    + "found navigation targets '%s' and '%s' with parameter have the same route.",
-                            parameter.getName(), target.getName()));
-                }
+                validateParameter(target);
                 parameter = target;
             }
+        }
+    }
+
+    private void validateParameter(Class<? extends Component> target)
+            throws InvalidRouteConfigurationException {
+        if (parameter != null) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
+                    parameter.getName(), target.getName()));
+        }
+    }
+
+    private void validateWildcard(Class<? extends Component> target)
+            throws InvalidRouteConfigurationException {
+        if (wildParameter != null) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
+                    parameter.getName(), target.getName()));
+        }
+    }
+
+    private void validateOptionalParameter(Class<? extends Component> target)
+            throws InvalidRouteConfigurationException {
+        if (normal != null) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
+                    normal.getName(), target.getName(), target.getName()));
+        } else if (optionalParameter != null) {
+            String message = String.format(
+                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
+                    parameter.getName(), target.getName());
+            throw new InvalidRouteConfigurationException(message);
+        }
+    }
+
+    private void validateNormalTarget(Class<? extends Component> target)
+            throws InvalidRouteConfigurationException {
+        if (normal != null) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
+                    normal.getName(), target.getName()));
+        } else if (optionalParameter != null) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
+                    target.getName(), optionalParameter.getName(),
+                    optionalParameter.getName()));
         }
     }
 
@@ -131,15 +147,6 @@ public class RouteTarget {
             return wildParameter;
         }
         return null;
-    }
-
-    private boolean checkIfOptionalParameter(
-            Class<? extends Component> navigationTarget,
-            Class<? extends Component> previousTarget) {
-        return HasUrlParameter.isAnnotatedParameter(navigationTarget,
-                OptionalParameter.class)
-                || HasUrlParameter.isAnnotatedParameter(previousTarget,
-                        OptionalParameter.class);
     }
 
     private boolean isAnnotatedParameter(Class<?> target) {

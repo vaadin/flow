@@ -30,11 +30,9 @@ import java.util.logging.Logger;
 
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
-import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RoutePrefix;
-import com.vaadin.router.WildcardParameter;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -51,7 +49,6 @@ public class RouteRegistry implements Serializable {
     private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
 
     private boolean initialized;
-
 
     /**
      * Creates a new uninitialized route registry.
