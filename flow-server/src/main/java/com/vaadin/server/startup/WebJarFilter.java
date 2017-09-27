@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -59,9 +60,17 @@ public class WebJarFilter implements Filter {
                         .put(bowerName, webJarAndVersion);
 
                 if (oldWebJarAndVersion != null) {
-                    Logger.getLogger(getClass().getName()).config(() -> String.format(
-                            "Have found multiple webjars with name '%s' and version '%s' for module '%s', using the one that was found last",
-                            webJar, version, bowerName));
+                    if (oldWebJarAndVersion.contains(version)) {
+                        Logger.getLogger(getClass().getName())
+                                .config(() -> String.format(
+                                        "Have found multiple webjars with name '%s' and version '%s' for module '%s', using the one that was found last",
+                                        webJar, version, bowerName));
+                    } else {
+                        throw new IllegalStateException(String.format(
+                                "Module `%s` has two webjars in the project with different versions: `%s` and `%s`. It is unclear which to use.",
+                                bowerName, oldWebJarAndVersion,
+                                webJarAndVersion));
+                    }
                 }
             }
         });
@@ -114,9 +123,9 @@ public class WebJarFilter implements Filter {
             return null;
         }
 
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(getClass().getClassLoader()
-                        .getResourceAsStream(bowerJsonPath)))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                getClass().getClassLoader().getResourceAsStream(bowerJsonPath),
+                StandardCharsets.UTF_8))) {
             // Ignoring linebreaks
             String jsonString = reader.lines().collect(Collectors.joining());
             return Json.parse(jsonString).getString("name");
@@ -128,6 +137,7 @@ public class WebJarFilter implements Filter {
 
     @Override
     public void destroy() {
-        // A nested comment for Sonar: this method is empty because we don't need to free any resources
+        // A nested comment for Sonar: this method is empty because we don't
+        // need to free any resources
     }
 }
