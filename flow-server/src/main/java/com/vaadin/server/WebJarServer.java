@@ -38,10 +38,11 @@ import com.vaadin.util.ResponseWriter;
 import elemental.json.Json;
 
 /**
- * Handles requests that may require webjars contents.
- * In this case, writes the required resource contents from a webjar into the response.
+ * Handles requests that may require webjars contents. In this case, writes the
+ * required resource contents from a webjar into the response.
  *
- * Does not applicable to the production mode.
+ * Does not applicable to the production mode if user have not enforced the
+ * webjars to be enabled with {@link Constants#DISABLE_WEBJARS} param.
  *
  * @author Vaadin Ltd.
  */
@@ -55,10 +56,7 @@ class WebJarServer implements Serializable {
     private final boolean webJarsDisabled;
 
     WebJarServer(VaadinService service) {
-        webJarsDisabled = service.getDeploymentConfiguration()
-                .isProductionMode()
-                || service.getDeploymentConfiguration()
-                        .getBooleanProperty(Constants.DISABLE_WEBJARS, false);
+        webJarsDisabled = areWebJarsDisabled(service);
 
         if (!webJarsDisabled) {
             locator.getWebJars().forEach((webJar, version) -> {
@@ -86,6 +84,16 @@ class WebJarServer implements Serializable {
         }
     }
 
+    private boolean areWebJarsDisabled(VaadinService service) {
+        String userConfiguredProperty = service.getDeploymentConfiguration()
+                .getStringProperty(Constants.DISABLE_WEBJARS, null);
+        if (userConfiguredProperty != null) {
+            return Boolean.parseBoolean(userConfiguredProperty);
+        } else {
+            return service.getDeploymentConfiguration().isProductionMode();
+        }
+    }
+
     private String getBowerName(String webJar) {
         String bowerJsonPath = locator.getFullPathExact(webJar, "bower.json");
         if (bowerJsonPath == null) {
@@ -105,13 +113,17 @@ class WebJarServer implements Serializable {
     }
 
     /**
-     * Searches for file requested in the webjars.
-     * If found, the file contents is written into request.
+     * Searches for file requested in the webjars. If found, the file contents
+     * is written into request.
      *
-     * @param request the servlet request
-     * @param response the servlet response
-     * @return {@code true} if response was populated with webjar contents, {@code false} otherwise
-     * @throws IOException if response population fails
+     * @param request
+     *            the servlet request
+     * @param response
+     *            the servlet response
+     * @return {@code true} if response was populated with webjar contents,
+     *         {@code false} otherwise
+     * @throws IOException
+     *             if response population fails
      */
     boolean tryServeWebJarResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
@@ -125,7 +137,8 @@ class WebJarServer implements Serializable {
         }
 
         URL resourceUrl = request.getServletContext().getResource(webJarPath);
-        responseWriter.writeResponseContents(webJarPath, resourceUrl, request, response);
+        responseWriter.writeResponseContents(webJarPath, resourceUrl, request,
+                response);
         return true;
     }
 
