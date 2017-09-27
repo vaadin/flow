@@ -32,7 +32,6 @@ import java.util.stream.Stream;
  *
  * @param <T>
  *            the type of the items to select
- * @since 8.0
  */
 public interface SelectionModel<T>
         extends Serializable {
@@ -54,7 +53,7 @@ public interface SelectionModel<T>
          *            the item to select
          */
         @Override
-        public void select(T item);
+        void select(T item);
 
         /**
          * Returns the currently selected item, or an empty optional if no item
@@ -63,7 +62,7 @@ public interface SelectionModel<T>
          * @return an optional of the selected item if any, an empty optional
          *         otherwise
          */
-        public Optional<T> getSelectedItem();
+        Optional<T> getSelectedItem();
 
         /**
          * Sets the current selection to the given item, or clears selection if
@@ -72,7 +71,7 @@ public interface SelectionModel<T>
          * @param item
          *            the item to select or {@code null} to clear selection
          */
-        public default void setSelectedItem(T item) {
+        default void setSelectedItem(T item) {
             if (item != null) {
                 select(item);
             } else {
@@ -81,7 +80,7 @@ public interface SelectionModel<T>
         }
 
         @Override
-        public default void deselectAll() {
+        default void deselectAll() {
             setSelectedItem(null);
         }
 
@@ -95,7 +94,7 @@ public interface SelectionModel<T>
          * @see #getSelectedItem()
          */
         @Override
-        public default Set<T> getSelectedItems() {
+        default Set<T> getSelectedItems() {
             return getSelectedItem().map(Collections::singleton)
                     .orElse(Collections.emptySet());
         }
@@ -114,7 +113,7 @@ public interface SelectionModel<T>
          *            without selecting another row instead; otherwise
          *            <code>false</code>.
          */
-        public void setDeselectAllowed(boolean deselectAllowed);
+        void setDeselectAllowed(boolean deselectAllowed);
 
         /**
          * Gets whether it's allowed to deselect the selected row through the
@@ -123,7 +122,7 @@ public interface SelectionModel<T>
          * @return <code>true</code> if deselection is allowed; otherwise
          *         <code>false</code>
          */
-        public boolean isDeselectAllowed();
+        boolean isDeselectAllowed();
     }
 
     /**
@@ -147,7 +146,7 @@ public interface SelectionModel<T>
          *            the item to add to selection, not {@code null}
          */
         @Override
-        public default void select(T item) {
+        default void select(T item) {
             Objects.requireNonNull(item);
             selectItems(item);
         };
@@ -166,7 +165,7 @@ public interface SelectionModel<T>
          * @param items
          *            to add to selection, not {@code null}
          */
-        public default void selectItems(T... items) {
+        default void selectItems(T... items) {
             Objects.requireNonNull(items);
             Stream.of(items).forEach(Objects::requireNonNull);
 
@@ -176,7 +175,7 @@ public interface SelectionModel<T>
 
         @SuppressWarnings("unchecked")
         @Override
-        public default void deselect(T item) {
+        default void deselect(T item) {
             deselectItems(item);
         }
 
@@ -191,7 +190,7 @@ public interface SelectionModel<T>
          * @param items
          *            to remove from selection, not {@code null}
          */
-        public default void deselectItems(T... items) {
+        default void deselectItems(T... items) {
             Objects.requireNonNull(items);
             Stream.of(items).forEach(Objects::requireNonNull);
 
@@ -212,7 +211,7 @@ public interface SelectionModel<T>
          * @param removedItems
          *            the items to remove, not {@code null}
          */
-        public void updateSelection(Set<T> addedItems, Set<T> removedItems);
+        void updateSelection(Set<T> addedItems, Set<T> removedItems);
 
         @Override
         default Optional<T> getFirstSelectedItem() {
@@ -222,7 +221,7 @@ public interface SelectionModel<T>
         /**
          * Selects all available the items.
          */
-        public void selectAll();
+        void selectAll();
     }
 
     /**
@@ -235,7 +234,7 @@ public interface SelectionModel<T>
      *
      * @return the items in the current selection, not null
      */
-    public Set<T> getSelectedItems();
+    Set<T> getSelectedItems();
 
     /**
      * Get first selected data item.
@@ -255,7 +254,7 @@ public interface SelectionModel<T>
      * @param item
      *            the item to select, not null
      */
-    public void select(T item);
+    void select(T item);
 
     /**
      * Deselects the given item. If the item is not currently selected, does
@@ -264,12 +263,12 @@ public interface SelectionModel<T>
      * @param item
      *            the item to deselect, not null
      */
-    public void deselect(T item);
+    void deselect(T item);
 
     /**
      * Deselects all currently selected items, if any.
      */
-    public void deselectAll();
+    void deselectAll();
 
     /**
      * Returns whether the given item is currently selected.
@@ -278,7 +277,7 @@ public interface SelectionModel<T>
      *            the item to check, not null
      * @return {@code true} if the item is selected, {@code false} otherwise
      */
-    public default boolean isSelected(T item) {
+    default boolean isSelected(T item) {
         return getSelectedItems().contains(item);
     }
 }

@@ -102,7 +102,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * to easily switch between the built-in selection models.
      *
      * @see Grid#setSelectionMode(SelectionMode)
-     * @see Grid#setSelectionModel(GridSelectionModel)
+     * @see Grid#setSelectionModel(GridSelectionModel, SelectionMode)
      */
     public enum SelectionMode {
 
@@ -369,8 +369,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * Sets the grid's selection mode.
      * <p>
      * To use your custom selection model, you can use
-     * {@link #setSelectionModel(GridSelectionModel)}, see existing selection
-     * model implementations for example.
+     * {@link #setSelectionModel(GridSelectionModel, SelectionMode)}, see
+     * existing selection model implementations for example.
      *
      * @param selectionMode
      *            the selection mode to switch to, not {@code null}
@@ -378,7 +378,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *
      * @see SelectionMode
      * @see GridSelectionModel
-     * @see #setSelectionModel(GridSelectionModel)
+     * @see #setSelectionModel(GridSelectionModel, SelectionMode)
      */
     public GridSelectionModel<T> setSelectionMode(SelectionMode selectionMode) {
         Objects.requireNonNull(selectionMode, "Selection mode cannot be null.");
