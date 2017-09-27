@@ -24,6 +24,7 @@ import java.util.stream.IntStream;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
@@ -32,8 +33,9 @@ import com.vaadin.ui.html.Div;
  * View for {@link Grid} demo.
  */
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
+@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-grid.html")
 public class GridView extends DemoView {
-    
+
     static List<Person> items = new ArrayList<>();
     private static Random random = new Random(0);
     static {
@@ -133,11 +135,10 @@ public class GridView extends DemoView {
         grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
         grid.asSingleSelect()
-                .addValueChangeListener(event -> messageDiv
-                        .setText(String.format(
-                                "Selection changed from %s to %s, selection is from client: %s",
-                                event.getOldValue(),
-                                event.getValue(), event.isFromClient())));
+                .addValueChangeListener(event -> messageDiv.setText(String
+                        .format("Selection changed from %s to %s, selection is from client: %s",
+                                event.getOldValue(), event.getValue(),
+                                event.isFromClient())));
 
         Button toggleSelect = new Button(
                 "Toggle selection of the first person");

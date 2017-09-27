@@ -58,8 +58,8 @@ window.gridConnector = {
             }
             // Determine what to fetch based on scroll position and not only
             // what grid asked for
-            var firstNeededPage = Math.min(page, grid._getPageForIndex(grid.$.scroller._virtualStart));
-            var lastNeededPage = Math.max(page, grid._getPageForIndex(grid.$.scroller._virtualEnd));
+            var firstNeededPage = Math.min(page, grid._getPageForIndex(grid._virtualStart));
+            var lastNeededPage = Math.max(page, grid._getPageForIndex(grid._virtualEnd));
 
             var first = Math.max(0,  firstNeededPage - extraPageBuffer);
             var last = Math.min(lastNeededPage + extraPageBuffer, Math.max(0, Math.floor(grid.size / grid.pageSize) + 1));
