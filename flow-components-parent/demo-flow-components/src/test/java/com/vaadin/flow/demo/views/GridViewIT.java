@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
@@ -31,52 +33,43 @@ public class GridViewIT extends ComponentDemoTest {
     @Test
     public void dataIsShown() throws InterruptedException {
         WebElement grid = findElement(By.id("basic"));
-        WebElement header = grid
-                .findElement(By.id("vaadin-grid-cell-content-0"));
 
-        Assert.assertEquals("Name", header.getText());
+        Assert.assertTrue(hasCell(grid, "Name"));
 
-        WebElement cell1 = grid
-                .findElement(By.id("vaadin-grid-cell-content-2"));
+        Assert.assertTrue(hasCell(grid, "Person 1"));
 
-        Assert.assertEquals("Person 1", cell1.getText());
+        scrollDown(grid, 185);
 
-        scrollDown(grid, 12);
-
-        waitUntil(driver -> findElements(By.tagName("vaadin-grid-cell-content"))
-                .stream().filter(cell -> "Person 189".equals(cell.getText()))
-                .findFirst().isPresent());
+        waitUntil(driver -> hasCell(grid, "Person 189"));
     }
 
     @Test
-    public void lalzyDataIsShown() throws InterruptedException {
+    public void lazyDataIsShown() throws InterruptedException {
         WebElement grid = findElement(By.id("lazy-loading"));
 
         scrollToElement(grid);
-        WebElement header = grid
-                .findElement(By.tagName("vaadin-grid-cell-content"));
 
-        Assert.assertEquals("Name", header.getText());
+        Assert.assertTrue(hasCell(grid, "Name"));
 
-        scrollDown(grid, 50);
+        scrollDown(grid, 1015);
 
-        WebElement cell = grid
-                .findElements(By.tagName("vaadin-grid-cell-content")).get(2);
-
-        waitUntil(driver -> "Person 1020".equals(cell.getText()));
+        Assert.assertTrue(hasCell(grid, "Person 1020"));
     }
 
-    private void scrollDown(WebElement grid, int pageNumbers) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < pageNumbers; i++) {
-            builder.append(
-                    "arguments[0]._scrollPageDown();arguments[0]._scrollPageDown();");
-        }
-        getCommandExecutor().executeScript(builder.toString(), grid);
+    private void scrollDown(WebElement grid, int index) {
+        getCommandExecutor().executeScript(
+                "arguments[0].scrollToIndex(" + index + ")", grid);
     }
 
     @Override
     protected String getTestPath() {
         return "/vaadin-grid";
+    }
+
+    private boolean hasCell(WebElement grid, String text) {
+        List<WebElement> cells = grid
+                .findElements(By.tagName("vaadin-grid-cell-content"));
+        return cells.stream().filter(cell -> text.equals(cell.getText()))
+                .findAny().isPresent();
     }
 }
