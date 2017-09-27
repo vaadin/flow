@@ -16,6 +16,7 @@
 package com.vaadin.flow.demo.views;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import com.vaadin.data.provider.DataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.grid.Grid.SelectionMode;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
 
@@ -75,6 +77,7 @@ public class GridView extends DemoView {
         createBasicUsage();
         createCallBackDataProvider();
         createSingleSelect();
+        createMultiSelect();
         createNoneSelect();
     }
 
@@ -158,6 +161,34 @@ public class GridView extends DemoView {
         addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
     }
 
+    private void createMultiSelect() {
+        Div messageDiv = new Div();
+        // begin-source-example
+        // source-example-heading: Grid Multi Selection
+        List<Person> people = createItems();
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(people);
+
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+
+        grid.setSelectionMode(SelectionMode.MULTI);
+
+        grid.asMultiSelect()
+                .addValueChangeListener(event -> messageDiv.setText(String
+                        .format("Selection changed from %s to %s, selection is from client: %s",
+                                event.getOldValue(), event.getValue(),
+                                event.isFromClient())));
+
+        Button selectBtn = new Button("Select first five persons");
+        selectBtn.addClickListener(event -> grid.asMultiSelect()
+                .setValue(new HashSet<>(people.subList(0, 5))));
+        // end-source-example
+        grid.setId("multi-selection");
+        messageDiv.setId("multi-selection-message");
+        addCard("Grid Multi Selection", grid, selectBtn, messageDiv);
+    }
+
     private void createNoneSelect() {
         // begin-source-example
         // source-example-heading: Grid with No Selection Enabled
@@ -167,7 +198,7 @@ public class GridView extends DemoView {
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
-        grid.setSelectionMode(Grid.SelectionMode.NONE);
+        grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
         grid.setId("none-selection");
         addCard("Grid with No Selection Enabled", grid);

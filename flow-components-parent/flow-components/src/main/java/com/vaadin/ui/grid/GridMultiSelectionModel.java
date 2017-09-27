@@ -17,7 +17,9 @@ package com.vaadin.ui.grid;
 
 import com.vaadin.data.Binder;
 import com.vaadin.data.selection.MultiSelect;
+import com.vaadin.data.selection.MultiSelectionListener;
 import com.vaadin.data.selection.SelectionModel;
+import com.vaadin.shared.Registration;
 
 /**
  * Multiselection model interface for Grid.
@@ -37,4 +39,15 @@ public interface GridMultiSelectionModel<T>
      * @return the multiselect wrapper
      */
     MultiSelect<Grid<T>, T> asMultiSelect();
+
+    /**
+     * Adds a selection listener that will be called when the selection is
+     * changed either by the user or programmatically.
+     *
+     * @param listener
+     *            the multi selection listener, not {@code null}
+     * @return a registration for the listener
+     */
+    Registration addMultiSelectionListener(
+            MultiSelectionListener<Grid<T>, T> listener);
 }

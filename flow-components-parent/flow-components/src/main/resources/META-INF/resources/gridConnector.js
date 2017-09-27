@@ -4,6 +4,8 @@ window.gridConnector = {
         var pageCallbacks = {};
         var cache = {};
         var lastRequestedRange = [0, 0];
+
+        var validSelectionModes = ['SINGLE', 'NONE', 'MULTI'];
         var selectedKeys = {};
         var selectionMode = 'SINGLE';
 
@@ -11,19 +13,22 @@ window.gridConnector = {
         grid.size = 0; // To avoid NaN here and there before we get proper data
 
         var doSelection = function(item, userOriginated) {
+            if (selectionMode === 'NONE') {
+                return;
+            }
             if (selectionMode === 'SINGLE') {
                 grid.selectedItems = [];
-                grid.selectItem(item);
                 selectedKeys = {};
-                selectedKeys[item.key] = item;
-                if (userOriginated) {
-                    grid.$server.select(item.key);
-                }
+            }
+            grid.selectItem(item);
+            selectedKeys[item.key] = item;
+            if (userOriginated) {
+                grid.$server.select(item.key);
             }
         };
 
         var doDeselection = function(item, userOriginated) {
-            if (selectionMode === 'SINGLE') {
+            if (selectionMode === 'SINGLE' || selectionMode === 'MULTI') {
                 grid.deselectItem(item);
                 delete selectedKeys[item.key];
                 if (userOriginated) {
@@ -157,7 +162,6 @@ window.gridConnector = {
             grid.$server.confirmUpdate(id);
         }
 
-        var validSelectionModes = ['SINGLE', 'NONE'];
         grid.setSelectionMode = function(mode) {
             if ((typeof mode === 'string' || mode instanceof String)
                 && validSelectionModes.indexOf(mode) >= 0) {

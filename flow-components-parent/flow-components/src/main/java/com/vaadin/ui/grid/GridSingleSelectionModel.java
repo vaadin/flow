@@ -18,6 +18,8 @@ package com.vaadin.ui.grid;
 import com.vaadin.data.Binder;
 import com.vaadin.data.selection.SelectionModel;
 import com.vaadin.data.selection.SingleSelect;
+import com.vaadin.data.selection.SingleSelectionListener;
+import com.vaadin.shared.Registration;
 
 /**
  * Single selection model interface for Grid.
@@ -37,4 +39,15 @@ public interface GridSingleSelectionModel<T>
      * @return the single select wrapper
      */
     SingleSelect<Grid<T>, T> asSingleSelect();
+
+    /**
+     * Adds a selection listener that will be called when the selection is
+     * changed either by the user or programmatically.
+     *
+     * @param listener
+     *            the single selection listener, not {@code null}
+     * @return a registration for the listener
+     */
+    Registration addSingleSelectionListener(
+            SingleSelectionListener<Grid<T>, T> listener);
 }
