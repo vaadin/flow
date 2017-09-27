@@ -12,54 +12,45 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.server.webjar;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.webjars.WebJarAssetLocator;
-
-import com.vaadin.server.Constants;
-import com.vaadin.util.ResponseWriter;
 
 import elemental.json.Json;
 
 /**
- * Handles requests that may require webJars contents. In this case, writes the
- * required resource contents from a webJar into the response.
- * <p>
- * Is not applicable to the production mode if user have not enforced the
- * webJars to be enabled with {@link Constants#DISABLE_WEBJARS} param.
- *
- * @author Vaadin Ltd.
+ * A filter that is used to redirect requests to inside the webjars. This allows
+ * Flow users to add and use web components as Maven dependencies.
  */
-public class WebJarServer implements Serializable {
+public class WebJarFilter implements Filter {
     private static final String PREFIX = "/bower_components/";
+    public static final String PATTERN = PREFIX + '*';
 
     private final WebJarAssetLocator locator = new WebJarAssetLocator();
-    private final ResponseWriter responseWriter = new ResponseWriter();
     private final Map<String, WebJarBowerDependency> bowerModuleToDependencyName = new HashMap<>();
 
-    /**
-     * Creates a webJar server that is able to search webJars for files and
-     * return them.
-     */
-    public WebJarServer() {
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
         locator.getWebJars().forEach((webJarName, version) -> {
             String bowerModuleName = getBowerModuleName(webJarName);
             if (bowerModuleName != null) {
@@ -105,34 +96,23 @@ public class WebJarServer implements Serializable {
         }
     }
 
-    /**
-     * Searches for file requested in the webJars. If found, the file contents
-     * is written into request.
-     *
-     * @param request
-     *            the servlet request
-     * @param response
-     *            the servlet response
-     * @return {@code true} if response was populated with webJar contents,
-     *         {@code false} otherwise
-     * @throws IOException
-     *             if response population fails
-     */
-    public boolean tryServeWebJarResource(HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-        String webJarPath = getWebJarPath(request.getPathInfo());
-        if (webJarPath == null) {
-            return false;
-        }
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response,
+                         FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest servletRequest = (HttpServletRequest) request;
 
-        URL resourceUrl = request.getServletContext().getResource(webJarPath);
-        if (resourceUrl == null) {
-            return false;
+        ServletRequest result = request;
+        String webJarPath = getWebJarPath(servletRequest.getPathInfo());
+        if (webJarPath != null) {
+            // Use a request with a pathInfo that points to the webjar
+            result = new HttpServletRequestWrapper(servletRequest) {
+                @Override
+                public String getPathInfo() {
+                    return webJarPath;
+                }
+            };
         }
-
-        responseWriter.writeResponseContents(webJarPath, resourceUrl, request,
-                response);
-        return true;
+        chain.doFilter(result, response);
     }
 
     private String getWebJarPath(String path) {
@@ -156,5 +136,11 @@ public class WebJarServer implements Serializable {
 
         String fileName = pathWithoutPrefix.substring(separatorIndex);
         return String.join("", "/webjars/", webJarAndVersion, fileName);
+    }
+
+    @Override
+    public void destroy() {
+        // A nested comment for Sonar: this method is empty because we don't
+        // need to free any resources
     }
 }

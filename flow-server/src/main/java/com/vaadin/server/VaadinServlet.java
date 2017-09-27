@@ -38,7 +38,6 @@ import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.server.webjar.WebJarServer;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.AnnotationReader;
@@ -60,7 +59,6 @@ import com.vaadin.util.CurrentInstance;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileServer staticFileServer;
-    private WebJarServer webJarServer;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -109,10 +107,6 @@ public class VaadinServlet extends HttpServlet {
         }
 
         staticFileServer = new StaticFileServer(servletService);
-
-        if (!deploymentConfiguration.areWebJarsDisabled()) {
-            webJarServer = new WebJarServer();
-        }
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -285,9 +279,6 @@ public class VaadinServlet extends HttpServlet {
 
         if (staticFileServer.isStaticResourceRequest(request)) {
             staticFileServer.serveStaticResource(request, response);
-            return;
-        }
-        if (webJarServer != null && webJarServer.tryServeWebJarResource(request, response)) {
             return;
         }
 

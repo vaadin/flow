@@ -16,11 +16,11 @@
 
 package com.vaadin.server;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -179,14 +179,9 @@ public class DefaultDeploymentConfiguration
         val = System.getProperty(
                 pkgName + parameterName.toLowerCase(Locale.ENGLISH));
 
-        if (val != null) {
-            return val;
-        }
-
-        // version prefixed with just "vaadin."
-        val = System.getProperty("vaadin." + parameterName);
-
-        return val;
+        return val == null
+                ? AbstractDeploymentConfiguration.getVaadinSystemProperty(parameterName, null)
+                : val;
     }
 
     /**
@@ -405,7 +400,7 @@ public class DefaultDeploymentConfiguration
             return null;
         }
 
-        List<String> foundPolyfills = new ArrayList<>();
+        Set<String> foundPolyfills = new HashSet<>();
         resourceScanner.accept(scanBase, name -> {
             if (name.endsWith("webcomponents-loader.js")) {
                 foundPolyfills.add(name);
@@ -428,7 +423,7 @@ public class DefaultDeploymentConfiguration
                     foundPolyfills));
         }
 
-        String fileName = foundPolyfills.get(0);
+        String fileName = foundPolyfills.iterator().next();
         String dirName = fileName.substring(0, fileName.lastIndexOf('/'));
         assert !dirName.endsWith("/");
 

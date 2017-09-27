@@ -15,6 +15,8 @@
  */
 package com.vaadin.server;
 
+import java.util.Optional;
+
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.ui.UI;
 
@@ -44,5 +46,20 @@ public abstract class AbstractDeploymentConfiguration
     public String getRouterConfiguratorClassName() {
         return getStringProperty(
                 Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR, null);
+    }
+
+    /**
+     * Gets Vaadin system property value.
+     * If no property found, the default value is returned.
+     *
+     * @param propertyName the property name to search for
+     * @param defaultValue the value to be returned if system property would be absent
+     * @return corresponding property value if present, default value otherwise
+     */
+    public static String getVaadinSystemProperty(String propertyName, String defaultValue) {
+        String systemProperty = Optional
+                .ofNullable(System.getProperty("vaadin." + propertyName))
+                .orElseGet(() -> System.getProperty(propertyName));
+        return systemProperty == null ? defaultValue : systemProperty;
     }
 }
