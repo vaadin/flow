@@ -82,10 +82,6 @@
                 <!-- Jetty execution is mapped in those modules that actually
                     use Jetty -->
                 <configuration>
-                    <webAppConfig>
-                        <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
-                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                    </webAppConfig>
                     <scanIntervalSeconds>-1</scanIntervalSeconds>
                     <httpConnector>
                         <port>${server.port}</port>

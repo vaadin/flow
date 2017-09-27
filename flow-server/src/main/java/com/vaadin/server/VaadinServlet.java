@@ -38,6 +38,7 @@ import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.VaadinServletConfiguration.InitParameterName;
+import com.vaadin.server.webjar.WebJarServer;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.AnnotationReader;
@@ -73,8 +74,7 @@ public class VaadinServlet extends HttpServlet {
      *             servlet's normal operation.
      */
     @Override
-    public void init(ServletConfig servletConfig)
-            throws ServletException {
+    public void init(ServletConfig servletConfig) throws ServletException {
         verifyServletVersion();
         CurrentInstance.clearAll();
         super.init(servletConfig);
@@ -109,7 +109,10 @@ public class VaadinServlet extends HttpServlet {
         }
 
         staticFileServer = new StaticFileServer(servletService);
-        webJarServer = new WebJarServer(servletService);
+
+        if (!deploymentConfiguration.areWebJarsDisabled()) {
+            webJarServer = new WebJarServer();
+        }
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -151,9 +154,10 @@ public class VaadinServlet extends HttpServlet {
         if (optionalConfigAnnotation.isPresent()) {
             VaadinServletConfiguration configuration = optionalConfigAnnotation
                     .get();
-            if (configuration.ui() == UI.class && configuration
-                    .routerConfigurator() == RouterConfigurator.class
-                    && configuration.usingNewRouting() == false) {
+            if (configuration.ui() == UI.class
+                    && configuration
+                            .routerConfigurator() == RouterConfigurator.class
+                    && !configuration.usingNewRouting()) {
                 throw new ServletException(String.format(
                         "At least one of 'ui' and 'routerConfigurator' must be defined in @%s if 'usingNewRouting' is false",
                         VaadinServletConfiguration.class.getSimpleName()));
@@ -283,7 +287,7 @@ public class VaadinServlet extends HttpServlet {
             staticFileServer.serveStaticResource(request, response);
             return;
         }
-        if (webJarServer.tryServeWebJarResource(request, response)) {
+        if (webJarServer != null && webJarServer.tryServeWebJarResource(request, response)) {
             return;
         }
 

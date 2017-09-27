@@ -17,7 +17,6 @@
 package com.vaadin.server;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -27,8 +26,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.webjars.WebJarAssetLocator;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.shared.ApplicationConstants;
@@ -84,7 +81,6 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SYNC_ID_CHECK = true;
 
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
-    private static final String WEBCOMPONENTS_LOADER_JS_POLYFILL = "webcomponents-loader.js";
 
     private final Properties initParameters;
     private boolean productionMode;
@@ -409,9 +405,15 @@ public class DefaultDeploymentConfiguration
             return null;
         }
 
-        List<String> foundPolyfills = new ArrayList<>(
-                findPolyfillInBowerComponents(resourceScanner, scanBase));
-        foundPolyfills.addAll(findPolyfillInWebJars());
+        List<String> foundPolyfills = new ArrayList<>();
+        resourceScanner.accept(scanBase, name -> {
+            if (name.endsWith("webcomponents-loader.js")) {
+                foundPolyfills.add(name);
+            }
+
+            // Don't traverse some potentially huge but pointless directories
+            return !name.contains("node/") && !name.contains("node_modules/");
+        });
 
         if (foundPolyfills.isEmpty()) {
             getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
@@ -433,32 +435,6 @@ public class DefaultDeploymentConfiguration
         getLogger().log(Level.CONFIG, () -> formatDefaultPolyfillMessage(
                 "Will use webcomponents polyfill discovered in " + dirName));
         return ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + dirName + '/';
-    }
-
-    private List<String> findPolyfillInBowerComponents(
-            BiConsumer<String, Predicate<String>> resourceScanner,
-            String scanBase) {
-        List<String> foundPolyfills = new ArrayList<>();
-        resourceScanner.accept(scanBase, name -> {
-            if (name.endsWith(WEBCOMPONENTS_LOADER_JS_POLYFILL)) {
-                foundPolyfills.add(name);
-            }
-
-            // Don't traverse some potentially huge but pointless directories
-            return !name.contains("node/") && !name.contains("node_modules/");
-        });
-        return foundPolyfills;
-    }
-
-    private List<String> findPolyfillInWebJars() {
-        if (areWebJarsDisabled()) {
-            return Collections.emptyList();
-        }
-        return Optional
-                .ofNullable(new WebJarAssetLocator().getFullPathExact(
-                        "webcomponentsjs", WEBCOMPONENTS_LOADER_JS_POLYFILL))
-                .map(Collections::singletonList)
-                .orElse(Collections.emptyList());
     }
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {
