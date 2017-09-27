@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
@@ -32,37 +34,27 @@ public class GridViewIT extends ComponentDemoTest {
     @Test
     public void dataIsShown() throws InterruptedException {
         WebElement grid = findElement(By.id("basic"));
-        WebElement header = grid
-                .findElement(By.id("vaadin-grid-cell-content-0"));
 
-        Assert.assertEquals("Name", header.getText());
+        Assert.assertTrue(hasCell(grid, "Name"));
 
-        WebElement cell1 = grid
-                .findElement(By.id("vaadin-grid-cell-content-2"));
+        Assert.assertTrue(hasCell(grid, "Person 1"));
 
-        Assert.assertEquals("Person 1", cell1.getText());
+        scroll(grid, 185);
 
-        scrollDown(grid, 9);
-
-        waitUntilCellHasText(grid, "Person 189");
+        waitUntil(driver -> hasCell(grid, "Person 189"));
     }
 
     @Test
-    public void lalzyDataIsShown() throws InterruptedException {
+    public void lazyDataIsShown() throws InterruptedException {
         WebElement grid = findElement(By.id("lazy-loading"));
 
         scrollToElement(grid);
-        WebElement header = grid
-                .findElement(By.tagName("vaadin-grid-cell-content"));
 
-        Assert.assertEquals("Name", header.getText());
+        Assert.assertTrue(hasCell(grid, "Name"));
 
-        scrollDown(grid, 50);
+        scroll(grid, 1010);
 
-        WebElement cell = grid
-                .findElements(By.tagName("vaadin-grid-cell-content")).get(2);
-
-        waitUntil(driver -> "Person 1020".equals(cell.getText()));
+        Assert.assertTrue(hasCell(grid, "Person 1020"));
     }
 
     @Test
@@ -99,12 +91,12 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertFalse(isRowSelected(grid, 0));
 
         // scroll to bottom
-        scrollDown(grid, 50);
+        scroll(grid, 495);
         waitUntilCellHasText(grid, "Person 499");
         // select item that is not in cache
         toggleButton.click();
         // scroll back up
-        scrollUp(grid, 50);
+        scroll(grid, 0);
         waitUntilCellHasText(grid, "Person 1");
         waitUntil(driver -> isRowSelected(grid, 0));
         Assert.assertEquals(
@@ -128,22 +120,9 @@ public class GridViewIT extends ComponentDemoTest {
                 oldSelection, newSelection, isFromClient);
     }
 
-    private void scrollDown(WebElement grid, int pageNumbers) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < pageNumbers; i++) {
-            builder.append(
-                    "arguments[0]._scrollPageDown();arguments[0]._scrollPageDown();");
-        }
-        getCommandExecutor().executeScript(builder.toString(), grid);
-    }
-
-    private void scrollUp(WebElement grid, int pageNumbers) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < pageNumbers; i++) {
-            builder.append(
-                    "arguments[0]._scrollPageUp();arguments[0]._scrollPageUp();");
-        }
-        getCommandExecutor().executeScript(builder.toString(), grid);
+    private void scroll(WebElement grid, int index) {
+        getCommandExecutor().executeScript(
+                "arguments[0].scrollToIndex(" + index + ")", grid);
     }
 
     private void waitUntilCellHasText(WebElement grid, String text) {
@@ -157,6 +136,13 @@ public class GridViewIT extends ComponentDemoTest {
         return (boolean) getCommandExecutor().executeScript(
                 "return arguments[0].shadowRoot.querySelectorAll('vaadin-grid-table-row')[arguments[1]].selected;",
                 grid, row);
+    }
+
+    private boolean hasCell(WebElement grid, String text) {
+        List<WebElement> cells = grid
+                .findElements(By.tagName("vaadin-grid-cell-content"));
+        return cells.stream().filter(cell -> text.equals(cell.getText()))
+                .findAny().isPresent();
     }
 
     @Override
