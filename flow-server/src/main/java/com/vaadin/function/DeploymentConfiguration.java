@@ -276,7 +276,7 @@ public interface DeploymentConfiguration extends Serializable {
      * {@code true} or the user have not set the property at all and the
      * production mode is enabled.
      *
-     * @return {@code true} if webJars are disabled, {@code false} otherwise
+     * @return {@code true} if webJars are enabled, {@code false} otherwise
      */
     default boolean areWebJarsEnabled() {
         return !getBooleanProperty(Constants.DISABLE_WEBJARS, isProductionMode());

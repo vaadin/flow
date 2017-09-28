@@ -41,8 +41,9 @@ import elemental.json.Json;
  * Handles requests that may require webJars contents. In this case, writes the
  * required resource contents from a webJar into the response.
  * <p>
- * Is not applicable to the production mode if user have not enforced the
- * webJars to be enabled with {@link Constants#DISABLE_WEBJARS} param.
+ * By default, webJars are enabled for development mode and disabled for
+ * production mode. There is a way to override this behavior by setting
+ * {@link Constants#DISABLE_WEBJARS} param.
  *
  * @author Vaadin Ltd.
  */
