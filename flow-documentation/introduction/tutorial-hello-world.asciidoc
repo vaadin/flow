@@ -1,17 +1,18 @@
 ---
 title: Building a Hello World Application
-order: 1
+order: 2
 layout: page
 ---
 
 = Building a Hello World Application
 
-The simplest possible Hello World application displays the text "Hello world" on the screen and does nothing else. To accomplish this you need two things:
+The simplest possible Hello World application displays the text "Hello world" on the screen and does nothing else.
+To accomplish this you only need one thing:
 
-* A component containing our UI elements
-* A servlet handling the rendering of the component
+* A Component with `@Route` annotation to mapping it to a url
 
-Let's start from the View class:
+Flow will automatically detect this _Navigation Target_ specified with the annotation, and map a servlet for the application to the context root ("/*").
+Here is an example of such a component:
 
 [source,java]
 ----
@@ -23,12 +24,15 @@ public class HelloWorld extends Div {
 }
 ----
 
-The main purpose of this div is to populate the UI with components. In this case the class extends the very simple `Div` component (corresponds to a `<div>` in the browser) and you can use its `setText` method to show the message.
+The main purpose of this class is to populate the UI. In this case the class extends the very simple `Div` component (corresponds to a `<div>` in the browser) and you can use its `setText` method to show the message.
+This is all that is needed, as both the servlet and the navigation target are registered automatically by Flow.
 
 [TIP]
 The `com.vaadin.flow.html` package contains a number of commonly used components. You can also extend `HtmlComponent` to create any custom component.
 
-To get the component to show up in the browser, you need to add a servlet and configure it to show the given view for the root URL:
+=== Defining a Servlet
+
+It is also possible to manually define a servlet and configure it:
 
 [source,java]
 ----

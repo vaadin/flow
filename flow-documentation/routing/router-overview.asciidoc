@@ -1,0 +1,21 @@
+---
+title: Router
+order: 1
+layout: page
+---
+
+= Router
+
+Router is a core concept in Vaadin Flow, enabling Navigation for your website or web app.
+It is based on HTML5 History API, and makes it possible to for the user to navigate pages back and forward,
+and keep the page state intact (if necessary).
+
+The following tutorials explain how to use the Router:
+
+** <<routing/tutorial-routing-annotation#,Defining Routes with @Route>>
+** <<routing/tutorial-routing-lifecycle#,Navigation Lifecycle>>
+** <<routing/tutorial-router-layout#,Router Layouts and Nested Router Targets>>
+** <<routing/tutorial-router-url-parameters#,URL Parameters for Navigation Targets>>
+** <<routing/tutorial-routing-url-generation#,URL generation>>
+** <<routing/tutorial-routing-navigation#,Navigating Between Routes>>
+** <<routing/tutorial-routing-page-titles#,Updating Page Title on Navigation>>

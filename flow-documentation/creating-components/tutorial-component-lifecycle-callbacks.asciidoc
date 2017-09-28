@@ -1,10 +1,10 @@
 ---
-title: Creating a Component with External Dependencies
+title: Component Lifecycle Callbacks
 order: 7
 layout: page
 ---
 
-= Creating a Component with External Dependencies
+= Component Lifecycle Callbacks
 
 Sometimes the content of a component depends on resources that are not available
 during the construction of the component. You can postpone the content creation
@@ -13,14 +13,13 @@ from `Component`.
 
 [source,java]
 ----
-@Tag("div")
-public class UserNameLabel extends Component {
+public class UserNameLabel extends Div {
 
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     // user name can be stored to session after login
     String userName = (String) attachEvent.getSession().getAttribute("username");
-    getElement().setText("Hello " + userName + ", welcome back!");
+    setText("Hello " + userName + ", welcome back!");
   }
 }
 ----

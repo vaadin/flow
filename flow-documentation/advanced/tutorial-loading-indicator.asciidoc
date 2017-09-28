@@ -1,6 +1,6 @@
 ---
 title: The Loading Indicator
-order: 4
+order: 6
 layout: page
 ---
 
@@ -91,7 +91,7 @@ seconds (300ms delay configured in java + 200ms animation delay).
 The next image illustrates an application with the modal curtain visible during loading
 (above) compared to the normal state (below).
 
-image:../images/modal_curtain.png[modal curtain]
+image:images/modal_curtain.png[modal curtain,700,700]
 
 == Displaying a Changing Loading Indicator
 
