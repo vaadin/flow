@@ -30,20 +30,13 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
 
     /**
      * Constructs an empty {@code PasswordField}.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      */
     public PasswordField() {
         getElement().synchronizeProperty("hasValue", "value-changed");
-        clear();
     }
 
     /**
      * Constructs an empty {@code PasswordField} with the given label.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -56,9 +49,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     /**
      * Constructs an empty {@code PasswordField} with the given label and
      * placeholder text.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -72,9 +62,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
 
     /**
      * Constructs an empty {@code PasswordField} with a value change listener.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param listener
      *            the value change listener
@@ -89,9 +76,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     /**
      * Constructs an empty {@code PasswordField} with a value change listener
      * and a label.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -110,9 +94,6 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     /**
      * Constructs a {@code PasswordField} with a value change listener, a label
      * and an initial value.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
