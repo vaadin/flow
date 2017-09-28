@@ -72,6 +72,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'opened-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code opened} property from the webcomponent
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -103,6 +105,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noCloseOnOutsideClick} property from the webcomponent
 	 */
 	public boolean isNoCloseOnOutsideClick() {
 		return getElement().getProperty("noCloseOnOutsideClick", false);
@@ -134,6 +138,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noCloseOnEsc} property from the webcomponent
 	 */
 	public boolean isNoCloseOnEsc() {
 		return getElement().getProperty("noCloseOnEsc", false);
@@ -194,7 +200,8 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param from
 	 *            Source path to link.
 	 */
-	public void linkPaths(java.lang.String to, java.lang.String from) {
+	protected void linkPaths(elemental.json.JsonObject to,
+			elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -248,8 +255,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to,
-			elemental.json.JsonObject from) {
+	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -268,7 +274,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	protected void unlinkPaths(elemental.json.JsonObject path) {
+	public void unlinkPaths(java.lang.String path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -287,7 +293,7 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param path
 	 *            Target path to unlink.
 	 */
-	public void unlinkPaths(java.lang.String path) {
+	protected void unlinkPaths(elemental.json.JsonObject path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -345,6 +351,10 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * {@code undefined} (this method does not throw when dereferencing
 	 * undefined paths).
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to the value to read. The path may be specified as a
@@ -356,10 +366,10 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 *            `['users', 12, 'name']`).
 	 * @param root
 	 *            Root object from which the path is evaluated.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
+	protected void get(elemental.json.JsonObject path,
+			elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -374,6 +384,10 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * {@code undefined} (this method does not throw when dereferencing
 	 * undefined paths).
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to the value to read. The path may be specified as a
@@ -385,11 +399,9 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 *            `['users', 12, 'name']`).
 	 * @param root
 	 *            Root object from which the path is evaluated.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
+	protected void get(java.lang.String path, elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -473,14 +485,18 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code double}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void push(java.lang.String path, elemental.json.JsonObject _Items) {
+	protected void push(elemental.json.JsonObject path,
+			elemental.json.JsonObject _Items) {
 	}
 
 	/**
@@ -498,15 +514,17 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code double}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void push(elemental.json.JsonObject path,
-			elemental.json.JsonObject _Items) {
+	protected void push(java.lang.String path, elemental.json.JsonObject _Items) {
 	}
 
 	/**
@@ -524,37 +542,43 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
-	protected void pop(elemental.json.JsonObject path) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes an item from the end of array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.pop}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
 	protected void pop(java.lang.String path) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Removes an item from the end of array at the path specified.
+	 * </p>
+	 * <p>
+	 * The arguments after {@code path} and return value match that of
+	 * {@code Array.prototype.pop}.
+	 * </p>
+	 * <p>
+	 * This method notifies other paths to the same array that a splice occurred
+	 * to the array.
+	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * different than void are not supported at this moment.
+	 * 
+	 * @param path
+	 *            Path to array.
+	 */
+	@NotSupported
+	protected void pop(elemental.json.JsonObject path) {
 	}
 
 	/**
@@ -573,6 +597,10 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonArray}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -581,7 +609,6 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param deleteCount
 	 *            Number of items to remove.
 	 * @param ...items Missing documentation!
-	 * @return It would return a interface elemental.json.JsonArray
 	 */
 	@NotSupported
 	protected void splice(elemental.json.JsonObject path, double start,
@@ -604,6 +631,10 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonArray}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -612,7 +643,6 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * @param deleteCount
 	 *            Number of items to remove.
 	 * @param ...items Missing documentation!
-	 * @return It would return a interface elemental.json.JsonArray
 	 */
 	@NotSupported
 	protected void splice(java.lang.String path, double start,
@@ -634,13 +664,16 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void shift(elemental.json.JsonObject path) {
+	protected void shift(java.lang.String path) {
 	}
 
 	/**
@@ -658,13 +691,16 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void shift(java.lang.String path) {
+	protected void shift(elemental.json.JsonObject path) {
 	}
 
 	/**
@@ -682,14 +718,17 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code double}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void unshift(java.lang.String path,
+	protected void unshift(elemental.json.JsonObject path,
 			elemental.json.JsonObject _Items) {
 	}
 
@@ -708,14 +747,17 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code double}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void unshift(elemental.json.JsonObject path,
+	protected void unshift(java.lang.String path,
 			elemental.json.JsonObject _Items) {
 	}
 
@@ -784,13 +826,16 @@ public class GeneratedVaadinDialog<R extends GeneratedVaadinDialog<R>>
 	 * this element. This method will return the same URL before and after
 	 * bundling.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code class java.lang.String}. Functions with return types different
+	 * than void are not supported at this moment.
 	 * 
 	 * @param url
 	 *            URL to resolve.
 	 * @param base
 	 *            Optional base URL to resolve against, defaults to the
 	 *            element's `importPath`
-	 * @return It would return a class java.lang.String
 	 */
 	@NotSupported
 	protected void resolveUrl(java.lang.String url,

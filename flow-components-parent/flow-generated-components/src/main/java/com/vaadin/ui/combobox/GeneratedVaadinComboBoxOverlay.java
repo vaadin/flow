@@ -55,6 +55,8 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	/**
 	 * This property is synchronized automatically from client side when a
 	 * 'opened-changed' event happens.
+	 * 
+	 * @return the {@code opened} property from the webcomponent
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -72,6 +74,8 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	/**
 	 * This property is synchronized automatically from client side when a
 	 * 'template-changed' event happens.
+	 * 
+	 * @return the {@code template} property from the webcomponent
 	 */
 	@Synchronize(property = "template", value = "template-changed")
 	protected JsonObject protectedGetTemplate() {
@@ -89,6 +93,8 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	/**
 	 * This property is synchronized automatically from client side when a
 	 * 'content-changed' event happens.
+	 * 
+	 * @return the {@code content} property from the webcomponent
 	 */
 	@Synchronize(property = "content", value = "content-changed")
 	protected JsonObject protectedGetContent() {
@@ -106,6 +112,8 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code withBackdrop} property from the webcomponent
 	 */
 	public boolean isWithBackdrop() {
 		return getElement().getProperty("withBackdrop", false);
@@ -130,6 +138,8 @@ public class GeneratedVaadinComboBoxOverlay<R extends GeneratedVaadinComboBoxOve
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code focusTrap} property from the webcomponent
 	 */
 	public boolean isFocusTrap() {
 		return getElement().getProperty("focusTrap", false);

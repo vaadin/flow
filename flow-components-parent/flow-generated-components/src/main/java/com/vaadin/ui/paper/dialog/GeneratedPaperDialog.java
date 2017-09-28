@@ -124,6 +124,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code sizingTarget} property from the webcomponent
 	 */
 	protected JsonObject protectedGetSizingTarget() {
 		return (JsonObject) getElement().getPropertyRaw("sizingTarget");
@@ -157,6 +159,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code fitInto} property from the webcomponent
 	 */
 	protected JsonObject protectedGetFitInto() {
 		return (JsonObject) getElement().getPropertyRaw("fitInto");
@@ -188,6 +192,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noOverlap} property from the webcomponent
 	 */
 	public boolean isNoOverlap() {
 		return getElement().getProperty("noOverlap", false);
@@ -220,6 +226,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code positionTarget} property from the webcomponent
 	 */
 	protected JsonObject protectedGetPositionTarget() {
 		return (JsonObject) getElement().getPropertyRaw("positionTarget");
@@ -253,6 +261,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code horizontalAlign} property from the webcomponent
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
@@ -288,6 +298,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code verticalAlign} property from the webcomponent
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
@@ -323,6 +335,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code dynamicAlign} property from the webcomponent
 	 */
 	public boolean isDynamicAlign() {
 		return getElement().getProperty("dynamicAlign", false);
@@ -369,6 +383,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code horizontalOffset} property from the webcomponent
 	 */
 	public double getHorizontalOffset() {
 		return getElement().getProperty("horizontalOffset", 0.0);
@@ -427,6 +443,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code verticalOffset} property from the webcomponent
 	 */
 	public double getVerticalOffset() {
 		return getElement().getProperty("verticalOffset", 0.0);
@@ -471,6 +489,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autoFitOnAttach} property from the webcomponent
 	 */
 	public boolean isAutoFitOnAttach() {
 		return getElement().getProperty("autoFitOnAttach", false);
@@ -501,6 +521,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'opened-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code opened} property from the webcomponent
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -532,6 +554,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code canceled} property from the webcomponent
 	 */
 	public boolean isCanceled() {
 		return getElement().getProperty("canceled", false);
@@ -548,6 +572,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code withBackdrop} property from the webcomponent
 	 */
 	public boolean isWithBackdrop() {
 		return getElement().getProperty("withBackdrop", false);
@@ -580,6 +606,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noAutoFocus} property from the webcomponent
 	 */
 	public boolean isNoAutoFocus() {
 		return getElement().getProperty("noAutoFocus", false);
@@ -611,6 +639,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noCancelOnEscKey} property from the webcomponent
 	 */
 	public boolean isNoCancelOnEscKey() {
 		return getElement().getProperty("noCancelOnEscKey", false);
@@ -641,6 +671,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noCancelOnOutsideClick} property from the webcomponent
 	 */
 	public boolean isNoCancelOnOutsideClick() {
 		return getElement().getProperty("noCancelOnOutsideClick", false);
@@ -675,6 +707,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code closingReason} property from the webcomponent
 	 */
 	protected JsonObject protectedGetClosingReason() {
 		return (JsonObject) getElement().getPropertyRaw("closingReason");
@@ -708,6 +742,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code restoreFocusOnClose} property from the webcomponent
 	 */
 	public boolean isRestoreFocusOnClose() {
 		return getElement().getProperty("restoreFocusOnClose", false);
@@ -738,6 +774,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code alwaysOnTop} property from the webcomponent
 	 */
 	public boolean isAlwaysOnTop() {
 		return getElement().getProperty("alwaysOnTop", false);
@@ -768,6 +806,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code modal} property from the webcomponent
 	 */
 	public boolean isModal() {
 		return getElement().getProperty("modal", false);
@@ -798,6 +838,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code animationConfig} property from the webcomponent
 	 */
 	protected JsonObject protectedGetAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
@@ -830,6 +872,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code entryAnimation} property from the webcomponent
 	 */
 	public String getEntryAnimation() {
 		return getElement().getProperty("entryAnimation");
@@ -865,6 +909,8 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code exitAnimation} property from the webcomponent
 	 */
 	public String getExitAnimation() {
 		return getElement().getProperty("exitAnimation");
@@ -1023,11 +1069,14 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param element
 	 *            A candidate descendant element that implements
 	 *            `IronResizableBehavior`.
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void resizerShouldNotify(elemental.json.JsonObject element) {

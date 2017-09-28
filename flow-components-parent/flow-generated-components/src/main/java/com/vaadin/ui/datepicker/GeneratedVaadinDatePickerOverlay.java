@@ -46,6 +46,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetSelectedDate() {
 		return (JsonObject) getElement().getPropertyRaw("selectedDate");
@@ -76,6 +78,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code focusedDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetFocusedDate() {
 		return (JsonObject) getElement().getPropertyRaw("focusedDate");
@@ -106,6 +110,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code initialPosition} property from the webcomponent
 	 */
 	protected JsonObject protectedGetInitialPosition() {
 		return (JsonObject) getElement().getPropertyRaw("initialPosition");
@@ -129,6 +135,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code i18n} property from the webcomponent
 	 */
 	protected JsonObject protectedGetI18n() {
 		return (JsonObject) getElement().getPropertyRaw("i18n");
@@ -145,6 +153,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code showWeekNumbers} property from the webcomponent
 	 */
 	public boolean isShowWeekNumbers() {
 		return getElement().getProperty("showWeekNumbers", false);
@@ -169,6 +179,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code minDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetMinDate() {
 		return (JsonObject) getElement().getPropertyRaw("minDate");
@@ -200,6 +212,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code maxDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetMaxDate() {
 		return (JsonObject) getElement().getPropertyRaw("maxDate");
@@ -230,6 +244,8 @@ public class GeneratedVaadinDatePickerOverlay<R extends GeneratedVaadinDatePicke
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code label} property from the webcomponent
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");

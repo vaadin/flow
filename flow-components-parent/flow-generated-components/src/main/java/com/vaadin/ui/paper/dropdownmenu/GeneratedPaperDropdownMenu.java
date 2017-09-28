@@ -149,6 +149,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code keyEventTarget} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -181,6 +183,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code stopKeyboardEventPropagation} property from the
+	 *         webcomponent
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -207,6 +212,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code keyBindings} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
@@ -230,6 +237,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code pressed} property from the webcomponent
 	 */
 	public boolean isPressed() {
 		return getElement().getProperty("pressed", false);
@@ -246,6 +255,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code toggles} property from the webcomponent
 	 */
 	public boolean isToggles() {
 		return getElement().getProperty("toggles", false);
@@ -277,6 +288,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'active-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code active} property from the webcomponent
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -310,6 +323,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code pointerDown} property from the webcomponent
 	 */
 	public boolean isPointerDown() {
 		return getElement().getProperty("pointerDown", false);
@@ -326,6 +341,9 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code receivedFocusFromKeyboard} property from the
+	 *         webcomponent
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
@@ -342,6 +360,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code ariaActiveAttribute} property from the webcomponent
 	 */
 	public String getAriaActiveAttribute() {
 		return getElement().getProperty("ariaActiveAttribute");
@@ -374,6 +394,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -390,6 +412,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'disabled-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -421,6 +445,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code name} property from the webcomponent
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -453,6 +479,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code value} property from the webcomponent
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	public String getValue() {
@@ -474,6 +502,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code required} property from the webcomponent
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -509,6 +539,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code validator} property from the webcomponent
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -540,6 +572,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code invalid} property from the webcomponent
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -573,6 +607,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedItemLabel} property from the webcomponent
 	 */
 	public String getSelectedItemLabel() {
 		return getElement().getProperty("selectedItemLabel");
@@ -591,6 +627,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedItem} property from the webcomponent
 	 */
 	protected JsonObject protectedGetSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -606,6 +644,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code label} property from the webcomponent
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -636,6 +676,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code placeholder} property from the webcomponent
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -667,6 +709,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code errorMessage} property from the webcomponent
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -698,6 +742,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'opened-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code opened} property from the webcomponent
 	 */
 	@Synchronize(property = "opened", value = "opened-changed")
 	public boolean isOpened() {
@@ -731,6 +777,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code allowOutsideScroll} property from the webcomponent
 	 */
 	public boolean isAllowOutsideScroll() {
 		return getElement().getProperty("allowOutsideScroll", false);
@@ -764,6 +812,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noLabelFloat} property from the webcomponent
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -796,6 +846,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code alwaysFloatLabel} property from the webcomponent
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -827,6 +879,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noAnimations} property from the webcomponent
 	 */
 	public boolean isNoAnimations() {
 		return getElement().getProperty("noAnimations", false);
@@ -858,6 +912,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code horizontalAlign} property from the webcomponent
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
@@ -891,6 +947,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code verticalAlign} property from the webcomponent
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
@@ -926,6 +984,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code dynamicAlign} property from the webcomponent
 	 */
 	public boolean isDynamicAlign() {
 		return getElement().getProperty("dynamicAlign", false);
@@ -959,6 +1019,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code restoreFocusOnClose} property from the webcomponent
 	 */
 	public boolean isRestoreFocusOnClose() {
 		return getElement().getProperty("restoreFocusOnClose", false);
@@ -989,6 +1051,8 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code contentElement} property from the webcomponent
 	 */
 	protected JsonObject protectedGetContentElement() {
 		return (JsonObject) getElement().getPropertyRaw("contentElement");
@@ -1048,12 +1112,15 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param event
 	 *            Missing documentation!
 	 * @param eventString
 	 *            Missing documentation!
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
@@ -1061,7 +1128,10 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	}
 
 	/**
-	 * @return It would return a boolean
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 */
 	@NotSupported
 	protected void hasValidator() {
@@ -1076,13 +1146,16 @@ public class GeneratedPaperDropdownMenu<R extends GeneratedPaperDropdownMenu<R>>
 	 * If you want your element to have custom validation logic, do not override
 	 * this method; override {@code _getValidity(value)} instead.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param value
 	 *            Deprecated: The value to be validated. By default, it is
 	 *            passed to the validator's `validate()` function, if a
 	 *            validator is set. If this argument is not specified, then the
 	 *            element's `value` property is used, if it exists.
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void validate(elemental.json.JsonObject value) {

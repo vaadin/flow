@@ -138,6 +138,8 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code for} property from the webcomponent
 	 */
 	public String getFor() {
 		return getElement().getProperty("for");
@@ -170,6 +172,8 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code label} property from the webcomponent
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -204,6 +208,8 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code icon} property from the webcomponent
 	 */
 	public String getIcon() {
 		return getElement().getProperty("icon");
@@ -239,6 +245,8 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code target} property from the webcomponent
 	 */
 	protected JsonObject protectedGetTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
@@ -316,11 +324,14 @@ public class GeneratedPaperBadge<R extends GeneratedPaperBadge<R>>
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param element
 	 *            A candidate descendant element that implements
 	 *            `IronResizableBehavior`.
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void resizerShouldNotify(elemental.json.JsonObject element) {

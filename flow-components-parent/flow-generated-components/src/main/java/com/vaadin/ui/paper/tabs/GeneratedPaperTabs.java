@@ -177,6 +177,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code attrForSelected} property from the webcomponent
 	 */
 	public String getAttrForSelected() {
 		return getElement().getProperty("attrForSelected");
@@ -216,6 +218,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'selected-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code selected} property from the webcomponent
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public String getSelectedString() {
@@ -233,6 +237,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'selected-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code selected} property from the webcomponent
 	 */
 	@Synchronize(property = "selected", value = "selected-changed")
 	public double getSelectedNumber() {
@@ -281,6 +287,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedItem} property from the webcomponent
 	 */
 	protected JsonObject protectedGetSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -298,6 +306,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code activateEvent} property from the webcomponent
 	 */
 	public String getActivateEvent() {
 		return getElement().getProperty("activateEvent");
@@ -324,6 +334,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code selectable} property from the webcomponent
 	 */
 	public String getSelectable() {
 		return getElement().getProperty("selectable");
@@ -348,6 +360,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedClass} property from the webcomponent
 	 */
 	public String getSelectedClass() {
 		return getElement().getProperty("selectedClass");
@@ -379,6 +393,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedAttribute} property from the webcomponent
 	 */
 	public String getSelectedAttribute() {
 		return getElement().getProperty("selectedAttribute");
@@ -411,6 +427,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code fallbackSelection} property from the webcomponent
 	 */
 	public String getFallbackSelection() {
 		return getElement().getProperty("fallbackSelection");
@@ -443,6 +461,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'items-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code items} property from the webcomponent
 	 */
 	@Synchronize(property = "items", value = "items-changed")
 	protected JsonArray protectedGetItems() {
@@ -459,6 +479,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code multi} property from the webcomponent
 	 */
 	public boolean isMulti() {
 		return getElement().getProperty("multi", false);
@@ -490,6 +512,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedValues} property from the webcomponent
 	 */
 	protected JsonArray protectedGetSelectedValues() {
 		return (JsonArray) getElement().getPropertyRaw("selectedValues");
@@ -521,6 +545,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedItems} property from the webcomponent
 	 */
 	protected JsonArray protectedGetSelectedItems() {
 		return (JsonArray) getElement().getPropertyRaw("selectedItems");
@@ -537,6 +563,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code keyEventTarget} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -569,6 +597,9 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code stopKeyboardEventPropagation} property from the
+	 *         webcomponent
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -595,6 +626,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code keyBindings} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
@@ -618,6 +651,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code focusedItem} property from the webcomponent
 	 */
 	protected JsonObject protectedGetFocusedItem() {
 		return (JsonObject) getElement().getPropertyRaw("focusedItem");
@@ -635,6 +670,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code attrForItemTitle} property from the webcomponent
 	 */
 	public String getAttrForItemTitle() {
 		return getElement().getProperty("attrForItemTitle");
@@ -661,6 +698,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -686,6 +725,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noink} property from the webcomponent
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
@@ -718,6 +759,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noBar} property from the webcomponent
 	 */
 	public boolean isNoBar() {
 		return getElement().getProperty("noBar", false);
@@ -748,6 +791,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noSlide} property from the webcomponent
 	 */
 	public boolean isNoSlide() {
 		return getElement().getProperty("noSlide", false);
@@ -779,6 +824,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code scrollable} property from the webcomponent
 	 */
 	public boolean isScrollable() {
 		return getElement().getProperty("scrollable", false);
@@ -811,6 +858,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code fitContainer} property from the webcomponent
 	 */
 	public boolean isFitContainer() {
 		return getElement().getProperty("fitContainer", false);
@@ -842,6 +891,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code disableDrag} property from the webcomponent
 	 */
 	public boolean isDisableDrag() {
 		return getElement().getProperty("disableDrag", false);
@@ -873,6 +924,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code hideScrollButtons} property from the webcomponent
 	 */
 	public boolean isHideScrollButtons() {
 		return getElement().getProperty("hideScrollButtons", false);
@@ -905,6 +958,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code alignBottom} property from the webcomponent
 	 */
 	public boolean isAlignBottom() {
 		return getElement().getProperty("alignBottom", false);
@@ -936,6 +991,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autoselect} property from the webcomponent
 	 */
 	public boolean isAutoselect() {
 		return getElement().getProperty("autoselect", false);
@@ -968,6 +1025,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autoselectDelay} property from the webcomponent
 	 */
 	public double getAutoselectDelay() {
 		return getElement().getProperty("autoselectDelay", 0.0);
@@ -1045,11 +1104,14 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * should not be notified by the current element. Return true if an element
 	 * should be notified, or false if it should not be notified.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param element
 	 *            A candidate descendant element that implements
 	 *            `IronResizableBehavior`.
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void resizerShouldNotify(elemental.json.JsonObject element) {
@@ -1062,10 +1124,13 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * <p>
 	 * Returns the index of the given item.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param item
 	 *            Missing documentation!
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
 	protected void indexOf(elemental.json.JsonObject item) {
@@ -1214,12 +1279,15 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param event
 	 *            Missing documentation!
 	 * @param eventString
 	 *            Missing documentation!
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,

@@ -46,6 +46,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code month} property from the webcomponent
 	 */
 	protected JsonObject protectedGetMonth() {
 		return (JsonObject) getElement().getPropertyRaw("month");
@@ -77,6 +79,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetSelectedDate() {
 		return (JsonObject) getElement().getPropertyRaw("selectedDate");
@@ -107,6 +111,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code focusedDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetFocusedDate() {
 		return (JsonObject) getElement().getPropertyRaw("focusedDate");
@@ -130,6 +136,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code showWeekNumbers} property from the webcomponent
 	 */
 	public boolean isShowWeekNumbers() {
 		return getElement().getProperty("showWeekNumbers", false);
@@ -146,6 +154,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code i18n} property from the webcomponent
 	 */
 	protected JsonObject protectedGetI18n() {
 		return (JsonObject) getElement().getPropertyRaw("i18n");
@@ -169,6 +179,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code ignoreTaps} property from the webcomponent
 	 */
 	public boolean isIgnoreTaps() {
 		return getElement().getProperty("ignoreTaps", false);
@@ -200,6 +212,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code minDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetMinDate() {
 		return (JsonObject) getElement().getPropertyRaw("minDate");
@@ -231,6 +245,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code maxDate} property from the webcomponent
 	 */
 	protected JsonObject protectedGetMaxDate() {
 		return (JsonObject) getElement().getPropertyRaw("maxDate");
@@ -254,6 +270,8 @@ public class GeneratedVaadinMonthCalendar<R extends GeneratedVaadinMonthCalendar
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);

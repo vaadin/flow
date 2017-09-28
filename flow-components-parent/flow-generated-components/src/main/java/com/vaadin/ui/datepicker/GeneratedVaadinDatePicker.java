@@ -212,6 +212,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.</li>
 	 * </ul>
+	 * 
+	 * @return the {@code value} property from the webcomponent
 	 */
 	public String getValueAsString() {
 		return getElement().getProperty("value");
@@ -251,6 +253,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code required} property from the webcomponent
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -281,6 +285,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code name} property from the webcomponent
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -311,6 +317,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code hasValue} property from the webcomponent
 	 */
 	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
@@ -329,6 +337,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code initialPosition} property from the webcomponent
 	 */
 	public String getInitialPosition() {
 		return getElement().getProperty("initialPosition");
@@ -363,6 +373,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code label} property from the webcomponent
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -393,6 +405,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code opened} property from the webcomponent
 	 */
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
@@ -425,6 +439,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code showWeekNumbers} property from the webcomponent
 	 */
 	public boolean isShowWeekNumbers() {
 		return getElement().getProperty("showWeekNumbers", false);
@@ -528,6 +544,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * 	        }&lt;p&gt;This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
 	 * 	</code>
 	 * </pre>
+	 * 
+	 * @return the {@code i18n} property from the webcomponent
 	 */
 	protected JsonObject protectedGetI18n() {
 		return (JsonObject) getElement().getPropertyRaw("i18n");
@@ -641,6 +659,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.</li>
 	 * </ul>
+	 * 
+	 * @return the {@code min} property from the webcomponent
 	 */
 	public String getMinAsString() {
 		return getElement().getProperty("min");
@@ -688,6 +708,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.</li>
 	 * </ul>
+	 * 
+	 * @return the {@code max} property from the webcomponent
 	 */
 	public String getMaxAsString() {
 		return getElement().getProperty("max");
@@ -726,6 +748,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -756,6 +780,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code errorMessage} property from the webcomponent
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -788,6 +814,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code placeholder} property from the webcomponent
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -820,6 +848,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code readonly} property from the webcomponent
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -850,6 +880,8 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code invalid} property from the webcomponent
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -903,10 +935,13 @@ public class GeneratedVaadinDatePicker<R extends GeneratedVaadinDatePicker<R>>
 	 * Returns true if {@code value} is valid, and sets the {@code invalid} flag
 	 * appropriatelly.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * {@code boolean}. Functions with return types different than void are not
+	 * supported at this moment.
 	 * 
 	 * @param value
 	 *            Missing documentation!
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void validate(elemental.json.JsonObject value) {

@@ -42,6 +42,8 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code animationTiming} property from the webcomponent
 	 */
 	protected JsonObject protectedGetAnimationTiming() {
 		return (JsonObject) getElement().getPropertyRaw("animationTiming");
@@ -72,6 +74,8 @@ public class GeneratedPaperMenuGrowWidthAnimation<R extends GeneratedPaperMenuGr
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code isNeonAnimation} property from the webcomponent
 	 */
 	public boolean isNeonAnimation() {
 		return getElement().getProperty("isNeonAnimation", false);

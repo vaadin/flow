@@ -86,6 +86,8 @@ public class GeneratedPaperInputError<R extends GeneratedPaperInputError<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code invalid} property from the webcomponent
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
