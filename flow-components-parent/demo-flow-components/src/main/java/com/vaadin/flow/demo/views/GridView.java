@@ -16,7 +16,7 @@
 package com.vaadin.flow.demo.views;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -183,9 +183,10 @@ public class GridView extends DemoView {
 
         Button selectBtn = new Button("Select first five persons");
         selectBtn.addClickListener(event -> grid.asMultiSelect()
-                .setValue(new HashSet<>(people.subList(0, 5))));
+                .setValue(new LinkedHashSet<>(people.subList(0, 5))));
         // end-source-example
         grid.setId("multi-selection");
+        selectBtn.setId("multi-selection-button");
         messageDiv.setId("multi-selection-message");
         addCard("Grid Multi Selection", grid, selectBtn, messageDiv);
     }

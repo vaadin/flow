@@ -471,7 +471,6 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-
         attachEvent.getUI().getPage().executeJavaScript(
                 "window.gridConnector.initLazy($0, $1)", getElement(),
                 PAGE_SIZE);
