@@ -271,14 +271,14 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Determines if webJars mechanism is disabled. It is disabled if the user
+     * Determines if webJars mechanism is enabled. It is disabled if the user
      * have explicitly set {@link Constants#DISABLE_WEBJARS} property to
-     * {@code true } or the user have not set the property at all and the
+     * {@code true} or the user have not set the property at all and the
      * production mode is enabled.
      *
      * @return {@code true} if webJars are disabled, {@code false} otherwise
      */
-    default boolean areWebJarsDisabled() {
-        return getBooleanProperty(Constants.DISABLE_WEBJARS, isProductionMode());
+    default boolean areWebJarsEnabled() {
+        return !getBooleanProperty(Constants.DISABLE_WEBJARS, isProductionMode());
     }
 }
