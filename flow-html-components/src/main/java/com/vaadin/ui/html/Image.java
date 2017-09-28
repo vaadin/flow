@@ -43,27 +43,18 @@ public class Image extends HtmlContainer {
     }
 
     /**
-     * Creates an image with the given URL.
-     *
-     * @see #setSrc(String)
-     */
-    public Image(String src) {
-        setSrc(src);
-    }
-
-    /**
      * Creates an image with the given URL and an alternative text.
      *
      * @param src
      *            the image URL
      * @param alt
      *            the alternate text
-     * 
+     *
      * @see #setSrc(String)
      * @see #setAlt(String)
      */
     public Image(String src, String alt) {
-        this(src);
+        setSrc(src);
         setAlt(alt);
     }
 

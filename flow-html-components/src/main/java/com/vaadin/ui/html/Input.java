@@ -51,15 +51,6 @@ public class Input extends HtmlComponent implements ChangeNotifier {
     }
 
     /**
-     * Creates a new input with an initial value.
-     *
-     * @see #setValue(String)
-     */
-    public Input(String intialValue) {
-        setValue(intialValue);
-    }
-
-    /**
      * Sets the placeholder text that is shown if the input is empty.
      *
      * @param placeholder
