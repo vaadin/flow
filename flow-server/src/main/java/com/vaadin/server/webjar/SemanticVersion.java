@@ -72,7 +72,7 @@ public class SemanticVersion {
     private int parseVersionPart(String fullVersionString,
             String versionPartString) {
         try {
-            return Integer.valueOf(versionPartString);
+            return Integer.parseInt(versionPartString);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(
                     createSemanticVersioningErrorString(fullVersionString), e);

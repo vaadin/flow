@@ -41,10 +41,20 @@ public class ResponseWriter implements Serializable {
 
     private final int bufferSize;
 
+    /**
+     * Create a response writer with buffer size equal to
+     * {@link ResponseWriter#DEFAULT_BUFFER_SIZE}.
+     */
     public ResponseWriter() {
         this(DEFAULT_BUFFER_SIZE);
     }
 
+    /**
+     * Creates a response writer with custom buffer size.
+     * 
+     * @param bufferSize
+     *            custom buffer size
+     */
     public ResponseWriter(int bufferSize) {
         this.bufferSize = bufferSize;
     }
@@ -164,8 +174,8 @@ public class ResponseWriter implements Serializable {
         return accept.contains("*") && !isQZero(accept, "*");
     }
 
-    void writeContentType(String filenameWithPath,
-            ServletRequest request, ServletResponse response) {
+    void writeContentType(String filenameWithPath, ServletRequest request,
+            ServletResponse response) {
         // Set type mime type if we can determine it based on the filename
         String mimetype = request.getServletContext()
                 .getMimeType(filenameWithPath);
