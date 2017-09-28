@@ -283,7 +283,7 @@ Native elements need to specify a custom change event name in the annotation usi
 
 Here's the template representation in the browser:
 
-image:../images/two-way-binding-example.png[Template representation]
+image:images/two-way-binding-example.png[Template representation]
 
 
 In the template we use two-way bindings for each element and some elements bind to the same property.

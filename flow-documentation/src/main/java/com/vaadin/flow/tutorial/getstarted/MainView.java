@@ -32,7 +32,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 @SuppressWarnings("serial")
 @HtmlImport("styles.html")
 @Route("")
-@CodeFor("get-started.asciidoc")
+@CodeFor("introduction/tutorial-get-started.asciidoc")
 public class MainView extends VerticalLayout {
     private CustomerService service = CustomerService.getInstance();
     private Grid<Customer> grid = new Grid<>();

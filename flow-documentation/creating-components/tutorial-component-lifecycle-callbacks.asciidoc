@@ -1,0 +1,81 @@
+---
+title: Component Lifecycle Callbacks
+order: 7
+layout: page
+---
+
+= Component Lifecycle Callbacks
+
+Sometimes the content of a component depends on resources that are not available
+during the construction of the component. You can postpone the content creation
+until the component is attached to the `UI` by overriding the `onAttach()` method
+from `Component`.
+
+[source,java]
+----
+@Tag("div")
+public class UserNameLabel extends Component {
+
+  @Override
+  protected void onAttach(AttachEvent attachEvent) {
+    // user name can be stored to session after login
+    String userName = (String) attachEvent.getSession().getAttribute("username");
+    getElement().setText("Hello " + userName + ", welcome back!");
+  }
+}
+----
+
+The `onAttach` method is invoked by the framework when the `Component` has been
+attached to the `UI`. Its counterpart, the `onDetach` method is invoked right
+before the component is detached from the `UI`. They are good places to reserve
+and release any resources used by the component.
+
+[source,java]
+----
+@Tag("div")
+public class ShoppingCartSummaryLabel extends Component {
+
+  private final Consumer<EventObject> eventHandler = this::onCartSummaryUpdate;
+
+  @Override
+  protected void onAttach(AttachEvent attachEvent) {
+    ShopEventBus eventBus = attachEvent.getSession().getAttribute(ShopEventBus.class);
+    // registering to event bus for updates from other components
+    eventBus.register(eventHandler);
+  }
+
+  @Override
+  protected void onDetach(DetachEvent detachEvent) {
+    ShopEventBus eventBus = detachEvent.getSession().getAttribute(ShopEventBus.class);
+    // after detaching don't need any updates
+    eventBus.unregister(eventHandler);
+  }
+
+  private void onCartSummaryUpdate(EventObject event) {
+    // update cart summary ...
+  }
+}
+
+interface ShopEventBus {
+  void register(Consumer<EventObject> eventHandler);
+
+  void unregister(Consumer<EventObject> eventHandler);
+}
+----
+
+[NOTE]
+The `getUI()` in `Component` returns an `Optional<UI>` because a component is not always attached. Using the attach or detach event to get the UI or the session is a more convenient way as they are always available.
+
+
+[NOTE]
+The default implementations of the `onAttach` and `onDetach` methods in the `Component`
+class are empty, so you don't need to call `super.onAttach()` or `super.onDetach()`
+from your overridden methods. However, when extending other component implementations,
+you might need to do that.
+
+[TIP]
+If you are interested in knowing when another component gets attached or detached,
+you can use the `Component.addAttachListener` and `Component.addDetachListener`.
+The corresponding events are fired after the `onAttach` and `onDetach` methods
+are invoked. The `getUI()` method for the component will return the UI instance
+during both events.
