@@ -117,4 +117,10 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
     public String getEmptyValue() {
         return "";
     }
+
+    @Override
+    public String getValue() {
+        String value = super.getValue();
+        return value == null ? getEmptyValue() : value;
+    }
 }

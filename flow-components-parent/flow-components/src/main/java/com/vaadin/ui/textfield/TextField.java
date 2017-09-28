@@ -139,4 +139,10 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     public boolean hasValue() {
         return !isEmpty();
     }
+
+    @Override
+    public String getValue() {
+        String value = super.getValue();
+        return value == null ? getEmptyValue() : value;
+    }
 }
