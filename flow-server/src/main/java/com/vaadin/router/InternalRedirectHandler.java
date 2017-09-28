@@ -16,7 +16,6 @@
 package com.vaadin.router;
 
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.ui.UI;
 
 /**

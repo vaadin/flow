@@ -23,7 +23,7 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.router.event.NavigationEvent;
-import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.flow.router.Resolver;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
