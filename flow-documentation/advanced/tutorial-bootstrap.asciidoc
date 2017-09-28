@@ -1,0 +1,275 @@
+---
+title: Modifying the bootstrap page
+order: 2
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Modifying the bootstrap page
+
+The application bootstrap page is created for you by the framework and normally there is no need to modify it.
+For instance Flow includes its internal JavaScripts to be able to provide its core functionality.
+Also it is possible to include additional JavaScripts, HTML imports and Style Sheets using annotations `@JavaScript`,
+`HtmlImport` and `@StyleSheet` (see <<../importing-dependencies/tutorial-include-css#,Including Style Sheets>> and <<../importing-dependencies/tutorial-importing#,Importing html/javascript>>).
+
+Sometimes you may want to customize the page header and add there some additional data, e.g. custom `meta` tags.
+Such markup is required to enable your web page to become a rich object in a social graph using http://ogp.me/[OpenGraph protocol].
+
+== Viewport annotation
+
+Viewport meta-tag can be set to the initial page by annotating the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+[source,java]
+----
+@Route("")
+@Viewport("width=device-width")
+public class MyApp extends Div {
+  public MyApp() {
+    setText("Hello world");
+  }
+}
+----
+
+[source,java]
+----
+@Route(value = "", layout = MyLayout.class)
+public class MyView extends Div {
+  public MyView() {
+    setText("Hello world");
+  }
+}
+
+@Viewport("width=device-width")
+public class MyLayout extends Div implements RouterLayout {
+}
+----
+
+[NOTE]
+If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
+
+== Inline annotation
+
+The initial page can be modified by using the `@Inline` annotations to add file contents
+to either the `<head>` or the `<body>`. Inline is repeatable, so multiple `@Inline` annotations
+can be added at once.
+
+Inline will add the contents of a classloader resource by default as appended to the
+head of the initial page with type decided by the file suffix.
+
+The configurations available for inlining contents are:
+
+ - TargetElement [*HEAD*, BODY]
+ - Position [*APPEND*, PREPEND]
+ - Wrapping [*AUTOMATIC*, NONE, STYLESHEET, JAVASCRIPT]
+
+[source,java]
+----
+@Route(value = "", layout = MyInline.class)
+public class MyRoot extends Div {
+  public MyRoot() {
+  }
+}
+
+@Inline("initialization.js")
+@Inline("initial_style.css")
+@Inline(value = "important_styles", wrapping = Inline.Wrapping.STYLESHEET)
+public class MyInline extends Div implements RouterLayout {
+}
+----
+
+[NOTE]
+If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
+
+== PageConfigurator
+
+To be able to modify default bootstrap page and add your custom meta tags on the page you
+can implement the `PageConfigurator` on the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+With the `PageConfigurator` you can prepend or append `javascript`, `html` and `css` to the head
+by giving a file on the classpath or as content string. Also supported is adding links and meta tags which
+can also be either prepended or appended.
+
+Setting the viewport meta tag using `InitialPageSettings::setViewport` will override any viewport
+set through a `@Viewport` annotation.
+
+By default everything is appended, but if needed you can give the position `InitialPageSettings.Position.PREPEND`
+to have the item prepended to head instead.
+
+Here is the code for the `PageConfigurator` implementation on the top
+`RouterLayout` which modifies the header of the page:
+
+[source,java]
+----
+@Route(value = "", layout = MainLayout.class)
+public class Root extends Div {
+}
+
+public class MainLayout extends Div
+        implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineFromFile(InitialPageSettings.Position.PREPEND,
+                "inline.js", InitialPageSettings.WrapMode.JAVASCRIPT);
+
+        settings.addMetaTag("og:title", "The Rock");
+        settings.addMetaTag("og:type", "video.movie");
+        settings.addMetaTag("og:url",
+                "http://www.imdb.com/title/tt0117500/");
+        settings.addMetaTag("og:image",
+                "http://ia.media-imdb.com/images/rock.jpg");
+
+        settings.addLink("shortcut icon", "icons/favicon.ico");
+        settings.addFavIcon("icon", "icons/icon-192.png", "192x192");
+    }
+}
+----
+
+[NOTE]
+If the PageConfigurator implementation is not on a `@Route` Component or a `RouterLayout` used from a route it will not be used.
+
+== Setting the body size styles
+
+To set the body size style you can either use the `@BodySize` annotation or the `PageConfigurator`.
+
+For `@BodySize` you just add it to the the navigation target with `@Route` or
+the top most `RouterLayout` that builds the navigation target chain.
+
+[source,java]
+----
+@Route("")
+@BodySize(height = "100vh", width = "100vw")
+public static class BodySizeAnnotatedRoute extends Div {
+}
+----
+
+You can define height and width or just one of them as wanted.
+
+With the `PageConfigurator` you can just addInlineContent like:
+
+[source,java]
+----
+@Route("")
+public static class InitialPageConfiguratorBodyStyle extends Div
+        implements PageConfigurator {
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineWithContents("body {width: 100vw; height:100vh;}",
+                InitialPageSettings.WrapMode.STYLESHEET);
+    }
+}
+----
+
+[NOTE]
+Only one way should be used as else the later statement will override the earlier one. In practise this would
+mean that by default the `PageConfigurator` will override the `@BodySize` except if the inlining is done as
+a `PREPEND` then the `@BodySize` will be the deciding one.
+
+[NOTE]
+If the Theme annotation is not on a `@Route` Component or a top `RouterLayout` an exception will be thrown on startup.
+
+[NOTE]
+It is recommended that the body sizes be set to `height = 100vh, width = 100vw`
+
+== BootstrapListener
+
+To be able to modify default bootstrap page and add your custom meta tags on the page you should use
+your `BootstrapListener` implementation and add it to the `ServiceInitEvent` instance available
+in a `VaadinServiceInitListener`.
+
+Here is the code for the `BoostrapListener` implementation which modifies the header of the page:
+
+[source,java]
+----
+public class CustomBootstrapListener implements BootstrapListener {
+
+    public void modifyBootstrapPage(BootstrapPageResponse response) {
+        Document document = response.getDocument();
+
+        Element head = document.head();
+
+        head.appendChild(createMeta(document, "og:title", "The Rock"));
+        head.appendChild(createMeta(document, "og:type", "video.movie"));
+        head.appendChild(createMeta(document, "og:url",
+                "http://www.imdb.com/title/tt0117500/"));
+        head.appendChild(createMeta(document, "og:image",
+                "http://ia.media-imdb.com/images/rock.jpg"));
+    }
+
+    private Element createMeta(Document document, String property,
+            String content) {
+        Element meta = document.createElement("meta");
+        meta.attr("property", property);
+        meta.attr("content", content);
+        return meta;
+    }
+}
+----
+
+Now this listener should be added to a `ServiceInitEvent` which is sent when a Vaadin service is initialized. Take a look on the <<../advanced/tutorial-service-init-listener#,ServiceInitListener tutorial>> on how to configure it.
+
+== Adding static HTML contents
+
+The framework provides multiple ways of adding static content to the page. Here we cover three different ways of adding a favicon.
+
+ - using `InitialPageSettings#addLink()`
+
+[source,java]
+----
+public class Layout1 extends Div implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        HashMap<String, String> attributes = new HashMap<>();
+        attributes.put("rel", "shortcut icon");
+        settings.addLink("icons/favicon.ico", attributes);
+    }
+}
+----
+
+ - using `InitialPageSettings#addInlineWithContents()`
+
+[source,java]
+----
+public class Layout2 extends Div implements RouterLayout, PageConfigurator {
+
+    @Override
+    public void configurePage(InitialPageSettings settings) {
+        settings.addInlineWithContents(
+                "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">",
+                InitialPageSettings.WrapMode.NONE);
+    }
+}
+----
+
+ - using <<../importing-dependencies/tutorial-bootstrap.asciidoc#bootstraplistener,`BootstrapListener>>#modifyBootstrapPage()`
+
+[source,java]
+----
+public class Layout3 extends Div
+            implements RouterLayout, BootstrapListener {
+
+        @Override
+        public void modifyBootstrapPage(BootstrapPageResponse response) {
+            final Element head = response.getDocument().head();
+            head.append(
+                    "<link rel=\"shortcut icon\" href=\"icons/favicon.ico\">");
+        }
+    }
+----
+
+But most commonly, you will deal with quite many files, in this case, you can see that it causes a lot of hard coding easily. To avoid this, we recommend you to move all the contents into a file, (e.g. `your-content.html`) and inline this file in your `PageConfigurator`
+
+[source,java]
+----
+public class Layout4 extends Div implements RouterLayout, PageConfigurator {
+
+        @Override
+        public void configurePage(InitialPageSettings settings) {
+            settings.addInlineFromFile("your-content.html",
+                    InitialPageSettings.WrapMode.NONE);
+        }
+    }
+----
