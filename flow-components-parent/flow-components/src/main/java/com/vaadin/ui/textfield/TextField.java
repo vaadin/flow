@@ -68,6 +68,90 @@ public class TextField extends GeneratedVaadinTextField<TextField>
         setPlaceholder(placeholder);
     }
 
+    /**
+     * Constructs a {@code TextField} with the given label, an initial value and
+     * placeholder text.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param initialValue
+     *            the initial value
+     * @param placeholder
+     *            the placeholder text to set
+     *
+     * @see #setValue(String)
+     * @see #setPlaceholder(String)
+     */
+    public TextField(String label, String initialValue, String placeholder) {
+        this(label);
+        setValue(initialValue);
+        setPlaceholder(placeholder);
+    }
+
+    /**
+     * Constructs an empty {@code TextField} with a value change listener.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
+     *
+     * @param listener
+     *            the value change listener
+     *
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public TextField(ValueChangeListener<TextField, String> listener) {
+        this();
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Constructs an empty {@code TextField} with a label and a value change
+     * listener.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param listener
+     *            the value change listener
+     * @see #setLabel(String)
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public TextField(String label,
+            ValueChangeListener<TextField, String> listener) {
+        this(label);
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Constructs an empty {@code TextField} with a label,a value change
+     * listener and an initial value.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param initialValue
+     *            the initial value
+     * @param listener
+     *            the value change listener
+     *
+     * @see #setLabel(String)
+     * @see #setValue(String)
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public TextField(String label, String initialValue,
+            ValueChangeListener<TextField, String> listener) {
+        this(label);
+        setValue(initialValue);
+        addValueChangeListener(listener);
+    }
+
     @Override
     public String getEmptyValue() {
         return "";
