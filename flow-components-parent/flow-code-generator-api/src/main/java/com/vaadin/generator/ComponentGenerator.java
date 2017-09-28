@@ -90,6 +90,7 @@ public class ComponentGenerator {
     private static final String JAVADOC_THROWS = "@throws";
     private static final String JAVADOC_SEE = "@see";
     private static final String JAVADOC_PARAM = "@param";
+    private static final String JAVADOC_RETURN = "@return";
     private static final String GENERIC_TYPE = "R";
     private static final String GENERIC_TYPE_DECLARATION = '<' + GENERIC_TYPE
             + '>';
@@ -384,7 +385,8 @@ public class ComponentGenerator {
         }
 
         if (StringUtils.isNotEmpty(metadata.getDescription())) {
-            addJavaDoc(metadata.getDescription(), javaClass.getJavaDoc());
+            addMarkdownJavaDoc(metadata.getDescription(),
+                    javaClass.getJavaDoc());
         }
 
         generateConstructors(javaClass);
@@ -827,11 +829,14 @@ public class ComponentGenerator {
         }
 
         if (StringUtils.isNotEmpty(property.getDescription())) {
-            addJavaDoc(property.getDescription() + "<p>"
+            addMarkdownJavaDoc(property.getDescription() + "<p>"
                     + synchronizationDescription, method.getJavaDoc());
         } else {
             method.getJavaDoc().setFullText(synchronizationDescription);
         }
+
+        method.getJavaDoc().addTagValue(JAVADOC_RETURN, "the {@code "
+                + property.getName() + "} property from the webcomponent");
     }
 
     private boolean containsChangedEventForProperty(String property,
@@ -875,7 +880,8 @@ public class ComponentGenerator {
         return false;
     }
 
-    private void addJavaDoc(String documentation, JavaDocSource<?> javaDoc) {
+    private void addMarkdownJavaDoc(String documentation,
+            JavaDocSource<?> javaDoc) {
         javaDoc.setFullText(javaDocFormatter.formatJavaDoc(documentation));
     }
 
@@ -904,7 +910,8 @@ public class ComponentGenerator {
                     property.getName()));
 
             if (StringUtils.isNotEmpty(property.getDescription())) {
-                addJavaDoc(property.getDescription(), method.getJavaDoc());
+                addMarkdownJavaDoc(property.getDescription(),
+                        method.getJavaDoc());
             }
 
             method.getJavaDoc().addTagValue(JAVADOC_PARAM,
@@ -942,7 +949,8 @@ public class ComponentGenerator {
                                 basicType, property.getName(), parameterName));
 
                 if (StringUtils.isNotEmpty(property.getDescription())) {
-                    addJavaDoc(property.getDescription(), method.getJavaDoc());
+                    addMarkdownJavaDoc(property.getDescription(),
+                            method.getJavaDoc());
                 }
 
                 method.getJavaDoc().addTagValue(JAVADOC_PARAM,
@@ -992,7 +1000,7 @@ public class ComponentGenerator {
                     parameterName));
 
             if (StringUtils.isNotEmpty(property.getDescription())) {
-                addJavaDoc(property.getDescription(),
+                addMarkdownJavaDoc(property.getDescription(),
                         overloadMethod.getJavaDoc());
             }
 
@@ -1030,7 +1038,7 @@ public class ComponentGenerator {
     private void addFluentReturnToMethod(MethodSource<JavaClassSource> method) {
         method.setReturnType(GENERIC_TYPE);
         method.setBody(method.getBody() + "return get();");
-        method.getJavaDoc().addTagValue("@return",
+        method.getJavaDoc().addTagValue(JAVADOC_RETURN,
                 "this instance, for method chaining");
     }
 
@@ -1047,7 +1055,8 @@ public class ComponentGenerator {
                     .setReturnTypeVoid();
 
             if (StringUtils.isNotEmpty(function.getDescription())) {
-                addJavaDoc(function.getDescription(), method.getJavaDoc());
+                addMarkdownJavaDoc(function.getDescription(),
+                        method.getJavaDoc());
             }
 
             String parameterString = generateMethodParameters(javaClass, method,
@@ -1058,9 +1067,12 @@ public class ComponentGenerator {
                     && function.getReturns() != ComponentBasicType.UNDEFINED) {
                 method.setProtected();
                 method.addAnnotation(NotSupported.class);
-                method.getJavaDoc().addTagValue("@return",
-                        "It would return a " + ComponentGeneratorUtils
-                                .toJavaType(function.getReturns()));
+
+                method.getJavaDoc().setText(method.getJavaDoc().getText()
+                        + "<p>This function is not supported by Flow because it returns a {@code "
+                        + ComponentGeneratorUtils
+                                .toJavaType(function.getReturns())
+                        + "}. Functions with return types different than void are not supported at this moment.");
                 method.setBody("");
             } else {
                 setMethodVisibility(method, typeVariant);
