@@ -31,7 +31,7 @@ import com.vaadin.data.AbstractListing;
  * @param <T>
  *            the type of the selected item
  *
- * @see com.vaadin.data.SelectionModel.Multi
+ * @see SelectionModel.Multi
  * @see MultiSelectionEvent
  */
 @FunctionalInterface
