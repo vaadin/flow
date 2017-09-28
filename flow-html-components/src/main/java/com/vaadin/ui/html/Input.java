@@ -18,13 +18,13 @@ package com.vaadin.ui.html;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlComponent;
-import com.vaadin.ui.event.ChangeEvent;
-import com.vaadin.ui.event.ChangeNotifier;
 import com.vaadin.ui.common.PropertyDescriptor;
 import com.vaadin.ui.common.PropertyDescriptors;
+import com.vaadin.ui.event.ChangeEvent;
+import com.vaadin.ui.event.ChangeNotifier;
+import com.vaadin.ui.event.Synchronize;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
@@ -48,6 +48,15 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      */
     public Input() {
         // Nothing to do here
+    }
+
+    /**
+     * Creates a new input with an initial value.
+     *
+     * @see #setValue(String)
+     */
+    public Input(String intialValue) {
+        setValue(intialValue);
     }
 
     /**

@@ -17,10 +17,10 @@ package com.vaadin.ui.html;
 
 import java.util.Optional;
 
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
@@ -45,13 +45,25 @@ public class Image extends HtmlContainer {
     /**
      * Creates an image with the given URL.
      *
+     * @see #setSrc(String)
+     */
+    public Image(String src) {
+        setSrc(src);
+    }
+
+    /**
+     * Creates an image with the given URL and an alternative text.
+     *
      * @param src
      *            the image URL
      * @param alt
      *            the alternate text
+     * 
+     * @see #setSrc(String)
+     * @see #setAlt(String)
      */
     public Image(String src, String alt) {
-        setSrc(src);
+        this(src);
         setAlt(alt);
     }
 
