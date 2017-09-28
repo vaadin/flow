@@ -33,7 +33,7 @@ public class MyUI extends UI {
     }
 
     @Override
-    public Optional<RouterInterface> getRouter() {
+    public Optional<RouterInterface> getRouterInterface() {
         return Optional.ofNullable(router);
     }
 }

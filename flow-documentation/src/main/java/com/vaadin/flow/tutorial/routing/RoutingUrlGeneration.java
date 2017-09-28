@@ -38,7 +38,7 @@ public class RoutingUrlGeneration {
     public class Menu extends Div {
         public Menu() {
             try {
-                String route = ((Router) UI.getCurrent().getRouter().get())
+                String route = ((Router) UI.getCurrent().getRouterInterface().get())
                         .getUrl(PathComponent.class);
                 Anchor link = new Anchor(route, "Path");
                 add(link);
@@ -62,7 +62,7 @@ public class RoutingUrlGeneration {
     public class ParameterMenu extends Div {
         public ParameterMenu() {
             try {
-                String route = ((Router) UI.getCurrent().getRouter().get())
+                String route = ((Router) UI.getCurrent().getRouterInterface().get())
                         .getUrl(GreetingComponent.class, "anonymous");
                 Anchor link = new Anchor(route, "Greeting");
                 add(link);

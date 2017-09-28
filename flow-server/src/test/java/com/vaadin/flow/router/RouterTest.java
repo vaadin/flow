@@ -59,7 +59,7 @@ public class RouterTest {
         }
 
         @Override
-        public Optional<RouterInterface> getRouter() {
+        public Optional<RouterInterface> getRouterInterface() {
             return Optional.of(router);
         }
     }
@@ -356,7 +356,7 @@ public class RouterTest {
     public void testStatusCodeUpdates() {
         RouterTestUI ui = new RouterTestUI();
 
-        Router router = (Router) ui.getRouter().get();
+        Router router = (Router) ui.getRouterInterface().get();
 
         router.reconfigure(c -> {
             c.setRoute("*", e -> 123);
