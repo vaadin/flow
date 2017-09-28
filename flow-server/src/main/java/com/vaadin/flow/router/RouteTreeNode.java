@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vaadin.router.NavigationHandler;
+
 /**
  * A node in the routing tree that is built up based on the paths configured
  * using {@link RouterConfiguration#setRoute(String, NavigationHandler)}. Each

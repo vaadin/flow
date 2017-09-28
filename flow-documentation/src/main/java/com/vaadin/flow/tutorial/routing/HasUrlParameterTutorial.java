@@ -17,6 +17,7 @@ package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.Route;
+import com.vaadin.router.WildcardParameter;
 import com.vaadin.ui.html.Div;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -46,6 +47,20 @@ public class HasUrlParameterTutorial {
                 setText("Welcome anonymous.");
             } else {
                 setText(String.format("Welcome %s.", parameter));
+            }
+        }
+    }
+
+    @Route("greet")
+    public class WildcardGreeting extends Div implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @WildcardParameter String parameter) {
+            if(parameter.isEmpty()) {
+                setText("Welcome anonymous.");
+            } else {
+                setText(String.format("Handling parameter %s.", parameter));
             }
         }
     }
