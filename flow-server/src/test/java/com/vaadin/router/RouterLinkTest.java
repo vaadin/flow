@@ -15,11 +15,11 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.ServletException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.After;
+import javax.servlet.ServletException;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,20 +41,15 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.util.CurrentInstance;
+import com.vaadin.util.HasCurrentService;
 
-public class RouterLinkTest {
+public class RouterLinkTest extends HasCurrentService {
 
     private RouteRegistry registry;
 
     @Before
     public void setUp() throws NoSuchFieldException, IllegalAccessException {
-        Assert.assertNull(CurrentInstance.get(VaadinService.class));
         registry = new TestRouteRegistry();
-    }
-
-    @After
-    public void tearDown() {
-        CurrentInstance.set(VaadinService.class, null);
     }
 
     @Test
@@ -298,10 +293,15 @@ public class RouterLinkTest {
 
     private RouterTestUI createUI() {
         RouterTestUI ui = new RouterTestUI();
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getRouter()).thenReturn(ui.getRouterInterface().get());
-        CurrentInstance.set(VaadinService.class, service);
+        VaadinService service = VaadinService.getCurrent();
+        Mockito.when(service.getRouter())
+                .thenReturn(ui.getRouterInterface().get());
         return ui;
+    }
+
+    @Override
+    protected VaadinService createService() {
+        return Mockito.mock(VaadinService.class);
     }
 
     @Test

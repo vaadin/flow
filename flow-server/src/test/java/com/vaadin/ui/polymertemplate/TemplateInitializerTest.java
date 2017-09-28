@@ -22,9 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.jsoup.Jsoup;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
@@ -32,11 +30,12 @@ import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Tag;
+import com.vaadin.util.HasCurrentService;
 
 /**
  * @author Vaadin Ltd.
  */
-public class TemplateInitializerTest {
+public class TemplateInitializerTest extends HasCurrentService {
     private TemplateParser templateParser;
 
     @Tag("template-initializer-test")
@@ -59,19 +58,15 @@ public class TemplateInitializerTest {
         }
     }
 
-    @BeforeClass
-    public static void initVaadinService() {
+    @Override
+    protected VaadinService createService() {
         VaadinService service = mock(VaadinService.class);
         DeploymentConfiguration configuration = mock(
                 DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(false);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
-        VaadinService.setCurrent(service);
-    }
 
-    @AfterClass
-    public static void removeVaadinService() {
-        VaadinService.setCurrent(null);
+        return service;
     }
 
     @Before

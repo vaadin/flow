@@ -110,7 +110,7 @@ public class ResponseWriterTest {
 
     @After
     public void tearDown() {
-        VaadinService.setCurrent(null);
+        Assert.assertNull(VaadinService.getCurrent());
     }
 
     @Test
