@@ -15,9 +15,6 @@
  */
 package com.vaadin.server.webjar;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -34,8 +31,8 @@ import java.util.Objects;
  * </ul>
  * <p>
  * WebJars corresponding to the same <strong>bower</strong> version numbers may
- * incorrectly start with 'v' prefix, so the repository contains both 'v2.0.1'
- * and '2.0.1' for same components.
+ * start with 'v' prefix, so the repository contains both 'v2.0.1' and '2.0.1'
+ * for same components.
  * <p>
  * Some webjar with one combination of name and version formats depend on webjar
  * with different combination. For instance,
@@ -50,9 +47,6 @@ import java.util.Objects;
  * @see <a href="https://www.webJars.org/">WebJars page</a>
  */
 public class WebJarBowerDependency {
-    private static final List<String> WEBJAR_NAME_INCORRECT_PREFIXES = Arrays
-            .asList("github-com-polymer-", "github-com-polymerelements-");
-
     private final String webJarName;
     private final String version;
     private final String bowerName;
@@ -62,6 +56,9 @@ public class WebJarBowerDependency {
      * Creates a webJar bower dependency class, also computing correct versions
      * of the packages.
      *
+     * @param bowerName
+     *            the name of a corresponding bower module (specified in
+     *            bower.json)
      * @param webJarName
      *            the name of a webJar, not {@code null}
      * @param version
@@ -71,21 +68,12 @@ public class WebJarBowerDependency {
      *             as a result of
      *             {@link SemanticVersion#SemanticVersion(String)}
      */
-    public WebJarBowerDependency(String webJarName, String version) {
+    public WebJarBowerDependency(String bowerName, String webJarName,
+            String version) {
+        this.bowerName = Objects.requireNonNull(bowerName);
         this.webJarName = Objects.requireNonNull(webJarName);
         this.version = Objects.requireNonNull(version);
-        bowerName = removeIncorrectWebJarNamePrefix(webJarName);
         semanticVersion = new SemanticVersion(version);
-    }
-
-    private String removeIncorrectWebJarNamePrefix(String webJarName) {
-        String normalizedWebJarName = webJarName.toLowerCase(Locale.US);
-        for (String incorrectPrefix : WEBJAR_NAME_INCORRECT_PREFIXES) {
-            if (normalizedWebJarName.startsWith(incorrectPrefix)) {
-                return normalizedWebJarName.substring(incorrectPrefix.length());
-            }
-        }
-        return webJarName;
     }
 
     /**

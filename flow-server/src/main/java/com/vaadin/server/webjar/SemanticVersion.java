@@ -18,7 +18,7 @@ package com.vaadin.server.webjar;
 import java.util.Objects;
 
 /**
- * The class to hold semantic version information.
+ * Holds semantic version information.
  *
  * @see <a href="http://semver.org/">Semantic versioning page</a>
  * @see <a href="https://bower.io/docs/creating-packages/">Bower and semantic

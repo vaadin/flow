@@ -23,6 +23,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -49,8 +50,8 @@ public class WebJarServer implements Serializable {
     private static final String PREFIX = "/bower_components/";
 
     private final transient WebJarAssetLocator locator = new WebJarAssetLocator();
+    private final transient Map<String, WebJarBowerDependency> bowerModuleToDependencyName = new HashMap<>();
     private final ResponseWriter responseWriter = new ResponseWriter();
-    private final HashMap<String, WebJarBowerDependency> bowerModuleToDependencyName = new HashMap<>();
 
     /**
      * Creates a webJar server that is able to search webJars for files and
@@ -61,7 +62,7 @@ public class WebJarServer implements Serializable {
             String bowerModuleName = getBowerModuleName(webJarName);
             if (bowerModuleName != null) {
                 WebJarBowerDependency newDependency = new WebJarBowerDependency(
-                        webJarName, version);
+                        bowerModuleName, webJarName, version);
                 bowerModuleToDependencyName.merge(bowerModuleName,
                         newDependency, this::mergeDependencies);
             }

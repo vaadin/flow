@@ -16,8 +16,10 @@
 
 package com.vaadin.server.webjar;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
 
@@ -27,83 +29,58 @@ import org.junit.Test;
  * @author Vaadin Ltd.
  */
 public class WebJarBowerDependencyTest {
+    private static final String BOWER_NAME = "bower-name";
+    private static final String WEBJAR_NAME = "webjar-name";
+    private static final String VERSION = "1.2.2alpha77";
+
+    @Test(expected = NullPointerException.class)
+    public void nullBowerNameIsNotAllowed() {
+        new WebJarBowerDependency(null, "webJarName", "1.2.3");
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void nullWebJarNameIsNotAllowed() {
+        new WebJarBowerDependency("bowerName", null, "1.2.3");
+    }
 
     @Test(expected = NullPointerException.class)
     public void nullVersionIsNotAllowed() {
-        new WebJarBowerDependency("name", null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void nullNameIsNotAllowed() {
-        new WebJarBowerDependency(null, "1.2.3");
+        new WebJarBowerDependency("bowerName", "webJarName", null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void dependenciesWithDifferentNamesAreIncomparable() {
-        new WebJarBowerDependency("name1", "1.2.3")
-                .compareVersions(new WebJarBowerDependency("name2", "1.2.3"));
+    public void dependenciesWithDifferentBowerNamesAreIncomparable() {
+        new WebJarBowerDependency("bowerName1", "webJarName", "1.2.3")
+                .compareVersions(new WebJarBowerDependency("bowerName2",
+                        "webJarName", "1.2.3"));
     }
 
     @Test
     public void webPathIsConstructedFromOriginalNameAndVersion() {
-        String name = "github-com-polymer-test";
-        String version = "v2.2.2";
+        String webPath = new WebJarBowerDependency(BOWER_NAME, WEBJAR_NAME,
+                VERSION).toWebPath();
 
-        String webPath = new WebJarBowerDependency(name, version).toWebPath();
-
-        assertThat("Constructed webPath is incorrect", webPath,
-                startsWith(name));
-        assertThat("Constructed webPath is incorrect", webPath,
-                endsWith(version));
+        assertThat("Constructed webPath should contain webJar name", webPath,
+                startsWith(WEBJAR_NAME));
+        assertThat("Constructed webPath should contain original version string",
+                webPath, endsWith(VERSION));
+        assertThat("Constructed webPath should not contain bower name", webPath,
+                not(containsString(BOWER_NAME)));
     }
 
     @Test
     public void equalDependencies() {
-        String name = "aDependency";
-        String versionString = "1.2.3";
-
-        assertDependenciesEqual(new WebJarBowerDependency(name, versionString),
-                new WebJarBowerDependency(name, versionString));
+        assertDependenciesEqual(
+                new WebJarBowerDependency(BOWER_NAME, WEBJAR_NAME, VERSION),
+                new WebJarBowerDependency(BOWER_NAME, WEBJAR_NAME, VERSION));
     }
 
     @Test
     public void equalDependencies_withWebJarVersionPrefixes() {
-        String name = "aDependency";
-        String versionString1 = "1.2.3";
-        String versionString2 = 'v' + versionString1;
-
-        assertDependenciesEqual(new WebJarBowerDependency(name, versionString1),
-                new WebJarBowerDependency(name, versionString2));
-    }
-
-    @Test
-    public void equalDependencies_withWebJarNamePrefixes_1() {
-        String name1 = "paper-input";
-        String name2 = "github-com-polymer-" + name1;
-        String version = "1.2.3";
-
-        assertDependenciesEqual(new WebJarBowerDependency(name1, version),
-                new WebJarBowerDependency(name2, version));
-    }
-
-    @Test
-    public void equalDependencies_withWebJarNamePrefixes_2() {
-        String name1 = "paper-input";
-        String name2 = "github-com-polymerelements-" + name1;
-        String version = "1.2.3";
-
-        assertDependenciesEqual(new WebJarBowerDependency(name1, version),
-                new WebJarBowerDependency(name2, version));
-    }
-
-    @Test
-    public void equalDependencies_withWebJarNamePrefixes_3() {
-        String name1 = "paper-input";
-        String name2 = "github-com-PolymerElements-" + name1;
-        String version = "1.2.3";
-
-        assertDependenciesEqual(new WebJarBowerDependency(name1, version),
-                new WebJarBowerDependency(name2, version));
+        assertDependenciesEqual(
+                new WebJarBowerDependency(BOWER_NAME, WEBJAR_NAME, VERSION),
+                new WebJarBowerDependency(BOWER_NAME, WEBJAR_NAME,
+                        'v' + VERSION));
     }
 
     private void assertDependenciesEqual(WebJarBowerDependency one,
