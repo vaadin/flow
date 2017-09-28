@@ -66,6 +66,10 @@ public class PolymerTemplateTest {
 
     private DeploymentConfiguration configuration;
 
+    // Explicit field for the service to prevent it from being garbage collected
+    // when set as a CurrentInstance.
+    private VaadinService service;
+
     private static class TestTemplateParser implements TemplateParser {
 
         private final Function<String, String> templateProducer;
@@ -209,10 +213,10 @@ public class PolymerTemplateTest {
             extends PolymerTemplate<ModelClass> {
 
         public TemplateWithChildInDomRepeat() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
-                    + "'><template><div>"
-                    + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
-                    + "</div></template></dom-module>"));
+            super((clazz, tag) -> Jsoup
+                    .parse("<dom-module id='" + tag + "'><template><div>"
+                            + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
+                            + "</div></template></dom-module>"));
         }
 
     }
@@ -330,7 +334,7 @@ public class PolymerTemplateTest {
         CustomElementRegistry.getInstance().setCustomElements(map);
 
         assertNull(VaadinService.getCurrent());
-        VaadinService service = Mockito.mock(VaadinService.class);
+        service = Mockito.mock(VaadinService.class);
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(service.getDeploymentConfiguration())
