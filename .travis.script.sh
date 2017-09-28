@@ -47,6 +47,11 @@ else
       fi
     fi
 
+    if [[ $change == *"flow-data/"* ]]
+    then
+      modules="$modules -pl flow-data"
+    fi
+
     if [[ $change == *"flow-components-parent/"* ]]
     then
       ## only trigger the analyzer & generator for validation builds on PRs that touched component generation
