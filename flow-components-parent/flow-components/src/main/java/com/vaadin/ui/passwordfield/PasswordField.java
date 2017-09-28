@@ -70,6 +70,68 @@ public class PasswordField extends GeneratedVaadinPasswordField<PasswordField>
         setPlaceholder(placeholder);
     }
 
+    /**
+     * Constructs an empty {@code PasswordField} with a value change listener.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
+     *
+     * @param listener
+     *            the value change listener
+     *
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public PasswordField(ValueChangeListener<PasswordField, String> listener) {
+        this();
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Constructs an empty {@code PasswordField} with a value change listener
+     * and a label.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param listener
+     *            the value change listener
+     *
+     * @see #setLabel(String)
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public PasswordField(String label,
+            ValueChangeListener<PasswordField, String> listener) {
+        this(label);
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Constructs a {@code PasswordField} with a value change listener, a label
+     * and an initial value.
+     * <p>
+     * Using this constructor, any value previously set at the client-side is
+     * cleared.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param initialValue
+     *            the initial value
+     * @param listener
+     *            the value change listener
+     *
+     * @see #setLabel(String)
+     * @see #setValue(String)
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public PasswordField(String label, String initialValue,
+            ValueChangeListener<PasswordField, String> listener) {
+        this(label);
+        setValue(initialValue);
+        addValueChangeListener(listener);
+    }
+
     @Override
     public String getEmptyValue() {
         return "";
