@@ -16,6 +16,7 @@
 package com.vaadin.ui.button;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.event.ComponentEventListener;
@@ -29,6 +30,7 @@ import com.vaadin.ui.icon.Icon;
  */
 public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
+    private Element span;
     private Component iconComponent;
     private boolean iconAfterText;
 
@@ -113,8 +115,15 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     /**
      * Sets the given string as the text content of this component.
      * <p>
-     * This method removes any existing text nodes from this component and adds
-     * a new text node with the given content.
+     * This method removes any existing text-content and replaces it with the
+     * given text.
+     * <p>
+     * If an icon has been set, the text will be wrapped in a
+     * <code>span</code>-element.
+     * <p>
+     * This method also sets or removes this button's <code>theme=icon</code>
+     * attribute based on whether this button contains only an icon after this
+     * operation or not.
      *
      * @param text
      *            the text content to set, may be <code>null</code> to only
@@ -124,14 +133,42 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     public void setText(String text) {
         getElement().removeChild(getTextNodes());
 
-        if (text == null) {
-            return;
-        }
-
-        if (iconComponent != null && !iconAfterText) {
+        if (text == null || text.isEmpty()) {
+            if (span != null) {
+                getElement().removeChild(span);
+                span = null;
+            }
+        } else if (span != null) {
+            span.setText(text);
+        } else if (iconComponent == null) {
             getElement().appendChild(Element.createText(text));
         } else {
-            getElement().insertChild(0, Element.createText(text));
+            span = ElementFactory.createSpan(text);
+            if (iconAfterText) {
+                getElement().insertChild(0, span);
+            } else {
+                getElement().appendChild(span);
+            }
+        }
+        updateThemeAttribute();
+    }
+
+    /**
+     * Gets the text content of this button.
+     * <p>
+     * If an icon has been set for this button, this method returns the text
+     * content wrapped in a <code>span</code>-element. Otherwise this method
+     * returns the text in this button without considering the text in any child
+     * components or elements.
+     *
+     * @return the text content of this component, not <code>null</code>
+     */
+    @Override
+    public String getText() {
+        if (span == null) {
+            return super.getText();
+        } else {
+            return span.getText();
         }
     }
 
@@ -139,9 +176,14 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      * Sets the given component as the icon of this button.
      * <p>
      * Even though you can use almost any component as an icon, some good
-     * options are {@link Icon} and {@link Image}. Use
-     * {@link #setIconAfterText(boolean)} to change the icon's position relative
-     * to the button's text content.
+     * options are {@link Icon} and {@link Image}.
+     * <p>
+     * Use {@link #setIconAfterText(boolean)} to change the icon's position
+     * relative to the button's text content.
+     * <p>
+     * This method also sets or removes this button's <code>theme=icon</code>
+     * attribute and wraps it's possible text-content in a
+     * <code>span</code>-element for better theming support.
      * 
      * @param icon
      *            component to be used as an icon, may be <code>null</code> to
@@ -158,6 +200,7 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
         iconComponent = icon;
         if (iconComponent == null) {
+            updateThemeAttribute();
             return;
         }
 
@@ -166,6 +209,11 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
         } else {
             getElement().insertChild(0, iconComponent.getElement());
         }
+
+        if (span == null && !getText().isEmpty()) {
+            wrapTextInSpan();
+        }
+        updateThemeAttribute();
     }
 
     /**
@@ -190,33 +238,32 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
      *            or not
      */
     public void setIconAfterText(boolean iconAfterText) {
-        if (this.iconAfterText == iconAfterText) {
-            return;
-        }
         this.iconAfterText = iconAfterText;
 
         Element[] textNodes = getTextNodes();
-        if (iconComponent == null || textNodes.length == 0) {
+
+        if ((span == null && textNodes.length == 0) || iconComponent == null) {
+            // either no text or no icon, so no reordering needed
             return;
         }
 
-        // reordering text and icon if necessary
         int iconIndex = getElement().indexOfChild(iconComponent.getElement());
-        if (iconAfterText) {
-            int lastTextIndex = getElement()
+        int textIndex;
+
+        if (span != null) {
+            textIndex = getElement().indexOfChild(span);
+        } else if (iconAfterText) {
+            textIndex = getElement()
                     .indexOfChild(textNodes[textNodes.length - 1]);
-            if (iconIndex < lastTextIndex) {
-                remove(iconComponent);
-                getElement().insertChild(lastTextIndex,
-                        iconComponent.getElement());
-            }
         } else {
-            int firstTextIndex = getElement().indexOfChild(textNodes[0]);
-            if (iconIndex > firstTextIndex) {
-                remove(iconComponent);
-                getElement().insertChild(firstTextIndex,
-                        iconComponent.getElement());
-            }
+            textIndex = getElement().indexOfChild(textNodes[0]);
+        }
+
+        // reorder by moving the icon, if necessary
+        if (iconAfterText && iconIndex < textIndex) {
+            add(iconComponent);
+        } else if (!iconAfterText && textIndex < iconIndex) {
+            getElement().insertChild(0, iconComponent.getElement());
         }
     }
 
@@ -242,9 +289,10 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     /**
      * Adds the given components as children of this component.
      * <p>
-     * Note that using this method together with {@link #setText(String)},
-     * {@link #setIcon(Component)} and {@link #setIconAfterText(boolean)} may
-     * result in an unexpected order of child components.
+     * Note that using this method together with convenience methods, such as
+     * {@link #setText(String)} and {@link #setIcon(Component)}, may have
+     * unexpected results, eg. in the order of child elements and the result of
+     * {@link #getText()}.
      *
      * @param components
      *            the components to add
@@ -254,9 +302,32 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
         super.add(components);
     }
 
+    private void wrapTextInSpan() {
+        String text = getText();
+
+        getElement().removeChild(getTextNodes());
+
+        span = ElementFactory.createSpan(text);
+
+        if (iconAfterText) {
+            getElement().insertChild(0, span);
+        } else {
+            getElement().appendChild(span);
+        }
+    }
+
     private Element[] getTextNodes() {
         return getElement().getChildren().filter(Element::isTextNode)
                 .toArray(Element[]::new);
     }
 
+    private void updateThemeAttribute() {
+        // set attribute theme="icon" when the button contains only an icon to
+        // fully support themes like Valo
+        if (getElement().getChildCount() == 1 && iconComponent != null) {
+            getElement().setAttribute("theme", "icon");
+        } else {
+            getElement().removeAttribute("theme");
+        }
+    }
 }

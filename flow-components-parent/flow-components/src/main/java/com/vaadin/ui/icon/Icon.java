@@ -32,7 +32,7 @@ import com.vaadin.ui.common.HtmlImport;
 @HtmlImport("frontend://bower_components/vaadin-icons/vaadin-icons.html")
 public class Icon extends Component implements HasStyle {
 
-    private static final String ICON_PROPERTY_NAME = "icon";
+    private static final String ICON_ATTRIBUTE_NAME = "icon";
     private static final String ICON_COLLECTION_NAME = "vaadin";
 
     /**
@@ -50,10 +50,10 @@ public class Icon extends Component implements HasStyle {
      *            the icon to display
      */
     public Icon(VaadinIcons icon) {
-        // iron-icon's icon-property uses the format "collection:name",
+        // iron-icon's icon-attribute uses the format "collection:name",
         // eg. icon="vaadin:arrow-down"
-        getElement().setProperty(ICON_PROPERTY_NAME, ICON_COLLECTION_NAME + ":"
-                + icon.name().toLowerCase().replace('_', '-'));
+        getElement().setAttribute(ICON_ATTRIBUTE_NAME, ICON_COLLECTION_NAME
+                + ":" + icon.name().toLowerCase().replace('_', '-'));
     }
 
     /**

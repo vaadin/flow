@@ -24,6 +24,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
@@ -43,6 +44,11 @@ import com.vaadin.shared.Registration;
  * <code>html &lt;vaadin-text-field label=&quot;First Name&quot;&gt; &lt;/vaadin-text-field&gt; {@code }</code>
  * </p>
  * <h3>Styling</h3>
+ * <p>
+ * <a href=
+ * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
+ * >Generic styling/theming documentation</a>
+ * </p>
  * <p>
  * The following shadow DOM parts are available for styling:
  * </p>
@@ -71,9 +77,47 @@ import com.vaadin.shared.Registration;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * The following state attributes are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code disabled}</td>
+ * <td>Set to a disabled text field</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code has-value}</td>
+ * <td>Set when the element has a value</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code invalid}</td>
+ * <td>Set when the element is invalid</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Set when the element is focused</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focus-ring}</td>
+ * <td>Set when the element is keyboard focused</td>
+ * <td>:host</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.TextFieldElement#1.1.0-alpha5",
+		"WebComponent: Vaadin.TextFieldElement#1.1.0-beta1",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
@@ -609,7 +653,9 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 */
 	@Override
 	public void setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("value", value == null ? "" : value);
+		}
 	}
 
 	/**

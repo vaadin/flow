@@ -232,7 +232,9 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	public void setValue(java.lang.Double value) {
 		Objects.requireNonNull(value,
 				"GeneratedPaperProgress value must not be null");
-		getElement().setProperty("value", value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("value", value);
+		}
 	}
 
 	/**
@@ -248,7 +250,11 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * @see #setValue(Double)
 	 */
 	public void setValue(java.lang.Number value) {
-		setValue(value.doubleValue());
+		Objects.requireNonNull(value,
+				"GeneratedPaperProgress value must not be null");
+		if (!Objects.equals(value, getValue())) {
+			setValue(value.doubleValue());
+		}
 	}
 
 	/**

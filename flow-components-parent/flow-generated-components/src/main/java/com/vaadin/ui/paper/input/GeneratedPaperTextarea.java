@@ -24,6 +24,7 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.Synchronize;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEvent;
@@ -58,7 +59,7 @@ import com.vaadin.shared.Registration;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: paper-textarea#2.0.1", "Flow#1.0-SNAPSHOT"})
+		"WebComponent: paper-textarea#2.0.2", "Flow#1.0-SNAPSHOT"})
 @Tag("paper-textarea")
 @HtmlImport("frontend://bower_components/paper-input/paper-textarea.html")
 public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
@@ -272,7 +273,9 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 */
 	@Override
 	public void setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("value", value == null ? "" : value);
+		}
 	}
 
 	/**
@@ -362,10 +365,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The type of the input. The supported types are {@code text},
-	 * {@code number} and {@code password}. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the
-	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * The type of the input. The supported types are the <a href=
+	 * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_&lt;input&gt;_types"
+	 * >native input's types</a>. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the (Polymer 1)
+	 * {@code <input is="iron-input">}'s or (Polymer 2) {@code <iron-input>}'s
+	 * {@code type} property.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -380,10 +385,12 @@ public class GeneratedPaperTextarea<R extends GeneratedPaperTextarea<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * The type of the input. The supported types are {@code text},
-	 * {@code number} and {@code password}. If you're using PaperInputBehavior
-	 * to implement your own paper-input-like element, bind this to the
-	 * {@code <input is="iron-input">}'s {@code type} property.
+	 * The type of the input. The supported types are the <a href=
+	 * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_&lt;input&gt;_types"
+	 * >native input's types</a>. If you're using PaperInputBehavior to
+	 * implement your own paper-input-like element, bind this to the (Polymer 1)
+	 * {@code <input is="iron-input">}'s or (Polymer 2) {@code <iron-input>}'s
+	 * {@code type} property.
 	 * </p>
 	 * 
 	 * @param type

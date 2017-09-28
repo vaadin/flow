@@ -45,7 +45,12 @@ import com.vaadin.ui.common.HasComponents;
  * </p>
  * <h3>Styling</h3>
  * <p>
- * The following shadow DOM parts are exposed for styling:
+ * <a href=
+ * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
+ * >Generic styling/theming documentation</a>
+ * </p>
+ * <p>
+ * The following shadow DOM parts are available for styling:
  * </p>
  * <table>
  * <thead>
@@ -74,7 +79,7 @@ import com.vaadin.ui.common.HasComponents;
  * </tbody>
  * </table>
  * <p>
- * The following attributes are exposed for styling:
+ * The following state attributes are available for styling:
  * </p>
  * <table>
  * <thead>
@@ -100,12 +105,19 @@ import com.vaadin.ui.common.HasComponents;
  * <td>{@code focused}</td>
  * <td>Set when the checkbox is focused.</td>
  * </tr>
+ * <tr>
+ * <td>{@code indeterminate}</td>
+ * <td>Set when the checkbox is in indeterminate mode.</td>
+ * </tr>
+ * <tr>
+ * <td>{@code checked}</td>
+ * <td>Set when the checkbox is checked.</td>
+ * </tr>
  * </tbody>
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#1.0.0-alpha6",
-		"Flow#1.0-SNAPSHOT"})
+		"WebComponent: Vaadin.CheckboxElement#1.0.0-beta1", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
@@ -226,7 +238,9 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	public void setValue(java.lang.Boolean value) {
 		Objects.requireNonNull(value,
 				"GeneratedVaadinCheckbox value must not be null");
-		getElement().setProperty("checked", value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("checked", value);
+		}
 	}
 
 	/**

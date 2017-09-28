@@ -24,6 +24,7 @@ import com.vaadin.ui.common.HtmlImport;
 import elemental.json.JsonArray;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.common.HasValue;
+import java.util.Objects;
 import elemental.json.JsonObject;
 import com.vaadin.ui.common.NotSupported;
 import com.vaadin.ui.event.DomEvent;
@@ -43,10 +44,7 @@ import com.vaadin.ui.common.HasComponents;
  * leaving the input field definition to the user.
  * </p>
  * <p>
- * This element is using the same <a
- * href="#vaadin.elements.combobox.ComboBoxBehavior">{@code ComboBoxBehavior}
- * </a> as <a href="#vaadin-combo-box">{@code <vaadin-combo-box>}</a>, so the
- * API remains the same.
+ * The element has the same API as {@code <vaadin-combo-box>}.
  * </p>
  * <p>
  * To create a custom input field, you need to add a child element which has a
@@ -78,7 +76,7 @@ import com.vaadin.ui.common.HasComponents;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxLightElement#3.0.0-alpha5",
+		"WebComponent: Vaadin.ComboBoxLightElement#3.0.0-alpha7",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
@@ -329,7 +327,9 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 */
 	@Override
 	public void setValue(java.lang.String value) {
-		getElement().setProperty("value", value == null ? "" : value);
+		if (!Objects.equals(value, getValue())) {
+			getElement().setProperty("value", value == null ? "" : value);
+		}
 	}
 
 	/**

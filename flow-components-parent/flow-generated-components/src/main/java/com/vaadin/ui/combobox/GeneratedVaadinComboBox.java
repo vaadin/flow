@@ -38,7 +38,8 @@ import com.vaadin.shared.Registration;
  * {@code <vaadin-combo-box>} is a combo box element combining a dropdown list
  * with an input field for filtering the list of items. If you want to replace
  * the default input field with a custom implementation, you should use the <a
- * href="#vaadin-combo-box-light">{@code <vaadin-combo-box-light>}</a> element.
+ * href="#/elements/vaadin-combo-box-light">{@code <vaadin-combo-box-light>}</a>
+ * element.
  * </p>
  * <p>
  * Items in the dropdown list must be provided as a list of {@code String}
@@ -103,13 +104,14 @@ import com.vaadin.shared.Registration;
  * </tr>
  * </tbody>
  * </table>
- * <p>
- * See the <a href="demo/item-template.html">Item Template Live Demos</a> for
- * more examples.
- * </p>
  * <h3>Styling</h3>
  * <p>
- * There are custom properties and mixins you can use to style the component:
+ * <a href=
+ * "https://cdn.vaadin.com/vaadin-valo-theme/0.3.1/demo/customization.html"
+ * >Generic styling/theming documentation</a>
+ * </p>
+ * <p>
+ * The following custom properties are available for styling:
  * </p>
  * <table>
  * <thead>
@@ -126,9 +128,92 @@ import com.vaadin.shared.Registration;
  * </tr>
  * </tbody>
  * </table>
+ * <p>
+ * The following shadow DOM parts are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Part name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code text-field}</td>
+ * <td>The text field</td>
+ * </tr>
+ * <tr>
+ * <td>{@code clear-button}</td>
+ * <td>The clear button</td>
+ * </tr>
+ * <tr>
+ * <td>{@code toggle-button}</td>
+ * <td>The toggle button</td>
+ * </tr>
+ * </tbody>
+ * </table>
+ * <p>
+ * See <a href=
+ * "https://github.com/vaadin/vaadin-overlay/blob/master/vaadin-overlay.html">
+ * {@code <vaadin-overlay>} documentation</a> for
+ * {@code <vaadin-combo-box-overlay>} parts.
+ * </p>
+ * <p>
+ * See <a href=
+ * "https://vaadin.com/elements/vaadin-text-field/html-api/elements/Vaadin.TextFieldElement"
+ * >{@code <vaadin-text-field>} documentation</a> for the text field parts.
+ * </p>
+ * <p>
+ * The following state attributes are available for styling:
+ * </p>
+ * <table>
+ * <thead>
+ * <tr>
+ * <th>Attribute</th>
+ * <th>Description</th>
+ * <th>Part name</th>
+ * </tr>
+ * </thead> <tbody>
+ * <tr>
+ * <td>{@code opened}</td>
+ * <td>Set when the combo box dropdown is open</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code disabled}</td>
+ * <td>Set to a disabled combo box</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code readonly}</td>
+ * <td>Set to a read only combo box</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code has-value}</td>
+ * <td>Set when the element has a value</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code invalid}</td>
+ * <td>Set when the element is invalid</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focused}</td>
+ * <td>Set when the element is focused</td>
+ * <td>:host</td>
+ * </tr>
+ * <tr>
+ * <td>{@code focus-ring}</td>
+ * <td>Set when the element is keyboard focused</td>
+ * <td>:host</td>
+ * </tr>
+ * </tbody>
+ * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxElement#3.0.0-alpha5",
+		"WebComponent: Vaadin.ComboBoxElement#3.0.0-alpha7",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
@@ -390,102 +475,6 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 */
 	public void setFilter(java.lang.String filter) {
 		getElement().setProperty("filter", filter == null ? "" : filter);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Path for label of the item. If {@code items} is an array of objects, the
-	 * {@code itemLabelPath} is used to fetch the displayed string label for
-	 * each item.
-	 * </p>
-	 * <p>
-	 * The item label is also used for matching items when processing user
-	 * input, i.e., for filtering and selecting items.
-	 * </p>
-	 * <p>
-	 * When using item templates, the property is still needed because it is
-	 * used for filtering, and for displaying the selected item value in the
-	 * input box.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	public String getItemLabelPath() {
-		return getElement().getProperty("itemLabelPath");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Path for label of the item. If {@code items} is an array of objects, the
-	 * {@code itemLabelPath} is used to fetch the displayed string label for
-	 * each item.
-	 * </p>
-	 * <p>
-	 * The item label is also used for matching items when processing user
-	 * input, i.e., for filtering and selecting items.
-	 * </p>
-	 * <p>
-	 * When using item templates, the property is still needed because it is
-	 * used for filtering, and for displaying the selected item value in the
-	 * input box.
-	 * </p>
-	 * 
-	 * @param itemLabelPath
-	 *            the String value to set
-	 */
-	public void setItemLabelPath(java.lang.String itemLabelPath) {
-		getElement().setProperty("itemLabelPath",
-				itemLabelPath == null ? "" : itemLabelPath);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Path for the value of the item. If {@code items} is an array of objects,
-	 * the {@code itemValuePath:} is used to fetch the string value for the
-	 * selected item.
-	 * </p>
-	 * <p>
-	 * The item value is used in the {@code value} property of the combo box, to
-	 * provide the form value.
-	 * <p>
-	 * This property is not synchronized automatically from the client side, so
-	 * the returned value may not be the same as in client side.
-	 * </p>
-	 */
-	public String getItemValuePath() {
-		return getElement().getProperty("itemValuePath");
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Path for the value of the item. If {@code items} is an array of objects,
-	 * the {@code itemValuePath:} is used to fetch the string value for the
-	 * selected item.
-	 * </p>
-	 * <p>
-	 * The item value is used in the {@code value} property of the combo box, to
-	 * provide the form value.
-	 * </p>
-	 * 
-	 * @param itemValuePath
-	 *            the String value to set
-	 */
-	public void setItemValuePath(java.lang.String itemValuePath) {
-		getElement().setProperty("itemValuePath",
-				itemValuePath == null ? "" : itemValuePath);
 	}
 
 	/**

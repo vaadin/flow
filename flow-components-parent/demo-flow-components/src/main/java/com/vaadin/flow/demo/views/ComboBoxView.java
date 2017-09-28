@@ -46,7 +46,7 @@ public class ComboBoxView extends DemoView {
 
         /**
          * Construct a song with the given name, artist and album.
-         * 
+         *
          * @param name
          *            name of the song
          * @param artist
@@ -124,7 +124,7 @@ public class ComboBoxView extends DemoView {
         // source-example-heading: Object selection
         ComboBox<Song> comboBox = new ComboBox<>();
         comboBox.setLabel("Music selection");
-        comboBox.setItemLabelPath("name");
+        comboBox.setItemLabelGenerator(Song::getName);
 
         List<Song> listOfSongs = createListOfSongs();
 
@@ -152,8 +152,7 @@ public class ComboBoxView extends DemoView {
         // begin-source-example
         // source-example-heading: Value selection from objects
         ComboBox<Song> comboBox = new ComboBox<>("Artists");
-        comboBox.setItemLabelPath("artist");
-        comboBox.setItemValuePath("artist");
+        comboBox.setItemLabelGenerator(Song::getArtist);
 
         List<Song> listOfSongs = createListOfSongs();
 
