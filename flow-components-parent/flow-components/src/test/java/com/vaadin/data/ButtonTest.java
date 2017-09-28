@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.icon.Icon;
@@ -29,6 +28,9 @@ import com.vaadin.ui.icon.Icon;
 public class ButtonTest {
 
     private Button button;
+    private Icon icon;
+
+    private static final String TEST_STRING = "lorem ipsum";
 
     @Test
     public void emptyCtor() {
@@ -63,14 +65,15 @@ public class ButtonTest {
     @Test
     public void setIcon() {
         button = new Button("foo", new Icon());
-        Icon icon = new Icon();
 
+        icon = new Icon();
         button.setIcon(icon);
         Assert.assertEquals(icon.getElement(), getButtonChild(0));
 
         button.setIcon(null);
         Assert.assertNull(button.getIcon());
-        Assert.assertEquals(0, button.getChildren().count()); // icon removed
+        Assert.assertFalse(
+                button.getChildren().anyMatch(child -> child.equals(icon)));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -81,134 +84,176 @@ public class ButtonTest {
     @Test
     public void setText() {
         button = new Button("foo", new Icon());
-        button.add(new Text("bar"), new Text("baz"));
-        Assert.assertEquals("foobarbaz", button.getText());
-
-        button.setText("qux");
-        Assert.assertEquals("qux", button.getText());
-
         button.setText(null);
+        Assert.assertEquals("", button.getText());
+
+        button.setText("bar");
+        Assert.assertEquals("bar", button.getText());
+
+        button.setText("");
         Assert.assertEquals("", button.getText());
     }
 
     @Test
-    public void iconAndTextPosition() {
-        Icon icon = new Icon();
-        button = new Button("foo", icon);
-        assertIconBeforeText(icon);
-
-        button.setIconAfterText(true);
-        assertIconAfterText(icon);
-    }
-
-    @Test
-    public void addChildren_addIcon_iconBeforeText() {
+    public void setText_setIcon_changeOrder() {
+        icon = new Icon();
         button = new Button();
-        addChildrenIncludingText();
 
-        Icon icon = new Icon();
+        button.setText(TEST_STRING);
         button.setIcon(icon);
 
-        assertIconBeforeText(icon);
+        assertIconBeforeText();
+        button.setIconAfterText(true);
+        assertIconAfterText();
     }
 
     @Test
-    public void addChildren_setIconAfterText_addIcon_iconAfterText() {
+    public void changeOrder_setIcon_setText_changeOrder() {
+        icon = new Icon();
         button = new Button();
-        addChildrenIncludingText();
 
         button.setIconAfterText(true);
 
-        Icon icon = new Icon();
         button.setIcon(icon);
+        button.setText(TEST_STRING);
 
-        assertIconAfterText(icon);
-    }
-
-    @Test
-    public void addIcon_addChildren_setIconAfterText_iconAfterText() {
-        Icon icon = new Icon();
-        button = new Button(icon);
-
-        addChildrenIncludingText();
-
-        button.setIconAfterText(true);
-
-        assertIconAfterText(icon);
-    }
-
-    @Test
-    public void addIconAfterText_addChildren_setIconBeforeText_iconBeforeText() {
-        Icon icon = new Icon();
-        button = new Button(icon);
-        button.setIconAfterText(true);
-
-        addChildrenIncludingText();
-
+        assertIconAfterText();
         button.setIconAfterText(false);
-
-        assertIconBeforeText(icon);
+        assertIconBeforeText();
     }
 
-    private void addChildrenIncludingText() {
-        button.add(new Icon(), new Text("foo"), new Icon(), new Text("bar"),
-                new Icon());
+    @Test
+    public void updatingThemeAttribute() {
+        button = new Button();
+        assertButtonHasThemeAttribute(false);
+
+        button.setIcon(new Icon());
+        assertButtonHasThemeAttribute(true);
+
+        button.setText("foo");
+        assertButtonHasThemeAttribute(false);
+
+        button.setIcon(null);
+        assertButtonHasThemeAttribute(false);
+
+        button = new Button("foo", new Icon());
+        assertButtonHasThemeAttribute(false);
+
+        button.setText("");
+        assertButtonHasThemeAttribute(true);
+
+        button = new Button("foo", new Icon());
+        button.setText(null);
+        assertButtonHasThemeAttribute(true);
     }
 
-    private void assertIconAfterText(Component icon) {
-        assertIconAfterText(icon, true);
+    @Test
+    public void wrappingTextInSpan() {
+        button = new Button();
+        button.setText(TEST_STRING);
+
+        assertOnlyChildIsText();
+        button.setIcon(new Icon());
+        assertIconAndSpan(false);
+        button.setIconAfterText(true);
+        assertIconAndSpan(true);
+        button.setText(null);
+        assertOnlyChildIsIcon();
+
+        button = new Button();
+        button.setIconAfterText(true);
+        button.setText(TEST_STRING);
+
+        assertOnlyChildIsText();
+        button.setIcon(new Icon());
+        assertIconAndSpan(true);
+        button.setIconAfterText(false);
+        assertIconAndSpan(false);
+        button.setText("");
+        assertOnlyChildIsIcon();
     }
 
-    private void assertIconBeforeText(Component icon) {
-        assertIconAfterText(icon, false);
+    private void assertOnlyChildIsText() {
+        Assert.assertEquals(1, button.getElement().getChildCount());
+        Element child = getButtonChild(0);
+        Assert.assertTrue(child.isTextNode());
+        Assert.assertEquals(TEST_STRING, child.getText());
     }
 
-    private void assertIconAfterText(Component icon, boolean iconAfterText) {
-        Assert.assertEquals(iconAfterText, button.isIconAfterText());
+    private void assertOnlyChildIsIcon() {
+        Assert.assertEquals(1, button.getElement().getChildCount());
+        Element child = getButtonChild(0);
+        Assert.assertEquals("iron-icon", child.getTag());
+    }
 
-        if (iconAfterText) {
-            Assert.assertTrue(getLastIndexOfTextNode() < indexOf(icon));
+    private void assertIconAndSpan(boolean iconAfterText) {
+        Assert.assertEquals(2, button.getElement().getChildCount());
+
+        Element icon = getButtonChild(iconAfterText ? 1 : 0);
+        Element span = getButtonChild(iconAfterText ? 0 : 1);
+
+        Assert.assertEquals("iron-icon", icon.getTag());
+        Assert.assertEquals("span", span.getTag());
+        Assert.assertEquals(TEST_STRING, span.getText());
+    }
+
+    private void assertButtonHasThemeAttribute(boolean hasThemeAttribute) {
+        if (hasThemeAttribute) {
+            Assert.assertEquals("icon",
+                    button.getElement().getAttribute("theme"));
         } else {
-            Assert.assertTrue(getFirstIndexOfTextNode() > indexOf(icon));
+            Assert.assertFalse(button.getElement().hasAttribute("theme"));
         }
     }
 
-    private int getFirstIndexOfTextNode() {
-        return indexOf(Element::isTextNode, true);
+    private void assertIconBeforeText() {
+        Assert.assertFalse(button.isIconAfterText());
+        Assert.assertTrue(indexOfIcon() < indexOfText());
     }
 
-    private int getLastIndexOfTextNode() {
-        return indexOf(Element::isTextNode, false);
+    private void assertIconAfterText() {
+        Assert.assertTrue(button.isIconAfterText());
+        Assert.assertTrue(indexOfText() < indexOfIcon());
     }
 
-    private int indexOf(Component component) {
-        return indexOf(element -> element.equals(component.getElement()), true);
+    /**
+     * Returns the first index of an element inside the button that has the
+     * {@link #TEST_STRING} as it's text content. If such element is not found,
+     * assertion error occurs.
+     */
+    private int indexOfText() {
+        return indexOf(element -> element.getText().equals(TEST_STRING));
+    }
+
+    /**
+     * Returns the index of icon inside the button. The icon is expected to be
+     * in the button, or an assertion error occurs.
+     */
+    private int indexOfIcon() {
+        int index = button.getElement().indexOfChild(icon.getElement());
+
+        if (index < 0) {
+            Assert.fail("Expected icon was not found in the button.");
+        }
+
+        return index;
     }
 
     /**
      * Finds a child element of the button that matches the given predicate and
      * returns the index of that element. It is expected that at least one such
      * element exists or an assertion error occurs.
-     * 
+     *
      * @param elementPredicate
      *            condition for the element to look for
-     * @param findFirstIndex
-     *            true if the first matching occurrence is wanted, false if the
-     *            last matching occurrence is wanted
-     * 
-     * @return the index of the first or the last child of the button that
-     *         matches the elementPredicate
+     *
+     * @return the index of the first child of the button that matches the
+     *         elementPredicate
      */
-    private int indexOf(Predicate<Element> elementPredicate,
-            boolean findFirstIndex) {
+    private int indexOf(Predicate<Element> elementPredicate) {
         for (int i = 0; i < button.getElement().getChildCount(); i++) {
-            int index = i;
-            if (!findFirstIndex) {
-                index = button.getElement().getChildCount() - i - 1;
-            }
-
-            if (elementPredicate.test(getButtonChild(index))) {
-                return index;
+            if (elementPredicate.test(getButtonChild(i))) {
+                return i;
             }
         }
         Assert.fail("Expected element was not found in the button.");
