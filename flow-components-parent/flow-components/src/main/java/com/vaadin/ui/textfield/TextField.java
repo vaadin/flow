@@ -28,20 +28,13 @@ public class TextField extends GeneratedVaadinTextField<TextField>
 
     /**
      * Constructs an empty {@code TextField}.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      */
     public TextField() {
         getElement().synchronizeProperty("hasValue", "value-changed");
-        clear();
     }
 
     /**
      * Constructs an empty {@code TextField} with the given label.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -54,9 +47,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     /**
      * Constructs an empty {@code TextField} with the given label and
      * placeholder text.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -71,9 +61,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     /**
      * Constructs a {@code TextField} with the given label, an initial value and
      * placeholder text.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -93,9 +80,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
 
     /**
      * Constructs an empty {@code TextField} with a value change listener.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param listener
      *            the value change listener
@@ -110,9 +94,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     /**
      * Constructs an empty {@code TextField} with a label and a value change
      * listener.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -130,9 +111,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     /**
      * Constructs an empty {@code TextField} with a label,a value change
      * listener and an initial value.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
