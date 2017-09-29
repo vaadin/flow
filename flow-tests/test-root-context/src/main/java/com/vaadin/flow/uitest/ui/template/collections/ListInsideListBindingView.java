@@ -20,19 +20,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.ModelItem;
-import com.vaadin.ui.polymertemplate.RepeatIndex;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.ui.polymertemplate.RepeatIndex;
 
 @Tag("list-inside-list-binding")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ListInsideListBinding.html")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ListInsideListBinding.html")
 public class ListInsideListBindingView extends
-        PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> implements View {
+        PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel>
+        implements View {
     static final String UPDATED_TEXT = "test";
 
     public static class Message {

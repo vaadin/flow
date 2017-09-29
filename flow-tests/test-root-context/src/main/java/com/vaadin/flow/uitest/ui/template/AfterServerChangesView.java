@@ -17,16 +17,16 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.UUID;
 
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 public class AfterServerChangesView extends AbstractDivView {
 
     @Tag("after-server-changes")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/AfterServerChanges.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AfterServerChanges.html")
     public static class AfterServerChanges extends PolymerTemplate<Message> {
 
         @Override
