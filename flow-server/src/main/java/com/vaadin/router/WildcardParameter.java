@@ -15,21 +15,18 @@
  */
 package com.vaadin.router;
 
-/**
- * Exception indicating that something went wrong while resolving navigation
- * routes.
- */
-public class NotFoundException extends RuntimeException {
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    /**
-     * Navigation exception thrown when routing fails due to a faulty navigation
-     * target string.
-     *
-     * @param message
-     *            the detail message. The detail message is saved for later
-     *            retrieval by the {@link #getMessage()} method.
-     */
-    public NotFoundException(String message) {
-        super(message);
-    }
+/**
+ * Annotation to mark a Navigation url parameter as a wildcard allowing 0-N
+ * parameter parts to be bound for this url parameter.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
+@Documented
+public @interface WildcardParameter {
 }

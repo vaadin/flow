@@ -29,6 +29,7 @@ import com.vaadin.flow.router.ViewRendererTest.AnotherTestView;
 import com.vaadin.flow.router.ViewRendererTest.ParentView;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
 import com.vaadin.router.Location;
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.UI;
@@ -41,7 +42,7 @@ public class LocationChangeEventTest {
     public void setup() {
         UI ui = new RouterTestUI();
 
-        event = new LocationChangeEvent(ui.getRouter().get(), ui,
+        event = new LocationChangeEvent(ui.getRouterInterface().get(), ui,
                 NavigationTrigger.PROGRAMMATIC, new Location(""),
                 Arrays.asList(new AnotherTestView(), new AnotherParentView()),
                 Collections.emptyMap());

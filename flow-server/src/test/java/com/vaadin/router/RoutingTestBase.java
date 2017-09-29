@@ -77,7 +77,7 @@ public class RoutingTestBase {
         }
 
         @Override
-        public Optional<RouterInterface> getRouter() {
+        public Optional<RouterInterface> getRouterInterface() {
             return Optional.of(router);
         }
     }

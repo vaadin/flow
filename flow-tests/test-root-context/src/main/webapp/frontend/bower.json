@@ -16,7 +16,6 @@
   ],
   "dependencies": {
     "polymer": "~2.0.2",
-    "paper-slider": "~2.0.2",
     "paper-input": "~2.0.1"
   }
 }

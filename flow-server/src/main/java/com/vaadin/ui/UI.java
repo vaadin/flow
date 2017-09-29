@@ -32,10 +32,10 @@ import com.vaadin.flow.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.router.Location;
-import com.vaadin.router.RouterInterface;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.QueryParameters;
-import com.vaadin.flow.router.Router;
+import com.vaadin.router.Router;
+import com.vaadin.router.RouterInterface;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
@@ -681,7 +681,7 @@ public class UI extends Component
                     "Query parameters may not be null");
         }
 
-        if (!getRouter().isPresent()) {
+        if (!getRouterInterface().isPresent()) {
             throw new IllegalStateException(
                     "Can't navigate when UI has no router");
         }
@@ -691,7 +691,7 @@ public class UI extends Component
         // Enable navigating back
         getPage().getHistory().pushState(null, navigationLocation);
 
-        getRouter().get().navigate(this, navigationLocation,
+        getRouterInterface().get().navigate(this, navigationLocation,
                 NavigationTrigger.PROGRAMMATIC);
     }
 
@@ -700,9 +700,31 @@ public class UI extends Component
      * when this UI was initialized.
      *
      * @return an optional router, or an empty {@code Optional} if this UI was
+     *         initialized without a router or with the old router
+     *         implementation
+     */
+    public Optional<Router> getRouter() {
+        if (router instanceof Router) {
+            return Optional.of((Router) router);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Gets the router interface used for navigating in this UI, if the router
+     * was active when this UI was initialized.
+     *
+     * @deprecated This method works as a bridge between the two different
+     *             router implementations and will be removed once the old
+     *             router implementation is removed.
+     * @return an optional router, or an empty {@code Optional} if this UI was
      *         initialized without a router
      */
-    public Optional<RouterInterface> getRouter() {
+    @Deprecated
+    public Optional<RouterInterface> getRouterInterface() {
+        // XXX When removing this, also remove mention of the old router from
+        // the javadoc for getRouter()
         return Optional.ofNullable(router);
     }
 

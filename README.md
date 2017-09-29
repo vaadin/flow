@@ -16,7 +16,7 @@ Instructions on how to set up a working environment for developing the Flow proj
 
 Quick Setup
 ======
-To create your own application using Flow, use https://github.com/vaadin/flow-hello-world as a starting point.
+To create your own application using Flow, use https://github.com/vaadin/skeleton-starter-flow as a starting point.
 
 To quickly get started with contributing, follow these simple steps.
 1. <code>git clone https://github.com/vaadin/flow.git</code>

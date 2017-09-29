@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.router.Location;
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.ui.Page;
 
 /**

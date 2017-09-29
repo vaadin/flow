@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.router.ViewRendererTest.ErrorView;
 import com.vaadin.flow.router.ViewRendererTest.TestView;
 import com.vaadin.router.Location;
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
 import com.vaadin.router.event.NavigationEvent;
@@ -59,7 +60,7 @@ public class RouterTest {
         }
 
         @Override
-        public Optional<RouterInterface> getRouter() {
+        public Optional<RouterInterface> getRouterInterface() {
             return Optional.of(router);
         }
     }
@@ -356,7 +357,7 @@ public class RouterTest {
     public void testStatusCodeUpdates() {
         RouterTestUI ui = new RouterTestUI();
 
-        Router router = (Router) ui.getRouter().get();
+        Router router = (Router) ui.getRouterInterface().get();
 
         router.reconfigure(c -> {
             c.setRoute("*", e -> 123);
