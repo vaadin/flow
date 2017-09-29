@@ -22,18 +22,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
+import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindingModel;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.ModelItem;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindingModel;
 
 @Tag("list-binding")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ListBinding.html")
-public class ListBindingView extends PolymerTemplate<ListBindingModel> implements View {
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ListBinding.html")
+public class ListBindingView extends PolymerTemplate<ListBindingModel>
+        implements View {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
     static final String INITIAL_STATE = "foo";
 

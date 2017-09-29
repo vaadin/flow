@@ -19,10 +19,10 @@ import java.util.Properties;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
-import com.vaadin.server.Constants;
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.server.Constants;
+import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.shared.ApplicationConstants;
 
 /**
@@ -39,7 +39,7 @@ public class Es6UrlViewTestServlet extends ViewTestServlet {
 
         initParameters.setProperty(Constants.FRONTEND_URL_ES6,
                 ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                        + "com/vaadin/flow/uitest/");
+                        + "frontend/com/vaadin/flow/uitest/");
 
         return super.createDeploymentConfiguration(initParameters);
     }

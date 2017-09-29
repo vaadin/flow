@@ -15,20 +15,20 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.Id;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Tag("parent-inject-child")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/ParentTemplateInjectChild.html")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ParentTemplateInjectChild.html")
 public class TemplateHasInjectedSubTemplateView extends PolymerTemplate<Message>
         implements View {
 
     @Tag("injected-child")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/InjectedChild.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/InjectedChild.html")
     public static class InjectedChild extends PolymerTemplate<Message> {
         @Override
         protected Message getModel() {

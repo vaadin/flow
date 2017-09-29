@@ -3,24 +3,24 @@ package com.vaadin.flow.uitest.ui.template.collections;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
 
 /**
  * @author Vaadin Ltd.
  */
 @Tag("clear-list")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ClearList.html")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ClearList.html")
 public class ClearListView extends PolymerTemplate<ClearListView.ClearListModel>
         implements View {
     public ClearListView() {
         setId("template");
-        getModel().setMessages(
-                Arrays.asList(new Message("1"), new Message("2")));
+        getModel()
+                .setMessages(Arrays.asList(new Message("1"), new Message("2")));
     }
 
     @EventHandler

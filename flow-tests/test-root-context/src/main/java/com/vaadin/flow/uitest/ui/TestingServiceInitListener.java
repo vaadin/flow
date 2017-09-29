@@ -54,7 +54,7 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                     .startsWith("replaceme://"))) {
                 List<Dependency> newList = new ArrayList<>();
                 newList.add(new Dependency(Dependency.Type.HTML_IMPORT,
-                        "/com/vaadin/flow/uitest/ui/dependencies/filtered.html",
+                        "frontend://com/vaadin/flow/uitest/ui/dependencies/filtered.html",
                         LoadMode.EAGER));
                 dependencies.stream()
                         .filter(dependency -> !dependency.getUrl()
@@ -67,7 +67,7 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                     .getUrl().startsWith("bundle://"))) {
                 List<Dependency> newList = new ArrayList<>();
                 newList.add(new Dependency(Dependency.Type.HTML_IMPORT,
-                        "/com/vaadin/flow/uitest/ui/template/BundleIdTemplate.html",
+                        "frontend://com/vaadin/flow/uitest/ui/template/BundleIdTemplate.html",
                         LoadMode.EAGER));
                 dependencies = newList;
             }
