@@ -83,7 +83,6 @@
                     use Jetty -->
                 <configuration>
                     <webAppConfig>
-                        <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                     </webAppConfig>
                     <scanIntervalSeconds>-1</scanIntervalSeconds>

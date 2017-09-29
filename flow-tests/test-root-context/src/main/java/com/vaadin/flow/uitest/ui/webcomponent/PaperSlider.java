@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.ui.event.DomEvent;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.ComponentEvent;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.DomEvent;
 
 @Tag("paper-slider")
-@HtmlImport("/bower_components/paper-slider/paper-slider.html")
+@HtmlImport("bower_components/paper-slider/paper-slider.html")
 public class PaperSlider extends Component implements HasValue {
     @DomEvent("value-change")
     public static class ValueChangeEvent extends ComponentEvent<PaperSlider> {

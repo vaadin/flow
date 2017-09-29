@@ -79,6 +79,12 @@ public final class Constants implements Serializable {
     public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
             + "frontend-es5/";
 
+    /**
+     * Configuration name for the parameter that determines if Flow should use
+     * webJars or not.
+     */
+    public static final String DISABLE_WEBJARS = "disable.webjar";
+
     private Constants() {
         // prevent instantiation constants class only
     }
