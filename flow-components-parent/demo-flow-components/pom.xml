@@ -89,10 +89,6 @@
                     <webAppConfig>
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                        <resourceBases>
-                            <resourceBase>${frontend.working.directory}</resourceBase>
-                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-                        </resourceBases>
                     </webAppConfig>
                 </configuration>
                 <executions>
@@ -167,23 +163,6 @@
                         <!-- it's not used anywhere else, so it's ok to remove it just like that -->
                         <exclude>**/Servlet.*</exclude>
                     </excludes>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>${frontend.working.directory}</directory>
-                            <excludes>
-                                <exclude>**/node/</exclude>
-                                <exclude>**/node_modules/</exclude>
-                                <exclude>**/etc/</exclude>
-                            </excludes>
-                        </resource>
-                    </webResources>
                 </configuration>
             </plugin>
 

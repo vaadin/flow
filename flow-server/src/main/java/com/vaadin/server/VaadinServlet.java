@@ -111,7 +111,7 @@ public class VaadinServlet extends HttpServlet {
         staticFileServer = new StaticFileServer(servletService);
 
         if (deploymentConfiguration.areWebJarsEnabled()) {
-            webJarServer = new WebJarServer();
+            webJarServer = new WebJarServer(deploymentConfiguration);
         }
 
         // Sets current service even though there are no request and response
@@ -274,7 +274,6 @@ public class VaadinServlet extends HttpServlet {
      * @throws IOException
      *             if the request for the TRACE cannot be handled.
      */
-
     @Override
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
@@ -283,11 +282,7 @@ public class VaadinServlet extends HttpServlet {
             return;
         }
 
-        if (staticFileServer.isStaticResourceRequest(request)) {
-            staticFileServer.serveStaticResource(request, response);
-            return;
-        }
-        if (webJarServer != null && webJarServer.tryServeWebJarResource(request, response)) {
+        if (serveStaticOrWebJarRequest(request, response)) {
             return;
         }
 
@@ -305,6 +300,40 @@ public class VaadinServlet extends HttpServlet {
             throw new ServletException(e);
         }
 
+    }
+
+    /**
+     * Handles a request by serving a static file or a file from a WebJar.
+     *
+     * @param request
+     *            the HTTP servlet request object that contains the request the
+     *            client made of the servlet
+     *
+     * @param response
+     *            the HTTP servlet response object that contains the response
+     *            the servlet returns to the client
+     * @return <code>true</code> if the request was handled a response written;
+     *         oterwise <code>false</code>
+     *
+     * @exception IOException
+     *                if an input or output error occurs while the servlet is
+     *                handling the HTTP request
+     *
+     * @exception ServletException
+     *                if the HTTP request cannot be handled
+     */
+    protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
+            HttpServletResponse response) throws ServletException, IOException {
+        if (staticFileServer.isStaticResourceRequest(request)) {
+            staticFileServer.serveStaticResource(request, response);
+            return true;
+        }
+        if (webJarServer != null
+                && webJarServer.tryServeWebJarResource(request, response)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

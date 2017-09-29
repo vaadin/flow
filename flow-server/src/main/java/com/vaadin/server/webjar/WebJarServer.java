@@ -27,11 +27,13 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webjars.WebJarAssetLocator;
 
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.Constants;
 import com.vaadin.util.ResponseWriter;
 
@@ -48,17 +50,37 @@ import elemental.json.Json;
  * @author Vaadin Ltd.
  */
 public class WebJarServer implements Serializable {
-    private static final String PREFIX = "/bower_components/";
-
     private final transient WebJarAssetLocator locator = new WebJarAssetLocator();
     private final transient Map<String, WebJarBowerDependency> bowerModuleToDependencyName = new HashMap<>();
     private final ResponseWriter responseWriter = new ResponseWriter();
 
+    private final String prefix;
+
     /**
      * Creates a webJar server that is able to search webJars for files and
      * return them.
+     *
+     * @param deploymentConfiguration
+     *            configuration for the deployment, not <code>null</code>
+     *
+     * @throws ServletException
+     *             if the WebJars server cannot be created
      */
-    public WebJarServer() {
+    public WebJarServer(DeploymentConfiguration deploymentConfiguration)
+            throws ServletException {
+        assert deploymentConfiguration != null;
+
+        String frontendPrefix = deploymentConfiguration
+                .getDevelopmentFrontendPrefix();
+        if (!frontendPrefix.startsWith("context://")) {
+            throw new ServletException(
+                    "Cannot host WebJars for a fronted prefix that isn't relative to 'context://'. Current frontend prefix: "
+                            + frontendPrefix);
+        }
+
+        prefix = "/" + frontendPrefix.substring("context://".length())
+                + "bower_components/";
+
         locator.getWebJars().forEach((webJarName, version) -> {
             String bowerModuleName = getBowerModuleName(webJarName);
             if (bowerModuleName != null) {
@@ -75,9 +97,10 @@ public class WebJarServer implements Serializable {
             WebJarBowerDependency newDependency) {
         int comparison = oldDependency.compareVersions(newDependency);
         if (comparison == 0) {
-            Logger.getLogger(getClass().getName()).config(() -> String.format(
-                    "Have found multiple webJars with name and version: '%s'",
-                    oldDependency));
+            Logger.getLogger(getClass().getName())
+                    .config(() -> String.format(
+                            "Have found multiple webJars with name and version: '%s'",
+                            oldDependency));
             return oldDependency;
         } else if (comparison > 0) {
             return oldDependency;
@@ -119,7 +142,9 @@ public class WebJarServer implements Serializable {
      */
     public boolean tryServeWebJarResource(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        String webJarPath = getWebJarPath(request.getPathInfo());
+        String pathInContext = request.getServletPath() + request.getPathInfo();
+
+        String webJarPath = getWebJarPath(pathInContext);
         if (webJarPath == null) {
             return false;
         }
@@ -135,10 +160,10 @@ public class WebJarServer implements Serializable {
     }
 
     private String getWebJarPath(String path) {
-        if (bowerModuleToDependencyName.isEmpty() || !path.startsWith(PREFIX)) {
+        if (bowerModuleToDependencyName.isEmpty() || !path.startsWith(prefix)) {
             return null;
         }
-        String pathWithoutPrefix = path.substring(PREFIX.length());
+        String pathWithoutPrefix = path.substring(prefix.length());
 
         int separatorIndex = pathWithoutPrefix.indexOf('/');
         if (separatorIndex < 0) {

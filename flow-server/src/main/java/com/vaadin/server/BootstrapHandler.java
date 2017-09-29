@@ -196,8 +196,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static class BootstrapUriResolver extends VaadinUriResolver {
         private final VaadinSession session;
         private final VaadinRequest request;
-        private final String es6BuildUrl;
-        private final String es5BuildUrl;
+        private final String es6FrontendPrefix;
+        private final String es5FrontendPrefix;
 
         protected BootstrapUriResolver(VaadinRequest request,
                 VaadinSession session) {
@@ -205,8 +205,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             this.request = request;
 
             DeploymentConfiguration config = session.getConfiguration();
-            es6BuildUrl = config.getEs6BuildUrl();
-            es5BuildUrl = config.getEs5BuildUrl();
+            es6FrontendPrefix = config.getEs6FrontendPrefix();
+            es5FrontendPrefix = config.getEs5FrontendPrefix();
         }
 
         @Override
@@ -221,9 +221,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         protected String getFrontendRootUrl() {
             String root;
             if (session.getBrowser().isEs6Supported()) {
-                root = es6BuildUrl;
+                root = es6FrontendPrefix;
             } else {
-                root = es5BuildUrl;
+                root = es5FrontendPrefix;
             }
             assert root.endsWith("/");
             return root;
@@ -269,7 +269,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         List<Element> dependenciesToInlineInBody = setupDocumentHead(head,
                 context);
         dependenciesToInlineInBody
-        .forEach(dependency -> document.body().appendChild(dependency));
+                .forEach(dependency -> document.body().appendChild(dependency));
         setupDocumentBody(document);
 
         document.outputSettings().prettyPrint(false);
@@ -406,14 +406,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static void setupMetaAndTitle(Element head,
             BootstrapContext context) {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
-        .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
+                .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
         head.appendElement("base").attr("href", getServiceUrl(context));
 
         getViewportContent(context.getUI().getClass(), context.getRequest())
-        .ifPresent(content -> head.appendElement(META_TAG)
-                .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
-                        content));
+                .ifPresent(content -> head.appendElement(META_TAG)
+                        .attr("name", "viewport").attr(CONTENT_ATTRIBUTE,
+                                content));
 
         resolvePageTitle(context).ifPresent(title -> {
             if (!title.isEmpty()) {
@@ -450,8 +450,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (loadEs5Adapter) {
             head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
-                    .resolveVaadinUri(webComponentsPolyfillBase
-                            + "custom-elements-es5-adapter.js"),
+                            .resolveVaadinUri(webComponentsPolyfillBase
+                                    + "custom-elements-es5-adapter.js"),
                     false));
         }
 
@@ -478,34 +478,33 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element createDependencyElement(VaadinUriResolver resolver,
             LoadMode loadMode, JsonObject dependency, Dependency.Type type) {
         boolean inlineElement = loadMode == LoadMode.INLINE;
-        String url = dependency.hasKey(Dependency.KEY_URL)
-                ? resolver.resolveVaadinUri(
-                        dependency.getString(Dependency.KEY_URL))
+        String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
+                .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
                 : null;
 
-                final Element dependencyElement;
-                switch (type) {
-                case STYLESHEET:
-                    dependencyElement = createStylesheetElement(url);
-                    break;
-                case JAVASCRIPT:
-                    dependencyElement = createJavaScriptElement(url, !inlineElement);
-                    break;
-                case HTML_IMPORT:
-                    dependencyElement = createHtmlImportElement(url);
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            "Unsupported dependency type: " + type);
-                }
+        final Element dependencyElement;
+        switch (type) {
+        case STYLESHEET:
+            dependencyElement = createStylesheetElement(url);
+            break;
+        case JAVASCRIPT:
+            dependencyElement = createJavaScriptElement(url, !inlineElement);
+            break;
+        case HTML_IMPORT:
+            dependencyElement = createHtmlImportElement(url);
+            break;
+        default:
+            throw new IllegalStateException(
+                    "Unsupported dependency type: " + type);
+        }
 
-                if (inlineElement) {
-                    dependencyElement.appendChild(
-                            new DataNode(dependency.getString(Dependency.KEY_CONTENTS),
-                                    dependencyElement.baseUri()));
-                }
+        if (inlineElement) {
+            dependencyElement.appendChild(
+                    new DataNode(dependency.getString(Dependency.KEY_CONTENTS),
+                            dependencyElement.baseUri()));
+        }
 
-                return dependencyElement;
+        return dependencyElement;
     }
 
     private static Element createHtmlImportElement(String url) {
@@ -763,7 +762,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         ui.getPushConfiguration().setPushMode(pushMode);
 
         AnnotationReader.getPushTransport(uiClass)
-        .ifPresent(ui.getPushConfiguration()::setTransport);
+                .ifPresent(ui.getPushConfiguration()::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
@@ -878,7 +877,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             + request.getPathInfo()
                             + " cannot find the mapped UI class with name "
                             + uiClassName,
-                            e);
+                    e);
         }
     }
 
@@ -936,13 +935,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // read client engine file name
         try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
                 "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                + "/compile.properties")) {
+                        + "/compile.properties")) {
             // null when running SDM or tests
             if (prop != null) {
                 Properties properties = new Properties();
                 properties.load(prop);
                 return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                + properties.getProperty("jsFile");
+                        + properties.getProperty("jsFile");
             } else {
                 getLogger().warning(
                         "No compile.properties available on initialization, "

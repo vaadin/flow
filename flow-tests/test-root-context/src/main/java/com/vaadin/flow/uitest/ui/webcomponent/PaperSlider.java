@@ -24,7 +24,7 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DomEvent;
 
 @Tag("paper-slider")
-@HtmlImport("bower_components/paper-slider/paper-slider.html")
+@HtmlImport("frontend://bower_components/paper-slider/paper-slider.html")
 public class PaperSlider extends Component implements HasValue {
     @DomEvent("value-change")
     public static class ValueChangeEvent extends ComponentEvent<PaperSlider> {
