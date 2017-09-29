@@ -45,6 +45,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code bufferSize} property from the webcomponent
 	 */
 	public double getBufferSize() {
 		return getElement().getProperty("bufferSize", 0.0);
@@ -70,6 +72,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code active} property from the webcomponent
 	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
@@ -123,24 +127,6 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	public void linkPaths(java.lang.String to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
 	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
@@ -159,7 +145,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -187,18 +173,17 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * Removes a data path alias previously established with {@code _linkPaths}.
-	 * </p>
-	 * <p>
-	 * Note, the path to unlink should be the target ({@code to}) used when
-	 * linking the paths.
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
 	 * </p>
 	 * 
-	 * @param path
-	 *            Target path to unlink.
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
 	 */
-	protected void unlinkPaths(elemental.json.JsonObject path) {
-		getElement().callFunction("unlinkPaths", path);
+	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+		getElement().callFunction("linkPaths", to, from);
 	}
 
 	/**
@@ -217,6 +202,25 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Target path to unlink.
 	 */
 	public void unlinkPaths(java.lang.String path) {
+		getElement().callFunction("unlinkPaths", path);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Removes a data path alias previously established with {@code _linkPaths}.
+	 * </p>
+	 * <p>
+	 * Note, the path to unlink should be the target ({@code to}) used when
+	 * linking the paths.
+	 * </p>
+	 * 
+	 * @param path
+	 *            Target path to unlink.
+	 */
+	protected void unlinkPaths(elemental.json.JsonObject path) {
 		getElement().callFunction("unlinkPaths", path);
 	}
 
@@ -274,6 +278,10 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * {@code undefined} (this method does not throw when dereferencing
 	 * undefined paths).
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to the value to read. The path may be specified as a
@@ -285,10 +293,10 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            `['users', 12, 'name']`).
 	 * @param root
 	 *            Root object from which the path is evaluated.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(java.lang.String path, elemental.json.JsonObject root) {
+	protected void get(elemental.json.JsonObject path,
+			elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -303,6 +311,10 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * {@code undefined} (this method does not throw when dereferencing
 	 * undefined paths).
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to the value to read. The path may be specified as a
@@ -314,11 +326,9 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            `['users', 12, 'name']`).
 	 * @param root
 	 *            Root object from which the path is evaluated.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void get(elemental.json.JsonObject path,
-			elemental.json.JsonObject root) {
+	protected void get(java.lang.String path, elemental.json.JsonObject root) {
 	}
 
 	/**
@@ -402,14 +412,18 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void push(java.lang.String path, elemental.json.JsonObject _Items) {
+	protected void push(elemental.json.JsonObject path,
+			elemental.json.JsonObject _Items) {
 	}
 
 	/**
@@ -427,15 +441,17 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void push(elemental.json.JsonObject path,
-			elemental.json.JsonObject _Items) {
+	protected void push(java.lang.String path, elemental.json.JsonObject _Items) {
 	}
 
 	/**
@@ -453,37 +469,43 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
-	 */
-	@NotSupported
-	protected void pop(elemental.json.JsonObject path) {
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Removes an item from the end of array at the path specified.
-	 * </p>
-	 * <p>
-	 * The arguments after {@code path} and return value match that of
-	 * {@code Array.prototype.pop}.
-	 * </p>
-	 * <p>
-	 * This method notifies other paths to the same array that a splice occurred
-	 * to the array.
-	 * </p>
-	 * 
-	 * @param path
-	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
 	protected void pop(java.lang.String path) {
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Removes an item from the end of array at the path specified.
+	 * </p>
+	 * <p>
+	 * The arguments after {@code path} and return value match that of
+	 * {@code Array.prototype.pop}.
+	 * </p>
+	 * <p>
+	 * This method notifies other paths to the same array that a splice occurred
+	 * to the array.
+	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
+	 * different than void are not supported at this moment.
+	 * 
+	 * @param path
+	 *            Path to array.
+	 */
+	@NotSupported
+	protected void pop(elemental.json.JsonObject path) {
 	}
 
 	/**
@@ -502,6 +524,10 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonArray</code>. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -510,7 +536,6 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param deleteCount
 	 *            Number of items to remove.
 	 * @param ...items Missing documentation!
-	 * @return It would return a interface elemental.json.JsonArray
 	 */
 	@NotSupported
 	protected void splice(elemental.json.JsonObject path, double start,
@@ -533,6 +558,10 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonArray</code>. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -541,7 +570,6 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param deleteCount
 	 *            Number of items to remove.
 	 * @param ...items Missing documentation!
-	 * @return It would return a interface elemental.json.JsonArray
 	 */
 	@NotSupported
 	protected void splice(java.lang.String path, double start,
@@ -563,13 +591,16 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void shift(elemental.json.JsonObject path) {
+	protected void shift(java.lang.String path) {
 	}
 
 	/**
@@ -587,13 +618,16 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
+	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
-	 * @return It would return a interface elemental.json.JsonObject
 	 */
 	@NotSupported
-	protected void shift(java.lang.String path) {
+	protected void shift(elemental.json.JsonObject path) {
 	}
 
 	/**
@@ -611,14 +645,17 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void unshift(java.lang.String path,
+	protected void unshift(elemental.json.JsonObject path,
 			elemental.json.JsonObject _Items) {
 	}
 
@@ -637,14 +674,17 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * This method notifies other paths to the same array that a splice occurred
 	 * to the array.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
 	 * @param ...items Missing documentation!
-	 * @return It would return a double
 	 */
 	@NotSupported
-	protected void unshift(elemental.json.JsonObject path,
+	protected void unshift(java.lang.String path,
 			elemental.json.JsonObject _Items) {
 	}
 
@@ -713,13 +753,16 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * this element. This method will return the same URL before and after
 	 * bundling.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>java.lang.String</code>. Functions with return types different than
+	 * void are not supported at this moment.
 	 * 
 	 * @param url
 	 *            URL to resolve.
 	 * @param base
 	 *            Optional base URL to resolve against, defaults to the
 	 *            element's `importPath`
-	 * @return It would return a class java.lang.String
 	 */
 	@NotSupported
 	protected void resolveUrl(java.lang.String url,

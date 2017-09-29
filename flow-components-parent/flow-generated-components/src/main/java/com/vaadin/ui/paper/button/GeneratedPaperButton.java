@@ -181,6 +181,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code keyEventTarget} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -213,6 +215,9 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code stopKeyboardEventPropagation} property from the
+	 *         webcomponent
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -239,6 +244,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code keyBindings} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
@@ -262,6 +269,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code pressed} property from the webcomponent
 	 */
 	public boolean isPressed() {
 		return getElement().getProperty("pressed", false);
@@ -278,6 +287,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code toggles} property from the webcomponent
 	 */
 	public boolean isToggles() {
 		return getElement().getProperty("toggles", false);
@@ -309,6 +320,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'active-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code active} property from the webcomponent
 	 */
 	@Synchronize(property = "active", value = "active-changed")
 	public boolean isActive() {
@@ -342,6 +355,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code pointerDown} property from the webcomponent
 	 */
 	public boolean isPointerDown() {
 		return getElement().getProperty("pointerDown", false);
@@ -358,6 +373,9 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code receivedFocusFromKeyboard} property from the
+	 *         webcomponent
 	 */
 	public boolean isReceivedFocusFromKeyboard() {
 		return getElement().getProperty("receivedFocusFromKeyboard", false);
@@ -374,6 +392,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code ariaActiveAttribute} property from the webcomponent
 	 */
 	public String getAriaActiveAttribute() {
 		return getElement().getProperty("ariaActiveAttribute");
@@ -406,6 +426,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -422,6 +444,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'disabled-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -454,6 +478,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noink} property from the webcomponent
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);
@@ -487,6 +513,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code elevation} property from the webcomponent
 	 */
 	public double getElevation() {
 		return getElement().getProperty("elevation", 0.0);
@@ -502,6 +530,8 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code raised} property from the webcomponent
 	 */
 	public boolean isRaised() {
 		return getElement().getProperty("raised", false);
@@ -561,12 +591,15 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param event
 	 *            Missing documentation!
 	 * @param eventString
 	 *            Missing documentation!
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
@@ -610,8 +643,10 @@ public class GeneratedPaperButton<R extends GeneratedPaperButton<R>>
 	 * <p>
 	 * Returns true if this element currently contains a ripple effect.
 	 * </p>
-	 * 
-	 * @return It would return a boolean
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 */
 	@NotSupported
 	protected void hasRipple() {
