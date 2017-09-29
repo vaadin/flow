@@ -98,6 +98,8 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code active} property from the webcomponent
 	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);
@@ -130,6 +132,8 @@ public class GeneratedPaperSpinnerLite<R extends GeneratedPaperSpinnerLite<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code alt} property from the webcomponent
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");

@@ -99,6 +99,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code opened} property from the webcomponent
 	 */
 	public boolean isOpened() {
 		return getElement().getProperty("opened", false);
@@ -129,6 +131,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -159,6 +163,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code readonly} property from the webcomponent
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -190,6 +196,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code items} property from the webcomponent
 	 */
 	protected JsonArray protectedGetItems() {
 		return (JsonArray) getElement().getPropertyRaw("items");
@@ -224,6 +232,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code allowCustomValue} property from the webcomponent
 	 */
 	public boolean isAllowCustomValue() {
 		return getElement().getProperty("allowCustomValue", false);
@@ -259,6 +269,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code filteredItems} property from the webcomponent
 	 */
 	protected JsonArray protectedGetFilteredItems() {
 		return (JsonArray) getElement().getPropertyRaw("filteredItems");
@@ -299,6 +311,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code value} property from the webcomponent
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	@Override
@@ -343,6 +357,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code hasValue} property from the webcomponent
 	 */
 	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
@@ -359,6 +375,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code loading} property from the webcomponent
 	 */
 	public boolean isLoading() {
 		return getElement().getProperty("loading", false);
@@ -390,6 +408,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code filter} property from the webcomponent
 	 */
 	public String getFilter() {
 		return getElement().getProperty("filter");
@@ -420,6 +440,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code selectedItem} property from the webcomponent
 	 */
 	protected JsonObject protectedGetSelectedItem() {
 		return (JsonObject) getElement().getPropertyRaw("selectedItem");
@@ -461,6 +483,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code itemLabelPath} property from the webcomponent
 	 */
 	public String getItemLabelPath() {
 		return getElement().getProperty("itemLabelPath");
@@ -509,6 +533,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code itemValuePath} property from the webcomponent
 	 */
 	public String getItemValuePath() {
 		return getElement().getProperty("itemValuePath");
@@ -546,6 +572,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code required} property from the webcomponent
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -576,6 +604,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code name} property from the webcomponent
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -606,6 +636,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code invalid} property from the webcomponent
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
@@ -637,6 +669,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code attrForValue} property from the webcomponent
 	 */
 	public String getAttrForValue() {
 		return getElement().getProperty("attrForValue");
@@ -670,6 +704,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code overlayVerticalOffset} property from the webcomponent
 	 */
 	public double getOverlayVerticalOffset() {
 		return getElement().getProperty("overlayVerticalOffset", 0.0);
@@ -695,6 +731,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code inputElement} property from the webcomponent
 	 */
 	protected JsonObject protectedGetInputElement() {
 		return (JsonObject) getElement().getPropertyRaw("inputElement");
@@ -744,10 +782,13 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * Returns true if {@code value} is valid, and sets the {@code invalid} flag
 	 * appropriatelly.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param value
 	 *            Missing documentation!
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void validate(elemental.json.JsonObject value) {

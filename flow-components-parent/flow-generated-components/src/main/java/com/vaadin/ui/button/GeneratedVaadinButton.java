@@ -110,6 +110,8 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autofocus} property from the webcomponent
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -140,6 +142,8 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
@@ -155,6 +159,8 @@ public class GeneratedVaadinButton<R extends GeneratedVaadinButton<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);

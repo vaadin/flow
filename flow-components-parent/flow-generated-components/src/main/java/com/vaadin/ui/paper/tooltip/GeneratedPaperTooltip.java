@@ -125,6 +125,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code animationConfig} property from the webcomponent
 	 */
 	protected JsonObject protectedGetAnimationConfig() {
 		return (JsonObject) getElement().getPropertyRaw("animationConfig");
@@ -159,6 +161,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code entryAnimation} property from the webcomponent
 	 */
 	public String getEntryAnimation() {
 		return getElement().getProperty("entryAnimation");
@@ -194,6 +198,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code exitAnimation} property from the webcomponent
 	 */
 	public String getExitAnimation() {
 		return getElement().getProperty("exitAnimation");
@@ -228,6 +234,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code for} property from the webcomponent
 	 */
 	public String getFor() {
 		return getElement().getProperty("for");
@@ -260,6 +268,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code manualMode} property from the webcomponent
 	 */
 	public boolean isManualMode() {
 		return getElement().getProperty("manualMode", false);
@@ -291,6 +301,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code position} property from the webcomponent
 	 */
 	public String getPosition() {
 		return getElement().getProperty("position");
@@ -321,6 +333,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code fitToVisibleBounds} property from the webcomponent
 	 */
 	public boolean isFitToVisibleBounds() {
 		return getElement().getProperty("fitToVisibleBounds", false);
@@ -352,6 +366,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code offset} property from the webcomponent
 	 */
 	public double getOffset() {
 		return getElement().getProperty("offset", 0.0);
@@ -385,6 +401,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code marginTop} property from the webcomponent
 	 */
 	public double getMarginTop() {
 		return getElement().getProperty("marginTop", 0.0);
@@ -418,6 +436,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code animationDelay} property from the webcomponent
 	 */
 	public double getAnimationDelay() {
 		return getElement().getProperty("animationDelay", 0.0);
@@ -451,6 +471,8 @@ public class GeneratedPaperTooltip<R extends GeneratedPaperTooltip<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code target} property from the webcomponent
 	 */
 	protected JsonObject protectedGetTarget() {
 		return (JsonObject) getElement().getPropertyRaw("target");
