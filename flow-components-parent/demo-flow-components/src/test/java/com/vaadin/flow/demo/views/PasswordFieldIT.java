@@ -39,7 +39,8 @@ public class PasswordFieldIT extends ComponentDemoTest {
     public void valueChangeListenerReportsCorrectValues() {
         WebElement passwordField = getPasswordField();
         Assert.assertEquals(passwordField.getAttribute("placeholder"),
-                "placeholder text");
+                "Password");
+        checkRevealMessage();
 
         String input = "abc";
         passwordField.sendKeys(input);
@@ -47,15 +48,10 @@ public class PasswordFieldIT extends ComponentDemoTest {
                 .equals(getPasswordField().getAttribute("value")));
 
         boolean isShownOriginally = isRevealButtonShown();
-        checkRevealMessage(isShownOriginally);
-
         layout.findElement(By.id("toggleButton")).click();
-        if (isShownOriginally) {
-            waitUntil(driver -> !isRevealButtonShown());
-            checkRevealMessage(false);
-        } else {
-            checkRevealMessage(true);
-        }
+        waitUntil(driver -> isRevealButtonShown() != isShownOriginally);
+        layout.findElement(By.id("toggleButton")).click();
+        waitUntil(driver -> isRevealButtonShown() == isShownOriginally);
     }
 
     private WebElement getPasswordField() {
@@ -67,9 +63,14 @@ public class PasswordFieldIT extends ComponentDemoTest {
                 getPasswordField().getAttribute("revealButtonHidden"));
     }
 
-    private void checkRevealMessage(boolean shouldBeShown) {
-        assertThat("Unexpected visibility of eye button",
+    private void checkRevealMessage() {
+        String expectedString = Boolean.parseBoolean(
+                getPasswordField().getAttribute("passwordVisible")) ? "visible"
+                        : "hidden";
+        assertThat(String.format(
+                "Password should be %s and message label should end with '%s' string",
+                expectedString, expectedString),
                 layout.findElement(By.id("messageLabel")).getText(),
-                Matchers.endsWith(shouldBeShown ? "visible" : "hidden"));
+                Matchers.endsWith(expectedString));
     }
 }

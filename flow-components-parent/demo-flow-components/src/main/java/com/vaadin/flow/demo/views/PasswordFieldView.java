@@ -31,24 +31,24 @@ import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
 @HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Password Field", href = "vaadin-password-field")
 public class PasswordFieldView extends DemoView {
+
     @Override
     void initView() {
         // begin-source-example
         // source-example-heading: Basic password field
         PasswordField passwordField = new PasswordField();
         passwordField.setLabel("Password field label");
-        passwordField.setPlaceholder("placeholder text");
+        passwordField.setPlaceholder("Password");
 
-        Label message = new Label("Password is "
-                + (passwordField.isPasswordVisible() ? "visible" : "hidden"));
+        Label message = new Label(
+                updateMessageText(passwordField.isPasswordVisible()));
 
         Button button = new Button("Toggle eye icon", event -> passwordField
                 .setRevealButtonHidden(!passwordField.isRevealButtonHidden()));
 
         getElement().addPropertyChangeListener("passwordVisible",
-                event -> message.setText("Password is "
-                        + (passwordField.isPasswordVisible() ? "visible"
-                                : "hidden")));
+                event -> message.setText(
+                        updateMessageText(passwordField.isPasswordVisible())));
         // end-source-example
 
         button.setId("toggleButton");
@@ -58,5 +58,9 @@ public class PasswordFieldView extends DemoView {
         HorizontalLayout layout = new HorizontalLayout(passwordField, button);
         layout.setDefaultVerticalComponentAlignment(FlexLayout.Alignment.END);
         addCard("Basic password field", layout, message);
+    }
+
+    private String updateMessageText(boolean isPasswordVisible) {
+        return "Password is " + (isPasswordVisible ? "visible" : "hidden");
     }
 }
