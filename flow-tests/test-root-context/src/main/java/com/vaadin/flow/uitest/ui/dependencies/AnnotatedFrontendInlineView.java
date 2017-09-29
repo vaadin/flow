@@ -15,19 +15,19 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.shared.ui.LoadMode;
 
 @Tag("frontend-inline")
-@JavaScript(value = "frontend://components/frontend-inline.js", loadMode = LoadMode.INLINE)
-@HtmlImport(value = "frontend://components/frontend-inline.html", loadMode = LoadMode.INLINE)
-@StyleSheet(value = "frontend://components/frontend-inline.css", loadMode = LoadMode.INLINE)
+@JavaScript(value = "components/frontend-inline.js", loadMode = LoadMode.INLINE)
+@HtmlImport(value = "components/frontend-inline.html", loadMode = LoadMode.INLINE)
+@StyleSheet(value = "components/frontend-inline.css", loadMode = LoadMode.INLINE)
 public class AnnotatedFrontendInlineView extends PolymerTemplate<TemplateModel>
         implements View {
 

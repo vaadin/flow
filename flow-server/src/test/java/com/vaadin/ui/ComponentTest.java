@@ -32,8 +32,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentUtil;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.Registration;
+import com.vaadin.shared.ui.Dependency;
+import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.DependencyList;
 import com.vaadin.ui.common.DetachEvent;
@@ -41,20 +46,10 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.ui.Text;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.shared.Registration;
-import com.vaadin.shared.ui.Dependency;
-import com.vaadin.tests.util.TestUtil;
+import com.vaadin.ui.event.Synchronize;
 
 public class ComponentTest {
 
@@ -466,12 +461,10 @@ public class ComponentTest {
         TestComponentContainer child = new TestComponentContainer();
         TestComponent grandChild = new TestComponent();
         child.track();
-        Registration attachRegistrationHandle = grandChild
-                .addAttachListener(event -> grandChild.getAttachEvents()
-                        .incrementAndGet());
-        Registration detachRegistrationHandle = grandChild
-                .addDetachListener(event -> grandChild.getDetachEvents()
-                        .incrementAndGet());
+        Registration attachRegistrationHandle = grandChild.addAttachListener(
+                event -> grandChild.getAttachEvents().incrementAndGet());
+        Registration detachRegistrationHandle = grandChild.addDetachListener(
+                event -> grandChild.getDetachEvents().incrementAndGet());
 
         parent.add(child);
         child.add(grandChild);
@@ -1076,15 +1069,17 @@ public class ComponentTest {
 
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
-        Dependency dependency = pendingDependencies.get(url);
+        Dependency dependency = pendingDependencies.get("frontend://" + url);
         Assert.assertNotNull(
-                "Could not locate a dependency object for url=" + url, dependency);
+                "Could not locate a dependency object for url=" + url,
+                dependency);
         Assert.assertEquals(type, dependency.getType());
-        Assert.assertEquals(url, dependency.getUrl());
+        Assert.assertEquals("frontend://" + url, dependency.getUrl());
     }
 
-    private Map<String, Dependency> getDependenciesMap(Collection<Dependency> dependencies) {
-        return dependencies.stream()
-                .collect(Collectors.toMap(Dependency::getUrl, Function.identity()));
+    private Map<String, Dependency> getDependenciesMap(
+            Collection<Dependency> dependencies) {
+        return dependencies.stream().collect(
+                Collectors.toMap(Dependency::getUrl, Function.identity()));
     }
 }

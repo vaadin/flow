@@ -28,8 +28,8 @@ import com.vaadin.ui.paper.dialog.GeneratedPaperDialog;
  * View for {@link GeneratedPaperDialog} demo.
  */
 @ComponentDemo(name = "Paper Dialog", href = "paper-dialog", category = DemoCategory.PAPER)
-@HtmlImport("frontend://bower_components/neon-animation/neon-animations.html")
-@HtmlImport("frontend://bower_components/neon-animation/web-animations.html")
+@HtmlImport("bower_components/neon-animation/neon-animations.html")
+@HtmlImport("bower_components/neon-animation/web-animations.html")
 public class PaperDialogView extends DemoView {
 
     private Div message;
@@ -161,9 +161,8 @@ public class PaperDialogView extends DemoView {
         HtmlComponent p = new HtmlComponent("p");
         p.getElement().setText(text);
         dialog.add(p);
-        dialog.addOpenedChangeListener(evt -> message
-                .setText(dialog.isOpened() ? (title + " was opened")
-                        : (title + " was closed")));
+        dialog.addOpenedChangeListener(evt -> message.setText(dialog.isOpened()
+                ? (title + " was opened") : (title + " was closed")));
         return dialog;
     }
 

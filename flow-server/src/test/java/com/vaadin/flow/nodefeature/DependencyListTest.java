@@ -135,9 +135,10 @@ public class DependencyListTest {
                 String.format(
                         "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
                         expectedJson.toJson(),
-                        deps.getPendingSendToClient().iterator().next().toJson()),
-                JsonUtils.jsonEquals(expectedJson,
-                        deps.getPendingSendToClient().iterator().next().toJson()));
+                        deps.getPendingSendToClient().iterator().next()
+                                .toJson()),
+                JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient()
+                        .iterator().next().toJson()));
     }
 
     @Test
@@ -152,27 +153,50 @@ public class DependencyListTest {
         assertUrlUnchanged("ftp://some.host/some/where");
         assertUrlUnchanged("https://some.host/some/where");
         assertUrlUnchanged("//same.protocol.some.host/some/where");
-        assertUrlUnchanged("foo?bar");
-        assertUrlUnchanged("foo?bar=http://yah");
-        assertUrlUnchanged("foo/baz?bar=http://some.thing");
-        assertUrlUnchanged("foo/baz?bar=http://some.thing&ftp://bar");
+        assertFrontendPrefixed("foo?bar");
+        assertFrontendPrefixed("foo?bar=http://yah");
+        assertFrontendPrefixed("foo/baz?bar=http://some.thing");
+        assertFrontendPrefixed("foo/baz?bar=http://some.thing&ftp://bar");
+        assertUrlUnchanged("context://foo?bar=frontend://baz");
+    }
+
+    private void assertFrontendPrefixed(String url) {
+        assertDependencyUrl("frontend://" + url, url);
     }
 
     private void assertUrlUnchanged(String url) {
-        deps.add(new Dependency(Type.JAVASCRIPT, url, LoadMode.EAGER));
-        assertEquals(url, deps.getPendingSendToClient().iterator().next().getUrl());
+        assertDependencyUrl(url, url);
+    }
+
+    private void assertDependencyUrl(String expectedUrl, String dependencyUrl) {
+        addSimpleDependency(dependencyUrl);
+        assertEquals(expectedUrl,
+                deps.getPendingSendToClient().iterator().next().getUrl());
         deps.clearPendingSendToClient();
     }
 
     @Test
     public void urlAddedOnlyOnce() {
-        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", LoadMode.EAGER));
-        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", LoadMode.EAGER));
+        addSimpleDependency("foo/bar.js");
+        addSimpleDependency("foo/bar.js");
+        addSimpleDependency("frontend://foo/bar.js");
         assertEquals(1, deps.getPendingSendToClient().size());
         deps.clearPendingSendToClient();
 
-        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js", LoadMode.EAGER));
+        addSimpleDependency("foo/bar.js");
         assertEquals(0, deps.getPendingSendToClient().size());
+    }
+
+    @Test
+    public void relativeUrlBecomesFrontend() {
+        addSimpleDependency("foo.js");
+
+        Dependency dependency = deps.getPendingSendToClient().iterator().next();
+        assertEquals("frontend://foo.js", dependency.getUrl());
+    }
+
+    private void addSimpleDependency(String foo) {
+        deps.add(new Dependency(Type.JAVASCRIPT, foo, LoadMode.EAGER));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -188,8 +212,7 @@ public class DependencyListTest {
     public void addDependencyPerformance() {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {
-            deps.add(new Dependency(Type.JAVASCRIPT, "foo" + i + "/bar.js",
-                    LoadMode.EAGER));
+            addSimpleDependency("foo" + i + "/bar.js");
         }
         long time = System.currentTimeMillis() - start;
 
@@ -199,40 +222,39 @@ public class DependencyListTest {
 
     @Test
     public void ensureDependenciesSentToClientHaveTheSameOrderAsAdded() {
-        Dependency eagerHtml = new Dependency(Type.HTML_IMPORT,
-                "eager.html", LoadMode.EAGER);
-        Dependency eagerJs = new Dependency(Type.JAVASCRIPT,
-                "eager.js", LoadMode.EAGER);
-        Dependency eagerCss = new Dependency(Type.STYLESHEET,
-                "eager.css", LoadMode.EAGER);
-        Dependency lazyHtml = new Dependency(Type.HTML_IMPORT,
-                "lazy.html", LoadMode.LAZY);
-        Dependency lazyJs = new Dependency(Type.JAVASCRIPT,
-                "lazy.js", LoadMode.LAZY);
-        Dependency lazyCss = new Dependency(Type.STYLESHEET,
-                "lazy.css", LoadMode.LAZY);
-        assertEquals("Expected the dependency to be eager",
-                LoadMode.EAGER, eagerHtml.getLoadMode());
-        assertEquals("Expected the dependency to be eager",
-                LoadMode.EAGER, eagerJs.getLoadMode());
-        assertEquals("Expected the dependency to be eager",
-                LoadMode.EAGER, eagerCss.getLoadMode());
-        assertEquals("Expected the dependency to be lazy",
-                LoadMode.LAZY, lazyHtml.getLoadMode());
-        assertEquals("Expected the dependency to be lazy",
-                LoadMode.LAZY, lazyJs.getLoadMode());
-        assertEquals("Expected the dependency to be lazy",
-                LoadMode.LAZY, lazyCss.getLoadMode());
+        Dependency eagerHtml = new Dependency(Type.HTML_IMPORT, "eager.html",
+                LoadMode.EAGER);
+        Dependency eagerJs = new Dependency(Type.JAVASCRIPT, "eager.js",
+                LoadMode.EAGER);
+        Dependency eagerCss = new Dependency(Type.STYLESHEET, "eager.css",
+                LoadMode.EAGER);
+        Dependency lazyHtml = new Dependency(Type.HTML_IMPORT, "lazy.html",
+                LoadMode.LAZY);
+        Dependency lazyJs = new Dependency(Type.JAVASCRIPT, "lazy.js",
+                LoadMode.LAZY);
+        Dependency lazyCss = new Dependency(Type.STYLESHEET, "lazy.css",
+                LoadMode.LAZY);
+        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
+                eagerHtml.getLoadMode());
+        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
+                eagerJs.getLoadMode());
+        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
+                eagerCss.getLoadMode());
+        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
+                lazyHtml.getLoadMode());
+        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
+                lazyJs.getLoadMode());
+        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
+                lazyCss.getLoadMode());
 
-        List<Dependency> dependencies = new ArrayList<>(
-                Arrays.asList(eagerHtml, eagerJs,
-                        eagerCss, lazyHtml,
-                        lazyJs, lazyCss));
+        List<Dependency> dependencies = new ArrayList<>(Arrays.asList(eagerHtml,
+                eagerJs, eagerCss, lazyHtml, lazyJs, lazyCss));
         assertEquals("Expected to have 6 dependencies", 6, dependencies.size());
 
         Collections.shuffle(dependencies);
         dependencies.forEach(deps::add);
-        List<Dependency> pendingSendToClient = new ArrayList<>(deps.getPendingSendToClient());
+        List<Dependency> pendingSendToClient = new ArrayList<>(
+                deps.getPendingSendToClient());
 
         for (int i = 0; i < pendingSendToClient.size(); i++) {
             Dependency actualDependency = pendingSendToClient.get(i);
@@ -242,7 +264,8 @@ public class DependencyListTest {
                     expectedDependency.getUrl(), actualDependency.getUrl());
             assertEquals(
                     "Expected to have the same dependency on the same position for list, but load modes do not match",
-                    expectedDependency.getLoadMode(), actualDependency.getLoadMode());
+                    expectedDependency.getLoadMode(),
+                    actualDependency.getLoadMode());
         }
     }
 }

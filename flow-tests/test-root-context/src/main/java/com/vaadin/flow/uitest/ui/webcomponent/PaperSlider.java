@@ -24,7 +24,9 @@ import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DomEvent;
 
 @Tag("paper-slider")
-@HtmlImport("bower_components/paper-slider/paper-slider.html")
+// Have to use context://run here because the overall url mapping is seriously
+// screwed up in this project
+@HtmlImport("context://run/bower_components/paper-slider/paper-slider.html")
 public class PaperSlider extends Component implements HasValue {
     @DomEvent("value-change")
     public static class ValueChangeEvent extends ComponentEvent<PaperSlider> {

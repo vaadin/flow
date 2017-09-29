@@ -28,7 +28,7 @@ import com.vaadin.ui.layout.VerticalLayout;
  * View for {@link Icon} demo.
  */
 @ComponentDemo(name = "Icon", href = "icon")
-@StyleSheet("frontend://styles.css")
+@StyleSheet("styles.css")
 public class IconView extends DemoView {
 
     @Override

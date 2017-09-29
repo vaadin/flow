@@ -25,8 +25,8 @@ import java.lang.annotation.Target;
 
 import com.vaadin.annotations.InternalContainerAnnotationForHtml;
 import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.ui.WebComponents;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.WebComponents;
 
 /**
  * Annotation for defining HTML dependencies on a {@link Component} class. For
@@ -52,21 +52,22 @@ public @interface HtmlImport {
      * HTML file URL to load before using the annotated {@link Component} in the
      * browser.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
-     * <p>
-     * When using compiled web components, you can prefix the URL with
-     * {@literal frontend://} to serve different files to different browsers,
-     * based on their ES6 support. For example, when using
-     * {@literal frontend://MyComponent.html}, the evaluated URL will be:
+     * When using compiled web components, you can use a relative URL or prefix
+     * the URL with {@code frontend://} to serve different files to different
+     * browsers, based on their ES6 support. For example, when using
+     * {@code "MyComponent.html"}, the evaluated URL will be:
      * <ul>
-     * <li>{@literal context://VAADIN/static/frontend/es6/MyComponent.html} for
-     * ES6 capable browsers;</li>
-     * <li>{@literal context://VAADIN/static/frontend/es5/MyComponent.html} for
-     * other browsers.</li>
+     * <li>{@code context://frontend/MyComponent.html} during development;</li>
+     * <li>{@code context://frontend-es6/MyComponent.html} for ES6 capable
+     * browsers;</li>
+     * <li>{@code context://frontend-es5/MyComponent.html} for other
+     * browsers.</li>
      * </ul>
+     * <p>
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      *
      * @return a html file URL
      * @see WebComponents
