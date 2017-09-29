@@ -42,7 +42,7 @@ public class LocationChangeEventTest {
     public void setup() {
         UI ui = new RouterTestUI();
 
-        event = new LocationChangeEvent(ui.getRouter().get(), ui,
+        event = new LocationChangeEvent(ui.getRouterInterface().get(), ui,
                 NavigationTrigger.PROGRAMMATIC, new Location(""),
                 Arrays.asList(new AnotherTestView(), new AnotherParentView()),
                 Collections.emptyMap());
