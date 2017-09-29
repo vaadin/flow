@@ -81,6 +81,7 @@ public interface VaadinUriResolverFactory extends Serializable {
         assert uriResolver != null;
 
         String uri = getUriResolver(request).resolveVaadinUri(path);
+        assert uri != null;
         if (request instanceof VaadinServletRequest) {
             VaadinServletRequest servletRequest = (VaadinServletRequest) request;
 

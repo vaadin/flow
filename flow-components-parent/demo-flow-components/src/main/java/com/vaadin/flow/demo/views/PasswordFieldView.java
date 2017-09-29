@@ -25,8 +25,8 @@ import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
 /**
  * View for {@link GeneratedVaadinPasswordField} demo.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-text-field.html")
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-text-field.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Password Field", href = "vaadin-password-field")
 public class PasswordFieldView extends DemoView {
     @Override
