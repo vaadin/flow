@@ -37,10 +37,12 @@ public class PolymerPropertyMutationInObserverIT extends ChromeBrowserTest {
                 modelValueDivs.size());
         Assert.assertEquals(
                 "First value change should equal the initially set server side value",
-                "initially set value", modelValueDivs.get(0).getText());
+                "Event old value: null, event value: initially set value, current model value: initially set value",
+                modelValueDivs.get(0).getText());
         Assert.assertEquals(
                 "Observer mutation has been transmitted to the server",
-                "mutated", modelValueDivs.get(1).getText());
+                "Event old value: initially set value, event value: mutated, current model value: mutated",
+                modelValueDivs.get(1).getText());
 
         WebElement template = findElement(By.id("template"));
         getInShadowRoot(template, By.id("input")).sendKeys(Keys.BACK_SPACE);
@@ -48,10 +50,12 @@ public class PolymerPropertyMutationInObserverIT extends ChromeBrowserTest {
         modelValueDivs = findElements(By.className("model-value"));
         Assert.assertEquals("Value changed 4 times in total after backspace", 4,
                 modelValueDivs.size());
-        Assert.assertEquals("User action mutation synced to server", "mutate",
+        Assert.assertEquals("User action mutation synced to server",
+                "Event old value: mutated, event value: mutate, current model value: mutated",
                 modelValueDivs.get(2).getText());
         Assert.assertEquals(
                 "Observer mutation acting on the user action mutation synced to server",
-                "mutated", modelValueDivs.get(3).getText());
+                "Event old value: mutate, event value: mutated, current model value: mutated",
+                modelValueDivs.get(3).getText());
     }
 }

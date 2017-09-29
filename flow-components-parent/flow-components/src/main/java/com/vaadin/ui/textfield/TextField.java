@@ -28,20 +28,13 @@ public class TextField extends GeneratedVaadinTextField<TextField>
 
     /**
      * Constructs an empty {@code TextField}.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      */
     public TextField() {
         getElement().synchronizeProperty("hasValue", "value-changed");
-        clear();
     }
 
     /**
      * Constructs an empty {@code TextField} with the given label.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -54,9 +47,6 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     /**
      * Constructs an empty {@code TextField} with the given label and
      * placeholder text.
-     * <p>
-     * Using this constructor, any value previously set at the client-side is
-     * cleared.
      *
      * @param label
      *            the text to set as the label
@@ -68,6 +58,78 @@ public class TextField extends GeneratedVaadinTextField<TextField>
         setPlaceholder(placeholder);
     }
 
+    /**
+     * Constructs a {@code TextField} with the given label, an initial value and
+     * placeholder text.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param initialValue
+     *            the initial value
+     * @param placeholder
+     *            the placeholder text to set
+     *
+     * @see #setValue(String)
+     * @see #setPlaceholder(String)
+     */
+    public TextField(String label, String initialValue, String placeholder) {
+        this(label);
+        setValue(initialValue);
+        setPlaceholder(placeholder);
+    }
+
+    /**
+     * Constructs an empty {@code TextField} with a value change listener.
+     *
+     * @param listener
+     *            the value change listener
+     *
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public TextField(ValueChangeListener<TextField, String> listener) {
+        this();
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Constructs an empty {@code TextField} with a label and a value change
+     * listener.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param listener
+     *            the value change listener
+     * @see #setLabel(String)
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public TextField(String label,
+            ValueChangeListener<TextField, String> listener) {
+        this(label);
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Constructs an empty {@code TextField} with a label,a value change
+     * listener and an initial value.
+     *
+     * @param label
+     *            the text to set as the label
+     * @param initialValue
+     *            the initial value
+     * @param listener
+     *            the value change listener
+     *
+     * @see #setLabel(String)
+     * @see #setValue(String)
+     * @see #addValueChangeListener(com.vaadin.ui.common.HasValue.ValueChangeListener)
+     */
+    public TextField(String label, String initialValue,
+            ValueChangeListener<TextField, String> listener) {
+        this(label);
+        setValue(initialValue);
+        addValueChangeListener(listener);
+    }
+
     @Override
     public String getEmptyValue() {
         return "";
@@ -76,5 +138,11 @@ public class TextField extends GeneratedVaadinTextField<TextField>
     @Override
     public boolean hasValue() {
         return !isEmpty();
+    }
+
+    @Override
+    public String getValue() {
+        String value = super.getValue();
+        return value == null ? getEmptyValue() : value;
     }
 }

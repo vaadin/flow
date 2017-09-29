@@ -141,6 +141,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autofocus} property from the webcomponent
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -171,6 +173,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
@@ -186,6 +190,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -216,6 +222,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'checked-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code checked} property from the webcomponent
 	 */
 	@Synchronize(property = "checked", value = "checked-changed")
 	@Override
@@ -256,6 +264,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'indeterminate-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code indeterminate} property from the webcomponent
 	 */
 	@Synchronize(property = "indeterminate", value = "indeterminate-changed")
 	public boolean isIndeterminate() {
@@ -290,6 +300,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code name} property from the webcomponent
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -321,6 +333,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code value} property from the webcomponent
 	 */
 	public String getPostValue() {
 		return getElement().getProperty("value");

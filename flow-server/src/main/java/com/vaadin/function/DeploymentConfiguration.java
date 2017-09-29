@@ -178,7 +178,7 @@ public interface DeploymentConfiguration extends Serializable {
      *             if property value string is not a boolean value
      */
     default boolean getBooleanProperty(String propertyName,
-                                       boolean defaultValue) throws IllegalArgumentException {
+            boolean defaultValue) throws IllegalArgumentException {
         String booleanString = getStringProperty(propertyName, null);
         if (booleanString == null) {
             return defaultValue;
@@ -240,7 +240,7 @@ public interface DeploymentConfiguration extends Serializable {
     default String getEs6BuildUrl() {
         String defaultUrl = isProductionMode()
                 ? Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
-                        : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
         return getStringProperty(Constants.FRONTEND_URL_ES6, defaultUrl);
     }
@@ -254,7 +254,7 @@ public interface DeploymentConfiguration extends Serializable {
     default String getEs5BuildUrl() {
         String defaultUrl = isProductionMode()
                 ? Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
-                        : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
 
         return getStringProperty(Constants.FRONTEND_URL_ES5, defaultUrl);
     }
@@ -268,5 +268,17 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean isUsingNewRouting() {
         return false;
+    }
+
+    /**
+     * Determines if webJars mechanism is enabled. It is disabled if the user
+     * have explicitly set {@link Constants#DISABLE_WEBJARS} property to
+     * {@code true} or the user have not set the property at all and the
+     * production mode is enabled.
+     *
+     * @return {@code true} if webJars are enabled, {@code false} otherwise
+     */
+    default boolean areWebJarsEnabled() {
+        return !getBooleanProperty(Constants.DISABLE_WEBJARS, isProductionMode());
     }
 }

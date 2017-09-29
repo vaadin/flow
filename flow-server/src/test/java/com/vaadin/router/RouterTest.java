@@ -198,7 +198,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public Optional<RouterInterface> getRouter() {
+        public Optional<RouterInterface> getRouterInterface() {
             return Optional.of(router);
         }
     }
