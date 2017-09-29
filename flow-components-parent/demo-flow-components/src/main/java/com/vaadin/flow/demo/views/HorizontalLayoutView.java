@@ -27,7 +27,7 @@ import com.vaadin.ui.layout.HorizontalLayout;
 /**
  * View for the {@link HorizontalLayout} component.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Horizontal Layout", href = "horizontal-layout", subcategory = "Layouts")
 public class HorizontalLayoutView extends DemoView {
 

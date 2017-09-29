@@ -86,6 +86,7 @@ public interface VaadinUriResolverFactory extends Serializable {
 
             String servletPath = servletRequest.getServletPath();
             assert servletPath != null;
+            assert uri != null;
             if (!servletPath.endsWith("/") && !uri.startsWith("/")) {
                 servletPath += "/";
             } else if (servletPath.endsWith("/") && uri.startsWith("/")) {

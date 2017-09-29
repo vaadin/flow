@@ -226,32 +226,32 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
 
         Elements scripts = page.head().getElementsByTag("script");
-        boolean found = scripts.stream().anyMatch(
-                element -> element.attr("src").equals("imported-by-filter.js"));
+        boolean found = scripts.stream().anyMatch(element -> element.attr("src")
+                .equals("./imported-by-filter.js"));
         Assert.assertTrue(
                 "imported-by-filter.js should be in the head of the page",
                 found);
 
         found = scripts.stream().anyMatch(element -> element.attr("src")
-                .equals("imported-by-filter2.js"));
+                .equals(".imported-by-filter2.js"));
         Assert.assertFalse(
                 "imported-by-filter2.js shouldn't be in the head of the page",
                 found);
 
         found = scripts.stream()
-                .anyMatch(element -> element.attr("src").equals("eager.js"));
+                .anyMatch(element -> element.attr("src").equals("./eager.js"));
         Assert.assertFalse("eager.js shouldn't be in the head of the page",
                 found);
 
         Elements links = page.head().getElementsByTag("link");
         found = links.stream().anyMatch(element -> element.attr("href")
-                .equals("imported-by-filter.css"));
+                .equals("./imported-by-filter.css"));
         Assert.assertTrue(
                 "imported-by-filter.css should be in the head of the page",
                 found);
 
         found = links.stream().anyMatch(element -> element.attr("href")
-                .equals("imported-by-filter.html"));
+                .equals("./imported-by-filter.html"));
         Assert.assertTrue(
                 "imported-by-filter.html should be in the head of the page",
                 found);

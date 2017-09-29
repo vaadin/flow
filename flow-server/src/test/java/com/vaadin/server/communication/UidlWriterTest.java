@@ -45,9 +45,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.junit.After;
 import org.junit.Test;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.HasChildView;
@@ -70,6 +67,9 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -158,9 +158,12 @@ public class UidlWriterTest {
     }
 
     @Tag("test")
-    @JavaScript(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "inline.js", loadMode = LoadMode.INLINE)
-    @StyleSheet(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "inline.css", loadMode = LoadMode.INLINE)
-    @HtmlImport(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "inline.html", loadMode = LoadMode.INLINE)
+    @JavaScript(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+            + "inline.js", loadMode = LoadMode.INLINE)
+    @StyleSheet(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+            + "inline.css", loadMode = LoadMode.INLINE)
+    @HtmlImport(value = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+            + "inline.html", loadMode = LoadMode.INLINE)
     public static class ComponentWithFrontendProtocol extends Component {
     }
 
@@ -207,9 +210,10 @@ public class UidlWriterTest {
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
 
-        JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
-                // Null since element is not attached
-                Json.createNull(), Json.create("$0.focus()")),
+        JsonArray expectedJson = JsonUtils.createArray(
+                JsonUtils.createArray(
+                        // Null since element is not attached
+                        Json.createNull(), Json.create("$0.focus()")),
                 JsonUtils.createArray(Json.create("Lives remaining:"),
                         Json.create(3), Json.create("console.log($0, $1)")));
 
@@ -304,10 +308,11 @@ public class UidlWriterTest {
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
                         .collect(Collectors.toList()),
                 hasSize(0));
-        assertThat("Should have 3 different eager urls",
-                eagerDependencies.stream()
-                        .map(json -> json.getString(Dependency.KEY_URL))
-                        .collect(Collectors.toList()),
+        assertThat("Should have 3 different eager urls", eagerDependencies
+                .stream().map(json -> json.getString(Dependency.KEY_URL))
+                .map(url -> url.substring(
+                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length()))
+                .collect(Collectors.toList()),
                 containsInAnyOrder("eager.js", "eager.html", "eager.css"));
         assertThat("Should have 3 different eager dependency types",
                 eagerDependencies.stream()
@@ -324,10 +329,11 @@ public class UidlWriterTest {
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
                         .collect(Collectors.toList()),
                 hasSize(0));
-        assertThat("Should have 3 different lazy urls",
-                lazyDependencies.stream()
-                        .map(json -> json.getString(Dependency.KEY_URL))
-                        .collect(Collectors.toList()),
+        assertThat("Should have 3 different lazy urls", lazyDependencies
+                .stream().map(json -> json.getString(Dependency.KEY_URL))
+                .map(url -> url.substring(
+                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length()))
+                .collect(Collectors.toList()),
                 containsInAnyOrder("lazy.js", "lazy.html", "lazy.css"));
         assertThat("Should have 3 different lazy dependency types",
                 lazyDependencies.stream()
@@ -349,8 +355,10 @@ public class UidlWriterTest {
 
         doAnswer(invocation -> {
             String path = (String) invocation.getArguments()[1];
-            if (path.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
-                return path.substring(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
+            if (path.startsWith(
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
+                return path.substring(
+                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
             }
             return path;
         }).when(factory).toServletContextPath(any(), anyString());
@@ -359,6 +367,11 @@ public class UidlWriterTest {
         JsonObject response = uidlWriter.createUidl(ui, false);
         List<JsonObject> inlineDependencies = JsonUtils
                 .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
+                // Put frontend prefix back to satisfy the following assert
+                .peek(dependency -> dependency.put(Dependency.KEY_CONTENTS,
+                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                + dependency
+                                        .getString(Dependency.KEY_CONTENTS)))
                 .collect(Collectors.toList());
 
         assertInlineDependencies(inlineDependencies);
@@ -411,10 +424,11 @@ public class UidlWriterTest {
                         .filter(json -> json.hasKey(Dependency.KEY_URL))
                         .collect(Collectors.toList()),
                 hasSize(0));
-        assertThat("Should have 3 different inline contents",
-                inlineDependencies.stream()
-                        .map(json -> json.getString(Dependency.KEY_CONTENTS))
-                        .collect(Collectors.toList()),
+        assertThat("Should have 3 different inline contents", inlineDependencies
+                .stream().map(json -> json.getString(Dependency.KEY_CONTENTS))
+                .map(url -> url.substring(
+                        ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length()))
+                .collect(Collectors.toList()),
                 containsInAnyOrder("inline.js", "inline.html", "inline.css"));
         assertThat("Should have 3 different inline dependency type",
                 inlineDependencies.stream()
@@ -525,6 +539,7 @@ public class UidlWriterTest {
 
     private void assertDependency(String url, String type,
             Map<String, JsonObject> dependenciesMap) {
+        url = ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + url;
         JsonObject jsonValue = dependenciesMap.get(url);
         assertNotNull(
                 "Expected dependencies map to have dependency with key=" + url,

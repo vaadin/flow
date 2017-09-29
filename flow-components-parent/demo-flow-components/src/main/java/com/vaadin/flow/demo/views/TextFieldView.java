@@ -24,7 +24,7 @@ import com.vaadin.ui.textfield.TextField;
 /**
  * View for {@link GeneratedVaadinTextField} demo.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-text-field.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-text-field.html")
 @ComponentDemo(name = "Text Field", href = "vaadin-text-field")
 public class TextFieldView extends DemoView {
     @Override

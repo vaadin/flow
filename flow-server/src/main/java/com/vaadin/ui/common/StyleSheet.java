@@ -51,10 +51,10 @@ public @interface StyleSheet {
      * Style sheet file URL to load before using the annotated {@link Component}
      * in the browser.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      *
      * @return a style sheet file URL
      */

@@ -302,18 +302,18 @@ public class BootstrapHandlerDependenciesTest {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            assertCssElementLoadedEagerly(head, "eager.css");
+            assertCssElementLoadedEagerly(head, "./eager.css");
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
-            assertJavaScriptElementLoadedEagerly(head, "eager.js");
-            assertHtmlElementLoadedEagerly(head, "eager.html");
+            assertJavaScriptElementLoadedEagerly(head, "./eager.js");
+            assertHtmlElementLoadedEagerly(head, "./eager.html");
 
-            assertCssElementInlined(head, "inline.css");
-            assertJavaScriptElementInlined(head, "inline.js");
-            assertHtmlElementInlined(page.body(), "inline.html");
+            assertCssElementInlined(head, "frontend://inline.css");
+            assertJavaScriptElementInlined(head, "frontend://inline.js");
+            assertHtmlElementInlined(page.body(), "frontend://inline.html");
 
-            assertElementLazyLoaded(head, "lazy.js");
-            assertElementLazyLoaded(head, "lazy.css");
-            assertElementLazyLoaded(head, "lazy.html");
+            assertElementLazyLoaded(head, "./lazy.js");
+            assertElementLazyLoaded(head, "./lazy.css");
+            assertElementLazyLoaded(head, "./lazy.html");
         };
         testUis(uiPageTestingMethod, new UIAnnotated_LoadingOrderTest(),
                 new UIWithMethods_LoadingOrderTest());

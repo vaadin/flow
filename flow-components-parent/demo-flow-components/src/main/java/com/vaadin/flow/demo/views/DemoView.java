@@ -36,7 +36,7 @@ import com.vaadin.ui.html.H3;
  * Base class for all the Views that demo some component.
  */
 @Tag("div")
-@StyleSheet("frontend://src/css/demo.css")
+@StyleSheet("src/css/demo.css")
 public abstract class DemoView extends Component
         implements View, HasComponents {
 
@@ -78,11 +78,11 @@ public abstract class DemoView extends Component
     /**
      * Create and add a new component card to the view. It automatically adds
      * any source code examples with the same heading to the bottom of the card.
-     * 
+     *
      * @param heading
      *            the header text of the card, that is added to the layout. If
      *            <code>null</code> or empty, the header is not added
-     * 
+     *
      * @param components
      *            components to add on creation. If <code>null</code> or empty,
      *            the card is created without the components inside
