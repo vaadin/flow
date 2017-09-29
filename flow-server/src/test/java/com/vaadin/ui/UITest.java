@@ -152,7 +152,7 @@ public class UITest {
         QueryParameters params = QueryParameters
                 .simple(Collections.singletonMap("test", "indeed"));
 
-        ui.getRouter().get().reconfigure(c -> c.setRoute(route, event -> {
+        ui.getRouterInterface().get().reconfigure(c -> c.setRoute(route, event -> {
             assertEquals(params.getParameters(),
                     event.getLocation().getQueryParameters().getParameters());
             requestHandled = true;

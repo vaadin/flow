@@ -398,7 +398,7 @@ public class RouterLink extends Component
         Optional<RouterInterface> router = Optional.empty();
         if (getElement().getNode().isAttached()) {
             StateTree tree = (StateTree) getElement().getNode().getOwner();
-            router = tree.getUI().getRouter();
+            router = tree.getUI().getRouterInterface();
             if (!router.isPresent()) {
                 throw new IllegalArgumentException(
                         "RouterLink cannot be used if Router is not used");
