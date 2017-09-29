@@ -127,6 +127,42 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
+	public void linkPaths(java.lang.String to, java.lang.String from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
 	protected void linkPaths(elemental.json.JsonObject to,
 			elemental.json.JsonObject from) {
 		getElement().callFunction("linkPaths", to, from);
@@ -146,43 +182,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
 	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
-	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -280,7 +280,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -313,7 +313,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -414,8 +414,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code double}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -443,8 +443,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code double}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -471,7 +471,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -498,7 +498,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -526,7 +526,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonArray}. Functions with return types
+	 * <code>elemental.json.JsonArray</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -560,7 +560,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonArray}. Functions with return types
+	 * <code>elemental.json.JsonArray</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -593,7 +593,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -620,7 +620,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param path
@@ -647,8 +647,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code double}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -676,8 +676,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code double}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>double</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param path
 	 *            Path to array.
@@ -755,8 +755,8 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code class java.lang.String}. Functions with return types different
-	 * than void are not supported at this moment.
+	 * <code>java.lang.String</code>. Functions with return types different than
+	 * void are not supported at this moment.
 	 * 
 	 * @param url
 	 *            URL to resolve.

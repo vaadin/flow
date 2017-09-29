@@ -1106,8 +1106,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code boolean}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param element
 	 *            A candidate descendant element that implements
@@ -1126,7 +1126,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code interface elemental.json.JsonObject}. Functions with return types
+	 * <code>elemental.json.JsonObject</code>. Functions with return types
 	 * different than void are not supported at this moment.
 	 * 
 	 * @param item
@@ -1281,8 +1281,8 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code boolean}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param event
 	 *            Missing documentation!

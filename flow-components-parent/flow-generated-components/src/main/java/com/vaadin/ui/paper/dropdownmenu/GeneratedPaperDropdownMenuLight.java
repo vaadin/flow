@@ -1096,8 +1096,8 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code boolean}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param event
 	 *            Missing documentation!
@@ -1148,8 +1148,8 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code boolean}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 */
 	@NotSupported
 	protected void hasRipple() {
@@ -1158,8 +1158,8 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	/**
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code boolean}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 */
 	@NotSupported
 	protected void hasValidator() {
@@ -1176,8 +1176,8 @@ public class GeneratedPaperDropdownMenuLight<R extends GeneratedPaperDropdownMen
 	 * </p>
 	 * <p>
 	 * This function is not supported by Flow because it returns a
-	 * {@code boolean}. Functions with return types different than void are not
-	 * supported at this moment.
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param value
 	 *            Deprecated: The value to be validated. By default, it is
