@@ -20,9 +20,9 @@ import java.util.EventObject;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.NavigationState;
 import com.vaadin.router.NavigationStateBuilder;
 import com.vaadin.router.NavigationStateRenderer;
@@ -201,7 +201,8 @@ public class BeforeNavigationEvent extends EventObject {
      */
     public <T> void rerouteTo(String route, T routeParam) {
         Optional<Class<? extends Component>> optionalTarget = getSource()
-                .getRegistry().getNavigationTarget(route);
+                .getRegistry().getNavigationTarget(route,
+                        Arrays.asList(routeParam.toString()));
 
         if (optionalTarget.isPresent()) {
             boolean hasUrlParameter = HasUrlParameter.class

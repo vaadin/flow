@@ -58,3 +58,28 @@ public class OptionalGreeting extends Div implements HasUrlParameter<String> {
 
 [NOTE] Also with an optional parameter a specific route will have precedence over the parametrised one.
 
+== Wildcard URL parameters for Navigation Targets
+
+In cases where more parameters are wanted the URL parameter can also be annotated with `@WildcardParameter`
+to have the route match *greet* and anything after for instance *greet/one/five/three*
+
+[source,java]
+----
+@Route("greet")
+public class WildcardGreeting extends Div implements HasUrlParameter<String> {
+
+    @Override
+    public void setParameter(BeforeNavigationEvent event,
+            @WildcardParameter String parameter) {
+        if(parameter.isEmpty()) {
+            setText("Welcome anonymous.");
+        } else {
+            setText(String.format("Handling parameter %s.", parameter));
+        }
+    }
+}
+----
+
+[NOTE] The parameter for Wildcard parameter will never be `null`.
+
+[NOTE] More specific paths will have precedence over the wildcard target.

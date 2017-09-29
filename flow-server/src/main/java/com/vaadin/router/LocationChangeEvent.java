@@ -24,7 +24,6 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.ui.UI;
 
