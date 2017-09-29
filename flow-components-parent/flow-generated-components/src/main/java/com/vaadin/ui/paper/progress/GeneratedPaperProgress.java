@@ -210,6 +210,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code value} property from the webcomponent
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	@Override
@@ -267,6 +269,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'min-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code min} property from the webcomponent
 	 */
 	@Synchronize(property = "min", value = "min-changed")
 	public double getMin() {
@@ -298,6 +302,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'max-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code max} property from the webcomponent
 	 */
 	@Synchronize(property = "max", value = "max-changed")
 	public double getMax() {
@@ -329,6 +335,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'step-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code step} property from the webcomponent
 	 */
 	@Synchronize(property = "step", value = "step-changed")
 	public double getStep() {
@@ -360,6 +368,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'ratio-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code ratio} property from the webcomponent
 	 */
 	@Synchronize(property = "ratio", value = "ratio-changed")
 	public double getRatio() {
@@ -376,6 +386,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code secondaryProgress} property from the webcomponent
 	 */
 	public double getSecondaryProgress() {
 		return getElement().getProperty("secondaryProgress", 0.0);
@@ -406,6 +418,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code secondaryRatio} property from the webcomponent
 	 */
 	public double getSecondaryRatio() {
 		return getElement().getProperty("secondaryRatio", 0.0);
@@ -421,6 +435,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code indeterminate} property from the webcomponent
 	 */
 	public boolean isIndeterminate() {
 		return getElement().getProperty("indeterminate", false);
@@ -451,6 +467,8 @@ public class GeneratedPaperProgress<R extends GeneratedPaperProgress<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);

@@ -61,6 +61,8 @@ public class GeneratedVaadinComboBoxSpinner<R extends GeneratedVaadinComboBoxSpi
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code active} property from the webcomponent
 	 */
 	public boolean isActive() {
 		return getElement().getProperty("active", false);

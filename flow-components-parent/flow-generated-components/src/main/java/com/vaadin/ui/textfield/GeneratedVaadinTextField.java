@@ -140,6 +140,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autofocus} property from the webcomponent
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -170,6 +172,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
 	 */
 	public boolean isFocused() {
 		return getElement().getProperty("focused", false);
@@ -185,6 +189,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	public boolean isDisabled() {
 		return getElement().getProperty("disabled", false);
@@ -218,6 +224,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autocomplete} property from the webcomponent
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -255,6 +263,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autocorrect} property from the webcomponent
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
@@ -289,6 +299,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code errorMessage} property from the webcomponent
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -320,6 +332,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code label} property from the webcomponent
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -351,6 +365,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code list} property from the webcomponent
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
@@ -383,6 +399,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code maxlength} property from the webcomponent
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
@@ -415,6 +433,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code minlength} property from the webcomponent
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
@@ -446,6 +466,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code name} property from the webcomponent
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -477,6 +499,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code pattern} property from the webcomponent
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
@@ -508,6 +532,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code placeholder} property from the webcomponent
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -540,6 +566,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code readonly} property from the webcomponent
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -571,6 +599,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code required} property from the webcomponent
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -601,6 +631,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code title} property from the webcomponent
 	 */
 	public String getTitle() {
 		return getElement().getProperty("title");
@@ -632,6 +664,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code value} property from the webcomponent
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	@Override
@@ -668,6 +702,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code invalid} property from the webcomponent
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -700,6 +736,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code hasValue} property from the webcomponent
 	 */
 	public boolean hasValue() {
 		return getElement().getProperty("hasValue", false);
@@ -716,6 +754,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code preventInvalidInput} property from the webcomponent
 	 */
 	public boolean isPreventInvalidInput() {
 		return getElement().getProperty("preventInvalidInput", false);
@@ -745,8 +785,10 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * Returns true if {@code value} is valid. {@code <iron-form>} uses this to
 	 * check the validity or all its elements.
 	 * </p>
-	 * 
-	 * @return It would return a boolean
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 */
 	@NotSupported
 	protected void validate() {
