@@ -289,7 +289,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void frontendProtocol_notInProductionMode_useContext() {
+    public void frontendProtocol_notInProductionMode_useDefaultFrontend() {
         initUI(testUI);
         deploymentConfiguration.setProductionMode(false);
         WebBrowser mockedWebBrowser = Mockito.mock(WebBrowser.class);
@@ -303,14 +303,14 @@ public class BootstrapHandlerTest {
         String urlES6 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
 
-        assertEquals(resolvedContext + "foo", urlES6);
+        assertEquals(resolvedContext + "frontend/foo", urlES6);
 
         Mockito.when(mockedWebBrowser.isEs6Supported()).thenReturn(false);
 
         String urlES5 = context.getUriResolver().resolveVaadinUri(
                 ApplicationConstants.FRONTEND_PROTOCOL_PREFIX + "foo");
 
-        assertEquals(resolvedContext + "foo", urlES5);
+        assertEquals(resolvedContext + "frontend/foo", urlES5);
 
         Mockito.verify(session, Mockito.times(3)).getBrowser();
     }
