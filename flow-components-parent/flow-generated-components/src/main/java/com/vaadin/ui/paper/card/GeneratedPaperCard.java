@@ -142,6 +142,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code heading} property from the webcomponent
 	 */
 	public String getHeading() {
 		return getElement().getProperty("heading");
@@ -172,6 +174,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code image} property from the webcomponent
 	 */
 	public String getImage() {
 		return getElement().getProperty("image");
@@ -202,6 +206,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code alt} property from the webcomponent
 	 */
 	public String getAlt() {
 		return getElement().getProperty("alt");
@@ -233,6 +239,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code preloadImage} property from the webcomponent
 	 */
 	public boolean isPreloadImage() {
 		return getElement().getProperty("preloadImage", false);
@@ -265,6 +273,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code fadeImage} property from the webcomponent
 	 */
 	public boolean isFadeImage() {
 		return getElement().getProperty("fadeImage", false);
@@ -298,6 +308,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code placeholderImage} property from the webcomponent
 	 */
 	public String getPlaceholderImage() {
 		return getElement().getProperty("placeholderImage");
@@ -331,6 +343,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code elevation} property from the webcomponent
 	 */
 	public double getElevation() {
 		return getElement().getProperty("elevation", 0.0);
@@ -362,6 +376,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code animatedShadow} property from the webcomponent
 	 */
 	public boolean isAnimatedShadow() {
 		return getElement().getProperty("animatedShadow", false);
@@ -394,6 +410,8 @@ public class GeneratedPaperCard<R extends GeneratedPaperCard<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code animated} property from the webcomponent
 	 */
 	public boolean isAnimated() {
 		return getElement().getProperty("animated", false);

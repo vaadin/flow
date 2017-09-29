@@ -96,6 +96,8 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code revealButtonHidden} property from the webcomponent
 	 */
 	public boolean isRevealButtonHidden() {
 		return getElement().getProperty("revealButtonHidden", false);
@@ -126,6 +128,8 @@ public class GeneratedVaadinPasswordField<R extends GeneratedVaadinPasswordField
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code passwordVisible} property from the webcomponent
 	 */
 	public boolean isPasswordVisible() {
 		return getElement().getProperty("passwordVisible", false);

@@ -27,19 +27,21 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.util.AnnotationReader;
-import com.vaadin.server.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServletHelper.RequestType;
+import com.vaadin.server.VaadinServletConfiguration.InitParameterName;
+import com.vaadin.server.webjar.WebJarServer;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
+import com.vaadin.util.AnnotationReader;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -56,9 +58,9 @@ import com.vaadin.util.CurrentInstance;
  * @author Vaadin Ltd
  */
 public class VaadinServlet extends HttpServlet {
-
     private VaadinServletService servletService;
     private StaticFileServer staticFileServer;
+    private WebJarServer webJarServer;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -72,8 +74,7 @@ public class VaadinServlet extends HttpServlet {
      *             servlet's normal operation.
      */
     @Override
-    public void init(javax.servlet.ServletConfig servletConfig)
-            throws ServletException {
+    public void init(ServletConfig servletConfig) throws ServletException {
         verifyServletVersion();
         CurrentInstance.clearAll();
         super.init(servletConfig);
@@ -107,7 +108,11 @@ public class VaadinServlet extends HttpServlet {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
 
-        staticFileServer = createStaticFileServer();
+        staticFileServer = new StaticFileServer(servletService);
+
+        if (deploymentConfiguration.areWebJarsEnabled()) {
+            webJarServer = new WebJarServer();
+        }
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -119,7 +124,7 @@ public class VaadinServlet extends HttpServlet {
 
     private static void verifyServletVersion() throws ServletException {
         try {
-            Method m = javax.servlet.http.HttpServletResponse.class
+            Method m = HttpServletResponse.class
                     .getMethod("setContentLengthLong", long.class);
             if (m != null) {
                 return;
@@ -149,9 +154,10 @@ public class VaadinServlet extends HttpServlet {
         if (optionalConfigAnnotation.isPresent()) {
             VaadinServletConfiguration configuration = optionalConfigAnnotation
                     .get();
-            if (configuration.ui() == UI.class && configuration
-                    .routerConfigurator() == RouterConfigurator.class
-                    && configuration.usingNewRouting() == false) {
+            if (configuration.ui() == UI.class
+                    && configuration
+                            .routerConfigurator() == RouterConfigurator.class
+                    && !configuration.usingNewRouting()) {
                 throw new ServletException(String.format(
                         "At least one of 'ui' and 'routerConfigurator' must be defined in @%s if 'usingNewRouting' is false",
                         VaadinServletConfiguration.class.getSimpleName()));
@@ -279,6 +285,9 @@ public class VaadinServlet extends HttpServlet {
 
         if (staticFileServer.isStaticResourceRequest(request)) {
             staticFileServer.serveStaticResource(request, response);
+            return;
+        }
+        if (webJarServer != null && webJarServer.tryServeWebJarResource(request, response)) {
             return;
         }
 
@@ -439,25 +448,6 @@ public class VaadinServlet extends HttpServlet {
     }
 
     /**
-     * Remove any heading or trailing "what" from the "string".
-     *
-     * @param string
-     * @param what
-     * @return
-     */
-    static String removeHeadingOrTrailing(String string, String what) {
-        while (string.startsWith(what)) {
-            string = string.substring(1);
-        }
-
-        while (string.endsWith(what)) {
-            string = string.substring(0, string.length() - 1);
-        }
-
-        return string;
-    }
-
-    /**
      * Gets the current application URL from request.
      *
      * @param request
@@ -523,7 +513,7 @@ public class VaadinServlet extends HttpServlet {
      *             version
      */
     @Deprecated
-    public static final String safeEscapeForHtml(String unsafe) {
+    public static String safeEscapeForHtml(String unsafe) {
         if (null == unsafe) {
             return null;
         }
@@ -550,18 +540,4 @@ public class VaadinServlet extends HttpServlet {
                 c > 96 && c < 123 // a-z
         ;
     }
-
-    /**
-     * Creates the static file server instance which will be used to serve
-     * static resources when needed.
-     * <p>
-     * The built-in file server is meant primarily for development and serves
-     * files from the WAR file and from META-INF/resources in any deployed JAR.
-     *
-     * @return the static file server instance to use.
-     */
-    protected StaticFileServer createStaticFileServer() {
-        return new StaticFileServer(servletService);
-    }
-
 }
