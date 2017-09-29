@@ -310,7 +310,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                                 "added items cannot be null");
                         Objects.requireNonNull(removedItems,
                                 "removed items cannot be null");
-                        addedItems.removeIf(item -> removedItems.remove(item));
+                        addedItems.removeIf(removedItems::remove);
                         if (selected.containsAll(addedItems) && Collections
                                 .disjoint(selected, removedItems)) {
                             return;
@@ -649,6 +649,9 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * This method is a shorthand that delegates to the currently set selection
      * model.
      *
+     * @param item
+     *            the item to select
+     *
      * @see #getSelectionModel()
      * @see GridSelectionModel
      */
@@ -659,6 +662,9 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     /**
      * This method is a shorthand that delegates to the currently set selection
      * model.
+     * 
+     * @param item
+     *            the item to deselect
      *
      * @see #getSelectionModel()
      * @see GridSelectionModel
@@ -696,8 +702,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *             if selection has been disabled with
      *             {@link SelectionMode#NONE}
      */
-    public Registration addSelectionListener(SelectionListener<T> listener)
-            throws UnsupportedOperationException {
+    public Registration addSelectionListener(SelectionListener<T> listener) {
         return getSelectionModel().addSelectionListener(listener);
     }
 

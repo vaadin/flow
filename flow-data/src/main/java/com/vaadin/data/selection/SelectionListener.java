@@ -40,5 +40,5 @@ public interface SelectionListener<T> extends Serializable, EventListener {
      * @param event
      *            the selection event
      */
-    public void selectionChange(SelectionEvent<T> event);
+    void selectionChange(SelectionEvent<T> event);
 }

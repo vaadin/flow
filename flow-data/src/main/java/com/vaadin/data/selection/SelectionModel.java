@@ -291,5 +291,5 @@ public interface SelectionModel<T>
      *            the listener to add, not {@code null}
      * @return a registration handle for removing the listener
      */
-    public Registration addSelectionListener(SelectionListener<T> listener);
+    Registration addSelectionListener(SelectionListener<T> listener);
 }

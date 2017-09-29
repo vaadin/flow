@@ -44,5 +44,5 @@ public interface SingleSelectionListener<L extends AbstractListing<T>, T>
      * @param event
      *            the single selection event
      */
-    public void selectionChange(SingleSelectionEvent<L, T> event);
+    void selectionChange(SingleSelectionEvent<L, T> event);
 }

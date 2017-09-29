@@ -44,5 +44,5 @@ public interface MultiSelectionListener<L extends AbstractListing<T>, T>
      * @param event
      *            the selection event, never {@code null}
      */
-    public void selectionChange(MultiSelectionEvent<L, T> event);
+    void selectionChange(MultiSelectionEvent<L, T> event);
 }
