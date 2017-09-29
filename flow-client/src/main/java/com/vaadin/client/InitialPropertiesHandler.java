@@ -36,7 +36,7 @@ import com.vaadin.flow.nodefeature.NodeFeatures;
  * Only properties that have not been set form the server are sent from the
  * client to the server. Properties that have been set from the server overrides
  * any client side default value.
- * 
+ *
  * @author Vaadin Ltd
  * @see StateTree#sendNodePropertySyncToServer(MapProperty)
  *
@@ -96,7 +96,7 @@ public class InitialPropertiesHandler {
      * The method returns {@code true} for the {@code property} which shouldn't
      * be sent to the server because it's going to be handled by the handler
      * (queued and sent later on if allowed).
-     * 
+     *
      * @param property
      *            property to handle
      * @return {@code true} if property is handled by the handler, {@code false}
@@ -136,6 +136,12 @@ public class InitialPropertiesHandler {
                 getRegistry().getStateTree()
                         .sendNodePropertySyncToServer(property);
             }
+            /*
+             * Do flush after each property update. There may be several
+             * properties and it looks like a property update may trigger
+             * default values of other properties back.
+             */
+            Reactive.flush();
         }
     }
 
