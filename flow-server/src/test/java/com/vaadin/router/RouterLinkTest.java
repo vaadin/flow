@@ -140,7 +140,7 @@ public class RouterLinkTest {
         // This method sets mock VaadinService instance which returns
         // Router from the UI.
         RouterTestUI ui = createUI();
-        ui.getRouter().get()
+        ui.getRouterInterface().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink("Show something", TestView.class,
@@ -158,7 +158,7 @@ public class RouterLinkTest {
     @Test
     public void setRoute_attachedLink() {
         RouterTestUI ui = new RouterTestUI(new com.vaadin.flow.router.Router());
-        ui.getRouter().get()
+        ui.getRouterInterface().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink();
@@ -193,7 +193,7 @@ public class RouterLinkTest {
         // This method sets mock VaadinService instance which returns
         // Router from the UI.
         RouterTestUI ui = createUI();
-        ui.getRouter().get()
+        ui.getRouterInterface().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink("Show something", TestView.class,
@@ -254,7 +254,7 @@ public class RouterLinkTest {
         // This method sets mock VaadinService instance which returns
         // Router from the UI.
         RouterTestUI ui = createUI();
-        ui.getRouter().get()
+        ui.getRouterInterface().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
         new RouterLink("Show something", TestView.class);
@@ -299,7 +299,7 @@ public class RouterLinkTest {
     private RouterTestUI createUI() {
         RouterTestUI ui = new RouterTestUI();
         VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getRouter()).thenReturn(ui.getRouter().get());
+        Mockito.when(service.getRouter()).thenReturn(ui.getRouterInterface().get());
         CurrentInstance.set(VaadinService.class, service);
         return ui;
     }
