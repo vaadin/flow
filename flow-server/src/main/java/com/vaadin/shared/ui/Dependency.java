@@ -17,6 +17,8 @@ package com.vaadin.shared.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.shared.ApplicationConstants;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -46,6 +48,10 @@ public class Dependency implements Serializable {
      * Creates a new dependency of the given type, to be loaded from the given
      * URL.
      * <p>
+     * A relative URL is expanded to use the {@code frontend://} prefix. URLs
+     * with a defined protocol and absolute URLs without a protocol are used
+     * as-is.
+     * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols, specified at
      * {@link com.vaadin.shared.VaadinUriResolver} can be used.
@@ -65,8 +71,24 @@ public class Dependency implements Serializable {
         assert type != null;
 
         this.type = type;
-        this.url = url;
+        this.url = prefixIfRelative(url,
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
         this.loadMode = loadMode;
+    }
+
+    private static String prefixIfRelative(String url, String prefix) {
+        // Absolute
+        if (url.startsWith("/")) {
+            return url;
+        }
+
+        // Has a protocol
+        // https://tools.ietf.org/html/rfc3986#section-3.1
+        if (url.matches("^[a-zA-Z0-9.\\-+]+:.*")) {
+            return url;
+        }
+
+        return prefix + url;
     }
 
     /**

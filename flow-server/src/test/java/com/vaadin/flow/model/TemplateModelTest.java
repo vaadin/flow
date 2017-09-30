@@ -11,9 +11,7 @@ import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -25,9 +23,10 @@ import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.util.HasCurrentService;
 import com.vaadin.util.ReflectTools;
 
-public class TemplateModelTest {
+public class TemplateModelTest extends HasCurrentService {
     public interface EmptyModel extends TemplateModel {
     }
 
@@ -449,21 +448,15 @@ public class TemplateModelTest {
 
     }
 
-    @Before
-    public void setUp() {
-        Assert.assertNull(VaadinService.getCurrent());
+    @Override
+    protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(service.getDeploymentConfiguration())
-        .thenReturn(configuration);
-        VaadinService.setCurrent(service);
-    }
-
-    @After
-    public void tearDown() {
-        VaadinService.setCurrent(null);
+                .thenReturn(configuration);
+        return service;
     }
 
     @Test

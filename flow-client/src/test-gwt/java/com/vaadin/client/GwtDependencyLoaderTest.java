@@ -166,12 +166,12 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
     }
 
     public void testEnsureLazyDependenciesLoadedInOrder() {
-        String jsUrl1 = "1.js";
-        String jsUrl2 = "2.js";
-        String cssUrl1 = "1.css";
-        String cssUrl2 = "2.css";
-        String htmlUrl1 = "1.html";
-        String htmlUrl2 = "2.html";
+        String jsUrl1 = "/1.js";
+        String jsUrl2 = "/2.js";
+        String cssUrl1 = "/1.css";
+        String cssUrl2 = "/2.css";
+        String htmlUrl1 = "/1.html";
+        String htmlUrl2 = "/2.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
@@ -204,17 +204,17 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
     }
 
     public void testDependenciesWithAllLoadModesAreProcessed() {
-        String eagerJsUrl = "eager.js";
-        String lazyJsUrl = "lazy.js";
-        String inlineJsContents = "inline.js";
+        String eagerJsUrl = "/eager.js";
+        String lazyJsUrl = "/lazy.js";
+        String inlineJsContents = "/inline.js";
 
-        String eagerCssUrl = "eager.css";
-        String lazyCssUrl = "lazy.css";
-        String inlineCssContents = "inline.css";
+        String eagerCssUrl = "/eager.css";
+        String lazyCssUrl = "/lazy.css";
+        String inlineCssContents = "/inline.css";
 
-        String eagerHtmlUrl = "eager.html";
-        String lazyHtmlUrl = "lazy.html";
-        String inlineHtmlContents = "inline.html";
+        String eagerHtmlUrl = "/eager.html";
+        String lazyHtmlUrl = "/lazy.html";
+        String inlineHtmlContents = "/inline.html";
 
         new DependencyLoader(registry)
                 .loadDependencies(createDependenciesMap(

@@ -30,8 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
@@ -71,7 +69,7 @@ public class StaticFileServerTest implements Serializable {
         public byte[] getOutput() {
             return baos.toByteArray();
         }
-    };
+    }
 
     private static URL createFileURLWithDataAndLength(String name, byte[] data)
             throws MalformedURLException {
@@ -100,7 +98,6 @@ public class StaticFileServerTest implements Serializable {
     private static class OverrideableStaticFileServer extends StaticFileServer {
         private Boolean overrideBrowserHasNewestVersion;
         private Integer overrideCacheTime;
-        private Boolean overrideAcceptsGzippedResource;
 
         OverrideableStaticFileServer(VaadinService service) {
             super(service);
@@ -124,15 +121,7 @@ public class StaticFileServerTest implements Serializable {
             }
             return super.getCacheTime(filenameWithPath);
         }
-
-        @Override
-        protected boolean acceptsGzippedResource(HttpServletRequest request) {
-            if (overrideAcceptsGzippedResource != null) {
-                return overrideAcceptsGzippedResource;
-            }
-            return super.acceptsGzippedResource(request);
-        }
-    };
+    }
 
     private OverrideableStaticFileServer fileServer;
     private ServletContext servletContext;
@@ -195,7 +184,7 @@ public class StaticFileServerTest implements Serializable {
 
     @After
     public void tearDown() {
-        VaadinService.setCurrent(null);
+        Assert.assertNull(VaadinService.getCurrent());
     }
 
     @Test
@@ -308,37 +297,6 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void contentType() {
-        AtomicReference<String> contentType = new AtomicReference<>(null);
-        Mockito.doAnswer(invocation -> {
-            contentType.set((String) invocation.getArguments()[0]);
-            return null;
-        }).when(response).setContentType(Matchers.anyString());
-
-        Mockito.when(servletContext.getMimeType("/file.png"))
-                .thenReturn("image/png");
-
-        fileServer.writeContentType("/file.png", request, response);
-
-        Assert.assertEquals("image/png", contentType.get());
-    }
-
-    @Test
-    public void noContentType() {
-        AtomicReference<String> contentType = new AtomicReference<>(null);
-        Mockito.doAnswer(invocation -> {
-            contentType.set((String) invocation.getArguments()[0]);
-            return null;
-        }).when(response).setContentType(Matchers.anyString());
-
-        Mockito.when(servletContext.getMimeType("/file")).thenReturn(null);
-
-        fileServer.writeContentType("/file", request, response);
-
-        Assert.assertNull(contentType.get());
-    }
-
-    @Test
     public void writeModificationTimestampBrowserHasLatest()
             throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = true;
@@ -421,7 +379,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void writeCacheHeadersCacheResource() {
         fileServer.overrideCacheTime = 12;
-        fileServer.writeCacheHeaders("/folder/myfile.txt", request, response);
+        fileServer.writeCacheHeaders("/folder/myfile.txt", response);
         Assert.assertTrue(headers.get("Cache-Control").contains("max-age=12"));
     }
 
@@ -430,14 +388,14 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
         fileServer.overrideCacheTime = 12;
-        fileServer.writeCacheHeaders("/folder/myfile.txt", request, response);
+        fileServer.writeCacheHeaders("/folder/myfile.txt", response);
         Assert.assertTrue(headers.get("Cache-Control").equals("no-cache"));
     }
 
     @Test
     public void writeCacheHeadersDoNotCacheResource() {
         fileServer.overrideCacheTime = 0;
-        fileServer.writeCacheHeaders("/folder/myfile.txt", request, response);
+        fileServer.writeCacheHeaders("/folder/myfile.txt", response);
         Assert.assertTrue(headers.get("Cache-Control").contains("max-age=0"));
         Assert.assertTrue(
                 headers.get("Cache-Control").contains("must-revalidate"));
@@ -448,7 +406,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
 
         fileServer.overrideCacheTime = 0;
-        fileServer.writeCacheHeaders("/folder/myfile.txt", request, response);
+        fileServer.writeCacheHeaders("/folder/myfile.txt", response);
         Assert.assertTrue(headers.get("Cache-Control").equals("no-cache"));
     }
 
@@ -465,114 +423,6 @@ public class StaticFileServerTest implements Serializable {
         Assert.assertEquals(3600, fileServer.getCacheTime("randomfile.js"));
         Assert.assertEquals(3600,
                 fileServer.getCacheTime("folder/randomfile.js"));
-    }
-
-    @Test
-    public void acceptsGzippedResource() {
-        Assert.assertTrue(acceptsGzippedResource("compress, gzip"));
-        Assert.assertTrue(acceptsGzippedResource("gzip"));
-        Assert.assertTrue(acceptsGzippedResource("gzip;"));
-        Assert.assertTrue(acceptsGzippedResource("gzip;q"));
-        Assert.assertFalse(acceptsGzippedResource("compress; q=1 , gzip;q=0"));
-        Assert.assertFalse(acceptsGzippedResource(""));
-        Assert.assertFalse(acceptsGzippedResource("compress"));
-
-        Assert.assertTrue(
-                acceptsGzippedResource("compress;q = 0.5, gzip;q=0.6"));
-        Assert.assertTrue(
-                acceptsGzippedResource("gzip;q=1.0, identity;q=0.5, *;q=0"));
-        Assert.assertTrue(acceptsGzippedResource("*"));
-        Assert.assertTrue(acceptsGzippedResource("*;q=0;gzip"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.0"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.00"));
-        Assert.assertFalse(acceptsGzippedResource("*;q=0.000"));
-    }
-
-    private boolean acceptsGzippedResource(String acceptEncodingHeader) {
-        Mockito.when(request.getHeader("Accept-Encoding"))
-                .thenReturn(acceptEncodingHeader);
-        return fileServer.acceptsGzippedResource(request);
-    }
-
-    @Test
-    public void writeDataGzipped() throws IOException {
-        fileServer.overrideAcceptsGzippedResource = true;
-        String fileJsContents = "File.js contents";
-        byte[] fileJsGzippedContents = gzip(fileJsContents);
-
-        URL fileJsURL = createFileURLWithDataAndLength("/static/file.js",
-                fileJsContents.getBytes(StandardCharsets.UTF_8));
-        URL fileJsGzURL = createFileURLWithDataAndLength("/static/file.js.gz",
-                fileJsGzippedContents);
-
-        Mockito.when(servletContext.getResource("/static/file.js"))
-                .thenReturn(fileJsURL);
-        Mockito.when(servletContext.getResource("/static/file.js.gz"))
-                .thenReturn(fileJsGzURL);
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-        fileServer.writeData("/static/file.js", fileJsURL, request, response);
-
-        Assert.assertArrayEquals(fileJsGzippedContents, out.getOutput());
-        Assert.assertEquals(fileJsGzippedContents.length,
-                responseContentLength.get());
-    }
-
-    @Test
-    public void writeDataNoGzippedVersion() throws IOException {
-        String fileJsContents = "File.js contents";
-
-        byte[] fileJsContentsBytes = fileJsContents
-                .getBytes(StandardCharsets.UTF_8);
-        URL fileJsURL = createFileURLWithDataAndLength("/static/file.js",
-                fileJsContentsBytes);
-
-        Mockito.when(servletContext.getResource("/static/file.js"))
-                .thenReturn(fileJsURL);
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-        fileServer.writeData("/static/file.js", fileJsURL, request, response);
-
-        Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
-        Assert.assertEquals(fileJsContentsBytes.length,
-                responseContentLength.get());
-    }
-
-    @Test
-    public void writeDataBrowserDoesNotAcceptGzippedVersion()
-            throws IOException {
-        fileServer.overrideAcceptsGzippedResource = false;
-        String fileJsContents = "File.js contents";
-        byte[] fileJsContentsBytes = fileJsContents
-                .getBytes(StandardCharsets.UTF_8);
-
-        URL fileJsURL = createFileURLWithDataAndLength("/static/file.js",
-                fileJsContentsBytes);
-        URL fileJsGzURL = createFileURLWithDataAndLength("/static/file.js.gz",
-                gzip(fileJsContents));
-
-        Mockito.when(servletContext.getResource("/static/file.js"))
-                .thenReturn(fileJsURL);
-        Mockito.when(servletContext.getResource("/static/file.js.gz"))
-                .thenReturn(fileJsGzURL);
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-        fileServer.writeData("/static/file.js", fileJsURL, request, response);
-
-        Assert.assertArrayEquals(fileJsContentsBytes, out.getOutput());
-        Assert.assertEquals(fileJsContentsBytes.length,
-                responseContentLength.get());
-    }
-
-    private byte[] gzip(String input) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        GZIPOutputStream stream = new GZIPOutputStream(baos);
-        stream.write(input.getBytes(StandardCharsets.UTF_8));
-        return baos.toByteArray();
     }
 
     @Test

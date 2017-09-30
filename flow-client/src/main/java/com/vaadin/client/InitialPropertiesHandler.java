@@ -140,6 +140,8 @@ public class InitialPropertiesHandler {
              * Do flush after each property update. There may be several
              * properties and it looks like a property update may trigger
              * default values of other properties back.
+             *
+             * See https://github.com/vaadin/flow/issues/2304
              */
             Reactive.flush();
         }

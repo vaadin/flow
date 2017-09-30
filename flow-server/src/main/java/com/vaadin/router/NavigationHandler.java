@@ -13,10 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.router;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.router.View;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
@@ -32,9 +33,7 @@ import com.vaadin.ui.UI;
  * everything related to it will be locked.
  *
  * @author Vaadin Ltd
- * @deprecated do not use! feature is to be removed in the near future
  */
-@Deprecated
 @FunctionalInterface
 public interface NavigationHandler extends Serializable {
     /**

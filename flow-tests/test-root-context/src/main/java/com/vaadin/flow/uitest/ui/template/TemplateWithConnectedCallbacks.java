@@ -28,7 +28,7 @@ public class TemplateWithConnectedCallbacks extends Component {
 
         getElement().addPropertyChangeListener("connected", evt -> {
             if (evt.isUserOriginated()) {
-                setConnected(getConnected() + " (checked from server side)");
+                setConnected("Connected (checked from server side)");
             }
         });
     }

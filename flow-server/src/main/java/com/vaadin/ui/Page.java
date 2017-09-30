@@ -17,14 +17,14 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.shared.ui.Dependency.Type;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -85,10 +85,10 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -107,10 +107,10 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -129,10 +129,10 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -151,10 +151,10 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -173,10 +173,10 @@ public class Page implements Serializable {
      * Adds the given HTML import to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      * <p>
      * Is is guaranteed that html import will be loaded before the first page
      * load. For more options, refer to {@link #addHtmlImport(String, LoadMode)}
@@ -192,10 +192,10 @@ public class Page implements Serializable {
      * Adds the given HTML import to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      *
      * @param url
      *            the URL to load the HTML import from, not <code>null</code>
@@ -207,18 +207,6 @@ public class Page implements Serializable {
         addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
     }
 
-    /**
-     * Adds the given dependency to the page and ensures that it is loaded
-     * successfully.
-     *
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
-     *
-     * @param dependency
-     *            the dependency to load
-     */
     private void addDependency(Dependency dependency) {
         assert dependency != null;
         ui.getInternals().getDependencyList().add(dependency);

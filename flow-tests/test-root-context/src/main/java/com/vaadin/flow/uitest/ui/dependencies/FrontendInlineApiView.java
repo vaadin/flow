@@ -33,11 +33,10 @@ public class FrontendInlineApiView extends PolymerTemplate<TemplateModel>
                 .parse("<dom-module id='frontend-inline-api'></dom-module>"));
         setId("template");
         UI.getCurrent().getPage().addHtmlImport(
-                "frontend://components/frontend-inline-api.html",
+                "components/frontend-inline-api.html", LoadMode.INLINE);
+        UI.getCurrent().getPage().addJavaScript("components/frontend-inline.js",
                 LoadMode.INLINE);
-        UI.getCurrent().getPage().addJavaScript(
-                "frontend://components/frontend-inline.js", LoadMode.INLINE);
         UI.getCurrent().getPage().addStyleSheet(
-                "frontend://components/frontend-inline.css", LoadMode.INLINE);
+                "components/frontend-inline.css", LoadMode.INLINE);
     }
 }

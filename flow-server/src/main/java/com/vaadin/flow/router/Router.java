@@ -20,6 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.router.InternalRedirectHandler;
 import com.vaadin.router.Location;
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.QueryParameters;
 import com.vaadin.router.RouterInterface;

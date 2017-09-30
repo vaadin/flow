@@ -22,7 +22,6 @@ import java.util.stream.StreamSupport;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 
@@ -34,17 +33,9 @@ public class WebComponentsIT extends ChromeBrowserTest {
     public void testPolyfillLoaded() {
         open();
 
-        assertScriptLoadedWithoutErrors(driver,
-                "/bower_components/webcomponentsjs/webcomponents-loader.js");
-    }
-
-    public static void assertScriptLoadedWithoutErrors(WebDriver driver,
-            String scriptSrcContents) {
         Assert.assertTrue(driver.findElements(By.tagName("script")).stream()
-                .anyMatch(element -> {
-                    return element.getAttribute("src")
-                            .contains(scriptSrcContents);
-                }));
+                .anyMatch(element -> element.getAttribute("src")
+                        .endsWith("webcomponents-loader.js")));
 
         LogEntries logs = driver.manage().logs().get("browser");
         if (logs != null) {
