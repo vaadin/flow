@@ -1,8 +1,6 @@
 package com.vaadin.server;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -10,18 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.io.IOUtils;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.template.angular.InlineTemplate;
 import com.vaadin.router.Title;
@@ -37,6 +23,18 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
+import org.apache.commons.io.IOUtils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class BootstrapHandlerTest {
 
@@ -227,13 +225,13 @@ public class BootstrapHandlerTest {
 
         Elements scripts = page.head().getElementsByTag("script");
         boolean found = scripts.stream().anyMatch(element -> element.attr("src")
-                .equals("./imported-by-filter.js"));
+                .equals("./frontend/imported-by-filter.js"));
         Assert.assertTrue(
                 "imported-by-filter.js should be in the head of the page",
                 found);
 
         found = scripts.stream().anyMatch(element -> element.attr("src")
-                .equals(".imported-by-filter2.js"));
+                .equals("./frontend/imported-by-filter2.js"));
         Assert.assertFalse(
                 "imported-by-filter2.js shouldn't be in the head of the page",
                 found);
@@ -245,13 +243,13 @@ public class BootstrapHandlerTest {
 
         Elements links = page.head().getElementsByTag("link");
         found = links.stream().anyMatch(element -> element.attr("href")
-                .equals("./imported-by-filter.css"));
+                .equals("./frontend/imported-by-filter.css"));
         Assert.assertTrue(
                 "imported-by-filter.css should be in the head of the page",
                 found);
 
         found = links.stream().anyMatch(element -> element.attr("href")
-                .equals("./imported-by-filter.html"));
+                .equals("./frontend/imported-by-filter.html"));
         Assert.assertTrue(
                 "imported-by-filter.html should be in the head of the page",
                 found);
