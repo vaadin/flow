@@ -30,6 +30,8 @@ import com.vaadin.ui.icon.Icon;
  */
 public class Button extends GeneratedVaadinButton<Button> implements HasSize {
 
+    private static final String THEME_ATTRIBUTE = "theme";
+
     private Element span;
     private Component iconComponent;
     private boolean iconAfterText;
@@ -322,12 +324,16 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
     }
 
     private void updateThemeAttribute() {
-        // set attribute theme="icon" when the button contains only an icon to
-        // fully support themes like Valo
-        if (getElement().getChildCount() == 1 && iconComponent != null) {
-            getElement().setAttribute("theme", "icon");
-        } else {
-            getElement().removeAttribute("theme");
+        // Set attribute theme="icon" when the button contains only an icon to
+        // fully support themes like Valo. This doesn't override explicitly set
+        // theme attribute.
+        String theme = getElement().getAttribute(THEME_ATTRIBUTE);
+
+        if (theme == null && getElement().getChildCount() == 1
+                && iconComponent != null) {
+            getElement().setAttribute(THEME_ATTRIBUTE, "icon");
+        } else if (theme != null && theme.equals("icon")) {
+            getElement().removeAttribute(THEME_ATTRIBUTE);
         }
     }
 }
