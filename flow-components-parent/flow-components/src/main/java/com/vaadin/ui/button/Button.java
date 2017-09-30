@@ -332,7 +332,7 @@ public class Button extends GeneratedVaadinButton<Button> implements HasSize {
         if (theme == null && getElement().getChildCount() == 1
                 && iconComponent != null) {
             getElement().setAttribute(THEME_ATTRIBUTE, "icon");
-        } else if (theme != null && theme.equals("icon")) {
+        } else if ("icon".equals(theme)) {
             getElement().removeAttribute(THEME_ATTRIBUTE);
         }
     }
