@@ -60,10 +60,10 @@ public class DependencyList implements Serializable {
      * <p>
      * Does not send any previously sent dependencies again.
      * <p>
-     * Relative URLs are interpreted as relative to the service (servlet) path.
-     * You can prefix the URL with {@literal context://} to make it relative to
-     * the context path or use an absolute URL to refer to files outside the
-     * service (servlet) path.
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
      *
      * @param dependency
      *            the dependency to include on the page
@@ -90,9 +90,13 @@ public class DependencyList implements Serializable {
                                     + "The loading strategy is changed to %s to avoid conflicts. This may impact performance.",
                             newDependency.getUrl(), newDependency.getLoadMode(),
                             currentDependency.getLoadMode(), LoadMode.EAGER));
-            if (currentDependency.getLoadMode() != newDependency.getLoadMode()) {
-                throw new IllegalStateException(String.format("Dependency with url %s is loaded both with %s and %s modes",
-                        currentDependency.getUrl(), currentDependency.getLoadMode(), newDependency.getLoadMode()));
+            if (currentDependency.getLoadMode() != newDependency
+                    .getLoadMode()) {
+                throw new IllegalStateException(String.format(
+                        "Dependency with url %s is loaded both with %s and %s modes",
+                        currentDependency.getUrl(),
+                        currentDependency.getLoadMode(),
+                        newDependency.getLoadMode()));
             }
         }
     }

@@ -64,7 +64,8 @@ public class LazyLoadingTemplateUI extends UI {
         StreamResourceRegistration registration = getSession()
                 .getResourceRegistry()
                 .registerResource(getHtmlImportResource());
-        getPage().addHtmlImport(registration.getResourceUri().toString(),
+        getPage().addHtmlImport(
+                "base://" + registration.getResourceUri().toString(),
                 LoadMode.LAZY);
     }
 

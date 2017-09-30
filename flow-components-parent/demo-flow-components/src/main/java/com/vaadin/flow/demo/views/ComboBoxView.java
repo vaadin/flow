@@ -27,7 +27,7 @@ import com.vaadin.ui.html.Div;
 /**
  * View for {@link ComboBox} demo.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-combo-box.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-combo-box.html")
 @ComponentDemo(name = "ComboBox", href = "vaadin-combo-box")
 public class ComboBoxView extends DemoView {
     /**

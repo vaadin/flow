@@ -28,7 +28,7 @@ import com.vaadin.ui.icon.VaadinIcons;
 /**
  * View for {@link Button} demo.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Button", href = "vaadin-button")
 public class ButtonView extends DemoView {
 

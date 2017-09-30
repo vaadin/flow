@@ -19,27 +19,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
 import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
+import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
 
 /**
  * Main layout of the application. It contains the menu, header and the main
  * section of the page.
  */
 @Tag("main-layout")
-@HtmlImport("frontend://src/main-layout.html")
-@JavaScript("frontend://src/script/prism.js")
-@StyleSheet("frontend://src/css/prism.css")
+@HtmlImport("src/main-layout.html")
+@JavaScript("src/script/prism.js")
+@StyleSheet("src/css/prism.css")
 public class MainLayout extends PolymerTemplate<MainLayoutModel>
         implements HasChildView {
 
@@ -52,7 +52,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
     public interface MainLayoutModel extends TemplateModel {
         /**
          * Sets the selected page, making the selection on the mnu to appear.
-         * 
+         *
          * @param page
          *            The name selected page in the selection menu.
          */
@@ -60,7 +60,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
 
         /**
          * Sets the options on the menu under Vaadin Components.
-         * 
+         *
          * @param selectors
          *            The selectable Vaadin component demos in the page menu.
          */
@@ -68,7 +68,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
 
         /**
          * Sets the options on the menu under Paper Components.
-         * 
+         *
          * @param selectors
          *            The selectable Paper component demos in the page menu.
          */

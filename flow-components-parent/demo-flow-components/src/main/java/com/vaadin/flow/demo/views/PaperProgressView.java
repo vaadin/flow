@@ -25,7 +25,7 @@ import com.vaadin.ui.paper.progress.GeneratedPaperProgress;
  * View for {@link GeneratedPaperProgress} demo.
  */
 @ComponentDemo(name = "Paper Progress", href = "paper-progress", category = DemoCategory.PAPER)
-@StyleSheet("frontend://src/css/progress.css")
+@StyleSheet("src/css/progress.css")
 public class PaperProgressView extends DemoView {
 
     @Override
