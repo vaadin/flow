@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.demo.views;
 
+import static org.junit.Assert.assertThat;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.ComponentDemoTest;
@@ -35,29 +37,40 @@ public class PasswordFieldIT extends ComponentDemoTest {
 
     @Test
     public void valueChangeListenerReportsCorrectValues() {
-        WebElement passwordFieldValueDiv = layout
-                .findElement(By.id("password-field-value"));
-        WebElement passwordField = layout
-                .findElement(By.id("password-field-with-value-change-listener"));
-
-        passwordField.sendKeys("a");
-        waitUntilTextsEqual("Password field value changed from '' to 'a'",
-                passwordFieldValueDiv.getText());
-
-        passwordField.sendKeys(Keys.BACK_SPACE);
-        waitUntilTextsEqual("Password field value changed from 'a' to ''",
-                passwordFieldValueDiv.getText());
-    }
-
-    @Test
-    public void passwordFieldHasPlaceholder() {
-        WebElement passwordField = layout
-                .findElement(By.id("password-field-with-value-change-listener"));
+        WebElement passwordField = getPasswordField();
         Assert.assertEquals(passwordField.getAttribute("placeholder"),
-                "placeholder text");
+                "Password");
+        checkRevealMessage();
+
+        String input = "abc";
+        passwordField.sendKeys(input);
+        waitUntil(driver -> input
+                .equals(getPasswordField().getAttribute("value")));
+
+        boolean isShownOriginally = isRevealButtonShown();
+        layout.findElement(By.id("toggleButton")).click();
+        waitUntil(driver -> isRevealButtonShown() != isShownOriginally);
+        layout.findElement(By.id("toggleButton")).click();
+        waitUntil(driver -> isRevealButtonShown() == isShownOriginally);
     }
 
-    private void waitUntilTextsEqual(String expected, String actual) {
-        waitUntil(driver -> expected.equals(actual));
+    private WebElement getPasswordField() {
+        return layout.findElement(By.id("passwordField"));
+    }
+
+    private boolean isRevealButtonShown() {
+        return !Boolean.parseBoolean(
+                getPasswordField().getAttribute("revealButtonHidden"));
+    }
+
+    private void checkRevealMessage() {
+        String expectedString = Boolean.parseBoolean(
+                getPasswordField().getAttribute("passwordVisible")) ? "visible"
+                        : "hidden";
+        assertThat(String.format(
+                "Password should be %s and message label should end with '%s' string",
+                expectedString, expectedString),
+                layout.findElement(By.id("messageLabel")).getText(),
+                Matchers.endsWith(expectedString));
     }
 }

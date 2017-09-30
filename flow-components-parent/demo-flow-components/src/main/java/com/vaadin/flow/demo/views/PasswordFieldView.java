@@ -18,7 +18,9 @@ package com.vaadin.flow.demo.views;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.layout.FlexLayout;
+import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.passwordfield.PasswordField;
 import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
 
@@ -29,31 +31,36 @@ import com.vaadin.ui.textfield.GeneratedVaadinPasswordField;
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Password Field", href = "vaadin-password-field")
 public class PasswordFieldView extends DemoView {
+
     @Override
     void initView() {
-        Div message = new Div();
-
         // begin-source-example
         // source-example-heading: Basic password field
         PasswordField passwordField = new PasswordField();
         passwordField.setLabel("Password field label");
-        passwordField.setPlaceholder("placeholder text");
-        passwordField.addValueChangeListener(event -> message.setText(
-                String.format("Password field value changed from '%s' to '%s'",
-                        event.getOldValue(), event.getValue())));
-        Button button = new Button("Toggle eye icon if password is hidden",
-                event -> {
-                    if (!passwordField.isPasswordVisible()) {
-                        passwordField.setRevealButtonHidden(
-                                !passwordField.isRevealButtonHidden());
-                    }
-                });
+        passwordField.setPlaceholder("Password");
+
+        Label message = new Label(
+                updateMessageText(passwordField.isPasswordVisible()));
+
+        Button button = new Button("Toggle eye icon", event -> passwordField
+                .setRevealButtonHidden(!passwordField.isRevealButtonHidden()));
+
+        getElement().addPropertyChangeListener("passwordVisible",
+                event -> message.setText(
+                        updateMessageText(passwordField.isPasswordVisible())));
         // end-source-example
 
-        passwordField.setId("password-field-with-value-change-listener");
-        message.setId("password-field-value");
-        button.setId("toggle-button");
+        button.setId("toggleButton");
+        passwordField.setId("passwordField");
+        message.setId("messageLabel");
 
-        addCard("Basic password field", button, passwordField, message);
+        HorizontalLayout layout = new HorizontalLayout(passwordField, button);
+        layout.setDefaultVerticalComponentAlignment(FlexLayout.Alignment.END);
+        addCard("Basic password field", layout, message);
+    }
+
+    private String updateMessageText(boolean isPasswordVisible) {
+        return "Password is " + (isPasswordVisible ? "visible" : "hidden");
     }
 }
