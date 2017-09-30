@@ -27,7 +27,7 @@ import com.vaadin.ui.layout.VerticalLayout;
 /**
  * View for the {@link VerticalLayout} component.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Vertical Layout", href = "vertical-layout", subcategory = "Layouts")
 public class VerticalLayoutView extends DemoView {
 

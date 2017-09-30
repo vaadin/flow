@@ -25,7 +25,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;

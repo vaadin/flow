@@ -356,11 +356,11 @@ public class UidlWriter implements Serializable {
 
     private List<Class<? extends HasChildView>> getParentViews(UI ui,
             Component component) {
-        if (!ui.getRouter().isPresent() || !(component instanceof View)) {
+        if (!ui.getRouterInterface().isPresent() || !(component instanceof View)) {
             return Collections.emptyList();
         }
         List<Class<? extends HasChildView>> parentViewsAscending = ui
-                .getRouter().get().getConfiguration()
+                .getRouterInterface().get().getConfiguration()
                 .getParentViewsAscending(
                         component.getClass().asSubclass(View.class))
                 .filter(Component.class::isAssignableFrom)

@@ -263,6 +263,8 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noLabelFloat} property from the webcomponent
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -294,6 +296,8 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code alwaysFloatLabel} property from the webcomponent
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -324,6 +328,8 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code attrForValue} property from the webcomponent
 	 */
 	public String getAttrForValue() {
 		return getElement().getProperty("attrForValue");
@@ -355,6 +361,8 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autoValidate} property from the webcomponent
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -387,6 +395,8 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code invalid} property from the webcomponent
 	 */
 	public boolean isInvalid() {
 		return getElement().getProperty("invalid", false);
@@ -419,6 +429,8 @@ public class GeneratedPaperInputContainer<R extends GeneratedPaperInputContainer
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {

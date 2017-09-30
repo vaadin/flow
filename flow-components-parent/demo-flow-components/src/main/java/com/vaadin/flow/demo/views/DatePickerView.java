@@ -27,7 +27,7 @@ import com.vaadin.ui.html.Div;
 /**
  * View for {@link DatePicker} demo.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-date-picker.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-date-picker.html")
 @ComponentDemo(name = "Date Picker", href = "vaadin-date-picker")
 public class DatePickerView extends DemoView {
 

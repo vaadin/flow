@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.router.NavigationHandler;
 import com.vaadin.router.RouteLocation;
 import com.vaadin.router.RouteLocation.RouteSegmentVisitor;
 import com.vaadin.router.Location;

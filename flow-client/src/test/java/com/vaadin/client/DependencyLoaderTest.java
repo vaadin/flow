@@ -153,7 +153,7 @@ public class DependencyLoaderTest {
     @Test
     public void loadMultiple() {
         String TEST_JS_URL = "http://foo.bar/baz.js";
-        String TEST_JS_URL2 = "my.js";
+        String TEST_JS_URL2 = "/my.js";
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
@@ -211,12 +211,12 @@ public class DependencyLoaderTest {
 
     @Test
     public void ensureEagerDependenciesLoadedInOrder() {
-        String jsUrl1 = "1.js";
-        String jsUrl2 = "2.js";
-        String cssUrl1 = "1.css";
-        String cssUrl2 = "2.css";
-        String htmlUrl1 = "1.html";
-        String htmlUrl2 = "2.html";
+        String jsUrl1 = "/1.js";
+        String jsUrl2 = "/2.js";
+        String cssUrl1 = "/1.css";
+        String cssUrl2 = "/2.css";
+        String htmlUrl1 = "/1.html";
+        String htmlUrl2 = "/2.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
@@ -250,12 +250,12 @@ public class DependencyLoaderTest {
 
     @Test
     public void ensureInlineDependenciesLoadedInOrder() {
-        String jsContents1 = "1.js";
-        String jsContents2 = "2.js";
-        String cssContents1 = "1.css";
-        String cssContents2 = "2.css";
-        String htmlContents1 = "1.html";
-        String htmlContents2 = "2.html";
+        String jsContents1 = "/1.js";
+        String jsContents2 = "/2.js";
+        String cssContents1 = "/1.css";
+        String cssContents2 = "/2.css";
+        String htmlContents1 = "/1.html";
+        String htmlContents2 = "/2.html";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createInlineDependency(Dependency.Type.JAVASCRIPT, jsContents1),

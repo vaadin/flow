@@ -28,9 +28,9 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.PropertyChangeEvent;
 import com.vaadin.ui.event.PropertyChangeListener;
-import com.vaadin.shared.Registration;
 
 /**
  * Map for element property values.
@@ -53,6 +53,27 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      */
     public ElementPropertyMap(StateNode node) {
         super(node);
+    }
+
+    /**
+     * Updates a property value from the client and returns a Runnable for
+     * firing the associated PropertyChangeEvent.
+     *
+     * @param key
+     *            the key to use
+     * @param value
+     *            the value to store
+     * @return a runnable for firing the deferred change event
+     */
+    public Runnable deferredUpdateFromClient(String key,
+            Serializable value) {
+        if (!mayUpdateFromClient(key, value)) {
+            throw new IllegalArgumentException(String.format(
+                    "Feature '%s' doesn't allow the client to update '%s'",
+                    getClass().getName(), key));
+        }
+
+        return putWithDeferredChangeEvent(key, value, false);
     }
 
     @Override
@@ -99,13 +120,22 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     @Override
     protected void put(String key, Serializable value, boolean emitChange) {
+        putWithDeferredChangeEvent(key, value, emitChange).run();
+    }
+
+    private Runnable putWithDeferredChangeEvent(String key, Serializable value,
+            boolean emitChange) {
         Serializable oldValue = get(key);
         super.put(key, value, emitChange);
 
         if (hasElement()) {
-            fireEvent(new PropertyChangeEvent(Element.get(getNode()), key,
-                    oldValue, !emitChange));
+            PropertyChangeEvent event = new PropertyChangeEvent(
+                    Element.get(getNode()), key, oldValue, !emitChange);
+            return () -> fireEvent(event);
         }
+        return () -> {
+            // NO-OP
+        };
     }
 
     @Override

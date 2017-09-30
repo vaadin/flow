@@ -24,11 +24,11 @@ import java.net.URLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.util.ResponseWriter;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -43,9 +43,7 @@ import com.vaadin.shared.ApplicationConstants;
  * @author Vaadin Ltd
  */
 public class StaticFileServer implements Serializable {
-
-    private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
-
+    private final ResponseWriter responseWriter = new ResponseWriter();
     private final VaadinService service;
 
     /**
@@ -118,7 +116,7 @@ public class StaticFileServer implements Serializable {
         // There is a resource!
 
         // Intentionally writing cache headers also for 304 responses
-        writeCacheHeaders(filenameWithPath, request, response);
+        writeCacheHeaders(filenameWithPath, response);
 
         long timestamp = writeModificationTimestamp(resourceUrl, request,
                 response);
@@ -128,29 +126,9 @@ public class StaticFileServer implements Serializable {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
             return true;
         }
-        writeContentType(filenameWithPath, request, response);
-        writeData(filenameWithPath, resourceUrl, request, response);
+        responseWriter.writeResponseContents(filenameWithPath, resourceUrl, request,
+                response);
         return true;
-    }
-
-    /**
-     * Writes the content type for the file into the response.
-     *
-     * @param filenameWithPath
-     *            the name of the file being sent
-     * @param request
-     *            the request object
-     * @param response
-     *            the response object
-     */
-    protected void writeContentType(String filenameWithPath,
-            HttpServletRequest request, HttpServletResponse response) {
-        // Set type mime type if we can determine it based on the filename
-        final String mimetype = request.getServletContext()
-                .getMimeType(filenameWithPath);
-        if (mimetype != null) {
-            response.setContentType(mimetype);
-        }
     }
 
     /**
@@ -206,18 +184,14 @@ public class StaticFileServer implements Serializable {
      *
      * @param filenameWithPath
      *            the name and path of the file being sent
-     * @param request
-     *            the request object
      * @param response
      *            the response object
      */
     protected void writeCacheHeaders(String filenameWithPath,
-            HttpServletRequest request, HttpServletResponse response) {
+            HttpServletResponse response) {
         int resourceCacheTime = getCacheTime(filenameWithPath);
         String cacheControl;
-        boolean isProductionMode = service.getDeploymentConfiguration()
-                .isProductionMode();
-        if (!isProductionMode) {
+        if (!service.getDeploymentConfiguration().isProductionMode()) {
             cacheControl = "no-cache";
         } else if (resourceCacheTime > 0) {
             cacheControl = "max-age=" + resourceCacheTime;
@@ -241,20 +215,8 @@ public class StaticFileServer implements Serializable {
         // ->
         // /servlet/folder/file.js
 
-        String servletPath; // Starts with "/"
-        if ("".equals(request.getServletPath())) {
-            // /* mapped servlet
-            servletPath = "";
-        } else {
-            // /something or /something/* mapped servlet
-            servletPath = request.getServletPath();
-        }
-
-        if (request.getPathInfo() == null) {
-            return servletPath;
-        } else {
-            return servletPath + request.getPathInfo();
-        }
+        return request.getPathInfo() == null ? request.getServletPath()
+                : request.getServletPath() + request.getPathInfo();
     }
 
     /**
@@ -292,140 +254,6 @@ public class StaticFileServer implements Serializable {
     }
 
     /**
-     * Writes the contents of the given resourceUrl to the response.
-     *
-     * @param filenameWithPath
-     *            the name of the file being sent
-     * @param resourceUrl
-     *            the URL to the file, reported by the servlet container
-     * @param request
-     *            the request object to read from
-     * @param response
-     *            the response object to write to
-     * @throws IOException
-     *             if the servlet container threw an exception while locating
-     *             the resource
-     */
-    protected void writeData(String filenameWithPath, URL resourceUrl,
-            HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-
-        URLConnection connection = null;
-        InputStream dataStream = null;
-
-        if (acceptsGzippedResource(request)) {
-            // try to serve a gzipped version if available
-            String gzippedFilenameWithPath = filenameWithPath + ".gz";
-            try {
-                URL url = request.getServletContext()
-                        .getResource(gzippedFilenameWithPath);
-                if (url != null) {
-                    connection = url.openConnection();
-                    dataStream = connection.getInputStream();
-                    response.setHeader("Content-Encoding", "gzip");
-                }
-            } catch (Exception e) {
-                getLogger().log(Level.FINE,
-                        "Unexpected exception looking for gzipped resource "
-                                + gzippedFilenameWithPath,
-                        e);
-            }
-        }
-        if (dataStream == null) {
-            // gzipped resource not available, get non compressed
-            connection = resourceUrl.openConnection();
-            dataStream = connection.getInputStream();
-        }
-
-        try {
-            long length = connection.getContentLengthLong();
-            if (length >= 0L) {
-                response.setContentLengthLong(length);
-            }
-        } catch (Exception e) {
-            getLogger().log(Level.FINE, "Error setting the content length", e);
-        }
-
-        try {
-            writeStream(response.getOutputStream(), dataStream);
-        } catch (IOException e) {
-            getLogger().log(Level.FINE, "Error writing static file to user", e);
-        } finally {
-            try {
-                dataStream.close();
-            } catch (IOException e) {
-                getLogger().log(Level.FINE,
-                        "Error closing input stream for resource", e);
-            }
-        }
-    }
-
-    private static void writeStream(ServletOutputStream outputStream,
-            InputStream inputStream) throws IOException {
-        final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        int bytes;
-        while ((bytes = inputStream.read(buffer)) >= 0) {
-            outputStream.write(buffer, 0, bytes);
-        }
-
-    }
-
-    /**
-     * Returns whether it is ok to serve a gzipped version of the given
-     * resource.
-     * <p>
-     * If this method returns true, the browser is ok with receiving a gzipped
-     * version of the resource. In other cases, an uncompressed file must be
-     * sent.
-     *
-     * @param request
-     *            the request for the resource
-     * @return true if the servlet should attempt to serve a precompressed
-     *         version of the resource, false otherwise
-     */
-    protected boolean acceptsGzippedResource(HttpServletRequest request) {
-        String accept = request.getHeader("Accept-Encoding");
-        if (accept == null) {
-            return false;
-        }
-
-        accept = accept.replace(" ", "");
-        // Browser denies gzip compression if it reports
-        // gzip;q=0
-        //
-        // Browser accepts gzip compression if it reports
-        // "gzip"
-        // "gzip;q=[notzero]"
-        // "*"
-        // "*;q=[not zero]"
-        if (accept.contains("gzip")) {
-            return !isQZero(accept, "gzip");
-        } else if (accept.contains("*")) {
-            return !isQZero(accept, "*");
-        }
-
-        return false;
-    }
-
-    private static boolean isQZero(String acceptEncoding, String encoding) {
-        String qPrefix = encoding + ";q=";
-        int qValueIndex = acceptEncoding.indexOf(qPrefix);
-        if (qValueIndex == -1) {
-            return false;
-        }
-
-        // gzip;q=0.123 or gzip;q=0.123,compress...
-        String qValue = acceptEncoding
-                .substring(qValueIndex + qPrefix.length());
-        int endOfQValue = qValue.indexOf(",");
-        if (endOfQValue != -1) {
-            qValue = qValue.substring(0, endOfQValue);
-        }
-        return "0".equals(qValue) || "0.0".equals(qValue)
-                || "0.00".equals(qValue) || "0.000".equals(qValue);
-    }
-
-    /**
      * Checks if the browser has an up to date cached version of requested
      * resource using the "If-Modified-Since" header.
      *
@@ -439,9 +267,9 @@ public class StaticFileServer implements Serializable {
      */
     protected boolean browserHasNewestVersion(HttpServletRequest request,
             long resourceLastModifiedTimestamp) {
-        assert resourceLastModifiedTimestamp >= -1;
+        assert resourceLastModifiedTimestamp >= -1L;
 
-        if (resourceLastModifiedTimestamp == -1) {
+        if (resourceLastModifiedTimestamp == -1L) {
             // We do not know when it was modified so the browser cannot have an
             // up-to-date version
             return false;

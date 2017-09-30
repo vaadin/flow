@@ -63,6 +63,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'focused-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code focused} property from the webcomponent
 	 */
 	@Synchronize(property = "focused", value = "focused-changed")
 	public boolean isFocused() {
@@ -82,6 +84,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'disabled-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code disabled} property from the webcomponent
 	 */
 	@Synchronize(property = "disabled", value = "disabled-changed")
 	public boolean isDisabled() {
@@ -117,6 +121,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code keyEventTarget} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyEventTarget() {
 		return (JsonObject) getElement().getPropertyRaw("keyEventTarget");
@@ -149,6 +155,9 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code stopKeyboardEventPropagation} property from the
+	 *         webcomponent
 	 */
 	public boolean isStopKeyboardEventPropagation() {
 		return getElement().getProperty("stopKeyboardEventPropagation", false);
@@ -175,6 +184,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	/**
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
+	 * 
+	 * @return the {@code keyBindings} property from the webcomponent
 	 */
 	protected JsonObject protectedGetKeyBindings() {
 		return (JsonObject) getElement().getPropertyRaw("keyBindings");
@@ -202,6 +213,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code label} property from the webcomponent
 	 */
 	public String getLabel() {
 		return getElement().getProperty("label");
@@ -236,6 +249,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'value-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code value} property from the webcomponent
 	 */
 	@Synchronize(property = "value", value = "value-changed")
 	@Override
@@ -278,6 +293,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code invalid} property from the webcomponent
 	 */
 	@Synchronize(property = "invalid", value = "invalid-changed")
 	public boolean isInvalid() {
@@ -319,6 +336,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code allowedPattern} property from the webcomponent
 	 */
 	public String getAllowedPattern() {
 		return getElement().getProperty("allowedPattern");
@@ -358,6 +377,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code type} property from the webcomponent
 	 */
 	public String getType() {
 		return getElement().getProperty("type");
@@ -396,6 +417,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code list} property from the webcomponent
 	 */
 	public String getList() {
 		return getElement().getProperty("list");
@@ -431,6 +454,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code pattern} property from the webcomponent
 	 */
 	public String getPattern() {
 		return getElement().getProperty("pattern");
@@ -468,6 +493,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code required} property from the webcomponent
 	 */
 	public boolean isRequired() {
 		return getElement().getProperty("required", false);
@@ -505,6 +532,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code errorMessage} property from the webcomponent
 	 */
 	public String getErrorMessage() {
 		return getElement().getProperty("errorMessage");
@@ -538,6 +567,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code charCounter} property from the webcomponent
 	 */
 	public boolean isCharCounter() {
 		return getElement().getProperty("charCounter", false);
@@ -571,6 +602,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noLabelFloat} property from the webcomponent
 	 */
 	public boolean isNoLabelFloat() {
 		return getElement().getProperty("noLabelFloat", false);
@@ -606,6 +639,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code alwaysFloatLabel} property from the webcomponent
 	 */
 	public boolean isAlwaysFloatLabel() {
 		return getElement().getProperty("alwaysFloatLabel", false);
@@ -641,6 +676,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autoValidate} property from the webcomponent
 	 */
 	public boolean isAutoValidate() {
 		return getElement().getProperty("autoValidate", false);
@@ -676,6 +713,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code validator} property from the webcomponent
 	 */
 	public String getValidator() {
 		return getElement().getProperty("validator");
@@ -711,6 +750,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autocomplete} property from the webcomponent
 	 */
 	public String getAutocomplete() {
 		return getElement().getProperty("autocomplete");
@@ -746,6 +787,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autofocus} property from the webcomponent
 	 */
 	public boolean isAutofocus() {
 		return getElement().getProperty("autofocus", false);
@@ -780,6 +823,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code inputmode} property from the webcomponent
 	 */
 	public String getInputmode() {
 		return getElement().getProperty("inputmode");
@@ -815,6 +860,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code minlength} property from the webcomponent
 	 */
 	public double getMinlength() {
 		return getElement().getProperty("minlength", 0.0);
@@ -849,6 +896,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code maxlength} property from the webcomponent
 	 */
 	public double getMaxlength() {
 		return getElement().getProperty("maxlength", 0.0);
@@ -883,6 +932,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code min} property from the webcomponent
 	 */
 	public String getMin() {
 		return getElement().getProperty("min");
@@ -918,6 +969,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code max} property from the webcomponent
 	 */
 	public String getMax() {
 		return getElement().getProperty("max");
@@ -953,6 +1006,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code step} property from the webcomponent
 	 */
 	public String getStep() {
 		return getElement().getProperty("step");
@@ -985,6 +1040,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code name} property from the webcomponent
 	 */
 	public String getName() {
 		return getElement().getProperty("name");
@@ -1016,6 +1073,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code placeholder} property from the webcomponent
 	 */
 	public String getPlaceholder() {
 		return getElement().getProperty("placeholder");
@@ -1050,6 +1109,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code readonly} property from the webcomponent
 	 */
 	public boolean isReadonly() {
 		return getElement().getProperty("readonly", false);
@@ -1084,6 +1145,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code size} property from the webcomponent
 	 */
 	public double getSize() {
 		return getElement().getProperty("size", 0.0);
@@ -1118,6 +1181,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autocapitalize} property from the webcomponent
 	 */
 	public String getAutocapitalize() {
 		return getElement().getProperty("autocapitalize");
@@ -1153,6 +1218,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autocorrect} property from the webcomponent
 	 */
 	public String getAutocorrect() {
 		return getElement().getProperty("autocorrect");
@@ -1188,6 +1255,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code autosave} property from the webcomponent
 	 */
 	public String getAutosave() {
 		return getElement().getProperty("autosave");
@@ -1222,6 +1291,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code results} property from the webcomponent
 	 */
 	public double getResults() {
 		return getElement().getProperty("results", 0.0);
@@ -1256,6 +1327,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code accept} property from the webcomponent
 	 */
 	public String getAccept() {
 		return getElement().getProperty("accept");
@@ -1290,6 +1363,8 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code multiple} property from the webcomponent
 	 */
 	public boolean isMultiple() {
 		return getElement().getProperty("multiple", false);
@@ -1351,12 +1426,15 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * <p>
 	 * Returns true if a keyboard event matches {@code eventString}.
 	 * </p>
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 * 
 	 * @param event
 	 *            Missing documentation!
 	 * @param eventString
 	 *            Missing documentation!
-	 * @return It would return a boolean
 	 */
 	@NotSupported
 	protected void keyboardEventMatchesKeys(elemental.json.JsonObject event,
@@ -1382,8 +1460,10 @@ public class GeneratedPaperInput<R extends GeneratedPaperInput<R>>
 	 * <p>
 	 * Validates the input element and sets an error style if needed.
 	 * </p>
-	 * 
-	 * @return It would return a boolean
+	 * <p>
+	 * This function is not supported by Flow because it returns a
+	 * <code>boolean</code>. Functions with return types different than void are
+	 * not supported at this moment.
 	 */
 	@NotSupported
 	protected void validate() {

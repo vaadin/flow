@@ -44,14 +44,14 @@ import com.vaadin.ui.textfield.TextField;
 
 /**
  * Demo view for {@link FormLayout}.
- * 
+ *
  * @author Vaadin Ltd
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-text-field.html")
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-form-layout.html")
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-date-picker.html")
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-checkbox.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-text-field.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-form-layout.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-date-picker.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-checkbox.html")
 @ComponentDemo(name = "Form Layout", href = "vaadin-form-layout", subcategory = "Layouts")
 public class FormLayoutView extends DemoView {
 
@@ -165,7 +165,7 @@ public class FormLayoutView extends DemoView {
         // begin-source-example
         // source-example-heading: A form layout with custom responsive layouting
         FormLayout nameLayout = new FormLayout();
-        
+
         TextField titleField = new TextField();
         titleField.setLabel("Title");
         titleField.setPlaceholder("Sir");
@@ -175,9 +175,9 @@ public class FormLayoutView extends DemoView {
         TextField lastNameField = new TextField();
         lastNameField.setLabel("Last name");
         lastNameField.setPlaceholder("Doe");
-        
+
         nameLayout.add(titleField, firstNameField, lastNameField);
-        
+
         nameLayout.setResponsiveSteps(
                 new ResponsiveStep("0", 1),
                 new ResponsiveStep("21em", 2),

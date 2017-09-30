@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.demo;
 
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.html.Div;
 
 /**
  * This builds up source samples and sets it up so that it can be annotated by
  * <a href="http://prismjs.com/">prism</a>
  */
-@StyleSheet("frontend://src/css/sources.css")
+@StyleSheet("src/css/sources.css")
 public class SourceContent extends Div {
 
     /**
@@ -35,7 +35,7 @@ public class SourceContent extends Div {
 
     /**
      * Adds a text to be rendered as a Java source code inside the component.
-     * 
+     *
      * @param text
      *            The source code to be shown.
      */
@@ -51,7 +51,7 @@ public class SourceContent extends Div {
 
     /**
      * Adds a text to be rendered as a CSS source code inside the component.
-     * 
+     *
      * @param text
      *            The source code to be shown.
      */
@@ -68,7 +68,7 @@ public class SourceContent extends Div {
     /**
      * Adds an {@link Element} directly into this component, without need to use
      * a component for it.
-     * 
+     *
      * @param element
      *            The element to be added to this component.
      */

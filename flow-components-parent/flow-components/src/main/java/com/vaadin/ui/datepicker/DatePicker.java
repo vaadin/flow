@@ -66,6 +66,34 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
     }
 
     /**
+     * Convenience constructor to create a date picker with a label.
+     *
+     * @param label
+     *            the label describing the date picker
+     * @see #setLabel(String)
+     */
+    public DatePicker(String label) {
+        this();
+        setLabel(label);
+    }
+
+    /**
+     * Convenience constructor to create a date picker with a pre-selected date
+     * and a label.
+     *
+     * @param label
+     *            the label describing the date picker
+     * @param initialDate
+     *            the pre-selected date in the picker
+     * @see #setValue(LocalDate)
+     * @see #setLabel(String)
+     */
+    public DatePicker(String label, LocalDate initialDate) {
+        this(initialDate);
+        setLabel(label);
+    }
+
+    /**
      * Convenience constructor to create a date picker with a
      * {@link ValueChangeListener}.
      *
@@ -75,6 +103,24 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      */
     public DatePicker(ValueChangeListener<DatePicker, LocalDate> listener) {
         this();
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Convenience constructor to create a date picker with a
+     * {@link ValueChangeListener} and a label.
+     *
+     *
+     * @param label
+     *            the label describing the date picker
+     * @param listener
+     *            the listener to receive value change events
+     * @see #setLabel(String)
+     * @see #addValueChangeListener(HasValue.ValueChangeListener)
+     */
+    public DatePicker(String label,
+            ValueChangeListener<DatePicker, LocalDate> listener) {
+        this(label);
         addValueChangeListener(listener);
     }
 
@@ -91,7 +137,27 @@ public class DatePicker extends GeneratedVaadinDatePicker<DatePicker>
      */
     public DatePicker(LocalDate initialDate,
             ValueChangeListener<DatePicker, LocalDate> listener) {
-        this();
+        this(initialDate);
+        addValueChangeListener(listener);
+    }
+
+    /**
+     * Convenience constructor to create a date picker with a pre-selected date,
+     * a {@link ValueChangeListener} and a label.
+     *
+     * @param label
+     *            the label describing the date picker
+     * @param initialDate
+     *            the pre-selected date in the picker
+     * @param listener
+     *            the listener to receive value change events
+     * @see #setLabel(String)
+     * @see #setValue(LocalDate)
+     * @see #addValueChangeListener(HasValue.ValueChangeListener)
+     */
+    public DatePicker(String label, LocalDate initialDate,
+            ValueChangeListener<DatePicker, LocalDate> listener) {
+        this(initialDate);
         setValue(initialDate);
         addValueChangeListener(listener);
     }

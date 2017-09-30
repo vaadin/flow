@@ -15,10 +15,10 @@
  */
 package com.vaadin.router;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
-import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.router.event.NavigationEvent;
@@ -149,11 +149,23 @@ public class Router implements RouterInterface {
     public String getUrl(Class<? extends Component> navigationTarget)
             throws NotFoundException {
         String routeString = getUrlForTarget(navigationTarget);
-        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)
-                && HasUrlParameter.isOptionalParameter(navigationTarget)) {
+        if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
+                WildcardParameter.class)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
         }
         return routeString;
+    }
+
+    private boolean isAnnotatedParameter(
+            Class<? extends Component> navigationTarget,
+            Class... parameterAnnotations) {
+        for (Class annotation : parameterAnnotations) {
+            if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                    annotation)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -179,7 +191,10 @@ public class Router implements RouterInterface {
             routeString = routeString.replace(
                     "{" + parameter.getClass().getSimpleName() + "}",
                     parameter.toString());
-        } else if (HasUrlParameter.isOptionalParameter(navigationTarget)) {
+        } else if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                OptionalParameter.class)
+                || HasUrlParameter.isAnnotatedParameter(navigationTarget,
+                        WildcardParameter.class)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
         } else {
             throw new NotFoundException(String.format(
@@ -188,7 +203,8 @@ public class Router implements RouterInterface {
         }
 
         Optional<Class<? extends Component>> registryTarget = getRegistry()
-                .getNavigationTargetWithParameter(routeString);
+                .getNavigationTarget(routeString,
+                        Arrays.asList((String) parameter));
 
         if (registryTarget.isPresent()
                 && !hasUrlParameters(registryTarget.get())
