@@ -15,19 +15,19 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Label;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class UpgradeElementUI extends UI {
 
     @Tag("upgrade-element")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/UpgradeElement.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/UpgradeElement.html")
     public static class UpgradeElement extends PolymerTemplate<Message> {
 
         @EventHandler

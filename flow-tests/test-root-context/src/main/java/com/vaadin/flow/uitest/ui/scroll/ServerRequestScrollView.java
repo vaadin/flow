@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.scroll;
 
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
 
 @Tag("server-request")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/ServerRequest.html")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ServerRequest.html")
 public class ServerRequestScrollView extends PolymerTemplate<TemplateModel>
         implements View {
 

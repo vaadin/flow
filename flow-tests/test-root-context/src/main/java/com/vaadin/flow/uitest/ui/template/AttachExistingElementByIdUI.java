@@ -22,7 +22,7 @@ import com.vaadin.ui.common.HtmlImport;
 
 public class AttachExistingElementByIdUI extends UI {
 
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/AttachExistingElementById.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AttachExistingElementById.html")
     @Tag("existing-element")
     public static class AttachExistingElementByIdTemplate
             extends AbstractAttachExistingElementByIdTemplate {
@@ -32,7 +32,7 @@ public class AttachExistingElementByIdUI extends UI {
         }
     }
 
-    @HtmlImport("context://com/vaadin/flow/uitest/ui/template/ContextAttachExistingElementById.html")
+    @HtmlImport("context://frontend/com/vaadin/flow/uitest/ui/template/ContextAttachExistingElementById.html")
     @Tag("context-existing-element")
     public static class ContextAttachExistingElementByIdTemplate
             extends AbstractAttachExistingElementByIdTemplate {

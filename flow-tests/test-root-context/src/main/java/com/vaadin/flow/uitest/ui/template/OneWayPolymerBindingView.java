@@ -16,20 +16,20 @@
 
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
 
 /**
  * @author Vaadin Ltd.
  */
 @Tag("my-one-way-template")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/OneWayPolymerBinding.html")
-public class OneWayPolymerBindingView
-        extends PolymerTemplate<OneWayPolymerBindingView.MessageModel> implements View {
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/OneWayPolymerBinding.html")
+public class OneWayPolymerBindingView extends
+        PolymerTemplate<OneWayPolymerBindingView.MessageModel> implements View {
     static final String MESSAGE = "testMessage";
     static final String NEW_MESSAGE = "newMessage";
 

@@ -20,7 +20,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 
 @Tag("template-with-connected-callbacks")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/TemplateWithConnectedCallbacks.html")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateWithConnectedCallbacks.html")
 public class TemplateWithConnectedCallbacks extends Component {
 
     public TemplateWithConnectedCallbacks() {

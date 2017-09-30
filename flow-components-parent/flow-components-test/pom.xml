@@ -89,9 +89,6 @@
                     <webAppConfig>
                         <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
-                        <resourceBases>
-                            <resourceBase>${frontend.working.directory}</resourceBase>
-                        </resourceBases>
                     </webAppConfig>
                 </configuration>
                 <executions>
@@ -176,7 +173,6 @@
                                     <!-- these paths are relative to the
                                         project where the profile is triggered -->
                                     <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
-                                    <resourceBase>${project.basedir}/${frontend.working.directory}</resourceBase>
                                     <resourceBase>${project.basedir}/../flow-components/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>

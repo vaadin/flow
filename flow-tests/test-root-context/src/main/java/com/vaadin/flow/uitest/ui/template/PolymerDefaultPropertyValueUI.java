@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.event.Synchronize;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.common.PropertyDescriptor;
-import com.vaadin.ui.common.PropertyDescriptors;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.PropertyDescriptor;
+import com.vaadin.ui.common.PropertyDescriptors;
+import com.vaadin.ui.event.Synchronize;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class PolymerDefaultPropertyValueUI extends UI {
 
@@ -39,7 +39,7 @@ public class PolymerDefaultPropertyValueUI extends UI {
     }
 
     @Tag("default-property")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/PolymerDefaultPropertyValue.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerDefaultPropertyValue.html")
     public static class MyTemplate extends PolymerTemplate<MyModel> {
 
         public MyTemplate() {
