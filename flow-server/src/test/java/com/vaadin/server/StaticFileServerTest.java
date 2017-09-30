@@ -99,7 +99,6 @@ public class StaticFileServerTest implements Serializable {
         private Boolean overrideBrowserHasNewestVersion;
         private Integer overrideCacheTime;
 
-
         OverrideableStaticFileServer(VaadinService service) {
             super(service);
         }
@@ -185,7 +184,7 @@ public class StaticFileServerTest implements Serializable {
 
     @After
     public void tearDown() {
-        VaadinService.setCurrent(null);
+        Assert.assertNull(VaadinService.getCurrent());
     }
 
     @Test

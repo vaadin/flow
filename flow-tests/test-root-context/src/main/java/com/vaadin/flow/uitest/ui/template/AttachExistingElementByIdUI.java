@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
 
 public class AttachExistingElementByIdUI extends UI {
 
@@ -42,7 +42,7 @@ public class AttachExistingElementByIdUI extends UI {
         }
     }
 
-    @HtmlImport("frontend://components/AttachExistingElementById.html")
+    @HtmlImport("components/AttachExistingElementById.html")
     @Tag("frontend-existing-element")
     public static class FrontendAttachExistingElementByIdTemplate
             extends AbstractAttachExistingElementByIdTemplate {

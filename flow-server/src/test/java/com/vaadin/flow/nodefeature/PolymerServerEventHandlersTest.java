@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jsoup.Jsoup;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -46,6 +45,7 @@ import com.vaadin.ui.event.EventData;
 import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.RepeatIndex;
+import com.vaadin.util.HasCurrentService;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -54,7 +54,7 @@ import elemental.json.impl.JreJsonArray;
 /**
  * @author Vaadin Ltd.
  */
-public class PolymerServerEventHandlersTest {
+public class PolymerServerEventHandlersTest extends HasCurrentService {
     private StateNode stateNode;
     private PolymerServerEventHandlers handlers;
     private Collection<Method> methodCollector;
@@ -132,18 +132,18 @@ public class PolymerServerEventHandlersTest {
         wronglyAnnotatedHandlers = getEventHandlerNamesAndMethods(
                 WrongAnnotationUsage.class);
 
+    }
+
+    @Override
+    protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
-        VaadinService.setCurrent(service);
-    }
 
-    @After
-    public void tearDown() {
-        VaadinService.setCurrent(null);
+        return service;
     }
 
     private void addAndVerifyMethod(Method method) {

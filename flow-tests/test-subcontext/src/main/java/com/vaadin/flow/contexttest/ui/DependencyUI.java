@@ -18,16 +18,16 @@ package com.vaadin.flow.contexttest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.html.Div;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.common.HasText;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HasText;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.html.Div;
 
 @StyleSheet("context://test-files/css/allred.css")
 public class DependencyUI extends UI {
@@ -63,7 +63,8 @@ public class DependencyUI extends UI {
         StreamResourceRegistration foo = getSession().getResourceRegistry()
                 .registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
-            getPage().addJavaScript(foo.getResourceUri().toString());
+            getPage()
+                    .addJavaScript("base://" + foo.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")

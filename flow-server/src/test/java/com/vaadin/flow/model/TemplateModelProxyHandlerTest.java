@@ -1,8 +1,6 @@
 package com.vaadin.flow.model;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -11,8 +9,9 @@ import com.vaadin.flow.model.TemplateModelTest.EmptyModelTemplate;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
+import com.vaadin.util.HasCurrentService;
 
-public class TemplateModelProxyHandlerTest {
+public class TemplateModelProxyHandlerTest extends HasCurrentService {
 
     public static class Model {
 
@@ -35,21 +34,16 @@ public class TemplateModelProxyHandlerTest {
 
     }
 
-    @Before
-    public void setUp() {
-        Assert.assertNull(VaadinService.getCurrent());
+    @Override
+    protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
-        VaadinService.setCurrent(service);
-    }
 
-    @After
-    public void tearDown() {
-        VaadinService.setCurrent(null);
+        return service;
     }
 
     @Test

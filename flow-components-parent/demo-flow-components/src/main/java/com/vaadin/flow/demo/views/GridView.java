@@ -33,7 +33,7 @@ import com.vaadin.ui.html.Div;
  * View for {@link Grid} demo.
  */
 @ComponentDemo(name = "Grid", href = "vaadin-grid")
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-grid.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-grid.html")
 public class GridView extends DemoView {
 
     static List<Person> items = new ArrayList<>();

@@ -9,19 +9,18 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.model.TemplateModelTest.EmptyDivTemplate;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
+import com.vaadin.util.HasCurrentService;
 
-public class TemplateModelWithConvertersTest {
+public class TemplateModelWithConvertersTest extends HasCurrentService {
 
     public static class TemplateWithConverters extends
     EmptyDivTemplate<TemplateWithConverters.TemplateModelWithConverters> {
@@ -500,21 +499,15 @@ public class TemplateModelWithConvertersTest {
         }
     }
 
-    @Before
-    public void setUp() {
-        Assert.assertNull(VaadinService.getCurrent());
+    @Override
+    protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(service.getDeploymentConfiguration())
-        .thenReturn(configuration);
-        VaadinService.setCurrent(service);
-    }
-
-    @After
-    public void tearDown() {
-        VaadinService.setCurrent(null);
+                .thenReturn(configuration);
+        return service;
     }
 
     @Test
