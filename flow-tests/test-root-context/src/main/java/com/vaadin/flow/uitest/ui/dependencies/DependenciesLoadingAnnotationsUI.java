@@ -1,23 +1,24 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.shared.ui.LoadMode;
 
 /**
  * See corresponding IT for more details.
  *
  * @author Vaadin Ltd.
  */
-@JavaScript(value = "/com/vaadin/flow/uitest/ui/dependencies/inline.js", loadMode = LoadMode.INLINE)
-@StyleSheet(value = "/com/vaadin/flow/uitest/ui/dependencies/inline.css", loadMode = LoadMode.INLINE)
-@HtmlImport(value = "/com/vaadin/flow/uitest/ui/dependencies/inline.html", loadMode = LoadMode.INLINE)
-@JavaScript(value = "/com/vaadin/flow/uitest/ui/dependencies/lazy.js", loadMode = LoadMode.LAZY)
-@StyleSheet(value = "/com/vaadin/flow/uitest/ui/dependencies/lazy.css", loadMode = LoadMode.LAZY)
-@HtmlImport(value = "/com/vaadin/flow/uitest/ui/dependencies/lazy.html", loadMode = LoadMode.LAZY)
-@JavaScript("/com/vaadin/flow/uitest/ui/dependencies/eager.js")
-@StyleSheet("/com/vaadin/flow/uitest/ui/dependencies/eager.css")
-@HtmlImport("/com/vaadin/flow/uitest/ui/dependencies/eager.html")
-public class DependenciesLoadingAnnotationsUI extends DependenciesLoadingBaseUI {
+@JavaScript(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.js", loadMode = LoadMode.INLINE)
+@StyleSheet(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.css", loadMode = LoadMode.INLINE)
+@HtmlImport(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.html", loadMode = LoadMode.INLINE)
+@JavaScript(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.js", loadMode = LoadMode.LAZY)
+@StyleSheet(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.css", loadMode = LoadMode.LAZY)
+@HtmlImport(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.html", loadMode = LoadMode.LAZY)
+@JavaScript("frontend://com/vaadin/flow/uitest/ui/dependencies/eager.js")
+@StyleSheet("frontend://com/vaadin/flow/uitest/ui/dependencies/eager.css")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/dependencies/eager.html")
+public class DependenciesLoadingAnnotationsUI
+        extends DependenciesLoadingBaseUI {
 }

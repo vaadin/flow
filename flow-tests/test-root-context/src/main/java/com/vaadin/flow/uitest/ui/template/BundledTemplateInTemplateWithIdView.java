@@ -26,7 +26,7 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 public class BundledTemplateInTemplateWithIdView extends AbstractDivView {
 
     @Tag("parent-id-template-bundled")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/ParentIdTemplate.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ParentIdTemplate.html")
     // This will make the DependencyFilter remove all other imports and add the
     // proper bundle
     @HtmlImport("bundle://something.html")
@@ -35,7 +35,7 @@ public class BundledTemplateInTemplateWithIdView extends AbstractDivView {
     }
 
     @Tag("child-id-template-bundled")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/ChildIdTemplate.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ChildIdTemplate.html")
     // This will make the DependencyFilter remove all other imports and add the
     // proper bundle
     @HtmlImport("bundle://something.html")

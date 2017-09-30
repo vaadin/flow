@@ -15,23 +15,23 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 public class TemplateInTemplateView extends AbstractDivView {
 
     @Tag("parent-template")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/ParentTemplate.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ParentTemplate.html")
     public static class ParentTemplate extends PolymerTemplate<Message> {
 
     }
 
     @Tag("child-template")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/ChildTemplate.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ChildTemplate.html")
     public static class ChildTemplate extends PolymerTemplate<Message> {
 
         @EventHandler

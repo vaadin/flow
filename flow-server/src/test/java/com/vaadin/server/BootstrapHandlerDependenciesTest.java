@@ -1,5 +1,30 @@
 package com.vaadin.server;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.shared.ui.LoadMode;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
@@ -14,33 +39,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.function.DeploymentConfiguration;
-import com.vaadin.server.BootstrapHandler.BootstrapContext;
-import com.vaadin.shared.ui.LoadMode;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-import com.vaadin.ui.UI;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 
 public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
@@ -302,10 +300,10 @@ public class BootstrapHandlerDependenciesTest {
         Consumer<Document> uiPageTestingMethod = page -> {
             Element head = page.head();
 
-            assertCssElementLoadedEagerly(head, "./eager.css");
+            assertCssElementLoadedEagerly(head, "./frontend/eager.css");
             assertCssElementLoadedEagerly(head, "./eager-relative.css");
-            assertJavaScriptElementLoadedEagerly(head, "./eager.js");
-            assertHtmlElementLoadedEagerly(head, "./eager.html");
+            assertJavaScriptElementLoadedEagerly(head, "./frontend/eager.js");
+            assertHtmlElementLoadedEagerly(head, "./frontend/eager.html");
 
             assertCssElementInlined(head, "frontend://inline.css");
             assertJavaScriptElementInlined(head, "frontend://inline.js");

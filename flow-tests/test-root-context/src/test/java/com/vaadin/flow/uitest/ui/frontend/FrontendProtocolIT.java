@@ -36,7 +36,7 @@ import com.vaadin.testbench.By;
  * There are three variants of the frontend-protocol.html file in the project,
  * each one with a different text inside it. This test reads the texts to make
  * sure the right file is loaded under each scenario.
- * 
+ *
  * @see FrontendProtocolView
  * @see FrontendProtocolTemplate
  *
@@ -67,7 +67,8 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
         Assert.assertEquals("File loaded from context path",
                 getComponentInnerText());
 
-        Assert.assertEquals(getRootURL() + "/components/frontend-protocol.html",
+        Assert.assertEquals(
+                getRootURL() + "/frontend/components/frontend-protocol.html",
                 executeClientSideResolveUri());
     }
 
@@ -82,7 +83,7 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
 
         Assert.assertEquals(
                 getRootURL()
-                        + "/com/vaadin/flow/uitest/components/frontend-protocol.html",
+                        + "/frontend/com/vaadin/flow/uitest/components/frontend-protocol.html",
                 executeClientSideResolveUri());
     }
 

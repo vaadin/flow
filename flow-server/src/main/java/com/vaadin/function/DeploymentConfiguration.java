@@ -24,7 +24,6 @@ import java.util.function.Function;
 import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.server.Constants;
 import com.vaadin.server.WrappedSession;
-import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -232,15 +231,27 @@ public interface DeploymentConfiguration extends Serializable {
     Optional<String> getWebComponentsPolyfillBase();
 
     /**
+     * Gets the URL from which frontend resources should be loaded during
+     * development, unless explicitly configured to use the production es6 and
+     * es5 URLs.
+     *
+     * @return the development resource URL
+     */
+    default String getDevelopmentFrontendPrefix() {
+        return getStringProperty(Constants.FRONTEND_URL_DEV,
+                Constants.FRONTEND_URL_DEV_DEFAULT);
+    }
+
+    /**
      * Gets the URL from which frontend resources should be loaded in ES6
      * compatible browsers.
      *
      * @return the ES6 resource URL
      */
-    default String getEs6BuildUrl() {
+    default String getEs6FrontendPrefix() {
         String defaultUrl = isProductionMode()
                 ? Constants.FRONTEND_URL_ES6_DEFAULT_VALUE
-                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+                : getDevelopmentFrontendPrefix();
 
         return getStringProperty(Constants.FRONTEND_URL_ES6, defaultUrl);
     }
@@ -251,10 +262,10 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return the ES5 resource URL
      */
-    default String getEs5BuildUrl() {
+    default String getEs5FrontendPrefix() {
         String defaultUrl = isProductionMode()
                 ? Constants.FRONTEND_URL_ES5_DEFAULT_VALUE
-                : ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+                : getDevelopmentFrontendPrefix();
 
         return getStringProperty(Constants.FRONTEND_URL_ES5, defaultUrl);
     }
@@ -279,6 +290,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return {@code true} if webJars are enabled, {@code false} otherwise
      */
     default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS, isProductionMode());
+        return !getBooleanProperty(Constants.DISABLE_WEBJARS,
+                isProductionMode());
     }
 }
