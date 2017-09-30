@@ -17,20 +17,21 @@ package com.vaadin.flow.uitest.ui.template;
 
 import java.util.Locale;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.event.EventData;
-import com.vaadin.ui.polymertemplate.EventHandler;
-import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.View;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.EventData;
+import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Tag("event-handler")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/EventHandler.html")
-public class EventHandlerView extends PolymerTemplate<TemplateModel> implements View {
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/EventHandler.html")
+public class EventHandlerView extends PolymerTemplate<TemplateModel>
+        implements View {
     public EventHandlerView() {
         setId("template");
     }

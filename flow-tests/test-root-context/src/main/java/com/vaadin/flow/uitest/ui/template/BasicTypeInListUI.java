@@ -18,18 +18,18 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class BasicTypeInListUI extends UI {
 
     @Tag("basic-type-list")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/BasicTypeList.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/BasicTypeList.html")
     public static class BasicTypeList extends PolymerTemplate<ItemsModel> {
 
         BasicTypeList() {

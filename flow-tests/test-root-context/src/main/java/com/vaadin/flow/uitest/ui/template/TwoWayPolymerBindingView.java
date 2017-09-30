@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.polymertemplate.EventHandler;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.polymertemplate.EventHandler;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
 
 @Tag("my-template")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/TwoWayPolymerBinding.html")
-public class TwoWayPolymerBindingView
-        extends PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> implements View {
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TwoWayPolymerBinding.html")
+public class TwoWayPolymerBindingView extends
+        PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> implements View {
     public TwoWayPolymerBindingView() {
         setId("template");
     }
