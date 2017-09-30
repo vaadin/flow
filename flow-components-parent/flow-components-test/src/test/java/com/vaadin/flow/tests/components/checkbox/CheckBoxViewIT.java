@@ -13,27 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.components.it.checkbox;
+package com.vaadin.flow.tests.components.checkbox;
 
-import com.vaadin.flow.components.it.TestView;
-import com.vaadin.ui.checkbox.Checkbox;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.tests.components.AbstractComponentIT;
 
 /**
- * Test view for {@link Checkbox}.
+ * @author Vaadin Ltd
  *
  */
-public class CheckBoxView extends TestView {
+public class CheckBoxViewIT extends AbstractComponentIT {
 
-    /**
-     * Creates a new instance.
-     */
-    public CheckBoxView() {
-        Checkbox checkbox = new Checkbox();
-        checkbox.setId("checkbox");
-        checkbox.addValueChangeListener(event -> {
-        });
-        checkbox.setValue(true);
+    @Test
+    public void valueChangeListenerInSameRequest_checkBoxValueIsSet() {
+        open();
 
-        add(checkbox);
+        WebElement checkbox = findElement(By.id("checkbox"));
+        Assert.assertTrue(getInShadowRoot(checkbox, By.id("nativeCheckbox"))
+                .isSelected());
     }
 }
