@@ -70,7 +70,7 @@ public class DefaultDeploymentConfigurationTest {
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
                 .orElseThrow(AssertionError::new);
 
-        assertEquals("frontend://bower_components/webcomponentsjs/",
+        assertEquals("context://bower_components/webcomponentsjs/",
                 webComponentsPolyfillBase);
     }
 
