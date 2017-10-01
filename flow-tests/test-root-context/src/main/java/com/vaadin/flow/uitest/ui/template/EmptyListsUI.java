@@ -19,16 +19,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class EmptyListsUI extends UI {
 
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/EmptyLists.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/EmptyLists.html")
     @com.vaadin.ui.Tag("empty-list")
     public static class EmptyLists extends PolymerTemplate<EmptyListsModel> {
         public EmptyLists() {

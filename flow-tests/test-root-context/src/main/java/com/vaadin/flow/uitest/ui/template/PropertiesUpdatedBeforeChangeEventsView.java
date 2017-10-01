@@ -8,7 +8,7 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 public class PropertiesUpdatedBeforeChangeEventsView extends AbstractDivView {
 
     @Tag("properties-updated-before-change-events")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/PropertiesUpdatedBeforeChangeEvents.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PropertiesUpdatedBeforeChangeEvents.html")
     public static class PropertiesUpdatedBeforeChangeEvents
             extends PolymerTemplate<Message> {
 
