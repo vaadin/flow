@@ -16,7 +16,9 @@
 package com.vaadin.router;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
@@ -28,6 +30,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -180,17 +183,42 @@ public class Router implements RouterInterface {
      *            navigation target to get url for
      * @param parameter
      *            parameter to embed into the generated url
-     * @return url for the naviagtion target with parameter
+     * @return url for the navigation target with parameter
      */
     public <T> String getUrl(
             Class<? extends HasUrlParameter<T>> navigationTarget, T parameter)
             throws NotFoundException {
+        return getUrl(navigationTarget, Arrays.asList(parameter));
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameter in the
+     * url.
+     * <p>
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type Boolean then
+     * calling getUrl with a String will fail.
+     *
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameter
+     *            parameter to embed into the generated url
+     * @return url for the navigation target with parameter
+     */
+    public <T> String getUrl(
+            Class<? extends HasUrlParameter<T>> navigationTarget,
+            List<T> parameter) throws NotFoundException {
         String routeString = getUrlForTarget(
                 (Class<? extends Component>) navigationTarget);
-        if (parameter != null) {
+
+        List<String> serializedParameters = ReflectTools
+                .createInstance(navigationTarget)
+                .serializeUrlParameters(parameter);
+        if (!parameter.isEmpty()) {
             routeString = routeString.replace(
-                    "{" + parameter.getClass().getSimpleName() + "}",
-                    parameter.toString());
+                    "{" + parameter.get(0).getClass().getSimpleName() + "}",
+                    serializedParameters.stream()
+                            .collect(Collectors.joining("/")));
         } else if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
                 OptionalParameter.class)
                 || HasUrlParameter.isAnnotatedParameter(navigationTarget,
@@ -201,10 +229,8 @@ public class Router implements RouterInterface {
                     "The navigation target '%s' has a non optional parameter that needs to be given.",
                     navigationTarget.getName()));
         }
-
         Optional<Class<? extends Component>> registryTarget = getRegistry()
-                .getNavigationTarget(routeString,
-                        Arrays.asList((String) parameter));
+                .getNavigationTarget(routeString, serializedParameters);
 
         if (registryTarget.isPresent()
                 && !hasUrlParameters(registryTarget.get())

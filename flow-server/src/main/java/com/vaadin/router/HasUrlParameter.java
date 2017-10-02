@@ -17,7 +17,9 @@ package com.vaadin.router;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,10 +69,35 @@ public interface HasUrlParameter<T> {
             return isAnnotatedParameter(this.getClass(),
                     WildcardParameter.class) ? (T) "" : null;
         }
+        Class<?> parameterType = getClassType(this.getClass());
         if (isAnnotatedParameter(this.getClass(), WildcardParameter.class)) {
+            if (!parameterType.isAssignableFrom(String.class)) {
+                throw new UnsupportedOperationException(
+                        "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class "
+                                + this.getClass().getName());
+            }
             return (T) urlParameters.stream().collect(Collectors.joining("/"));
         }
-        return (T) urlParameters.get(0);
+        String parameter = urlParameters.get(0);
+        if (parameterType.isAssignableFrom(String.class)) {
+            return (T) parameter;
+        } else if (parameterType.isAssignableFrom(Integer.class)) {
+            return (T) Integer.valueOf(parameter);
+        } else if (parameterType.isAssignableFrom(Long.class)) {
+            return (T) Long.valueOf(parameter);
+        } else if (parameterType.isAssignableFrom(Boolean.class)) {
+            return (T) Boolean.valueOf(parameter);
+        } else {
+            throw new IllegalArgumentException("Bad type.");
+        }
+    }
+
+    default List<String> serializeUrlParameters(List<T> urlParameters) {
+        if (urlParameters == null) {
+            return new ArrayList<>();
+        }
+        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -90,16 +117,11 @@ public interface HasUrlParameter<T> {
                     "Given navigationTarget '%s' does not implement HasUrlParameter.",
                     navigationTarget.getName()));
         }
-        Type type = GenericTypeReflector.getTypeParameter(navigationTarget,
-                HasUrlParameter.class.getTypeParameters()[0]);
-        if (!(type instanceof Class<?>)) {
-            throw new IllegalArgumentException(String.format(
-                    "Parameter type of the given navigationTarget '%s' could not be resolved.",
-                    navigationTarget.getName()));
-        }
-        Class<?> parameterType = GenericTypeReflector.erase(type);
+
+        Class<?> parameterType = getClassType(navigationTarget);
+
         Set<Class<?>> supportedTypes = Stream
-                .of(Long.class, Integer.class, String.class)
+                .of(Long.class, Integer.class, String.class, Boolean.class)
                 .collect(Collectors.toSet());
         if (supportedTypes.contains(parameterType)) {
             if (isAnnotatedParameter(navigationTarget,
@@ -115,6 +137,24 @@ public interface HasUrlParameter<T> {
                 "Currently HasUrlParameter only supports the following parameter types: %s.",
                 supportedTypes.stream().map(Class::getName)
                         .collect(Collectors.joining(", "))));
+    }
+
+    /**
+     * Get the parameter type class.
+     * 
+     * @param navigationTarget
+     *            navigation target to get parameter type class for
+     * @return parameter type class
+     */
+    static Class<?> getClassType(Class<?> navigationTarget) {
+        Type type = GenericTypeReflector.getTypeParameter(navigationTarget,
+                HasUrlParameter.class.getTypeParameters()[0]);
+        if (!(type instanceof Class<?>)) {
+            throw new IllegalArgumentException(String.format(
+                    "Parameter type of the given navigationTarget '%s' could not be resolved.",
+                    navigationTarget.getName()));
+        }
+        return GenericTypeReflector.erase(type);
     }
 
     /**
