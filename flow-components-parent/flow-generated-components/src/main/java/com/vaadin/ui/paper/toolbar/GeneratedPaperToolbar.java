@@ -195,6 +195,8 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code bottomJustify} property from the webcomponent
 	 */
 	public String getBottomJustify() {
 		return getElement().getProperty("bottomJustify");
@@ -230,6 +232,8 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code justify} property from the webcomponent
 	 */
 	public String getJustify() {
 		return getElement().getProperty("justify");
@@ -264,6 +268,8 @@ public class GeneratedPaperToolbar<R extends GeneratedPaperToolbar<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code middleJustify} property from the webcomponent
 	 */
 	public String getMiddleJustify() {
 		return getElement().getProperty("middleJustify");

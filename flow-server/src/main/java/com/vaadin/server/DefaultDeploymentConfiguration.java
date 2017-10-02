@@ -390,7 +390,7 @@ public class DefaultDeploymentConfiguration
 
             @Override
             protected String getFrontendRootUrl() {
-                return getEs6BuildUrl();
+                return getEs6FrontendPrefix();
             }
         };
         String scanBase = uriResolver.resolveVaadinUri(

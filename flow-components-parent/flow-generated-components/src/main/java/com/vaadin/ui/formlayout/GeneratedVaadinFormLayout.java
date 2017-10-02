@@ -144,6 +144,7 @@ public class GeneratedVaadinFormLayout<R extends GeneratedVaadinFormLayout<R>>
 	  </dd>
 	</dl><p>This property is not synchronized automatically from the client side, so the returned value may not be the same as in client side.
 
+	 * @return the {@code responsiveSteps} property from the webcomponent
 	 */
 	protected JsonObject protectedGetResponsiveSteps() {
 		return (JsonObject) getElement().getPropertyRaw("responsiveSteps");

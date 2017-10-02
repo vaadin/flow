@@ -105,6 +105,8 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is synchronized automatically from client side when a
 	 * 'color-changed' event happens.
 	 * </p>
+	 * 
+	 * @return the {@code color} property from the webcomponent
 	 */
 	@Synchronize(property = "color", value = "color-changed")
 	public String getColor() {
@@ -140,6 +142,8 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code colorList} property from the webcomponent
 	 */
 	protected JsonArray protectedGetColorList() {
 		return (JsonArray) getElement().getPropertyRaw("colorList");
@@ -177,6 +181,8 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code columnCount} property from the webcomponent
 	 */
 	public double getColumnCount() {
 		return getElement().getProperty("columnCount", 0.0);
@@ -211,6 +217,8 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code horizontalAlign} property from the webcomponent
 	 */
 	public String getHorizontalAlign() {
 		return getElement().getProperty("horizontalAlign");
@@ -244,6 +252,8 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code verticalAlign} property from the webcomponent
 	 */
 	public String getVerticalAlign() {
 		return getElement().getProperty("verticalAlign");
@@ -277,6 +287,8 @@ public class GeneratedPaperSwatchPicker<R extends GeneratedPaperSwatchPicker<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code noink} property from the webcomponent
 	 */
 	public boolean isNoink() {
 		return getElement().getProperty("noink", false);

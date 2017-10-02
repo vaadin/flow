@@ -35,7 +35,6 @@ import java.util.function.Function;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,13 +54,14 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.util.HasCurrentService;
 
 import elemental.json.JsonArray;
 
 /**
  * @author Vaadin Ltd.
  */
-public class PolymerTemplateTest {
+public class PolymerTemplateTest extends HasCurrentService {
     private static final String TAG = "FFS";
 
     private DeploymentConfiguration configuration;
@@ -209,10 +209,10 @@ public class PolymerTemplateTest {
             extends PolymerTemplate<ModelClass> {
 
         public TemplateWithChildInDomRepeat() {
-            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
-                    + "'><template><div>"
-                    + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
-                    + "</div></template></dom-module>"));
+            super((clazz, tag) -> Jsoup
+                    .parse("<dom-module id='" + tag + "'><template><div>"
+                            + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
+                            + "</div></template></dom-module>"));
         }
 
     }
@@ -328,19 +328,17 @@ public class PolymerTemplateTest {
         map.put("child-template", TemplateChild.class);
         map.put("ffs", TestPolymerTemplate.class);
         CustomElementRegistry.getInstance().setCustomElements(map);
-
-        assertNull(VaadinService.getCurrent());
-        VaadinService service = Mockito.mock(VaadinService.class);
-        configuration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        VaadinService.setCurrent(service);
     }
 
-    @After
-    public void tearDown() {
-        VaadinService.setCurrent(null);
+    @Override
+    public VaadinService createService() {
+        configuration = Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+        return service;
     }
 
     @Test

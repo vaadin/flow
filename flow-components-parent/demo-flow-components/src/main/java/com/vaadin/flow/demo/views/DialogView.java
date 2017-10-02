@@ -25,7 +25,7 @@ import com.vaadin.ui.layout.HorizontalLayout;
 /**
  * View for {@link Dialog} demo.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-button.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-button.html")
 @ComponentDemo(name = "Dialog", href = "vaadin-dialog")
 public class DialogView extends DemoView {
 

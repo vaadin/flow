@@ -58,8 +58,8 @@ import com.vaadin.util.CurrentInstance;
 public class DefaultTemplateParserTest {
 
     @Tag("foo")
-    @HtmlImport("bar.html")
-    @HtmlImport("bar1.html")
+    @HtmlImport("/bar.html")
+    @HtmlImport("/bar1.html")
     private static class ImportsInspectTemplate
             extends PolymerTemplate<ModelClass> {
 
@@ -94,11 +94,11 @@ public class DefaultTemplateParserTest {
 
         resolver = Mockito.mock(VaadinUriResolver.class);
 
-        Mockito.when(resolver.resolveVaadinUri("bar.html"))
+        Mockito.when(resolver.resolveVaadinUri("/bar.html"))
                 .thenReturn("bar.html");
-        Mockito.when(resolver.resolveVaadinUri("bar1.html"))
+        Mockito.when(resolver.resolveVaadinUri("/bar1.html"))
                 .thenReturn("bar1.html");
-        Mockito.when(resolver.resolveVaadinUri("bundle.html"))
+        Mockito.when(resolver.resolveVaadinUri("/bundle.html"))
                 .thenReturn("bundle.html");
 
         VaadinUriResolverFactory factory = rqst -> resolver;
@@ -204,9 +204,9 @@ public class DefaultTemplateParserTest {
     public void defaultParser_servletPathIsNotEmpty_doubleSlashIsRemovedFromRequest() {
         VaadinServletRequest request = (VaadinServletRequest) CurrentInstance
                 .get(VaadinRequest.class);
-        Mockito.when(resolver.resolveVaadinUri("bar.html"))
+        Mockito.when(resolver.resolveVaadinUri("/bar.html"))
                 .thenReturn("/./../bar.html");
-        Mockito.when(resolver.resolveVaadinUri("bar1.html"))
+        Mockito.when(resolver.resolveVaadinUri("/bar1.html"))
                 .thenReturn("/./../bar1.html");
 
         Mockito.when(request.getServletPath()).thenReturn("/run/");
@@ -275,7 +275,7 @@ public class DefaultTemplateParserTest {
         AtomicInteger calls = new AtomicInteger();
         DependencyFilter filter = (list, context) -> {
             list.clear();
-            list.add(new Dependency(Type.HTML_IMPORT, "bundle.html",
+            list.add(new Dependency(Type.HTML_IMPORT, "/bundle.html",
                     LoadMode.EAGER));
             calls.incrementAndGet();
             return list;

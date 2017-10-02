@@ -24,7 +24,7 @@ import com.vaadin.ui.html.Div;
 /**
  * View for {@link Checkbox} demo.
  */
-@HtmlImport("frontend://bower_components/vaadin-valo-theme/vaadin-checkbox.html")
+@HtmlImport("bower_components/vaadin-valo-theme/vaadin-checkbox.html")
 @ComponentDemo(name = "Checkbox", href = "vaadin-checkbox")
 public class CheckboxView extends DemoView {
 

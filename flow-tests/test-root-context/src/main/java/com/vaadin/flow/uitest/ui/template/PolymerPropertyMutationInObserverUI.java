@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class PolymerPropertyMutationInObserverUI extends UI {
 
     @Tag("property-mutation-in-observer")
-    @HtmlImport("/com/vaadin/flow/uitest/ui/template/PolymerPropertyMutationInObserver.html")
+    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerPropertyMutationInObserver.html")
     public static class PolymerPropertyMutationInObserver
             extends PolymerTemplate<Message> {
 
@@ -33,9 +33,11 @@ public class PolymerPropertyMutationInObserverUI extends UI {
             getModel().setText(text);
         }
 
-        private Div getValueDiv() {
+        private Div getValueDiv(String eventOldValue, String eventValue) {
             Div div = new Div();
-            div.setText(getModel().getText());
+            div.setText(String.format(
+                    "Event old value: %s, event value: %s, current model value: %s",
+                    eventOldValue, eventValue, getModel().getText()));
             div.addClassName("model-value");
             return div;
         }
@@ -46,7 +48,8 @@ public class PolymerPropertyMutationInObserverUI extends UI {
         PolymerPropertyMutationInObserver template = new PolymerPropertyMutationInObserver();
         template.setId("template");
         template.getElement().addPropertyChangeListener("text",
-                event -> add(template.getValueDiv()));
+                event -> add(template.getValueDiv((String) event.getOldValue(),
+                        (String) event.getValue())));
         template.setText("initially set value");
         add(template);
     }

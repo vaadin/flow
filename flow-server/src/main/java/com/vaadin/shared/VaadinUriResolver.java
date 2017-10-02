@@ -41,6 +41,8 @@ public abstract class VaadinUriResolver {
      * resolves to the build path where web components were compiled. Browsers
      * supporting ES6 can receive different, more optimized files than browsers
      * that only support ES5.</li>
+     * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
+     * resolves to the base URI of the page</li>
      * </ul>
      * Any other URI protocols, such as <code>http://</code> or
      * <code>https://</code> are passed through this method unmodified.
@@ -56,8 +58,17 @@ public abstract class VaadinUriResolver {
 
         String processedUri = processFrontendProtocol(vaadinUri);
         processedUri = processContextProtocol(processedUri);
+        processedUri = processBaseUri(processedUri);
 
         return processedUri;
+    }
+
+    private String processBaseUri(String vaadinUri) {
+        if (vaadinUri.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+            vaadinUri = vaadinUri.substring(
+                    ApplicationConstants.BASE_PROTOCOL_PREFIX.length());
+        }
+        return vaadinUri;
     }
 
     private String processFrontendProtocol(String vaadinUri) {
@@ -91,7 +102,7 @@ public abstract class VaadinUriResolver {
      * Gets the URL pointing to the root build path where the frontend files
      * were compiled. It is expected that different browsers receive different
      * files depending on their capabilities.
-     * 
+     *
      * @return the base build URL
      */
     protected abstract String getFrontendRootUrl();

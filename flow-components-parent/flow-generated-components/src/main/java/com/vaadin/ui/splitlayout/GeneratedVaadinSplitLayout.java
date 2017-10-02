@@ -192,6 +192,8 @@ public class GeneratedVaadinSplitLayout<R extends GeneratedVaadinSplitLayout<R>>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
 	 * </p>
+	 * 
+	 * @return the {@code vertical} property from the webcomponent
 	 */
 	public boolean isVertical() {
 		return getElement().getProperty("vertical", false);

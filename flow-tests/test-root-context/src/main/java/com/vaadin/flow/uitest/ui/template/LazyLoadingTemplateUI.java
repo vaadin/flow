@@ -64,7 +64,8 @@ public class LazyLoadingTemplateUI extends UI {
         StreamResourceRegistration registration = getSession()
                 .getResourceRegistry()
                 .registerResource(getHtmlImportResource());
-        getPage().addHtmlImport(registration.getResourceUri().toString(),
+        getPage().addHtmlImport(
+                "base://" + registration.getResourceUri().toString(),
                 LoadMode.LAZY);
     }
 
@@ -84,7 +85,7 @@ public class LazyLoadingTemplateUI extends UI {
 
     private static String getTemplateContent() {
         // @formatter:off
-        return "<link rel='import' href='/bower_components/polymer/polymer-element.html'>"+
+        return "<link rel='import' href='/frontend/bower_components/polymer/polymer-element.html'>"+
         "<dom-module id='lazy-widget'>"+
               "<template>"+
                 "<div id='msg' >[[text]]</div>"+

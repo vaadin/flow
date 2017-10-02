@@ -32,6 +32,10 @@ public class ButtonTest {
 
     private static final String TEST_STRING = "lorem ipsum";
 
+    private static final String THEME_ATTRIBUTE = "theme";
+    private static final String THEME_ATTRIBUTE_ICON = "icon";
+    private static final String THEME_ATTRIBUTE_PRIMARY = "primary";
+
     @Test
     public void emptyCtor() {
         button = new Button();
@@ -125,26 +129,40 @@ public class ButtonTest {
     @Test
     public void updatingThemeAttribute() {
         button = new Button();
-        assertButtonHasThemeAttribute(false);
+        assertButtonHasThemeAttribute(null);
 
         button.setIcon(new Icon());
-        assertButtonHasThemeAttribute(true);
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_ICON);
 
         button.setText("foo");
-        assertButtonHasThemeAttribute(false);
+        assertButtonHasThemeAttribute(null);
 
         button.setIcon(null);
-        assertButtonHasThemeAttribute(false);
+        assertButtonHasThemeAttribute(null);
 
         button = new Button("foo", new Icon());
-        assertButtonHasThemeAttribute(false);
+        assertButtonHasThemeAttribute(null);
 
         button.setText("");
-        assertButtonHasThemeAttribute(true);
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_ICON);
 
         button = new Button("foo", new Icon());
         button.setText(null);
-        assertButtonHasThemeAttribute(true);
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_ICON);
+
+        // don't override explicitly set theme-attribute
+        button = new Button();
+        button.getElement().setAttribute(THEME_ATTRIBUTE,
+                THEME_ATTRIBUTE_PRIMARY);
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_PRIMARY);
+        button.setIcon(new Icon());
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_PRIMARY);
+        button.setText("foo");
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_PRIMARY);
+        button.setIcon(null);
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_PRIMARY);
+        button.setText(null);
+        assertButtonHasThemeAttribute(THEME_ATTRIBUTE_PRIMARY);
     }
 
     @Test
@@ -197,12 +215,13 @@ public class ButtonTest {
         Assert.assertEquals(TEST_STRING, span.getText());
     }
 
-    private void assertButtonHasThemeAttribute(boolean hasThemeAttribute) {
-        if (hasThemeAttribute) {
-            Assert.assertEquals("icon",
-                    button.getElement().getAttribute("theme"));
+    private void assertButtonHasThemeAttribute(String theme) {
+        if (theme == null) {
+            Assert.assertFalse(
+                    button.getElement().hasAttribute(THEME_ATTRIBUTE));
         } else {
-            Assert.assertFalse(button.getElement().hasAttribute("theme"));
+            Assert.assertEquals(theme,
+                    button.getElement().getAttribute(THEME_ATTRIBUTE));
         }
     }
 

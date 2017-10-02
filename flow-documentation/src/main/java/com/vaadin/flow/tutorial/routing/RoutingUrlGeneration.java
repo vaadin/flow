@@ -17,7 +17,6 @@ package com.vaadin.flow.tutorial.routing;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.HasUrlParameter;
-import com.vaadin.router.NotFoundException;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.UI;
@@ -36,14 +35,10 @@ public class RoutingUrlGeneration {
 
     public class Menu extends Div {
         public Menu() {
-            try {
-                String route = UI.getCurrent().getRouter().get()
-                        .getUrl(PathComponent.class);
-                Anchor link = new Anchor(route, "Path");
-                add(link);
-            } catch (NotFoundException e) {
-                // Omitted
-            }
+            String route = UI.getCurrent().getRouter().get()
+                    .getUrl(PathComponent.class);
+            Anchor link = new Anchor(route, "Path");
+            add(link);
         }
     }
 
@@ -60,14 +55,10 @@ public class RoutingUrlGeneration {
 
     public class ParameterMenu extends Div {
         public ParameterMenu() {
-            try {
-                String route = UI.getCurrent().getRouter().get()
-                        .getUrl(GreetingComponent.class, "anonymous");
-                Anchor link = new Anchor(route, "Greeting");
-                add(link);
-            } catch (NotFoundException e) {
-                // Omitted
-            }
+            String route = UI.getCurrent().getRouter().get()
+                    .getUrl(GreetingComponent.class, "anonymous");
+            Anchor link = new Anchor(route, "Greeting");
+            add(link);
         }
     }
 }

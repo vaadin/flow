@@ -10,77 +10,6 @@
 # Exclude third party code from Sonar analysis
 SONAR_EXCLUSIONS=**/bower_components/**,**/node_modules/**,**/node/**,**/src/main/webapp/**
 
-# Get all changes to branch (no-merges)
-actualCommits=`git log --no-merges --pretty=oneline master^..HEAD`
-
-# If running a pull request drop merged pull requests that have '(#' in the comment)
-if [[ "$TRAVIS_PULL_REQUEST" != "false" ]]
-then
-  actualCommits=`echo "$actualCommits" | grep -v "(#"`
-fi
-
-#Collect commit hashes
-actualCommits=`echo "$actualCommits" | awk '{print $1}' | tr '\n' ' '`
-
-# Get changed files with full path for branch commits.
-change=`diff <(git show --name-only $actualCommits) <(git show --summary $actualCommits)`
-
-# Collect changed modules to build and build also modules that depend on the
-# selected modules (see the flag '-amd')
-modules=
-if [[ $change == *"flow-push/"* ]]
-then
-  modules="$modules -pl flow-push"
-else
-  ## All modules except for production mode depend on push.
-  if [[ $change == *"flow-server/"* ]]
-  then
-    modules="$modules -pl flow-server"
-  else
-    if [[ $change == *"flow-html-components/"* ]]
-    then
-      modules="$modules -pl flow-html-components"
-    else
-      if [[ $change == *"flow-documentation/"* ]]
-      then
-        modules="$modules -pl flow-documentation"
-      fi
-    fi
-
-    if [[ $change == *"flow-data/"* ]]
-    then
-      modules="$modules -pl flow-data"
-    fi
-
-    if [[ $change == *"flow-components-parent/"* ]]
-    then
-      ## only trigger the analyzer & generator for validation builds on PRs that touched component generation
-      echo "Setting components flag to true"
-      modules="$modules -pl flow-components-parent -P generator"
-    fi
-
-    if [[ $change == *"flow-client/"* ]]
-    then
-      modules="$modules -pl flow-client"
-    fi
-  fi
-fi
-
-if [[ $change == *"flow-test-util/"* ]]
-then
-  modules="$modules -pl flow-test-util"
-else
-  if [[ $change == *"flow-tests/"* ]]
-  then
-    modules="$modules -pl flow-tests"
-  fi
-fi
-
-if [[ $change == *"flow-server-production-mode/"* ]]
-then
-  modules="$modules -pl flow-server-production-mode"
-fi
-
 function getDockerParamsIfNeeded {
     if [ "$USE_SELENOID" == "true" ]
     then
@@ -129,7 +58,7 @@ then
 
     # Trigger Sonar analysis
     # Verify build and build javadoc
-    echo "Running clean verify $modules -amd"
+    echo "Running clean verify"
     mvn -B -e -V \
         -Pvalidation \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
@@ -137,7 +66,7 @@ then
         $(getDockerParamsIfNeeded) \
         clean \
         license:download-licenses \
-        org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc $modules -amd
+        org.jacoco:jacoco-maven-plugin:prepare-agent verify javadoc:javadoc
     # Get the status for the previous maven command and if not exception then run sonar.
     STATUS=$?
     if [ $STATUS -eq 0 ]
@@ -176,5 +105,5 @@ else
         $(getDockerParamsIfNeeded) \
         -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE \
         license:download-licenses \
-        verify javadoc:javadoc $modules -amd
+        verify javadoc:javadoc
 fi

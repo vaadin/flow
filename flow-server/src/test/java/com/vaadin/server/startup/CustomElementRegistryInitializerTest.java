@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import javax.servlet.ServletException;
 
 import org.jsoup.Jsoup;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,34 +35,34 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
+import com.vaadin.util.HasCurrentService;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
  */
-public class CustomElementRegistryInitializerTest {
+public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
     private static final TemplateParser TEST_PARSER = (clazz, tag) -> Jsoup
             .parse("<dom-module id='" + tag + "'></dom-module>");
 
     private CustomElementRegistryInitializer customElementRegistryInitializer;
 
-    @Before
-    public void setup() {
-        CustomElementRegistryAccess.resetRegistry();
-        Assert.assertNull(VaadinService.getCurrent());
+    @Override
+    protected VaadinService createService() {
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(service.getDeploymentConfiguration())
-        .thenReturn(configuration);
-        VaadinService.setCurrent(service);
-        customElementRegistryInitializer = new CustomElementRegistryInitializer();
+                .thenReturn(configuration);
+        return service;
     }
 
-    @After
-    public void tearDown() {
-        VaadinService.setCurrent(null);
+    @Before
+    public void setup() {
+        CustomElementRegistryAccess.resetRegistry();
+
+        customElementRegistryInitializer = new CustomElementRegistryInitializer();
     }
 
     @Test

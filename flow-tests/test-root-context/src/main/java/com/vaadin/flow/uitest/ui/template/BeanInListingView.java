@@ -18,15 +18,15 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.router.View;
+import com.vaadin.flow.uitest.ui.template.BeanInListingView.ListModel;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.uitest.ui.template.BeanInListingView.ListModel;
 
 @Tag("listing-bean-view")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/BeanInListing.html")
+@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/BeanInListing.html")
 public class BeanInListingView extends PolymerTemplate<ListModel>
         implements View {
 
