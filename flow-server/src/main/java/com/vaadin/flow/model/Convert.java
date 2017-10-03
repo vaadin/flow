@@ -22,8 +22,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.annotations.InternalContainerAnnotationForConvert;
-import com.vaadin.flow.template.angular.model.TemplateModel;
-import com.vaadin.flow.model.ModelConverter;
 
 /**
  * Defines a ModelConverter on a template model property found through

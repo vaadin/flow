@@ -21,8 +21,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.template.angular.model.TemplateModel;
-
 /**
  * Defines which properties to include when importing a bean into a template
  * model.
