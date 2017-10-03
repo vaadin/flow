@@ -100,7 +100,7 @@ public class DefaultRouteResolver implements RouteResolver {
 
         Deque<PathDetails> paths = new ArrayDeque<>();
         StringBuilder pathBuilder = new StringBuilder(pathSegments.get(0));
-        if (!pathSegments.get(0).equals("")) {
+        if (!"".equals(pathSegments.get(0))) {
             paths.push(new PathDetails("", pathSegments));
         }
         paths.push(new PathDetails(pathBuilder.toString(),
