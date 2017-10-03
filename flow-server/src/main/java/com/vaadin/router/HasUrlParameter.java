@@ -183,10 +183,18 @@ public interface HasUrlParameter<T> {
             return false;
         }
         try {
-            Method setParameter = navigationTarget.getMethod(
-                    ReflectTools.getFunctionalMethod(HasUrlParameter.class)
-                            .getName(),
-                    BeforeNavigationEvent.class, Object.class);
+            String methodName = "setParameter";
+            assert methodName.equals(ReflectTools
+                    .getFunctionalMethod(HasUrlParameter.class).getName());
+
+            // Raw method has no parameter annotations if compiled by Eclipse
+            Type parameterType = GenericTypeReflector.getTypeParameter(
+                    navigationTarget,
+                    HasUrlParameter.class.getTypeParameters()[0]);
+            Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
+
+            Method setParameter = navigationTarget.getMethod(methodName,
+                    BeforeNavigationEvent.class, parameterClass);
             return setParameter.getParameters()[1]
                     .isAnnotationPresent(parameterAnnotation);
         } catch (NoSuchMethodException e) {
