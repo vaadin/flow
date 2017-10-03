@@ -132,6 +132,9 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                     public void select(T item) {
                         T oldValue = selectedItem;
                         selectedItem = item;
+                        if (Objects.equals(item, oldValue)) {
+                            return;
+                        }
                         grid.getDataCommunicator().reset();
                         grid.fireEvent(
                                 new SingleSelectionEvent<Grid<T>, T>(grid,
