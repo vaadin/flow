@@ -242,6 +242,42 @@ public class RouterTest extends RoutingTestBase {
     public static class LoneRoute extends Component {
     }
 
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class WildRootParameter extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @WildcardParameter String parameter) {
+            eventCollector.add("With parameter: " + parameter);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class OptionalRootParameter extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @com.vaadin.router.OptionalParameter String parameter) {
+            eventCollector.add(parameter == null ? "No parameter" : parameter);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class RootParameter extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            eventCollector.add(parameter);
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -622,21 +658,20 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-
     @Test
     public void url_resolves_correctly_for_optional_and_wild_parameters()
             throws InvalidRouteConfigurationException, NotFoundException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(OptionalParameter.class,
-                                WildParameter.class)
+        router.getRegistry().setNavigationTargets(
+                Stream.of(OptionalParameter.class, WildParameter.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals("Optional value should be able to return even without any parameters", "optional",
-                router.getUrl(OptionalParameter.class, null));
+        Assert.assertEquals(
+                "Optional value should be able to return even without any parameters",
+                "optional", router.getUrl(OptionalParameter.class, null));
 
-        Assert.assertEquals("Wildcard value should be able to return even without any parameters","wild",
-                router.getUrl(WildParameter.class, null));
+        Assert.assertEquals(
+                "Wildcard value should be able to return even without any parameters",
+                "wild", router.getUrl(WildParameter.class, null));
 
         Assert.assertEquals("optional/my_param",
                 router.getUrl(OptionalParameter.class, "my_param"));
@@ -646,6 +681,62 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("wild/there/are/many/of/us",
                 router.getUrl(WildParameter.class, "there/are/many/of/us"));
+    }
+
+    @Test
+    public void root_navigation_target_with_wildcard_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(WildRootParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "With parameter: ",
+                eventCollector.get(0));
+
+        router.navigate(ui, new Location("my/wild"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty",
+                "With parameter: my/wild", eventCollector.get(1));
+    }
+
+    @Test
+    public void root_navigation_target_with_optional_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(OptionalRootParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "No parameter",
+                eventCollector.get(0));
+
+        router.navigate(ui, new Location("optional"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "optional",
+                eventCollector.get(1));
+    }
+
+    @Test
+    public void root_navigation_target_with_required_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(RootParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Has url with required parameter should not match to \"\"", 0,
+                eventCollector.size());
     }
 
     private Class<? extends Component> getUIComponent() {
