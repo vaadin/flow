@@ -149,8 +149,7 @@ public class Router implements RouterInterface {
      *            navigation target to get url for
      * @return url for the navigation target
      */
-    public String getUrl(Class<? extends Component> navigationTarget)
-            throws NotFoundException {
+    public String getUrl(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
                 WildcardParameter.class)) {
@@ -176,8 +175,8 @@ public class Router implements RouterInterface {
      * url.
      * <p>
      * Note! Given parameter is checked for correct class type. This means that
-     * if the navigation target defined parameter is of type Boolean then
-     * calling getUrl with a String will fail.
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
      *
      * @param navigationTarget
      *            navigation target to get url for
@@ -186,8 +185,7 @@ public class Router implements RouterInterface {
      * @return url for the navigation target with parameter
      */
     public <T> String getUrl(
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter)
-            throws NotFoundException {
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
         return getUrl(navigationTarget, Arrays.asList(parameter));
     }
 
@@ -196,27 +194,27 @@ public class Router implements RouterInterface {
      * url.
      * <p>
      * Note! Given parameter is checked for correct class type. This means that
-     * if the navigation target defined parameter is of type Boolean then
-     * calling getUrl with a String will fail.
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
      *
      * @param navigationTarget
      *            navigation target to get url for
-     * @param parameter
-     *            parameter to embed into the generated url
+     * @param parameters
+     *            parameters to embed into the generated url
      * @return url for the navigation target with parameter
      */
     public <T> String getUrl(
             Class<? extends HasUrlParameter<T>> navigationTarget,
-            List<T> parameter) throws NotFoundException {
+            List<T> parameters) {
         String routeString = getUrlForTarget(
                 (Class<? extends Component>) navigationTarget);
 
         List<String> serializedParameters = ReflectTools
                 .createInstance(navigationTarget)
-                .serializeUrlParameters(parameter);
-        if (!parameter.isEmpty()) {
+                .serializeUrlParameters(parameters);
+        if (!parameters.isEmpty()) {
             routeString = routeString.replace(
-                    "{" + parameter.get(0).getClass().getSimpleName() + "}",
+                    "{" + parameters.get(0).getClass().getSimpleName() + "}",
                     serializedParameters.stream()
                             .collect(Collectors.joining("/")));
         } else if (HasUrlParameter.isAnnotatedParameter(navigationTarget,

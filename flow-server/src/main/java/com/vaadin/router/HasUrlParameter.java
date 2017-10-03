@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
@@ -69,26 +68,27 @@ public interface HasUrlParameter<T> {
             return isAnnotatedParameter(this.getClass(),
                     WildcardParameter.class) ? (T) "" : null;
         }
-        Class<?> parameterType = getClassType(this.getClass());
+        Class parameterType = getClassType(this.getClass());
         if (isAnnotatedParameter(this.getClass(), WildcardParameter.class)) {
-            if (!parameterType.isAssignableFrom(String.class)) {
-                throw new UnsupportedOperationException(
-                        "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class "
-                                + this.getClass().getName());
-            }
+            validateWildcardType(this.getClass(), parameterType);
             return (T) urlParameters.stream().collect(Collectors.joining("/"));
         }
         String parameter = urlParameters.get(0);
-        if (parameterType.isAssignableFrom(String.class)) {
-            return (T) parameter;
-        } else if (parameterType.isAssignableFrom(Integer.class)) {
-            return (T) Integer.valueOf(parameter);
-        } else if (parameterType.isAssignableFrom(Long.class)) {
-            return (T) Long.valueOf(parameter);
-        } else if (parameterType.isAssignableFrom(Boolean.class)) {
-            return (T) Boolean.valueOf(parameter);
-        } else {
-            throw new IllegalArgumentException("Bad type.");
+        return ParameterDeserializer.deserializeParameter(
+                (Class<T>) parameterType, parameter, this.getClass().getName());
+    }
+
+    /**
+     * Validate that we can support the given wildcard parameter type.
+     * 
+     * @param parameterType
+     */
+    static void validateWildcardType(Class<?> navigationTarget,
+            Class<?> parameterType) {
+        if (!parameterType.isAssignableFrom(String.class)) {
+            throw new UnsupportedOperationException(
+                    "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class "
+                            + navigationTarget.getName());
         }
     }
 
@@ -130,9 +130,7 @@ public interface HasUrlParameter<T> {
 
         Class<?> parameterType = getClassType(navigationTarget);
 
-        Set<Class<?>> supportedTypes = Stream
-                .of(Long.class, Integer.class, String.class, Boolean.class)
-                .collect(Collectors.toSet());
+        Set<Class<?>> supportedTypes = ParameterDeserializer.supportedTypes;
         if (supportedTypes.contains(parameterType)) {
             if (isAnnotatedParameter(navigationTarget,
                     WildcardParameter.class)) {
