@@ -25,6 +25,13 @@ import java.util.Set;
  */
 public final class ParameterDeserializer {
 
+    /**
+     * Types supported by the default deserializer.
+     */
+    public static final Set<Class<?>> supportedTypes = Collections
+            .unmodifiableSet(new HashSet<>(Arrays.asList(Long.class,
+                    Integer.class, String.class, Boolean.class)));
+
     private ParameterDeserializer() {
     }
 
@@ -55,11 +62,4 @@ public final class ParameterDeserializer {
                     parameterType, targetClass));
         }
     }
-
-    /**
-     * Types supported by the default deserializer.
-     */
-    public static final Set<Class<?>> supportedTypes = Collections
-            .unmodifiableSet(new HashSet<>(Arrays.asList(Long.class,
-                    Integer.class, String.class, Boolean.class)));
 }
