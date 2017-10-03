@@ -25,6 +25,9 @@ import java.util.Set;
  */
 public final class ParameterDeserializer {
 
+    private ParameterDeserializer() {
+    }
+
     /**
      * Types supported by the default deserializer.
      */

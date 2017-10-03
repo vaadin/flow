@@ -81,7 +81,10 @@ public interface HasUrlParameter<T> {
     /**
      * Validate that we can support the given wildcard parameter type.
      * 
+     * @param navigationTarget
+     *            navigation target class
      * @param parameterType
+     *            parameter type to check validity for usage with wildcard
      */
     static void validateWildcardType(Class<?> navigationTarget,
             Class<?> parameterType) {
