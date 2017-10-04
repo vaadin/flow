@@ -32,6 +32,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -256,6 +257,17 @@ public class RouterTest extends RoutingTestBase {
     public static class NavigationTargetWithTitle extends Component {
     }
 
+    @RoutePrefix("parent-with-title")
+    @Title("Parent Title")
+    @Tag(Tag.DIV)
+    public static class ParentWithTitle extends Component implements RouterLayout {
+    }
+
+    @Route(value = "child", layout = ParentWithTitle.class)
+    @Tag(Tag.DIV)
+    public static class ChildWithoutTitle extends Component {
+    }
+
     @Route("navigation-target-with-dynamic-title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithDynamicTitle extends Component
@@ -449,6 +461,18 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("navigation-target-with-title"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Custom Title", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_from_annotation_in_parent()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(ChildWithoutTitle.class));
+
+        router.navigate(ui, new Location("parent-with-title/child"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Parent Title", ui.getInternals().getTitle());
     }
 
     @Test

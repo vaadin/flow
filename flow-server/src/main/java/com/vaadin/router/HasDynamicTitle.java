@@ -25,6 +25,7 @@ package com.vaadin.router;
  *
  * @author Vaadin Ltd.
  */
+@FunctionalInterface
 public interface HasDynamicTitle {
 
     /**

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -243,25 +244,31 @@ public class NavigationStateRenderer implements NavigationHandler {
             Component routeTarget,
             List<Class<? extends RouterLayout>> routeLayoutTypes) {
 
-        String title = "";
+        String title;
 
         if (routeTarget instanceof HasDynamicTitle) {
             title = ((HasDynamicTitle) routeTarget).getTitle();
         } else {
-            Title annotation = routeTarget.getClass().getAnnotation(Title.class);
-            if (annotation == null) {
-                for (Class<?> clazz : routeLayoutTypes) {
-                    annotation = clazz.getAnnotation(Title.class);
-                    if (annotation != null) {
-                        break;
-                    }
-                }
-            }
-            if (annotation != null && annotation.value() != null) {
-                title = annotation.value();
-            }
+            title = lookForTitleInTarget(routeTarget)
+                    .map(Optional::of)
+                    .orElseGet(() -> lookForTitleInParents(routeLayoutTypes))
+                    .map(Title::value)
+                    .orElse("");
         }
         navigationEvent.getUI().getPage().setTitle(title);
+    }
+
+    private Optional<Title> lookForTitleInTarget(Component routeTarget) {
+        return Optional.ofNullable(
+                routeTarget.getClass().getAnnotation(Title.class));
+    }
+
+    private Optional<Title> lookForTitleInParents(
+            List<Class<? extends RouterLayout>> routeLayoutTypes) {
+        return routeLayoutTypes.stream()
+                .map(clazz -> clazz.getAnnotation(Title.class))
+                .filter(Objects::nonNull)
+                .findFirst();
     }
 
     private LocationChangeEvent createEvent(NavigationEvent event,
