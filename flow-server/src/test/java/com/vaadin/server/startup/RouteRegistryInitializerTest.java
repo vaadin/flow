@@ -196,6 +196,19 @@ public class RouteRegistryInitializerTest {
                 registry.getTargetUrl(StringParameterRoute.class).get());
     }
 
+    @Test
+    public void routeRegistry_route_returns_string_not_ending_in_dash()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(Stream
+                .of(NaviagtionRootWithParent.class).collect(Collectors.toSet()),
+                servletContext);
+
+        Assert.assertEquals(
+                "The root target for a parent layout should not end with '/'",
+                "parent",
+                registry.getTargetUrl(NaviagtionRootWithParent.class).get());
+    }
+
     @Route("")
     private static class NavigationTarget extends Component {
     }
@@ -214,6 +227,10 @@ public class RouteRegistryInitializerTest {
 
     private static class RouteParentLayout extends Component
             implements RouterLayout {
+    }
+
+    @Route(value = "", layout = ParentWithRoutePrefix.class)
+    private static class NaviagtionRootWithParent extends Component {
     }
 
     @ParentLayout(RouteParentLayout.class)

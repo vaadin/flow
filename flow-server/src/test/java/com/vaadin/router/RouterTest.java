@@ -770,6 +770,10 @@ public class RouterTest extends RoutingTestBase {
                 eventCollector.size());
         Assert.assertEquals("Parameter should be empty",
                 "With parameter: my/wild", eventCollector.get(1));
+
+        Assert.assertEquals("", router.getUrl(WildRootParameter.class));
+        Assert.assertEquals("wild",
+                router.getUrl(WildRootParameter.class, "wild"));
     }
 
     @Test
@@ -792,6 +796,10 @@ public class RouterTest extends RoutingTestBase {
                 eventCollector.size());
         Assert.assertEquals("Parameter should be empty", "optional",
                 eventCollector.get(1));
+
+        Assert.assertEquals("", router.getUrl(OptionalRootParameter.class));
+        Assert.assertEquals("optional",
+                router.getUrl(OptionalRootParameter.class, "optional"));
     }
 
     @Test
@@ -807,6 +815,7 @@ public class RouterTest extends RoutingTestBase {
                 eventCollector.size());
     }
 
+    @Test
     public void test_has_url_with_supported_parameters_navigation()
             throws InvalidRouteConfigurationException {
         router.getRegistry()

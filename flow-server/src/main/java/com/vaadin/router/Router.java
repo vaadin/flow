@@ -155,6 +155,21 @@ public class Router implements RouterInterface {
                 WildcardParameter.class)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
         }
+        return trimRouteString(routeString);
+    }
+
+    /**
+     * Trim the given route string of extra characters that can be left in
+     * special cases like root target containing optional parameter.
+     * 
+     * @param routeString
+     *            route string to trim
+     * @return trimmed route
+     */
+    private String trimRouteString(String routeString) {
+        if (routeString.startsWith("/")) {
+            routeString = routeString.substring(1);
+        }
         return routeString;
     }
 
@@ -237,7 +252,7 @@ public class Router implements RouterInterface {
                     "Url matches existing navigation target '%s' with higher priority.",
                     registryTarget.get().getName()));
         }
-        return routeString;
+        return trimRouteString(routeString);
     }
 
     private String getUrlForTarget(Class<? extends Component> navigationTarget)
