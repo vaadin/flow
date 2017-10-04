@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
@@ -240,17 +241,15 @@ public class RouteRegistry implements Serializable {
             return annotation.value();
         }
 
-        StringBuilder fullRoute = new StringBuilder();
         List<String> parentRoutePrefixes = getParentRoutePrefixes(
                 navigationTarget);
         Collections.reverse(parentRoutePrefixes);
+        if (!annotation.value().isEmpty()) {
+            parentRoutePrefixes.add(annotation.value());
+        }
 
-        parentRoutePrefixes
-                .forEach(prefix -> fullRoute.append(prefix).append("/"));
-
-        fullRoute.append(annotation.value());
-
-        return fullRoute.toString();
+        return parentRoutePrefixes.stream()
+                .collect(Collectors.joining("/"));
     }
 
     private List<String> getParentRoutePrefixes(Class<?> component) {
