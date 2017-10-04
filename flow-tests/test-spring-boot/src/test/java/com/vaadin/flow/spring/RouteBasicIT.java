@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,27 +13,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.boot;
 
-import com.vaadin.router.Route;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.ui.html.Div;
+package com.vaadin.flow.spring;
 
-/**
- * @author Vaadin Ltd
- *
- */
-@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
-public class TestSpringServlet extends VaadinServlet {
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
 
-    @Route("")
-    public static class RootNavigationTarget extends Div {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-        public RootNavigationTarget() {
-            setId("main");
-            setText("root");
-        }
+public class RouteBasicIT extends ChromeBrowserTest {
+
+    @Override
+    protected String getTestPath() {
+        return "/";
     }
 
+    @Test
+    public void testServletDeployed() throws Exception {
+        open();
+
+        Assert.assertTrue(isElementPresent(By.id("main")));
+    }
 }
