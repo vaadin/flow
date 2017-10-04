@@ -248,10 +248,8 @@ public class RouteRegistry implements Serializable {
             parentRoutePrefixes.add(annotation.value());
         }
 
-        String fullRoute = parentRoutePrefixes.stream()
+        return parentRoutePrefixes.stream()
                 .collect(Collectors.joining("/"));
-
-        return fullRoute.toString();
     }
 
     private List<String> getParentRoutePrefixes(Class<?> component) {
