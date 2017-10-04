@@ -80,7 +80,6 @@ public class NodeFeatureTest {
         expectedIds.put(SynchronizedPropertyEventsList.class,
                 NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
-        expectedIds.put(TemplateMap.class, NodeFeatures.TEMPLATE);
         expectedIds.put(ModelMap.class, NodeFeatures.TEMPLATE_MODELMAP);
         expectedIds.put(TemplateOverridesMap.class,
                 NodeFeatures.TEMPLATE_OVERRIDES);

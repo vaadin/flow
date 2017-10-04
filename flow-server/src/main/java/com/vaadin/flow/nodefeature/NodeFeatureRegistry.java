@@ -70,7 +70,7 @@ public class NodeFeatureRegistry {
         registerFeature(SynchronizedPropertyEventsList.class,
                 SynchronizedPropertyEventsList::new);
         registerFeature(ComponentMapping.class, ComponentMapping::new);
-        registerFeature(TemplateMap.class, TemplateMap::new);
+//        registerFeature(TemplateMap.class, TemplateMap::new);
         registerFeature(ModelMap.class, ModelMap::new);
         registerFeature(TemplateOverridesMap.class, TemplateOverridesMap::new);
         registerFeature(OverrideElementData.class, OverrideElementData::new);

@@ -44,7 +44,6 @@ import com.vaadin.flow.nodefeature.OverrideElementData;
 import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.nodefeature.TemplateOverridesMap;
 import com.vaadin.flow.template.angular.BindingValueProvider;
 import com.vaadin.flow.template.angular.ElementTemplateNode;
@@ -67,9 +66,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     // template
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] rootNodeFeatures = new Class[] {
-            ComponentMapping.class, TemplateMap.class,
-            ParentGeneratorHolder.class, ClientDelegateHandlers.class,
-            TemplateOverridesMap.class, ModelMap.class };
+            ComponentMapping.class, ParentGeneratorHolder.class,
+            ClientDelegateHandlers.class, TemplateOverridesMap.class,
+            ModelMap.class };
 
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream

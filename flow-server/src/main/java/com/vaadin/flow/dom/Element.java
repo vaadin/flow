@@ -34,11 +34,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.nodefeature.ElementData;
-import com.vaadin.flow.nodefeature.OverrideElementData;
-import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.nodefeature.TextNodeMap;
-import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
-import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.startup.CustomElementRegistry;
@@ -122,7 +118,7 @@ public class Element extends Node<Element> {
 
         if (autocreate) {
             CustomElementRegistry.getInstance()
-            .wrapElementIfNeeded(Element.this);
+                    .wrapElementIfNeeded(Element.this);
         }
     }
 
@@ -140,19 +136,6 @@ public class Element extends Node<Element> {
             return get(node, BasicTextElementStateProvider.get());
         } else if (node.hasFeature(ElementData.class)) {
             return get(node, BasicElementStateProvider.get());
-        } else if (node.hasFeature(TemplateMap.class)) {
-            TemplateNode rootTemplate = node.getFeature(TemplateMap.class)
-                    .getRootTemplate();
-            assert rootTemplate instanceof AbstractElementTemplateNode;
-            return rootTemplate.getElement(0, node);
-        } else if (node.hasFeature(OverrideElementData.class)) {
-            // provided node is an override: get real state node + template node
-            StateNode templateStateNode = node.getParent();
-            TemplateNode templateNode = node
-                    .getFeature(OverrideElementData.class).getTemplateNode();
-
-            assert templateNode instanceof AbstractElementTemplateNode;
-            return templateNode.getElement(0, templateStateNode);
         } else {
             throw new IllegalArgumentException(
                     "Node is not valid as an element");
@@ -449,9 +432,9 @@ public class Element extends Node<Element> {
      */
     public Stream<String> getAttributeNames() {
         assert getStateProvider().getAttributeNames(getNode())
-        .map(CustomAttribute::get).filter(Optional::isPresent)
-        .filter(attr -> attr.get().hasAttribute(this))
-        .count() == 0 : "Overlap between stored attributes and existing custom attributes";
+                .map(CustomAttribute::get).filter(Optional::isPresent)
+                .filter(attr -> attr.get().hasAttribute(this))
+                .count() == 0 : "Overlap between stored attributes and existing custom attributes";
 
         Stream<String> regularNames = getStateProvider()
                 .getAttributeNames(getNode());
@@ -1041,7 +1024,7 @@ public class Element extends Node<Element> {
             builder.append(getText());
         } else {
             getChildren().filter(childFilter)
-            .forEach(e -> e.appendTextContent(builder, childFilter));
+                    .forEach(e -> e.appendTextContent(builder, childFilter));
         }
     }
 
@@ -1132,7 +1115,7 @@ public class Element extends Node<Element> {
     public Element addSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
-        .add(eventType);
+                .add(eventType);
         return this;
     }
 
@@ -1149,7 +1132,7 @@ public class Element extends Node<Element> {
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
         getStateProvider().getSynchronizedProperties(getNode())
-        .remove(property);
+                .remove(property);
         return this;
     }
 
@@ -1167,7 +1150,7 @@ public class Element extends Node<Element> {
     public Element removeSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
         getStateProvider().getSynchronizedPropertyEvents(getNode())
-        .remove(eventType);
+                .remove(eventType);
         return this;
     }
 
@@ -1345,20 +1328,20 @@ public class Element extends Node<Element> {
     public void callFunction(String functionName, Serializable... arguments) {
         assert functionName != null;
         assert !functionName
-        .startsWith(".") : "Function name should not start with a dot";
+                .startsWith(".") : "Function name should not start with a dot";
 
-        getNode()
-        .runWhenAttached(
+        getNode().runWhenAttached(
                 ui -> doCallFunction(ui, functionName, arguments));
 
     }
 
     private void doCallFunction(UI ui, String functionName,
             Serializable... arguments) {
-        ui.getInternals().getStateTree().beforeClientResponse(getNode(), () ->{
+        ui.getInternals().getStateTree().beforeClientResponse(getNode(), () -> {
             // $0.method($1,$2,$3)
-            String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
-                    .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
+            String paramPlaceholderString = IntStream
+                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
+                    .collect(Collectors.joining(","));
             Serializable[] jsParameters = Stream
                     .concat(Stream.of(this), Stream.of(arguments))
                     .toArray(size -> new Serializable[size]);

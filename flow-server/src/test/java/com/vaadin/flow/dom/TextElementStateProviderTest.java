@@ -18,12 +18,7 @@ package com.vaadin.flow.dom;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.impl.TemplateTextElementStateProvider;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.nodefeature.TextNodeMap;
-import com.vaadin.flow.template.angular.TextTemplateNode;
 
 public class TextElementStateProviderTest {
     private Element element = Element.createText("foo");

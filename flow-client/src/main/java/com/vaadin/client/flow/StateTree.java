@@ -352,7 +352,6 @@ public class StateTree {
                     "synchronizedPropertyEvents");
             nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING,
                     "componentMapping");
-            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE, "template");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELMAP,
                     "templateModelMap");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_OVERRIDES,
