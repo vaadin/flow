@@ -20,10 +20,6 @@ import java.util.function.Predicate;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.client.flow.template.ChildSlotBindingStrategy;
-import com.vaadin.client.flow.template.ElementTemplateBindingStrategy;
-import com.vaadin.client.flow.template.ForTemplateBindingStrategy;
-import com.vaadin.client.flow.template.TextTemplateBindingStrategy;
 
 import elemental.dom.Node;
 
@@ -133,10 +129,6 @@ public final class Binder {
         JsArray<BindingStrategy<?>> array = JsCollections.array();
         array.push(new SimpleElementBindingStrategy());
         array.push(new TextBindingStrategy());
-        array.push(new ElementTemplateBindingStrategy());
-        array.push(new TextTemplateBindingStrategy());
-        array.push(new ForTemplateBindingStrategy());
-        array.push(new ChildSlotBindingStrategy());
 
         return array;
     }
