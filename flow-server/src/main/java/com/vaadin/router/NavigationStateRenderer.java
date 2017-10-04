@@ -138,7 +138,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        updatePageTitle(event, routeTargetType, routeLayoutTypes);
+        updatePageTitle(event, componentInstance, routeLayoutTypes);
 
         LocationChangeEvent locationChangeEvent = createEvent(event, chain);
 
@@ -229,31 +229,39 @@ public class NavigationStateRenderer implements NavigationHandler {
     /**
      * Updates the page title according to the currently visible component.
      * <p>
-     * Uses the {@link Title} to resolve the title.
+     * Uses {@link HasDynamicTitle#getTitle()} if implemented, or else
+     * the {@link Title} annotation, to resolve the title.
      *
      * @param navigationEvent
      *            the event object about the navigation
-     * @param routeTargetType
-     *            the type of the route target
+     * @param routeTarget
+     *            the currently visible component
+     * @param routeLayoutTypes
+     *            the route layout types
      */
-    protected void updatePageTitle(NavigationEvent navigationEvent,
-            Class<? extends Component> routeTargetType,
+    private void updatePageTitle(NavigationEvent navigationEvent,
+            Component routeTarget,
             List<Class<? extends RouterLayout>> routeLayoutTypes) {
 
-        Title annotation = routeTargetType.getAnnotation(Title.class);
-        if (annotation == null) {
-            for (Class<?> clazz : routeLayoutTypes) {
-                annotation = clazz.getAnnotation(Title.class);
-                if (annotation != null) {
-                    break;
+        String title = "";
+
+        if (routeTarget instanceof HasDynamicTitle) {
+            title = ((HasDynamicTitle) routeTarget).getTitle();
+        } else {
+            Title annotation = routeTarget.getClass().getAnnotation(Title.class);
+            if (annotation == null) {
+                for (Class<?> clazz : routeLayoutTypes) {
+                    annotation = clazz.getAnnotation(Title.class);
+                    if (annotation != null) {
+                        break;
+                    }
                 }
             }
+            if (annotation != null && annotation.value() != null) {
+                title = annotation.value();
+            }
         }
-        if (annotation == null || annotation.value() == null) {
-            navigationEvent.getUI().getPage().setTitle("");
-        } else {
-            navigationEvent.getUI().getPage().setTitle(annotation.value());
-        }
+        navigationEvent.getUI().getPage().setTitle(title);
     }
 
     private LocationChangeEvent createEvent(NavigationEvent event,

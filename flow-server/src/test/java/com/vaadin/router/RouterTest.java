@@ -15,6 +15,9 @@
  */
 package com.vaadin.router;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,8 +48,11 @@ import com.vaadin.ui.UI;
 
 public class RouterTest extends RoutingTestBase {
 
-    private UI ui;
+    private static final String DYNAMIC_TITLE = "I am dynamic!";
+
     private static List<String> eventCollector = new ArrayList<>(0);
+
+    private UI ui;
 
     @Route("")
     @Tag(Tag.DIV)
@@ -250,6 +256,65 @@ public class RouterTest extends RoutingTestBase {
     public static class NavigationTargetWithTitle extends Component {
     }
 
+    @Route("navigation-target-with-dynamic-title")
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithDynamicTitle extends Component
+            implements HasDynamicTitle {
+
+        public NavigationTargetWithDynamicTitle() {
+        }
+
+        @Override
+        public String getTitle() {
+            return DYNAMIC_TITLE;
+        }
+    }
+
+    @Route("url")
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithDynamicTitleFromUrl
+            extends Component
+            implements HasDynamicTitle, HasUrlParameter<String> {
+
+        private String title = DYNAMIC_TITLE;
+
+        public NavigationTargetWithDynamicTitleFromUrl() {
+        }
+
+        @Override
+        public String getTitle() {
+            return title;
+        }
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @com.vaadin.router.OptionalParameter String parameter) {
+            title = parameter;
+        }
+    }
+
+    @Route("url")
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithDynamicTitleFromNavigation
+            extends Component
+            implements HasDynamicTitle, BeforeNavigationListener {
+
+        private String title = DYNAMIC_TITLE;
+
+        public NavigationTargetWithDynamicTitleFromNavigation() {
+        }
+
+        @Override
+        public String getTitle() {
+            return title;
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            title = event.getActivationState().name();
+        }
+    }
+
     public static class RouterTestUI extends MockUI {
         final Router router;
 
@@ -387,6 +452,45 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void page_title_set_dynamically()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(NavigationTargetWithDynamicTitle.class));
+
+        router.navigate(ui, new Location("navigation-target-with-dynamic-title"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is(DYNAMIC_TITLE));
+    }
+
+    @Test
+    public void page_title_set_dynamically_from_url_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(NavigationTargetWithDynamicTitleFromUrl.class));
+
+        router.navigate(ui, new Location("url/hello"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is("hello"));
+    }
+
+    @Test
+    public void page_title_set_dynamically_from_event_handler()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(NavigationTargetWithDynamicTitleFromNavigation.class));
+
+        router.navigate(ui, new Location("url"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is("ACTIVATING"));
+    }
+
+    @Test
     public void test_before_navigation_event_is_triggered()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
@@ -488,6 +592,7 @@ public class RouterTest extends RoutingTestBase {
                 "Event before navigation", eventCollector.get(2));
     }
 
+    @Test
     public void basic_url_resolving()
             throws InvalidRouteConfigurationException, NotFoundException {
         router.getRegistry()

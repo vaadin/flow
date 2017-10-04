@@ -15,25 +15,29 @@
  */
 package com.vaadin.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.TestRouteRegistry;
+import com.vaadin.router.Title;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
@@ -56,6 +60,9 @@ public class RouteRegistryInitializerTest {
         Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
                 .thenReturn(registry);
     }
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
     public void onStartUp() throws ServletException {
@@ -209,6 +216,18 @@ public class RouteRegistryInitializerTest {
                 registry.getTargetUrl(NaviagtionRootWithParent.class).get());
     }
 
+    public void routeRegistry_fails_for_navigation_target_with_duplicate_title()
+            throws ServletException {
+        expectedEx.expect(DuplicateNavigationTitleException.class);
+        expectedEx.expectMessage(String.format(
+                "'%s' has a Title annotation, but also implements HasDynamicTitle.",
+                FaultyNavigationTargetWithTitle.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Collections.singleton(FaultyNavigationTargetWithTitle.class),
+                servletContext);
+    }
+
     @Route("")
     private static class NavigationTarget extends Component {
     }
@@ -280,6 +299,17 @@ public class RouteRegistryInitializerTest {
         public void setParameter(BeforeNavigationEvent event,
                 String parameter) {
 
+        }
+    }
+
+    @Route("foo")
+    @Title("Custom Title")
+    private static class FaultyNavigationTargetWithTitle extends Component
+            implements HasDynamicTitle {
+
+        @Override
+        public String getTitle() {
+            return "";
         }
     }
 }
