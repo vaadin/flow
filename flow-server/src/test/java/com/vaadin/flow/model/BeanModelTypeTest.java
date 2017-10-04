@@ -23,8 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.template.angular.model.BeanModelType;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
 
 public class BeanModelTypeTest {
     // Partial overlap with Bean
@@ -73,7 +72,8 @@ public class BeanModelTypeTest {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL);
 
-        ModelMap model = ModelMap.get(new StateNode(ModelMap.class));
+        ElementPropertyMap model = new ElementPropertyMap(
+                new StateNode(ElementPropertyMap.class));
 
         Bean bean = new Bean(3);
 
@@ -82,19 +82,21 @@ public class BeanModelTypeTest {
         assertThreeBean(model);
     }
 
-    private void assertThreeBean(ModelMap model) {
-        Assert.assertEquals(7, model.getKeys().count());
+    private void assertThreeBean(ElementPropertyMap model) {
+        Assert.assertEquals(7, model.getPropertyNames().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intValue"));
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intObject"));
+        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intValue"));
+        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intObject"));
 
-        Assert.assertEquals(Double.valueOf(3), model.getValue("doubleValue"));
-        Assert.assertEquals(Double.valueOf(3), model.getValue("doubleObject"));
+        Assert.assertEquals(Double.valueOf(3),
+                model.getProperty("doubleValue"));
+        Assert.assertEquals(Double.valueOf(3),
+                model.getProperty("doubleObject"));
 
-        Assert.assertEquals(Boolean.TRUE, model.getValue("booleanValue"));
-        Assert.assertEquals(Boolean.TRUE, model.getValue("booleanObject"));
+        Assert.assertEquals(Boolean.TRUE, model.getProperty("booleanValue"));
+        Assert.assertEquals(Boolean.TRUE, model.getProperty("booleanObject"));
 
-        Assert.assertEquals("3", model.getValue("string"));
+        Assert.assertEquals("3", model.getProperty("string"));
     }
 
     @Test
@@ -102,15 +104,16 @@ public class BeanModelTypeTest {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 new PropertyFilter(name -> "intValue".equals(name)));
 
-        ModelMap model = ModelMap.get(new StateNode(ModelMap.class));
+        ElementPropertyMap model = new ElementPropertyMap(
+                new StateNode(ElementPropertyMap.class));
 
         Bean bean = new Bean(3);
 
         beanType.importProperties(model, bean, PropertyFilter.ACCEPT_ALL);
 
-        Assert.assertEquals(1, model.getKeys().count());
+        Assert.assertEquals(1, model.getPropertyNames().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intValue"));
+        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intValue"));
     }
 
     @Test
@@ -118,16 +121,17 @@ public class BeanModelTypeTest {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL);
 
-        ModelMap model = ModelMap.get(new StateNode(ModelMap.class));
+        ElementPropertyMap model = new ElementPropertyMap(
+                new StateNode(ElementPropertyMap.class));
 
         Bean bean = new Bean(3);
 
         beanType.importProperties(model, bean,
                 new PropertyFilter(name -> "intObject".equals(name)));
 
-        Assert.assertEquals(1, model.getKeys().count());
+        Assert.assertEquals(1, model.getPropertyNames().count());
 
-        Assert.assertEquals(Integer.valueOf(3), model.getValue("intObject"));
+        Assert.assertEquals(Integer.valueOf(3), model.getProperty("intObject"));
     }
 
     @Test
@@ -135,7 +139,8 @@ public class BeanModelTypeTest {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL);
 
-        ModelMap model = ModelMap.get(new StateNode(ModelMap.class));
+        ElementPropertyMap model = new StateNode(ElementPropertyMap.class)
+                .getFeature(ElementPropertyMap.class);
 
         DifferentBean bean = new DifferentBean(3);
 
@@ -143,11 +148,11 @@ public class BeanModelTypeTest {
         beanType.importProperties(model, bean,
                 new PropertyFilter(name -> !"intValue".equals(name)));
 
-        Assert.assertEquals(1, model.getKeys().count());
+        Assert.assertEquals(1, model.getPropertyNames().count());
 
-        Assert.assertEquals("3", model.getValue("string"));
+        Assert.assertEquals("3", model.getProperty("string"));
 
-        Assert.assertFalse(model.hasValue("date"));
+        Assert.assertFalse(model.hasProperty("date"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -155,7 +160,8 @@ public class BeanModelTypeTest {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL);
 
-        ModelMap model = ModelMap.get(new StateNode(ModelMap.class));
+        ElementPropertyMap model = new ElementPropertyMap(
+                new StateNode(ElementPropertyMap.class));
 
         DifferentBean bean = new DifferentBean(3);
 
@@ -167,9 +173,10 @@ public class BeanModelTypeTest {
         BeanModelType<Bean> beanType = new BeanModelType<>(Bean.class,
                 PropertyFilter.ACCEPT_ALL);
 
-        ModelMap model = ModelMap.get(new StateNode(ModelMap.class));
-        model.setValue("string", "3");
-        model.setValue("intValue", Integer.valueOf(3));
+        ElementPropertyMap model = new StateNode(ElementPropertyMap.class)
+                .getFeature(ElementPropertyMap.class);
+        model.setProperty("string", "3");
+        model.setProperty("intValue", Integer.valueOf(3));
 
         Bean bean = beanType.modelToApplication(model.getNode());
 
@@ -188,7 +195,8 @@ public class BeanModelTypeTest {
         StateNode applicationToModel = beanType.applicationToModel(bean,
                 PropertyFilter.ACCEPT_ALL);
 
-        ModelMap model = ModelMap.get(applicationToModel);
+        ElementPropertyMap model = applicationToModel
+                .getFeature(ElementPropertyMap.class);
 
         assertThreeBean(model);
     }
@@ -204,11 +212,12 @@ public class BeanModelTypeTest {
                 new PropertyFilter(name -> name.equals("string")
                         || name.equals("intValue")));
 
-        ModelMap model = ModelMap.get(applicationToModel);
+        ElementPropertyMap model = applicationToModel
+                .getFeature(ElementPropertyMap.class);
 
         Assert.assertEquals(Arrays.asList("string"),
-                model.getKeys().collect(Collectors.toList()));
+                model.getPropertyNames().collect(Collectors.toList()));
 
-        Assert.assertEquals("3", model.getValue("string"));
+        Assert.assertEquals("3", model.getProperty("string"));
     }
 }

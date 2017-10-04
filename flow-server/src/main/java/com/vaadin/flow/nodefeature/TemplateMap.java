@@ -21,7 +21,7 @@ import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.template.angular.ChildSlotNode;
 import com.vaadin.flow.template.angular.TemplateNode;
-import com.vaadin.flow.template.angular.model.ModelDescriptor;
+import com.vaadin.flow.model.ModelDescriptor;
 
 /**
  * Map for nodes used as template roots.

@@ -28,7 +28,7 @@ import javax.script.ScriptException;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
-import com.vaadin.flow.template.angular.model.BeanModelType;
+import com.vaadin.flow.model.BeanModelType;
 import com.vaadin.flow.model.ModelType;
 
 import elemental.json.JsonValue;
