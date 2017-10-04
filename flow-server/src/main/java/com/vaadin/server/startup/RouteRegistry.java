@@ -15,7 +15,6 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +27,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import javax.servlet.ServletContext;
 
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
@@ -139,10 +140,10 @@ public class RouteRegistry implements Serializable {
     /**
      * Gets the optional navigation target class for a given Location matching
      * with path segments.
-     * 
-     * 
+     *
+     *
      * @see Location
-     * 
+     *
      * @param pathString
      *            path to get navigation target for, not {@code null}
      * @param segments
@@ -248,8 +249,7 @@ public class RouteRegistry implements Serializable {
             parentRoutePrefixes.add(annotation.value());
         }
 
-        return parentRoutePrefixes.stream()
-                .collect(Collectors.joining("/"));
+        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
     private List<String> getParentRoutePrefixes(Class<?> component) {
