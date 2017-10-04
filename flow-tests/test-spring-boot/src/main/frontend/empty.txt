@@ -1,0 +1,1 @@
+Empty file here to ensure the directory is created, since it's needed by the default Jetty configuration.
