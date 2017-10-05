@@ -41,8 +41,8 @@ Implementing the interface `HasDynamicTitle` allows us to change the title
 from Java at runtime:
 [source,java]
 ----
-@Route(value = "blog", layout = MainLayout.class)
-class BlogPost extends Div
+@Route(value = "blog")
+class BlogPost extends Component
         implements HasDynamicTitle, HasUrlParameter<Long> {
   private String title = "";
 
