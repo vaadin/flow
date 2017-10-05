@@ -58,17 +58,6 @@ public class RouterRegistryServletContextInitializer
 
     private ApplicationContext appContext;
 
-    /**
-     * Creates a new {@link ServletContextInitializer} instance with application
-     * {@code context} provided.
-     *
-     * @param context
-     *            the application context
-     */
-    public RouterRegistryServletContextInitializer(ApplicationContext context) {
-        appContext = context;
-    }
-
     private ServletContextListener listener = new ServletContextListener() {
 
         @Override
@@ -90,9 +79,21 @@ public class RouterRegistryServletContextInitializer
 
         @Override
         public void contextDestroyed(ServletContextEvent sce) {
+            // no need care about destroyed context
         }
 
     };
+
+    /**
+     * Creates a new {@link ServletContextInitializer} instance with application
+     * {@code context} provided.
+     *
+     * @param context
+     *            the application context
+     */
+    public RouterRegistryServletContextInitializer(ApplicationContext context) {
+        appContext = context;
+    }
 
     @Override
     public void onStartup(ServletContext servletContext)
