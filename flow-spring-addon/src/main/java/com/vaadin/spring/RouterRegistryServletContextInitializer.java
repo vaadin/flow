@@ -18,7 +18,6 @@ package com.vaadin.spring;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -36,6 +35,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 
@@ -53,8 +53,8 @@ import com.vaadin.ui.Component;
  * @author Vaadin Ltd
  *
  */
-public class RouterRegistryServletContextInitializer
-        implements ServletContextInitializer {
+public class RouterRegistryServletContextInitializer extends
+        AbstractRouteRegistryInitializer implements ServletContextInitializer {
 
     private ApplicationContext appContext;
 
@@ -99,13 +99,19 @@ public class RouterRegistryServletContextInitializer
     public void onStartup(ServletContext servletContext)
             throws ServletException {
 
+        RouteRegistry registry = RouteRegistry.getInstance(servletContext);
+        // If the registry is already initialized then RouteRegistryInitializer
+        // has done its job already, skip the custom routes search
+        if (registry.isInitialized()) {
+            return;
+        }
         /*
-         * Don't check RouteRegistry here because it's not known whether
-         * RouteRegistryInitializer has been executed already or not (the order
-         * is undefined). Postpone this to the end of context initialization
-         * cycle. At this point RouteRegistry is either initialized or it's not
-         * initialized because an RouteRegistryInitializer has not been executed
-         * (end never will).
+         * Don't rely on RouteRegistry.isInitialized() negative return value
+         * here because it's not known whether RouteRegistryInitializer has been
+         * executed already or not (the order is undefined). Postpone this to
+         * the end of context initialization cycle. At this point RouteRegistry
+         * is either initialized or it's not initialized because an
+         * RouteRegistryInitializer has not been executed (end never will).
          */
         servletContext.addListener(listener);
     }
@@ -116,13 +122,12 @@ public class RouterRegistryServletContextInitializer
         scanner.setResourceLoader(appContext);
         scanner.addIncludeFilter(new AnnotationTypeFilter(Route.class));
 
-        return getRoutePackages().stream().map(scanner::findCandidateComponents)
-                .flatMap(set -> set.stream()).map(this::getNavigationTarget)
-                .collect(Collectors.toSet());
+        return validateRouteClasses(getRoutePackages().stream()
+                .map(scanner::findCandidateComponents)
+                .flatMap(set -> set.stream()).map(this::getNavigationTarget));
     }
 
-    private Class<? extends Component> getNavigationTarget(
-            BeanDefinition beanDefinition) {
+    private Class<?> getNavigationTarget(BeanDefinition beanDefinition) {
         AbstractBeanDefinition definition = (AbstractBeanDefinition) beanDefinition;
         Class<?> beanClass;
         if (definition.hasBeanClass()) {
@@ -135,7 +140,7 @@ public class RouterRegistryServletContextInitializer
                 throw new IllegalStateException(e);
             }
         }
-        return beanClass.asSubclass(Component.class);
+        return beanClass;
     }
 
     private List<String> getRoutePackages() {
