@@ -17,24 +17,22 @@ package com.vaadin.server.startup;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
-import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
 
 /**
  * Servlet initializer for collecting all available {@link Route}s on startup.
  */
 @HandlesTypes(Route.class)
-public class RouteRegistryInitializer implements ServletContainerInitializer {
+public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
+        implements ServletContainerInitializer {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -46,11 +44,8 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
                         .setNavigationTargets(Collections.emptySet());
                 return;
             }
-            Set<Class<? extends Component>> routes = classSet.stream()
-                    .filter(RouteRegistryInitializer::isApplicableClass)
-                    .map(clazz -> (Class<? extends Component>) clazz)
-                    .peek(this::checkForConflictingAnnotations)
-                    .collect(Collectors.toSet());
+            Set<Class<? extends Component>> routes = validateRouteClasses(
+                    classSet.stream());
 
             RouteRegistry.getInstance(servletContext)
                     .setNavigationTargets(routes);
@@ -61,16 +56,4 @@ public class RouteRegistryInitializer implements ServletContainerInitializer {
         }
     }
 
-    private void checkForConflictingAnnotations(Class<?> route) {
-        if (route.isAnnotationPresent(ParentLayout.class)) {
-            throw new InvalidRouteLayoutConfigurationException(route
-                    .getCanonicalName()
-                    + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
-        }
-    }
-
-    private static boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Route.class)
-                && Component.class.isAssignableFrom(clazz);
-    }
 }
