@@ -31,8 +31,9 @@ class HomeView extends Div {
   }
 }
 ----
-The `@Title` annotation is read from the actual navigation target first.
-If that class is not annotated, parent views are also considered.
+[NOTE]
+The `@Title` annotation is read from the actual navigation target only;
+its parent views are not considered.
 
 == Setting the Page Title Dynamically
 
