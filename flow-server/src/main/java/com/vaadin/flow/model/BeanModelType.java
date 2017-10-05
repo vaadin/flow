@@ -48,7 +48,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     private final Class<T> proxyType;
 
     private transient ReflectionCache<Object, Map<String, Method>> beanPropertyCache;
-    private PropertyFilter propertyFilter = PropertyFilter.ACCEPT_ALL;
+    private transient PropertyFilter propertyFilter = PropertyFilter.ACCEPT_ALL;
 
     /**
      * Creates a new bean model type from the given class and properties.

@@ -137,8 +137,6 @@ public class UIInternals implements Serializable {
     private ArrayList<View> viewChain = new ArrayList<>();
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
-    private final Set<Integer> sentTemplateIds = new HashSet<>();
-
     /**
      * The Vaadin session to which the related UI belongs.
      */
