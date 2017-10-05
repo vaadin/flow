@@ -42,7 +42,6 @@ import com.vaadin.flow.router.HasChildView;
 import com.vaadin.router.Location;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
@@ -669,38 +668,6 @@ public class UIInternals implements Serializable {
 
     private static Logger getLogger() {
         return Logger.getLogger(UIInternals.class.getName());
-    }
-
-    /**
-     * Checks whether the given template node has already been sent to the
-     * client.
-     *
-     * @see #setTemplateSent(TemplateNode)
-     * @param node
-     *            the node to check, not <code>null</code>
-     * @return <code>true</code> if the template node has already been sent to
-     *         the client, <code>false</code> if the client does not know about
-     *         the template node
-     */
-    public boolean isTemplateSent(TemplateNode node) {
-        assert node != null;
-
-        return sentTemplateIds.contains(node.getId());
-    }
-
-    /**
-     * Marks the given template node as being sent to the client.
-     *
-     * @see #isTemplateSent(TemplateNode)
-     *
-     * @param node
-     *            the template node to set as sent, not <code>null</code>
-     */
-    public void setTemplateSent(TemplateNode node) {
-        assert node != null;
-        assert !isTemplateSent(node);
-
-        sentTemplateIds.add(node.getId());
     }
 
     /**

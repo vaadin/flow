@@ -35,6 +35,13 @@ public class ElementChildrenList extends StateNodeNodeList {
     }
 
     @Override
+    public void add(int index, StateNode node) {
+        assert node != null;
+
+        super.add(index, node);
+    }
+
+    @Override
     public StateNode get(int index) {
         return super.get(index);
     }

@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -48,7 +47,6 @@ import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.DependencyFilter.FilterContext;
@@ -302,18 +300,6 @@ public class UidlWriter implements Serializable {
         StateTree stateTree = uiInternals.getStateTree();
 
         stateTree.runExecutionsBeforeClientResponse();
-
-        Consumer<TemplateNode> templateEncoder = new Consumer<TemplateNode>() {
-            @Override
-            public void accept(TemplateNode templateNode) {
-                // Send to client if it's a new template
-                if (!uiInternals.isTemplateSent(templateNode)) {
-                    uiInternals.setTemplateSent(templateNode);
-                    templates.put(Integer.toString(templateNode.getId()),
-                            templateNode.toJson(this));
-                }
-            }
-        };
 
         Set<Class<? extends Component>> componentsWithDependencies = new LinkedHashSet<>();
         stateTree.collectChanges(change -> {
