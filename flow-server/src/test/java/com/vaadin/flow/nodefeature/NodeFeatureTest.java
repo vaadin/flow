@@ -81,11 +81,7 @@ public class NodeFeatureTest {
                 NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
         expectedIds.put(ModelMap.class, NodeFeatures.TEMPLATE_MODELMAP);
-        expectedIds.put(TemplateOverridesMap.class,
-                NodeFeatures.TEMPLATE_OVERRIDES);
         expectedIds.put(OverrideElementData.class, NodeFeatures.OVERRIDE_DATA);
-        expectedIds.put(ParentGeneratorHolder.class,
-                NodeFeatures.PARENT_GENERATOR);
         expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
         expectedIds.put(PolymerServerEventHandlers.class,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);

@@ -354,12 +354,8 @@ public class StateTree {
                     "componentMapping");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELMAP,
                     "templateModelMap");
-            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_OVERRIDES,
-                    "templateOverrides");
             nodeFeatureDebugName.set(NodeFeatures.OVERRIDE_DATA,
                     "overrideNodeData");
-            nodeFeatureDebugName.set(NodeFeatures.PARENT_GENERATOR,
-                    "parentGeneratorHolder");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,
                     "modelList");
             nodeFeatureDebugName.set(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,

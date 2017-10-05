@@ -97,66 +97,58 @@ public final class NodeFeatures {
      */
     public static final int TEMPLATE_MODELMAP = 16;
     /**
-     * Id for {@link TemplateOverridesMap}.
-     */
-    public static final int TEMPLATE_OVERRIDES = 17;
-    /**
      * Id for {@link OverrideElementData}.
      */
-    public static final int OVERRIDE_DATA = 18;
-    /**
-     * Id for {@link ParentGeneratorHolder}.
-     */
-    public static final int PARENT_GENERATOR = 19;
+    public static final int OVERRIDE_DATA = 17;
     /**
      * Id for {@link ModelList}.
      */
-    public static final int TEMPLATE_MODELLIST = 20;
+    public static final int TEMPLATE_MODELLIST = 18;
 
     /**
      * Id for {@link PolymerServerEventHandlers}.
      */
-    public static final int POLYMER_SERVER_EVENT_HANDLERS = 21;
+    public static final int POLYMER_SERVER_EVENT_HANDLERS = 19;
 
     /**
      * Id for {@link PolymerEventListenerMap}.
      */
-    public static final int POLYMER_EVENT_LISTENERS = 22;
+    public static final int POLYMER_EVENT_LISTENERS = 20;
 
     /**
      * Id for {@link ClientDelegateHandlers}.
      */
-    public static final int CLIENT_DELEGATE_HANDLERS = 23;
+    public static final int CLIENT_DELEGATE_HANDLERS = 21;
 
     /**
      * Id for {@link ShadowRootData}.
      */
-    public static final int SHADOW_ROOT_DATA = 24;
+    public static final int SHADOW_ROOT_DATA = 22;
 
     /**
      * Id for {@link ShadowRootHost}.
      */
-    public static final int SHADOW_ROOT_HOST = 25;
+    public static final int SHADOW_ROOT_HOST = 23;
 
     /**
      * Id for {@link AttachExistingElementFeature}.
      */
-    public static final int ATTACH_EXISTING_ELEMENT = 26;
+    public static final int ATTACH_EXISTING_ELEMENT = 24;
 
     /**
      * Id for {@link AttachTemplateChildFeature}.
      */
-    public static final int ATTACH_TEMPLATE_CHILD_ELEMENT = 27;
+    public static final int ATTACH_TEMPLATE_CHILD_ELEMENT = 25;
 
     /**
      * Id for {@link VirtualChildrenList}.
      */
-    public static final int VIRTUAL_CHILD_ELEMENTS = 28;
+    public static final int VIRTUAL_CHILD_ELEMENTS = 26;
 
     /**
      * Id for {@link BasicTypeValue}.
      */
-    public static final int BASIC_TYPE_VALUE = 29;
+    public static final int BASIC_TYPE_VALUE = 27;
 
     private NodeFeatures() {
         // Only static
