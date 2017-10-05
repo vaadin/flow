@@ -15,13 +15,12 @@
  */
 package com.vaadin.server.startup;
 
-import java.util.Collections;
-import java.util.Set;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.util.Collections;
+import java.util.Set;
 
 import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
