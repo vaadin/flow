@@ -15,15 +15,13 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
@@ -139,7 +137,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        updatePageTitle(event, componentInstance, routeLayoutTypes);
+        updatePageTitle(event, componentInstance);
 
         LocationChangeEvent locationChangeEvent = createEvent(event, chain);
 
@@ -237,12 +235,9 @@ public class NavigationStateRenderer implements NavigationHandler {
      *            the event object about the navigation
      * @param routeTarget
      *            the currently visible component
-     * @param routeLayoutTypes
-     *            the route layout types
      */
     private void updatePageTitle(NavigationEvent navigationEvent,
-            Component routeTarget,
-            List<Class<? extends RouterLayout>> routeLayoutTypes) {
+            Component routeTarget) {
 
         String title;
 
