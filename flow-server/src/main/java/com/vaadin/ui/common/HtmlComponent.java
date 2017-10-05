@@ -52,27 +52,27 @@ public class HtmlComponent extends Component implements HasSize, HasStyle {
     }
 
     /**
-     * Sets the title of this component. Browsers typically use the title to
+     * Sets the title tooltip of this component. Browsers typically use the title to
      * show a tooltip when hovering an element or any descendant without a title
      * value of its own.
      *
-     * @param title
+     * @param tooltip
      *            the title value to set, or <code>""</code> to remove any
      *            previously set title
      */
-    public void setTitle(String title) {
-        set(titleDescriptor, title);
+    public void setTooltip(String tooltip) {
+        set(titleDescriptor, tooltip);
     }
 
     /**
-     * Gets the title of this component.
+     * Gets the title tooltip of this component.
      *
-     * @see #setTitle(String)
+     * @see #setTooltip(String)
      *
      * @return an optional title, or an empty optional if no title has been set
      *
      */
-    public Optional<String> getTitle() {
+    public Optional<String> getTooltip() {
         return get(titleDescriptor);
     }
 
