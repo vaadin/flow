@@ -250,8 +250,6 @@ public class NavigationStateRenderer implements NavigationHandler {
             title = ((HasDynamicTitle) routeTarget).getTitle();
         } else {
             title = lookForTitleInTarget(routeTarget)
-                    .map(Optional::of)
-                    .orElseGet(() -> lookForTitleInParents(routeLayoutTypes))
                     .map(Title::value)
                     .orElse("");
         }
@@ -261,14 +259,6 @@ public class NavigationStateRenderer implements NavigationHandler {
     private Optional<Title> lookForTitleInTarget(Component routeTarget) {
         return Optional.ofNullable(
                 routeTarget.getClass().getAnnotation(Title.class));
-    }
-
-    private Optional<Title> lookForTitleInParents(
-            List<Class<? extends RouterLayout>> routeLayoutTypes) {
-        return routeLayoutTypes.stream()
-                .map(clazz -> clazz.getAnnotation(Title.class))
-                .filter(Objects::nonNull)
-                .findFirst();
     }
 
     private LocationChangeEvent createEvent(NavigationEvent event,

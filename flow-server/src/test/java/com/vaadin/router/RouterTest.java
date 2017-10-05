@@ -464,7 +464,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void page_title_set_from_annotation_in_parent()
+    public void page_title_not_set_from_annotation_in_parent()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(ChildWithoutTitle.class));
@@ -472,7 +472,7 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("parent-with-title/child"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Parent Title", ui.getInternals().getTitle());
+        Assert.assertEquals("", ui.getInternals().getTitle());
     }
 
     @Test
