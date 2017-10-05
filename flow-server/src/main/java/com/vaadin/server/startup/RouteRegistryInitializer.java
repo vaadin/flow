@@ -15,18 +15,14 @@
  */
 package com.vaadin.server.startup;
 
-import java.util.Collections;
-import java.util.Set;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+import java.util.Collections;
+import java.util.Set;
 
-import com.vaadin.router.HasDynamicTitle;
-import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
-import com.vaadin.router.Title;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
 
@@ -59,22 +55,4 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         }
     }
 
-    private void checkForConflictingAnnotations(Class<?> route) {
-        if (route.isAnnotationPresent(ParentLayout.class)) {
-            throw new InvalidRouteLayoutConfigurationException(route
-                    .getCanonicalName()
-                    + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
-        }
-        if (route.isAnnotationPresent(Title.class)
-                && HasDynamicTitle.class.isAssignableFrom(route)) {
-            throw new DuplicateNavigationTitleException(String.format(
-                    "'%s' has a Title annotation, but also implements HasDynamicTitle.",
-                    route.getName()));
-        }
-    }
-
-    private static boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Route.class)
-                && Component.class.isAssignableFrom(clazz);
-    }
 }
