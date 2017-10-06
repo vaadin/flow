@@ -15,14 +15,13 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
@@ -138,7 +137,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        updatePageTitle(event, routeTargetType, routeLayoutTypes);
+        updatePageTitle(event, componentInstance);
 
         LocationChangeEvent locationChangeEvent = createEvent(event, chain);
 
@@ -229,31 +228,32 @@ public class NavigationStateRenderer implements NavigationHandler {
     /**
      * Updates the page title according to the currently visible component.
      * <p>
-     * Uses the {@link Title} to resolve the title.
+     * Uses {@link HasDynamicTitle#getTitle()} if implemented, or else
+     * the {@link Title} annotation, to resolve the title.
      *
      * @param navigationEvent
      *            the event object about the navigation
-     * @param routeTargetType
-     *            the type of the route target
+     * @param routeTarget
+     *            the currently visible component
      */
-    protected void updatePageTitle(NavigationEvent navigationEvent,
-            Class<? extends Component> routeTargetType,
-            List<Class<? extends RouterLayout>> routeLayoutTypes) {
+    private void updatePageTitle(NavigationEvent navigationEvent,
+            Component routeTarget) {
 
-        Title annotation = routeTargetType.getAnnotation(Title.class);
-        if (annotation == null) {
-            for (Class<?> clazz : routeLayoutTypes) {
-                annotation = clazz.getAnnotation(Title.class);
-                if (annotation != null) {
-                    break;
-                }
-            }
-        }
-        if (annotation == null || annotation.value() == null) {
-            navigationEvent.getUI().getPage().setTitle("");
+        String title;
+
+        if (routeTarget instanceof HasDynamicTitle) {
+            title = ((HasDynamicTitle) routeTarget).getTitle();
         } else {
-            navigationEvent.getUI().getPage().setTitle(annotation.value());
+            title = lookForTitleInTarget(routeTarget)
+                    .map(Title::value)
+                    .orElse("");
         }
+        navigationEvent.getUI().getPage().setTitle(title);
+    }
+
+    private Optional<Title> lookForTitleInTarget(Component routeTarget) {
+        return Optional.ofNullable(
+                routeTarget.getClass().getAnnotation(Title.class));
     }
 
     private LocationChangeEvent createEvent(NavigationEvent event,

@@ -216,6 +216,7 @@ public class RouteRegistry implements Serializable {
             }
             String route = getNavigationRoute(navigationTarget);
             targetRoutes.put(navigationTarget, route);
+            // Further validation is performed inside addRoute()
             if (navigationTargetMap.containsKey(route)) {
                 navigationTargetMap.get(route).addRoute(navigationTarget);
             } else {

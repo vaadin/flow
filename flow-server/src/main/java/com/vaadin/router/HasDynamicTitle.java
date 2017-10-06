@@ -13,27 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.boot;
 
-import com.vaadin.router.Route;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.ui.html.Div;
+package com.vaadin.router;
 
 /**
- * @author Vaadin Ltd
+ * Interface for navigation targets to resolve their title dynamically
+ * at runtime.
+ * <p>
+ * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
+ * and have a {@link Title} annotation.
  *
+ * @author Vaadin Ltd.
  */
-@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
-public class TestSpringServlet extends VaadinServlet {
+@FunctionalInterface
+public interface HasDynamicTitle {
 
-    @Route("")
-    public static class RootNavigationTarget extends Div {
-
-        public RootNavigationTarget() {
-            setId("main");
-            setText("root");
-        }
-    }
-
+    /**
+     * Gets the title of this navigation target.
+     * @return  the title of this navigation target
+     */
+    String getTitle();
 }
