@@ -49,6 +49,12 @@ public class SpringBootAutoConfiguration {
         return new RouterRegistryServletContextInitializer(context);
     }
 
+    /**
+     * Creates a {@link ServletRegistrationBean} instance with Spring aware
+     * Vaadin servlet.
+     *
+     * @return a custom ServletRegistrationBean instance
+     */
     @Bean
     public ServletRegistrationBean servletRegistrationBean() {
         ServletRegistrationBean registration = new ServletRegistrationBean(
