@@ -124,12 +124,13 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
                 selectedView.getElement().removeFromParent();
             }
 
-            if (selectedView == ReflectTools.createInstance(
-                    ComponentDemoRegister.getViewFor(parameter).get())) {
-                return;
-            }
-
             if (ComponentDemoRegister.getViewFor(parameter).isPresent()) {
+
+                if (selectedView == ReflectTools.createInstance(
+                        ComponentDemoRegister.getViewFor(parameter).get())) {
+                    return;
+                }
+
                 selectedView = ReflectTools.createInstance(
                         ComponentDemoRegister.getViewFor(parameter).get());
                 getElement().appendChild(selectedView.getElement());
