@@ -24,26 +24,32 @@ import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
 import com.vaadin.flow.demo.model.DemoObject;
 import com.vaadin.flow.demo.views.DemoView;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.router.HasChildView;
-import com.vaadin.flow.router.View;
+import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.OptionalParameter;
+import com.vaadin.router.Route;
+import com.vaadin.router.RouterLayout;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Main layout of the application. It contains the menu, header and the main
  * section of the page.
  */
+@Route("")
 @Tag("main-layout")
 @HtmlImport("src/main-layout.html")
 @JavaScript("src/script/prism.js")
 @StyleSheet("src/css/prism.css")
 public class MainLayout extends PolymerTemplate<MainLayoutModel>
-        implements HasChildView {
+        implements RouterLayout, HasUrlParameter<String> {
 
-    private View selectedView;
+    private Component selectedView;
 
     /**
      * The model of the layout, allowing to set the properties needed for the
@@ -51,7 +57,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
      */
     public interface MainLayoutModel extends TemplateModel {
         /**
-         * Sets the selected page, making the selection on the mnu to appear.
+         * Sets the selected page, making the selection on the menu to appear.
          *
          * @param page
          *            The name selected page in the selection menu.
@@ -81,6 +87,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
     public MainLayout() {
         List<DemoObject> vaadinComponentSelectors = new ArrayList<>();
         List<DemoObject> paperComponentSelectors = new ArrayList<>();
+
         for (Class<? extends DemoView> view : ComponentDemoRegister
                 .getAvailableViews()) {
             ComponentDemo annotation = view.getAnnotation(ComponentDemo.class);
@@ -107,20 +114,32 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
     }
 
     @Override
-    public void setChildView(View childView) {
-        if (selectedView == childView) {
-            return;
-        }
-        if (selectedView != null) {
-            selectedView.getElement().removeFromParent();
-        }
-        selectedView = childView;
+    public void setParameter(BeforeNavigationEvent event,
+            @OptionalParameter String parameter) {
 
-        // uses the <slot> at the template
-        getElement().appendChild(childView.getElement());
-        if (childView instanceof DemoView) {
-            getModel().setPage(childView.getClass()
-                    .getAnnotation(ComponentDemo.class).name());
+        if (parameter == null) {
+            return;
+        } else {
+            if (selectedView != null) {
+                selectedView.getElement().removeFromParent();
+            }
+
+            if (selectedView == ReflectTools.createInstance(
+                    ComponentDemoRegister.getViewFor(parameter).get())) {
+                return;
+            }
+
+            if (ComponentDemoRegister.getViewFor(parameter).isPresent()) {
+                selectedView = ReflectTools.createInstance(
+                        ComponentDemoRegister.getViewFor(parameter).get());
+                getElement().appendChild(selectedView.getElement());
+
+                if (selectedView instanceof DemoView) {
+                    getModel().setPage(selectedView.getClass()
+                            .getAnnotation(ComponentDemo.class).name());
+                }
+
+            }
         }
     }
 }
