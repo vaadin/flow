@@ -59,7 +59,7 @@ public class SpringServlet extends VaadinServlet {
     @Override
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        Properties properties = new Properties();
+        Properties properties = new Properties(initParameters);
         properties.put(Constants.SERVLET_PARAMETER_USING_NEW_ROUTING,
                 Boolean.TRUE.toString());
         return super.createDeploymentConfiguration(properties);
