@@ -282,6 +282,17 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("fail/params")
+    @Tag(Tag.DIV)
+    public static class FailRerouteWithParams extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteTo("param", Arrays.asList(1L, 2L));
+        }
+    }
+
     @Route("navigation-target-with-title")
     @Title("Custom Title")
     @Tag(Tag.DIV)
@@ -755,6 +766,22 @@ public class RouterTest extends RoutingTestBase {
                 eventCollector.size());
         Assert.assertEquals("Before navigation event was wrong.",
                 "Stored parameter: this/must/work", eventCollector.get(1));
+    }
+
+    @Test
+    public void reroute_fails_with_faulty_url_parameters()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithMultipleParameters.class, FailRerouteWithParams.class)
+                        .collect(Collectors.toSet()));
+
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(
+                "Given route parameter 'class java.lang.Long' is of the wrong type. Required 'class java.lang.String'.");
+
+        router.navigate(ui, new Location("fail/params"),
+                NavigationTrigger.PROGRAMMATIC);
     }
 
     @Test

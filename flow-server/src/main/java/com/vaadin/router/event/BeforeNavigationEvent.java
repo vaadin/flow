@@ -15,6 +15,7 @@
  */
 package com.vaadin.router.event;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
@@ -29,7 +30,6 @@ import com.vaadin.router.NavigationStateBuilder;
 import com.vaadin.router.NavigationStateRenderer;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
-import com.vaadin.router.WildcardParameter;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
@@ -202,24 +202,7 @@ public class BeforeNavigationEvent extends EventObject {
      *            route parameter
      */
     public <T> void rerouteTo(String route, T routeParam) {
-        List<String> segments = Collections
-                .singletonList(routeParam.toString());
-        Class<? extends Component> target = getTargetOrThrow(route, segments);
-
-        checkUrlParameterType(routeParam, target);
-        rerouteTo(new NavigationStateBuilder()
-                .withTarget(target, segments).build());
-    }
-
-    private <T> void checkUrlParameterType(T routeParam,
-            Class<? extends Component> target) {
-        Class<?> genericInterfaceType = ReflectTools
-                .getGenericInterfaceType(target, HasUrlParameter.class);
-        if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
-            throw new IllegalArgumentException(String.format(
-                    "Given route parameter '%s' is of the wrong type. Required '%s'.",
-                    routeParam.getClass(), genericInterfaceType));
-        }
+        rerouteTo(route, Collections.singletonList(routeParam));
     }
 
     /**
@@ -236,6 +219,9 @@ public class BeforeNavigationEvent extends EventObject {
                 .collect(Collectors.toList());
         Class<? extends Component> target = getTargetOrThrow(route, segments);
 
+        if (routeParams.size() > 0) {
+            checkUrlParameterType(routeParams.get(0), target);
+        }
         rerouteTo(new NavigationStateBuilder()
                 .withTarget(target, segments).build());
     }
@@ -250,6 +236,17 @@ public class BeforeNavigationEvent extends EventObject {
                 .orElseThrow(() -> new IllegalArgumentException(String.format
                         ("The navigation target for route '%s' doesn't accept the parameters %s.",
                                 route, segments)));
+    }
+
+    private <T> void checkUrlParameterType(T routeParam,
+            Class<? extends Component> target) {
+        Class<?> genericInterfaceType = ReflectTools
+                .getGenericInterfaceType(target, HasUrlParameter.class);
+        if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
+            throw new IllegalArgumentException(String.format(
+                    "Given route parameter '%s' is of the wrong type. Required '%s'.",
+                    routeParam.getClass(), genericInterfaceType));
+        }
     }
 
     /**
