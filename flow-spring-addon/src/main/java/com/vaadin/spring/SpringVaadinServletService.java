@@ -15,9 +15,15 @@
  */
 package com.vaadin.spring;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.context.ApplicationContext;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.function.DeploymentConfiguration;
+import com.vaadin.server.ServiceException;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletService;
 
@@ -49,4 +55,29 @@ public class SpringVaadinServletService extends VaadinServletService {
         this.context = context;
     }
 
+    @Override
+    protected Optional<Instantiator> loadInstantiators()
+            throws ServiceException {
+        Optional<Instantiator> spiInstantiator = super.loadInstantiators();
+        List<Instantiator> springInstantiators = context
+                .getBeansOfType(Instantiator.class).values().stream()
+                .filter(instantiator -> instantiator.init(this))
+                .collect(Collectors.toList());
+        if (spiInstantiator.isPresent() && !springInstantiators.isEmpty()) {
+            throw new ServiceException(
+                    "Cannot init VaadinService because there are multiple eligible "
+                            + "instantiator implementations: Java SPI registered instantiator "
+                            + spiInstantiator.get()
+                            + " and Spring instantiator beans: "
+                            + springInstantiators);
+        }
+        if (!spiInstantiator.isPresent() && springInstantiators.isEmpty()) {
+            Instantiator defaultInstantiator = new SpringInstantiator(this,
+                    context);
+            defaultInstantiator.init(this);
+            return Optional.of(defaultInstantiator);
+        }
+        return spiInstantiator.isPresent() ? spiInstantiator
+                : springInstantiators.stream().findFirst();
+    }
 }

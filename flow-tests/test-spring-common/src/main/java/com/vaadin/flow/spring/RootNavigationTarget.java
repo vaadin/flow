@@ -15,14 +15,20 @@
  */
 package com.vaadin.flow.spring;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
 
 @Route("")
 public class RootNavigationTarget extends Div {
 
-    public RootNavigationTarget() {
+    public RootNavigationTarget(@Autowired DataBean dataBean,
+            @Autowired FooNavigationTarget section) {
         setId("main");
-        setText("root");
+        setText(dataBean.getMessage());
+
+        section.setId("singleton");
+        section.setText("singleton");
     }
 }

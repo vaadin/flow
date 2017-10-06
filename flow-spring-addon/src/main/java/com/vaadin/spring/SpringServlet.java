@@ -64,4 +64,5 @@ public class SpringServlet extends VaadinServlet {
                 Boolean.TRUE.toString());
         return super.createDeploymentConfiguration(properties);
     }
+
 }

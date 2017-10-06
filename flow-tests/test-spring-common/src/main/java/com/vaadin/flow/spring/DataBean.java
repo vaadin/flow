@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2014 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,30 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
+import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+/**
+ * @author Vaadin Ltd
+ *
+ */
+@Component
+public class DataBean {
 
-public class RouteBasicIT extends ChromeBrowserTest {
-
-    @Override
-    protected String getTestPath() {
-        return "/";
-    }
-
-    @Test
-    public void testServletDeployed() throws Exception {
-        open();
-
-        Assert.assertTrue(isElementPresent(By.id("main")));
-
-        getDriver().get(getTestURL() + "foo");
-
-        waitUntil(driver -> isElementPresent(By.id("singleton")));
+    public String getMessage() {
+        return "foo";
     }
 }

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -321,37 +322,53 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Creates an instantiator to use with this service. A custom Vaadin service
-     * implementation can override this method to pick an instantiator in some
-     * other way instead of the default implementation that uses
-     * {@link ServiceLoader}.
+     * Creates an instantiator to use with this service.
      *
      * @return an instantiator to use, not <code>null</code>
      *
      * @see Instantiator
      */
     protected Instantiator createInstantiator() throws ServiceException {
-        ArrayList<Instantiator> candidates = new ArrayList<>();
-        ServiceLoader.load(Instantiator.class, getClassLoader())
-                .forEach(instance -> {
-                    if (instance.init(this)) {
-                        candidates.add(instance);
-                    }
-                });
-
-        switch (candidates.size()) {
-        case 0:
+        return loadInstantiators().orElseGet(() -> {
             DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
                     this);
             defaultInstantiator.init(this);
             return defaultInstantiator;
-        case 1:
-            return candidates.get(0);
-        default:
+        });
+    }
+
+    /**
+     * Loads and initializes instantiators.
+     * <p>
+     * A custom Vaadin service implementation can override this method to pick
+     * an instantiator in some other way instead of the default implementation
+     * that uses {@link ServiceLoader}.
+     * <p>
+     * There may be only one applicable instantiator. Otherwise
+     * {@link ServiceException} will be thrown.
+     *
+     * @see Instantiator
+     * @throws ServiceException
+     *             if there are multiple applicable instantiators
+     *
+     * @return an optional instantator, or an empty optional if no instantiator
+     *         found
+     */
+    protected Optional<Instantiator> loadInstantiators()
+            throws ServiceException {
+        ArrayList<Instantiator> instantiators = new ArrayList<>();
+        ServiceLoader.load(Instantiator.class, getClassLoader())
+                .forEach(instance -> {
+                    if (instance.init(this)) {
+                        instantiators.add(instance);
+                    }
+                });
+        if (instantiators.size() > 1) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible instantiator implementations: "
-                            + candidates);
+                            + instantiators);
         }
+        return instantiators.stream().findFirst();
     }
 
     /**

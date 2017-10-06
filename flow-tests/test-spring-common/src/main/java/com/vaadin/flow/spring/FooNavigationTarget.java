@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2014 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,30 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.router.Route;
+import com.vaadin.ui.html.Div;
 
-public class RouteBasicIT extends ChromeBrowserTest {
+/**
+ * @author Vaadin Ltd
+ *
+ */
+@Route("foo")
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+public class FooNavigationTarget extends Div {
 
-    @Override
-    protected String getTestPath() {
-        return "/";
-    }
-
-    @Test
-    public void testServletDeployed() throws Exception {
-        open();
-
-        Assert.assertTrue(isElementPresent(By.id("main")));
-
-        getDriver().get(getTestURL() + "foo");
-
-        waitUntil(driver -> isElementPresent(By.id("singleton")));
-    }
 }
