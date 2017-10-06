@@ -152,13 +152,25 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-
-        if (routes.containsKey(pathString)) {
+        if (hasRouteTo(pathString)) {
             return Optional
                     .ofNullable(routes.get(pathString).getTarget(segments));
         }
         return Optional.empty();
+    }
+
+    /**
+     * Checks if the registry contains a route to the given path.
+     *
+     * @param pathString
+     *            path to get navigation target for, not {@code null}
+     * @return true if the registry contains a route to the given path,
+     *         false otherwise.
+     */
+    public boolean hasRouteTo(String pathString) {
+        Objects.requireNonNull(pathString, "pathString must not be null.");
+
+        return routes.containsKey(pathString);
     }
 
     /**
