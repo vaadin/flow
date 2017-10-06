@@ -15,10 +15,11 @@
  */
 package com.vaadin.router.event;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.EventObject;
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
@@ -28,6 +29,7 @@ import com.vaadin.router.NavigationStateBuilder;
 import com.vaadin.router.NavigationStateRenderer;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
+import com.vaadin.router.WildcardParameter;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
@@ -200,38 +202,75 @@ public class BeforeNavigationEvent extends EventObject {
      *            route parameter
      */
     public <T> void rerouteTo(String route, T routeParam) {
-        Optional<Class<? extends Component>> optionalTarget = getSource()
-                .getRegistry().getNavigationTarget(route,
-                        Arrays.asList(routeParam.toString()));
+        List<String> segments = Collections
+                .singletonList(routeParam.toString());
+        Class<? extends Component> target = getTargetOrThrow(route, segments);
 
-        if (optionalTarget.isPresent()) {
-            boolean hasUrlParameter = HasUrlParameter.class
-                    .isAssignableFrom(optionalTarget.get());
-            if (hasUrlParameter) {
-                Class genericInterfaceType = ReflectTools
-                        .getGenericInterfaceType(optionalTarget.get(),
-                                HasUrlParameter.class);
-                if (genericInterfaceType
-                        .isAssignableFrom(routeParam.getClass())) {
-                    rerouteTo(
-                            new NavigationStateBuilder()
-                                    .withTarget(optionalTarget.get(),
-                                            Arrays.asList(
-                                                    routeParam.toString()))
-                                    .build());
-                } else {
-                    throw new IllegalArgumentException(String.format(
-                            "Given route parameter '%s' is of the wrong type. Required '%s'.",
-                            routeParam.getClass(), genericInterfaceType));
-                }
-            } else {
-                throw new IllegalArgumentException(String.format(
-                        "Found navigation target for route '%s' doesn't support url parameters.",
-                        route));
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "No navigation target found route '" + route + "'");
+        checkHasUrlParameter(route, target);
+        checkUrlParameterType(routeParam, target);
+        rerouteTo(new NavigationStateBuilder()
+                .withTarget(target, segments).build());
+    }
+
+    private <T> void checkUrlParameterType(T routeParam,
+            Class<? extends Component> target) {
+        Class<?> genericInterfaceType = ReflectTools
+                .getGenericInterfaceType(target, HasUrlParameter.class);
+        if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
+            throw new IllegalArgumentException(String.format(
+                    "Given route parameter '%s' is of the wrong type. Required '%s'.",
+                    routeParam.getClass(), genericInterfaceType));
+        }
+    }
+
+    /**
+     * Reroute to navigation component registered for given location string with
+     * given route parameters instead of the component about to be displayed.
+     *
+     * @param route
+     *            reroute target location string
+     * @param routeParams
+     *            route parameters
+     */
+    public <T> void rerouteTo(String route, List<T> routeParams) {
+        List<String> segments = routeParams.stream().map(Object::toString)
+                .collect(Collectors.toList());
+        Class<? extends Component> target = getTargetOrThrow(route, segments);
+
+        checkHasUrlParameter(route, target);
+        checkWildcardParameter(routeParams, target);
+        rerouteTo(new NavigationStateBuilder()
+                .withTarget(target, segments).build());
+    }
+
+    private Class<? extends Component> getTargetOrThrow(String route,
+            List<String> segments) {
+        if (!getSource().getRegistry().hasRouteTo(route)) {
+            throw new IllegalArgumentException(String.format
+                    ("No navigation target found for route '%s'", route));
+        }
+        return getSource().getRegistry().getNavigationTarget(route, segments)
+                .orElseThrow(() -> new IllegalArgumentException(String.format
+                        ("The navigation target for route '%s' doesn't accept the parameters %s.",
+                                route, segments)));
+    }
+
+    private void checkHasUrlParameter(String route,
+            Class<? extends Component> target) {
+        boolean hasUrlParameter = HasUrlParameter.class.isAssignableFrom(target);
+        if (!hasUrlParameter) {
+            throw new IllegalArgumentException(String.format(
+                    "The navigation target for route '%s' doesn't support url parameters.",
+                    route));
+        }
+    }
+
+    private <T> void checkWildcardParameter(List<T> routeParams,
+            Class<? extends Component> target) {
+        if (!HasUrlParameter.isAnnotatedParameter(target, WildcardParameter.class)) {
+            throw new IllegalArgumentException(String.format(
+                    "Given route parameter '%s' doesn't support wildcard url parameters.",
+                    routeParams.getClass()));
         }
     }
 

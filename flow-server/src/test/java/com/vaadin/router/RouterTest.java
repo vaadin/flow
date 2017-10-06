@@ -112,6 +112,26 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("param")
+    @Tag(Tag.DIV)
+    public static class RouteWithMultipleParameters extends Component
+            implements BeforeNavigationListener, HasUrlParameter<String> {
+
+        private String param;
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @WildcardParameter String parameter) {
+            eventCollector.add("Received param: " + parameter);
+            param = parameter;
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Stored parameter: " + param);
+        }
+    }
+
     @Route("param/static")
     @Tag(Tag.DIV)
     public static class StaticParameter extends Component {
@@ -248,6 +268,17 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             event.rerouteTo("param", Boolean.TRUE);
+        }
+    }
+
+    @Route("redirect/to/params")
+    @Tag(Tag.DIV)
+    public static class RerouteToRouteWithMultipleParams extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteTo("param", Arrays.asList("this", "must", "work"));
         }
     }
 
@@ -660,7 +691,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void test_reroute_with_url_parameter()
+    public void reroute_with_url_parameter()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
@@ -677,7 +708,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void fail_reroute_with_faulty_url_parameter()
+    public void reroute_fails_with_faulty_url_parameter()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
@@ -689,6 +720,40 @@ public class RouterTest extends RoutingTestBase {
                 "Given route parameter 'class java.lang.Boolean' is of the wrong type. Required 'class java.lang.String'.");
 
         router.navigate(ui, new Location("fail/param"),
+                NavigationTrigger.PROGRAMMATIC);
+    }
+
+    @Test
+    public void reroute_with_multiple_url_parameters()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithMultipleParameters.class,
+                        RerouteToRouteWithMultipleParams.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("redirect/to/params"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "Stored parameter: this/must/work", eventCollector.get(1));
+    }
+
+    @Test
+    public void reroute_fails_with_multiple_url_parameters()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithParameter.class, RerouteToRouteWithMultipleParams.class)
+                        .collect(Collectors.toSet()));
+
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(
+                "The navigation target for route 'param' doesn't accept the parameters [this, must, work].");
+
+        router.navigate(ui, new Location("redirect/to/params"),
                 NavigationTrigger.PROGRAMMATIC);
     }
 
