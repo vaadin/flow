@@ -422,6 +422,27 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    public static class ErrorTarget extends RouteNotFoundError implements
+            HasErrorParameter<NotFoundException>, BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Redirected to error view, showing message: "
+                    + getElement().getText());
+        }
+    }
+
+    @Route("exception")
+    @Tag(Tag.DIV)
+    public static class FailOnException extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            throw new RuntimeException("Failed on an exception");
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -618,7 +639,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void basic_url_resolving()
-            throws InvalidRouteConfigurationException, NotFoundException {
+            throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream.of(RootNavigationTarget.class,
                         FooNavigationTarget.class, FooBarNavigationTarget.class)
@@ -632,7 +653,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void nested_layouts_url_resolving()
-            throws InvalidRouteConfigurationException, NotFoundException {
+            throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(
                 Stream.of(RouteChild.class, LoneRoute.class)
                         .collect(Collectors.toSet()));
@@ -643,7 +664,7 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void layout_with_url_parameter_url_resolving()
-            throws InvalidRouteConfigurationException, NotFoundException {
+            throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream
                         .of(GreetingNavigationTarget.class,
@@ -684,12 +705,16 @@ public class RouterTest extends RoutingTestBase {
                         RouteWithParameter.class, FailRerouteWithParam.class)
                         .collect(Collectors.toSet()));
 
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(
-                "Given route parameter 'class java.lang.Boolean' is of the wrong type. Required 'class java.lang.String'.");
-
-        router.navigate(ui, new Location("fail/param"),
+        String locationString = "fail/param";
+        router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
+
+        String message = "Given route parameter 'class java.lang.Boolean' is of the wrong type. Required 'class java.lang.String'.";
+        String exceptionText = String.format(
+                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                locationString, message);
+
+        assertExceptionComponent(exceptionText);
     }
 
     @Test
@@ -790,7 +815,6 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(404, router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC));
     }
-    // ("With parameter: " + parameter);
 
     @Test
     public void navigating_to_route_with_wildcard_parameter()
@@ -996,17 +1020,38 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void default_wildcard_support_only_for_string()
             throws InvalidRouteConfigurationException {
-        expectedEx.expect(UnsupportedOperationException.class);
-        expectedEx.expectMessage(String.format(
-                "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class %s",
-                UnsupportedWildParameter.class.getName()));
-
         router.getRegistry()
                 .setNavigationTargets(Stream.of(UnsupportedWildParameter.class)
                         .collect(Collectors.toSet()));
 
-        router.navigate(ui, new Location("usupported/wildcard/3/4/1"),
+        String locationString = "usupported/wildcard/3/4/1";
+        int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Non existent route should have returned.", 500,
+                result);
+
+        String message = String.format(
+                "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class %s",
+                UnsupportedWildParameter.class.getName());
+        String exceptionText = String.format(
+                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                locationString, message);
+
+        assertExceptionComponent(exceptionText);
+    }
+
+    private void assertExceptionComponent(String exceptionText) {
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+
+        Assert.assertTrue("No navigation component visible",
+                visibleComponent.isPresent());
+
+        Assert.assertEquals(InternalServerError.class,
+                visibleComponent.get().getClass());
+        Assert.assertEquals(exceptionText,
+                visibleComponent.get().getElement().getText());
     }
 
     @Test
@@ -1025,6 +1070,38 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("fixed/wildcard/5/5/3", router
                 .getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3)));
+    }
+
+    @Test
+    public void redirect_to_routeNotFound_error_view_when_no_route_found()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(FixedWildParameter.class).collect(Collectors.toSet()));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(ErrorTarget.class));
+
+        int result = router.navigate(ui, new Location("error"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Non existent route should have returned.", 404,
+                result);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("",
+                "Redirected to error view, showing message: Could not navigate to 'error'",
+                eventCollector.get(0));
+    }
+
+    @Test
+    public void exception_during_navigation_is_caught_and_show_in_internalServerError()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(FailOnException.class));
+
+        int result = router.navigate(ui, new Location("exception"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Non existent route should have returned.", 500,
+                result);
     }
 
     private Class<? extends Component> getUIComponent() {

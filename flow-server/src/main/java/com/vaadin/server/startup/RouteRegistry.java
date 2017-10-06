@@ -29,10 +29,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.InternalServerError;
 import com.vaadin.router.Location;
+import com.vaadin.router.NotFoundException;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
+import com.vaadin.router.RouteNotFoundError;
 import com.vaadin.router.RoutePrefix;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.ui.Component;
@@ -48,8 +52,10 @@ public class RouteRegistry implements Serializable {
 
     private final Map<String, RouteTarget> routes = new HashMap<>();
     private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
+    private final Map<Class, Class<? extends Component>> exceptionTargets = new HashMap<Class, Class<? extends Component>>();
 
     private boolean initialized;
+    private boolean errorTargetsInitialized;
 
     /**
      * Creates a new uninitialized route registry.
@@ -116,6 +122,77 @@ public class RouteRegistry implements Serializable {
         validateNavigationTargets(navigationTargets);
         doRegisterNavigationTargets(navigationTargets);
         initialized = true;
+    }
+
+    /**
+     * Set error handler navigation targets.
+     * 
+     * @param errorNavigationTargets
+     *            error handler navigation targets
+     */
+    public void setErrorNavigationTargets(
+            Set<Class<? extends Component>> errorNavigationTargets) {
+        for (Class<? extends Component> target : errorNavigationTargets) {
+            Class exceptionType = ReflectTools.getGenericInterfaceType(target,
+                    HasErrorParameter.class);
+            exceptionTargets.put(exceptionType, target);
+        }
+        initErrorTargets();
+    }
+
+    private void initErrorTargets() {
+        if (!exceptionTargets.containsKey(NotFoundException.class)) {
+            exceptionTargets.put(NotFoundException.class,
+                    RouteNotFoundError.class);
+        }
+        if (!exceptionTargets.containsKey(Exception.class)) {
+            exceptionTargets.put(Exception.class, InternalServerError.class);
+        }
+        errorTargetsInitialized = true;
+    }
+
+    /**
+     * Get a registered navigation target for given exception. First we will
+     * search for a matching cause for in the exception chain and if no match
+     * found search by extended type.
+     * 
+     * @param exception
+     *            exception to search error view for
+     * @return error view for exception or null if no match found.
+     */
+    public Class<? extends Component> getErrorNavigationTarget(
+            Throwable exception) {
+        if (!errorTargetsInitialized) {
+            initErrorTargets();
+        }
+        Class<? extends Component> result = searchByCause(exception);
+        if (result == null) {
+            result = searchBySuperType(exception);
+        }
+        return result;
+    }
+
+    private Class<? extends Component> searchByCause(Throwable exception) {
+        if (exceptionTargets.containsKey(exception.getClass())) {
+            return exceptionTargets.get(exception.getClass());
+        }
+        if (exception.getCause() != null) {
+            return getErrorNavigationTarget(exception.getCause());
+        }
+        return null;
+    }
+
+    private Class<? extends Component> searchBySuperType(Throwable exception) {
+        Class<?> superClass = exception.getClass().getSuperclass();
+        do {
+            if (exceptionTargets.containsKey(superClass)) {
+                return exceptionTargets.get(superClass);
+            }
+            superClass = superClass.getSuperclass();
+        } while (superClass != null
+                && Throwable.class.isAssignableFrom(superClass));
+
+        return null;
     }
 
     /**
@@ -249,8 +326,7 @@ public class RouteRegistry implements Serializable {
             parentRoutePrefixes.add(annotation.value());
         }
 
-        return parentRoutePrefixes.stream()
-                .collect(Collectors.joining("/"));
+        return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
     private List<String> getParentRoutePrefixes(Class<?> component) {

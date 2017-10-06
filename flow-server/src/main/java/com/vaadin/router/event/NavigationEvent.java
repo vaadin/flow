@@ -17,9 +17,10 @@ package com.vaadin.router.event;
 
 import java.util.EventObject;
 
+import com.vaadin.router.ErrorParameter;
+import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
 import com.vaadin.router.RouterInterface;
-import com.vaadin.router.Location;
 import com.vaadin.ui.UI;
 
 /**
@@ -31,6 +32,8 @@ public class NavigationEvent extends EventObject {
     private final Location location;
     private final UI ui;
     private final NavigationTrigger trigger;
+
+    private ErrorParameter errorParameter;
 
     /**
      * Creates a new navigation event.
@@ -89,5 +92,24 @@ public class NavigationEvent extends EventObject {
      */
     public NavigationTrigger getTrigger() {
         return trigger;
+    }
+
+    /**
+     * Gets the ErrorParameter if set.
+     * 
+     * @return set error parameter or null if not set
+     */
+    public ErrorParameter getErrorParameter() {
+        return errorParameter;
+    }
+
+    /**
+     * Set an error parameter for the navigation event.
+     * 
+     * @param errorParameter
+     *            error parameter for the error handling
+     */
+    public void setErrorParameter(ErrorParameter errorParameter) {
+        this.errorParameter = errorParameter;
     }
 }
