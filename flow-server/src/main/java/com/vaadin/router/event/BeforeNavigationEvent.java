@@ -218,7 +218,7 @@ public class BeforeNavigationEvent extends EventObject {
                 .collect(Collectors.toList());
         Class<? extends Component> target = getTargetOrThrow(route, segments);
 
-        if (routeParams.size() > 0) {
+        if (!routeParams.isEmpty()) {
             checkUrlParameterType(routeParams.get(0), target);
         }
         rerouteTo(new NavigationStateBuilder()
