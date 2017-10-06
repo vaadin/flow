@@ -376,6 +376,7 @@ public class UidlWriterTest {
             assertInlineDependencies(inlineDependencies, "");
         } catch (Exception e) {
             e.printStackTrace();
+            throw e;
         }
     }
 

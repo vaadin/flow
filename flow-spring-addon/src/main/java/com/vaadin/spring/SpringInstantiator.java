@@ -39,6 +39,8 @@ public class SpringInstantiator extends DefaultInstantiator {
     /**
      * Creates a new spring instantiator instance.
      *
+     * @param service
+     *            service the service to use
      * @param context
      *            the application context
      */

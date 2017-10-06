@@ -39,8 +39,8 @@ public class SpringServlet extends VaadinServlet {
      * Creates a new Vaadin servlet instance with the application
      * {@code context} provided.
      *
-     * @param the
-     *            Spring application context
+     * @param context
+     *            the Spring application context
      */
     public SpringServlet(ApplicationContext context) {
         this.context = context;
