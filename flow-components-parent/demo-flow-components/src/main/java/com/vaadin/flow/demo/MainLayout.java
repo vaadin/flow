@@ -120,16 +120,16 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         if (parameter == null) {
             return;
         } else {
+
             if (selectedView != null) {
+                if (selectedView.getClass().getAnnotation(ComponentDemo.class)
+                        .href().equals(parameter)) {
+                    return;
+                }
                 selectedView.getElement().removeFromParent();
             }
 
             if (ComponentDemoRegister.getViewFor(parameter).isPresent()) {
-
-                if (selectedView == ReflectTools.createInstance(
-                        ComponentDemoRegister.getViewFor(parameter).get())) {
-                    return;
-                }
 
                 selectedView = ReflectTools.createInstance(
                         ComponentDemoRegister.getViewFor(parameter).get());
@@ -139,7 +139,6 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
                     getModel().setPage(selectedView.getClass()
                             .getAnnotation(ComponentDemo.class).name());
                 }
-
             }
         }
     }
