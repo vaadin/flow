@@ -15,7 +15,6 @@
  */
 package com.vaadin.router.event;
 
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
