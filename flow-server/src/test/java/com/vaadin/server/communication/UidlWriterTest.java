@@ -365,12 +365,18 @@ public class UidlWriterTest {
         }).when(factory).toServletContextPath(any(), anyString());
 
         ui.add(new ComponentWithFrontendProtocol());
-        JsonObject response = uidlWriter.createUidl(ui, false);
-        List<JsonObject> inlineDependencies = JsonUtils
-                .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
-                .collect(Collectors.toList());
+        try {
+            JsonObject response = uidlWriter.createUidl(ui, false);
+            List<JsonObject> inlineDependencies = JsonUtils
+                    .<JsonObject> stream(
+                            response.getArray(LoadMode.INLINE.name()))
+                    .collect(Collectors.toList());
 
-        assertInlineDependencies(inlineDependencies, "");
+            assertInlineDependencies(inlineDependencies, "");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Test
