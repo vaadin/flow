@@ -708,6 +708,22 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void reroute_fails_with_no_url_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        ParameterRouteNoParameter.class, RerouteToRouteWithParam.class)
+                        .collect(Collectors.toSet()));
+
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(
+                "The navigation target for route 'param' doesn't accept the parameters [hello].");
+
+        router.navigate(ui, new Location("redirect/to/param"),
+                NavigationTrigger.PROGRAMMATIC);
+    }
+
+    @Test
     public void reroute_fails_with_faulty_url_parameter()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
@@ -742,7 +758,23 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_fails_with_multiple_url_parameters()
+    public void reroute_with_multiple_url_parameters_fails_to_parameterless_target()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        ParameterRouteNoParameter.class, RerouteToRouteWithMultipleParams.class)
+                        .collect(Collectors.toSet()));
+
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(
+                "The navigation target for route 'param' doesn't accept the parameters [this, must, work].");
+
+        router.navigate(ui, new Location("redirect/to/params"),
+                NavigationTrigger.PROGRAMMATIC);
+    }
+
+    @Test
+    public void reroute_with_multiple_url_parameters_fails_to_single_parameter_target()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,

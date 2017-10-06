@@ -206,7 +206,6 @@ public class BeforeNavigationEvent extends EventObject {
                 .singletonList(routeParam.toString());
         Class<? extends Component> target = getTargetOrThrow(route, segments);
 
-        checkHasUrlParameter(route, target);
         checkUrlParameterType(routeParam, target);
         rerouteTo(new NavigationStateBuilder()
                 .withTarget(target, segments).build());
@@ -237,8 +236,6 @@ public class BeforeNavigationEvent extends EventObject {
                 .collect(Collectors.toList());
         Class<? extends Component> target = getTargetOrThrow(route, segments);
 
-        checkHasUrlParameter(route, target);
-        checkWildcardParameter(routeParams, target);
         rerouteTo(new NavigationStateBuilder()
                 .withTarget(target, segments).build());
     }
@@ -253,25 +250,6 @@ public class BeforeNavigationEvent extends EventObject {
                 .orElseThrow(() -> new IllegalArgumentException(String.format
                         ("The navigation target for route '%s' doesn't accept the parameters %s.",
                                 route, segments)));
-    }
-
-    private void checkHasUrlParameter(String route,
-            Class<? extends Component> target) {
-        boolean hasUrlParameter = HasUrlParameter.class.isAssignableFrom(target);
-        if (!hasUrlParameter) {
-            throw new IllegalArgumentException(String.format(
-                    "The navigation target for route '%s' doesn't support url parameters.",
-                    route));
-        }
-    }
-
-    private <T> void checkWildcardParameter(List<T> routeParams,
-            Class<? extends Component> target) {
-        if (!HasUrlParameter.isAnnotatedParameter(target, WildcardParameter.class)) {
-            throw new IllegalArgumentException(String.format(
-                    "Given route parameter '%s' doesn't support wildcard url parameters.",
-                    routeParams.getClass()));
-        }
     }
 
     /**
