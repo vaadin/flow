@@ -124,7 +124,6 @@
                     <stopWait>5</stopWait>
                     <stopKey>foo</stopKey>
                     <webAppConfig>
-                        <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                     </webAppConfig>
                 </configuration>
