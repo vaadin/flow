@@ -43,6 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
@@ -323,9 +324,16 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Creates an instantiator to use with this service.
+     * <p>
+     * A custom Vaadin service implementation can override this method to pick
+     * an instantiator. The method {@link #loadInstantiators()} is used to find
+     * a custom instantiator. If there is no one found then the default is used.
+     * You may override this method or {@link #loadInstantiators()} in your
+     * custom service.
      *
      * @return an instantiator to use, not <code>null</code>
      *
+     * @see #loadInstantiators()
      * @see Instantiator
      */
     protected Instantiator createInstantiator() throws ServiceException {
@@ -347,6 +355,7 @@ public abstract class VaadinService implements Serializable {
      * There may be only one applicable instantiator. Otherwise
      * {@link ServiceException} will be thrown.
      *
+     * @see #createInstantiator()
      * @see Instantiator
      * @throws ServiceException
      *             if there are multiple applicable instantiators
@@ -356,13 +365,11 @@ public abstract class VaadinService implements Serializable {
      */
     protected Optional<Instantiator> loadInstantiators()
             throws ServiceException {
-        ArrayList<Instantiator> instantiators = new ArrayList<>();
-        ServiceLoader.load(Instantiator.class, getClassLoader())
-                .forEach(instance -> {
-                    if (instance.init(this)) {
-                        instantiators.add(instance);
-                    }
-                });
+        List<Instantiator> instantiators = StreamSupport
+                .stream(ServiceLoader.load(Instantiator.class, getClassLoader())
+                        .spliterator(), false)
+                .filter(iterator -> iterator.init(this))
+                .collect(Collectors.toList());
         if (instantiators.size() > 1) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible instantiator implementations: "
@@ -1307,7 +1314,8 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval() : -1;
+                ? session.getSession().getMaxInactiveInterval()
+                : -1;
     }
 
     /**
