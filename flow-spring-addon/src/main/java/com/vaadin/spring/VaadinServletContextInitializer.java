@@ -15,9 +15,11 @@
  */
 package com.vaadin.spring;
 
+import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -35,17 +37,21 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.startup.AbstractCustomElementRegistryInitializer;
 import com.vaadin.server.startup.AbstractRouteRegistryInitializer;
+import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 
 /**
  * Servlet context initializer for Spring Boot Application.
  * <p>
- * If Java application is used to run Spring Boot then it doesn't scan for
- * {@link Route} annotations in the classpath (it skips
- * {@link ServletContainerInitializer}s). This class enables this scanning via
- * Spring so that router may be used in the same way as in deployable WAR file.
+ * If Java application is used to run Spring Boot then it doesn't run registered
+ * {@link ServletContainerInitializer}s (e.g. to scan for {@link Route}
+ * annotations in the classpath). This class enables this scanning via Spring so
+ * that the functionality which relies on {@link ServletContainerInitializer}
+ * works in the same way as in deployable WAR file.
  *
  * @see ServletContainerInitializer
  * @see RouteRegistry
@@ -53,12 +59,13 @@ import com.vaadin.ui.Component;
  * @author Vaadin Ltd
  *
  */
-public class RouterRegistryServletContextInitializer extends
-        AbstractRouteRegistryInitializer implements ServletContextInitializer {
+public class VaadinServletContextInitializer
+        implements ServletContextInitializer {
 
     private ApplicationContext appContext;
 
-    private ServletContextListener listener = new ServletContextListener() {
+    private class RouteServletContextListener extends
+            AbstractRouteRegistryInitializer implements ServletContextListener {
 
         @Override
         public void contextInitialized(ServletContextEvent event) {
@@ -69,7 +76,8 @@ public class RouterRegistryServletContextInitializer extends
             }
 
             try {
-                Set<Class<? extends Component>> navigationTargets = findNavigationTargets();
+                Set<Class<? extends Component>> navigationTargets = validateRouteClasses(
+                        findByAnnotation(Route.class));
 
                 registry.setNavigationTargets(navigationTargets);
             } catch (InvalidRouteConfigurationException e) {
@@ -79,7 +87,30 @@ public class RouterRegistryServletContextInitializer extends
 
         @Override
         public void contextDestroyed(ServletContextEvent sce) {
-            // no need care about destroyed context
+            // no need to do anything
+        }
+
+    };
+
+    private class CustomElementServletContextListener
+            extends AbstractCustomElementRegistryInitializer
+            implements ServletContextListener {
+
+        @Override
+        public void contextInitialized(ServletContextEvent event) {
+            CustomElementRegistry registry = CustomElementRegistry
+                    .getInstance();
+            if (registry.isInitialized()) {
+                return;
+            }
+
+            registry.setCustomElements(
+                    filterCustomElements(findByAnnotation(Tag.class)));
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent sce) {
+            // no need to do anything
         }
 
     };
@@ -91,7 +122,7 @@ public class RouterRegistryServletContextInitializer extends
      * @param context
      *            the application context
      */
-    public RouterRegistryServletContextInitializer(ApplicationContext context) {
+    public VaadinServletContextInitializer(ApplicationContext context) {
         appContext = context;
     }
 
@@ -102,32 +133,41 @@ public class RouterRegistryServletContextInitializer extends
         RouteRegistry registry = RouteRegistry.getInstance(servletContext);
         // If the registry is already initialized then RouteRegistryInitializer
         // has done its job already, skip the custom routes search
-        if (registry.isInitialized()) {
-            return;
+        if (!registry.isInitialized()) {
+            /*
+             * Don't rely on RouteRegistry.isInitialized() negative return value
+             * here because it's not known whether RouteRegistryInitializer has
+             * been executed already or not (the order is undefined). Postpone
+             * this to the end of context initialization cycle. At this point
+             * RouteRegistry is either initialized or it's not initialized
+             * because an RouteRegistryInitializer has not been executed (end
+             * never will).
+             */
+            servletContext.addListener(new RouteServletContextListener());
         }
-        /*
-         * Don't rely on RouteRegistry.isInitialized() negative return value
-         * here because it's not known whether RouteRegistryInitializer has been
-         * executed already or not (the order is undefined). Postpone this to
-         * the end of context initialization cycle. At this point RouteRegistry
-         * is either initialized or it's not initialized because an
-         * RouteRegistryInitializer has not been executed (end never will).
-         */
-        servletContext.addListener(listener);
+
+        CustomElementRegistry elementRegistry = CustomElementRegistry
+                .getInstance();
+        if (!elementRegistry.isInitialized()) {
+            // Same thing: don't rely on isInitialized() negative return value
+            servletContext
+                    .addListener(new CustomElementServletContextListener());
+        }
+
     }
 
-    private Set<Class<? extends Component>> findNavigationTargets() {
+    private Stream<Class<?>> findByAnnotation(
+            Class<? extends Annotation> annotation) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(appContext);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(Route.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(annotation));
 
-        return validateRouteClasses(getRoutePackages().stream()
-                .map(scanner::findCandidateComponents)
-                .flatMap(set -> set.stream()).map(this::getNavigationTarget));
+        return getRoutePackages().stream().map(scanner::findCandidateComponents)
+                .flatMap(set -> set.stream()).map(this::getBeanClass);
     }
 
-    private Class<?> getNavigationTarget(BeanDefinition beanDefinition) {
+    private Class<?> getBeanClass(BeanDefinition beanDefinition) {
         AbstractBeanDefinition definition = (AbstractBeanDefinition) beanDefinition;
         Class<?> beanClass;
         if (definition.hasBeanClass()) {
