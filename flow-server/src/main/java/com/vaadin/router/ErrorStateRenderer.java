@@ -42,8 +42,7 @@ public class ErrorStateRenderer implements NavigationHandler {
     private final NavigationState navigationState;
 
     /**
-     * Constructs a new NavigationStateRenderer that handles the given
-     * navigation state.
+     * Constructs a new state renderer for the given navigation state.
      *
      * @param navigationState
      *            the navigation state handled by this instance
