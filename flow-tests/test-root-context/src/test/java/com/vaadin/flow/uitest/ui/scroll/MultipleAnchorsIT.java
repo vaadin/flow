@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -33,6 +34,7 @@ public class MultipleAnchorsIT extends ChromeBrowserTest {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
+        testBench().resizeViewPortTo(700, 800);
         open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
@@ -96,8 +98,9 @@ public class MultipleAnchorsIT extends ChromeBrowserTest {
     }
 
     private void checkPageScroll(int x, int y) {
-        assertThat("Unexpected x scroll position", getScrollX(), is(x));
-        assertThat("Unexpected y scroll position", getScrollY(), is(y));
+        final int maximumAllowedDifference = 25; // Different Chrome browser and driver versions may have different offsets and we cannot control it.
+        assertThat("Unexpected x scroll position", Math.abs(getScrollX() - x), is(lessThan(maximumAllowedDifference)));
+        assertThat("Unexpected y scroll position", Math.abs(getScrollY() - y), is(lessThan(maximumAllowedDifference)));
     }
 
     private Long getBrowserHistoryLength() {

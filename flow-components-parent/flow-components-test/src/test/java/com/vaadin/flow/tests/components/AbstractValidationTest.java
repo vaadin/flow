@@ -27,7 +27,7 @@ import com.vaadin.ui.common.HasValidation;
 /**
  * Base class for validation tests of components that implement
  * {@link HasValidation}.
- * 
+ *
  * @see ValidationTestView
  */
 public abstract class AbstractValidationTest extends AbstractComponentIT {
@@ -70,12 +70,11 @@ public abstract class AbstractValidationTest extends AbstractComponentIT {
     }
 
     @Test
-    public void invalidatewhenEmptyAndThenBlur() {
+    public void invalidateWhenEmptyAndThenBlur() {
         scrollIntoViewAndClick(invalidate);
         scrollIntoViewAndClick(field);
 
-        WebElement body = findElement(By.tagName("body"));
-        scrollIntoViewAndClick(body);
+        executeScript("document.body.click()");
 
         assertInvalid();
     }
@@ -86,8 +85,7 @@ public abstract class AbstractValidationTest extends AbstractComponentIT {
         scrollIntoViewAndClick(invalidate);
         scrollIntoViewAndClick(field);
 
-        WebElement body = findElement(By.tagName("body"));
-        scrollIntoViewAndClick(body);
+        executeScript("document.body.click()");
 
         assertInvalid();
     }

@@ -55,6 +55,7 @@
                         </goals>
                         <configuration>
                             <workingDirectory>${frontend.working.directory}</workingDirectory>
+                            <arguments>install --allow-root</arguments>
                         </configuration>
                     </execution>
                 </executions>
