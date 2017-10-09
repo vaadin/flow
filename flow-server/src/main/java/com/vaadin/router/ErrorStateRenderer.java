@@ -16,22 +16,20 @@
 package com.vaadin.router;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
+import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.AnnotationReader;
 
 /**
  * Handles navigation events by rendering a contained NavigationState in the
@@ -96,7 +94,7 @@ public class ErrorStateRenderer implements NavigationHandler {
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
 
-        checkForDuplicates(routeTargetType, routeLayoutTypes);
+        RouterUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         Component componentInstance = getRouteTarget(routeTargetType, event);
         List<HasElement> chain = new ArrayList<>();
@@ -112,8 +110,10 @@ public class ErrorStateRenderer implements NavigationHandler {
         int i = ((HasErrorParameter) componentInstance).setErrorParameter(
                 beforeNavigationActivating, event.getErrorParameter());
 
-        List<BeforeNavigationListener> listeners = EventUtil.collectBeforeNavigationListeners(chain);
-        listeners.forEach(listener -> listener.beforeNavigation(beforeNavigationActivating));
+        List<BeforeNavigationListener> listeners = EventUtil
+                .collectBeforeNavigationListeners(chain);
+        listeners.forEach(listener -> listener
+                .beforeNavigation(beforeNavigationActivating));
 
         @SuppressWarnings("unchecked")
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
@@ -122,7 +122,13 @@ public class ErrorStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        updatePageTitle(event, routeTargetType, routeLayoutTypes);
+        RouterUtil.updatePageTitle(event, componentInstance);
+
+        AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
+                RouterUtil.createEvent(event, chain));
+
+        EventUtil.collectAfterNavigationListeners(chain).forEach(
+                listener -> listener.afterNavigation(afterNavigationEvent));
 
         return i;
     }
@@ -142,78 +148,6 @@ public class ErrorStateRenderer implements NavigationHandler {
             Class<? extends Component> targetType) {
         assert targetType == navigationState.getNavigationTarget();
 
-        return getParentLayouts(targetType);
-    }
-
-    /**
-     * Checks that the same component type is not used in multiple parts of a
-     * route chain.
-     *
-     * @param routeTargetType
-     *            the actual component in the route chain
-     * @param routeLayoutTypes
-     *            the parent types in the route chain
-     */
-    protected static void checkForDuplicates(
-            Class<? extends Component> routeTargetType,
-            Collection<Class<? extends RouterLayout>> routeLayoutTypes) {
-        Set<Class<?>> duplicateCheck = new HashSet<>();
-        duplicateCheck.add(routeTargetType);
-        for (Class<?> parentType : routeLayoutTypes) {
-            if (!duplicateCheck.add(parentType)) {
-                throw new IllegalArgumentException(
-                        parentType + " is used in multiple locations");
-            }
-        }
-    }
-
-    /**
-     * Updates the page title according to the currently visible component.
-     * <p>
-     * Uses the {@link Title} to resolve the title.
-     *
-     * @param navigationEvent
-     *            the event object about the navigation
-     * @param routeTargetType
-     *            the type of the route target
-     */
-    protected void updatePageTitle(NavigationEvent navigationEvent,
-            Class<? extends Component> routeTargetType,
-            List<Class<? extends RouterLayout>> routeLayoutTypes) {
-
-        Title annotation = routeTargetType.getAnnotation(Title.class);
-        if (annotation == null) {
-            for (Class<?> clazz : routeLayoutTypes) {
-                annotation = clazz.getAnnotation(Title.class);
-                if (annotation != null) {
-                    break;
-                }
-            }
-        }
-        if (annotation == null || annotation.value() == null) {
-            navigationEvent.getUI().getPage().setTitle("");
-        } else {
-            navigationEvent.getUI().getPage().setTitle(annotation.value());
-        }
-    }
-
-    private List<Class<? extends RouterLayout>> getParentLayouts(
-            Class<?> component) {
-        List<Class<? extends RouterLayout>> list = new ArrayList<>();
-
-        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(component, ParentLayout.class);
-
-        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
-            list.add(router.get().layout());
-            list.addAll(getParentLayouts(router.get().layout()));
-        } else if (parentLayout.isPresent()) {
-            list.add(parentLayout.get().value());
-            list.addAll(getParentLayouts(parentLayout.get().value()));
-        }
-
-        return list;
+        return RouterUtil.getParentLayouts(targetType);
     }
 }

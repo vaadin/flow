@@ -30,10 +30,10 @@ import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.AnnotationReader;
 
 /**
  * Handles navigation events by rendering a contained NavigationState in the
@@ -98,7 +98,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
 
-        checkForDuplicates(routeTargetType, routeLayoutTypes);
+        RouterUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         BeforeNavigationEvent beforeNavigationDeactivating = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.DEACTIVATING);
@@ -137,9 +137,9 @@ public class NavigationStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        updatePageTitle(event, componentInstance);
+        RouterUtil.updatePageTitle(event, componentInstance);
 
-        LocationChangeEvent locationChangeEvent = createEvent(event, chain);
+        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event, chain);
 
         if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
             fireAfterNavigationListeners(chain,
@@ -173,7 +173,7 @@ public class NavigationStateRenderer implements NavigationHandler {
             Class<? extends Component> targetType) {
         assert targetType == navigationState.getNavigationTarget();
 
-        return getParentLayouts(targetType);
+        return RouterUtil.getParentLayouts(targetType);
     }
 
     private boolean executeBeforeNavigation(
@@ -201,84 +201,5 @@ public class NavigationStateRenderer implements NavigationHandler {
                 NavigationTrigger.PROGRAMMATIC);
 
         return handler.handle(newNavigationEvent);
-    }
-
-    /**
-     * Checks that the same component type is not used in multiple parts of a
-     * route chain.
-     *
-     * @param routeTargetType
-     *            the actual component in the route chain
-     * @param routeLayoutTypes
-     *            the parent types in the route chain
-     */
-    protected static void checkForDuplicates(
-            Class<? extends Component> routeTargetType,
-            Collection<Class<? extends RouterLayout>> routeLayoutTypes) {
-        Set<Class<?>> duplicateCheck = new HashSet<>();
-        duplicateCheck.add(routeTargetType);
-        for (Class<?> parentType : routeLayoutTypes) {
-            if (!duplicateCheck.add(parentType)) {
-                throw new IllegalArgumentException(
-                        parentType + " is used in multiple locations");
-            }
-        }
-    }
-
-    /**
-     * Updates the page title according to the currently visible component.
-     * <p>
-     * Uses {@link HasDynamicTitle#getTitle()} if implemented, or else
-     * the {@link Title} annotation, to resolve the title.
-     *
-     * @param navigationEvent
-     *            the event object about the navigation
-     * @param routeTarget
-     *            the currently visible component
-     */
-    private void updatePageTitle(NavigationEvent navigationEvent,
-            Component routeTarget) {
-
-        String title;
-
-        if (routeTarget instanceof HasDynamicTitle) {
-            title = ((HasDynamicTitle) routeTarget).getTitle();
-        } else {
-            title = lookForTitleInTarget(routeTarget)
-                    .map(Title::value)
-                    .orElse("");
-        }
-        navigationEvent.getUI().getPage().setTitle(title);
-    }
-
-    private Optional<Title> lookForTitleInTarget(Component routeTarget) {
-        return Optional.ofNullable(
-                routeTarget.getClass().getAnnotation(Title.class));
-    }
-
-    private LocationChangeEvent createEvent(NavigationEvent event,
-            List<HasElement> routeTargetChain) {
-        return new LocationChangeEvent(event.getSource(), event.getUI(),
-                event.getTrigger(), event.getLocation(), routeTargetChain);
-    }
-
-    private List<Class<? extends RouterLayout>> getParentLayouts(
-            Class<?> component) {
-        List<Class<? extends RouterLayout>> list = new ArrayList<>();
-
-        Optional<Route> router = AnnotationReader.getAnnotationFor(component,
-                Route.class);
-        Optional<ParentLayout> parentLayout = AnnotationReader
-                .getAnnotationFor(component, ParentLayout.class);
-
-        if (router.isPresent() && !router.get().layout().equals(UI.class)) {
-            list.add(router.get().layout());
-            list.addAll(getParentLayouts(router.get().layout()));
-        } else if (parentLayout.isPresent()) {
-            list.add(parentLayout.get().value());
-            list.addAll(getParentLayouts(parentLayout.get().value()));
-        }
-
-        return list;
     }
 }
