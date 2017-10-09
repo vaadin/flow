@@ -25,7 +25,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
 
-public class ClientDelegteHandlersTest {
+public class ClientDelegateHandlersTest {
 
     @Tag("div")
     static class NonTemplateComponentWithoutEventHandler extends Component {
