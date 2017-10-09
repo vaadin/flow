@@ -81,11 +81,12 @@
                         <id>install-node-and-npm</id>
                         <goals>
                             <goal>install-node-and-npm</goal>
-                            <goal>npm</goal> <!-- runs 'install' by default -->
-                            <goal>bower</goal> <!-- runs 'install' by default -->
+                            <goal>npm</goal>
+                            <goal>bower</goal>
                         </goals>
                         <configuration>
                             <workingDirectory>${frontend.working.directory}</workingDirectory>
+                            <arguments>install --allow-root</arguments>
                         </configuration>
                     </execution>
                 </executions>
