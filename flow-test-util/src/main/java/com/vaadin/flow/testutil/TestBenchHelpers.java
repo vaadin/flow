@@ -92,7 +92,7 @@ public class TestBenchHelpers extends ParallelTest {
         waitUntil(ExpectedConditions.not(condition), timeoutInSeconds);
     }
 
-    protected void waitForElementPresent(By by) {
+    protected void waitForElementPresent(final By by) {
         waitUntil(ExpectedConditions.presenceOfElementLocated(by));
     }
 

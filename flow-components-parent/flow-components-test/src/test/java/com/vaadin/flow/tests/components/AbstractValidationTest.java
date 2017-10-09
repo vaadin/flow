@@ -74,7 +74,7 @@ public abstract class AbstractValidationTest extends AbstractComponentIT {
         scrollIntoViewAndClick(invalidate);
         scrollIntoViewAndClick(field);
 
-        findElement(By.tagName("body")).click();
+        executeScript("document.body.click()");
 
         assertInvalid();
     }
@@ -85,7 +85,7 @@ public abstract class AbstractValidationTest extends AbstractComponentIT {
         scrollIntoViewAndClick(invalidate);
         scrollIntoViewAndClick(field);
 
-        findElement(By.tagName("body")).click();
+        executeScript("document.body.click()");
 
         assertInvalid();
     }
