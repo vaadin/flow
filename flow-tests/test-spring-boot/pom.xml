@@ -14,10 +14,9 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <skip.npm>true</skip.npm>
         <skip.bower>true</skip.bower>
-        <spring-boot.version>1.5.7.RELEASE</spring-boot.version>
     </properties>
     
-     <dependencyManagement>
+    <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -28,7 +27,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
+    
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -128,6 +127,28 @@
                         </fileset>
                     </filesets>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <!-- start and stop jetty (running our app) when running 
+                        integration tests -->
+                    <execution>
+                        <id>start-app</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-app</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -15,25 +15,29 @@
  */
 package com.vaadin.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.TestRouteRegistry;
+import com.vaadin.router.Title;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
@@ -56,6 +60,9 @@ public class RouteRegistryInitializerTest {
         Mockito.when(servletContext.getAttribute(RouteRegistry.class.getName()))
                 .thenReturn(registry);
     }
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
     public void onStartUp() throws ServletException {
@@ -200,13 +207,50 @@ public class RouteRegistryInitializerTest {
     public void routeRegistry_route_returns_string_not_ending_in_dash()
             throws ServletException {
         routeRegistryInitializer.onStartup(Stream
-                .of(NaviagtionRootWithParent.class).collect(Collectors.toSet()),
+                .of(NavigationRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
 
         Assert.assertEquals(
                 "The root target for a parent layout should not end with '/'",
                 "parent",
-                registry.getTargetUrl(NaviagtionRootWithParent.class).get());
+                registry.getTargetUrl(NavigationRootWithParent.class).get());
+    }
+
+    @Test
+    public void registration_fails_for_navigation_target_with_duplicate_title()
+            throws ServletException {
+        expectedEx.expect(DuplicateNavigationTitleException.class);
+        expectedEx.expectMessage(String.format(
+                "'%s' has a Title annotation, but also implements HasDynamicTitle.",
+                FaultyNavigationTargetWithTitle.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Collections.singleton(FaultyNavigationTargetWithTitle.class),
+                servletContext);
+    }
+
+    @Test
+    public void registration_fails_for_navigation_target_with_inherited_dynamic_title()
+            throws ServletException {
+        expectedEx.expect(DuplicateNavigationTitleException.class);
+        expectedEx.expectMessage(String.format(
+                "'%s' has a Title annotation, but also implements HasDynamicTitle.",
+                FaultyChildWithDuplicateTitle.class.getName()));
+
+        routeRegistryInitializer.onStartup(
+                Collections.singleton(FaultyChildWithDuplicateTitle.class),
+                servletContext);
+    }
+
+    @Test
+    public void registration_succeeds_for_navigation_target_with_inherited_title_annotation()
+            throws ServletException {
+        routeRegistryInitializer.onStartup(
+                Collections.singleton(ChildWithDynamicTitle.class),
+                servletContext);
+
+        Assert.assertEquals("bar",
+                registry.getTargetUrl(ChildWithDynamicTitle.class).get());
     }
 
     @Route("")
@@ -230,7 +274,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Route(value = "", layout = ParentWithRoutePrefix.class)
-    private static class NaviagtionRootWithParent extends Component {
+    private static class NavigationRootWithParent extends Component {
     }
 
     @ParentLayout(RouteParentLayout.class)
@@ -280,6 +324,55 @@ public class RouteRegistryInitializerTest {
         public void setParameter(BeforeNavigationEvent event,
                 String parameter) {
 
+        }
+    }
+
+    @Route("foo")
+    @Title("Custom Title")
+    private static class FaultyNavigationTargetWithTitle extends Component
+            implements HasDynamicTitle {
+
+        @Override
+        public String getTitle() {
+            return "";
+        }
+    }
+
+    @Route("foo")
+    private static class ParentWithDynamicTitle extends Component
+            implements HasDynamicTitle {
+
+        @Override
+        public String getTitle() {
+            return "Parent View";
+        }
+    }
+
+    @Route("bar")
+    @Title("Child View")
+    private static class FaultyChildWithDuplicateTitle
+            extends ParentWithDynamicTitle {
+    }
+
+    @Route("foo")
+    @Title("Parent View")
+    private static class ParentWithTitleAnnotation extends Component
+            implements HasDynamicTitle {
+
+        @Override
+        public String getTitle() {
+            return "";
+        }
+    }
+
+    @Route("bar")
+    private static class ChildWithDynamicTitle
+            extends ParentWithTitleAnnotation
+            implements HasDynamicTitle {
+
+        @Override
+        public String getTitle() {
+            return "Child View";
         }
     }
 }
