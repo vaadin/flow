@@ -35,6 +35,7 @@ import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionEvent;
 import com.vaadin.data.selection.MultiSelectionListener;
@@ -74,6 +75,7 @@ import elemental.json.JsonValue;
  */
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
+@HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @JavaScript("context://gridConnector.js")
 public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
@@ -259,13 +261,18 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         MULTI {
             @Override
             protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
-                return new GridMultiSelectionModel<T>() {
+                GridSelectionColumn selectionColumn = new GridSelectionColumn();
+                grid.getElement().insertChild(0, selectionColumn.getElement());
+                GridMultiSelectionModel<T> model = new GridMultiSelectionModel<T>() {
 
-                    Set<T> selected = new LinkedHashSet<>();
+                    private Set<T> selected = new LinkedHashSet<>();
+                    private SelectAllCheckBoxVisibility selectAllCheckBoxVisibility = SelectAllCheckBoxVisibility.DEFAULT;
 
                     @Override
                     public void remove() {
                         deselectAll();
+                        grid.getElement()
+                                .removeChild(selectionColumn.getElement());
                     }
 
                     @Override
@@ -298,11 +305,24 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                     public void deselect(T item) {
                         doDeselect(item, false);
                         grid.getDataCommunicator().reset();
+                        selectionColumn.setSelectAllCheckboxState(false);
+                    }
+
+                    @Override
+                    public void selectAll() {
+                        updateSelection(
+                                grid.getDataCommunicator().getDataProvider()
+                                        .fetch(new Query<>())
+                                        .collect(Collectors.toSet()),
+                                Collections.emptySet());
+                        selectionColumn.setSelectAllCheckboxState(true);
                     }
 
                     @Override
                     public void deselectAll() {
-                        selected.clear();
+                        updateSelection(Collections.emptySet(),
+                                getSelectedItems());
+                        selectionColumn.setSelectAllCheckboxState(false);
                     }
 
                     @Override
@@ -323,12 +343,9 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                         grid.getDataCommunicator().reset();
                         grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(grid,
                                 grid.asMultiSelect(), oldSelection, false));
-                    }
-
-                    @Override
-                    public void selectAll() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
+                        if (removedItems.size() > 0) {
+                            selectionColumn.setSelectAllCheckboxState(false);
+                        }
                     }
 
                     @Override
@@ -403,6 +420,36 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                                                 (MultiSelectionEvent) event)));
                     }
 
+                    @Override
+                    public void setSelectAllCheckBoxVisibility(
+                            SelectAllCheckBoxVisibility selectAllCheckBoxVisibility) {
+                        this.selectAllCheckBoxVisibility = selectAllCheckBoxVisibility;
+                        selectionColumn.setSelectAllCheckBoxVisibility(
+                                isSelectAllCheckBoxVisible());
+                    }
+
+                    @Override
+                    public SelectAllCheckBoxVisibility getSelectAllCheckBoxVisibility() {
+                        return selectAllCheckBoxVisibility;
+                    }
+
+                    @Override
+                    public boolean isSelectAllCheckBoxVisible() {
+                        switch (selectAllCheckBoxVisibility) {
+                        case DEFAULT:
+                            return grid.getDataCommunicator().getDataProvider()
+                                    .isInMemory();
+                        case HIDDEN:
+                            return false;
+                        case VISIBLE:
+                            return true;
+                        default:
+                            throw new IllegalStateException(String.format(
+                                    "Select all checkbox visibility is set to an unsupported value: %s",
+                                    selectAllCheckBoxVisibility));
+                        }
+                    }
+
                     private void doSelect(T item, boolean userOriginated) {
                         Set<T> oldSelection = new LinkedHashSet<>(selected);
                         boolean added = selected.add(item);
@@ -423,6 +470,9 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                         }
                     }
                 };
+                selectionColumn.setSelectAllCheckBoxVisibility(
+                        model.isSelectAllCheckBoxVisible());
+                return model;
             }
         },
 
@@ -709,6 +759,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * @see #getSelectionModel()
      * @see GridSelectionModel
      */
+    @ClientDelegate
     public void deselectAll() {
         getSelectionModel().deselectAll();
     }
@@ -733,6 +784,17 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      */
     public Registration addSelectionListener(SelectionListener<T> listener) {
         return getSelectionModel().addSelectionListener(listener);
+    }
+
+    @ClientDelegate
+    private void selectAll() {
+        GridSelectionModel<T> selectionModel = getSelectionModel();
+        if (!(selectionModel instanceof GridMultiSelectionModel)) {
+            throw new IllegalStateException(
+                    "Attempted to select all items from the client "
+                            + "while this Grid does not have multi selection enabled");
+        }
+        ((GridMultiSelectionModel<T>) selectionModel).selectAll();
     }
 
     @ClientDelegate
