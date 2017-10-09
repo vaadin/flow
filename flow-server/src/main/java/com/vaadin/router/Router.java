@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
@@ -140,10 +141,9 @@ public class Router implements RouterInterface {
                     new NavigationStateBuilder().withTarget(navigationTarget)
                             .build());
 
-            NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, NavigationTrigger.PROGRAMMATIC);
-
-            navigationEvent.setErrorParameter(new ErrorParameter(exception, exception.getMessage()));
+            NavigationEvent navigationEvent = new ErrorNavigationEvent(this,
+                    location, ui, NavigationTrigger.PROGRAMMATIC,
+                    new ErrorParameter(exception, exception.getMessage()));
 
             return handler.handle(navigationEvent);
         }

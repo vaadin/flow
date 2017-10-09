@@ -45,6 +45,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
 
 public class RouterTest extends RoutingTestBase {
@@ -1148,11 +1149,7 @@ public class RouterTest extends RoutingTestBase {
     public void do_not_accept_same_exception_targets() {
 
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(String.format(
-                "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                RouteNotFoundError.class.getName(),
-                NonExtendingNotFoundTarget.class.getName(),
-                NotFoundException.class.getName())));
+        expectedEx.expectMessage(startsWith("Only one target for an exception should be defined. Found "));
 
         router.getRegistry()
                 .setErrorNavigationTargets(Stream

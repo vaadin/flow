@@ -38,7 +38,7 @@ public class RouteNotFoundError extends Component
 }
 ----
 
-This will return a http response of 404 and show the set text to the user.
+This will return an http response of 404 and show the set text to the user.
 
 Exception matching will run first by exception cause and then by exception super type.
 

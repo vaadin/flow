@@ -18,7 +18,7 @@ package com.vaadin.router;
 import com.vaadin.router.event.BeforeNavigationEvent;
 
 /**
- * Event sent to the an error handler that handlers given Exception type T. This
+ * Event sent to the error handler that handlers given Exception type T. This
  * is done for caught exceptions during navigation.
  *
  * @author Vaadin Ltd

@@ -24,6 +24,7 @@ import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.router.util.RouterUtil;
@@ -84,6 +85,8 @@ public class ErrorStateRenderer implements NavigationHandler {
 
     @Override
     public int handle(NavigationEvent event) {
+        assert event instanceof ErrorNavigationEvent : "Error handling needs ErrorNavigationEvent";
+
         UI ui = event.getUI();
 
         Class<? extends Component> routeTargetType = navigationState
@@ -107,8 +110,9 @@ public class ErrorStateRenderer implements NavigationHandler {
         BeforeNavigationEvent beforeNavigationActivating = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.ACTIVATING);
 
-        int i = ((HasErrorParameter) componentInstance).setErrorParameter(
-                beforeNavigationActivating, event.getErrorParameter());
+        int statusCode = ((HasErrorParameter) componentInstance)
+                .setErrorParameter(beforeNavigationActivating,
+                        ((ErrorNavigationEvent) event).getErrorParameter());
 
         List<BeforeNavigationListener> listeners = EventUtil
                 .collectBeforeNavigationListeners(chain);
@@ -130,7 +134,7 @@ public class ErrorStateRenderer implements NavigationHandler {
         EventUtil.collectAfterNavigationListeners(chain).forEach(
                 listener -> listener.afterNavigation(afterNavigationEvent));
 
-        return i;
+        return statusCode;
     }
 
     /**

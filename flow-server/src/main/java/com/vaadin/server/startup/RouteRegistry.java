@@ -134,26 +134,45 @@ public class RouteRegistry implements Serializable {
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
         for (Class<? extends Component> target : errorNavigationTargets) {
-            Class exceptionType = ReflectTools.getGenericInterfaceType(target,
-                    HasErrorParameter.class);
+            Class<?> exceptionType = ReflectTools
+                    .getGenericInterfaceType(target, HasErrorParameter.class);
+
             if (exceptionTargets.containsKey(exceptionType)) {
-                Class<? extends Component> registered = exceptionTargets
-                        .get(exceptionType);
-                if (registered.isAssignableFrom(target)) {
-                    // Register the more specific type as the actual target.
-                    exceptionTargets.put(exceptionType, target);
-                } else if(!target.isAssignableFrom(registered)){
-                    String msg = String.format(
-                            "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
-                            target.getName(), registered.getName(),
-                            exceptionType.getName());
-                    throw new InvalidRouteLayoutConfigurationException(msg);
-                }
+                handleRegisteredExceptionType(target, exceptionType);
             } else {
                 exceptionTargets.put(exceptionType, target);
             }
         }
         initErrorTargets();
+    }
+
+    /**
+     * Register a child handler if parent registered or leave as is if child
+     * registered.
+     * <p>
+     * If the target is not related to the registered handler then throw
+     * configuration exception as only one handler for each exception type is
+     * allowed.
+     * 
+     * @param target
+     *            target being handled
+     * @param exceptionType
+     *            type of the handled exception
+     */
+    private void handleRegisteredExceptionType(
+            Class<? extends Component> target, Class<?> exceptionType) {
+        Class<? extends Component> registered = exceptionTargets
+                .get(exceptionType);
+
+        if (registered.isAssignableFrom(target)) {
+            exceptionTargets.put(exceptionType, target);
+        } else if (!target.isAssignableFrom(registered)) {
+            String msg = String.format(
+                    "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                    target.getName(), registered.getName(),
+                    exceptionType.getName());
+            throw new InvalidRouteLayoutConfigurationException(msg);
+        }
     }
 
     private void initErrorTargets() {
