@@ -16,7 +16,9 @@
 package com.vaadin.router;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
@@ -28,6 +30,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -146,12 +149,26 @@ public class Router implements RouterInterface {
      *            navigation target to get url for
      * @return url for the navigation target
      */
-    public String getUrl(Class<? extends Component> navigationTarget)
-            throws NotFoundException {
+    public String getUrl(Class<? extends Component> navigationTarget) {
         String routeString = getUrlForTarget(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
                 WildcardParameter.class)) {
             routeString = routeString.replaceAll("/\\{[\\s\\S]*}", "");
+        }
+        return trimRouteString(routeString);
+    }
+
+    /**
+     * Trim the given route string of extra characters that can be left in
+     * special cases like root target containing optional parameter.
+     * 
+     * @param routeString
+     *            route string to trim
+     * @return trimmed route
+     */
+    private String trimRouteString(String routeString) {
+        if (routeString.startsWith("/")) {
+            routeString = routeString.substring(1);
         }
         return routeString;
     }
@@ -173,24 +190,48 @@ public class Router implements RouterInterface {
      * url.
      * <p>
      * Note! Given parameter is checked for correct class type. This means that
-     * if the navigation target defined parameter is of type Boolean then
-     * calling getUrl with a String will fail.
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
      *
      * @param navigationTarget
      *            navigation target to get url for
      * @param parameter
      *            parameter to embed into the generated url
-     * @return url for the naviagtion target with parameter
+     * @return url for the navigation target with parameter
      */
     public <T> String getUrl(
-            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter)
-            throws NotFoundException {
+            Class<? extends HasUrlParameter<T>> navigationTarget, T parameter) {
+        return getUrl(navigationTarget, Arrays.asList(parameter));
+    }
+
+    /**
+     * Get the url string for given navigation target with the parameter in the
+     * url.
+     * <p>
+     * Note! Given parameter is checked for correct class type. This means that
+     * if the navigation target defined parameter is of type {@code Boolean}
+     * then calling getUrl with a {@code String} will fail.
+     *
+     * @param navigationTarget
+     *            navigation target to get url for
+     * @param parameters
+     *            parameters to embed into the generated url
+     * @return url for the navigation target with parameter
+     */
+    public <T> String getUrl(
+            Class<? extends HasUrlParameter<T>> navigationTarget,
+            List<T> parameters) {
         String routeString = getUrlForTarget(
                 (Class<? extends Component>) navigationTarget);
-        if (parameter != null) {
+
+        List<String> serializedParameters = ReflectTools
+                .createInstance(navigationTarget)
+                .serializeUrlParameters(parameters);
+        if (!parameters.isEmpty()) {
             routeString = routeString.replace(
-                    "{" + parameter.getClass().getSimpleName() + "}",
-                    parameter.toString());
+                    "{" + parameters.get(0).getClass().getSimpleName() + "}",
+                    serializedParameters.stream()
+                            .collect(Collectors.joining("/")));
         } else if (HasUrlParameter.isAnnotatedParameter(navigationTarget,
                 OptionalParameter.class)
                 || HasUrlParameter.isAnnotatedParameter(navigationTarget,
@@ -201,10 +242,8 @@ public class Router implements RouterInterface {
                     "The navigation target '%s' has a non optional parameter that needs to be given.",
                     navigationTarget.getName()));
         }
-
         Optional<Class<? extends Component>> registryTarget = getRegistry()
-                .getNavigationTarget(routeString,
-                        Arrays.asList((String) parameter));
+                .getNavigationTarget(routeString, serializedParameters);
 
         if (registryTarget.isPresent()
                 && !hasUrlParameters(registryTarget.get())
@@ -213,7 +252,7 @@ public class Router implements RouterInterface {
                     "Url matches existing navigation target '%s' with higher priority.",
                     registryTarget.get().getName()));
         }
-        return routeString;
+        return trimRouteString(routeString);
     }
 
     private String getUrlForTarget(Class<? extends Component> navigationTarget)

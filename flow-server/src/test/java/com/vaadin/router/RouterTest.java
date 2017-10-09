@@ -15,7 +15,11 @@
  */
 package com.vaadin.router;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +32,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -44,8 +49,11 @@ import com.vaadin.ui.UI;
 
 public class RouterTest extends RoutingTestBase {
 
-    private UI ui;
+    private static final String DYNAMIC_TITLE = "I am dynamic!";
+
     private static List<String> eventCollector = new ArrayList<>(0);
+
+    private UI ui;
 
     @Route("")
     @Tag(Tag.DIV)
@@ -126,6 +134,37 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("usupported/wildcard")
+    @Tag(Tag.DIV)
+    public static class UnsupportedWildParameter extends Component
+            implements HasUrlParameter<Integer> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @WildcardParameter Integer parameter) {
+            eventCollector.add("With parameter: " + parameter);
+        }
+    }
+
+    @Route("fixed/wildcard")
+    @Tag(Tag.DIV)
+    public static class FixedWildParameter extends Component
+            implements HasUrlParameter<Integer> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @WildcardParameter Integer parameter) {
+            eventCollector.add("With parameter: " + parameter);
+        }
+
+        @Override
+        public Integer deserializeUrlParameters(List<String> urlParameters) {
+            Integer value = urlParameters.stream().map(Integer::valueOf)
+                    .reduce(Integer::sum).orElse(0);
+            return value;
+        }
+    }
+
     @Route("wild")
     @Tag(Tag.DIV)
     public static class WildParameter extends Component
@@ -146,6 +185,41 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void setParameter(BeforeNavigationEvent event,
                 String parameter) {
+            eventCollector.add("Parameter: " + parameter);
+        }
+    }
+
+    @Route("integer")
+    @Tag(Tag.DIV)
+    public static class IntegerParameter extends Component
+            implements HasUrlParameter<Integer> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                Integer parameter) {
+            eventCollector.add("Parameter: " + parameter);
+        }
+    }
+
+    @Route("long")
+    @Tag(Tag.DIV)
+    public static class LongParameter extends Component
+            implements HasUrlParameter<Long> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event, Long parameter) {
+            eventCollector.add("Parameter: " + parameter);
+        }
+    }
+
+    @Route("boolean")
+    @Tag(Tag.DIV)
+    public static class BooleanParameter extends Component
+            implements HasUrlParameter<Boolean> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                Boolean parameter) {
             eventCollector.add("Parameter: " + parameter);
         }
     }
@@ -181,6 +255,76 @@ public class RouterTest extends RoutingTestBase {
     @Title("Custom Title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithTitle extends Component {
+    }
+
+    @RoutePrefix("parent-with-title")
+    @Title("Parent Title")
+    @Tag(Tag.DIV)
+    public static class ParentWithTitle extends Component implements RouterLayout {
+    }
+
+    @Route(value = "child", layout = ParentWithTitle.class)
+    @Tag(Tag.DIV)
+    public static class ChildWithoutTitle extends Component {
+    }
+
+    @Route("navigation-target-with-dynamic-title")
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithDynamicTitle extends Component
+            implements HasDynamicTitle {
+
+        public NavigationTargetWithDynamicTitle() {
+        }
+
+        @Override
+        public String getTitle() {
+            return DYNAMIC_TITLE;
+        }
+    }
+
+    @Route("url")
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithDynamicTitleFromUrl
+            extends Component
+            implements HasDynamicTitle, HasUrlParameter<String> {
+
+        private String title = DYNAMIC_TITLE;
+
+        public NavigationTargetWithDynamicTitleFromUrl() {
+        }
+
+        @Override
+        public String getTitle() {
+            return title;
+        }
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @com.vaadin.router.OptionalParameter String parameter) {
+            title = parameter;
+        }
+    }
+
+    @Route("url")
+    @Tag(Tag.DIV)
+    public static class NavigationTargetWithDynamicTitleFromNavigation
+            extends Component
+            implements HasDynamicTitle, BeforeNavigationListener {
+
+        private String title = DYNAMIC_TITLE;
+
+        public NavigationTargetWithDynamicTitleFromNavigation() {
+        }
+
+        @Override
+        public String getTitle() {
+            return title;
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            title = event.getActivationState().name();
+        }
     }
 
     public static class RouterTestUI extends MockUI {
@@ -242,6 +386,42 @@ public class RouterTest extends RoutingTestBase {
     public static class LoneRoute extends Component {
     }
 
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class WildRootParameter extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @WildcardParameter String parameter) {
+            eventCollector.add("With parameter: " + parameter);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class OptionalRootParameter extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @com.vaadin.router.OptionalParameter String parameter) {
+            eventCollector.add(parameter == null ? "No parameter" : parameter);
+        }
+    }
+
+    @Route("")
+    @Tag(Tag.DIV)
+    public static class RootParameter extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            eventCollector.add(parameter);
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -281,6 +461,57 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("navigation-target-with-title"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Custom Title", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_not_set_from_annotation_in_parent()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(ChildWithoutTitle.class));
+
+        router.navigate(ui, new Location("parent-with-title/child"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_dynamically()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(NavigationTargetWithDynamicTitle.class));
+
+        router.navigate(ui, new Location("navigation-target-with-dynamic-title"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is(DYNAMIC_TITLE));
+    }
+
+    @Test
+    public void page_title_set_dynamically_from_url_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(NavigationTargetWithDynamicTitleFromUrl.class));
+
+        router.navigate(ui, new Location("url/hello"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is("hello"));
+    }
+
+    @Test
+    public void page_title_set_dynamically_from_event_handler()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(NavigationTargetWithDynamicTitleFromNavigation.class));
+
+        router.navigate(ui, new Location("url"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is("ACTIVATING"));
     }
 
     @Test
@@ -385,6 +616,7 @@ public class RouterTest extends RoutingTestBase {
                 "Event before navigation", eventCollector.get(2));
     }
 
+    @Test
     public void basic_url_resolving()
             throws InvalidRouteConfigurationException, NotFoundException {
         router.getRegistry()
@@ -622,21 +854,20 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-
     @Test
     public void url_resolves_correctly_for_optional_and_wild_parameters()
             throws InvalidRouteConfigurationException, NotFoundException {
-        router.getRegistry()
-                .setNavigationTargets(Stream
-                        .of(OptionalParameter.class,
-                                WildParameter.class)
+        router.getRegistry().setNavigationTargets(
+                Stream.of(OptionalParameter.class, WildParameter.class)
                         .collect(Collectors.toSet()));
 
-        Assert.assertEquals("Optional value should be able to return even without any parameters", "optional",
-                router.getUrl(OptionalParameter.class, null));
+        Assert.assertEquals(
+                "Optional value should be able to return even without any parameters",
+                "optional", router.getUrl(OptionalParameter.class));
 
-        Assert.assertEquals("Wildcard value should be able to return even without any parameters","wild",
-                router.getUrl(WildParameter.class, null));
+        Assert.assertEquals(
+                "Wildcard value should be able to return even without any parameters",
+                "wild", router.getUrl(WildParameter.class));
 
         Assert.assertEquals("optional/my_param",
                 router.getUrl(OptionalParameter.class, "my_param"));
@@ -646,6 +877,154 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("wild/there/are/many/of/us",
                 router.getUrl(WildParameter.class, "there/are/many/of/us"));
+    }
+
+    @Test
+    public void root_navigation_target_with_wildcard_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(WildRootParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "With parameter: ",
+                eventCollector.get(0));
+
+        router.navigate(ui, new Location("my/wild"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty",
+                "With parameter: my/wild", eventCollector.get(1));
+
+        Assert.assertEquals("", router.getUrl(WildRootParameter.class));
+        Assert.assertEquals("wild",
+                router.getUrl(WildRootParameter.class, "wild"));
+    }
+
+    @Test
+    public void root_navigation_target_with_optional_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(OptionalRootParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "No parameter",
+                eventCollector.get(0));
+
+        router.navigate(ui, new Location("optional"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "optional",
+                eventCollector.get(1));
+
+        Assert.assertEquals("", router.getUrl(OptionalRootParameter.class));
+        Assert.assertEquals("optional",
+                router.getUrl(OptionalRootParameter.class, "optional"));
+    }
+
+    @Test
+    public void root_navigation_target_with_required_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(RootParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Has url with required parameter should not match to \"\"", 0,
+                eventCollector.size());
+    }
+
+    @Test
+    public void test_has_url_with_supported_parameters_navigation()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(IntegerParameter.class, LongParameter.class,
+                                BooleanParameter.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("integer/5"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "Parameter: 5",
+                eventCollector.get(0));
+
+        router.navigate(ui, new Location("long/5"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "Parameter: 5",
+                eventCollector.get(1));
+
+        router.navigate(ui, new Location("boolean/true"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 3,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "Parameter: true",
+                eventCollector.get(2));
+    }
+
+    @Test
+    public void test_getUrl_for_has_url_with_supported_parameters()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(IntegerParameter.class, LongParameter.class,
+                                BooleanParameter.class)
+                        .collect(Collectors.toSet()));
+
+        Assert.assertEquals("integer/5",
+                router.getUrl(IntegerParameter.class, 5));
+
+        Assert.assertEquals("long/5", router.getUrl(LongParameter.class, 5l));
+
+        Assert.assertEquals("boolean/false",
+                router.getUrl(BooleanParameter.class, false));
+    }
+
+    @Test
+    public void default_wildcard_support_only_for_string()
+            throws InvalidRouteConfigurationException {
+        expectedEx.expect(UnsupportedOperationException.class);
+        expectedEx.expectMessage(String.format(
+                "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class %s",
+                UnsupportedWildParameter.class.getName()));
+
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(UnsupportedWildParameter.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("usupported/wildcard/3/4/1"),
+                NavigationTrigger.PROGRAMMATIC);
+    }
+
+    @Test
+    public void overridden_deserializer_wildcard_support_for_custom_type()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream
+                .of(FixedWildParameter.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("fixed/wildcard/3/4/1"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "With parameter: 8",
+                eventCollector.get(0));
+
+        Assert.assertEquals("fixed/wildcard/5/5/3", router
+                .getUrl(FixedWildParameter.class, Arrays.asList(5, 5, 3)));
     }
 
     private Class<? extends Component> getUIComponent() {

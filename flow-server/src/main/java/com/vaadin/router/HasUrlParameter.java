@@ -17,10 +17,11 @@ package com.vaadin.router;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
@@ -67,10 +68,49 @@ public interface HasUrlParameter<T> {
             return isAnnotatedParameter(this.getClass(),
                     WildcardParameter.class) ? (T) "" : null;
         }
+        Class parameterType = getClassType(this.getClass());
         if (isAnnotatedParameter(this.getClass(), WildcardParameter.class)) {
+            validateWildcardType(this.getClass(), parameterType);
             return (T) urlParameters.stream().collect(Collectors.joining("/"));
         }
-        return (T) urlParameters.get(0);
+        String parameter = urlParameters.get(0);
+        return ParameterDeserializer.deserializeParameter(
+                (Class<T>) parameterType, parameter, this.getClass().getName());
+    }
+
+    /**
+     * Validate that we can support the given wildcard parameter type.
+     * 
+     * @param navigationTarget
+     *            navigation target class
+     * @param parameterType
+     *            parameter type to check validity for usage with wildcard
+     */
+    static void validateWildcardType(Class<?> navigationTarget,
+            Class<?> parameterType) {
+        if (!parameterType.isAssignableFrom(String.class)) {
+            throw new UnsupportedOperationException(
+                    "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class "
+                            + navigationTarget.getName());
+        }
+    }
+
+    /**
+     * Method used to serialize the list of url parameters get the url segments
+     * This method can be overridden to support more complex objects as an url
+     * parameter. By default this method attempts to cast the parameter list to
+     * String and collect the parts to a List.
+     * 
+     * @param urlParameters
+     *            parameters to serialize
+     * @return list of serialized parameters
+     */
+    default List<String> serializeUrlParameters(List<T> urlParameters) {
+        if (urlParameters == null) {
+            return new ArrayList<>();
+        }
+        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -90,17 +130,10 @@ public interface HasUrlParameter<T> {
                     "Given navigationTarget '%s' does not implement HasUrlParameter.",
                     navigationTarget.getName()));
         }
-        Type type = GenericTypeReflector.getTypeParameter(navigationTarget,
-                HasUrlParameter.class.getTypeParameters()[0]);
-        if (!(type instanceof Class<?>)) {
-            throw new IllegalArgumentException(String.format(
-                    "Parameter type of the given navigationTarget '%s' could not be resolved.",
-                    navigationTarget.getName()));
-        }
-        Class<?> parameterType = GenericTypeReflector.erase(type);
-        Set<Class<?>> supportedTypes = Stream
-                .of(Long.class, Integer.class, String.class)
-                .collect(Collectors.toSet());
+
+        Class<?> parameterType = getClassType(navigationTarget);
+
+        Set<Class<?>> supportedTypes = ParameterDeserializer.supportedTypes;
         if (supportedTypes.contains(parameterType)) {
             if (isAnnotatedParameter(navigationTarget,
                     WildcardParameter.class)) {
@@ -118,6 +151,24 @@ public interface HasUrlParameter<T> {
     }
 
     /**
+     * Get the parameter type class.
+     * 
+     * @param navigationTarget
+     *            navigation target to get parameter type class for
+     * @return parameter type class
+     */
+    static Class<?> getClassType(Class<?> navigationTarget) {
+        Type type = GenericTypeReflector.getTypeParameter(navigationTarget,
+                HasUrlParameter.class.getTypeParameters()[0]);
+        if (!(type instanceof Class<?>)) {
+            throw new IllegalArgumentException(String.format(
+                    "Parameter type of the given navigationTarget '%s' could not be resolved.",
+                    navigationTarget.getName()));
+        }
+        return GenericTypeReflector.erase(type);
+    }
+
+    /**
      * Check if the parameter value is annotated as OptionalParameter.
      * 
      * @param navigationTarget
@@ -132,10 +183,18 @@ public interface HasUrlParameter<T> {
             return false;
         }
         try {
-            Method setParameter = navigationTarget.getMethod(
-                    ReflectTools.getFunctionalMethod(HasUrlParameter.class)
-                            .getName(),
-                    BeforeNavigationEvent.class, Object.class);
+            String methodName = "setParameter";
+            assert methodName.equals(ReflectTools
+                    .getFunctionalMethod(HasUrlParameter.class).getName());
+
+            // Raw method has no parameter annotations if compiled by Eclipse
+            Type parameterType = GenericTypeReflector.getTypeParameter(
+                    navigationTarget,
+                    HasUrlParameter.class.getTypeParameters()[0]);
+            Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
+
+            Method setParameter = navigationTarget.getMethod(methodName,
+                    BeforeNavigationEvent.class, parameterClass);
             return setParameter.getParameters()[1]
                     .isAnnotationPresent(parameterAnnotation);
         } catch (NoSuchMethodException e) {

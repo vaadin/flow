@@ -21,10 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.router.View;
-
 /**
- * Defines the HTML page title for a {@link View}.
+ * Defines the HTML page title for a navigation target.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -36,9 +34,8 @@ public @interface Title {
      * Empty string will clear any previous page title. In that case the browser
      * will decide what to show as the title, most likely the url.
      * <p>
-     * You may dynamically update the title for a view by overriding the
-     * {@link View#getTitle(com.vaadin.flow.router.LocationChangeEvent)
-     * View.getTitle(LocationChangeEvent)} method.
+     * You may dynamically update the title for a view by implementing the
+     * {@link HasDynamicTitle#getTitle()} method.
      *
      * @return a page title string
      */
