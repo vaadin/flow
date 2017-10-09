@@ -18,6 +18,7 @@ package com.vaadin.flow.demo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.vaadin.flow.demo.ComponentDemo.DemoCategory;
 import com.vaadin.flow.demo.MainLayout.MainLayoutModel;
@@ -122,8 +123,10 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
         } else {
 
             if (selectedView != null) {
-                if (selectedView.getClass().getAnnotation(ComponentDemo.class)
-                        .href().equals(parameter)) {
+                if (Objects.equals(
+                        selectedView.getClass()
+                                .getAnnotation(ComponentDemo.class).href(),
+                        parameter)) {
                     return;
                 }
                 selectedView.getElement().removeFromParent();
@@ -140,6 +143,7 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
                             .getAnnotation(ComponentDemo.class).name());
                 }
             }
+
         }
     }
 }
