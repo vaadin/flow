@@ -39,6 +39,7 @@ import com.vaadin.router.Route;
 import com.vaadin.router.RouteNotFoundError;
 import com.vaadin.router.RoutePrefix;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.util.AnnotationReader;
@@ -135,7 +136,22 @@ public class RouteRegistry implements Serializable {
         for (Class<? extends Component> target : errorNavigationTargets) {
             Class exceptionType = ReflectTools.getGenericInterfaceType(target,
                     HasErrorParameter.class);
-            exceptionTargets.put(exceptionType, target);
+            if (exceptionTargets.containsKey(exceptionType)) {
+                Class<? extends Component> registered = exceptionTargets
+                        .get(exceptionType);
+                if (registered.isAssignableFrom(target)) {
+                    // Register the more specific type as the actual target.
+                    exceptionTargets.put(exceptionType, target);
+                } else if(!target.isAssignableFrom(registered)){
+                    String msg = String.format(
+                            "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                            target.getName(), registered.getName(),
+                            exceptionType.getName());
+                    throw new InvalidRouteLayoutConfigurationException(msg);
+                }
+            } else {
+                exceptionTargets.put(exceptionType, target);
+            }
         }
         initErrorTargets();
     }

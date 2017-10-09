@@ -15,9 +15,6 @@
  */
 package com.vaadin.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,12 +29,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.server.InvalidRouteConfigurationException;
+import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.server.MockVaadinServletService;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinSession;
@@ -46,6 +43,9 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class RouterTest extends RoutingTestBase {
 
@@ -260,7 +260,8 @@ public class RouterTest extends RoutingTestBase {
     @RoutePrefix("parent-with-title")
     @Title("Parent Title")
     @Tag(Tag.DIV)
-    public static class ParentWithTitle extends Component implements RouterLayout {
+    public static class ParentWithTitle extends Component
+            implements RouterLayout {
     }
 
     @Route(value = "child", layout = ParentWithTitle.class)
@@ -284,9 +285,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("url")
     @Tag(Tag.DIV)
-    public static class NavigationTargetWithDynamicTitleFromUrl
-            extends Component
-            implements HasDynamicTitle, HasUrlParameter<String> {
+    public static class NavigationTargetWithDynamicTitleFromUrl extends
+            Component implements HasDynamicTitle, HasUrlParameter<String> {
 
         private String title = DYNAMIC_TITLE;
 
@@ -307,9 +307,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("url")
     @Tag(Tag.DIV)
-    public static class NavigationTargetWithDynamicTitleFromNavigation
-            extends Component
-            implements HasDynamicTitle, BeforeNavigationListener {
+    public static class NavigationTargetWithDynamicTitleFromNavigation extends
+            Component implements HasDynamicTitle, BeforeNavigationListener {
 
         private String title = DYNAMIC_TITLE;
 
@@ -432,6 +431,29 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    public static class CustomNotFoundTarget extends RouteNotFoundError
+            implements HasErrorParameter<NotFoundException> {
+
+        public static final String TEXT_CONTENT = "My custom not found class!";
+
+        @Override
+        public int setErrorParameter(BeforeNavigationEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            getElement().setText(TEXT_CONTENT);
+            return 404;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class NonExtendingNotFoundTarget extends Component
+            implements HasErrorParameter<NotFoundException> {
+        @Override
+        public int setErrorParameter(BeforeNavigationEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 404;
+        }
+    }
+
     @Route("exception")
     @Tag(Tag.DIV)
     public static class FailOnException extends Component
@@ -502,37 +524,38 @@ public class RouterTest extends RoutingTestBase {
         router.getRegistry().setNavigationTargets(
                 Collections.singleton(NavigationTargetWithDynamicTitle.class));
 
-        router.navigate(ui, new Location("navigation-target-with-dynamic-title"),
+        router.navigate(ui,
+                new Location("navigation-target-with-dynamic-title"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is(DYNAMIC_TITLE));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is(DYNAMIC_TITLE));
     }
 
     @Test
     public void page_title_set_dynamically_from_url_parameter()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(NavigationTargetWithDynamicTitleFromUrl.class));
+        router.getRegistry().setNavigationTargets(Collections
+                .singleton(NavigationTargetWithDynamicTitleFromUrl.class));
 
         router.navigate(ui, new Location("url/hello"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is("hello"));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is("hello"));
     }
 
     @Test
     public void page_title_set_dynamically_from_event_handler()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Collections.singleton(NavigationTargetWithDynamicTitleFromNavigation.class));
+        router.getRegistry().setNavigationTargets(Collections.singleton(
+                NavigationTargetWithDynamicTitleFromNavigation.class));
 
         router.navigate(ui, new Location("url"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is("ACTIVATING"));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is("ACTIVATING"));
     }
 
     @Test
@@ -1102,6 +1125,61 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.", 500,
                 result);
+    }
+
+    @Test
+    public void fail_for_multiple_of_the_same_class()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setErrorNavigationTargets(
+                Stream.of(ErrorTarget.class, RouteNotFoundError.class)
+                        .collect(Collectors.toSet()));
+
+        int result = router.navigate(ui, new Location("exception"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Non existent route should have returned.", 404,
+                result);
+
+        Assert.assertEquals(
+                "Expected the extending class to be used instead of the super class",
+                ErrorTarget.class, getUIComponent());
+    }
+
+    @Test
+    public void do_not_accept_same_exception_targets() {
+
+        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
+        expectedEx.expectMessage(String.format(String.format(
+                "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
+                RouteNotFoundError.class.getName(),
+                NonExtendingNotFoundTarget.class.getName(),
+                NotFoundException.class.getName())));
+
+        router.getRegistry()
+                .setErrorNavigationTargets(Stream
+                        .of(NonExtendingNotFoundTarget.class,
+                                RouteNotFoundError.class)
+                        .collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void custom_exception_target_is_used() {
+        router.getRegistry().setErrorNavigationTargets(
+                Stream.of(CustomNotFoundTarget.class, RouteNotFoundError.class)
+                        .collect(Collectors.toSet()));
+
+        int result = router.navigate(ui, new Location("exception"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Non existent route should have returned.", 404,
+                result);
+
+        Assert.assertEquals(
+                "Expected the extending class to be used instead of the super class",
+                CustomNotFoundTarget.class, getUIComponent());
+
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+        Assert.assertEquals(CustomNotFoundTarget.TEXT_CONTENT,
+                visibleComponent.get().getElement().getText());
     }
 
     private Class<? extends Component> getUIComponent() {

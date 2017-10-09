@@ -49,7 +49,6 @@ public class ErrorNavigationTargetInitializer
                     .setErrorNavigationTargets(defaultErrorViews);
             return;
         }
-        // Validation for error targets and what would that be?
         Set<Class<? extends Component>> routes = classSet.stream()
                 .map(clazz -> (Class<? extends Component>) clazz)
                 .collect(Collectors.toSet());
