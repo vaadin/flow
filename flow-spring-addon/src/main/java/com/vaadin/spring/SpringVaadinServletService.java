@@ -35,7 +35,7 @@ import com.vaadin.server.VaadinServletService;
  */
 public class SpringVaadinServletService extends VaadinServletService {
 
-    private ApplicationContext context;
+    private final ApplicationContext context;
 
     /**
      * Creates an instance connected to the given servlet and using the given
