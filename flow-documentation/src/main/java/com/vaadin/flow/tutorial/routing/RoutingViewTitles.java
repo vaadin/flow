@@ -26,7 +26,7 @@ public class RoutingViewTitles {
         private String title = "";
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return title;
         }
 

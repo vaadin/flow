@@ -47,7 +47,7 @@ class BlogPost extends Component
   private String title = "";
 
   @Override
-  public String getTitle() {
+  public String getPageTitle() {
     return title;
   }
 

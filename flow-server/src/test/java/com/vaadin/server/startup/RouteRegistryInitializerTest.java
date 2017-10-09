@@ -333,7 +333,7 @@ public class RouteRegistryInitializerTest {
             implements HasDynamicTitle {
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return "";
         }
     }
@@ -343,7 +343,7 @@ public class RouteRegistryInitializerTest {
             implements HasDynamicTitle {
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return "Parent View";
         }
     }
@@ -360,7 +360,7 @@ public class RouteRegistryInitializerTest {
             implements HasDynamicTitle {
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return "";
         }
     }
@@ -371,7 +371,7 @@ public class RouteRegistryInitializerTest {
             implements HasDynamicTitle {
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return "Child View";
         }
     }

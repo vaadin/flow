@@ -32,5 +32,5 @@ public interface HasDynamicTitle {
      * Gets the title of this navigation target.
      * @return  the title of this navigation target
      */
-    String getTitle();
+    String getPageTitle();
 }

@@ -169,22 +169,22 @@ public abstract class ComponentTest {
 
     @Test
     public void setTitle() {
-        Assert.assertFalse(component.getTooltip().isPresent());
+        Assert.assertFalse(component.getTitle().isPresent());
 
-        component.setTooltip("myTitle");
+        component.setTitle("myTitle");
 
         Assert.assertEquals("myTitle",
                 component.getElement().getAttribute("title"));
-        Assert.assertEquals("myTitle", component.getTooltip().orElse(null));
+        Assert.assertEquals("myTitle", component.getTitle().orElse(null));
         Assert.assertFalse(component.getElement().hasProperty("title"));
 
-        component.setTooltip("");
-        Assert.assertFalse(component.getTooltip().isPresent());
+        component.setTitle("");
+        Assert.assertFalse(component.getTitle().isPresent());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setTitle_nullDisallowed() {
-        component.setTooltip(null);
+        component.setTitle(null);
     }
 
     private Stream<ComponentProperty> getOptionalStringProperties() {

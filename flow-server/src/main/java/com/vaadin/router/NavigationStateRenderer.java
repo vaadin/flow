@@ -228,7 +228,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     /**
      * Updates the page title according to the currently visible component.
      * <p>
-     * Uses {@link HasDynamicTitle#getTitle()} if implemented, or else
+     * Uses {@link HasDynamicTitle#getPageTitle()} if implemented, or else
      * the {@link Title} annotation, to resolve the title.
      *
      * @param navigationEvent
@@ -242,7 +242,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         String title;
 
         if (routeTarget instanceof HasDynamicTitle) {
-            title = ((HasDynamicTitle) routeTarget).getTitle();
+            title = ((HasDynamicTitle) routeTarget).getPageTitle();
         } else {
             title = lookForTitleInTarget(routeTarget)
                     .map(Title::value)

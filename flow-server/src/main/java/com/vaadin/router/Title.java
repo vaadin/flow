@@ -35,7 +35,7 @@ public @interface Title {
      * will decide what to show as the title, most likely the url.
      * <p>
      * You may dynamically update the title for a view by implementing the
-     * {@link HasDynamicTitle#getTitle()} method.
+     * {@link HasDynamicTitle#getPageTitle()} method.
      *
      * @return a page title string
      */

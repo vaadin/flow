@@ -277,7 +277,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return DYNAMIC_TITLE;
         }
     }
@@ -294,7 +294,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return title;
         }
 
@@ -317,7 +317,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return title;
         }
 
