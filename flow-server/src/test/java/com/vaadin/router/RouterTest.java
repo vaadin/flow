@@ -32,7 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -252,13 +251,13 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("navigation-target-with-title")
-    @Title("Custom Title")
+    @PageTitle("Custom Title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithTitle extends Component {
     }
 
     @RoutePrefix("parent-with-title")
-    @Title("Parent Title")
+    @PageTitle("Parent Title")
     @Tag(Tag.DIV)
     public static class ParentWithTitle extends Component implements RouterLayout {
     }

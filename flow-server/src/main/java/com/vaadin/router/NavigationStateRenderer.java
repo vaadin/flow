@@ -229,7 +229,7 @@ public class NavigationStateRenderer implements NavigationHandler {
      * Updates the page title according to the currently visible component.
      * <p>
      * Uses {@link HasDynamicTitle#getPageTitle()} if implemented, or else
-     * the {@link Title} annotation, to resolve the title.
+     * the {@link PageTitle} annotation, to resolve the title.
      *
      * @param navigationEvent
      *            the event object about the navigation
@@ -245,15 +245,15 @@ public class NavigationStateRenderer implements NavigationHandler {
             title = ((HasDynamicTitle) routeTarget).getPageTitle();
         } else {
             title = lookForTitleInTarget(routeTarget)
-                    .map(Title::value)
+                    .map(PageTitle::value)
                     .orElse("");
         }
         navigationEvent.getUI().getPage().setTitle(title);
     }
 
-    private Optional<Title> lookForTitleInTarget(Component routeTarget) {
+    private Optional<PageTitle> lookForTitleInTarget(Component routeTarget) {
         return Optional.ofNullable(
-                routeTarget.getClass().getAnnotation(Title.class));
+                routeTarget.getClass().getAnnotation(PageTitle.class));
     }
 
     private LocationChangeEvent createEvent(NavigationEvent event,

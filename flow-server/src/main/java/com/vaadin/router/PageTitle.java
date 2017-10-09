@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Title {
+public @interface PageTitle {
 
     /**
      * Gets the HTML title that should be used.

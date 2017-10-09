@@ -32,12 +32,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.HasUrlParameter;
+import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RoutePrefix;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.TestRouteRegistry;
-import com.vaadin.router.Title;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
@@ -221,7 +221,7 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         expectedEx.expect(DuplicateNavigationTitleException.class);
         expectedEx.expectMessage(String.format(
-                "'%s' has a Title annotation, but also implements HasDynamicTitle.",
+                "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
                 FaultyNavigationTargetWithTitle.class.getName()));
 
         routeRegistryInitializer.onStartup(
@@ -234,7 +234,7 @@ public class RouteRegistryInitializerTest {
             throws ServletException {
         expectedEx.expect(DuplicateNavigationTitleException.class);
         expectedEx.expectMessage(String.format(
-                "'%s' has a Title annotation, but also implements HasDynamicTitle.",
+                "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
                 FaultyChildWithDuplicateTitle.class.getName()));
 
         routeRegistryInitializer.onStartup(
@@ -328,7 +328,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Route("foo")
-    @Title("Custom Title")
+    @PageTitle("Custom Title")
     private static class FaultyNavigationTargetWithTitle extends Component
             implements HasDynamicTitle {
 
@@ -349,13 +349,13 @@ public class RouteRegistryInitializerTest {
     }
 
     @Route("bar")
-    @Title("Child View")
+    @PageTitle("Child View")
     private static class FaultyChildWithDuplicateTitle
             extends ParentWithDynamicTitle {
     }
 
     @Route("foo")
-    @Title("Parent View")
+    @PageTitle("Parent View")
     private static class ParentWithTitleAnnotation extends Component
             implements HasDynamicTitle {
 
