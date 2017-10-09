@@ -59,11 +59,20 @@ public class ErrorParameter<T extends Exception> {
     }
 
     /**
+     * Check if we have a custom message for the exception.
+     * 
+     * @return true if a custom message is set
+     */
+    public boolean hasCustomMessage() {
+        return customMessage != null && !customMessage.isEmpty();
+    }
+
+    /**
      * Get the set custom message.
      * 
-     * @return custom message or null if not defined
+     * @return custom message or empty if not defined
      */
     public String getCustomMessage() {
-        return customMessage;
+        return customMessage == null ? "" : customMessage;
     }
 }

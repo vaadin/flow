@@ -33,11 +33,9 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
 
 /**
- * Handles navigation events by rendering a contained NavigationState in the
- * target UI.
+ * Handles error navigation rendering in the target UI.
  *
- * @see NavigationState
- * @see Route
+ * @see HasErrorParameter
  */
 public class ErrorStateRenderer implements NavigationHandler {
 

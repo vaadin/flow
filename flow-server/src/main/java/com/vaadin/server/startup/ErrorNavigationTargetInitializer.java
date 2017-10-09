@@ -29,7 +29,7 @@ import com.vaadin.router.RouteNotFoundError;
 import com.vaadin.ui.Component;
 
 /**
- * Servlet initializer for collecting all available error hndler navigation
+ * Servlet initializer for collecting all available error handler navigation
  * targets implementing {@link HasErrorParameter} on startup.
  */
 @HandlesTypes(HasErrorParameter.class)

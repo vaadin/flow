@@ -30,8 +30,7 @@ public class InternalServerError extends Component
     public int setErrorParameter(BeforeNavigationEvent event,
             ErrorParameter<Exception> parameter) {
         String exceptionText;
-        if (parameter.getCustomMessage() != null
-                && !parameter.getCustomMessage().isEmpty()) {
+        if (parameter.hasCustomMessage()) {
             exceptionText = String.format(
                     "There was an exception while trying to navigate to '%s' with the exception message '%s'",
                     event.getLocation().getPath(),

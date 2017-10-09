@@ -11,7 +11,8 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 There is special support for navigation targets that are activated to show an error message to the user.
 
-These targets generally work in the same way as regular navigation targets, although they do typically not have any specific `@Route` as they are show for arbitrary URLs.
+These targets generally work in the same way as regular navigation targets, although they do typically
+not have any specific `@Route` as they are shown for arbitrary URLs.
 
 Error navigation is resolved to a target based on the exception type thrown during navigation.
 
@@ -67,4 +68,4 @@ Exception targets may define ParentLayouts and `BeforeNavigationEvent` and `Afte
 will be sent as for normal navigation.
 
 [NOTE]
-One exception may only have one exception handler (only extending instances are allowed)
+One exception may only have one exception handler (only extending instances are allowed).

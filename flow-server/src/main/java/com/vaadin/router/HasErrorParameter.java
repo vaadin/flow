@@ -18,8 +18,8 @@ package com.vaadin.router;
 import com.vaadin.router.event.BeforeNavigationEvent;
 
 /**
- * Event sent to the error handler that handlers given Exception type T. This
- * is done for caught exceptions during navigation.
+ * Event sent to the error handler that handlers given Exception type T. This is
+ * done for caught exceptions during navigation.
  *
  * @author Vaadin Ltd
  */
@@ -27,13 +27,13 @@ import com.vaadin.router.event.BeforeNavigationEvent;
 public interface HasErrorParameter<T extends Exception> {
 
     /**
-     * Method called for the implementing class when corresponding exception has
-     * been caught during navigation.
+     * Method called for the implementing class when a corresponding exception
+     * has been caught during navigation.
      * 
      * @param event
      *            the before navigation event for this request
      * @param parameter
-     *            error parameter class containing custom exception and caught
+     *            error parameter containing custom exception and caught
      *            exception
      * @return html servlet status code
      */
