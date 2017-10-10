@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import com.vaadin.data.selection.SelectionListener;
+import com.vaadin.shared.Registration;
+
 /**
  * Selection model implementation for disabling selection in Grid.
  *
@@ -67,5 +70,11 @@ public class GridNoneSelectionModel<T> implements GridSelectionModel<T> {
     public void deselectFromClient(T item) {
         throw new IllegalStateException("Client tried to update selection"
                 + " even though selection mode is currently set to NONE.");
+    }
+
+    @Override
+    public Registration addSelectionListener(SelectionListener<T> listener) {
+        throw new UnsupportedOperationException(
+                "This selection model doesn't allow selection, cannot add selection listeners to it");
     }
 }
