@@ -24,7 +24,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.router.Location;
 import com.vaadin.router.QueryParameters;
@@ -218,4 +220,41 @@ public class LocationTest {
         Assert.assertEquals("param=&param=bar",
                 location.getQueryParameters().getQueryString());
     }
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
+
+    @Test
+    public void locationNameShouldBeAbleToHaveDotDot() {
+        Location location = new Location("..element");
+        assertEquals("..element", location.getFirstSegment());
+
+        location = new Location("el..ement");
+        assertEquals("el..ement", location.getFirstSegment());
+    }
+
+    @Test
+    public void locationShouldBeRelative() {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage("Relative path cannot contain .. segments");
+
+        new Location("../element");
+    }
+
+    @Test
+    public void locationShouldNotEndWithDotDotSegment() {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage("Relative path cannot contain .. segments");
+
+        new Location("element/..");
+    }
+
+    @Test
+    public void dotDotLocationShouldNotWork() {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage("Relative path cannot contain .. segments");
+
+        new Location("..");
+    }
+
 }
