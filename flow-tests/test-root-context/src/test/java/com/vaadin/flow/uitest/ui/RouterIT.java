@@ -79,6 +79,15 @@ public class RouterIT extends ChromeBrowserTest {
                 layout.findElement(By.id("name-div")).getText());
     }
 
+    @Test
+    public void faultyRouteShowsExpectedErrorScreen() {
+        openRouteUrl("exception");
+
+        WebElement element = findElement(By.xpath("/html/body/div[1]"));
+
+        Assert.assertEquals("Could not navigate to 'exception'", element.getText());
+    }
+
     private void openRouteUrl(String route) {
         getDriver().get(getRootURL() + getTestPath() + route);
     }

@@ -313,7 +313,11 @@ public class Location implements Serializable {
             } else if (uri.getPath().startsWith("/")) {
                 throw new IllegalArgumentException(
                         "Relative path cannot start with /");
-            } else if (uri.getRawPath().contains("..")) {
+            } else if (uri.getRawPath().contains("..%2F")
+                    || uri.getRawPath().endsWith("%2F..")
+                    || uri.getRawPath().equals("..")) {
+                // the actual part that we do not support is '../' so this
+                // shouldn't catch 'el..ement' nor '..element'
                 throw new IllegalArgumentException(
                         "Relative path cannot contain .. segments");
             }

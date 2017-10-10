@@ -20,17 +20,27 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
 /**
- * This is a basic default error view shown on routing exceptions.
+ * This is a basic default error view shown on exceptions during navigation.
  */
 @Tag(Tag.DIV)
-public class RouteNotFoundError extends Component
-        implements HasErrorParameter<NotFoundException> {
+public class InternalServerError extends Component
+        implements HasErrorParameter<Exception> {
 
     @Override
     public int setErrorParameter(BeforeNavigationEvent event,
-            ErrorParameter<NotFoundException> parameter) {
-        getElement().setText(
-                "Could not navigate to '" + event.getLocation().getPath() + "'");
-        return 404;
+            ErrorParameter<Exception> parameter) {
+        String exceptionText;
+        if (parameter.hasCustomMessage()) {
+            exceptionText = String.format(
+                    "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                    event.getLocation().getPath(),
+                    parameter.getCustomMessage());
+        } else {
+            exceptionText = String.format(
+                    "There was an exception while trying to navigate to '%s'",
+                    event.getLocation().getPath());
+        }
+        getElement().setText(exceptionText);
+        return 500;
     }
 }
