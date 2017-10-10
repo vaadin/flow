@@ -81,7 +81,7 @@ The other opportunity is to run tests using test hub, to do so, you need to star
 Currently, when integration tests are run on CI server, they use [Selenoid](https://github.com/aerokube/selenoid) a local hub and target `localhost` as a hub hostname.
 If you want to change hub hostname, this can be done via setting the variable `-Dcom.vaadin.testbench.Parameters.hubHostname="foo"`
 
-Normally, you don't need to run IT tests yourself, Travis can do this for you. 
+Normally, you don't need to run IT tests yourself, the CI will do this for you. 
 
 Building a package
 =====
