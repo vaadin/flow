@@ -68,7 +68,7 @@ public class DefaultRouteResolver implements RouteResolver {
             String message = "Exception while navigation to path " + path;
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
                     message, nfe);
-            builder.withTarget(RouteNotFoundError.class);
+            throw nfe;
         }
 
         return builder.build();
