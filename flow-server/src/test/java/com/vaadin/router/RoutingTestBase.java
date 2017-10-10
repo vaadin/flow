@@ -42,13 +42,13 @@ public class RoutingTestBase {
     }
 
     @Route("navigation-target-with-title")
-    @Title("Custom Title")
+    @PageTitle("Custom Title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithTitle extends Component {
     }
 
     @Route("greeting")
-    @Title("Custom Title")
+    @PageTitle("Custom Title")
     @Tag(Tag.DIV)
     public static class GreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {
@@ -59,7 +59,7 @@ public class RoutingTestBase {
     }
 
     @Route("greeting/other")
-    @Title("Custom Title")
+    @PageTitle("Custom Title")
     @Tag(Tag.DIV)
     public static class OtherGreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {

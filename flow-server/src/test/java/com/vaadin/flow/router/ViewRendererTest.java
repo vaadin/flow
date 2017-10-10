@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.router.Location;
@@ -65,12 +65,12 @@ public class ViewRendererTest {
         }
     }
 
-    @Title(ANOTHER_VIEW_TITLE)
+    @PageTitle(ANOTHER_VIEW_TITLE)
     public static class AnotherTestView extends TestView {
 
     }
 
-    @Title("not used")
+    @PageTitle("not used")
     public static class DynamicTitleView extends TestView {
 
         @Override
@@ -87,7 +87,7 @@ public class ViewRendererTest {
         }
     }
 
-    @Title("foobar")
+    @PageTitle("foobar")
     public static class ParentView extends TestView implements HasChildView {
         @Override
         public void setChildView(View childView) {
