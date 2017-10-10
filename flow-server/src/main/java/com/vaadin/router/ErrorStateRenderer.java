@@ -15,46 +15,39 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
-import com.vaadin.util.AnnotationReader;
 
 /**
- * Handles navigation events by rendering a contained NavigationState in the
- * target UI.
+ * Handles error navigation rendering in the target UI.
  *
- * @see NavigationState
- * @see Route
+ * @see HasErrorParameter
  */
-public class NavigationStateRenderer implements NavigationHandler {
+public class ErrorStateRenderer implements NavigationHandler {
 
     private final NavigationState navigationState;
 
     /**
-     * Constructs a new NavigationStateRenderer that handles the given
-     * navigation state.
+     * Constructs a new state renderer for the given navigation state.
      *
      * @param navigationState
      *            the navigation state handled by this instance
      */
-    public NavigationStateRenderer(NavigationState navigationState) {
+    public ErrorStateRenderer(NavigationState navigationState) {
         this.navigationState = navigationState;
     }
 
@@ -89,6 +82,8 @@ public class NavigationStateRenderer implements NavigationHandler {
 
     @Override
     public int handle(NavigationEvent event) {
+        assert event instanceof ErrorNavigationEvent : "Error handling needs ErrorNavigationEvent";
+
         UI ui = event.getUI();
 
         Class<? extends Component> routeTargetType = navigationState
@@ -101,14 +96,6 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         RouterUtil.checkForDuplicates(routeTargetType, routeLayoutTypes);
 
-        BeforeNavigationEvent beforeNavigationDeactivating = new BeforeNavigationEvent(
-                event, routeTargetType, ActivationState.DEACTIVATING);
-        List<BeforeNavigationListener> listeners = EventUtil
-                .collectBeforeNavigationListeners(ui.getElement());
-        if (executeBeforeNavigation(beforeNavigationDeactivating, listeners)) {
-            return reroute(event, beforeNavigationDeactivating);
-        }
-
         Component componentInstance = getRouteTarget(routeTargetType, event);
         List<HasElement> chain = new ArrayList<>();
         chain.add(componentInstance);
@@ -120,16 +107,14 @@ public class NavigationStateRenderer implements NavigationHandler {
         BeforeNavigationEvent beforeNavigationActivating = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.ACTIVATING);
 
-        navigationState.getUrlParameters().ifPresent(urlParameters -> {
-            HasUrlParameter hasUrlParameter = (HasUrlParameter) componentInstance;
-            hasUrlParameter.setParameter(beforeNavigationActivating,
-                    hasUrlParameter.deserializeUrlParameters(urlParameters));
-        });
+        int statusCode = ((HasErrorParameter) componentInstance)
+                .setErrorParameter(beforeNavigationActivating,
+                        ((ErrorNavigationEvent) event).getErrorParameter());
 
-        listeners = EventUtil.collectBeforeNavigationListeners(chain);
-        if (executeBeforeNavigation(beforeNavigationActivating, listeners)) {
-            return reroute(event, beforeNavigationActivating);
-        }
+        List<BeforeNavigationListener> listeners = EventUtil
+                .collectBeforeNavigationListeners(chain);
+        listeners.forEach(listener -> listener
+                .beforeNavigation(beforeNavigationActivating));
 
         @SuppressWarnings("unchecked")
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
@@ -140,23 +125,13 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         RouterUtil.updatePageTitle(event, componentInstance);
 
-        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event, chain);
+        AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
+                RouterUtil.createEvent(event, chain));
 
-        if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
-            fireAfterNavigationListeners(chain,
-                    new AfterNavigationEvent(locationChangeEvent));
-        }
+        EventUtil.collectAfterNavigationListeners(chain).forEach(
+                listener -> listener.afterNavigation(afterNavigationEvent));
 
-        if (componentInstance instanceof RouteNotFoundError) {
-            locationChangeEvent.setStatusCode(HttpServletResponse.SC_NOT_FOUND);
-        }
-        return locationChangeEvent.getStatusCode();
-    }
-
-    private void fireAfterNavigationListeners(List<HasElement> chain,
-            AfterNavigationEvent event) {
-        EventUtil.collectAfterNavigationListeners(chain)
-                .forEach(listener -> listener.afterNavigation(event));
+        return statusCode;
     }
 
     /**
@@ -175,32 +150,5 @@ public class NavigationStateRenderer implements NavigationHandler {
         assert targetType == navigationState.getNavigationTarget();
 
         return RouterUtil.getParentLayouts(targetType);
-    }
-
-    private boolean executeBeforeNavigation(
-            BeforeNavigationEvent beforeNavigation,
-            List<BeforeNavigationListener> listeners) {
-        for (BeforeNavigationListener listener : listeners) {
-            listener.beforeNavigation(beforeNavigation);
-
-            if (beforeNavigation.hasRerouteTarget()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private int reroute(NavigationEvent event,
-            BeforeNavigationEvent beforeNavigation) {
-        NavigationHandler handler = beforeNavigation.getRerouteTarget();
-
-        Location location = new Location(beforeNavigation.getRouteTargetType()
-                .getAnnotation(Route.class).value());
-
-        NavigationEvent newNavigationEvent = new NavigationEvent(
-                event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC);
-
-        return handler.handle(newNavigationEvent);
     }
 }
