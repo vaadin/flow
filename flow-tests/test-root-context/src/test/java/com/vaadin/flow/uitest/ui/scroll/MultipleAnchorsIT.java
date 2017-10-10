@@ -33,6 +33,7 @@ public class MultipleAnchorsIT extends ChromeBrowserTest {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
+        testBench().resizeViewPortTo(700, 800);
         open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
@@ -62,6 +63,7 @@ public class MultipleAnchorsIT extends ChromeBrowserTest {
 
     @Test
     public void numerousEqualAnchorsShouldRepresentOneHistoryEntry() {
+        testBench().resizeViewPortTo(700, 800);
         open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
