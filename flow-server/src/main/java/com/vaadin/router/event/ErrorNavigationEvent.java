@@ -15,8 +15,6 @@
  */
 package com.vaadin.router.event;
 
-import java.util.EventObject;
-
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationTrigger;
@@ -24,15 +22,13 @@ import com.vaadin.router.RouterInterface;
 import com.vaadin.ui.UI;
 
 /**
- * Event object with data related to navigation.
+ * Event object with data related to error navigation.
  *
  * @author Vaadin Ltd
  */
-public class NavigationEvent extends EventObject {
-    private final Location location;
-    private final UI ui;
-    private final NavigationTrigger trigger;
+public class ErrorNavigationEvent extends NavigationEvent {
 
+    private final ErrorParameter errorParameter;
 
     /**
      * Creates a new navigation event.
@@ -46,50 +42,22 @@ public class NavigationEvent extends EventObject {
      * @param trigger
      *            the type of user action that triggered this navigation event,
      *            not {@code null}
+     * @param errorParameter
+     *            parameter containing navigation error information
      */
-    public NavigationEvent(RouterInterface router, Location location, UI ui,
-            NavigationTrigger trigger) {
-        super(router);
+    public ErrorNavigationEvent(RouterInterface router, Location location,
+            UI ui, NavigationTrigger trigger, ErrorParameter errorParameter) {
+        super(router, location, ui, trigger);
 
-        assert location != null;
-        assert ui != null;
-        assert trigger != null;
-
-        this.location = location;
-        this.ui = ui;
-        this.trigger = trigger;
-    }
-
-    @Override
-    public RouterInterface getSource() {
-        return (RouterInterface) super.getSource();
+        this.errorParameter = errorParameter;
     }
 
     /**
-     * Gets the new location.
+     * Gets the ErrorParameter if set.
      *
-     * @return the new location, not {@code null}
+     * @return set error parameter or null if not set
      */
-    public Location getLocation() {
-        return location;
-    }
-
-    /**
-     * Gets the UI in which the navigation occurs.
-     *
-     * @return the UI of the navigation
-     */
-    public UI getUI() {
-        return ui;
-    }
-
-    /**
-     * Gets the type of user action that triggered this navigation event.
-     *
-     * @return the type of user action that triggered this navigation event, not
-     *         {@code null}
-     */
-    public NavigationTrigger getTrigger() {
-        return trigger;
+    public ErrorParameter getErrorParameter() {
+        return errorParameter;
     }
 }
