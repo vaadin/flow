@@ -28,6 +28,8 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
  * View for {@link Grid} demo.
@@ -36,152 +38,236 @@ import com.vaadin.ui.html.Div;
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-grid.html")
 public class GridView extends DemoView {
 
-    static List<Person> items = new ArrayList<>();
-    private static Random random = new Random(0);
-    static {
-        items = IntStream.range(1, 500).mapToObj(GridView::createPerson)
-                .collect(Collectors.toList());
-    }
+	static List<Person> items = new ArrayList<>();
+	private static Random random = new Random(0);
+	static {
+		items = IntStream.range(1, 500).mapToObj(GridView::createPerson)
+				.collect(Collectors.toList());
+	}
 
-    /**
-     * Example object.
-     */
-    public static class Person {
-        private String name;
-        private int age;
+	// begin-source-example
+	// source-example-heading: Grid example model
+	/**
+	 * Example object.
+	 */
+	public static class Person {
+		private String name;
+		private int age;
+		private Address address;
 
-        public String getName() {
-            return name;
-        }
+		public String getName() {
+			return name;
+		}
 
-        public void setName(String name) {
-            this.name = name;
-        }
+		public void setName(String name) {
+			this.name = name;
+		}
 
-        public int getAge() {
-            return age;
-        }
+		public int getAge() {
+			return age;
+		}
 
-        public void setAge(int age) {
-            this.age = age;
-        }
+		public void setAge(int age) {
+			this.age = age;
+		}
 
-        @Override
-        public String toString() {
-            return String.format("[Person name: %s, age: %s]", name, age);
-        }
-    }
+		public Address getAddress() {
+			return address;
+		}
 
-    @Override
-    void initView() {
-        createBasicUsage();
-        createCallBackDataProvider();
-        createSingleSelect();
-        createNoneSelect();
-    }
+		public void setAddress(Address address) {
+			this.address = address;
+		}
+	}
 
-    private void createBasicUsage() {
-        // begin-source-example
-        // source-example-heading: Grid Basics
-        Grid<Person> grid = new Grid<>();
-        grid.setItems(createItems());
+	/**
+	 * Example object.
+	 */
+	public static class Address {
+		private String street;
+		private int number;
+		private String postalCode;
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+		public String getStreet() {
+			return street;
+		}
 
-        // end-source-example
-        grid.setId("basic");
+		public void setStreet(String street) {
+			this.street = street;
+		}
 
-        addCard("Grid Basics", grid);
-    }
+		public int getNumber() {
+			return number;
+		}
 
-    private void createCallBackDataProvider() {
-        // begin-source-example
-        // source-example-heading: Grid with lazy loading
-        Grid<Person> grid = new Grid<>();
+		public void setNumber(int number) {
+			this.number = number;
+		}
 
-        /*
-         * This Data Provider doesn't load all items into the memory right away.
-         * Grid will request only the data that should be shown in its current
-         * view "window". The Data Provider will use callbacks to load only a
-         * portion of the data.
-         */
-        grid.setDataProvider(DataProvider.fromCallbacks(query -> {
-            return IntStream
-                    .range(query.getOffset(),
-                            query.getOffset() + query.getLimit())
-                    .mapToObj(GridView::createPerson);
-        }, query -> 10000));
+		public String getPostalCode() {
+			return postalCode;
+		}
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+		public void setPostalCode(String postalCode) {
+			this.postalCode = postalCode;
+		}
+	}
+	// end-source-example
 
-        // end-source-example
+	@Override
+	void initView() {
+		createBasicUsage();
+		createCallBackDataProvider();
+		createSingleSelect();
+		createNoneSelect();
+		createColumnTemplate();
 
-        grid.setId("lazy-loading");
+		addCard("Grid example model",
+				new Label("These objects are used in the examples above"));
+	}
 
-        addCard("Grid with lazy loading", grid);
-    }
+	private void createBasicUsage() {
+		// begin-source-example
+		// source-example-heading: Grid Basics
+		Grid<Person> grid = new Grid<>();
+		grid.setItems(createItems());
 
-    private void createSingleSelect() {
-        Div messageDiv = new Div();
-        // begin-source-example
-        // source-example-heading: Grid Single Selection
-        List<Person> people = createItems();
-        Grid<Person> grid = new Grid<>();
-        grid.setItems(people);
+		grid.addColumn("Name", Person::getName);
+		grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+		// end-source-example
+		grid.setId("basic");
 
-        grid.asSingleSelect()
-                .addValueChangeListener(event -> messageDiv.setText(String
-                        .format("Selection changed from %s to %s, selection is from client: %s",
-                                event.getOldValue(), event.getValue(),
-                                event.isFromClient())));
+		addCard("Grid Basics", grid);
+	}
 
-        Button toggleSelect = new Button(
-                "Toggle selection of the first person");
-        Person firstPerson = people.get(0);
-        toggleSelect.addClickListener(event -> {
-            GridSelectionModel<Person> selectionModel = grid
-                    .getSelectionModel();
-            if (selectionModel.isSelected(firstPerson)) {
-                selectionModel.deselect(firstPerson);
-            } else {
-                selectionModel.select(firstPerson);
-            }
-        });
-        // end-source-example
-        grid.setId("single-selection");
-        toggleSelect.setId("single-selection-toggle");
-        messageDiv.setId("single-selection-message");
-        addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
-    }
+	private void createCallBackDataProvider() {
+		// begin-source-example
+		// source-example-heading: Grid with lazy loading
+		Grid<Person> grid = new Grid<>();
 
-    private void createNoneSelect() {
-        // begin-source-example
-        // source-example-heading: Grid with No Selection Enabled
-        Grid<Person> grid = new Grid<>();
-        grid.setItems(createItems());
+		/*
+		 * This Data Provider doesn't load all items into the memory right away.
+		 * Grid will request only the data that should be shown in its current
+		 * view "window". The Data Provider will use callbacks to load only a
+		 * portion of the data.
+		 */
+		grid.setDataProvider(DataProvider.fromCallbacks(query -> {
+			return IntStream
+					.range(query.getOffset(),
+							query.getOffset() + query.getLimit())
+					.mapToObj(GridView::createPerson);
+		}, query -> 10000));
 
-        grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+		grid.addColumn("Name", Person::getName);
+		grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
-        grid.setSelectionMode(Grid.SelectionMode.NONE);
-        // end-source-example
-        grid.setId("none-selection");
-        addCard("Grid with No Selection Enabled", grid);
-    }
+		// end-source-example
 
-    private List<Person> createItems() {
-        return items;
-    }
+		grid.setId("lazy-loading");
 
-    private static Person createPerson(int index) {
-        Person person = new Person();
-        person.setName("Person " + index);
-        person.setAge(13 + random.nextInt(50));
-        return person;
-    }
+		addCard("Grid with lazy loading", grid);
+	}
+
+	private void createSingleSelect() {
+		Div messageDiv = new Div();
+		// begin-source-example
+		// source-example-heading: Grid Single Selection
+		List<Person> people = createItems();
+		Grid<Person> grid = new Grid<>();
+		grid.setItems(people);
+
+		grid.addColumn("Name", Person::getName);
+		grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+
+		grid.asSingleSelect().addValueChangeListener(
+				event -> messageDiv.setText(String.format(
+						"Selection changed from %s to %s, selection is from client: %s",
+						event.getOldValue(), event.getValue(),
+						event.isFromClient())));
+
+		Button toggleSelect = new Button(
+				"Toggle selection of the first person");
+		Person firstPerson = people.get(0);
+		toggleSelect.addClickListener(event -> {
+			GridSelectionModel<Person> selectionModel = grid
+					.getSelectionModel();
+			if (selectionModel.isSelected(firstPerson)) {
+				selectionModel.deselect(firstPerson);
+			} else {
+				selectionModel.select(firstPerson);
+			}
+		});
+		// end-source-example
+		grid.setId("single-selection");
+		toggleSelect.setId("single-selection-toggle");
+		messageDiv.setId("single-selection-message");
+		addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
+	}
+
+	private void createNoneSelect() {
+		// begin-source-example
+		// source-example-heading: Grid with No Selection Enabled
+		Grid<Person> grid = new Grid<>();
+		grid.setItems(createItems());
+
+		grid.addColumn("Name", Person::getName);
+		grid.addColumn("Age", Person::getAge);
+
+		grid.setSelectionMode(Grid.SelectionMode.NONE);
+		// end-source-example
+		grid.setId("none-selection");
+		addCard("Grid with No Selection Enabled", grid);
+	}
+
+	private void createColumnTemplate() {
+		// @formatter:off
+		// begin-source-example
+		// source-example-heading: Grid with columns using template renderer
+		Grid<Person> grid = new Grid<>();
+		grid.setItems(createItems());
+
+		// You can use the [[index]] variable to print the row index (0 based)
+		grid.addColumn("#", TemplateRenderer.of("[[index]]"));
+
+		// You can set any property by using `withProperty`, including
+		// properties not present on the original bean.
+		grid.addColumn("Person", TemplateRenderer.<Person> of(
+				"<div title=\"[[item.name]]\">[[item.name]]<br><small>[[item.yearsOld]]</small></div>")
+				.withProperty("name", Person::getName)
+				.withProperty("yearsOld",
+						person -> person.getAge() > 1
+								? person.getAge() + " years old"
+								: person.getAge() + " year old"));
+
+		// Youcan also set complex objects directly. Internal properties of the
+		// bean are accessible in the template.
+		grid.addColumn("Address", TemplateRenderer.<Person> of(
+				"<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
+				.withProperty("address", Person::getAddress));
+
+		grid.setSelectionMode(Grid.SelectionMode.NONE);
+		// end-source-example
+		// @formatter:on
+		grid.setId("template-renderer");
+		addCard("Grid with columns using template renderer", grid);
+	}
+
+	private List<Person> createItems() {
+		return items;
+	}
+
+	private static Person createPerson(int index) {
+		Person person = new Person();
+		person.setName("Person " + index);
+		person.setAge(13 + random.nextInt(50));
+
+		Address address = new Address();
+		address.setStreet("Street " + ((char) ('A' + random.nextInt(26))));
+		address.setNumber(1 + random.nextInt(50));
+		address.setPostalCode(String.valueOf(10000 + random.nextInt(8999)));
+		person.setAddress(address);
+
+		return person;
+	}
 }
