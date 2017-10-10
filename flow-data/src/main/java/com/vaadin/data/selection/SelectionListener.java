@@ -13,24 +13,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.data.selection;
 
-package com.vaadin.router;
+import java.io.Serializable;
+import java.util.EventListener;
 
 /**
- * Interface for navigation targets to resolve their title dynamically
- * at runtime.
+ * A listener for {@code SelectionEvent}.
  * <p>
- * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
- * and have a {@link PageTitle} annotation.
+ * This is a generic listener for both type of selections, single and
+ * multiselect.
  *
  * @author Vaadin Ltd.
+ *
+ * @param <T>
+ *            the type of the selected item
+ *
+ * @see SelectionEvent
  */
 @FunctionalInterface
-public interface HasDynamicTitle {
+public interface SelectionListener<T> extends Serializable, EventListener {
 
     /**
-     * Gets the title of this navigation target.
-     * @return  the title of this navigation target
+     * Invoked when the selection has changed.
+     *
+     * @param event
+     *            the selection event
      */
-    String getPageTitle();
+    void selectionChange(SelectionEvent<T> event);
 }

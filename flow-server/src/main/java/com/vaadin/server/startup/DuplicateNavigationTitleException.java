@@ -16,11 +16,11 @@
 package com.vaadin.server.startup;
 
 import com.vaadin.router.HasDynamicTitle;
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 
 /**
  * Exception indicating a conflict between a route target implementing
- * {@link HasDynamicTitle} while also having a {@link Title} annotation.
+ * {@link HasDynamicTitle} while also having a {@link PageTitle} annotation.
  */
 public class DuplicateNavigationTitleException extends RuntimeException {
 

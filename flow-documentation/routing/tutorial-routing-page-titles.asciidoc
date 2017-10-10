@@ -23,7 +23,7 @@ https://developer.mozilla.org/en-US/docs/Web/API/Document/title[Page Title] is
 to use the `@Title` annotation on your `Component` class.
 [source,java]
 ----
-@Title("home")
+@PageTitle("home")
 class HomeView extends Div {
 
   HomeView(){
@@ -47,7 +47,7 @@ class BlogPost extends Component
   private String title = "";
 
   @Override
-  public String getTitle() {
+  public String getPageTitle() {
     return title;
   }
 
