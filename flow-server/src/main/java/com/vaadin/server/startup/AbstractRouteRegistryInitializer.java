@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.router.HasDynamicTitle;
+import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
-import com.vaadin.router.Title;
 import com.vaadin.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.ui.Component;
 
@@ -61,10 +61,10 @@ public abstract class AbstractRouteRegistryInitializer {
                     .getCanonicalName()
                     + " contains both @Route and @ParentLayout annotation. Only use @Route with Route.layout.");
         }
-        if (route.isAnnotationPresent(Title.class)
+        if (route.isAnnotationPresent(PageTitle.class)
                 && HasDynamicTitle.class.isAssignableFrom(route)) {
             throw new DuplicateNavigationTitleException(String.format(
-                    "'%s' has a Title annotation, but also implements HasDynamicTitle.",
+                    "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
                     route.getName()));
         }
     }
