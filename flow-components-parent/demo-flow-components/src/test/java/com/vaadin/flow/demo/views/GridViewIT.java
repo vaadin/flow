@@ -31,126 +31,149 @@ import com.vaadin.testbench.By;
  */
 public class GridViewIT extends ComponentDemoTest {
 
-    @Test
-    public void dataIsShown() throws InterruptedException {
-        WebElement grid = findElement(By.id("basic"));
+	@Test
+	public void dataIsShown() throws InterruptedException {
+		WebElement grid = findElement(By.id("basic"));
 
-        Assert.assertTrue(hasCell(grid, "Name"));
+		Assert.assertTrue(hasCell(grid, "Name"));
 
-        Assert.assertTrue(hasCell(grid, "Person 1"));
+		Assert.assertTrue(hasCell(grid, "Person 1"));
 
-        scroll(grid, 185);
+		scroll(grid, 185);
 
-        waitUntil(driver -> hasCell(grid, "Person 189"));
-    }
+		waitUntil(driver -> hasCell(grid, "Person 189"));
+	}
 
-    @Test
-    public void lazyDataIsShown() throws InterruptedException {
-        WebElement grid = findElement(By.id("lazy-loading"));
+	@Test
+	public void lazyDataIsShown() throws InterruptedException {
+		WebElement grid = findElement(By.id("lazy-loading"));
 
-        scrollToElement(grid);
+		scrollToElement(grid);
 
-        Assert.assertTrue(hasCell(grid, "Name"));
+		Assert.assertTrue(hasCell(grid, "Name"));
 
-        scroll(grid, 1010);
+		scroll(grid, 1010);
 
-        Assert.assertTrue(hasCell(grid, "Person 1020"));
-    }
+		Assert.assertTrue(hasCell(grid, "Person 1020"));
+	}
 
-    @Test
-    public void gridAsSingleSelect() {
-        WebElement grid = findElement(By.id("single-selection"));
-        scrollToElement(grid);
+	@Test
+	public void gridAsSingleSelect() {
+		WebElement grid = findElement(By.id("single-selection"));
+		scrollToElement(grid);
 
-        WebElement toggleButton = findElement(By.id("single-selection-toggle"));
-        WebElement messageDiv = findElement(By.id("single-selection-message"));
+		WebElement toggleButton = findElement(By.id("single-selection-toggle"));
+		WebElement messageDiv = findElement(By.id("single-selection-message"));
 
-        toggleButton.click();
-        Assert.assertEquals(
-                getSelectionMessage(null, GridView.items.get(0), false),
-                messageDiv.getText());
-        Assert.assertTrue(isRowSelected(grid, 0));
-        toggleButton.click();
-        Assert.assertEquals(
-                getSelectionMessage(GridView.items.get(0), null, false),
-                messageDiv.getText());
-        Assert.assertFalse(isRowSelected(grid, 0));
+		toggleButton.click();
+		Assert.assertEquals(
+				getSelectionMessage(null, GridView.items.get(0), false),
+				messageDiv.getText());
+		Assert.assertTrue(isRowSelected(grid, 0));
+		toggleButton.click();
+		Assert.assertEquals(
+				getSelectionMessage(GridView.items.get(0), null, false),
+				messageDiv.getText());
+		Assert.assertFalse(isRowSelected(grid, 0));
 
-        // should be the cell in the first column's second row
-        getCell(grid, "Person 2").click();
-        Assert.assertTrue(isRowSelected(grid, 1));
-        Assert.assertEquals(
-                getSelectionMessage(null, GridView.items.get(1), true),
-                messageDiv.getText());
-        toggleButton.click();
-        Assert.assertTrue(isRowSelected(grid, 0));
-        Assert.assertFalse(isRowSelected(grid, 1));
-        Assert.assertEquals(getSelectionMessage(GridView.items.get(1),
-                GridView.items.get(0), false), messageDiv.getText());
-        toggleButton.click();
-        Assert.assertFalse(isRowSelected(grid, 0));
+		// should be the cell in the first column's second row
+		getCell(grid, "Person 2").click();
+		Assert.assertTrue(isRowSelected(grid, 1));
+		Assert.assertEquals(
+				getSelectionMessage(null, GridView.items.get(1), true),
+				messageDiv.getText());
+		toggleButton.click();
+		Assert.assertTrue(isRowSelected(grid, 0));
+		Assert.assertFalse(isRowSelected(grid, 1));
+		Assert.assertEquals(getSelectionMessage(GridView.items.get(1),
+				GridView.items.get(0), false), messageDiv.getText());
+		toggleButton.click();
+		Assert.assertFalse(isRowSelected(grid, 0));
 
-        // scroll to bottom
-        scroll(grid, 495);
-        waitUntilCellHasText(grid, "Person 499");
-        // select item that is not in cache
-        toggleButton.click();
-        // scroll back up
-        scroll(grid, 0);
-        waitUntilCellHasText(grid, "Person 1");
-        waitUntil(driver -> isRowSelected(grid, 0));
-        Assert.assertEquals(
-                getSelectionMessage(null, GridView.items.get(0), false),
-                messageDiv.getText());
-    }
+		// scroll to bottom
+		scroll(grid, 495);
+		waitUntilCellHasText(grid, "Person 499");
+		// select item that is not in cache
+		toggleButton.click();
+		// scroll back up
+		scroll(grid, 0);
+		waitUntilCellHasText(grid, "Person 1");
+		waitUntil(driver -> isRowSelected(grid, 0));
+		Assert.assertEquals(
+				getSelectionMessage(null, GridView.items.get(0), false),
+				messageDiv.getText());
+	}
 
-    @Test
-    public void gridWithDisabledSelection() {
-        WebElement grid = findElement(By.id("none-selection"));
-        scrollToElement(grid);
-        grid.findElements(By.tagName("vaadin-grid-cell-content")).get(3)
-                .click();
-        Assert.assertFalse(isRowSelected(grid, 1));
-    }
+	@Test
+	public void gridWithDisabledSelection() {
+		WebElement grid = findElement(By.id("none-selection"));
+		scrollToElement(grid);
+		grid.findElements(By.tagName("vaadin-grid-cell-content")).get(3)
+				.click();
+		Assert.assertFalse(isRowSelected(grid, 1));
+	}
 
-    private static String getSelectionMessage(Person oldSelection,
-            Person newSelection, boolean isFromClient) {
-        return String.format(
-                "Selection changed from %s to %s, selection is from client: %s",
-                oldSelection, newSelection, isFromClient);
-    }
+	@Test
+	public void gridWithColumnTemplate() {
+		WebElement grid = findElement(By.id("template-renderer"));
+		scrollToElement(grid);
+		Assert.assertTrue(hasHtmlCell(grid, "0"));
+		Assert.assertTrue(hasHtmlCell(grid,
+				"<div title=\"Person 1\">Person 1<br><small>23 years old</small></div>"));
+		Assert.assertTrue(hasHtmlCell(grid,
+				"<div>Street S, number 30<br><small>16142</small></div>"));
+	}
 
-    private void scroll(WebElement grid, int index) {
-        getCommandExecutor().executeScript(
-                "arguments[0].scrollToIndex(" + index + ")", grid);
-    }
+	private static String getSelectionMessage(Person oldSelection,
+			Person newSelection, boolean isFromClient) {
+		return String.format(
+				"Selection changed from %s to %s, selection is from client: %s",
+				oldSelection, newSelection, isFromClient);
+	}
 
-    private void waitUntilCellHasText(WebElement grid, String text) {
-        waitUntil(driver -> grid
-                .findElements(By.tagName("vaadin-grid-cell-content")).stream()
-                .filter(cell -> text.equals(cell.getText())).findFirst()
-                .isPresent());
-    }
+	private void scroll(WebElement grid, int index) {
+		getCommandExecutor().executeScript(
+				"arguments[0].scrollToIndex(" + index + ")", grid);
+	}
 
-    private boolean isRowSelected(WebElement grid, int row) {
-        WebElement gridRow = getInShadowRoot(grid, By.id("items"))
-                .findElements(By.cssSelector("tr")).get(row);
-        return gridRow.getAttribute("selected") != null;
-    }
+	private void waitUntilCellHasText(WebElement grid, String text) {
+		waitUntil(driver -> grid
+				.findElements(By.tagName("vaadin-grid-cell-content")).stream()
+				.filter(cell -> text.equals(cell.getText())).findFirst()
+				.isPresent());
+	}
 
-    private boolean hasCell(WebElement grid, String text) {
-        return getCell(grid, text) != null;
-    }
+	private boolean isRowSelected(WebElement grid, int row) {
+		WebElement gridRow = getInShadowRoot(grid, By.id("items"))
+				.findElements(By.cssSelector("tr")).get(row);
+		return gridRow.getAttribute("selected") != null;
+	}
 
-    private WebElement getCell(WebElement grid, String text) {
-        List<WebElement> cells = grid
-                .findElements(By.tagName("vaadin-grid-cell-content"));
-        return cells.stream().filter(cell -> text.equals(cell.getText()))
-                .findAny().orElse(null);
-    }
+	private boolean hasCell(WebElement grid, String text) {
+		return getCell(grid, text) != null;
+	}
 
-    @Override
-    protected String getTestPath() {
-        return "/vaadin-grid";
-    }
+	private WebElement getCell(WebElement grid, String text) {
+		List<WebElement> cells = grid
+				.findElements(By.tagName("vaadin-grid-cell-content"));
+		return cells.stream().filter(cell -> text.equals(cell.getText()))
+				.findAny().orElse(null);
+	}
+
+	private boolean hasHtmlCell(WebElement grid, String html) {
+		return getHtmlCell(grid, html) != null;
+	}
+
+	private WebElement getHtmlCell(WebElement grid, String text) {
+		List<WebElement> cells = grid
+				.findElements(By.tagName("vaadin-grid-cell-content"));
+		return cells.stream()
+				.filter(cell -> text.equals(cell.getAttribute("innerHTML")))
+				.findAny().orElse(null);
+	}
+
+	@Override
+	protected String getTestPath() {
+		return "/vaadin-grid";
+	}
 }

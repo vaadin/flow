@@ -84,13 +84,15 @@ public class TemplateRenderer<SOURCE> implements Serializable {
 	 * TemplateRenderer.<Person> of("<div>Name: [[item.name]]</div>")
 	 * 			.withProperty("name", Person::getName);
 	 * 
-	 * // Property that uses a bean. Note that in this case the entire "Adress" object will be sent to the template
+	 * // Property that uses a bean. Note that in this case the entire "Adress" object will be sent to the template.
+	 * // Note that even properties of the bean which are not used in the template are sent to the client, so use
+	 * // this feature with caution.
 	 * TemplateRenderer.<Person> of("<span>Street: [[item.address.street]]</span>")
 	 * 			.withProperty("address", Person::getAddress); 
 	 * 
-	 * // In this case only the street is sent
+	 * // In this case only the street field inside the Address object is sent
 	 * TemplateRenderer.<Person> of("<span>Street: [[item.street]]</span>")
-	 * 			.withProperty("street", person -> person.getAddress().getStreet()); // this will send just the street name
+	 * 			.withProperty("street", person -> person.getAddress().getStreet());
 	 * }
 	 * </pre>
 	 * 

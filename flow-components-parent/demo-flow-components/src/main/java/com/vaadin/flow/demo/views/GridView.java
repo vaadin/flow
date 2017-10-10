@@ -78,6 +78,12 @@ public class GridView extends DemoView {
 		public void setAddress(Address address) {
 			this.address = address;
 		}
+
+		@Override
+		public String toString() {
+			return String.format("Person [name=%s, age=%s, address=%s]", name,
+					age, address);
+		}
 	}
 
 	/**
@@ -110,6 +116,13 @@ public class GridView extends DemoView {
 
 		public void setPostalCode(String postalCode) {
 			this.postalCode = postalCode;
+		}
+
+		@Override
+		public String toString() {
+			return String.format(
+					"Address [street=%s, number=%s, postalCode=%s]", street,
+					number, postalCode);
 		}
 	}
 	// end-source-example
