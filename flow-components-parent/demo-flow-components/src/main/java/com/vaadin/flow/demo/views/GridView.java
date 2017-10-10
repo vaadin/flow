@@ -40,233 +40,233 @@ import com.vaadin.ui.renderers.TemplateRenderer;
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-grid.html")
 public class GridView extends DemoView {
 
-	static List<Person> items = new ArrayList<>();
-	private static Random random = new Random(0);
-	static {
-		items = IntStream.range(1, 500).mapToObj(GridView::createPerson)
-				.collect(Collectors.toList());
-	}
+    static List<Person> items = new ArrayList<>();
+    private static Random random = new Random(0);
+    static {
+        items = IntStream.range(1, 500).mapToObj(GridView::createPerson)
+                .collect(Collectors.toList());
+    }
 
-	// begin-source-example
-	// source-example-heading: Grid example model
-	/**
-	 * Example object.
-	 */
-	public static class Person {
-		private String name;
-		private int age;
-		private Address address;
+    // begin-source-example
+    // source-example-heading: Grid example model
+    /**
+     * Example object.
+     */
+    public static class Person {
+        private String name;
+        private int age;
+        private Address address;
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public void setName(String name) {
-			this.name = name;
-		}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-		public int getAge() {
-			return age;
-		}
+        public int getAge() {
+            return age;
+        }
 
-		public void setAge(int age) {
-			this.age = age;
-		}
+        public void setAge(int age) {
+            this.age = age;
+        }
 
-		public Address getAddress() {
-			return address;
-		}
+        public Address getAddress() {
+            return address;
+        }
 
-		public void setAddress(Address address) {
-			this.address = address;
-		}
+        public void setAddress(Address address) {
+            this.address = address;
+        }
 
-		@Override
-		public String toString() {
-			return String.format("Person [name=%s, age=%s, address=%s]", name,
-					age, address);
-		}
-	}
+        @Override
+        public String toString() {
+            return String.format("Person [name=%s, age=%s, address=%s]", name,
+                    age, address);
+        }
+    }
 
-	/**
-	 * Example object.
-	 */
-	public static class Address {
-		private String street;
-		private int number;
-		private String postalCode;
+    /**
+     * Example object.
+     */
+    public static class Address {
+        private String street;
+        private int number;
+        private String postalCode;
 
-		public String getStreet() {
-			return street;
-		}
+        public String getStreet() {
+            return street;
+        }
 
-		public void setStreet(String street) {
-			this.street = street;
-		}
+        public void setStreet(String street) {
+            this.street = street;
+        }
 
-		public int getNumber() {
-			return number;
-		}
+        public int getNumber() {
+            return number;
+        }
 
-		public void setNumber(int number) {
-			this.number = number;
-		}
+        public void setNumber(int number) {
+            this.number = number;
+        }
 
-		public String getPostalCode() {
-			return postalCode;
-		}
+        public String getPostalCode() {
+            return postalCode;
+        }
 
-		public void setPostalCode(String postalCode) {
-			this.postalCode = postalCode;
-		}
+        public void setPostalCode(String postalCode) {
+            this.postalCode = postalCode;
+        }
 
-		@Override
-		public String toString() {
-			return String.format(
-					"Address [street=%s, number=%s, postalCode=%s]", street,
-					number, postalCode);
-		}
-	}
-	// end-source-example
+        @Override
+        public String toString() {
+            return String.format(
+                    "Address [street=%s, number=%s, postalCode=%s]", street,
+                    number, postalCode);
+        }
+    }
+    // end-source-example
 
-	@Override
-	void initView() {
-		createBasicUsage();
-		createCallBackDataProvider();
-		createSingleSelect();
-		createMultiSelect();
-		createNoneSelect();
-		createColumnTemplate();
+    @Override
+    void initView() {
+        createBasicUsage();
+        createCallBackDataProvider();
+        createSingleSelect();
+        createMultiSelect();
+        createNoneSelect();
+        createColumnTemplate();
 
-		addCard("Grid example model",
-				new Label("These objects are used in the examples above"));
-	}
+        addCard("Grid example model",
+                new Label("These objects are used in the examples above"));
+    }
 
-	private void createBasicUsage() {
-		// begin-source-example
-		// source-example-heading: Grid Basics
-		Grid<Person> grid = new Grid<>();
-		grid.setItems(createItems());
+    private void createBasicUsage() {
+        // begin-source-example
+        // source-example-heading: Grid Basics
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
 
-		grid.addColumn("Name", Person::getName);
-		grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
-		// end-source-example
-		grid.setId("basic");
+        // end-source-example
+        grid.setId("basic");
 
-		addCard("Grid Basics", grid);
-	}
+        addCard("Grid Basics", grid);
+    }
 
-	private void createCallBackDataProvider() {
-		// begin-source-example
-		// source-example-heading: Grid with lazy loading
-		Grid<Person> grid = new Grid<>();
+    private void createCallBackDataProvider() {
+        // begin-source-example
+        // source-example-heading: Grid with lazy loading
+        Grid<Person> grid = new Grid<>();
 
-		/*
-		 * This Data Provider doesn't load all items into the memory right away.
-		 * Grid will request only the data that should be shown in its current
-		 * view "window". The Data Provider will use callbacks to load only a
-		 * portion of the data.
-		 */
-		grid.setDataProvider(DataProvider.fromCallbacks(query -> {
-			return IntStream
-					.range(query.getOffset(),
-							query.getOffset() + query.getLimit())
-					.mapToObj(GridView::createPerson);
-		}, query -> 10000));
+        /*
+         * This Data Provider doesn't load all items into the memory right away.
+         * Grid will request only the data that should be shown in its current
+         * view "window". The Data Provider will use callbacks to load only a
+         * portion of the data.
+         */
+        grid.setDataProvider(DataProvider.fromCallbacks(query -> {
+            return IntStream
+                    .range(query.getOffset(),
+                            query.getOffset() + query.getLimit())
+                    .mapToObj(GridView::createPerson);
+        }, query -> 10000));
 
-		grid.addColumn("Name", Person::getName);
-		grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
-		// end-source-example
+        // end-source-example
 
-		grid.setId("lazy-loading");
+        grid.setId("lazy-loading");
 
-		addCard("Grid with lazy loading", grid);
-	}
+        addCard("Grid with lazy loading", grid);
+    }
 
-	private void createSingleSelect() {
-		Div messageDiv = new Div();
-		// begin-source-example
-		// source-example-heading: Grid Single Selection
-		List<Person> people = createItems();
-		Grid<Person> grid = new Grid<>();
-		grid.setItems(people);
+    private void createSingleSelect() {
+        Div messageDiv = new Div();
+        // begin-source-example
+        // source-example-heading: Grid Single Selection
+        List<Person> people = createItems();
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(people);
 
-		grid.addColumn("Name", Person::getName);
-		grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
-		grid.asSingleSelect().addValueChangeListener(
-				event -> messageDiv.setText(String.format(
-						"Selection changed from %s to %s, selection is from client: %s",
-						event.getOldValue(), event.getValue(),
-						event.isFromClient())));
+        grid.asSingleSelect().addValueChangeListener(
+                event -> messageDiv.setText(String.format(
+                        "Selection changed from %s to %s, selection is from client: %s",
+                        event.getOldValue(), event.getValue(),
+                        event.isFromClient())));
 
-		Button toggleSelect = new Button(
-				"Toggle selection of the first person");
-		Person firstPerson = people.get(0);
-		toggleSelect.addClickListener(event -> {
-			GridSelectionModel<Person> selectionModel = grid
-					.getSelectionModel();
-			if (selectionModel.isSelected(firstPerson)) {
-				selectionModel.deselect(firstPerson);
-			} else {
-				selectionModel.select(firstPerson);
-			}
-		});
-		// end-source-example
-		grid.setId("single-selection");
-		toggleSelect.setId("single-selection-toggle");
-		messageDiv.setId("single-selection-message");
-		addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
-	}
+        Button toggleSelect = new Button(
+                "Toggle selection of the first person");
+        Person firstPerson = people.get(0);
+        toggleSelect.addClickListener(event -> {
+            GridSelectionModel<Person> selectionModel = grid
+                    .getSelectionModel();
+            if (selectionModel.isSelected(firstPerson)) {
+                selectionModel.deselect(firstPerson);
+            } else {
+                selectionModel.select(firstPerson);
+            }
+        });
+        // end-source-example
+        grid.setId("single-selection");
+        toggleSelect.setId("single-selection-toggle");
+        messageDiv.setId("single-selection-message");
+        addCard("Grid Single Selection", grid, toggleSelect, messageDiv);
+    }
 
-	private void createMultiSelect() {
-		Div messageDiv = new Div();
-		// begin-source-example
-		// source-example-heading: Grid Multi Selection
-		List<Person> people = createItems();
-		Grid<Person> grid = new Grid<>();
-		grid.setItems(people);
+    private void createMultiSelect() {
+        Div messageDiv = new Div();
+        // begin-source-example
+        // source-example-heading: Grid Multi Selection
+        List<Person> people = createItems();
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(people);
 
-		grid.addColumn("Name", Person::getName);
-		grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
 
-		grid.setSelectionMode(SelectionMode.MULTI);
+        grid.setSelectionMode(SelectionMode.MULTI);
 
-		grid.asMultiSelect().addValueChangeListener(
-				event -> messageDiv.setText(String.format(
-						"Selection changed from %s to %s, selection is from client: %s",
-						event.getOldValue(), event.getValue(),
-						event.isFromClient())));
+        grid.asMultiSelect().addValueChangeListener(
+                event -> messageDiv.setText(String.format(
+                        "Selection changed from %s to %s, selection is from client: %s",
+                        event.getOldValue(), event.getValue(),
+                        event.isFromClient())));
 
-		Button selectBtn = new Button("Select first five persons");
-		selectBtn.addClickListener(event -> grid.asMultiSelect()
-				.setValue(new LinkedHashSet<>(people.subList(0, 5))));
-		// end-source-example
-		grid.setId("multi-selection");
-		selectBtn.setId("multi-selection-button");
-		messageDiv.setId("multi-selection-message");
-		addCard("Grid Multi Selection", grid, selectBtn, messageDiv);
-	}
+        Button selectBtn = new Button("Select first five persons");
+        selectBtn.addClickListener(event -> grid.asMultiSelect()
+                .setValue(new LinkedHashSet<>(people.subList(0, 5))));
+        // end-source-example
+        grid.setId("multi-selection");
+        selectBtn.setId("multi-selection-button");
+        messageDiv.setId("multi-selection-message");
+        addCard("Grid Multi Selection", grid, selectBtn, messageDiv);
+    }
 
-	private void createNoneSelect() {
-		// begin-source-example
-		// source-example-heading: Grid with No Selection Enabled
-		Grid<Person> grid = new Grid<>();
-		grid.setItems(createItems());
+    private void createNoneSelect() {
+        // begin-source-example
+        // source-example-heading: Grid with No Selection Enabled
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(createItems());
 
-		grid.addColumn("Name", Person::getName);
-		grid.addColumn("Age", Person::getAge);
+        grid.addColumn("Name", Person::getName);
+        grid.addColumn("Age", Person::getAge);
 
-		grid.setSelectionMode(Grid.SelectionMode.NONE);
-		// end-source-example
-		grid.setId("none-selection");
-		addCard("Grid with No Selection Enabled", grid);
-	}
+        grid.setSelectionMode(Grid.SelectionMode.NONE);
+        // end-source-example
+        grid.setId("none-selection");
+        addCard("Grid with No Selection Enabled", grid);
+    }
 
-	private void createColumnTemplate() {
-		// @formatter:off
+    private void createColumnTemplate() {
+        // @formatter:off
 		// begin-source-example
 		// source-example-heading: Grid with columns using template renderer
 		Grid<Person> grid = new Grid<>();
@@ -294,25 +294,25 @@ public class GridView extends DemoView {
 		grid.setSelectionMode(Grid.SelectionMode.NONE);
 		// end-source-example
 		// @formatter:on
-		grid.setId("template-renderer");
-		addCard("Grid with columns using template renderer", grid);
-	}
+        grid.setId("template-renderer");
+        addCard("Grid with columns using template renderer", grid);
+    }
 
-	private List<Person> createItems() {
-		return items;
-	}
+    private List<Person> createItems() {
+        return items;
+    }
 
-	private static Person createPerson(int index) {
-		Person person = new Person();
-		person.setName("Person " + index);
-		person.setAge(13 + random.nextInt(50));
+    private static Person createPerson(int index) {
+        Person person = new Person();
+        person.setName("Person " + index);
+        person.setAge(13 + random.nextInt(50));
 
-		Address address = new Address();
-		address.setStreet("Street " + ((char) ('A' + random.nextInt(26))));
-		address.setNumber(1 + random.nextInt(50));
-		address.setPostalCode(String.valueOf(10000 + random.nextInt(8999)));
-		person.setAddress(address);
+        Address address = new Address();
+        address.setStreet("Street " + ((char) ('A' + random.nextInt(26))));
+        address.setNumber(1 + random.nextInt(50));
+        address.setPostalCode(String.valueOf(10000 + random.nextInt(8999)));
+        person.setAddress(address);
 
-		return person;
-	}
+        return person;
+    }
 }
