@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.demo.views;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.demo.ComponentDemoTest;
-import com.vaadin.flow.demo.views.GridView.Person;
 import com.vaadin.testbench.By;
 
 /**
@@ -105,6 +106,38 @@ public class GridViewIT extends ComponentDemoTest {
     }
 
     @Test
+    public void gridAsMultiSelect() {
+        WebElement grid = findElement(By.id("multi-selection"));
+        scrollToElement(grid);
+
+        WebElement selectBtn = findElement(By.id("multi-selection-button"));
+        WebElement messageDiv = findElement(By.id("multi-selection-message"));
+
+        selectBtn.click();
+        Assert.assertEquals(
+                getSelectionMessage(Collections.emptySet(),
+                        GridView.items.subList(0, 5), false),
+                messageDiv.getText());
+        assertRowsSelected(grid, 0, 5);
+
+        List<WebElement> cells = grid
+                .findElements(By.tagName("vaadin-grid-cell-content"));
+        cells.get(0).click();
+        cells.get(2).click();
+        Assert.assertEquals(
+                getSelectionMessage(GridView.items.subList(1, 5),
+                        GridView.items.subList(2, 5), true),
+                messageDiv.getText());
+        assertRowsSelected(grid, 2, 5);
+
+        cells.get(10).click();
+        Assert.assertTrue(isRowSelected(grid, 5));
+        selectBtn.click();
+        assertRowsSelected(grid, 0, 5);
+        Assert.assertFalse(isRowSelected(grid, 5));
+    }
+
+    @Test
     public void gridWithDisabledSelection() {
         WebElement grid = findElement(By.id("none-selection"));
         scrollToElement(grid);
@@ -113,8 +146,8 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertFalse(isRowSelected(grid, 1));
     }
 
-    private static String getSelectionMessage(Person oldSelection,
-            Person newSelection, boolean isFromClient) {
+    private static String getSelectionMessage(Object oldSelection,
+            Object newSelection, boolean isFromClient) {
         return String.format(
                 "Selection changed from %s to %s, selection is from client: %s",
                 oldSelection, newSelection, isFromClient);
@@ -130,6 +163,11 @@ public class GridViewIT extends ComponentDemoTest {
                 .findElements(By.tagName("vaadin-grid-cell-content")).stream()
                 .filter(cell -> text.equals(cell.getText())).findFirst()
                 .isPresent());
+    }
+
+    private void assertRowsSelected(WebElement grid, int first, int last) {
+        IntStream.range(first, last).forEach(
+                rowIndex -> Assert.assertTrue(isRowSelected(grid, rowIndex)));
     }
 
     private boolean isRowSelected(WebElement grid, int row) {
