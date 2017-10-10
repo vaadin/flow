@@ -17,14 +17,18 @@ package com.vaadin.flow.spring;
 
 import org.springframework.stereotype.Component;
 
+import com.vaadin.server.VaadinSession;
+import com.vaadin.spring.annotation.VaadinSessionScope;
+
 /**
  * @author Vaadin Ltd
  *
  */
 @Component
+@VaadinSessionScope
 public class DataBean {
 
     public String getMessage() {
-        return "foo";
+        return "foo" + VaadinSession.getCurrent().getSession().getId();
     }
 }

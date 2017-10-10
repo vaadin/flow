@@ -25,6 +25,14 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinSessionState;
 
 /**
+ * Implementation of Spring's
+ * {@link org.springframework.beans.factory.config.Scope} that binds the beans
+ * to the current {@link com.vaadin.server.VaadinSession} (as opposed to the
+ * current Servlet session). Registered by default as the scope "
+ * {@value #VAADIN_SESSION_SCOPE_NAME}".
+ *
+ * @see com.vaadin.spring.annotation.VaadinSessionScope
+ *
  * @author Vaadin Ltd
  *
  */

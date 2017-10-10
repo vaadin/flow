@@ -15,7 +15,11 @@
  */
 package com.vaadin.spring;
 
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.vaadin.spring.scopes.VaadinSessionScope;
 
 /**
  * Vaadin scopes configuration.
@@ -26,4 +30,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class VaadinScopesConfig {
 
+    /**
+     * Creates a Vaadin session scope.
+     *
+     * @return the Vaadin session scope
+     */
+    @Bean
+    public static BeanFactoryPostProcessor vaadinSessionScope() {
+        return new VaadinSessionScope();
+    }
 }
