@@ -4,14 +4,14 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Route;
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.html.Div;
 
 @CodeFor("routing/tutorial-routing-page-titles.asciidoc")
 public class RoutingViewTitles {
-    @Title("home")
+    @PageTitle("home")
     class HomeView extends Div {
 
         HomeView() {
@@ -26,7 +26,7 @@ public class RoutingViewTitles {
         private String title = "";
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return title;
         }
 

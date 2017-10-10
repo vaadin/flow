@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,5 +47,19 @@ public class SpringBootAutoConfiguration {
     @Bean
     public ServletContextInitializer contextInitializer() {
         return new RouterRegistryServletContextInitializer(context);
+    }
+
+    /**
+     * Creates a {@link ServletRegistrationBean} instance with Spring aware
+     * Vaadin servlet.
+     *
+     * @return a custom ServletRegistrationBean instance
+     */
+    @Bean
+    public ServletRegistrationBean servletRegistrationBean() {
+        ServletRegistrationBean registration = new ServletRegistrationBean(
+                new SpringServlet(context), "/*");
+        registration.setAsyncSupported(true);
+        return registration;
     }
 }

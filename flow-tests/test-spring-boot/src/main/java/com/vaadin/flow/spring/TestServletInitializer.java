@@ -13,17 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.boot;
+package com.vaadin.flow.spring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.web.WebApplicationInitializer;
 
 /**
  * @author Vaadin Ltd
@@ -32,15 +29,10 @@ import org.springframework.web.WebApplicationInitializer;
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
         HibernateJpaAutoConfiguration.class })
-public class TestServletInitializer extends SpringBootServletInitializer
-        implements WebApplicationInitializer {
+public class TestServletInitializer extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
         SpringApplication.run(TestServletInitializer.class, args);
     }
 
-    @Bean
-    public ServletRegistrationBean servletRegistrationBean() {
-        return new ServletRegistrationBean(new TestSpringServlet(), "/*");
-    }
 }

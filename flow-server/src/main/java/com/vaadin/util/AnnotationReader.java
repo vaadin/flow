@@ -26,7 +26,7 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.Push;
 import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 import com.vaadin.flow.router.View;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
@@ -45,7 +45,7 @@ public class AnnotationReader {
 
     /**
      * Returns the title for the given class, specified with
-     * {@link Title @Title} annotation.
+     * {@link PageTitle @PageTitle} annotation.
      *
      * @param viewWithTitle
      *            the class with the title
@@ -53,7 +53,7 @@ public class AnnotationReader {
      */
     public static Optional<String> getPageTitle(
             Class<? extends View> viewWithTitle) {
-        return getAnnotationFor(viewWithTitle, Title.class).map(Title::value);
+        return getAnnotationFor(viewWithTitle, PageTitle.class).map(PageTitle::value);
     }
 
     /**
