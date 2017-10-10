@@ -28,7 +28,6 @@ import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.Route;
-import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
@@ -48,7 +47,7 @@ import com.vaadin.util.ReflectTools;
 @JavaScript("src/script/prism.js")
 @StyleSheet("src/css/prism.css")
 public class MainLayout extends PolymerTemplate<MainLayoutModel>
-        implements RouterLayout, HasUrlParameter<String> {
+        implements HasUrlParameter<String> {
 
     private Component selectedView;
 
@@ -132,18 +131,18 @@ public class MainLayout extends PolymerTemplate<MainLayoutModel>
                 selectedView.getElement().removeFromParent();
             }
 
-            if (ComponentDemoRegister.getViewFor(parameter).isPresent()) {
-
-                selectedView = ReflectTools.createInstance(
-                        ComponentDemoRegister.getViewFor(parameter).get());
-                getElement().appendChild(selectedView.getElement());
-
-                if (selectedView instanceof DemoView) {
-                    getModel().setPage(selectedView.getClass()
-                            .getAnnotation(ComponentDemo.class).name());
-                }
-            }
-
+            ComponentDemoRegister.getViewFor(parameter)
+                    .ifPresent(this::addComponentToView);
         }
     }
+
+    private void addComponentToView(Class<? extends DemoView> view) {
+        selectedView = ReflectTools.createInstance(view);
+        getElement().appendChild(selectedView.getElement());
+
+        if (DemoView.class.isAssignableFrom(view)) {
+            getModel().setPage(view.getAnnotation(ComponentDemo.class).name());
+        }
+    }
+
 }
