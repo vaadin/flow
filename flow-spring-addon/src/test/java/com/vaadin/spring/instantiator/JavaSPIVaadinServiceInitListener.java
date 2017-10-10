@@ -13,24 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.spring.instantiator;
 
-package com.vaadin.router;
+import com.vaadin.server.ServiceInitEvent;
+import com.vaadin.server.VaadinServiceInitListener;
 
-/**
- * Interface for navigation targets to resolve their title dynamically
- * at runtime.
- * <p>
- * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
- * and have a {@link PageTitle} annotation.
- *
- * @author Vaadin Ltd.
- */
-@FunctionalInterface
-public interface HasDynamicTitle {
+public class JavaSPIVaadinServiceInitListener
+        implements VaadinServiceInitListener {
 
-    /**
-     * Gets the title of this navigation target.
-     * @return  the title of this navigation target
-     */
-    String getPageTitle();
+    @Override
+    public void serviceInit(ServiceInitEvent event) {
+    }
+
 }

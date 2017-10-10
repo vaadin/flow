@@ -295,13 +295,13 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("navigation-target-with-title")
-    @Title("Custom Title")
+    @PageTitle("Custom Title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithTitle extends Component {
     }
 
     @RoutePrefix("parent-with-title")
-    @Title("Parent Title")
+    @PageTitle("Parent Title")
     @Tag(Tag.DIV)
     public static class ParentWithTitle extends Component
             implements RouterLayout {
@@ -321,7 +321,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return DYNAMIC_TITLE;
         }
     }
@@ -337,7 +337,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return title;
         }
 
@@ -359,7 +359,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         @Override
-        public String getTitle() {
+        public String getPageTitle() {
             return title;
         }
 

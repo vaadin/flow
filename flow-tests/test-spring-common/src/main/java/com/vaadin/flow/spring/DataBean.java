@@ -13,29 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.war;
+package com.vaadin.flow.spring;
 
-import javax.servlet.annotation.WebServlet;
-
-import com.vaadin.router.Route;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.ui.html.Div;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Vaadin Ltd
  *
  */
-@WebServlet(asyncSupported = true, urlPatterns = { "/*" })
-@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
-public class TestSpringServlet extends VaadinServlet {
+@Component
+public class DataBean {
 
-    @Route("")
-    public static class RootNavigationTarget extends Div {
-
-        public RootNavigationTarget() {
-            setText("root");
-        }
+    public String getMessage() {
+        return "foo";
     }
-
 }

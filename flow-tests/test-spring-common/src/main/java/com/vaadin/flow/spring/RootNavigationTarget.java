@@ -13,24 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.spring;
 
-package com.vaadin.router;
+import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * Interface for navigation targets to resolve their title dynamically
- * at runtime.
- * <p>
- * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
- * and have a {@link PageTitle} annotation.
- *
- * @author Vaadin Ltd.
- */
-@FunctionalInterface
-public interface HasDynamicTitle {
+import com.vaadin.router.Route;
+import com.vaadin.ui.html.Div;
 
-    /**
-     * Gets the title of this navigation target.
-     * @return  the title of this navigation target
-     */
-    String getPageTitle();
+@Route("")
+public class RootNavigationTarget extends Div {
+
+    public RootNavigationTarget(@Autowired DataBean dataBean,
+            @Autowired FooNavigationTarget section) {
+        setId("main");
+        setText(dataBean.getMessage());
+
+        section.setId("singleton");
+        section.setText("singleton");
+    }
 }
