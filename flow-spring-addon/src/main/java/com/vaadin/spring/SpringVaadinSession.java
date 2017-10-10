@@ -45,7 +45,7 @@ public class SpringVaadinSession extends VaadinSession {
     }
 
     /**
-     * Handles destruction of the given session.
+     * Handles destruction of the session.
      */
     public void fireSessionDestroy() {
         SessionDestroyEvent event = new SessionDestroyEvent(getService(), this);
@@ -55,7 +55,7 @@ public class SpringVaadinSession extends VaadinSession {
     }
 
     /**
-     * Adds a listener that gets notified when a Vaadin service session is
+     * Adds a listener that gets notified when the Vaadin service session is
      * destroyed.
      * <p>
      * No need to remove the listener since all listeners are removed
