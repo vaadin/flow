@@ -167,13 +167,6 @@
                                 <resource>
                                     <directory>src/main/webapp</directory>
                                     <targetPath>META-INF/resources</targetPath>
-                                    <excludes>
-                                        <exclude>**/node/**</exclude>
-                                        <exclude>**/node_modules/**</exclude>
-                                        <exclude>**/etc/**</exclude>
-                                        <exclude>**/bower_components/**</exclude>
-                                        <exclude>**/build/**</exclude>
-                                    </excludes>
                                 </resource>
                             </resources>
                         </configuration>
