@@ -364,7 +364,7 @@ public class RouterLinkTest extends HasCurrentService {
     }
 
     @Route("greeting")
-    @Title("Custom Title")
+    @PageTitle("Custom Title")
     @Tag(Tag.DIV)
     public static class GreetingNavigationTarget extends Component
             implements HasUrlParameter<String> {

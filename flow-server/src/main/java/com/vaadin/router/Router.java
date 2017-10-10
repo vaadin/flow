@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.router.ImmutableRouterConfiguration;
 import com.vaadin.flow.router.RouterConfiguration;
 import com.vaadin.flow.router.RouterConfigurator;
+import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
@@ -100,32 +101,52 @@ public class Router implements RouterInterface {
         assert location != null;
         assert trigger != null;
 
-        NavigationState newState = getRouteResolver()
-                .resolve(new ResolveRequest(this, location));
-        if (newState != null) {
-            NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, trigger);
-
-            NavigationHandler handler = new NavigationStateRenderer(newState);
-            return handler.handle(navigationEvent);
-        }
-
-        if (!location.getPath().isEmpty()) {
-            Location slashToggledLocation = location.toggleTrailingSlash();
-            NavigationState slashToggledState = getRouteResolver()
-                    .resolve(new ResolveRequest(this, slashToggledLocation));
-            if (slashToggledState != null) {
+        try {
+            NavigationState newState = getRouteResolver()
+                    .resolve(new ResolveRequest(this, location));
+            if (newState != null) {
                 NavigationEvent navigationEvent = new NavigationEvent(this,
-                        slashToggledLocation, ui, trigger);
+                        location, ui, trigger);
 
-                NavigationHandler handler = new InternalRedirectHandler(
-                        slashToggledLocation);
+                NavigationHandler handler = new NavigationStateRenderer(
+                        newState);
                 return handler.handle(navigationEvent);
             }
+
+            if (!location.getPath().isEmpty()) {
+                Location slashToggledLocation = location.toggleTrailingSlash();
+                NavigationState slashToggledState = getRouteResolver().resolve(
+                        new ResolveRequest(this, slashToggledLocation));
+                if (slashToggledState != null) {
+                    NavigationEvent navigationEvent = new NavigationEvent(this,
+                            slashToggledLocation, ui, trigger);
+
+                    NavigationHandler handler = new InternalRedirectHandler(
+                            slashToggledLocation);
+                    return handler.handle(navigationEvent);
+                }
+            }
+
+            throw new NotFoundException(
+                    "Couldn't find route for '" + location.getPath() + "'");
+        } catch (Exception exception) {
+            Class<? extends Component> navigationTarget = getRegistry()
+                    .getErrorNavigationTarget(exception);
+
+            if (navigationTarget == null) {
+                throw exception;
+            }
+
+            NavigationHandler handler = new ErrorStateRenderer(
+                    new NavigationStateBuilder().withTarget(navigationTarget)
+                            .build());
+
+            NavigationEvent navigationEvent = new ErrorNavigationEvent(this,
+                    location, ui, NavigationTrigger.PROGRAMMATIC,
+                    new ErrorParameter(exception, exception.getMessage()));
+
+            return handler.handle(navigationEvent);
         }
-
-        return 404;
-
     }
 
     @Override

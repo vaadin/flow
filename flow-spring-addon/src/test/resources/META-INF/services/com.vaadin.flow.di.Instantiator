@@ -1,0 +1,2 @@
+com.vaadin.spring.service.JavaSPIInstantiator
+com.vaadin.spring.service.JavaNonUniqueSPIInstantiator

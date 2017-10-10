@@ -15,8 +15,7 @@
  */
 package com.vaadin.router;
 
-import com.vaadin.router.event.AfterNavigationEvent;
-import com.vaadin.router.event.AfterNavigationListener;
+import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
@@ -25,11 +24,13 @@ import com.vaadin.ui.Tag;
  */
 @Tag(Tag.DIV)
 public class RouteNotFoundError extends Component
-        implements AfterNavigationListener {
+        implements HasErrorParameter<NotFoundException> {
 
     @Override
-    public void afterNavigation(AfterNavigationEvent event) {
+    public int setErrorParameter(BeforeNavigationEvent event,
+            ErrorParameter<NotFoundException> parameter) {
         getElement().setText(
-                "Could not navigate to " + event.getLocation().getPath());
+                "Could not navigate to '" + event.getLocation().getPath() + "'");
+        return 404;
     }
 }
