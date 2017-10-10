@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2014 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,26 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.spring.service;
 
-package com.vaadin.flow.spring;
+import com.vaadin.server.VaadinService;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class RouteBasicIT extends ChromeBrowserTest {
+public class JavaNonUniqueSPIInstantiator extends JavaSPIInstantiator {
 
     @Override
-    protected String getTestPath() {
-        return "/";
+    public boolean init(VaadinService service) {
+        return "bar".equals(service.getDeploymentConfiguration()
+                .getInitParameters().getProperty(FOO));
     }
 
-    @Test
-    public void testServletDeployed() throws Exception {
-        open();
-
-        Assert.assertTrue(isElementPresent(By.id("main")));
-    }
 }

@@ -13,27 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.boot;
+package com.vaadin.flow.spring;
+
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.vaadin.router.Route;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.ui.html.Div;
 
 /**
  * @author Vaadin Ltd
  *
  */
-@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
-public class TestSpringServlet extends VaadinServlet {
-
-    @Route("")
-    public static class RootNavigationTarget extends Div {
-
-        public RootNavigationTarget() {
-            setId("main");
-            setText("root");
-        }
-    }
+@Route("foo")
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+public class FooNavigationTarget extends Div {
 
 }
