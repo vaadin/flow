@@ -143,36 +143,6 @@
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>
-                                ${frontend.working.directory}/bower_components
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/build
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/etc
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>
-                                ${frontend.working.directory}/node_modules
-                            </directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
             <!--  unpack common tests to run it in the project -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

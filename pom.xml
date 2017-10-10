@@ -650,18 +650,6 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${frontend.working.directory}/bower_components</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/build</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node_modules</directory>
-                        </fileset>
-                        <fileset>
                             <directory>${project.rootdir}/driver</directory>
                         </fileset>
                         <fileset>
@@ -689,8 +677,6 @@
                                 <Implementation-Version>${project.version}</Implementation-Version>
                             </manifestEntries>
                         </archive>
-                        <warSourceExcludes>**/node_modules/,**/node/,**/etc/</warSourceExcludes>
-                        <packagingExcludes>**/node_modules/,**/node/,**/etc/</packagingExcludes>
                     </configuration>
                 </plugin>
                 <plugin>
