@@ -1,9 +1,9 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 import com.vaadin.ui.html.Div;
 
-@Title("Title view")
+@PageTitle("Title view")
 public class TitleView extends AbstractDivView {
 
     @Override
