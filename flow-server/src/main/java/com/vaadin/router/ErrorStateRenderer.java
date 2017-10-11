@@ -123,7 +123,7 @@ public class ErrorStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        RouterUtil.updatePageTitle(event, componentInstance);
+        RouterUtil.updatePageTitle(ui, componentInstance);
 
         AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
                 RouterUtil.createEvent(event, chain));

@@ -15,10 +15,11 @@
  */
 package com.vaadin.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
@@ -134,9 +135,10 @@ public class NavigationStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        RouterUtil.updatePageTitle(event, componentInstance);
+        RouterUtil.updatePageTitle(ui, componentInstance);
 
-        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event, chain);
+        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event,
+                chain);
 
         if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
             fireAfterNavigationListeners(chain,

@@ -24,10 +24,10 @@ import java.util.Set;
 
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.LocationChangeEvent;
+import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
-import com.vaadin.router.PageTitle;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -72,13 +72,12 @@ public final class RouterUtil {
      * Uses {@link HasDynamicTitle#getPageTitle()} if implemented, or else the
      * {@link PageTitle} annotation, to resolve the title.
      *
-     * @param navigationEvent
-     *            the event object about the navigation
+     * @param ui
+     *            the current user interface
      * @param routeTarget
      *            the currently visible component
      */
-    public static void updatePageTitle(NavigationEvent navigationEvent,
-            Component routeTarget) {
+    public static void updatePageTitle(UI ui, Component routeTarget) {
 
         String title;
 
@@ -88,12 +87,13 @@ public final class RouterUtil {
             title = lookForTitleInTarget(routeTarget).map(PageTitle::value)
                     .orElse("");
         }
-        navigationEvent.getUI().getPage().setTitle(title);
+        ui.getPage().setTitle(title);
     }
 
-    private static Optional<PageTitle> lookForTitleInTarget(Component routeTarget) {
-        return Optional
-                .ofNullable(routeTarget.getClass().getAnnotation(PageTitle.class));
+    private static Optional<PageTitle> lookForTitleInTarget(
+            Component routeTarget) {
+        return Optional.ofNullable(
+                routeTarget.getClass().getAnnotation(PageTitle.class));
     }
 
     /**

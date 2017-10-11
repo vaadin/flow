@@ -27,6 +27,7 @@ import com.vaadin.router.Route;
 import com.vaadin.router.WildcardParameter;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.html.Div;
@@ -102,10 +103,14 @@ public class ViewTestLayout extends Div
                 subElement = ReflectTools.createInstance(ViewTestServlet
                         .getViewLocator().findViewClass(parameter))
                         .getElement();
+
+                RouterUtil.updatePageTitle(UI.getCurrent(),
+                        subElement.getComponent().get());
+
                 viewContainer.setChild(0, subElement);
                 viewContainer.appendChild(subElement);
             } catch (ClassNotFoundException e) {
-                event.rerouteTo("ErrorView");
+                // waiting for new implement
             }
         }
 
