@@ -51,6 +51,7 @@ import static org.junit.Assert.assertThat;
 public class RouterTest extends RoutingTestBase {
 
     private static final String DYNAMIC_TITLE = "I am dynamic!";
+    public static final String EXCEPTION_WRAPPER_MESSAGE = "There was an exception while trying to navigate to '%s' with the exception message '%s'";
 
     private static List<String> eventCollector = new ArrayList<>(0);
 
@@ -103,6 +104,26 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void setParameter(BeforeNavigationEvent event,
                 String parameter) {
+            eventCollector.add("Received param: " + parameter);
+            param = parameter;
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Stored parameter: " + param);
+        }
+    }
+
+    @Route("param")
+    @Tag(Tag.DIV)
+    public static class RouteWithMultipleParameters extends Component
+            implements BeforeNavigationListener, HasUrlParameter<String> {
+
+        private String param;
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                @WildcardParameter String parameter) {
             eventCollector.add("Received param: " + parameter);
             param = parameter;
         }
@@ -249,6 +270,28 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             event.rerouteTo("param", Boolean.TRUE);
+        }
+    }
+
+    @Route("redirect/to/params")
+    @Tag(Tag.DIV)
+    public static class RerouteToRouteWithMultipleParams extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteTo("param", Arrays.asList("this", "must", "work"));
+        }
+    }
+
+    @Route("fail/params")
+    @Tag(Tag.DIV)
+    public static class FailRerouteWithParams extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteTo("param", Arrays.asList(1L, 2L));
         }
     }
 
@@ -729,7 +772,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void test_reroute_with_url_parameter()
+    public void reroute_with_url_parameter()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
@@ -746,7 +789,27 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void fail_reroute_with_faulty_url_parameter()
+    public void reroute_fails_with_no_url_parameter()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        ParameterRouteNoParameter.class, RerouteToRouteWithParam.class)
+                        .collect(Collectors.toSet()));
+        String locationString = "redirect/to/param";
+
+        int result = router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Routing with mismatching parameters should have failed -",
+                500, result);
+        String message = "The navigation target for route 'param' doesn't accept the parameters [hello].";
+        String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
+                locationString, message);
+        assertExceptionComponent(exceptionText);
+    }
+
+    @Test
+    public void reroute_fails_with_faulty_url_parameter()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
                 .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
@@ -758,10 +821,87 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         String message = "Given route parameter 'class java.lang.Boolean' is of the wrong type. Required 'class java.lang.String'.";
-        String exceptionText = String.format(
-                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+        String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
 
+        assertExceptionComponent(exceptionText);
+    }
+
+    @Test
+    public void reroute_with_multiple_url_parameters()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithMultipleParameters.class,
+                        RerouteToRouteWithMultipleParams.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("redirect/to/params"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Before navigation event was wrong.",
+                "Stored parameter: this/must/work", eventCollector.get(1));
+    }
+
+    @Test
+    public void reroute_fails_with_faulty_url_parameters()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithMultipleParameters.class, FailRerouteWithParams.class)
+                        .collect(Collectors.toSet()));
+        String locationString = "fail/params";
+
+        int result = router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Routing with mismatching parameters should have failed -",
+                500, result);
+        String message = "Given route parameter 'class java.lang.Long' is of the wrong type. Required 'class java.lang.String'.";
+        String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
+                locationString, message);
+        assertExceptionComponent(exceptionText);
+    }
+
+    @Test
+    public void reroute_with_multiple_url_parameters_fails_to_parameterless_target()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        ParameterRouteNoParameter.class, RerouteToRouteWithMultipleParams.class)
+                        .collect(Collectors.toSet()));
+        String locationString = "redirect/to/params";
+
+        int result = router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Routing with mismatching parameters should have failed -",
+                500, result);
+        String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
+        String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
+                locationString, message);
+        assertExceptionComponent(exceptionText);
+    }
+
+    @Test
+    public void reroute_with_multiple_url_parameters_fails_to_single_parameter_target()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
+                        RouteWithParameter.class, RerouteToRouteWithMultipleParams.class)
+                        .collect(Collectors.toSet()));
+        String locationString = "redirect/to/params";
+
+        int result = router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Routing with mismatching parameters should have failed -",
+                500, result);
+        String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
+        String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
+                locationString, message);
         assertExceptionComponent(exceptionText);
     }
 
@@ -1082,24 +1222,10 @@ public class RouterTest extends RoutingTestBase {
         String message = String.format(
                 "Wildcard parameter can only be for String type by default. Implement `deserializeUrlParameters` for class %s",
                 UnsupportedWildParameter.class.getName());
-        String exceptionText = String.format(
-                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+        String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
 
         assertExceptionComponent(exceptionText);
-    }
-
-    private void assertExceptionComponent(String exceptionText) {
-        Optional<Component> visibleComponent = ui.getElement().getChild(0)
-                .getComponent();
-
-        Assert.assertTrue("No navigation component visible",
-                visibleComponent.isPresent());
-
-        Assert.assertEquals(InternalServerError.class,
-                visibleComponent.get().getClass());
-        Assert.assertEquals(exceptionText,
-                visibleComponent.get().getElement().getText());
     }
 
     @Test
@@ -1198,10 +1324,8 @@ public class RouterTest extends RoutingTestBase {
                 "Expected the extending class to be used instead of the super class",
                 CustomNotFoundTarget.class, getUIComponent());
 
-        Optional<Component> visibleComponent = ui.getElement().getChild(0)
-                .getComponent();
-        Assert.assertEquals(CustomNotFoundTarget.TEXT_CONTENT,
-                visibleComponent.get().getElement().getText());
+        assertExceptionComponent(CustomNotFoundTarget.TEXT_CONTENT,
+                CustomNotFoundTarget.class);
     }
 
     @Test
@@ -1233,4 +1357,21 @@ public class RouterTest extends RoutingTestBase {
                 .get().getClass();
     }
 
+    private void assertExceptionComponent(String exceptionText) {
+        assertExceptionComponent(exceptionText, InternalServerError.class);
+    }
+
+    private void assertExceptionComponent(String exceptionText,
+            Class errorClass) {
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+
+        Assert.assertTrue("No navigation component visible",
+                visibleComponent.isPresent());
+
+        Assert.assertEquals(errorClass,
+                visibleComponent.get().getClass());
+        Assert.assertEquals(exceptionText,
+                visibleComponent.get().getElement().getText());
+    }
 }
