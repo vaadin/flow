@@ -18,10 +18,9 @@ package com.vaadin.flow.uitest.servlet;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.flow.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view-production/*" })
-@VaadinServletConfiguration(productionMode = true, routerConfigurator = ViewTestConfigurator.class)
+@VaadinServletConfiguration(productionMode = true, usingNewRouting = true)
 public class ProductionModeViewTestServlet extends ViewTestServlet {
 
 }

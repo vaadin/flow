@@ -2,14 +2,14 @@ package com.vaadin.flow.uitest.servlet;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
-import com.vaadin.server.VaadinServletConfiguration;
-import com.vaadin.ui.html.Div;
-import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.ui.html.Div;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
 @VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
@@ -22,7 +22,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
     }
 
-    @Route("")
+    @Route("abc")
     public static class RootNavigationTarget extends ClassNameDiv {
     }
 

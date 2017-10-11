@@ -17,31 +17,17 @@ package com.vaadin.flow.uitest.ui;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.server.VaadinServletConfiguration;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.RouterConfiguration;
-import com.vaadin.flow.router.RouterConfigurator;
 import com.vaadin.router.RouterLink;
-import com.vaadin.flow.router.View;
-import com.vaadin.flow.uitest.ui.RouterLinkTestServlet.MyRouterConfigurator;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletConfiguration;
+import com.vaadin.ui.html.Div;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/router-link/*" })
-@VaadinServletConfiguration(productionMode = false, routerConfigurator = MyRouterConfigurator.class)
+@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
 public class RouterLinkTestServlet extends VaadinServlet {
 
-    public static class MyRouterConfigurator implements RouterConfigurator {
-
-        @Override
-        public void configure(RouterConfiguration configuration) {
-            configuration.setRoute("", ViewImpl.class);
-            configuration.setRoute("another", AnotherView.class);
-        }
-
-    }
-
-    public static class ViewImpl extends Div implements View {
+    public static class ViewImpl extends Div {
         public ViewImpl() {
             RouterLink link = new RouterLink("Home", ViewImpl.class);
             link.addClassName("root-link");
@@ -52,6 +38,6 @@ public class RouterLinkTestServlet extends VaadinServlet {
         }
     }
 
-    public static class AnotherView extends Div implements View {
+    public static class AnotherView extends Div {
     }
 }
