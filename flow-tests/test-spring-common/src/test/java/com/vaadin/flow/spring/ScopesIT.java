@@ -33,7 +33,7 @@ public class ScopesIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void testServletDeployed() throws Exception {
+    public void checkSessionScope() throws Exception {
         open();
 
         String prefix = "foo";

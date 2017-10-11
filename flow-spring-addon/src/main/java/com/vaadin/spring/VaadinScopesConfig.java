@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.spring.scopes.VaadinSessionScope;
+import com.vaadin.spring.scopes.VaadinUIScope;
 
 /**
  * Vaadin scopes configuration.
@@ -38,5 +39,15 @@ public class VaadinScopesConfig {
     @Bean
     public static BeanFactoryPostProcessor vaadinSessionScope() {
         return new VaadinSessionScope();
+    }
+
+    /**
+     * Creates a Vaadin UI scope.
+     *
+     * @return the Vaadin UI scope
+     */
+    @Bean
+    public static BeanFactoryPostProcessor vaadinUIScope() {
+        return new VaadinUIScope();
     }
 }
