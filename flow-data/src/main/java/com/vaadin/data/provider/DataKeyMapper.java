@@ -17,7 +17,7 @@ package com.vaadin.data.provider;
 
 import java.io.Serializable;
 
-import com.vaadin.data.ValueProvider;
+import com.vaadin.function.ValueProvider;
 
 /**
  * DataKeyMapper to map data objects to key strings.

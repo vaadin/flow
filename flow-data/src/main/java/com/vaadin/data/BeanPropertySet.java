@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.util.BeanUtil;
+import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.util.SharedUtil;
 import com.vaadin.util.ReflectTools;
 
