@@ -39,10 +39,11 @@ public class SideElement extends Div implements BeforeNavigationListener {
 
 
 ==== Reroute
-The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need show completely different information in some state.
+The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need
+to show completely different information in some state.
 Rerouting can happen from a listener in the detaching or the attaching chain.
 
-In this example the reroute would happen on attach of BlogList when it receives no results.
+In this example the reroute would happen on attach of `BlogList` when it receives no results.
 [source,java]
 ----
 @Route("no-items")
@@ -70,6 +71,8 @@ public class BlogList extends Div implements BeforeNavigationListener {
   }
 }
 ----
+[NOTE]
+`rerouteTo` has several overloads to serve different use cases.
 
 == AfterNavigationEvent
 
