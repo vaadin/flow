@@ -42,6 +42,7 @@ import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.data.event.EventRouter;
 import com.vaadin.function.SerializableFunction;
 import com.vaadin.function.SerializablePredicate;
+import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Component;

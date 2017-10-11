@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.shared;
+package com.vaadin.util;
 
 import java.io.Serializable;
 import java.util.stream.IntStream;
