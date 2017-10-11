@@ -67,7 +67,8 @@ public class ViewOrUITest extends AbstractTestBenchTest {
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends Component> getViewClass() {
-        return (Class<? extends Component>) findClass(Component.class);
+        return (Class<? extends Component>) findClass(Component.class,
+                getClass().getName().replaceFirst("IT$", "View"));
     }
 
     /**
@@ -80,12 +81,12 @@ public class ViewOrUITest extends AbstractTestBenchTest {
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends UI> getUIClass() {
-        return (Class<? extends UI>) findClass(UI.class);
+        return (Class<? extends UI>) findClass(UI.class,
+                getClass().getName().replaceFirst("IT$", "UI"));
     }
 
-    private Class<?> findClass(Class<?> typeToFind) {
-        String classNameToFind = getClass().getName().replaceFirst("IT$",
-                typeToFind.getSimpleName());
+    private Class<?> findClass(Class<?> typeToFind, String classNameToFind) {
+
         try {
             Class<?> cls = Class.forName(classNameToFind);
             if (typeToFind.isAssignableFrom(cls)) {
