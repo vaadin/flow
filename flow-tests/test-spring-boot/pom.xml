@@ -108,6 +108,7 @@
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring-boot.version}</version>
                 </plugin>
+                
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -143,36 +144,6 @@
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>
-                                ${frontend.working.directory}/bower_components
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/build
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/etc
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node
-                            </directory>
-                        </fileset>
-                        <fileset>
-                            <directory>
-                                ${frontend.working.directory}/node_modules
-                            </directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
             <!--  unpack common tests to run it in the project -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

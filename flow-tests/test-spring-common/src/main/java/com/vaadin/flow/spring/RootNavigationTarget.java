@@ -30,5 +30,9 @@ public class RootNavigationTarget extends Div {
 
         section.setId("singleton");
         section.setText("singleton");
+
+        TemplateInjectsTemplate template = new TemplateInjectsTemplate();
+        template.setId("template");
+        add(template);
     }
 }
