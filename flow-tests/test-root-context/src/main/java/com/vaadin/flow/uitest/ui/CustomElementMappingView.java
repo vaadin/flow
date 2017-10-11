@@ -3,7 +3,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
@@ -15,7 +15,7 @@ import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate;
 import com.vaadin.flow.uitest.ui.template.TwoWayPolymerBindingView;
 import com.vaadin.server.startup.CustomElementRegistry;
 
-@Title("Registered custom elements view")
+@PageTitle("Registered custom elements view")
 public class CustomElementMappingView extends AbstractDivView {
 
     List<Class<? extends PolymerTemplate>> customElements = Arrays.asList(

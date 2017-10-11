@@ -1,11 +1,11 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 import com.vaadin.ui.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.LocationChangeEvent;
 
-@Title("foobar")
+@PageTitle("foobar")
 public class DynamicTitleView extends AbstractDivView {
 
     @Override
