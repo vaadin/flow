@@ -466,6 +466,52 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("beforeToError/exception")
+    @Tag(Tag.DIV)
+    public static class RerouteToError extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteToError(IllegalArgumentException.class);
+        }
+    }
+
+    @Route("beforeToError/message")
+    @Tag(Tag.DIV)
+    public static class RerouteToErrorWithMessage extends Component
+            implements BeforeNavigationListener, HasUrlParameter<String> {
+
+        String message;
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteToError(IllegalArgumentException.class, message);
+        }
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            this.message = parameter;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class IllegalTarget extends Component
+            implements HasErrorParameter<IllegalArgumentException> {
+
+        @Override
+        public int setErrorParameter(BeforeNavigationEvent event,
+                ErrorParameter<IllegalArgumentException> parameter) {
+            if (parameter.hasCustomMessage()) {
+                getElement().setText(parameter.getCustomMessage());
+            } else {
+                getElement().setText("Illegal argument exception.");
+            }
+            return 500;
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -1149,7 +1195,8 @@ public class RouterTest extends RoutingTestBase {
     public void do_not_accept_same_exception_targets() {
 
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(startsWith("Only one target for an exception should be defined. Found "));
+        expectedEx.expectMessage(startsWith(
+                "Only one target for an exception should be defined. Found "));
 
         router.getRegistry()
                 .setErrorNavigationTargets(Stream
@@ -1176,6 +1223,52 @@ public class RouterTest extends RoutingTestBase {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
         Assert.assertEquals(CustomNotFoundTarget.TEXT_CONTENT,
+                visibleComponent.get().getElement().getText());
+    }
+
+    @Test
+    public void reroute_to_error_opens_expected_error_target()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(RerouteToError.class));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(IllegalTarget.class));
+
+        int result = router.navigate(ui,
+                new Location("beforeToError/exception"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Target should have rerouted to exception target.",
+                500, result);
+
+        Assert.assertEquals(IllegalTarget.class, getUIComponent());
+
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+        Assert.assertEquals("Illegal argument exception.",
+                visibleComponent.get().getElement().getText());
+    }
+
+    @Test
+    public void reroute_to_error_with_custom_message_message_is_used()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(RerouteToErrorWithMessage.class));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(IllegalTarget.class));
+
+        int result = router.navigate(ui,
+                new Location("beforeToError/message/CustomMessage"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Target should have rerouted to exception target.",
+                500, result);
+
+        Assert.assertEquals(IllegalTarget.class, getUIComponent());
+
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+        Assert.assertEquals("CustomMessage",
                 visibleComponent.get().getElement().getText());
     }
 

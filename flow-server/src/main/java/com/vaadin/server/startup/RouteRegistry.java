@@ -193,9 +193,9 @@ public class RouteRegistry implements Serializable {
      * 
      * @param exception
      *            exception to search error view for
-     * @return error view for exception or null if no match found.
+     * @return optional error target corresponding to the given exception
      */
-    public Class<? extends Component> getErrorNavigationTarget(
+    public Optional<Class<? extends Component>> getErrorNavigationTarget(
             Throwable exception) {
         if (!errorTargetsInitialized) {
             initErrorTargets();
@@ -204,7 +204,7 @@ public class RouteRegistry implements Serializable {
         if (result == null) {
             result = searchBySuperType(exception);
         }
-        return result;
+        return Optional.ofNullable(result);
     }
 
     private Class<? extends Component> searchByCause(Throwable exception) {
@@ -212,7 +212,7 @@ public class RouteRegistry implements Serializable {
             return exceptionTargets.get(exception.getClass());
         }
         if (exception.getCause() != null) {
-            return getErrorNavigationTarget(exception.getCause());
+            return searchByCause(exception.getCause());
         }
         return null;
     }

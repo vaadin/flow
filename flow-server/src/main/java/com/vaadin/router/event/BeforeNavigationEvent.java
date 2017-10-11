@@ -20,6 +20,8 @@ import java.util.EventObject;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.vaadin.router.ErrorParameter;
+import com.vaadin.router.ErrorStateRenderer;
 import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Location;
 import com.vaadin.router.NavigationHandler;
@@ -46,6 +48,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     private final Class<?> navigationTarget;
     private NavigationState rerouteTargetState;
+    private ErrorParameter<?> errorParameter;
 
     /**
      * Construct event from a NavigationEvent.
@@ -260,5 +263,75 @@ public class BeforeNavigationEvent extends EventObject {
      */
     public ActivationState getActivationState() {
         return activationState;
+    }
+
+    /**
+     * Reroute to error target for given exception without custom message.
+     * 
+     * @param exception
+     *            exception to get error target for
+     */
+    public void rerouteToError(Class<? extends Exception> exception) {
+        rerouteToError(exception, "");
+    }
+
+    /**
+     * Reroute to error target for given exception with given custom message.
+     * 
+     * @param exception
+     *            exception to get error target for
+     * @param customMessage
+     *            custom message to send to error target
+     */
+    public void rerouteToError(Class<? extends Exception> exception,
+            String customMessage) {
+        Exception instance = ReflectTools.createInstance(exception);
+        rerouteToError(instance, customMessage);
+    }
+
+    /**
+     * Reroute to error target for given exception with given custom message.
+     * 
+     * @param exception
+     *            exception to get error target for
+     * @param customMessage
+     *            custom message to send to error target
+     */
+    public void rerouteToError(Exception exception, String customMessage) {
+        ErrorParameter<?> errorParameter = new ErrorParameter(exception,
+                customMessage);
+
+        Optional<Class<? extends Component>> navigationTarget = getSource()
+                .getRegistry()
+                .getErrorNavigationTarget(errorParameter.getException());
+
+        if (navigationTarget.isPresent()) {
+            rerouteTargetState = new NavigationStateBuilder()
+                    .withTarget(navigationTarget.get()).build();
+            rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
+
+            this.errorParameter = errorParameter;
+        } else {
+            throw new RuntimeException(customMessage,
+                    errorParameter.getException());
+        }
+    }
+
+    /**
+     * Check if we have an error parameter set for this navigation event.
+     * 
+     * @return true if error parameter is set
+     */
+    public boolean hasErrorParameter() {
+        return errorParameter != null;
+    }
+
+    /**
+     * Get the set error parameter.
+     * 
+     * @return error parameter
+     */
+    public ErrorParameter<?> getErrorParameter() {
+        return errorParameter;
     }
 }
