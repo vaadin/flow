@@ -13,22 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.spring;
 
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.vaadin.server.VaadinSession;
-import com.vaadin.spring.annotation.VaadinSessionScope;
+import com.vaadin.spring.scopes.VaadinSessionScope;
 
 /**
+ * Vaadin scopes configuration.
+ *
  * @author Vaadin Ltd
  *
  */
-@Component
-@VaadinSessionScope
-public class DataBean {
+@Configuration
+public class VaadinScopesConfig {
 
-    public String getMessage() {
-        return "foo" + VaadinSession.getCurrent().getSession().getId();
+    /**
+     * Creates a Vaadin session scope.
+     *
+     * @return the Vaadin session scope
+     */
+    @Bean
+    public static BeanFactoryPostProcessor vaadinSessionScope() {
+        return new VaadinSessionScope();
     }
 }
