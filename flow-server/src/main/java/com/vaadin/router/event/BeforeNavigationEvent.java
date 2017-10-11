@@ -48,7 +48,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     private final Class<?> navigationTarget;
     private NavigationState rerouteTargetState;
-    private transient ErrorParameter<?> errorParameter;
+    private ErrorParameter<?> errorParameter;
 
     /**
      * Construct event from a NavigationEvent.
