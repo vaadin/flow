@@ -20,7 +20,7 @@ import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
@@ -40,7 +40,7 @@ public class ViewOrUITest extends AbstractTestBenchTest {
                 return "/run/" + URLEncoder.encode(uiClass.getName(), "UTF-8");
             }
 
-            Class<? extends View> viewClass = getViewClass();
+            Class<? extends Component> viewClass = getViewClass();
             if (viewClass != null) {
                 return "/view/"
                         + URLEncoder.encode(viewClass.getName(), "UTF-8");
@@ -66,8 +66,8 @@ public class ViewOrUITest extends AbstractTestBenchTest {
      *         View class was found
      */
     @SuppressWarnings("unchecked")
-    protected Class<? extends View> getViewClass() {
-        return (Class<? extends View>) findClass(View.class);
+    protected Class<? extends Component> getViewClass() {
+        return (Class<? extends Component>) findClass(Component.class);
     }
 
     /**
