@@ -17,13 +17,12 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
-import com.vaadin.flow.router.View;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class ServiceInitListenersView extends Div implements View {
+public class ServiceInitListenersView extends Div {
 
     public ServiceInitListenersView() {
         add(new Label(

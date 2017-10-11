@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
 import com.vaadin.flow.uitest.ui.CompositeView.NameField;
 import com.vaadin.ui.Composite;
+import com.vaadin.ui.html.Div;
 
-public class CompositeNestedView extends Composite<Div> implements View {
+public class CompositeNestedView extends Composite<Div> {
 
     public static final String NAME_ID = "name";
     public static final String NAME_FIELD_ID = "nameField";

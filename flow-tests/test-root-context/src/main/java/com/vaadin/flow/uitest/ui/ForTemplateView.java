@@ -18,24 +18,23 @@ package com.vaadin.flow.uitest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.flow.StateNode;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.html.Label;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateOverridesMap;
-import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.server.Command;
+import com.vaadin.ui.common.ClientDelegate;
+import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.html.NativeButton;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class ForTemplateView extends Div implements View {
+public class ForTemplateView extends Div {
 
     public static class Item {
         private String text;

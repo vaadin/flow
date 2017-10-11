@@ -19,18 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.ui.html.Hr;
-import com.vaadin.flow.router.View;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WebBrowser;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Hr;
+import com.vaadin.ui.html.NativeButton;
 
-public class InfoView extends Div implements View {
+public class InfoView extends Div {
 
     public InfoView() {
         setClassName("infoContainer");

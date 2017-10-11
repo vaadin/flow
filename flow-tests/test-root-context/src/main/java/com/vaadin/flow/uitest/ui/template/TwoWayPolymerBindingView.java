@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.EventHandler;
@@ -24,8 +23,8 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Tag("my-template")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TwoWayPolymerBinding.html")
-public class TwoWayPolymerBindingView extends
-        PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> implements View {
+public class TwoWayPolymerBindingView
+        extends PolymerTemplate<TwoWayPolymerBindingView.TwoWayModel> {
     public TwoWayPolymerBindingView() {
         setId("template");
     }

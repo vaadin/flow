@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template.imports;
 
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.router.View;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.AttachEvent;
@@ -26,8 +25,7 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Tag("x-lazy-widget")
 @HtmlImport(value = "frontend://com/vaadin/flow/uitest/ui/template/imports/x-lazy-widget.html", loadMode = LoadMode.LAZY)
-public class LazyWidgetView extends PolymerTemplate<LazyWidgetView.Model>
-        implements View {
+public class LazyWidgetView extends PolymerTemplate<LazyWidgetView.Model> {
     static final String GREETINGS_TEMPLATE = "Greetings from server, %s!";
 
     public LazyWidgetView() {

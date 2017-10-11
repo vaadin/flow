@@ -15,16 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.NativeButton;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class TimingInfoReportedView extends Div implements View {
+public class TimingInfoReportedView extends Div {
 
   //@formatter:off
     private static final String REPORT_TIMINGS = "setTimeout(function() {"

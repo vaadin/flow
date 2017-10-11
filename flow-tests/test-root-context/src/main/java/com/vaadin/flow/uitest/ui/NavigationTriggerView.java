@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.event.BeforeNavigationEvent;
 
 public class NavigationTriggerView extends AbstractDivView {
     private static final String CLASS_NAME = NavigationTriggerView.class
@@ -40,8 +40,8 @@ public class NavigationTriggerView extends AbstractDivView {
     }
 
     @Override
-    public void onLocationChange(LocationChangeEvent event) {
-        super.onLocationChange(event);
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        super.beforeNavigation(event);
 
         String location = event.getLocation().getPathWithQueryParameters();
         assert location.startsWith(CLASS_NAME);

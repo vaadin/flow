@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.Html;
 
-public class StaticHtmlView extends Html implements View {
+public class StaticHtmlView extends Html {
 
     public StaticHtmlView() {
         super(StaticHtmlView.class.getResourceAsStream("StaticHtmlView.html"));

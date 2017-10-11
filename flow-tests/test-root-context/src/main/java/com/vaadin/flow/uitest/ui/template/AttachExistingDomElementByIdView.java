@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.EventHandler;
@@ -27,7 +26,7 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AttachExistingDomElementById.html")
 @Tag("existing-dom-element")
 public class AttachExistingDomElementByIdView
-        extends PolymerTemplate<TemplateModel> implements View {
+        extends PolymerTemplate<TemplateModel> {
 
     @Id("input")
     private Element input;

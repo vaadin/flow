@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
-import com.vaadin.ui.Html;
 import com.vaadin.ui.AngularTemplate;
+import com.vaadin.ui.Html;
+import com.vaadin.ui.html.Div;
 
-public class SvgView extends Div implements View {
+public class SvgView extends Div {
 
     public static class SvgTemplate extends AngularTemplate {
 

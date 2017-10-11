@@ -15,11 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.html.NativeButton;
 
-public class PaperSliderView extends Div implements View {
+public class PaperSliderView extends Div {
     static final String VALUE_TEXT_ID = "valueText";
     static final String CHANGE_VALUE_ID = "changeValue";
     static final int INITIAL_VALUE = 75;

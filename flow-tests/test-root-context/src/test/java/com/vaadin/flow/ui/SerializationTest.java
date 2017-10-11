@@ -22,17 +22,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.router.Location;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.router.NavigationTrigger;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.View;
 import com.vaadin.flow.uitest.servlet.ViewClassLocator;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 public class SerializationTest {
@@ -42,13 +37,14 @@ public class SerializationTest {
         UI ui = new UI();
         UI.setCurrent(ui);
         try {
-            Collection<Class<? extends View>> viewClasses = new ViewClassLocator(
+            Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(
                     getClass().getClassLoader()).getAllViewClasses();
-            for (Class<? extends View> viewClass : viewClasses) {
-                View view = viewClass.newInstance();
-                view.onLocationChange(new LocationChangeEvent(new Router(), ui,
-                        NavigationTrigger.PROGRAMMATIC, new Location(""),
-                        Collections.emptyList(), Collections.emptyMap()));
+            for (Class<? extends Component> viewClass : viewClasses) {
+                Component view = viewClass.newInstance();
+                // view.onLocationChange(new LocationChangeEvent(new Router(),
+                // ui,
+                // NavigationTrigger.PROGRAMMATIC, new Location(""),
+                // Collections.emptyList(), Collections.emptyMap()));
                 try {
                     Assert.assertNotNull(serializeDeserialize(view));
                 } catch (Exception e) {

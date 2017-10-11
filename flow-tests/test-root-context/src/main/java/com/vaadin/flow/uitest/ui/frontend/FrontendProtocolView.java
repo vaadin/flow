@@ -15,20 +15,18 @@
  */
 package com.vaadin.flow.uitest.ui.frontend;
 
-import com.vaadin.flow.router.View;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.HasComponents;
 
 /**
  * Wrapper view for the {@link FrontendProtocolTemplate} component. This class
- * is used by the FrontendProtocolIT to test the "frontend://" protocol
- * in multiple scenarios.
+ * is used by the FrontendProtocolIT to test the "frontend://" protocol in
+ * multiple scenarios.
  */
 @Tag("div")
-public class FrontendProtocolView extends Component
-        implements View, HasComponents {
+public class FrontendProtocolView extends Component implements HasComponents {
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {

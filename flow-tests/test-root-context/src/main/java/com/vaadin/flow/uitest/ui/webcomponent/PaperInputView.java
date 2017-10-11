@@ -16,9 +16,8 @@
 package com.vaadin.flow.uitest.ui.webcomponent;
 
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
 
-public class PaperInputView extends Div implements View {
+public class PaperInputView extends Div {
 
     public PaperInputView() {
         PaperInput paperInput = new PaperInput("foo");

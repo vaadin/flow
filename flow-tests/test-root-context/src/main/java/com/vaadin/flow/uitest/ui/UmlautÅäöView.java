@@ -18,10 +18,9 @@ package com.vaadin.flow.uitest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.AngularTemplate;
 
-public class UmlautÅäöView extends AngularTemplate implements View {
+public class UmlautÅäöView extends AngularTemplate {
 
     public UmlautÅäöView() {
         super(new ByteArrayInputStream(

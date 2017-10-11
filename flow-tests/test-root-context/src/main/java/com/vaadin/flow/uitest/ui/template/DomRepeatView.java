@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.event.EventData;
@@ -34,8 +33,8 @@ import com.vaadin.ui.polymertemplate.RepeatIndex;
  */
 @Tag("employees-list")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/DomRepeatPolymerTemplate.html")
-public class DomRepeatView extends PolymerTemplate<DomRepeatView.EmployeesModel>
-        implements View {
+public class DomRepeatView
+        extends PolymerTemplate<DomRepeatView.EmployeesModel> {
     static final int NUMBER_OF_EMPLOYEES = 3;
     static final String EVENT_INDEX_ID = "eventIndex";
     static final String REPEAT_INDEX_ID = "repeatIndex";

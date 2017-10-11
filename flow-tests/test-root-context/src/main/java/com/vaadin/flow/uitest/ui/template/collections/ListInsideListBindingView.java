@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.EventHandler;
@@ -32,8 +31,7 @@ import com.vaadin.ui.polymertemplate.RepeatIndex;
 @Tag("list-inside-list-binding")
 @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ListInsideListBinding.html")
 public class ListInsideListBindingView extends
-        PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel>
-        implements View {
+        PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> {
     static final String UPDATED_TEXT = "test";
 
     public static class Message {

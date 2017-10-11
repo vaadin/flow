@@ -17,18 +17,20 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.function.Consumer;
 
-import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.NativeButton;
 
 @StyleSheet("/com/vaadin/flow/uitest/ui/loading-indicator.css")
-public class LoadingIndicatorView extends AbstractDivView {
+public class LoadingIndicatorView extends AbstractDivView
+        implements BeforeNavigationListener {
 
     @Override
-    public void onLocationChange(LocationChangeEvent event) {
+    public void beforeNavigation(BeforeNavigationEvent event) {
         setIfPresent(event, "first",
                 getLoadingIndicatorConfiguration()::setFirstDelay);
         setIfPresent(event, "second",
@@ -63,12 +65,13 @@ public class LoadingIndicatorView extends AbstractDivView {
         return UI.getCurrent().getLoadingIndicatorConfiguration();
     }
 
-    private void setIfPresent(LocationChangeEvent event, String parameter,
+    private void setIfPresent(BeforeNavigationEvent event, String parameter,
             Consumer<Integer> setter) {
-        String value = event.getPathParameter(parameter);
-        if (value != null) {
-            setter.accept(Integer.parseInt(value));
-        }
+
+        // String value = event.getPathParameter(parameter);
+        // if (value != null) {
+        // setter.accept(Integer.parseInt(value));
+        // }
 
     }
 
