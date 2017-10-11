@@ -18,6 +18,8 @@ package com.vaadin.data;
 import java.io.Serializable;
 import java.util.Optional;
 
+import com.vaadin.function.ValueProvider;
+
 /**
  * A property from a {@link PropertySet}.
  *
