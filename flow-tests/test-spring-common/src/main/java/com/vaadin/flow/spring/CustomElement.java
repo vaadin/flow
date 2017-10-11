@@ -15,21 +15,13 @@
  */
 package com.vaadin.flow.spring;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-import com.vaadin.router.Route;
-import com.vaadin.ui.html.Div;
+@HtmlImport("/components/CustomElement.html")
+@Tag("custom-element")
+public class CustomElement extends PolymerTemplate<TemplateModel> {
 
-@Route("")
-public class RootNavigationTarget extends Div {
-
-    public RootNavigationTarget(@Autowired DataBean dataBean,
-            @Autowired FooNavigationTarget section) {
-        setId("main");
-        setText(dataBean.getMessage());
-
-        section.setId("singleton");
-        section.setText("singleton");
-
-    }
 }
