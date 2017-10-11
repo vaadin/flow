@@ -149,7 +149,7 @@ public class GridView extends DemoView {
         grid.setItems(createItems());
 
         grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Age", Person::getAge);
 
         // end-source-example
         grid.setId("basic");
@@ -176,7 +176,7 @@ public class GridView extends DemoView {
         }, query -> 10000));
 
         grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Age", Person::getAge);
 
         // end-source-example
 
@@ -194,7 +194,7 @@ public class GridView extends DemoView {
         grid.setItems(people);
 
         grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Age", Person::getAge);
 
         grid.asSingleSelect().addValueChangeListener(
                 event -> messageDiv.setText(String.format(
@@ -230,7 +230,7 @@ public class GridView extends DemoView {
         grid.setItems(people);
 
         grid.addColumn("Name", Person::getName);
-        grid.addColumn("Age", person -> Integer.toString(person.getAge()));
+        grid.addColumn("Age", Person::getAge);
 
         grid.setSelectionMode(SelectionMode.MULTI);
 
@@ -259,7 +259,7 @@ public class GridView extends DemoView {
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", Person::getAge);
 
-        grid.setSelectionMode(Grid.SelectionMode.NONE);
+        grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
         grid.setId("none-selection");
         addCard("Grid with No Selection Enabled", grid);
@@ -277,19 +277,19 @@ public class GridView extends DemoView {
         // You can set any property by using `withProperty`, including
         // properties not present on the original bean.
         grid.addColumn("Person", TemplateRenderer.<Person> of(
-                "<div title=\"[[item.name]]\">[[item.name]]<br><small>[[item.yearsOld]]</small></div>")
+                "<div title='[[item.name]]'>[[item.name]]<br><small>[[item.yearsOld]]</small></div>")
                 .withProperty("name", Person::getName).withProperty("yearsOld",
                         person -> person.getAge() > 1
                                 ? person.getAge() + " years old"
                                 : person.getAge() + " year old"));
 
-        // Youcan also set complex objects directly. Internal properties of the
+        // You can also set complex objects directly. Internal properties of the
         // bean are accessible in the template.
         grid.addColumn("Address", TemplateRenderer.<Person> of(
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
                 .withProperty("address", Person::getAddress));
 
-        grid.setSelectionMode(Grid.SelectionMode.NONE);
+        grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
         grid.setId("template-renderer");
         addCard("Grid with columns using template renderer", grid);

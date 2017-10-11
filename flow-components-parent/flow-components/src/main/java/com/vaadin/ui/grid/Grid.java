@@ -481,10 +481,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     /**
      * Adds a new text column to this {@link Grid} with a value provider. The
      * value is converted to a JSON value by using
-     * {@link JsonSerializer#toJson(Object)}. In-memory sorting will use the
-     * natural ordering of elements if they are mutually comparable and
-     * otherwise fall back to comparing the string representations of the
-     * values.
+     * {@link JsonSerializer#toJson(Object)}.
      *
      * @param header
      *            the column header name
@@ -500,10 +497,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     /**
      * Adds a new text column to this {@link Grid} with a template renderer. The
      * values inside the renderer are converted to JSON values by using
-     * {@link JsonSerializer#toJson(Object)}. In-memory sorting will use the
-     * natural ordering of elements if they are mutually comparable and
-     * otherwise fall back to comparing the string representations of the
-     * values.
+     * {@link JsonSerializer#toJson(Object)}.
      * 
      * @param header
      *            the column header name

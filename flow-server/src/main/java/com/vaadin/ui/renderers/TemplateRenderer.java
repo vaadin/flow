@@ -55,7 +55,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * // Prints the index of the item inside a repeating list
      * TemplateRenderer.of("[[index]]");
      * 
-     *  // Prints the property of an item
+     * // Prints the property of an item
      * TemplateRenderer.of("<div>Property: [[item.property]]</div>");
      * }
      * </pre>
@@ -85,17 +85,17 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * {@code
      * // Regular property
      * TemplateRenderer.<Person> of("<div>Name: [[item.name]]</div>")
-     * 			.withProperty("name", Person::getName);
+     *          .withProperty("name", Person::getName);
      * 
-     * // Property that uses a bean. Note that in this case the entire "Adress" object will be sent to the template.
+     * // Property that uses a bean. Note that in this case the entire "Address" object will be sent to the template.
      * // Note that even properties of the bean which are not used in the template are sent to the client, so use
      * // this feature with caution.
      * TemplateRenderer.<Person> of("<span>Street: [[item.address.street]]</span>")
-     * 			.withProperty("address", Person::getAddress); 
+     *          .withProperty("address", Person::getAddress); 
      * 
      * // In this case only the street field inside the Address object is sent
      * TemplateRenderer.<Person> of("<span>Street: [[item.street]]</span>")
-     * 			.withProperty("street", person -> person.getAddress().getStreet());
+     *          .withProperty("street", person -> person.getAddress().getStreet());
      * }
      * </pre>
      * 
@@ -105,7 +105,8 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * @param property
      *            the name of the property used inside the template
      * @param provider
-     *            a {@link ValueProvider} that provides the actual
+     *            a {@link ValueProvider} that provides the actual value for the
+     *            property
      * @return this instance for method chaining
      */
     public TemplateRenderer<SOURCE> withProperty(String property,
