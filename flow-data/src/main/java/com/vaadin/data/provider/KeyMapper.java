@@ -14,14 +14,13 @@
  * the License.
  */
 
-package com.vaadin.server;
+package com.vaadin.data.provider;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.data.ValueProvider;
-import com.vaadin.data.provider.DataKeyMapper;
+import com.vaadin.function.ValueProvider;
 
 /**
  * <code>KeyMapper</code> is the simple two-way map for generating textual keys
