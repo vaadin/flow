@@ -146,6 +146,17 @@ public class GridViewIT extends ComponentDemoTest {
         Assert.assertFalse(isRowSelected(grid, 1));
     }
 
+    @Test
+    public void gridWithColumnTemplate() {
+        WebElement grid = findElement(By.id("template-renderer"));
+        scrollToElement(grid);
+        Assert.assertTrue(hasHtmlCell(grid, "0"));
+        Assert.assertTrue(hasHtmlCell(grid,
+                "<div title=\"Person 1\">Person 1<br><small>23 years old</small></div>"));
+        Assert.assertTrue(hasHtmlCell(grid,
+                "<div>Street S, number 30<br><small>16142</small></div>"));
+    }
+
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(
@@ -184,6 +195,18 @@ public class GridViewIT extends ComponentDemoTest {
         List<WebElement> cells = grid
                 .findElements(By.tagName("vaadin-grid-cell-content"));
         return cells.stream().filter(cell -> text.equals(cell.getText()))
+                .findAny().orElse(null);
+    }
+
+    private boolean hasHtmlCell(WebElement grid, String html) {
+        return getHtmlCell(grid, html) != null;
+    }
+
+    private WebElement getHtmlCell(WebElement grid, String text) {
+        List<WebElement> cells = grid
+                .findElements(By.tagName("vaadin-grid-cell-content"));
+        return cells.stream()
+                .filter(cell -> text.equals(cell.getAttribute("innerHTML")))
                 .findAny().orElse(null);
     }
 

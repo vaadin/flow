@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import com.vaadin.data.AbstractListing;
 import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
-import com.vaadin.data.ValueProvider;
 import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataCommunicator;
@@ -49,6 +48,7 @@ import com.vaadin.data.selection.SingleSelectionListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.AttachEvent;
@@ -56,6 +56,8 @@ import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.renderers.TemplateRenderer;
+import com.vaadin.util.JsonSerializer;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -478,22 +480,39 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
     /**
      * Adds a new text column to this {@link Grid} with a value provider. The
-     * value is converted to a String using {@link Object#toString()}. In-memory
-     * sorting will use the natural ordering of elements if they are mutually
-     * comparable and otherwise fall back to comparing the string
-     * representations of the values.
+     * value is converted to a JSON value by using
+     * {@link JsonSerializer#toJson(Object)}.
      *
      * @param header
      *            the column header name
      * @param valueProvider
      *            the value provider
      */
-    public void addColumn(String header,
-            ValueProvider<T, String> valueProvider) {
-        int id = nextColumnId;
-        nextColumnId++;
-        String columnKey = "col" + id;
-        columnGenerators.put(columnKey, valueProvider.andThen(Json::create));
+    public void addColumn(String header, ValueProvider<T, ?> valueProvider) {
+        String columnKey = getColumnKey(false);
+        addColumn(header, TemplateRenderer.<T> of("[[item." + columnKey + "]]")
+                .withProperty(columnKey, valueProvider));
+    }
+
+    /**
+     * Adds a new text column to this {@link Grid} with a template renderer. The
+     * values inside the renderer are converted to JSON values by using
+     * {@link JsonSerializer#toJson(Object)}.
+     * 
+     * @param header
+     *            the column header name
+     * @param renderer
+     *            the renderer used to create the grid cell structure
+     * 
+     * @see TemplateRenderer#of(String)
+     */
+    public void addColumn(String header, TemplateRenderer<T> renderer) {
+        String columnKey = getColumnKey(true);
+
+        renderer.getValueProviders().forEach((key, provider) -> {
+            columnGenerators.put(key, provider.andThen(JsonSerializer::toJson));
+        });
+
         getDataCommunicator().reset();
 
         // Use innerHTML to set document fragment instead of DOM children
@@ -501,13 +520,21 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                 .setAttribute("class", "header")
                 .setProperty("innerHTML", HtmlUtils.escape(header));
         Element contentTemplate = new Element("template")
-                .setProperty("innerHTML", "[[item." + columnKey + "]]");
+                .setProperty("innerHTML", renderer.getTemplate());
 
         Element colElement = new Element("vaadin-grid-column")
                 .setAttribute("id", columnKey)
                 .appendChild(headerTemplate, contentTemplate);
 
         getElement().appendChild(colElement);
+    }
+
+    private String getColumnKey(boolean increment) {
+        int id = nextColumnId;
+        if (increment) {
+            nextColumnId++;
+        }
+        return "col" + id;
     }
 
     @Override
@@ -640,6 +667,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *
      * @see #getSelectionModel()
      * @see GridSelectionModel
+     * 
+     * @return a set with the selected items, never <code>null</code>
      */
     public Set<T> getSelectedItems() {
         return getSelectionModel().getSelectedItems();
