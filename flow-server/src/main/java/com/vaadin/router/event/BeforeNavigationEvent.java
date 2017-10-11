@@ -48,7 +48,7 @@ public class BeforeNavigationEvent extends EventObject {
 
     private final Class<?> navigationTarget;
     private NavigationState rerouteTargetState;
-    private ErrorParameter<?> errorParameter;
+    private transient ErrorParameter<?> errorParameter;
 
     /**
      * Construct event from a NavigationEvent.
@@ -304,16 +304,16 @@ public class BeforeNavigationEvent extends EventObject {
      *            custom message to send to error target
      */
     public void rerouteToError(Exception exception, String customMessage) {
-        ErrorParameter<?> errorParameter = new ErrorParameter(exception,
+        ErrorParameter errorParameter = new ErrorParameter(exception,
                 customMessage);
 
-        Optional<Class<? extends Component>> navigationTarget = getSource()
+        Optional<Class<? extends Component>> errorNavigationTarget = getSource()
                 .getRegistry()
                 .getErrorNavigationTarget(errorParameter.getException());
 
-        if (navigationTarget.isPresent()) {
+        if (errorNavigationTarget.isPresent()) {
             rerouteTargetState = new NavigationStateBuilder()
-                    .withTarget(navigationTarget.get()).build();
+                    .withTarget(errorNavigationTarget.get()).build();
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
             this.errorParameter = errorParameter;
@@ -337,7 +337,7 @@ public class BeforeNavigationEvent extends EventObject {
      * 
      * @return error parameter
      */
-    public ErrorParameter<?> getErrorParameter() {
+    public ErrorParameter getErrorParameter() {
         return errorParameter;
     }
 }
