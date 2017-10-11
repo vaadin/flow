@@ -18,8 +18,8 @@ package com.vaadin.flow.tutorial.binder;
 import com.vaadin.data.Binder;
 import com.vaadin.data.Setter;
 import com.vaadin.data.ValidationException;
-import com.vaadin.data.ValueProvider;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.function.ValueProvider;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.textfield.TextField;
 

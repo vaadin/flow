@@ -18,10 +18,10 @@ package com.vaadin.data.provider;
 import java.util.Locale;
 import java.util.Objects;
 
-import com.vaadin.data.ValueProvider;
 import com.vaadin.function.SerializableBiPredicate;
 import com.vaadin.function.SerializableComparator;
 import com.vaadin.function.SerializablePredicate;
+import com.vaadin.function.ValueProvider;
 import com.vaadin.ui.UI;
 
 /**
