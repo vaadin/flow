@@ -267,9 +267,12 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Reroute to error target for given exception without custom message.
+     * <p>
+     * Exception class needs to have default no-arg constructor.
      * 
      * @param exception
      *            exception to get error target for
+     * @see BeforeNavigationEvent#rerouteToError(Exception, String)
      */
     public void rerouteToError(Class<? extends Exception> exception) {
         rerouteToError(exception, "");
@@ -277,11 +280,14 @@ public class BeforeNavigationEvent extends EventObject {
 
     /**
      * Reroute to error target for given exception with given custom message.
+     * <p>
+     * Exception class needs to have default no-arg constructor.
      * 
      * @param exception
      *            exception to get error target for
      * @param customMessage
      *            custom message to send to error target
+     * @see BeforeNavigationEvent#rerouteToError(Exception, String)
      */
     public void rerouteToError(Class<? extends Exception> exception,
             String customMessage) {
