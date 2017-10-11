@@ -15,10 +15,11 @@
  */
 package com.vaadin.router.event;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.EventObject;
+import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.ErrorStateRenderer;
@@ -203,38 +204,50 @@ public class BeforeNavigationEvent extends EventObject {
      *            route parameter
      */
     public <T> void rerouteTo(String route, T routeParam) {
-        Optional<Class<? extends Component>> optionalTarget = getSource()
-                .getRegistry().getNavigationTarget(route,
-                        Arrays.asList(routeParam.toString()));
+        rerouteTo(route, Collections.singletonList(routeParam));
+    }
 
-        if (optionalTarget.isPresent()) {
-            boolean hasUrlParameter = HasUrlParameter.class
-                    .isAssignableFrom(optionalTarget.get());
-            if (hasUrlParameter) {
-                Class genericInterfaceType = ReflectTools
-                        .getGenericInterfaceType(optionalTarget.get(),
-                                HasUrlParameter.class);
-                if (genericInterfaceType
-                        .isAssignableFrom(routeParam.getClass())) {
-                    rerouteTo(
-                            new NavigationStateBuilder()
-                                    .withTarget(optionalTarget.get(),
-                                            Arrays.asList(
-                                                    routeParam.toString()))
-                                    .build());
-                } else {
-                    throw new IllegalArgumentException(String.format(
-                            "Given route parameter '%s' is of the wrong type. Required '%s'.",
-                            routeParam.getClass(), genericInterfaceType));
-                }
-            } else {
-                throw new IllegalArgumentException(String.format(
-                        "Found navigation target for route '%s' doesn't support url parameters.",
-                        route));
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "No navigation target found route '" + route + "'");
+    /**
+     * Reroute to navigation component registered for given location string with
+     * given route parameters instead of the component about to be displayed.
+     *
+     * @param route
+     *            reroute target location string
+     * @param routeParams
+     *            route parameters
+     */
+    public <T> void rerouteTo(String route, List<T> routeParams) {
+        List<String> segments = routeParams.stream().map(Object::toString)
+                .collect(Collectors.toList());
+        Class<? extends Component> target = getTargetOrThrow(route, segments);
+
+        if (!routeParams.isEmpty()) {
+            checkUrlParameterType(routeParams.get(0), target);
+        }
+        rerouteTo(new NavigationStateBuilder()
+                .withTarget(target, segments).build());
+    }
+
+    private Class<? extends Component> getTargetOrThrow(String route,
+            List<String> segments) {
+        if (!getSource().getRegistry().hasRouteTo(route)) {
+            throw new IllegalArgumentException(String.format
+                    ("No navigation target found for route '%s'", route));
+        }
+        return getSource().getRegistry().getNavigationTarget(route, segments)
+                .orElseThrow(() -> new IllegalArgumentException(String.format
+                        ("The navigation target for route '%s' doesn't accept the parameters %s.",
+                                route, segments)));
+    }
+
+    private <T> void checkUrlParameterType(T routeParam,
+            Class<? extends Component> target) {
+        Class<?> genericInterfaceType = ReflectTools
+                .getGenericInterfaceType(target, HasUrlParameter.class);
+        if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
+            throw new IllegalArgumentException(String.format(
+                    "Given route parameter '%s' is of the wrong type. Required '%s'.",
+                    routeParam.getClass(), genericInterfaceType));
         }
     }
 
