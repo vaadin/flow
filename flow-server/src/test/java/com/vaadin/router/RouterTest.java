@@ -466,6 +466,30 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("loop")
+    @Tag(Tag.DIV)
+    public static class LoopByReroute extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Loop");
+            UI.getCurrent().navigateTo("loop");
+        }
+    }
+
+    @Route("redirect/loop")
+    @Tag(Tag.DIV)
+    public static class RedirectToLoopByReroute extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Redirect");
+            UI.getCurrent().navigateTo("loop");
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -1149,7 +1173,8 @@ public class RouterTest extends RoutingTestBase {
     public void do_not_accept_same_exception_targets() {
 
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(startsWith("Only one target for an exception should be defined. Found "));
+        expectedEx.expectMessage(startsWith(
+                "Only one target for an exception should be defined. Found "));
 
         router.getRegistry()
                 .setErrorNavigationTargets(Stream
@@ -1177,6 +1202,30 @@ public class RouterTest extends RoutingTestBase {
                 .getComponent();
         Assert.assertEquals(CustomNotFoundTarget.TEXT_CONTENT,
                 visibleComponent.get().getElement().getText());
+    }
+
+    @Test
+    public void repeatedly_navigating_to_same_ur_through_ui_navigateTo_should_not_loop()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(LoopByReroute.class).collect(Collectors.toSet()));
+
+        ui.navigateTo("loop");
+
+        Assert.assertEquals("Expected only one request to loop", 1,
+                eventCollector.size());
+    }
+
+    @Test
+    public void navigateTo_should_not_loop()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(LoopByReroute.class, RedirectToLoopByReroute.class).collect(Collectors.toSet()));
+
+        ui.navigateTo("redirect/loop");
+
+        Assert.assertEquals("Expected two events", 2,
+                eventCollector.size());
     }
 
     private Class<? extends Component> getUIComponent() {
