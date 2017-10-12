@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>flow-test-resources</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.lightbody.bmp</groupId>
