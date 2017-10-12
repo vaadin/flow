@@ -15,20 +15,13 @@
  */
 package com.vaadin.flow.spring;
 
-import org.springframework.stereotype.Component;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-import com.vaadin.server.VaadinSession;
-import com.vaadin.spring.annotation.VaadinSessionScope;
+@HtmlImport("/components/CustomElement.html")
+@Tag("custom-element")
+public class CustomElement extends PolymerTemplate<TemplateModel> {
 
-/**
- * @author Vaadin Ltd
- *
- */
-@Component
-@VaadinSessionScope
-public class DataBean {
-
-    public String getMessage() {
-        return "foo" + VaadinSession.getCurrent().getSession().getId();
-    }
 }

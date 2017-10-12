@@ -46,7 +46,7 @@ public class SpringBootAutoConfiguration {
      */
     @Bean
     public ServletContextInitializer contextInitializer() {
-        return new RouterRegistryServletContextInitializer(context);
+        return new VaadinServletContextInitializer(context);
     }
 
     /**

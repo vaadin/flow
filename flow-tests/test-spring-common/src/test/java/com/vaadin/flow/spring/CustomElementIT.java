@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2014 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -13,22 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.spring;
 
-import org.springframework.stereotype.Component;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-import com.vaadin.server.VaadinSession;
-import com.vaadin.spring.annotation.VaadinSessionScope;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-/**
- * @author Vaadin Ltd
- *
- */
-@Component
-@VaadinSessionScope
-public class DataBean {
+public class CustomElementIT extends ChromeBrowserTest {
 
-    public String getMessage() {
-        return "foo" + VaadinSession.getCurrent().getSession().getId();
+    @Override
+    protected String getTestPath() {
+        return "/custom-element";
+    }
+
+    @Test
+    public void customElementIsRegistered() throws Exception {
+        open();
+
+        WebElement element = findElement(By.id("registered-custom-element"));
+        Assert.assertEquals(CustomElement.class.getName(), element.getText());
     }
 }

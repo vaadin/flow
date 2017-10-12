@@ -12,16 +12,21 @@
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <skip.npm>true</skip.npm>
-        <skip.bower>true</skip.bower>
         <skipTests>true</skipTests>
+        <frontend.working.directory>${project.basedir}/src/main/resources/META-INF/resources</frontend.working.directory>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-spring-addon</artifactId>
+            <version>${project.version}</version>
         </dependency>
         
          <dependency>
@@ -42,6 +47,58 @@
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>
+                                ${frontend.working.directory}/bower_components
+                            </directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${frontend.working.directory}/build
+                            </directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${frontend.working.directory}/etc
+                            </directory>
+                        </fileset>
+                        <fileset>
+                            <directory>${frontend.working.directory}/node
+                            </directory>
+                        </fileset>
+                        <fileset>
+                            <directory>
+                                ${frontend.working.directory}/node_modules
+                            </directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                <configuration>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <npmVersion>${npm.version}</npmVersion>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                            <goal>npm</goal> <!-- runs 'install' by default -->
+                            <goal>bower</goal> <!-- runs 'install' by default -->
+                        </goals>
+                        <configuration>
+                            <workingDirectory>${frontend.working.directory}</workingDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
