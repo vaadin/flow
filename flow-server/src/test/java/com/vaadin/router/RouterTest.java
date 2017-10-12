@@ -23,13 +23,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hibernate.validator.constraints.SafeHtml;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
@@ -583,7 +581,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("toNotFound")
     @Tag(Tag.DIV)
-    public static class RedirectToNotFoundInHasParam extends Component implements HasUrlParameter<String> {
+    public static class RedirectToNotFoundInHasParam extends Component
+            implements HasUrlParameter<String> {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
@@ -594,7 +593,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("param/reroute")
     @Tag(Tag.DIV)
-    public static class RedirectOnSetParam extends Component implements HasUrlParameter<String> {
+    public static class RedirectOnSetParam extends Component
+            implements HasUrlParameter<String> {
 
         @Override
         public void setParameter(BeforeNavigationEvent event,
@@ -863,16 +863,19 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_fails_with_no_url_parameter()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        ParameterRouteNoParameter.class, RerouteToRouteWithParam.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                ParameterRouteNoParameter.class,
+                                RerouteToRouteWithParam.class)
                         .collect(Collectors.toSet()));
         String locationString = "redirect/to/param";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [hello].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -902,9 +905,10 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_with_multiple_url_parameters()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithMultipleParameters.class,
-                        RerouteToRouteWithMultipleParams.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                RouteWithMultipleParameters.class,
+                                RerouteToRouteWithMultipleParams.class)
                         .collect(Collectors.toSet()));
 
         router.navigate(ui, new Location("redirect/to/params"),
@@ -920,16 +924,19 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_fails_with_faulty_url_parameters()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithMultipleParameters.class, FailRerouteWithParams.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                RouteWithMultipleParameters.class,
+                                FailRerouteWithParams.class)
                         .collect(Collectors.toSet()));
         String locationString = "fail/params";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "Given route parameter 'class java.lang.Long' is of the wrong type. Required 'class java.lang.String'.";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -940,16 +947,19 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_with_multiple_url_parameters_fails_to_parameterless_target()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        ParameterRouteNoParameter.class, RerouteToRouteWithMultipleParams.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                ParameterRouteNoParameter.class,
+                                RerouteToRouteWithMultipleParams.class)
                         .collect(Collectors.toSet()));
         String locationString = "redirect/to/params";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -959,17 +969,18 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_with_multiple_url_parameters_fails_to_single_parameter_target()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithParameter.class, RerouteToRouteWithMultipleParams.class)
-                        .collect(Collectors.toSet()));
+        router.getRegistry().setNavigationTargets(Stream
+                .of(GreetingNavigationTarget.class, RouteWithParameter.class,
+                        RerouteToRouteWithMultipleParams.class)
+                .collect(Collectors.toSet()));
         String locationString = "redirect/to/params";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1231,9 +1242,11 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_on_hasParameter_step()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(
-                Stream.of(RootParameter.class, RedirectOnSetParam.class).collect(Collectors.toSet()));
+                Stream.of(RootParameter.class, RedirectOnSetParam.class)
+                        .collect(Collectors.toSet()));
 
-        router.navigate(ui, new Location("param/reroute/hello"), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location("param/reroute/hello"),
+                NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
@@ -1463,10 +1476,10 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_to_error_from_has_param()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(
-                Stream.of(RedirectToNotFoundInHasParam.class).collect(Collectors.toSet()));
+                Stream.of(RedirectToNotFoundInHasParam.class)
+                        .collect(Collectors.toSet()));
 
-        int result = router.navigate(ui,
-                new Location("toNotFound/error"),
+        int result = router.navigate(ui, new Location("toNotFound/error"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Target should have rerouted to exception target.",
                 404, result);
@@ -1516,8 +1529,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertTrue("No navigation component visible",
                 visibleComponent.isPresent());
 
-        Assert.assertEquals(errorClass,
-                visibleComponent.get().getClass());
+        Assert.assertEquals(errorClass, visibleComponent.get().getClass());
         Assert.assertEquals(exceptionText,
                 visibleComponent.get().getElement().getText());
     }
