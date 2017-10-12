@@ -139,6 +139,11 @@ public final class ExecuteJavaScriptElementUtils {
             Reactive.addPostFlushListener(() -> Scheduler.get()
                     .scheduleDeferred(() -> attachExistingElementById(parent,
                             tagName, serverSideId, id)));
+        } else if (getDomRoot(parent.getDomNode()) == null) {
+            invokeWhenDefined(parent.getDomNode(),
+                    () -> attachExistingElementById(parent, tagName,
+                            serverSideId, id));
+            return;
         } else {
             Element existingElement = getDomElementById(
                     (Element) parent.getDomNode(), id);
@@ -167,6 +172,12 @@ public final class ExecuteJavaScriptElementUtils {
      */
     public static void attachCustomElement(StateNode parent, String tagName,
             int serverSideId, JsonArray path) {
+        if (getDomRoot(parent.getDomNode()) == null) {
+            invokeWhenDefined(parent.getDomNode(),
+                    () -> attachCustomElement(parent, tagName, serverSideId,
+                            path));
+            return;
+        }
         Element customElement = getCustomElement(
                 getDomRoot(parent.getDomNode()), path);
         if (customElement != null
@@ -275,4 +286,12 @@ public final class ExecuteJavaScriptElementUtils {
         }
         return existingId;
     }
+
+    private static native void invokeWhenDefined(Node node, Runnable runnable)
+    /*-{
+        $wnd.customElements.whenDefined(node.localName).then(
+            function () {
+                runnable.@java.lang.Runnable::run(*)();
+            });
+    }-*/;
 }
