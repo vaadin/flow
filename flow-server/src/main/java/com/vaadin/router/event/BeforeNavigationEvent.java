@@ -318,22 +318,17 @@ public class BeforeNavigationEvent extends EventObject {
      *            custom message to send to error target
      */
     public void rerouteToError(Exception exception, String customMessage) {
-        ErrorParameter errorParameter = new ErrorParameter(exception,
-                customMessage);
-
         Optional<Class<? extends Component>> errorNavigationTarget = getSource()
-                .getRegistry()
-                .getErrorNavigationTarget(errorParameter.getException());
+                .getRegistry().getErrorNavigationTarget(exception);
 
         if (errorNavigationTarget.isPresent()) {
             rerouteTargetState = new NavigationStateBuilder()
                     .withTarget(errorNavigationTarget.get()).build();
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
-            this.errorParameter = errorParameter;
+            errorParameter = new ErrorParameter(exception, customMessage);
         } else {
-            throw new RuntimeException(customMessage,
-                    errorParameter.getException());
+            throw new RuntimeException(customMessage, exception);
         }
     }
 
