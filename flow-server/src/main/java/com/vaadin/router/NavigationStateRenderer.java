@@ -52,7 +52,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     }
 
     private final NavigationState navigationState;
-    private Queue<BeforeNavigationListener> remainingListeners = null;
+    private LinkedList<BeforeNavigationListener> remainingListeners = null;
 
     /**
      * Constructs a new NavigationStateRenderer that handles the given
@@ -111,7 +111,7 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         BeforeNavigationEvent beforeNavigationDeactivating = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.DEACTIVATING);
-        Queue<BeforeNavigationListener> listeners = remainingListeners;
+        LinkedList<BeforeNavigationListener> listeners = remainingListeners;
         if (listeners == null) {
             listeners = new LinkedList<>(
                     EventUtil.collectBeforeNavigationListeners(ui.getElement()));

@@ -16,20 +16,20 @@
 
 package com.vaadin.router;
 
+import java.io.Serializable;
+
 import com.vaadin.router.event.BeforeNavigationEvent;
 
 /**
  * The action to resume a postponed {@link BeforeNavigationEvent}.
  * @author Vaadin Ltd.
  */
-public class ContinueNavigationAction {
+public class ContinueNavigationAction implements Serializable {
 
+    /** A lambda which does nothing. */
     static final Runnable NULL_FUNCTION = () -> {};
 
     private Runnable callback = NULL_FUNCTION;
-
-    public ContinueNavigationAction() {
-    }
 
     void setCallback(Runnable callback) {
         this.callback = callback;
