@@ -266,6 +266,7 @@ public class BootstrapHandlerDependenciesTest {
 
     @After
     public void tearDown() {
+        session.unlock();
         VaadinService.setCurrent(null);
     }
 
