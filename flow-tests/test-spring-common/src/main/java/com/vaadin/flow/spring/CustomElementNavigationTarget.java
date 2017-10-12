@@ -15,33 +15,24 @@
  */
 package com.vaadin.flow.spring;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.vaadin.router.Route;
-import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.server.startup.CustomElementRegistry;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
-@Route("")
-public class RootNavigationTarget extends Div {
+@Route("custom-element")
+public class CustomElementNavigationTarget extends Div {
 
-    public RootNavigationTarget(@Autowired DataBean dataBean,
-            @Autowired FooNavigationTarget section) {
-        setId("main");
-        Label label = new Label(dataBean.getMessage());
-        label.setId("message");
-        add(label);
-
-        section.setId("singleton");
-        section.setText("singleton");
-
+    public CustomElementNavigationTarget() {
+        // Don't test it via the functionality which uses it (@Id, tempalates in
+        // templates) because of #2653
+        Class<? extends Component> customElement = CustomElementRegistry
+                .getInstance().getRegisteredCustomElement("custom-element");
+        if (customElement != null) {
+            Label label = new Label(customElement.getName());
+            label.setId("registered-custom-element");
+            add(label);
+        }
     }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        Label label = new Label(String.valueOf(getUI().get().getUIId()));
-        label.setId("ui-id");
-        add(label);
-    }
-
 }
