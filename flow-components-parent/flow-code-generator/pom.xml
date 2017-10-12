@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-code-generator-api</artifactId>
-            <version>${flow.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Maven plugin dependencies -->
