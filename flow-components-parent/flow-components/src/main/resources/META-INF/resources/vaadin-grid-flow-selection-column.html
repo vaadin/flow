@@ -110,7 +110,7 @@
 
       _onSelectAllClick(e) {
         e.preventDefault();
-        this.selectAll ? this._grid.$server.deselectAll() : this._grid.$server.selectAll();
+        this.selectAll ? this.$server.deselectAll() : this.$server.selectAll();
       }
 
       _onSelectEvent(e) {

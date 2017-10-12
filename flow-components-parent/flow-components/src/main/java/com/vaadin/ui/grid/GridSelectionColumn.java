@@ -17,6 +17,7 @@ package com.vaadin.ui.grid;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 
 /**
@@ -27,6 +28,26 @@ import com.vaadin.ui.common.HtmlImport;
 @Tag("vaadin-grid-flow-selection-column")
 @HtmlImport("context://vaadin-grid-flow-selection-column.html")
 public class GridSelectionColumn extends Component {
+
+    private final Runnable selectAllCallback;
+    private final Runnable deselectAllCallback;
+
+    /**
+     * Constructs a new grid selection column configured to use the given
+     * callbacks whenever the select all checkbox is toggled on the client side.
+     * 
+     * @param selectAllCallback
+     *            the runnable to run when the select all checkbox has been
+     *            checked
+     * @param deselectAllCallback
+     *            the runnable to run when the select all checkbox has been
+     *            unchecked
+     */
+    public GridSelectionColumn(Runnable selectAllCallback,
+            Runnable deselectAllCallback) {
+        this.selectAllCallback = selectAllCallback;
+        this.deselectAllCallback = deselectAllCallback;
+    }
 
     /**
      * Sets the checked state of the select all checkbox on the client.
@@ -46,5 +67,15 @@ public class GridSelectionColumn extends Component {
      */
     public void setSelectAllCheckBoxVisibility(boolean visible) {
         getElement().setProperty("selectAllHidden", !visible);
+    }
+
+    @ClientDelegate
+    private void selectAll() {
+        selectAllCallback.run();
+    }
+
+    @ClientDelegate
+    private void deselectAll() {
+        deselectAllCallback.run();
     }
 }
