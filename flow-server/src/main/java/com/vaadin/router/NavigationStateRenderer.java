@@ -25,6 +25,7 @@ import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.router.util.RouterUtil;
@@ -136,7 +137,8 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         RouterUtil.updatePageTitle(event, componentInstance);
 
-        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event, chain);
+        LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event,
+                chain);
 
         if (locationChangeEvent.getStatusCode() == HttpServletResponse.SC_OK) {
             fireAfterNavigationListeners(chain,
@@ -190,13 +192,29 @@ public class NavigationStateRenderer implements NavigationHandler {
             BeforeNavigationEvent beforeNavigation) {
         NavigationHandler handler = beforeNavigation.getRerouteTarget();
 
+        NavigationEvent newNavigationEvent = getNavigationEvent(event,
+                beforeNavigation);
+
+        return handler.handle(newNavigationEvent);
+    }
+
+    private NavigationEvent getNavigationEvent(NavigationEvent event,
+            BeforeNavigationEvent beforeNavigation) {
+        if (beforeNavigation.hasErrorParameter()) {
+            ErrorParameter<?> errorParameter = beforeNavigation
+                    .getErrorParameter();
+            Location location = new Location(
+                    errorParameter.getException().getClass().getSimpleName());
+
+            return new ErrorNavigationEvent(event.getSource(), location,
+                    event.getUI(), NavigationTrigger.PROGRAMMATIC,
+                    errorParameter);
+        }
+
         Location location = new Location(beforeNavigation.getRouteTargetType()
                 .getAnnotation(Route.class).value());
 
-        NavigationEvent newNavigationEvent = new NavigationEvent(
-                event.getSource(), location, event.getUI(),
+        return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC);
-
-        return handler.handle(newNavigationEvent);
     }
 }

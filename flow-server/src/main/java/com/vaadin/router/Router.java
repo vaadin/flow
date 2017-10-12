@@ -135,24 +135,33 @@ public class Router implements RouterInterface {
             throw new NotFoundException(
                     "Couldn't find route for '" + location.getPath() + "'");
         } catch (Exception exception) {
-            Class<? extends Component> navigationTarget = getRegistry()
-                    .getErrorNavigationTarget(exception);
+            ErrorParameter<?> errorParameter = new ErrorParameter<>(exception,
+                    exception.getMessage());
 
-            if (navigationTarget == null) {
-                throw exception;
-            }
-
-            NavigationHandler handler = new ErrorStateRenderer(
-                    new NavigationStateBuilder().withTarget(navigationTarget)
-                            .build());
-
-            NavigationEvent navigationEvent = new ErrorNavigationEvent(this,
-                    location, ui, NavigationTrigger.PROGRAMMATIC,
-                    new ErrorParameter(exception, exception.getMessage()));
-
-            return handler.handle(navigationEvent);
+            return navigateToExceptionView(ui, location, errorParameter);
         } finally {
             lastHandledNavigation = null;
+        }
+    }
+
+    private int navigateToExceptionView(UI ui, Location location,
+            ErrorParameter<?> errorParameter) {
+        Optional<Class<? extends Component>> navigationTarget = getRegistry()
+                .getErrorNavigationTarget(errorParameter.getException());
+
+        if (navigationTarget.isPresent()) {
+            ErrorStateRenderer handler = new ErrorStateRenderer(
+                    new NavigationStateBuilder()
+                            .withTarget(navigationTarget.get()).build());
+
+            ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
+                    this, location, ui, NavigationTrigger.PROGRAMMATIC,
+                    errorParameter);
+
+            return handler.handle(navigationEvent);
+        } else {
+            throw new RuntimeException(errorParameter.getCustomMessage(),
+                    errorParameter.getException());
         }
     }
 
