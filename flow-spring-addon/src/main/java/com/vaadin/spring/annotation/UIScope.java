@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 import org.springframework.context.annotation.Scope;
 
 /**
- * Stereotype annotation for Spring's {@code @Scope("vaadin-session")}.
+ * Stereotype annotation for Spring's {@code @Scope("vaadin-ui")}.
  *
  * @author Vaadin Ltd
  */
@@ -34,5 +34,5 @@ import org.springframework.context.annotation.Scope;
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface VaadinUIScope {
+public @interface UIScope {
 }

@@ -34,7 +34,7 @@ import com.vaadin.ui.event.ComponentEventListener;
  * to the current {@link UI}. Registered by default as the scope "
  * {@value #VAADIN_UI_SCOPE_NAME}".
  *
- * @see com.vaadin.spring.annotation.VaadinUIScope
+ * @see com.vaadin.spring.annotation.UIScope
  *
  * @author Vaadin Ltd
  *
