@@ -509,6 +509,52 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("beforeToError/exception")
+    @Tag(Tag.DIV)
+    public static class RerouteToError extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteToError(IllegalArgumentException.class);
+        }
+    }
+
+    @Route("beforeToError/message")
+    @Tag(Tag.DIV)
+    public static class RerouteToErrorWithMessage extends Component
+            implements BeforeNavigationListener, HasUrlParameter<String> {
+
+        String message;
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            event.rerouteToError(IllegalArgumentException.class, message);
+        }
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            this.message = parameter;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class IllegalTarget extends Component
+            implements HasErrorParameter<IllegalArgumentException> {
+
+        @Override
+        public int setErrorParameter(BeforeNavigationEvent event,
+                ErrorParameter<IllegalArgumentException> parameter) {
+            if (parameter.hasCustomMessage()) {
+                getElement().setText(parameter.getCustomMessage());
+            } else {
+                getElement().setText("Illegal argument exception.");
+            }
+            return 500;
+        }
+    }
+
     @Route("loop")
     @Tag(Tag.DIV)
     public static class LoopByReroute extends Component
@@ -1329,6 +1375,52 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void reroute_to_error_opens_expected_error_target()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(RerouteToError.class));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(IllegalTarget.class));
+
+        int result = router.navigate(ui,
+                new Location("beforeToError/exception"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Target should have rerouted to exception target.",
+                500, result);
+
+        Assert.assertEquals(IllegalTarget.class, getUIComponent());
+
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+        Assert.assertEquals("Illegal argument exception.",
+                visibleComponent.get().getElement().getText());
+    }
+
+    @Test
+    public void reroute_to_error_with_custom_message_message_is_used()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Collections.singleton(RerouteToErrorWithMessage.class));
+        router.getRegistry().setErrorNavigationTargets(
+                Collections.singleton(IllegalTarget.class));
+
+        int result = router.navigate(ui,
+                new Location("beforeToError/message/CustomMessage"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Target should have rerouted to exception target.",
+                500, result);
+
+        Assert.assertEquals(IllegalTarget.class, getUIComponent());
+
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+        Assert.assertEquals("CustomMessage",
+                visibleComponent.get().getElement().getText());
+    }
+
+    @Test
     public void repeatedly_navigating_to_same_ur_through_ui_navigateTo_should_not_loop()
             throws InvalidRouteConfigurationException {
         router.getRegistry().setNavigationTargets(
@@ -1343,13 +1435,14 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void navigateTo_should_not_loop()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(
-                Stream.of(LoopByReroute.class, RedirectToLoopByReroute.class).collect(Collectors.toSet()));
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(LoopByReroute.class, RedirectToLoopByReroute.class)
+                        .collect(Collectors.toSet()));
 
         ui.navigateTo("redirect/loop");
 
-        Assert.assertEquals("Expected two events", 2,
-                eventCollector.size());
+        Assert.assertEquals("Expected two events", 2, eventCollector.size());
     }
 
     private Class<? extends Component> getUIComponent() {

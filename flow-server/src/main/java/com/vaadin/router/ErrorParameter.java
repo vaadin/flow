@@ -15,13 +15,15 @@
  */
 package com.vaadin.router;
 
+import java.io.Serializable;
+
 /**
  * Navigation error parameter class containing thrown exception and possibly a
  * custom message.
  * 
  * @author Vaadin Ltd.
  */
-public class ErrorParameter<T extends Exception> {
+public class ErrorParameter<T extends Exception> implements Serializable {
 
     private T exception;
     private String customMessage;
