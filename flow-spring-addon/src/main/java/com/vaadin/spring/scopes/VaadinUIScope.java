@@ -70,7 +70,7 @@ public class VaadinUIScope extends AbstractScope {
         public void onComponentEvent(DetachEvent event) {
             assert session.hasLock();
             UI ui = event.getUI();
-            BeanStore beanStore = uiStores.get(ui.getUIId());
+            BeanStore beanStore = uiStores.remove(ui.getUIId());
             if (beanStore != null) {
                 beanStore.destroy();
             }
@@ -80,6 +80,7 @@ public class VaadinUIScope extends AbstractScope {
             BeanStore beanStore = uiStores.get(ui.getUIId());
             if (beanStore == null) {
                 beanStore = new BeanStore(session);
+                uiStores.put(ui.getUIId(), beanStore);
                 ui.addDetachListener(this);
             }
             return beanStore;

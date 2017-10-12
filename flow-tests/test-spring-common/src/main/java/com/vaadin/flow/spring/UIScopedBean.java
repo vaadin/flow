@@ -15,16 +15,19 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.ui.UI;
 
 @Component
 @UIScope
 public class UIScopedBean {
 
-    public int getUIId() {
-        return UI.getCurrent().getUIId();
+    private final String uid = UUID.randomUUID().toString();
+
+    public String getUid() {
+        return uid;
     }
 }

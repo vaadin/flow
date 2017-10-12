@@ -37,7 +37,7 @@ public class UIScopeTarget extends Div {
 
         @Override
         protected void onAttach(AttachEvent attachEvent) {
-            Label label = new Label(String.valueOf(bean.getUIId()));
+            Label label = new Label(String.valueOf(bean.getUid()));
             label.setId("inner");
             add(label);
         }
@@ -45,7 +45,7 @@ public class UIScopeTarget extends Div {
 
     public UIScopeTarget(@Autowired UIScopedBean bean,
             @Autowired InnerComponent component) {
-        Label label = new Label(String.valueOf(bean.getUIId()));
+        Label label = new Label(String.valueOf(bean.getUid()));
         label.setId("main");
         add(label);
 
