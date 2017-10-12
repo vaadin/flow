@@ -45,6 +45,12 @@ public class CustomElementRegistry {
         return INSTANCE;
     }
 
+    /**
+     * Returns whether this registry has been initialized with custom elements
+     * info.
+     *
+     * @return whether this registry has been initialized
+     */
     public boolean isInitialized() {
         return initialized;
     }
