@@ -160,7 +160,7 @@
                                 <artifactItem>
                                     <groupId>com.vaadin</groupId>
                                     <artifactId>flow-test-spring-common</artifactId>
-                                    <version>1.0-SNAPSHOT</version>
+                                    <version>${project.version}</version>
                                     <type>test-jar</type>
                                     <outputDirectory>${project.build.directory}/test-classes</outputDirectory>
                                 </artifactItem>
