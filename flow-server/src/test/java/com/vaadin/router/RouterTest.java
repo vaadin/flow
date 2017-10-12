@@ -23,11 +23,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.hibernate.validator.constraints.SafeHtml;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
@@ -576,6 +578,29 @@ public class RouterTest extends RoutingTestBase {
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Redirect");
             UI.getCurrent().navigateTo("loop");
+        }
+    }
+
+    @Route("toNotFound")
+    @Tag(Tag.DIV)
+    public static class RedirectToNotFoundInHasParam extends Component implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            event.rerouteToError(NotFoundException.class);
+        }
+    }
+
+    @Route("param/reroute")
+    @Tag(Tag.DIV)
+    public static class RedirectOnSetParam extends Component implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            // NOTE! Expects RootParameter.class to be registered!
+            event.rerouteTo("", parameter);
         }
     }
 
@@ -1203,6 +1228,20 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void reroute_on_hasParameter_step()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(RootParameter.class, RedirectOnSetParam.class).collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("param/reroute/hello"), NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "hello",
+                eventCollector.get(0));
+    }
+
+    @Test
     public void test_has_url_with_supported_parameters_navigation()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
@@ -1418,6 +1457,21 @@ public class RouterTest extends RoutingTestBase {
                 .getComponent();
         Assert.assertEquals("CustomMessage",
                 visibleComponent.get().getElement().getText());
+    }
+
+    @Test
+    public void reroute_to_error_from_has_param()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(RedirectToNotFoundInHasParam.class).collect(Collectors.toSet()));
+
+        int result = router.navigate(ui,
+                new Location("toNotFound/error"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Target should have rerouted to exception target.",
+                404, result);
+
+        Assert.assertEquals(RouteNotFoundError.class, getUIComponent());
     }
 
     @Test

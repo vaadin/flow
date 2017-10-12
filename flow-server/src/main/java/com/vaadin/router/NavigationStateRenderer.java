@@ -122,6 +122,9 @@ public class NavigationStateRenderer implements NavigationHandler {
             hasUrlParameter.setParameter(beforeNavigationActivating,
                     hasUrlParameter.deserializeUrlParameters(urlParameters));
         });
+        if (beforeNavigationActivating.hasRerouteTarget()) {
+            return reroute(event, beforeNavigationActivating);
+        }
 
         listeners = EventUtil.collectBeforeNavigationListeners(chain);
         if (executeBeforeNavigation(beforeNavigationActivating, listeners)) {
