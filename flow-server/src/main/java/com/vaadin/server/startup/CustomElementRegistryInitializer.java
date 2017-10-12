@@ -15,6 +15,8 @@
  */
 package com.vaadin.server.startup;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContainerInitializer;
@@ -22,11 +24,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
-import com.vaadin.util.CustomElementNameValidator;
 
 /**
  * Servlet initializer for collecting all applicable custom element tag names on
@@ -34,9 +33,8 @@ import com.vaadin.util.CustomElementNameValidator;
  */
 @HandlesTypes(Tag.class)
 public class CustomElementRegistryInitializer
-implements ServletContainerInitializer {
-
-    private CustomElements customElements;
+        extends AbstractCustomElementRegistryInitializer
+        implements ServletContainerInitializer {
 
     @Override
     public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
@@ -44,33 +42,15 @@ implements ServletContainerInitializer {
         CustomElementRegistry elementRegistry = CustomElementRegistry
                 .getInstance();
 
-        customElements = new CustomElements();
+        Map<String, Class<? extends Component>> customElements = Collections
+                .emptyMap();
         if (classSet != null) {
-            classSet.stream()
-            .filter(CustomElementRegistryInitializer::isApplicableClass)
-            .forEach(this::processComponentClass);
+            customElements = filterCustomElements(classSet.stream());
         }
 
         if (!elementRegistry.isInitialized()) {
-            elementRegistry.setCustomElements(customElements.computeTagToElementRelation());
+            elementRegistry.setCustomElements(customElements);
         }
     }
 
-    private static boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Tag.class)
-                && Component.class.isAssignableFrom(clazz)
-                && PolymerTemplate.class.isAssignableFrom(clazz);
-    }
-
-    private void processComponentClass(Class<?> clazz) {
-        String tagName = clazz.getAnnotation(Tag.class).value();
-        if (CustomElementNameValidator.isCustomElementName(tagName)) {
-            customElements.addElement(tagName, (Class<? extends Component>) clazz);
-        } else {
-            String msg = String.format(
-                    "Tag name '%s' for '%s' is not a valid custom element name.",
-                    tagName, clazz.getCanonicalName());
-            throw new InvalidCustomElementNameException(msg);
-        }
-    }
 }

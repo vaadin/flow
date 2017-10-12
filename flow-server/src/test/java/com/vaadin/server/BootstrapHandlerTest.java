@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.vaadin.router.Title;
+import com.vaadin.router.PageTitle;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
@@ -40,7 +40,7 @@ public class BootstrapHandlerTest {
 
     static final String UI_TITLE = "UI_TITLE";
 
-    @Title(UI_TITLE)
+    @PageTitle(UI_TITLE)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
     @HtmlImport(value = "lazy.html", loadMode = LoadMode.LAZY)

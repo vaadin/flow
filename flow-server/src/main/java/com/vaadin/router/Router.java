@@ -54,6 +54,8 @@ public class Router implements RouterInterface {
 
     private final RouteRegistry registry;
 
+    private Location lastHandledNavigation = null;
+
     /**
      * Constructs a new router with the given route registry and a
      * {@link DefaultRouteResolver}.
@@ -110,7 +112,10 @@ public class Router implements RouterInterface {
 
                 NavigationHandler handler = new NavigationStateRenderer(
                         newState);
-                return handler.handle(navigationEvent);
+                if (notNavigatingToSameLocation(location)) {
+                    lastHandledNavigation = location;
+                    return handler.handle(navigationEvent);
+                }
             }
 
             if (!location.getPath().isEmpty()) {
@@ -130,23 +135,40 @@ public class Router implements RouterInterface {
             throw new NotFoundException(
                     "Couldn't find route for '" + location.getPath() + "'");
         } catch (Exception exception) {
-            Class<? extends Component> navigationTarget = getRegistry()
-                    .getErrorNavigationTarget(exception);
+            ErrorParameter<?> errorParameter = new ErrorParameter<>(exception,
+                    exception.getMessage());
 
-            if (navigationTarget == null) {
-                throw exception;
-            }
+            return navigateToExceptionView(ui, location, errorParameter);
+        } finally {
+            lastHandledNavigation = null;
+        }
+    }
 
-            NavigationHandler handler = new ErrorStateRenderer(
-                    new NavigationStateBuilder().withTarget(navigationTarget)
-                            .build());
+    private int navigateToExceptionView(UI ui, Location location,
+            ErrorParameter<?> errorParameter) {
+        Optional<Class<? extends Component>> navigationTarget = getRegistry()
+                .getErrorNavigationTarget(errorParameter.getException());
 
-            NavigationEvent navigationEvent = new ErrorNavigationEvent(this,
-                    location, ui, NavigationTrigger.PROGRAMMATIC,
-                    new ErrorParameter(exception, exception.getMessage()));
+        if (navigationTarget.isPresent()) {
+            ErrorStateRenderer handler = new ErrorStateRenderer(
+                    new NavigationStateBuilder()
+                            .withTarget(navigationTarget.get()).build());
+
+            ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
+                    this, location, ui, NavigationTrigger.PROGRAMMATIC,
+                    errorParameter);
 
             return handler.handle(navigationEvent);
+        } else {
+            throw new RuntimeException(errorParameter.getCustomMessage(),
+                    errorParameter.getException());
         }
+    }
+
+    private boolean notNavigatingToSameLocation(Location location) {
+        return lastHandledNavigation == null
+                || !location.getPathWithQueryParameters().equals(
+                        lastHandledNavigation.getPathWithQueryParameters());
     }
 
     @Override

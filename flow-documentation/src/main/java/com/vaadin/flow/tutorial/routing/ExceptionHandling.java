@@ -1,10 +1,13 @@
 package com.vaadin.flow.tutorial.routing;
 
+import java.nio.file.AccessDeniedException;
+
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.NotFoundException;
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
@@ -32,6 +35,21 @@ public class ExceptionHandling {
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText("My custom not found class!");
             return 404;
+        }
+    }
+
+    public class AuthenticationHandler implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            Class<?> target = event.getNavigationTarget();
+            if (!currentUserMayEnter(target)) {
+                event.rerouteToError(AccessDeniedException.class);
+            }
+        }
+
+        private boolean currentUserMayEnter(Class<?> target) {
+            // implementation omitted
+            return false;
         }
     }
 }

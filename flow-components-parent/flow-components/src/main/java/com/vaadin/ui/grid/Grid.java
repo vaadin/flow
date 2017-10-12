@@ -17,28 +17,38 @@ package com.vaadin.ui.grid;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.vaadin.data.AbstractListing;
 import com.vaadin.data.Binder;
 import com.vaadin.data.HasDataProvider;
-import com.vaadin.data.ValueProvider;
 import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.selection.MultiSelect;
+import com.vaadin.data.selection.MultiSelectionEvent;
+import com.vaadin.data.selection.MultiSelectionListener;
+import com.vaadin.data.selection.SelectionEvent;
+import com.vaadin.data.selection.SelectionListener;
 import com.vaadin.data.selection.SelectionModel;
 import com.vaadin.data.selection.SelectionModel.Single;
 import com.vaadin.data.selection.SingleSelect;
 import com.vaadin.data.selection.SingleSelectionEvent;
+import com.vaadin.data.selection.SingleSelectionListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.AttachEvent;
@@ -46,6 +56,8 @@ import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.renderers.TemplateRenderer;
+import com.vaadin.util.JsonSerializer;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -121,24 +133,19 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
                     @Override
                     public void selectFromClient(T item) {
-                        T oldValue = selectedItem;
-                        selectedItem = item;
-                        grid.fireEvent(
-                                new SingleSelectionEvent<Grid<T>, T>(grid,
-                                grid.asSingleSelect(), oldValue, true));
+                        if (Objects.equals(item, selectedItem)) {
+                            return;
+                        }
+                        doSelect(item, true);
                     }
 
                     @Override
                     public void select(T item) {
-                        T oldValue = selectedItem;
-                        selectedItem = item;
-                        if (Objects.equals(item, oldValue)) {
+                        if (Objects.equals(item, selectedItem)) {
                             return;
                         }
+                        doSelect(item, false);
                         grid.getDataCommunicator().reset();
-                        grid.fireEvent(
-                                new SingleSelectionEvent<Grid<T>, T>(grid,
-                                grid.asSingleSelect(), oldValue, false));
                     }
 
                     @Override
@@ -194,6 +201,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                             @Override
                             public Registration addValueChangeListener(
                                     ValueChangeListener<Grid<T>, T> listener) {
+                                Objects.requireNonNull(listener,
+                                        "listener cannot be null");
                                 return grid.addListener(
                                         SingleSelectionEvent.class,
                                         (ComponentEventListener) listener);
@@ -204,6 +213,38 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                                 return grid;
                             }
                         };
+                    }
+
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    @Override
+                    public Registration addSelectionListener(
+                            SelectionListener<T> listener) {
+                        Objects.requireNonNull(listener,
+                                "listener cannot be null");
+                        return grid.addListener(SingleSelectionEvent.class,
+                                (ComponentEventListener) (event -> listener
+                                        .selectionChange(
+                                                (SelectionEvent) event)));
+                    }
+
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    @Override
+                    public Registration addSingleSelectionListener(
+                            SingleSelectionListener<Grid<T>, T> listener) {
+                        Objects.requireNonNull(listener,
+                                "listener cannot be null");
+                        return grid.addListener(SingleSelectionEvent.class,
+                                (ComponentEventListener) (event -> listener
+                                        .selectionChange(
+                                                (SingleSelectionEvent) event)));
+                    }
+
+                    private void doSelect(T item, boolean userOriginated) {
+                        T oldValue = selectedItem;
+                        selectedItem = item;
+                        grid.fireEvent(new SingleSelectionEvent<Grid<T>, T>(
+                                grid, grid.asSingleSelect(), oldValue,
+                                userOriginated));
                     }
                 };
             }
@@ -218,7 +259,170 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         MULTI {
             @Override
             protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
-                throw new UnsupportedOperationException("Not implemented yet.");
+                return new GridMultiSelectionModel<T>() {
+
+                    Set<T> selected = new LinkedHashSet<>();
+
+                    @Override
+                    public void remove() {
+                        deselectAll();
+                    }
+
+                    @Override
+                    public void selectFromClient(T item) {
+                        doSelect(item, true);
+                    }
+
+                    @Override
+                    public void deselectFromClient(T item) {
+                        doDeselect(item, true);
+                    }
+
+                    @Override
+                    public Set<T> getSelectedItems() {
+                        return Collections.unmodifiableSet(selected);
+                    }
+
+                    @Override
+                    public Optional<T> getFirstSelectedItem() {
+                        return selected.stream().findFirst();
+                    }
+
+                    @Override
+                    public void select(T item) {
+                        doSelect(item, false);
+                        grid.getDataCommunicator().reset();
+                    }
+
+                    @Override
+                    public void deselect(T item) {
+                        doDeselect(item, false);
+                        grid.getDataCommunicator().reset();
+                    }
+
+                    @Override
+                    public void deselectAll() {
+                        selected.clear();
+                    }
+
+                    @Override
+                    public void updateSelection(Set<T> addedItems,
+                            Set<T> removedItems) {
+                        Objects.requireNonNull(addedItems,
+                                "added items cannot be null");
+                        Objects.requireNonNull(removedItems,
+                                "removed items cannot be null");
+                        addedItems.removeIf(removedItems::remove);
+                        if (selected.containsAll(addedItems) && Collections
+                                .disjoint(selected, removedItems)) {
+                            return;
+                        }
+                        Set<T> oldSelection = new LinkedHashSet<>(selected);
+                        selected.removeAll(removedItems);
+                        selected.addAll(addedItems);
+                        grid.getDataCommunicator().reset();
+                        grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(grid,
+                                grid.asMultiSelect(), oldSelection, false));
+                    }
+
+                    @Override
+                    public void selectAll() {
+                        throw new UnsupportedOperationException(
+                                "Not implemented yet.");
+                    }
+
+                    @Override
+                    public boolean isSelected(T item) {
+                        return getSelectedItems().contains(item);
+                    }
+
+                    @Override
+                    public MultiSelect<Grid<T>, T> asMultiSelect() {
+                        return new MultiSelect<Grid<T>, T>() {
+
+                            @Override
+                            public void setValue(Set<T> value) {
+                                Objects.requireNonNull(value);
+                                Set<T> copy = value.stream()
+                                        .map(Objects::requireNonNull)
+                                        .collect(Collectors.toCollection(
+                                                LinkedHashSet::new));
+                                updateSelection(copy, new LinkedHashSet<>(
+                                        getSelectedItems()));
+                            }
+
+                            @Override
+                            public Set<T> getValue() {
+                                return getSelectedItems();
+                            }
+
+                            @SuppressWarnings({ "unchecked", "rawtypes" })
+                            @Override
+                            public Registration addValueChangeListener(
+                                    ValueChangeListener<Grid<T>, Set<T>> listener) {
+                                Objects.requireNonNull(listener,
+                                        "listener cannot be null");
+                                return grid.addListener(
+                                        MultiSelectionEvent.class,
+                                        (ComponentEventListener) listener);
+                            }
+
+                            @Override
+                            public Grid<T> get() {
+                                return grid;
+                            }
+
+                            @Override
+                            public Set<T> getEmptyValue() {
+                                return Collections.emptySet();
+                            }
+                        };
+                    }
+
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    @Override
+                    public Registration addSelectionListener(
+                            SelectionListener<T> listener) {
+                        Objects.requireNonNull(listener,
+                                "listener cannot be null");
+                        return grid.addListener(MultiSelectionEvent.class,
+                                (ComponentEventListener) (event -> listener
+                                        .selectionChange(
+                                                (SelectionEvent) event)));
+                    }
+
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    @Override
+                    public Registration addMultiSelectionListener(
+                            MultiSelectionListener<Grid<T>, T> listener) {
+                        Objects.requireNonNull(listener,
+                                "listener cannot be null");
+                        return grid.addListener(MultiSelectionEvent.class,
+                                (ComponentEventListener) (event -> listener
+                                        .selectionChange(
+                                                (MultiSelectionEvent) event)));
+                    }
+
+                    private void doSelect(T item, boolean userOriginated) {
+                        Set<T> oldSelection = new LinkedHashSet<>(selected);
+                        boolean added = selected.add(item);
+                        if (added) {
+                            grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(
+                                    grid, grid.asMultiSelect(), oldSelection,
+                                    userOriginated));
+                        }
+                    }
+
+                    private void doDeselect(T item, boolean userOriginated) {
+                        Set<T> oldSelection = new LinkedHashSet<>(selected);
+                        boolean removed = selected.remove(item);
+                        if (removed) {
+                            grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(
+                                    grid, grid.asMultiSelect(), oldSelection,
+                                    userOriginated));
+                        }
+                    }
+                };
             }
         },
 
@@ -269,7 +473,6 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-
         attachEvent.getUI().getPage().executeJavaScript(
                 "window.gridConnector.initLazy($0, $1)", getElement(),
                 PAGE_SIZE);
@@ -277,22 +480,39 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
     /**
      * Adds a new text column to this {@link Grid} with a value provider. The
-     * value is converted to a String using {@link Object#toString()}. In-memory
-     * sorting will use the natural ordering of elements if they are mutually
-     * comparable and otherwise fall back to comparing the string
-     * representations of the values.
+     * value is converted to a JSON value by using
+     * {@link JsonSerializer#toJson(Object)}.
      *
      * @param header
      *            the column header name
      * @param valueProvider
      *            the value provider
      */
-    public void addColumn(String header,
-            ValueProvider<T, String> valueProvider) {
-        int id = nextColumnId;
-        nextColumnId++;
-        String columnKey = "col" + id;
-        columnGenerators.put(columnKey, valueProvider.andThen(Json::create));
+    public void addColumn(String header, ValueProvider<T, ?> valueProvider) {
+        String columnKey = getColumnKey(false);
+        addColumn(header, TemplateRenderer.<T> of("[[item." + columnKey + "]]")
+                .withProperty(columnKey, valueProvider));
+    }
+
+    /**
+     * Adds a new text column to this {@link Grid} with a template renderer. The
+     * values inside the renderer are converted to JSON values by using
+     * {@link JsonSerializer#toJson(Object)}.
+     * 
+     * @param header
+     *            the column header name
+     * @param renderer
+     *            the renderer used to create the grid cell structure
+     * 
+     * @see TemplateRenderer#of(String)
+     */
+    public void addColumn(String header, TemplateRenderer<T> renderer) {
+        String columnKey = getColumnKey(true);
+
+        renderer.getValueProviders().forEach((key, provider) -> {
+            columnGenerators.put(key, provider.andThen(JsonSerializer::toJson));
+        });
+
         getDataCommunicator().reset();
 
         // Use innerHTML to set document fragment instead of DOM children
@@ -300,13 +520,21 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                 .setAttribute("class", "header")
                 .setProperty("innerHTML", HtmlUtils.escape(header));
         Element contentTemplate = new Element("template")
-                .setProperty("innerHTML", "[[item." + columnKey + "]]");
+                .setProperty("innerHTML", renderer.getTemplate());
 
         Element colElement = new Element("vaadin-grid-column")
                 .setAttribute("id", columnKey)
                 .appendChild(headerTemplate, contentTemplate);
 
         getElement().appendChild(colElement);
+    }
+
+    private String getColumnKey(boolean increment) {
+        int id = nextColumnId;
+        if (increment) {
+            nextColumnId++;
+        }
+        return "col" + id;
     }
 
     @Override
@@ -410,6 +638,101 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                             + "being able to use single selection features.");
         }
         return ((GridSingleSelectionModel<T>) model).asSingleSelect();
+    }
+
+    /**
+     * Use this grid as a multiselect in {@link Binder}.
+     * <p>
+     * Throws {@link IllegalStateException} if the grid is not using a
+     * {@link GridMultiSelectionModel}.
+     *
+     * @return the multiselect wrapper that can be used in binder
+     * @throws IllegalStateException
+     *             if not using a multiselection model
+     */
+    public MultiSelect<Grid<T>, T> asMultiSelect() {
+        GridSelectionModel<T> model = getSelectionModel();
+        if (!(model instanceof GridMultiSelectionModel)) {
+            throw new IllegalStateException("Grid is not in multi select mode, "
+                    + "it needs to be explicitly set to such with "
+                    + "setSelectionMode(SelectionMode.MULTI) before "
+                    + "being able to use multi selection features.");
+        }
+        return ((GridMultiSelectionModel<T>) model).asMultiSelect();
+    }
+
+    /**
+     * This method is a shorthand that delegates to the currently set selection
+     * model.
+     *
+     * @see #getSelectionModel()
+     * @see GridSelectionModel
+     * 
+     * @return a set with the selected items, never <code>null</code>
+     */
+    public Set<T> getSelectedItems() {
+        return getSelectionModel().getSelectedItems();
+    }
+
+    /**
+     * This method is a shorthand that delegates to the currently set selection
+     * model.
+     *
+     * @param item
+     *            the item to select
+     *
+     * @see #getSelectionModel()
+     * @see GridSelectionModel
+     */
+    public void select(T item) {
+        getSelectionModel().select(item);
+    }
+
+    /**
+     * This method is a shorthand that delegates to the currently set selection
+     * model.
+     * 
+     * @param item
+     *            the item to deselect
+     *
+     * @see #getSelectionModel()
+     * @see GridSelectionModel
+     */
+    public void deselect(T item) {
+        getSelectionModel().deselect(item);
+    }
+
+    /**
+     * This method is a shorthand that delegates to the currently set selection
+     * model.
+     *
+     * @see #getSelectionModel()
+     * @see GridSelectionModel
+     */
+    public void deselectAll() {
+        getSelectionModel().deselectAll();
+    }
+
+    /**
+     * Adds a selection listener to the current selection model.
+     * <p>
+     * This is a shorthand for
+     * {@code grid.getSelectionModel().addSelectionListener()}. To get more
+     * detailed selection events, use {@link #getSelectionModel()} and either
+     * {@link GridSingleSelectionModel#addSingleSelectionListener(SingleSelectionListener)}
+     * or
+     * {@link GridMultiSelectionModel#addMultiSelectionListener(MultiSelectionListener)}
+     * depending on the used selection mode.
+     *
+     * @param listener
+     *            the listener to add
+     * @return a registration handle to remove the listener
+     * @throws UnsupportedOperationException
+     *             if selection has been disabled with
+     *             {@link SelectionMode#NONE}
+     */
+    public Registration addSelectionListener(SelectionListener<T> listener) {
+        return getSelectionModel().addSelectionListener(listener);
     }
 
     @ClientDelegate

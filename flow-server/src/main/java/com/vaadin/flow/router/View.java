@@ -17,8 +17,8 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 
+import com.vaadin.router.PageTitle;
 import com.vaadin.util.AnnotationReader;
-import com.vaadin.router.Title;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
@@ -81,7 +81,7 @@ public interface View extends HasElement, Serializable {
     /**
      * Get the page title to show for this view.
      * <p>
-     * By default returns the value specified with the {@link Title @Title}
+     * By default returns the value specified with the {@link PageTitle @PageTitle}
      * annotation, or an empty string if the annotation is not present. The
      * empty string will clear any previously set title. In that case the
      * browser will decide what to show as the title.

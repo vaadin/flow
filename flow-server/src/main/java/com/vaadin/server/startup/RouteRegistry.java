@@ -193,9 +193,9 @@ public class RouteRegistry implements Serializable {
      * 
      * @param exception
      *            exception to search error view for
-     * @return error view for exception or null if no match found.
+     * @return optional error target corresponding to the given exception
      */
-    public Class<? extends Component> getErrorNavigationTarget(
+    public Optional<Class<? extends Component>> getErrorNavigationTarget(
             Throwable exception) {
         if (!errorTargetsInitialized) {
             initErrorTargets();
@@ -204,7 +204,7 @@ public class RouteRegistry implements Serializable {
         if (result == null) {
             result = searchBySuperType(exception);
         }
-        return result;
+        return Optional.ofNullable(result);
     }
 
     private Class<? extends Component> searchByCause(Throwable exception) {
@@ -212,7 +212,7 @@ public class RouteRegistry implements Serializable {
             return exceptionTargets.get(exception.getClass());
         }
         if (exception.getCause() != null) {
-            return getErrorNavigationTarget(exception.getCause());
+            return searchByCause(exception.getCause());
         }
         return null;
     }
@@ -264,13 +264,25 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-
-        if (routes.containsKey(pathString)) {
+        if (hasRouteTo(pathString)) {
             return Optional
                     .ofNullable(routes.get(pathString).getTarget(segments));
         }
         return Optional.empty();
+    }
+
+    /**
+     * Checks if the registry contains a route to the given path.
+     *
+     * @param pathString
+     *            path to get navigation target for, not {@code null}
+     * @return true if the registry contains a route to the given path,
+     *         false otherwise.
+     */
+    public boolean hasRouteTo(String pathString) {
+        Objects.requireNonNull(pathString, "pathString must not be null.");
+
+        return routes.containsKey(pathString);
     }
 
     /**

@@ -21,7 +21,7 @@ package com.vaadin.router;
  * at runtime.
  * <p>
  * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
- * and have a {@link Title} annotation.
+ * and have a {@link PageTitle} annotation.
  *
  * @author Vaadin Ltd.
  */
@@ -32,5 +32,5 @@ public interface HasDynamicTitle {
      * Gets the title of this navigation target.
      * @return  the title of this navigation target
      */
-    String getTitle();
+    String getPageTitle();
 }
