@@ -22,6 +22,12 @@ package com.vaadin.router;
 public class NotFoundException extends RuntimeException {
 
     /**
+     * Default constructor.
+     */
+    public NotFoundException() {
+    }
+
+    /**
      * Navigation exception thrown when routing fails due to a faulty navigation
      * target string.
      *
