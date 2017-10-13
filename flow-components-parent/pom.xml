@@ -19,7 +19,6 @@
     </modules>
 
     <properties>
-        <flow.version>${project.version}</flow.version>
         <build.demos.alone>true</build.demos.alone>
     </properties>
 
@@ -28,17 +27,17 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow</artifactId>
-                <version>${flow.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-server</artifactId>
-                <version>${flow.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-html-components</artifactId>
-                <version>${flow.version}</version>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -24,8 +24,12 @@ import org.springframework.context.ApplicationContext;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
+import com.vaadin.server.SessionDestroyListener;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.Registration;
 
 /**
  * Spring application context aware Vaadin servlet service implementation.
@@ -36,6 +40,8 @@ import com.vaadin.server.VaadinServletService;
 public class SpringVaadinServletService extends VaadinServletService {
 
     private final ApplicationContext context;
+
+    private final Registration serviceDestroyRegistration;
 
     /**
      * Creates an instance connected to the given servlet and using the given
@@ -53,6 +59,11 @@ public class SpringVaadinServletService extends VaadinServletService {
             ApplicationContext context) {
         super(servlet, deploymentConfiguration);
         this.context = context;
+        SessionDestroyListener listener = event -> sessionDestroyed(
+                event.getSession());
+        Registration registration = addSessionDestroyListener(listener);
+        serviceDestroyRegistration = addServiceDestroyListener(
+                event -> serviceDestroyed(registration));
     }
 
     @Override
@@ -79,5 +90,21 @@ public class SpringVaadinServletService extends VaadinServletService {
         }
         return spiInstantiator.isPresent() ? spiInstantiator
                 : springInstantiators.stream().findFirst();
+    }
+
+    @Override
+    protected VaadinSession createVaadinSession(VaadinRequest request)
+            throws ServiceException {
+        return new VaadinSession(this);
+    }
+
+    private void sessionDestroyed(VaadinSession session) {
+        assert session instanceof SpringVaadinSession;
+        ((SpringVaadinSession) session).fireSessionDestroy();
+    }
+
+    private void serviceDestroyed(Registration registration) {
+        registration.remove();
+        serviceDestroyRegistration.remove();
     }
 }

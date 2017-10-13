@@ -69,3 +69,35 @@ will be sent as for normal navigation.
 
 [NOTE]
 One exception may only have one exception handler (only extending instances are allowed).
+
+== Rerouting to an error view
+
+It is possible to reroute to an error view registered for an exception from the `BeforeNavigationEvent`.
+
+The rerouting is done by using one of the overloads for `BeforeNavigationEvent::rerouteToError` with only the
+exception class to target or with an added custom error message.
+
+.Reroute to error view
+[source, java]
+----
+public class AuthenticationHandler implements BeforeNavigationListener {
+    @Override
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        Class<?> target = event.getNavigationTarget();
+        if (!currentUserMayEnter(target)) {
+            event.rerouteToError(AccessDeniedException.class);
+        }
+    }
+
+    private boolean currentUserMayEnter(Class<?> target) {
+        // implementation omitted
+        return false;
+    }
+}
+----
+
+[NOTE]
+In cases where the rerouting method catches an exception and there is a need to add a custom
+message it is possible to use the `rerouteToError(Exception, String)` method to set a custom message.
+
+

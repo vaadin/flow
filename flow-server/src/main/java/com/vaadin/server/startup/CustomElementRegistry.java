@@ -31,21 +31,27 @@ public class CustomElementRegistry {
 
     private static final CustomElementRegistry INSTANCE = new CustomElementRegistry();
 
-     boolean initialized;
+    boolean initialized;
 
     private CustomElementRegistry() {
     }
 
     /**
      * Get instance of CustomElementRegistry.
-     * 
+     *
      * @return singleton instance of the registry
      */
     public static CustomElementRegistry getInstance() {
         return INSTANCE;
     }
 
-    protected boolean isInitialized() {
+    /**
+     * Returns whether this registry has been initialized with custom elements
+     * info.
+     *
+     * @return whether this registry has been initialized
+     */
+    public boolean isInitialized() {
         return initialized;
     }
 
@@ -53,7 +59,7 @@ public class CustomElementRegistry {
      * Set registered custom elements.
      * <p>
      * Note! Custom elements can only be set once!
-     * 
+     *
      * @param customElements
      *            map of registered custom elements
      */

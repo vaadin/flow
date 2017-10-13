@@ -1,0 +1,21 @@
+{
+  "name": "test-spring-common",
+  "homepage": "https://github.com/vaadin/flow",
+  "authors": [
+  ],
+  "description": "",
+  "main": "",
+  "license": "Apache2",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "~2.0.2"
+  }
+}
+

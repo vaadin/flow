@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.vaadin.spring.SpringBootAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.vaadin.spring.SpringBootAutoConfiguration,com.vaadin.spring.VaadinScopesConfig

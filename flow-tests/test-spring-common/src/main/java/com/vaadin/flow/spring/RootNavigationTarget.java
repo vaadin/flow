@@ -18,7 +18,9 @@ package com.vaadin.flow.spring;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.router.Route;
+import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
 
 @Route("")
 public class RootNavigationTarget extends Div {
@@ -26,9 +28,20 @@ public class RootNavigationTarget extends Div {
     public RootNavigationTarget(@Autowired DataBean dataBean,
             @Autowired FooNavigationTarget section) {
         setId("main");
-        setText(dataBean.getMessage());
+        Label label = new Label(dataBean.getMessage());
+        label.setId("message");
+        add(label);
 
         section.setId("singleton");
         section.setText("singleton");
+
     }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        Label label = new Label(String.valueOf(getUI().get().getUIId()));
+        label.setId("ui-id");
+        add(label);
+    }
+
 }
