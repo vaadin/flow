@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,7 +50,6 @@ import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.startup.CustomElementRegistry;
-import com.vaadin.server.startup.CustomElementRegistryAccess;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.Tag;
@@ -209,10 +209,10 @@ public class PolymerTemplateTest extends HasCurrentService {
             extends PolymerTemplate<ModelClass> {
 
         public TemplateWithChildInDomRepeat() {
-            super((clazz, tag) -> Jsoup
-                    .parse("<dom-module id='" + tag + "'><template><div>"
-                            + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
-                            + "</div></template></dom-module>"));
+            super((clazz, tag) -> Jsoup.parse("<dom-module id='" + tag
+                    + "'><template><div>"
+                    + "<dom-repeat items='[[messages]]'><template><child-template></template></dom-repeat>"
+                    + "</div></template></dom-module>"));
         }
 
     }
@@ -322,8 +322,14 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Before
-    public void setUp() {
-        CustomElementRegistryAccess.resetRegistry();
+    public void setUp() throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
+        Field customElements = CustomElementRegistry.class
+                .getDeclaredField("customElements");
+        customElements.setAccessible(true);
+        customElements.set(CustomElementRegistry.getInstance(),
+                new AtomicReference<>());
+
         Map<String, Class<? extends Component>> map = new HashMap<>();
         map.put("child-template", TemplateChild.class);
         map.put("ffs", TestPolymerTemplate.class);
