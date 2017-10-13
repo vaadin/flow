@@ -150,8 +150,8 @@ public class ApplicationConnection {
         });
         
         $wnd.vaadin.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
-        	var sc = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
-        	sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
+            var sc = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
+            sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
     
         client.initializing = false;

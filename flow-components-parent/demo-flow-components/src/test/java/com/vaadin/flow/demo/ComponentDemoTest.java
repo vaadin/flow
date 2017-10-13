@@ -70,8 +70,4 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
                             logEntry));
         }
     }
-
-    public void nativeClick(WebElement element) {
-        executeScript("arguments[0].click();", element);
-    }
 }

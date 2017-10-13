@@ -162,15 +162,15 @@ public class GridViewIT extends ComponentDemoTest {
                 .findElements(By.tagName("button"));
         Assert.assertEquals(2, buttons.size());
 
-        nativeClick(buttons.get(0));
+        clickElementWithJs(buttons.get(0));
         waitUntil(driver -> hasHtmlCell(grid,
                 "<div title=\"Person 1 Updated\">Person 1 Updated<br><small>23 years old</small></div>"));
 
-        nativeClick(buttons.get(0));
+        clickElementWithJs(buttons.get(0));
         waitUntil(driver -> hasHtmlCell(grid,
                 "<div title=\"Person 1 Updated Updated\">Person 1 Updated Updated<br><small>23 years old</small></div>"));
 
-        nativeClick(buttons.get(1));
+        clickElementWithJs(buttons.get(1));
         waitUntilNot(driver -> hasHtmlCell(grid,
                 "<div title=\"Person 1 Updated Updated\">Person 1 Updated Updated<br><small>23 years old</small></div>"));
     }

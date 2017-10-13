@@ -48,6 +48,7 @@ import com.vaadin.data.selection.SelectionModel.Single;
 import com.vaadin.data.selection.SingleSelect;
 import com.vaadin.data.selection.SingleSelectionEvent;
 import com.vaadin.data.selection.SingleSelectionListener;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
@@ -532,7 +533,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                 .appendChild(headerTemplate, contentTemplate);
 
         Map<String, SerializableConsumer<T>> eventConsumers = renderer
-                .getEventConsumers();
+                .getEventHandlers();
 
         if (!eventConsumers.isEmpty()) {
             /*
@@ -543,11 +544,10 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
              * the template element must have the "__dataHost" property set with
              * the column element.
              */
-            colElement.getNode().runWhenAttached(ui -> {
-                eventConsumers.forEach((handlerName,
-                        consumer) -> setupTemplateRendererEventHandler(ui,
-                                colElement, handlerName, consumer));
-            });
+            colElement.getNode().runWhenAttached(
+                    ui -> processTemplateRendererEventConsumers(ui, colElement,
+                            eventConsumers));
+
             contentTemplate.getNode()
                     .runWhenAttached(ui -> ui.getPage().executeJavaScript(
                             "$0.__dataHost = $1;", contentTemplate,
@@ -557,8 +557,16 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         getElement().appendChild(colElement);
     }
 
-    private void setupTemplateRendererEventHandler(UI ui,
-            Element colElement, String handlerName, Consumer<T> consumer) {
+    private void processTemplateRendererEventConsumers(UI ui,
+            Element colElement,
+            Map<String, SerializableConsumer<T>> eventConsumers) {
+        eventConsumers.forEach(
+                (handlerName, consumer) -> setupTemplateRendererEventHandler(ui,
+                        colElement, handlerName, consumer));
+    }
+
+    private void setupTemplateRendererEventHandler(UI ui, Element colElement,
+            String handlerName, Consumer<T> consumer) {
 
         // vaadin.sendEventMessage is an exported function at the client side
         ui.getPage().executeJavaScript(String.format(
@@ -566,21 +574,31 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                 handlerName, colElement.getNode().getId(), handlerName),
                 colElement);
 
-        colElement.addEventListener(handlerName, event -> {
-            if (event.getEventData() != null) {
-                String itemKey = event.getEventData().getString("key");
-                T item = getDataCommunicator().getKeyMapper().get(itemKey);
+        colElement.addEventListener(handlerName,
+                event -> processEventFromTemplateRenderer(event, handlerName,
+                        consumer));
+    }
 
-                if (item != null) {
-                    consumer.accept(item);
-                } else {
-                    Logger.getLogger(Grid.class.getName()).log(Level.INFO,
-                            String.format(
-                                    "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
-                                    handlerName, itemKey));
-                }
+    private void processEventFromTemplateRenderer(DomEvent event,
+            String handlerName, Consumer<T> consumer) {
+        if (event.getEventData() != null) {
+            String itemKey = event.getEventData().getString("key");
+            T item = getDataCommunicator().getKeyMapper().get(itemKey);
+
+            if (item != null) {
+                consumer.accept(item);
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.INFO,
+                        String.format(
+                                "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
+                                handlerName, itemKey));
             }
-        });
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.INFO,
+                    String.format(
+                            "Received an event for the handler '%s' without any data. Ignoring event.",
+                            handlerName));
+        }
     }
 
     private String getColumnKey(boolean increment) {

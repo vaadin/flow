@@ -43,7 +43,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
 
     private String template;
     private Map<String, ValueProvider<SOURCE, ?>> valueProviders;
-    private Map<String, SerializableConsumer<SOURCE>> eventConsumers;
+    private Map<String, SerializableConsumer<SOURCE>> eventHandlers;
 
     /**
      * Creates a new TemplateRenderer based on the provided template. The
@@ -115,8 +115,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
     public TemplateRenderer<SOURCE> withProperty(String property,
             ValueProvider<SOURCE, ?> provider) {
         Objects.requireNonNull(property, "The property must not be null");
-        Objects.requireNonNull(provider,
-                "The property provider must not be null");
+        Objects.requireNonNull(provider, "The value provider must not be null");
         valueProviders.put(property, provider);
         return this;
     }
@@ -148,25 +147,24 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * @param handlerName
      *            the name of the handler used inside the
      *            {@code on-event="handlerName"}, not <code>null</code>
-     * @param consumer
-     *            the consumer executed when the event is triggered, not
+     * @param handler
+     *            the handler executed when the event is triggered, not
      *            <code>null</code>
      * @return this instance for method chaining
      * @see <a href=
      *      "https://www.polymer-project.org/2.0/docs/devguide/events">https://www.polymer-project.org/2.0/docs/devguide/events</a>
      */
     public TemplateRenderer<SOURCE> withEventHandler(String handlerName,
-            SerializableConsumer<SOURCE> consumer) {
+            SerializableConsumer<SOURCE> handler) {
         Objects.requireNonNull(handlerName, "The handlerName must not be null");
-        Objects.requireNonNull(consumer,
-                "The event handler consumer must not be null");
-        eventConsumers.put(handlerName, consumer);
+        Objects.requireNonNull(handler, "The event handler must not be null");
+        eventHandlers.put(handlerName, handler);
         return this;
     }
 
     protected TemplateRenderer() {
         valueProviders = new HashMap<>();
-        eventConsumers = new HashMap<>();
+        eventHandlers = new HashMap<>();
     }
 
     /**
@@ -188,7 +186,14 @@ public class TemplateRenderer<SOURCE> implements Serializable {
         return Collections.unmodifiableMap(valueProviders);
     }
 
-    public Map<String, SerializableConsumer<SOURCE>> getEventConsumers() {
-        return Collections.unmodifiableMap(eventConsumers);
+    /**
+     * Gets the event handlers linked to this renderer. The returned map in
+     * immutable.
+     * 
+     * @return the mapped event handlers, never <code>null</code>
+     * @see #withEventHandler(String, SerializableConsumer)
+     */
+    public Map<String, SerializableConsumer<SOURCE>> getEventHandlers() {
+        return Collections.unmodifiableMap(eventHandlers);
     }
 }

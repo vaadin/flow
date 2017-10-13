@@ -91,24 +91,18 @@ public class GridView extends DemoView {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + id;
-            return result;
+            return id;
         }
 
         @Override
         public boolean equals(Object obj) {
             if (this == obj)
                 return true;
-            if (obj == null)
+            if (!(obj instanceof Person)) {
                 return false;
-            if (!(obj instanceof Person))
-                return false;
+            }
             Person other = (Person) obj;
-            if (id != other.id)
-                return false;
-            return true;
+            return id == other.id;
         }
 
         @Override
@@ -191,12 +185,12 @@ public class GridView extends DemoView {
          * portion of the data.
          */
         Random random = new Random(0);
-        grid.setDataProvider(DataProvider.fromCallbacks(query -> {
-            return IntStream
-                    .range(query.getOffset(),
-                            query.getOffset() + query.getLimit())
-                    .mapToObj(index -> createPerson(index, random));
-        }, query -> 10000));
+        grid.setDataProvider(DataProvider.fromCallbacks(
+                query -> IntStream
+                        .range(query.getOffset(),
+                                query.getOffset() + query.getLimit())
+                        .mapToObj(index -> createPerson(index, random)),
+                query -> 10000));
 
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", Person::getAge);
