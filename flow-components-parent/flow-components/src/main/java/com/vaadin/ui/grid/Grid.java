@@ -597,7 +597,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
             Logger.getLogger(getClass().getName()).log(Level.INFO,
                     () -> String.format(
                             "Received an event for the handler '%s' without any data. Ignoring event.",
-                            handlerName, handlerName));
+                            handlerName));
         }
     }
 
