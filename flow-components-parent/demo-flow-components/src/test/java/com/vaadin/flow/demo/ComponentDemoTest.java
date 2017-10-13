@@ -49,17 +49,29 @@ public abstract class ComponentDemoTest extends ChromeBrowserTest {
 
     private void checkLogsForErrors() {
         driver.manage().logs().get(LogType.BROWSER).getAll().stream()
-                .filter(logEntry -> logEntry.getLevel().intValue() > Level.INFO.intValue())
+                .filter(logEntry -> logEntry.getLevel().intValue() > Level.INFO
+                        .intValue())
                 // we always have this error
-                .filter(logEntry -> !logEntry.getMessage().contains("favicon.ico"))
+                .filter(logEntry -> !logEntry.getMessage()
+                        .contains("favicon.ico"))
                 .forEach(this::processWarningOrError);
     }
 
     private void processWarningOrError(LogEntry logEntry) {
-        if (Objects.equals(logEntry.getLevel(), Level.SEVERE) || logEntry.getMessage().contains("404")) {
-            throw new AssertionError(String.format("Received error message in browser log console right after opening the page, message: %s", logEntry));
+        if (Objects.equals(logEntry.getLevel(), Level.SEVERE)
+                || logEntry.getMessage().contains("404")) {
+            throw new AssertionError(String.format(
+                    "Received error message in browser log console right after opening the page, message: %s",
+                    logEntry));
         } else {
-            Logger.getLogger(ComponentDemoTest.class.getName()).warning(String.format("This message in browser log console may be a potential error: '%s'", logEntry));
+            Logger.getLogger(ComponentDemoTest.class.getName())
+                    .warning(String.format(
+                            "This message in browser log console may be a potential error: '%s'",
+                            logEntry));
         }
+    }
+
+    public void nativeClick(WebElement element) {
+        executeScript("arguments[0].click();", element);
     }
 }
