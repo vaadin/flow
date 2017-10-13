@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +55,7 @@ import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
@@ -542,38 +544,43 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
              * the column element.
              */
             colElement.getNode().runWhenAttached(ui -> {
-                eventConsumers.forEach((handlerName, consumer) -> {
-                    ui.getPage().executeJavaScript(String.format(
-                            "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
-                            handlerName, colElement.getNode().getId(),
-                            handlerName), colElement);
-
-                    colElement.addEventListener(handlerName, event -> {
-                        if (event.getEventData() != null) {
-                            String itemKey = event.getEventData()
-                                    .getString("key");
-                            T item = getDataCommunicator().getKeyMapper()
-                                    .get(itemKey);
-
-                            if (item != null) {
-                                consumer.accept(item);
-                            } else {
-                                Logger.getLogger(Grid.class.getName())
-                                        .log(Level.INFO, String.format(
-                                                "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
-                                                handlerName, itemKey));
-                            }
-                        }
-                    });
-                });
+                eventConsumers.forEach((handlerName,
+                        consumer) -> setupTemplateRendererEventHandler(ui,
+                                colElement, handlerName, consumer));
             });
-            contentTemplate.getNode().runWhenAttached(ui -> {
-                ui.getPage().executeJavaScript("$0.__dataHost = $1;",
-                        contentTemplate, colElement);
-            });
+            contentTemplate.getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                            "$0.__dataHost = $1;", contentTemplate,
+                            colElement));
         }
 
         getElement().appendChild(colElement);
+    }
+
+    private void setupTemplateRendererEventHandler(UI ui,
+            Element colElement, String handlerName, Consumer<T> consumer) {
+
+        // vaadin.sendEventMessage is an exported function at the client side
+        ui.getPage().executeJavaScript(String.format(
+                "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
+                handlerName, colElement.getNode().getId(), handlerName),
+                colElement);
+
+        colElement.addEventListener(handlerName, event -> {
+            if (event.getEventData() != null) {
+                String itemKey = event.getEventData().getString("key");
+                T item = getDataCommunicator().getKeyMapper().get(itemKey);
+
+                if (item != null) {
+                    consumer.accept(item);
+                } else {
+                    Logger.getLogger(Grid.class.getName()).log(Level.INFO,
+                            String.format(
+                                    "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
+                                    handlerName, itemKey));
+                }
+            }
+        });
     }
 
     private String getColumnKey(boolean increment) {
