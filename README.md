@@ -72,11 +72,10 @@ IT tests can be run with
 <pre><code>mvn verify</code></pre>
 
 To run IT tests locally, you'll need a [Testbench](https://vaadin.com/testbench) license and a Chrome browser installed (currently this is the only browser that IT tests are run in).
-If you don't have the license, it's ok, our CI will run those tests for you after you create a pull request. 
+If you don't have the license, it's ok, our CI system will run those tests for you after you create a pull request. 
 Refer to the [contribution guide](/CONTRIBUTING.md) for details. 
 
-When running IT tests locally, by default, local Chrome is used to run tests.
-The other opportunity is to run tests using test hub, to do so, you need to start a hub and start tests with `-Dtest.use.hub=true -Dcom.vaadin.testbench.Parameters.hubHostname="foo"` properties.
+When running IT tests locally, by default, local Chrome is used to run tests, make sure it's installed.
 
 Building a package
 =====
