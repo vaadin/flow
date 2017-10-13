@@ -30,8 +30,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -59,20 +57,6 @@ public class RouteRegistry implements Serializable {
     private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
     private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
 
-    private static final AtomicReference<RouteRegistry> INSTANCE = new AtomicReference<>();
-
-    private static final ServletContextListener DESTROY_LISTENER = new ServletContextListener() {
-
-        @Override
-        public void contextInitialized(ServletContextEvent sce) {
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            INSTANCE.set(null);
-        }
-    };
-
     /**
      * Creates a new uninitialized route registry.
      */
@@ -94,16 +78,24 @@ public class RouteRegistry implements Serializable {
     public static RouteRegistry getInstance(ServletContext servletContext) {
         assert servletContext != null;
 
-        // Only one servlet context should be active in the application. So
-        // let's store it as a "singleton".
-        RouteRegistry registry = INSTANCE.get();
-        if (registry == null) {
-            servletContext.addListener(DESTROY_LISTENER);
-            registry = new RouteRegistry();
-            INSTANCE.compareAndSet(null, registry);
+        Object attribute;
+        synchronized (servletContext) {
+            attribute = servletContext
+                    .getAttribute(RouteRegistry.class.getName());
+
+            if (attribute == null) {
+                attribute = new RouteRegistry();
+                servletContext.setAttribute(RouteRegistry.class.getName(),
+                        attribute);
+            }
         }
 
-        return registry;
+        if (attribute instanceof RouteRegistry) {
+            return (RouteRegistry) attribute;
+        } else {
+            throw new IllegalStateException(
+                    "Unknown servlet context attribute value: " + attribute);
+        }
     }
 
     /**
@@ -277,7 +269,7 @@ public class RouteRegistry implements Serializable {
             String pathString, List<String> segments) {
         if (hasRouteTo(pathString)) {
             return Optional.ofNullable(
-                    routes.get().get(pathString).getTarget(segments));
+                    getRoutes().get(pathString).getTarget(segments));
         }
         return Optional.empty();
     }
@@ -293,7 +285,7 @@ public class RouteRegistry implements Serializable {
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
-        return routes.get().containsKey(pathString);
+        return getRoutes().containsKey(pathString);
     }
 
     /**
@@ -457,6 +449,14 @@ public class RouteRegistry implements Serializable {
      *         registered; otherwise <code>false</code>
      */
     public boolean hasNavigationTargets() {
-        return !routes.get().isEmpty();
+        return !getRoutes().isEmpty();
+    }
+
+    private Map<String, RouteTarget> getRoutes() {
+        Map<String, RouteTarget> map = routes.get();
+        if (map == null) {
+            return Collections.emptyMap();
+        }
+        return map;
     }
 }

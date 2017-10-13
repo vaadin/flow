@@ -83,7 +83,7 @@ public class CustomElementRegistry {
      * @return true if custom element class is found
      */
     public boolean isRegisteredCustomElement(String tag) {
-        return customElements.get().containsKey(tag);
+        return getCustomElements().containsKey(tag);
     }
 
     /**
@@ -94,7 +94,7 @@ public class CustomElementRegistry {
      * @return custom element class for tag
      */
     public Class<? extends Component> getRegisteredCustomElement(String tag) {
-        return customElements.get().get(tag);
+        return getCustomElements().get(tag);
     }
 
     /**
@@ -118,5 +118,13 @@ public class CustomElementRegistry {
                 && !element.getComponent().isPresent()) {
             Component.from(element, getRegisteredCustomElement(tag));
         }
+    }
+
+    private Map<String, Class<? extends Component>> getCustomElements() {
+        Map<String, Class<? extends Component>> map = customElements.get();
+        if (map == null) {
+            return Collections.emptyMap();
+        }
+        return map;
     }
 }
