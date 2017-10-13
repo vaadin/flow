@@ -589,15 +589,15 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                 consumer.accept(item);
             } else {
                 Logger.getLogger(getClass().getName()).log(Level.INFO,
-                        String.format(
+                        () -> String.format(
                                 "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
                                 handlerName, itemKey));
             }
         } else {
             Logger.getLogger(getClass().getName()).log(Level.INFO,
-                    String.format(
+                    () -> String.format(
                             "Received an event for the handler '%s' without any data. Ignoring event.",
-                            handlerName));
+                            handlerName, handlerName));
         }
     }
 
