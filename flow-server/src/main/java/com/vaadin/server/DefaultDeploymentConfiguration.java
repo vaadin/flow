@@ -16,6 +16,8 @@
 
 package com.vaadin.server;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
@@ -24,11 +26,11 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -40,8 +42,9 @@ import com.vaadin.shared.communication.PushMode;
  */
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
-
     private static final String SEPARATOR = "\n===========================================================";
+    private static final String WEB_COMPONENTS_LOADER_JS_NAME = "webcomponents-loader.js";
+    private static final String CONTEXT_ROOT_PATH = "/";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
             + "\nVaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
@@ -371,50 +374,106 @@ public class DefaultDeploymentConfiguration
         String propertyValue = getStringProperty(
                 Constants.SERVLET_PARAMETER_POLYFILL_BASE, null);
         if (null == propertyValue) {
-            propertyValue = resolveDefaultPolyfillUri(resourceScanner);
+            Optional<String> locatedPolyfill = getWebComponentsPolyfill(
+                    resourceScanner);
+            if (!locatedPolyfill.isPresent()) {
+                getLogger().warning(() -> String.format(
+                        "Unable to locate polyfill %s, proceeding without it",
+                        WEB_COMPONENTS_LOADER_JS_NAME));
+            }
+            propertyValue = locatedPolyfill.orElse(null);
         } else if (propertyValue.trim().isEmpty()) {
             propertyValue = null;
         }
         webComponentsPolyfillBase = propertyValue;
     }
 
-    private String resolveDefaultPolyfillUri(
+    private Optional<String> getWebComponentsPolyfill(
             BiConsumer<String, Predicate<String>> resourceScanner) {
-        Set<String> foundPolyfills = new HashSet<>();
-        resourceScanner.accept("/", name -> {
-            if (name.endsWith("webcomponents-loader.js")) {
-                foundPolyfills.add(name);
+        Set<String> excludedDirectories = new HashSet<>(
+                Arrays.asList("node/", "node_modules/"));
+        Optional<String> frontendDirectoryPath = getFrontendDirectoryPath();
+        Set<String> frontendDirectoryPolyfills = frontendDirectoryPath
+                .map(searchBase -> locatePolyfills(resourceScanner,
+                        searchBase, excludedDirectories))
+                .orElse(Collections.emptySet());
+        if (frontendDirectoryPolyfills.isEmpty()) {
+            getLogger().config(() -> String.format(
+                    "Unable to find %s polyfill in frontend directory, searching the whole context",
+                    WEB_COMPONENTS_LOADER_JS_NAME));
+            frontendDirectoryPath.ifPresent(excludedDirectories::add);
+            return getPolyfillBasePath(CONTEXT_ROOT_PATH, locatePolyfills(
+                    resourceScanner, CONTEXT_ROOT_PATH, excludedDirectories));
+        } else {
+            return getPolyfillBasePath(
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,
+                    frontendDirectoryPolyfills);
+        }
+    }
+
+    private Optional<String> getFrontendDirectoryPath() {
+        VaadinUriResolver uriResolver = new VaadinUriResolver() {
+            @Override
+            protected String getContextRootUrl() {
+                // ServletContext.getResource expects a leading slash
+                return CONTEXT_ROOT_PATH;
             }
 
-            // Don't traverse some potentially huge but pointless directories
-            return !name.contains("node/") && !name.contains("node_modules/");
+            @Override
+            protected String getFrontendRootUrl() {
+                return getEs6FrontendPrefix();
+            }
+        };
+        String scanBase = uriResolver.resolveVaadinUri(
+                ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        if (!scanBase.startsWith(CONTEXT_ROOT_PATH)) {
+            getLogger().warning(() -> formatDefaultPolyfillMessage(String
+                    .format("Cannot automatically find the %s polyfill because the property "
+                            + "'%s' value is not absolute (doesn't start with '/')",
+                            WEB_COMPONENTS_LOADER_JS_NAME,
+                            Constants.FRONTEND_URL_ES6)));
+            return Optional.empty();
+        }
+        return Optional.of(scanBase);
+    }
+
+    private Set<String> locatePolyfills(
+            BiConsumer<String, Predicate<String>> resourceScanner,
+            String scanBase, Set<String> exclusions) {
+        Set<String> foundPolyfills = new HashSet<>();
+        resourceScanner.accept(scanBase, name -> {
+            if (name.endsWith(WEB_COMPONENTS_LOADER_JS_NAME)) {
+                foundPolyfills.add(name);
+            }
+            return exclusions.stream().noneMatch(name::contains);
         });
+        return foundPolyfills;
+    }
 
-        if (foundPolyfills.isEmpty()) {
-            getLogger().log(Level.WARNING, () -> formatDefaultPolyfillMessage(
-                    "Webcomponents polyfill will not be used because none was found in the context"));
-            return null;
+    private Optional<String> getPolyfillBasePath(String prefix,
+            Set<String> polyfills) {
+        if (polyfills.isEmpty()) {
+            return Optional.empty();
         }
-        if (foundPolyfills.size() > 1) {
-            getLogger().log(Level.WARNING, () -> String.format(
-                    "Have located multiple webcomponents polyfills: '%s', will use the first one from the list",
-                    foundPolyfills));
+        if (polyfills.size() > 1) {
+            getLogger().warning(() -> String.format(
+                    "Have located multiple %s polyfills: '%s', using the first one",
+                    WEB_COMPONENTS_LOADER_JS_NAME, polyfills));
         }
 
-        String fileName = foundPolyfills.iterator().next();
+        String fileName = polyfills.iterator().next();
         String dirName = fileName.substring(0, fileName.lastIndexOf('/'));
-        assert !dirName.endsWith("/");
 
-        getLogger().log(Level.CONFIG, () -> formatDefaultPolyfillMessage(
-                "Will use webcomponents polyfill discovered in " + dirName));
-        return ApplicationConstants.CONTEXT_PROTOCOL_PREFIX + dirName + '/';
+        getLogger().config(() -> formatDefaultPolyfillMessage(
+                String.format("Will use %s polyfill discovered in %s",
+                        WEB_COMPONENTS_LOADER_JS_NAME, dirName)));
+        return Optional.of(prefix + dirName + '/');
     }
 
     private static String formatDefaultPolyfillMessage(String baseMessage) {
         return String.format("%1$s%n"
-                + "Configure %2$s with an empty value to explicitly disable Web Components polyfill loading.%n"
+                + "Configure %2$s with an empty value to explicitly disable web components polyfill loading.%n"
                 + "Configure %2$s with an explicit value to use that location instead of scanning for an implementation.",
                 baseMessage, Constants.SERVLET_PARAMETER_POLYFILL_BASE);
     }
-
 }
