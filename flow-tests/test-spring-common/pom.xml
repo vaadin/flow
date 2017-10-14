@@ -34,6 +34,11 @@
             <version>4.3.11.RELEASE</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>polymer</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
