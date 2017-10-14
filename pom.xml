@@ -83,8 +83,6 @@
         <node.version>v7.10.1</node.version>
         <npm.version>5.3.0</npm.version>
 
-        <frontend.working.directory>${project.basedir}/src/main/webapp/frontend</frontend.working.directory>
-
         <maven.test.skip>false</maven.test.skip>
     </properties>
 

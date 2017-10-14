@@ -12,8 +12,6 @@
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <skip.npm>true</skip.npm>
-        <skip.bower>true</skip.bower>
     </properties>
 
     <dependencyManagement>
