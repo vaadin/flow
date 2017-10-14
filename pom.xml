@@ -653,6 +653,9 @@
                         <fileset>
                             <directory>${project.rootdir}/driver_zips</directory>
                         </fileset>
+                        <fileset>
+                            <directory>error-screenshots</directory>
+                        </fileset>
                     </filesets>
                 </configuration>
             </plugin>
