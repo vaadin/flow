@@ -23,6 +23,12 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.VaadinSessionState;
 
 /**
+ * Abstract Vaadin scope implementation.
+ * <p>
+ * Contains common methods for every Vaadin scope: most important methods are
+ * delegates to a custom bean store which is responsibe for all bean store
+ * operations.
+ *
  * @author Vaadin Ltd
  *
  */
@@ -48,8 +54,21 @@ abstract class AbstractScope implements Scope, BeanFactoryPostProcessor {
         getBeanStore().registerDestructionCallback(name, callback);
     }
 
+    /**
+     * Gets bean store for this scope.
+     *
+     * @return bean store for the scope
+     */
     protected abstract BeanStore getBeanStore();
 
+    /**
+     * Gets current Vaadin session.
+     * <p>
+     * Throws {@link IllegalStateException} if there is no current Vaadin
+     * session scope or it's not opened.
+     *
+     * @return the current Vaadin session
+     */
     protected VaadinSession getVaadinSession() {
         VaadinSession session = VaadinSession.getCurrent();
         if (session == null) {
