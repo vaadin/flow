@@ -144,6 +144,10 @@ public class RouteRegistry implements Serializable {
         initErrorTargets(exceptionTargetsMap);
     }
 
+    public boolean errorNavigationTargetsInitialized() {
+        return exceptionTargets.get() == null;
+    }
+
     /**
      * Register a child handler if parent registered or leave as is if child
      * registered.
@@ -200,7 +204,7 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getErrorNavigationTarget(
             Throwable exception) {
-        if (exceptionTargets.get() == null) {
+        if (errorNavigationTargetsInitialized()) {
             initErrorTargets(new HashMap<>());
         }
         Class<? extends Component> result = searchByCause(exception);
