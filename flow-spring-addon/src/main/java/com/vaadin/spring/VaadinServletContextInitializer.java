@@ -74,7 +74,7 @@ public class VaadinServletContextInitializer
         public void contextInitialized(ServletContextEvent event) {
             RouteRegistry registry = RouteRegistry
                     .getInstance(event.getServletContext());
-            if (registry.isInitialized()) {
+            if (registry.navigationTargetsInitialized()) {
                 return;
             }
 
@@ -126,7 +126,7 @@ public class VaadinServletContextInitializer
         public void contextInitialized(ServletContextEvent event) {
             RouteRegistry registry = RouteRegistry
                     .getInstance(event.getServletContext());
-            if (registry.hasNavigationTargets()) {
+            if (registry.errorNavigationTargetsInitialized()) {
                 return;
             }
 
@@ -163,7 +163,7 @@ public class VaadinServletContextInitializer
         RouteRegistry registry = RouteRegistry.getInstance(servletContext);
         // If the registry is already initialized then RouteRegistryInitializer
         // has done its job already, skip the custom routes search
-        if (!registry.isInitialized()) {
+        if (!registry.navigationTargetsInitialized()) {
             /*
              * Don't rely on RouteRegistry.isInitialized() negative return value
              * here because it's not known whether RouteRegistryInitializer has
@@ -176,7 +176,7 @@ public class VaadinServletContextInitializer
             servletContext.addListener(new RouteServletContextListener());
         }
 
-        if (!registry.hasNavigationTargets()) {
+        if (!registry.errorNavigationTargetsInitialized()) {
             // Same thing: don't rely on hasNavigationTargets() negative return
             // value
             servletContext
