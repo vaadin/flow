@@ -33,7 +33,7 @@
     "iron-icons": "~2.0.1",
     "iron-media-query": "~2.0.0",
     "iron-selector": "~2.0.0",
-    "vaadin-grid": "~4.0.0-alpha2",
+    "vaadin-grid": "~4.0.0-alpha5",
     "vaadin-text-field": "~1.1.0-beta1",
     "vaadin-button": "~1.0.4",
     "vaadin-checkbox": "~1.0.0-beta1",

@@ -47,16 +47,18 @@ public abstract class AbstractGridMultiSelectionModel<T>
                 this::clientDeselectAll);
         selectAllCheckBoxVisibility = SelectAllCheckboxVisibility.DEFAULT;
 
-        grid.getElement().insertChild(0, selectionColumn.getElement());
         selectionColumn
                 .setSelectAllCheckBoxVisibility(isSelectAllCheckboxVisible());
+        grid.getElement().getNode().runWhenAttached(ui -> grid.getElement()
+                .insertChild(0, selectionColumn.getElement()));
     }
 
     @Override
     public void remove() {
         deselectAll();
-        grid.getElement()
-                .removeChild(selectionColumn.getElement());
+        if (selectionColumn.getElement().getNode().isAttached()) {
+            grid.getElement().removeChild(selectionColumn.getElement());
+        }
     }
 
     @Override

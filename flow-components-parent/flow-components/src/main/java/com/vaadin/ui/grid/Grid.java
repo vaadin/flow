@@ -71,6 +71,7 @@ import elemental.json.JsonValue;
  */
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
+@HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @JavaScript("context://gridConnector.js")
 public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
