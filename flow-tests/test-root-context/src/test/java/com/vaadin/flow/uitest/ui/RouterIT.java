@@ -11,6 +11,7 @@ import com.vaadin.flow.uitest.servlet.RouterTestServlet.ChildNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooBarNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.RootNavigationTarget;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 public class RouterIT extends ChromeBrowserTest {
 
@@ -22,7 +23,7 @@ public class RouterIT extends ChromeBrowserTest {
     @Test
     public void rootNavigationTarget() {
         open();
-        Assert.assertEquals(RootNavigationTarget.class.getSimpleName(),
+        Assert.assertEquals(ViewTestLayout.BaseNavigationTarget.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
     }
 

@@ -39,6 +39,10 @@ public class ViewTestLayout extends Div
 
     @Route(value = "", layout = ViewTestLayout.class)
     public static class BaseNavigationTarget extends Div {
+        public BaseNavigationTarget() {
+            setText(this.getClass().getSimpleName());
+            setId("name-div");
+        }
     }
 
     public ViewTestLayout() {
