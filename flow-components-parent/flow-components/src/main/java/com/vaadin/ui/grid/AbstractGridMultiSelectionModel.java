@@ -31,7 +31,7 @@ public abstract class AbstractGridMultiSelectionModel<T>
     private final Set<T> selected;
     private final GridSelectionColumn selectionColumn;
     private final Grid<T> grid;
-    private SelectAllCheckBoxVisibility selectAllCheckBoxVisibility;
+    private SelectAllCheckboxVisibility selectAllCheckBoxVisibility;
     
     /**
      * Constructor for passing a reference of the grid to this implementation.
@@ -45,11 +45,11 @@ public abstract class AbstractGridMultiSelectionModel<T>
         selected = new LinkedHashSet<>();
         selectionColumn = new GridSelectionColumn(this::clientSelectAll,
                 this::clientDeselectAll);
-        selectAllCheckBoxVisibility = SelectAllCheckBoxVisibility.DEFAULT;
+        selectAllCheckBoxVisibility = SelectAllCheckboxVisibility.DEFAULT;
 
         grid.getElement().insertChild(0, selectionColumn.getElement());
         selectionColumn
-                .setSelectAllCheckBoxVisibility(isSelectAllCheckBoxVisible());
+                .setSelectAllCheckBoxVisibility(isSelectAllCheckboxVisible());
     }
 
     @Override
@@ -192,20 +192,20 @@ public abstract class AbstractGridMultiSelectionModel<T>
     }
 
     @Override
-    public void setSelectAllCheckBoxVisibility(
-            SelectAllCheckBoxVisibility selectAllCheckBoxVisibility) {
+    public void setSelectAllCheckboxVisibility(
+            SelectAllCheckboxVisibility selectAllCheckBoxVisibility) {
         this.selectAllCheckBoxVisibility = selectAllCheckBoxVisibility;
         selectionColumn.setSelectAllCheckBoxVisibility(
-                isSelectAllCheckBoxVisible());
+                isSelectAllCheckboxVisible());
     }
 
     @Override
-    public SelectAllCheckBoxVisibility getSelectAllCheckBoxVisibility() {
+    public SelectAllCheckboxVisibility getSelectAllCheckboxVisibility() {
         return selectAllCheckBoxVisibility;
     }
 
     @Override
-    public boolean isSelectAllCheckBoxVisible() {
+    public boolean isSelectAllCheckboxVisible() {
         switch (selectAllCheckBoxVisibility) {
         case DEFAULT:
             return grid.getDataCommunicator().getDataProvider()

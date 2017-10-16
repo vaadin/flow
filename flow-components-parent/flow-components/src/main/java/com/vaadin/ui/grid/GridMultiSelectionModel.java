@@ -41,7 +41,7 @@ public interface GridMultiSelectionModel<T>
      * only visible if an in-memory data provider is used
      * {@link DataProvider#isInMemory()}.
      */
-    public enum SelectAllCheckBoxVisibility {
+    public enum SelectAllCheckboxVisibility {
 
         /**
          * Shows the select all checkbox, regardless of data provider used.
@@ -91,35 +91,35 @@ public interface GridMultiSelectionModel<T>
     /**
      * Sets the select all checkbox visibility mode.
      * <p>
-     * The default value is {@link SelectAllCheckBoxVisibility#DEFAULT}, which
+     * The default value is {@link SelectAllCheckboxVisibility#DEFAULT}, which
      * means that the checkbox is only visible if the grid's data provider is
      * in- memory.
      *
      * @param selectAllCheckBoxVisibility
      *            the visiblity mode to use
-     * @see SelectAllCheckBoxVisibility
+     * @see SelectAllCheckboxVisibility
      */
-    public void setSelectAllCheckBoxVisibility(
-            SelectAllCheckBoxVisibility selectAllCheckBoxVisibility);
+    public void setSelectAllCheckboxVisibility(
+            SelectAllCheckboxVisibility selectAllCheckBoxVisibility);
 
     /**
      * Gets the current mode for the select all checkbox visibility.
      *
      * @return the select all checkbox visibility mode
-     * @see SelectAllCheckBoxVisibility
-     * @see #isSelectAllCheckBoxVisible()
+     * @see SelectAllCheckboxVisibility
+     * @see #isSelectAllCheckboxVisible()
      */
-    public SelectAllCheckBoxVisibility getSelectAllCheckBoxVisibility();
+    public SelectAllCheckboxVisibility getSelectAllCheckboxVisibility();
 
     /**
      * Returns whether the select all checkbox will be visible with the current
      * setting of
-     * {@link #setSelectAllCheckBoxVisibility(SelectAllCheckBoxVisibility)}.
+     * {@link #setSelectAllCheckboxVisibility(SelectAllCheckboxVisibility)}.
      *
      * @return {@code true} if the checkbox will be visible with the current
      *         settings
-     * @see SelectAllCheckBoxVisibility
-     * @see #setSelectAllCheckBoxVisibility(SelectAllCheckBoxVisibility)
+     * @see SelectAllCheckboxVisibility
+     * @see #setSelectAllCheckboxVisibility(SelectAllCheckboxVisibility)
      */
-    public boolean isSelectAllCheckBoxVisible();
+    public boolean isSelectAllCheckboxVisible();
 }
