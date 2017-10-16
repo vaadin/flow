@@ -13,25 +13,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.spring.annotation;
 
-import java.util.UUID;
+import static com.vaadin.spring.scopes.VaadinUIScope.VAADIN_UI_SCOPE_NAME;
 
-import org.springframework.stereotype.Component;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import com.vaadin.spring.annotation.VaadinSessionScope;
+import org.springframework.context.annotation.Scope;
 
 /**
- * @author Vaadin Ltd
+ * Stereotype annotation for Spring's {@code @Scope("vaadin-ui")}.
  *
+ * @author Vaadin Ltd
  */
-@Component
-@VaadinSessionScope
-public class DataBean {
-
-    private final String uid = UUID.randomUUID().toString();
-
-    public String getMessage() {
-        return "foo" + uid;
-    }
+@Scope(VAADIN_UI_SCOPE_NAME)
+@Target({ ElementType.TYPE, ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface UIScope {
 }
