@@ -33,7 +33,7 @@ public class ScopesIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void testServletDeployed() throws Exception {
+    public void checkSessionScope() throws Exception {
         open();
 
         String prefix = "foo";
@@ -52,5 +52,27 @@ public class ScopesIT extends ChromeBrowserTest {
         Assert.assertEquals(sessionId, text.substring(prefix.length()));
         // self check: it should be another UI
         Assert.assertNotEquals(uiId, findElement(By.id("ui-id")).getText());
+    }
+
+    @Test
+    public void checkUiScope() throws Exception {
+        getDriver().get(getTestURL() + "ui-scope");
+
+        String mainId = findElement(By.id("main")).getText();
+
+        String innerId = findElement(By.id("inner")).getText();
+
+        Assert.assertEquals(mainId, innerId);
+
+        // open another ui
+        getDriver().get(getTestURL() + "ui-scope");
+
+        String anotherMainId = findElement(By.id("main")).getText();
+
+        Assert.assertNotEquals(mainId, anotherMainId);
+
+        innerId = findElement(By.id("inner")).getText();
+
+        Assert.assertEquals(anotherMainId, innerId);
     }
 }
