@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -749,10 +748,10 @@ public class UIInternals implements Serializable {
      * Get the latest handled location or empty optional if no active
      * navigation.
      * 
-     * @return optional location if navigated during active navigation
+     * @return location if navigated during active navigation or {@code null}
      */
-    public Optional<Location> getLastHanLocation() {
-        return Optional.ofNullable(lastHandledNavigation);
+    public Location getLastHandledLocation() {
+        return lastHandledNavigation;
     }
 
     /**
@@ -769,6 +768,6 @@ public class UIInternals implements Serializable {
      * Clear latest handled navigation location.
      */
     public void clearLastHandledNavigation() {
-        lastHandledNavigation = null;
+        setLastHandledNavigation(null);
     }
 }

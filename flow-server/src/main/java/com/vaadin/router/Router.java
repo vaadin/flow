@@ -111,7 +111,7 @@ public class Router implements RouterInterface {
                 NavigationHandler handler = new NavigationStateRenderer(
                         newState);
                 if (notNavigatingToSameLocation(location,
-                        ui.getInternals().getLastHanLocation())) {
+                        ui.getInternals().getLastHandledLocation())) {
                     ui.getInternals().setLastHandledNavigation(location);
                     return handler.handle(navigationEvent);
                 }
@@ -165,10 +165,10 @@ public class Router implements RouterInterface {
     }
 
     private boolean notNavigatingToSameLocation(Location location,
-            Optional<Location> lastHandledNavigation) {
-        if (lastHandledNavigation.isPresent()) {
-            return !location.getPathWithQueryParameters().equals(
-                    lastHandledNavigation.get().getPathWithQueryParameters());
+            Location lastHandledNavigation) {
+        if (lastHandledNavigation != null) {
+            return !location.getPathWithQueryParameters()
+                    .equals(lastHandledNavigation.getPathWithQueryParameters());
         }
         return true;
     }
