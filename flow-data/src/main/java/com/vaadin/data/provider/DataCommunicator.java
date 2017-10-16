@@ -30,10 +30,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.data.provider.ArrayUpdater.Update;
+import com.vaadin.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.function.SerializableConsumer;
+import com.vaadin.shared.Registration;
+import com.vaadin.ui.UI;
 import com.vaadin.util.Range;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -50,6 +55,7 @@ import elemental.json.JsonValue;
 public class DataCommunicator<T> {
     private final BiFunction<String, T, JsonValue> dataGenerator;
     private final ArrayUpdater arrayUpdater;
+    private final SerializableConsumer<JsonArray> dataUpdater;
     private final StateNode stateNode;
 
     private final KeyMapper<T> keyMapper = new KeyMapper<>();
@@ -80,7 +86,11 @@ public class DataCommunicator<T> {
     private Comparator<T> inMemorySorting;
     private final List<QuerySortOrder> backEndSorting = new ArrayList<>();
 
+    private Registration dataProviderUpdateRegistration;
+    private Set<T> updatedData = new HashSet<>();
+
     private Runnable flushRequest;
+    private Runnable flushUpdatedDataRequest;
 
     /**
      * Creates a new instance.
@@ -89,13 +99,18 @@ public class DataCommunicator<T> {
      *            the data generator function
      * @param arrayUpdater
      *            array updater strategy
+     * @param dataUpdater
+     *            data updater strategy
      * @param stateNode
      *            the state node used to communicate for
      */
     public DataCommunicator(BiFunction<String, T, JsonValue> dataGenerator,
-            ArrayUpdater arrayUpdater, StateNode stateNode) {
+            ArrayUpdater arrayUpdater,
+            SerializableConsumer<JsonArray> dataUpdater,
+            StateNode stateNode) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
+        this.dataUpdater = dataUpdater;
         this.stateNode = stateNode;
 
         stateNode.addAttachListener(this::handleAttach);
@@ -127,6 +142,20 @@ public class DataCommunicator<T> {
         resendEntireRange = true;
 
         requestFlush();
+    }
+
+    /**
+     * Informs the DataCommunicator that a data object has been updated.
+     *
+     * @param data
+     *            updated data object; not {@code null}
+     */
+    public void refresh(T data) {
+        Objects.requireNonNull(data,
+                "DataCommunicator can not refresh null object");
+        getKeyMapper().refresh(data);
+        updatedData.add(data);
+        requestFlushUpdatedData();
     }
 
     /**
@@ -175,8 +204,7 @@ public class DataCommunicator<T> {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
         filter = initialFilter;
 
-        // TODO: remove old data provider listener (see
-        // handleAttach/handleDetach)
+        handleDetach();
 
         reset();
 
@@ -184,7 +212,7 @@ public class DataCommunicator<T> {
 
         keyMapper.setIdentifierGetter(dataProvider::getId);
 
-        // TODO: add data provider listener if attached (see handleAttach)
+        handleAttach();
 
         return filter -> {
             if (this.dataProvider != dataProvider) {
@@ -247,25 +275,11 @@ public class DataCommunicator<T> {
     }
 
     private void handleAttach() {
-        // TODO: Add data listener
-        /*
-         * It should add data provider listener to listen events like
-         * "refresh an item" event. As a result the item should be refreshed
-         * here in the communicator class and data generators should refresh the
-         * item. At the moment there is no dedicated DataGenerator interface so
-         * it's not implemented. See
-         * https://github.com/vaadin/framework/blob/master/server/src/main/java/
-         * com/vaadin/data/provider/DataCommunicator.java in the FW8 for
-         * details.
-         */
+        attachDataProviderListener();
     }
 
     private void handleDetach() {
-        // TODO: Remove data listener
-        /*
-         * Just remove listener added in the handleAttach method via
-         * registration
-         */
+        detachDataProviderListener();
     }
 
     private void requestFlush() {
@@ -276,6 +290,17 @@ public class DataCommunicator<T> {
             };
             stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
                     .beforeClientResponse(stateNode, flushRequest));
+        }
+    }
+
+    private void requestFlushUpdatedData() {
+        if (flushUpdatedDataRequest == null) {
+            flushUpdatedDataRequest = () -> {
+                flushUpdatedData();
+                flushUpdatedDataRequest = null;
+            };
+            stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
+                    .beforeClientResponse(stateNode, flushUpdatedDataRequest));
         }
     }
 
@@ -313,6 +338,15 @@ public class DataCommunicator<T> {
 
         // Phase 4: unregister passivated and updated items
         unregisterPassivatedKeys();
+    }
+
+    private void flushUpdatedData() {
+        if (updatedData.isEmpty()) {
+            return;
+        }
+        dataUpdater.accept(updatedData.stream().map(this::generateJson)
+                .collect(JsonUtils.asArray()));
+        updatedData.clear();
     }
 
     private void unregisterPassivatedKeys() {
@@ -464,5 +498,23 @@ public class DataCommunicator<T> {
         return dataGenerator.apply(keyMapper.key(item), item);
     }
 
+    private void attachDataProviderListener() {
+        dataProviderUpdateRegistration = getDataProvider()
+                .addDataProviderListener(event -> {
+                    UI.getCurrent().access(() -> {
+                        if (event instanceof DataRefreshEvent) {
+                            refresh(((DataRefreshEvent<T>) event).getItem());
+                        } else {
+                            reset();
+                        }
+                    });
+                });
+    }
 
+    private void detachDataProviderListener() {
+        if (dataProviderUpdateRegistration != null) {
+            dataProviderUpdateRegistration.remove();
+            dataProviderUpdateRegistration = null;
+        }
+    }
 }
