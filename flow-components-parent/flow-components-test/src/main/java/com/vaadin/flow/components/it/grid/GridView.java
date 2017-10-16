@@ -28,12 +28,10 @@ import com.vaadin.ui.grid.Grid;
 public class GridView extends TestView {
 
     private DataProvider<String, ?> dataProvider1 = DataProvider
-            .fromCallbacks(query -> {
-                return IntStream
-                        .range(query.getOffset(),
-                                query.getOffset() + query.getLimit())
-                        .mapToObj(Integer::toString);
-            }, query -> 10000);
+            .fromCallbacks(query -> IntStream
+                    .range(query.getOffset(),
+                            query.getOffset() + query.getLimit())
+                    .mapToObj(Integer::toString), query -> 10000);
 
     private DataProvider<String, ?> dataProvider2 = DataProvider.ofItems("foo",
             "foob", "fooba", "foobar");

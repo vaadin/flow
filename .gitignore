@@ -29,9 +29,3 @@ scripts/*.pyc
 selenium_standalone_zips
 driver_zips
 driver
-
-# Bower/node stuff
-**/bower_components
-**/node
-**/node_modules
-**/build
