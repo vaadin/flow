@@ -1,2 +1,2 @@
 generator.version=${project.version}
-flow.version=${flow.version}
+flow.version=${project.version}

@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-generated-components</artifactId>
-            <version>${flow.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -27,7 +27,7 @@
             <artifactId>flow-data</artifactId>
             <scope>test</scope>
             <type>test-jar</type>
-            <version>${flow.version}</version>
+            <version>${project.version}</version>
         </dependency>
          <dependency>
             <groupId>javax.validation</groupId>
