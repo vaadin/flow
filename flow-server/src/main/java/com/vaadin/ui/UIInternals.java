@@ -22,13 +22,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.common.JavaScript;
-import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.flow.ConstantPool;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.Element;
@@ -39,10 +37,10 @@ import com.vaadin.flow.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.HasChildView;
-import com.vaadin.router.Location;
-import com.vaadin.router.RouterLayout;
 import com.vaadin.flow.router.View;
 import com.vaadin.flow.template.angular.TemplateNode;
+import com.vaadin.router.Location;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
@@ -51,6 +49,9 @@ import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.Page.ExecutionCanceler;
 import com.vaadin.ui.common.DependencyList;
 import com.vaadin.ui.common.HasElement;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.common.StyleSheet;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -139,6 +140,8 @@ public class UIInternals implements Serializable {
     private ArrayList<HasElement> routerTargetChain = new ArrayList<>();
 
     private final Set<Integer> sentTemplateIds = new HashSet<>();
+
+    private Location lastHandledNavigation = null;
 
     /**
      * The Vaadin session to which the related UI belongs.
@@ -740,5 +743,32 @@ public class UIInternals implements Serializable {
      */
     public ConstantPool getConstantPool() {
         return constantPool;
+    }
+
+    /**
+     * Get the latest handled location or empty optional if no active
+     * navigation.
+     * 
+     * @return optional location if navigated during active navigation
+     */
+    public Optional<Location> getLastHanLocation() {
+        return Optional.ofNullable(lastHandledNavigation);
+    }
+
+    /**
+     * Set the latest navigation location for active navigation.
+     * 
+     * @param location
+     *            last location navigated to
+     */
+    public void setLastHandledNavigation(Location location) {
+        this.lastHandledNavigation = location;
+    }
+
+    /**
+     * Clear latest handled navigation location.
+     */
+    public void clearLastHandledNavigation() {
+        lastHandledNavigation = null;
     }
 }
