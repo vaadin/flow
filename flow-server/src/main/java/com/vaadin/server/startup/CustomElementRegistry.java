@@ -15,8 +15,9 @@
  */
 package com.vaadin.server.startup;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
@@ -27,45 +28,51 @@ import com.vaadin.ui.Component;
  */
 public class CustomElementRegistry {
 
-    private final Map<String, Class<? extends Component>> customElements = new HashMap<>();
+    private final AtomicReference<Map<String, Class<? extends Component>>> customElements = new AtomicReference<>();
 
     private static final CustomElementRegistry INSTANCE = new CustomElementRegistry();
-
-     boolean initialized;
 
     private CustomElementRegistry() {
     }
 
     /**
      * Get instance of CustomElementRegistry.
-     * 
+     *
      * @return singleton instance of the registry
      */
     public static CustomElementRegistry getInstance() {
         return INSTANCE;
     }
 
-    protected boolean isInitialized() {
-        return initialized;
+    /**
+     * Returns whether this registry has been initialized with custom elements
+     * info.
+     *
+     * @return whether this registry has been initialized
+     */
+    public boolean isInitialized() {
+        return customElements.get() != null;
     }
 
     /**
      * Set registered custom elements.
      * <p>
      * Note! Custom elements can only be set once!
-     * 
+     *
      * @param customElements
      *            map of registered custom elements
      */
     public void setCustomElements(
             Map<String, Class<? extends Component>> customElements) {
-        if (initialized) {
+        if (isInitialized()) {
             throw new IllegalArgumentException(
                     "Custom element map has already been initialized");
         }
-        this.customElements.clear();
-        this.customElements.putAll(customElements);
-        initialized = true;
+        if (!this.customElements.compareAndSet(null,
+                Collections.unmodifiableMap(customElements))) {
+            throw new IllegalStateException(
+                    "The custom element registry has been already initialized");
+        }
     }
 
     /**
@@ -76,7 +83,7 @@ public class CustomElementRegistry {
      * @return true if custom element class is found
      */
     public boolean isRegisteredCustomElement(String tag) {
-        return customElements.containsKey(tag);
+        return getCustomElements().containsKey(tag);
     }
 
     /**
@@ -87,7 +94,7 @@ public class CustomElementRegistry {
      * @return custom element class for tag
      */
     public Class<? extends Component> getRegisteredCustomElement(String tag) {
-        return customElements.get(tag);
+        return getCustomElements().get(tag);
     }
 
     /**
@@ -111,5 +118,13 @@ public class CustomElementRegistry {
                 && !element.getComponent().isPresent()) {
             Component.from(element, getRegisteredCustomElement(tag));
         }
+    }
+
+    private Map<String, Class<? extends Component>> getCustomElements() {
+        Map<String, Class<? extends Component>> map = customElements.get();
+        if (map == null) {
+            return Collections.emptyMap();
+        }
+        return map;
     }
 }

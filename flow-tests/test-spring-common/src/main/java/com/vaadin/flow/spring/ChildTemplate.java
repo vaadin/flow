@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.startup;
+package com.vaadin.flow.spring;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class CustomElementRegistryAccess {
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
-    public static void resetRegistry() {
-        CustomElementRegistry.getInstance().initialized = false;
-    }
+@Tag("child-template")
+@HtmlImport("/components/ChildTemplate.html")
+public class ChildTemplate extends PolymerTemplate<TemplateModel> {
+
 }

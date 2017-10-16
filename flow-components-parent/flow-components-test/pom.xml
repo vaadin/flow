@@ -23,43 +23,19 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-components</artifactId>
-            <version>${flow.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>${flow.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>${frontend.maven.plugin.version}</version>
-                <configuration>
-                    <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
-                    <workingDirectory>${frontend.working.directory}</workingDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install-bower-dependencies</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                            <goal>npm</goal>
-                            <goal>bower</goal>
-                        </goals>
-                        <configuration>
-                            <workingDirectory>${frontend.working.directory}</workingDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <executions>
@@ -87,7 +63,6 @@
                     <stopWait>5</stopWait>
                     <stopKey>foo</stopKey>
                     <webAppConfig>
-                        <webInfIncludeJarPattern>.*/flow-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
                         <containerIncludeJarPattern>^$</containerIncludeJarPattern>
                     </webAppConfig>
                 </configuration>
@@ -172,7 +147,6 @@
                                 <resourceBases>
                                     <!-- these paths are relative to the
                                         project where the profile is triggered -->
-                                    <resourceBase>${project.basedir}/${webapp.directory}</resourceBase>
                                     <resourceBase>${project.basedir}/../flow-components/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-client/target/classes/META-INF/resources</resourceBase>
                                     <resourceBase>${project.basedir}/../../flow-push/src/main/resources/META-INF/resources</resourceBase>

@@ -12,15 +12,13 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <skip.npm>true</skip.npm>
-        <skip.bower>true</skip.bower>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-resources</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

@@ -1,6 +1,6 @@
 # Contributing to Vaadin Flow
 
-*There are many ways to participate to the Vaadin project. You can ask questions and participate to discussion in the [forum](https://vaadin.com/forum), [fill bug reports](https://github.com/vaadin/flow/issues) and enhancement suggestions and contribute code. These instructions are for contributing code to Flow.*
+*There are many ways to participate to the Vaadin Flow project. You can ask questions and participate to discussion in [gitter](gitter.im/vaadin-flow/Lobby), [forum](https://vaadin.com/forum), [fill bug reports](https://github.com/vaadin/flow/issues) and enhancement suggestions and contribute code. These instructions are for contributing code to Flow.*
 
 # Summary
 
@@ -20,7 +20,7 @@ In other words:
 
 # We encourage you to get in touch
 
-Getting in touch with us on the [Vaadin forum](https://vaadin.com/forum) or on the Vaadin IRC channel (#vaadin on irc.freenode.net) is not a bad place to start. We’re more than happy to help you get started, and we’re happy to engage in conversation about feature suggestions and bug fixes. We welcome contributors and contributions and we’re here to help.
+Getting in touch with us on the [gitter](gitter.im/vaadin-flow/Lobby) is the best place to start. We’re more than happy to help you get started, and we’re happy to engage in conversation about feature suggestions and bug fixes. We welcome contributors and contributions and we’re here to help.
 
 Getting in touch with us early will also help us co-ordinate efforts so that not everyone ends up working on the same bug or feature at the same time.
 
@@ -74,7 +74,7 @@ When dividing your change into a series of patches, take special care to ensure 
 
 # Style-check your changes
 
-Check your patch for basic style violations. If you use eclipse, use the formatting rules preconfigured in the project to make life easier for all involved, and configure save actions as described in [README.md](https://github.com/vaadin/flow/blob/master/README.md). 
+Check your patch for basic style violations. If you use Eclipse, use the formatting rules preconfigured in the project to make life easier for all involved, and configure save actions as described in [README.md](https://github.com/vaadin/flow/blob/master/README.md). 
 
 Patches causing unnecessary style/whitespace changes are messy and will likely be bounced back. 
 
@@ -110,7 +110,12 @@ Start with a good Commit message in imperative form. Reference a ticket number i
 
 # Include a test
 
-Ideally, we would like all patches to include automated tests. Unit tests are preferred. If there’s a change to UI Code, we would prefer a TestBench test. If that’s not possible (you as a contributor lack a TestBench license), we can make do with a Test UI class that contains a test case as well a clear instructions for how to perform the test. This also goes for features that are hard to test automatically. 
+Ideally, we would like all patches to include automated tests. Unit tests are preferred. If there’s a change to UI Code, we would prefer an integration test. 
+
+Our integration tests use TestBench that requires a license. If you don't have any, it's ok: we can make do with a Test UI class that contains a test case as well a clear instructions for how to perform the test.
+This also goes for features that are hard to test automatically.
+
+After submitting a pull request, our CI system will trigger the verification build automatically, including integration tests and you will be able to see the whole build output and results.
 
 Test cases should succeed with the patch and fail without the patch. That way, it’s clear to everyone that the test does in fact test what it is supposed to test. 
 
