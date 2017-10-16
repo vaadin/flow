@@ -26,37 +26,39 @@ import com.vaadin.ui.Tag;
 
 public class RouterParallelIT extends AbstractParallelTestBenchTest {
 
-    private WebElement buttonElement;
-
     @Before
     public void openAndFindElement() {
         getDriver().get(getRootURL() + "/new-router-session/ElementQueryView");
-        buttonElement = findElements(By.tagName(Tag.BUTTON)).get(0);
     }
 
     @Test
     public void a() {
-        Assert.assertNotNull(buttonElement);
+        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
+        Assert.assertNotNull(button);
     }
 
     @Test
     public void b() {
-        Assert.assertNotNull(buttonElement);
+        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
+        Assert.assertNotNull(button);
     }
 
     @Test
     public void c() {
-        Assert.assertNotNull(buttonElement);
+        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
+        Assert.assertNotNull(button);
     }
 
     @Test
     public void d() {
-        Assert.assertNotNull(buttonElement);
+        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
+        Assert.assertNotNull(button);
     }
 
     @Test
     public void e() {
-        Assert.assertNotNull(buttonElement);
+        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
+        Assert.assertNotNull(button);1
     }
 
 }
