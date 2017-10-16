@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.AbstractParallelTestBenchTest;
 import com.vaadin.ui.Tag;
@@ -33,32 +32,32 @@ public class RouterParallelIT extends AbstractParallelTestBenchTest {
 
     @Test
     public void a() {
-        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
-        Assert.assertNotNull(button);
+        Assert.assertTrue("No button was found on page",
+                isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void b() {
-        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
-        Assert.assertNotNull(button);
+        Assert.assertTrue("No button was found on page",
+                isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void c() {
-        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
-        Assert.assertNotNull(button);
+        Assert.assertTrue("No button was found on page",
+                isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void d() {
-        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
-        Assert.assertNotNull(button);
+        Assert.assertTrue("No button was found on page",
+                isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
     @Test
     public void e() {
-        WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
-        Assert.assertNotNull(button);
+        Assert.assertTrue("No button was found on page",
+                isElementPresent(By.tagName(Tag.BUTTON)));
     }
 
 }
