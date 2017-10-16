@@ -19,12 +19,15 @@ import java.util.function.BiConsumer;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.ui.History;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonValue;
 
+@Route(value = "com.vaadin.flow.uitest.ui.scroll.PushStateScrollView", layout = ViewTestLayout.class)
 public class PushStateScrollView extends AbstractDivView {
     public PushStateScrollView() {
         Element filler = ElementFactory.createDiv(

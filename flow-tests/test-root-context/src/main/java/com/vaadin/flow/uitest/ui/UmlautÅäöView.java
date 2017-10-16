@@ -13,26 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.scroll;
+package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.model.TemplateModel;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.ClientDelegate;
-import com.vaadin.ui.common.HtmlImport;
-import com.vaadin.ui.polymertemplate.PolymerTemplate;
+import com.vaadin.ui.AngularTemplate;
 
-@Route(value = "com.vaadin.flow.uitest.ui.scroll.ServerRequestScrollView", layout = ViewTestLayout.class)
-@Tag("server-request")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ServerRequest.html")
-public class ServerRequestScrollView extends PolymerTemplate<TemplateModel> {
+@Route(value = "com.vaadin.flow.uitest.ui.UmlautÅäöView", layout = ViewTestLayout.class)
+public class UmlautÅäöView extends AngularTemplate {
 
-    public ServerRequestScrollView() {
-        setId("template");
-    }
+    public UmlautÅäöView() {
+        super(new ByteArrayInputStream(
+                "<div id='content'>Umlaut view: åäöü. a\u00adb</div>"
+                        .getBytes(StandardCharsets.UTF_8)));
 
-    @ClientDelegate
-    private void requestServer() {
     }
 }

@@ -2,10 +2,13 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
 import com.vaadin.ui.Page;
 
+@Route(value = "com.vaadin.flow.uitest.ui.FragmentLinkView", layout = ViewTestLayout.class)
 public class FragmentLinkView extends AbstractDivView {
 
     public FragmentLinkView() {

@@ -22,24 +22,24 @@ import java.util.List;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.Route;
-import com.vaadin.router.WildcardParameter;
+import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
-import com.vaadin.router.util.RouterUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.html.Div;
-import com.vaadin.util.ReflectTools;
 
-@Route("")
 public class ViewTestLayout extends Div
-        implements BeforeNavigationListener, HasUrlParameter<String> {
+        implements RouterLayout, BeforeNavigationListener {
 
     private Element element = ElementFactory.createDiv();
     private Element viewContainer = ElementFactory.createDiv();
     private Element viewSelect = ElementFactory.createSelect();
+
+    @Route(value = "", layout = ViewTestLayout.class)
+    public static class BaseNavigationTarget extends Div {
+    }
 
     public ViewTestLayout() {
 
@@ -90,30 +90,4 @@ public class ViewTestLayout extends Div
                 "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
                 event.getLocation().getPath());
     }
-
-    @Override
-    public void setParameter(BeforeNavigationEvent event,
-            @WildcardParameter String parameter) {
-        Element subElement;
-
-        if (parameter.isEmpty()) {
-            return;
-        } else {
-            try {
-                subElement = ReflectTools.createInstance(ViewTestServlet
-                        .getViewLocator().findViewClass(parameter))
-                        .getElement();
-
-                RouterUtil.updatePageTitle(UI.getCurrent(),
-                        subElement.getComponent().get());
-
-                viewContainer.setChild(0, subElement);
-                viewContainer.appendChild(subElement);
-            } catch (ClassNotFoundException e) {
-                // waiting for new implement
-            }
-        }
-
-    }
-
 }

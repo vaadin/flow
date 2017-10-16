@@ -19,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
@@ -34,6 +36,7 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Hr;
 import com.vaadin.ui.html.NativeButton;
 
+@Route(value = "com.vaadin.flow.uitest.ui.DependencyView", layout = ViewTestLayout.class)
 public class DependencyView extends AbstractDivView {
 
     private StreamResourceRegistration htmlImport2;

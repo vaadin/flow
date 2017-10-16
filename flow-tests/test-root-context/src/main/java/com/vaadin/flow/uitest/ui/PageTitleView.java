@@ -1,10 +1,13 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Input;
 
+@Route(value = "com.vaadin.flow.uitest.ui.PageTitleView", layout = ViewTestLayout.class)
 public class PageTitleView extends AbstractDivView
         implements BeforeNavigationListener {
 

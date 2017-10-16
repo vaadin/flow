@@ -16,15 +16,15 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
-/**
- * @author Vaadin Ltd.
- */
+@Route(value = "com.vaadin.flow.uitest.ui.frontend.BrowserLoggingView", layout = ViewTestLayout.class)
 @Tag("div")
 // context://frontend/ instead of frontend:// to have the same URL in production
 @JavaScript(value = "context://frontend/com/vaadin/flow/uitest/ui/frontend/consoleLoggingProxy.js", loadMode = LoadMode.INLINE)

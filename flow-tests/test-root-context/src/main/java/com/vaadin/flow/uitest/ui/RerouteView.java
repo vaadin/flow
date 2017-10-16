@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
@@ -26,6 +28,7 @@ import com.vaadin.ui.html.Input;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.html.NativeButton;
 
+@Route(value = "com.vaadin.flow.uitest.ui.RerouteView", layout = ViewTestLayout.class)
 public class RerouteView extends AbstractDivView {
 
     boolean reroute = false;

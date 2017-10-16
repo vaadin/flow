@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
 
+@Route(value = "com.vaadin.flow.uitest.ui.webcomponent.PaperSliderView", layout = ViewTestLayout.class)
 public class PaperSliderView extends Div {
     static final String VALUE_TEXT_ID = "valueText";
     static final String CHANGE_VALUE_ID = "changeValue";

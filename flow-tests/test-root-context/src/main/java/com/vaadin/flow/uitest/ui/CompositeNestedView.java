@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.CompositeView.NameField;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.html.Div;
 
+@Route(value = "com.vaadin.flow.uitest.ui.CompositeNestedView", layout = ViewTestLayout.class)
 public class CompositeNestedView extends Composite<Div> {
 
     public static final String NAME_ID = "name";

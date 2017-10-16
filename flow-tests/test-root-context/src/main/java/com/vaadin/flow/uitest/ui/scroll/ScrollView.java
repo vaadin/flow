@@ -16,13 +16,13 @@
 
 package com.vaadin.flow.uitest.ui.scroll;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Anchor;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
-/**
- * @author Vaadin Ltd.
- */
+@Route(value = "com.vaadin.flow.uitest.ui.scroll.ScrollView", layout = ViewTestLayout.class)
 public class ScrollView extends AbstractDivView {
     private static final String ROUTER_LINK_ATTRIBUTE_NAME = "router-link";
 

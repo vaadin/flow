@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.AngularTemplate;
 
+@Route(value = "com.vaadin.flow.uitest.ui.TemplateWithScriptAndInlineStyleView", layout = ViewTestLayout.class)
 public class TemplateWithScriptAndInlineStyleView extends AngularTemplate {
 }

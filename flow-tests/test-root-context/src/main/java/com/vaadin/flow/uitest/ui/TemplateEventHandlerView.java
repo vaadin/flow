@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.html.Div;
@@ -26,10 +28,7 @@ import com.vaadin.ui.html.Label;
 
 import elemental.json.JsonValue;
 
-/**
- * @author Vaadin Ltd
- *
- */
+@Route(value = "com.vaadin.flow.uitest.ui.TemplateEventHandlerView", layout = ViewTestLayout.class)
 public class TemplateEventHandlerView extends Div {
 
     public static class EventReceiver extends InlineTemplate<TemplateModel> {
