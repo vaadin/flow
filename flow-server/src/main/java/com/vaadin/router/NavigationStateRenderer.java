@@ -120,22 +120,15 @@ public class NavigationStateRenderer implements NavigationHandler {
         }
         TransitionOutcome transitionOutcome = executeBeforeNavigation(
                 beforeNavigationDeactivating, listeners);
-        switch (transitionOutcome) {
-        case REROUTED:
+        if (transitionOutcome == TransitionOutcome.REROUTED) {
             return reroute(event, beforeNavigationDeactivating);
-        case POSTPONED:
+        } else if (transitionOutcome == TransitionOutcome.POSTPONED) {
             remainingListeners = listeners;
             ContinueNavigationAction currentAction = beforeNavigationDeactivating
                     .getContinueNavigationAction();
-            currentAction.setCallback(() -> this.handle(event));
+            currentAction.setReferences(this, event);
             storeContinueNavigationAction(ui, currentAction);
             return HttpServletResponse.SC_OK;
-        case FINISHED:
-            // Continue normally
-            break;
-        default:
-            throw new IllegalStateException(
-                    "Unexpected transition outcome: " + transitionOutcome);
         }
 
         Component componentInstance = getRouteTarget(routeTargetType, event);
@@ -159,16 +152,8 @@ public class NavigationStateRenderer implements NavigationHandler {
                 EventUtil.collectBeforeNavigationListeners(chain));
         transitionOutcome = executeBeforeNavigation(
                 beforeNavigationActivating, listeners);
-        switch (transitionOutcome) {
-        case REROUTED:
+        if (transitionOutcome == TransitionOutcome.REROUTED) {
             return reroute(event, beforeNavigationActivating);
-        case FINISHED:
-            // Continue normally
-            break;
-        case POSTPONED: // It is not valid here, so fall through to default
-        default:
-            throw new IllegalStateException(
-                    "Unexpected transition outcome: " + transitionOutcome);
         }
 
         @SuppressWarnings("unchecked")
@@ -203,7 +188,7 @@ public class NavigationStateRenderer implements NavigationHandler {
             if (previousAction != null && previousAction != currentAction) {
                 // Any earlier action is now obsolete, so it must be defused
                 // to prevent it from wreaking havoc if it's ever called
-                previousAction.setCallback(ContinueNavigationAction.NULL_FUNCTION);
+                previousAction.setReferences(null, null);
             }
             session.setAttribute(ContinueNavigationAction.class, currentAction);
         });

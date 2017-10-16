@@ -111,8 +111,7 @@ where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ i
 
 [NOTE]
 Postpone may only be initiated while leaving (deactivating) a page; if the method
-is called while entering / activating the new page, it will have no effect
-and will return `null`.
+is called while entering / activating the new page, it will throw an `IllegalStateException`.
 [NOTE]
 At most one navigation event may be postponed at any time; starting a new
 navigation transition while a previous one is in a postponed state obsoletes

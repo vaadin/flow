@@ -29,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -582,12 +583,24 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("postpone")
     @Tag(Tag.DIV)
+    public static class EagerlyPostponingNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Attempting to postpone...");
+            ContinueNavigationAction action = event.postpone();
+            eventCollector.add("Postponed");
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
     public static class PostponingForeverNavigationTarget extends Component
             implements BeforeNavigationListener {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
-            ContinueNavigationAction action = event.postpone();
-            if (action != null) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                event.postpone();
                 eventCollector.add("Postponed");
             } else {
                 eventCollector.add("Can't postpone here");
@@ -601,8 +614,8 @@ public class RouterTest extends RoutingTestBase {
             implements BeforeNavigationListener {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
-            ContinueNavigationAction action = event.postpone();
-            if (action != null) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                ContinueNavigationAction action = event.postpone();
                 eventCollector.add("Postponed");
                 sleepThenRun(100, action);
             } else {
@@ -620,8 +633,8 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             if (counter++ < 2) {
-                ContinueNavigationAction action = event.postpone();
-                if (action != null) {
+                if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                    ContinueNavigationAction action = event.postpone();
                     eventCollector.add("Postponed");
                     sleepThenRun(50, action);
                 } else {
@@ -653,8 +666,8 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
-            ContinueNavigationAction action = event.postpone();
-            if (action != null) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                ContinueNavigationAction action = event.postpone();
                 eventCollector.add("Postponed");
                 sleepThenRun(100, action);
             } else {
@@ -1539,6 +1552,20 @@ public class RouterTest extends RoutingTestBase {
         ui.navigateTo("redirect/loop");
 
         Assert.assertEquals("Expected two events", 2, eventCollector.size());
+    }
+
+    @Test
+    public void postpone_fails_on_activating_before_navigation_event()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                EagerlyPostponingNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(500, status);
     }
 
     @Test

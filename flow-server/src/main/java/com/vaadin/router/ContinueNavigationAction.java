@@ -19,6 +19,7 @@ package com.vaadin.router;
 import java.io.Serializable;
 
 import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.NavigationEvent;
 
 /**
  * The action to resume a postponed {@link BeforeNavigationEvent}.
@@ -26,20 +27,21 @@ import com.vaadin.router.event.BeforeNavigationEvent;
  */
 public class ContinueNavigationAction implements Serializable {
 
-    /** A lambda which does nothing. */
-    static final Runnable NULL_FUNCTION = () -> {};
+    private NavigationHandler handler = null;
+    private NavigationEvent event = null;
 
-    private Runnable callback = NULL_FUNCTION;
-
-    void setCallback(Runnable callback) {
-        this.callback = callback;
+    void setReferences(NavigationHandler handler, NavigationEvent event) {
+        this.handler = handler;
+        this.event = event;
     }
 
     /**
      * Resumes the page transition associated with the postponed event.
      */
     public void proceed() {
-        callback.run();
-        callback = NULL_FUNCTION;
+        if (handler != null && event != null) {
+            handler.handle(event);
+            setReferences(null, null);
+        }
     }
 }

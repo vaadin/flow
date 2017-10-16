@@ -358,16 +358,20 @@ public class BeforeNavigationEvent extends EventObject {
      * finishing the transition.
      * <p>
      * This is only valid while leaving (deactivating) a page; if the method is
-     * called while entering / activating the new page, it will have no effect
-     * and will return <code>null</code>.
+     * called while entering / activating the new page, it will throw an
+     * {@link IllegalStateException}.
      *
      * @return the action to run when the transition is to be resumed, or null
+     *
+     * @throws IllegalStateException if the method is called while
+     *                               entering / activating the new page
      */
-    public ContinueNavigationAction postpone() {
-        if (activationState == ActivationState.DEACTIVATING) {
-            continueNavigationAction = new ContinueNavigationAction();
+    public ContinueNavigationAction postpone() throws IllegalStateException {
+        if (activationState != ActivationState.DEACTIVATING) {
+            throw new IllegalStateException(
+                    "Transition may only be postponed in its deactivating phase");
         }
-
+        continueNavigationAction = new ContinueNavigationAction();
         return continueNavigationAction;
     }
 
