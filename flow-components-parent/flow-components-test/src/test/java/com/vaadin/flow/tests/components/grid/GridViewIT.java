@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -47,19 +46,18 @@ public class GridViewIT extends AbstractComponentIT {
     }
 
     @Test
-    @Ignore
-    /**
-     * Ignored because it doesn't work in Grid v4. See
-     * https://github.com/vaadin/flow/issues/2518
-     */
     public void changeDataProvider() {
         open();
 
+        WebElement grid = findElement(By.tagName("vaadin-grid"));
+
         // change data provider
         findElement(By.id("update-provider")).click();
-
         waitUntil(driver -> hasData());
 
+        // change data provider again
+        findElement(By.id("update-provider")).click();
+        waitUntil(driver -> hasCell(grid, "text"));
     }
 
     private void scrollDown(WebElement grid, int index) {

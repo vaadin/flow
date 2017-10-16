@@ -102,7 +102,7 @@ public class RouteRegistry implements Serializable {
      * Registers a set of components as navigation targets.
      * <p>
      * <strong>Note:</strong> Navigation targets can only be set once, i.e. when
-     * {@link #isInitialized()} is {@code false}.
+     * {@link #navigationTargetsInitialized()} is {@code false}.
      *
      * @param navigationTargets
      *            set of navigation target components
@@ -113,7 +113,7 @@ public class RouteRegistry implements Serializable {
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
-        if (isInitialized()) {
+        if (navigationTargetsInitialized()) {
             throw new InvalidRouteConfigurationException(
                     "Routes have already been initialized");
         }
@@ -142,6 +142,17 @@ public class RouteRegistry implements Serializable {
             }
         }
         initErrorTargets(exceptionTargetsMap);
+    }
+
+    /**
+     * Returns whether this registry has been initialized with error navigation
+     * targets.
+     *
+     * @return whether this registry has been initialized with error navigation
+     *         targets
+     */
+    public boolean errorNavigationTargetsInitialized() {
+        return exceptionTargets.get() != null;
     }
 
     /**
@@ -200,7 +211,7 @@ public class RouteRegistry implements Serializable {
      */
     public Optional<Class<? extends Component>> getErrorNavigationTarget(
             Throwable exception) {
-        if (exceptionTargets.get() == null) {
+        if (!errorNavigationTargetsInitialized()) {
             initErrorTargets(new HashMap<>());
         }
         Class<? extends Component> result = searchByCause(exception);
@@ -327,7 +338,7 @@ public class RouteRegistry implements Serializable {
      *
      * @return whether this registry has been initialized
      */
-    public boolean isInitialized() {
+    public boolean navigationTargetsInitialized() {
         return routes.get() != null;
     }
 

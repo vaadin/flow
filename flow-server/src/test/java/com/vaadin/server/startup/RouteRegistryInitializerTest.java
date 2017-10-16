@@ -105,10 +105,10 @@ public class RouteRegistryInitializerTest {
     public void routeRegistry_routes_can_only_be_set_once()
             throws InvalidRouteConfigurationException {
         Assert.assertFalse("RouteRegistry should not be initialized",
-                registry.isInitialized());
+                registry.navigationTargetsInitialized());
         registry.setNavigationTargets(new HashSet<>());
         Assert.assertTrue("RouteRegistry should be initialized",
-                registry.isInitialized());
+                registry.navigationTargetsInitialized());
         registry.setNavigationTargets(new HashSet<>());
     }
 

@@ -25,8 +25,6 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.server.VaadinSession;
-import com.vaadin.shared.Registration;
-import com.vaadin.spring.SpringVaadinSession;
 
 /**
  * Spring bean store class to keep scope objects.
@@ -41,8 +39,6 @@ class BeanStore {
 
     private final VaadinSession session;
 
-    private final Registration sessionDestroyListenerRegistration;
-
     private final Map<String, Object> objects = new HashMap<String, Object>();
 
     private final Map<String, Runnable> destructionCallbacks = new HashMap<String, Runnable>();
@@ -56,15 +52,6 @@ class BeanStore {
     BeanStore(VaadinSession session) {
         assert session.hasLock();
         this.session = session;
-
-        if (session instanceof SpringVaadinSession) {
-            sessionDestroyListenerRegistration = null;
-            ((SpringVaadinSession) session)
-                    .addDestroyListener(event -> destroy());
-        } else {
-            sessionDestroyListenerRegistration = session.getService()
-                    .addSessionDestroyListener(event -> destroy());
-        }
     }
 
     /**
@@ -106,8 +93,27 @@ class BeanStore {
         execute(() -> destructionCallbacks.put(name, callback));
     }
 
-    private void destroy() {
+    void destroy() {
         execute(this::doDestroy);
+    }
+
+    VaadinSession getVaadinSession() {
+        return session;
+    }
+
+    Void doDestroy() {
+        assert session.hasLock();
+        for (Runnable destructionCallback : destructionCallbacks.values()) {
+            try {
+                destructionCallback.run();
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE,
+                        "BeanStore destruction callback failed", e);
+            }
+        }
+        destructionCallbacks.clear();
+        objects.clear();
+        return null;
     }
 
     private Object doRemove(String name) {
@@ -122,28 +128,6 @@ class BeanStore {
             objects.put(name, bean);
         }
         return bean;
-    }
-
-    private Void doDestroy() {
-        assert session.hasLock();
-        try {
-            session.setAttribute(BeanStore.class, null);
-            if (sessionDestroyListenerRegistration != null) {
-                sessionDestroyListenerRegistration.remove();
-            }
-        } finally {
-            for (Runnable destructionCallback : destructionCallbacks.values()) {
-                try {
-                    destructionCallback.run();
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE,
-                            "BeanStore destruction callback failed", e);
-                }
-            }
-            destructionCallbacks.clear();
-            objects.clear();
-        }
-        return null;
     }
 
     private <T> T execute(Supplier<T> supplier) {

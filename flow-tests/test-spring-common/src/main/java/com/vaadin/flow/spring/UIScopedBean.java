@@ -19,19 +19,15 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import com.vaadin.spring.annotation.VaadinSessionScope;
+import com.vaadin.spring.annotation.UIScope;
 
-/**
- * @author Vaadin Ltd
- *
- */
 @Component
-@VaadinSessionScope
-public class DataBean {
+@UIScope
+public class UIScopedBean {
 
     private final String uid = UUID.randomUUID().toString();
 
-    public String getMessage() {
-        return "foo" + uid;
+    public String getUid() {
+        return uid;
     }
 }
