@@ -10,6 +10,7 @@ import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.RouterLayout;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.ui.html.NativeButton;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/new-router-session/*" })
 @VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
@@ -46,6 +47,17 @@ public class RouterTestServlet extends VaadinServlet {
                 String parameter) {
             setText(String.format("Hello, %s!", parameter));
         }
+    }
+
+    @Route("ElementQueryView")
+    public static class ElementQueryView extends Div {
+
+        public ElementQueryView() {
+            for (int i = 0; i < 10; i++) {
+                add(new Div(new NativeButton("Button " + i)));
+            }
+        }
+
     }
 
     public static class MyRouterLayout extends Div implements RouterLayout {
