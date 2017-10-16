@@ -58,7 +58,7 @@ public class RouterParallelIT extends AbstractParallelTestBenchTest {
     @Test
     public void e() {
         WebElement button = findElements(By.tagName(Tag.BUTTON)).get(0);
-        Assert.assertNotNull(button);1
+        Assert.assertNotNull(button);
     }
 
 }
