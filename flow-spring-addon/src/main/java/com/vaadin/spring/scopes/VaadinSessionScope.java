@@ -16,13 +16,11 @@
 package com.vaadin.spring.scopes;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.server.VaadinSession;
-import com.vaadin.server.VaadinSessionState;
+import com.vaadin.shared.Registration;
+import com.vaadin.spring.SpringVaadinSession;
 
 /**
  * Implementation of Spring's
@@ -36,9 +34,39 @@ import com.vaadin.server.VaadinSessionState;
  * @author Vaadin Ltd
  *
  */
-public class VaadinSessionScope implements Scope, BeanFactoryPostProcessor {
+public class VaadinSessionScope extends AbstractScope {
 
     public static final String VAADIN_SESSION_SCOPE_NAME = "vaadin-session";
+
+    private static class SessionBeanStore extends BeanStore {
+
+        private final Registration sessionDestroyListenerRegistration;
+
+        private SessionBeanStore(VaadinSession session) {
+            super(session);
+            if (session instanceof SpringVaadinSession) {
+                sessionDestroyListenerRegistration = null;
+                ((SpringVaadinSession) session)
+                        .addDestroyListener(event -> destroy());
+            } else {
+                sessionDestroyListenerRegistration = session.getService()
+                        .addSessionDestroyListener(event -> destroy());
+            }
+        }
+
+        @Override
+        Void doDestroy() {
+            try {
+                getVaadinSession().setAttribute(BeanStore.class, null);
+                super.doDestroy();
+            } finally {
+                if (sessionDestroyListenerRegistration != null) {
+                    sessionDestroyListenerRegistration.remove();
+                }
+            }
+            return null;
+        }
+    }
 
     @Override
     public void postProcessBeanFactory(
@@ -47,50 +75,18 @@ public class VaadinSessionScope implements Scope, BeanFactoryPostProcessor {
     }
 
     @Override
-    public Object get(String name, ObjectFactory<?> objectFactory) {
-        return getBeanStore().get(name, objectFactory);
-    }
-
-    @Override
-    public Object remove(String name) {
-        return getBeanStore().remove(name);
-    }
-
-    @Override
-    public void registerDestructionCallback(String name, Runnable callback) {
-        getBeanStore().registerDestructionCallback(name, callback);
-    }
-
-    @Override
-    public Object resolveContextualObject(String key) {
-        return null;
-    }
-
-    @Override
     public String getConversationId() {
         return getVaadinSession().getSession().getId();
     }
 
-    private VaadinSession getVaadinSession() {
-        VaadinSession session = VaadinSession.getCurrent();
-        if (session == null) {
-            throw new IllegalStateException(
-                    "No VaadinSession bound to current thread");
-        }
-        if (session.getState() != VaadinSessionState.OPEN) {
-            throw new IllegalStateException(
-                    "Current VaadinSession is not open");
-        }
-        return session;
-    }
-
-    private BeanStore getBeanStore() {
+    @Override
+    protected BeanStore getBeanStore() {
         final VaadinSession session = getVaadinSession();
         session.lock();
         try {
             BeanStore beanStore = session.getAttribute(BeanStore.class);
             if (beanStore == null) {
-                beanStore = new BeanStore(session);
+                beanStore = new SessionBeanStore(session);
                 session.setAttribute(BeanStore.class, beanStore);
             }
             return beanStore;

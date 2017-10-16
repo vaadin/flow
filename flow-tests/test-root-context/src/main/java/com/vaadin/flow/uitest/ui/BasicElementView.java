@@ -20,10 +20,13 @@ import java.util.Set;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.shared.Registration;
 
 import elemental.json.JsonObject;
 
+@Route(value = "com.vaadin.flow.uitest.ui.BasicElementView", layout = ViewTestLayout.class)
 public class BasicElementView extends AbstractDivView {
 
     private Registration helloWorldEventRemover;

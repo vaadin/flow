@@ -17,6 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.function.Consumer;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
@@ -25,6 +27,7 @@ import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.NativeButton;
 
+@Route(value = "com.vaadin.flow.uitest.ui.LoadingIndicatorView", layout = ViewTestLayout.class)
 @StyleSheet("/com/vaadin/flow/uitest/ui/loading-indicator.css")
 public class LoadingIndicatorView extends AbstractDivView
         implements BeforeNavigationListener {

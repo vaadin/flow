@@ -18,11 +18,14 @@ package com.vaadin.flow.uitest.ui.dependencies;
 import org.jsoup.Jsoup;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
+@Route(value = "com.vaadin.flow.uitest.ui.dependencies.FrontendInlineApiView", layout = ViewTestLayout.class)
 @Tag("frontend-inline-api")
 public class FrontendInlineApiView extends PolymerTemplate<TemplateModel> {
 

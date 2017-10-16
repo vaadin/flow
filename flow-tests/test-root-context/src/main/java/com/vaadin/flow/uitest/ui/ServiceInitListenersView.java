@@ -15,13 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
-/**
- * @author Vaadin Ltd
- *
- */
+@Route(value = "com.vaadin.flow.uitest.ui.ServiceInitListenersView", layout = ViewTestLayout.class)
 public class ServiceInitListenersView extends Div {
 
     public ServiceInitListenersView() {

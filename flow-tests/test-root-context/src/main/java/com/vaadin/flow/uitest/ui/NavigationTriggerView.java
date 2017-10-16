@@ -17,9 +17,12 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 
+@Route(value = "com.vaadin.flow.uitest.ui.NavigationTriggerView", layout = ViewTestLayout.class)
 public class NavigationTriggerView extends AbstractDivView {
     private static final String CLASS_NAME = NavigationTriggerView.class
             .getName();

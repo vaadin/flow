@@ -34,7 +34,6 @@ public class RootNavigationTarget extends Div {
 
         section.setId("singleton");
         section.setText("singleton");
-
     }
 
     @Override

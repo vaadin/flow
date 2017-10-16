@@ -20,12 +20,15 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.H1;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.Component;
 
+@Route(value = "com.vaadin.flow.uitest.ui.AttachExistingElementView", layout = ViewTestLayout.class)
 public class AttachExistingElementView extends AbstractDivView {
 
     private Label attachedLabel;

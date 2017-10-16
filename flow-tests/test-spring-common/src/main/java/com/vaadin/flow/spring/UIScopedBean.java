@@ -13,15 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.startup;
+package com.vaadin.flow.spring;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class CustomElementRegistryAccess {
+import java.util.UUID;
 
-    public static void resetRegistry() {
-        CustomElementRegistry.getInstance().initialized = false;
+import org.springframework.stereotype.Component;
+
+import com.vaadin.spring.annotation.UIScope;
+
+@Component
+@UIScope
+public class UIScopedBean {
+
+    private final String uid = UUID.randomUUID().toString();
+
+    public String getUid() {
+        return uid;
     }
 }

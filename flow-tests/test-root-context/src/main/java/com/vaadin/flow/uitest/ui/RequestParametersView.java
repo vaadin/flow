@@ -18,14 +18,14 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.Collections;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
-/**
- * @author Vaadin Ltd.
- */
+@Route(value = "com.vaadin.flow.uitest.ui.RequestParametersView", layout = ViewTestLayout.class)
 public class RequestParametersView extends Div
         implements BeforeNavigationListener {
     static final String REQUEST_PARAM_NAME = "testRequestParam";

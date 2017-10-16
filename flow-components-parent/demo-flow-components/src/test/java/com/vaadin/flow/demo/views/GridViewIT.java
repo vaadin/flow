@@ -155,6 +155,24 @@ public class GridViewIT extends ComponentDemoTest {
                 "<div title=\"Person 1\">Person 1<br><small>23 years old</small></div>"));
         Assert.assertTrue(hasHtmlCell(grid,
                 "<div>Street S, number 30<br><small>16142</small></div>"));
+
+        WebElement buttonsCell = getHtmlCell(grid,
+                "<button>Update</button><button>Remove</button>");
+        List<WebElement> buttons = buttonsCell
+                .findElements(By.tagName("button"));
+        Assert.assertEquals(2, buttons.size());
+
+        clickElementWithJs(buttons.get(0));
+        waitUntil(driver -> hasHtmlCell(grid,
+                "<div title=\"Person 1 Updated\">Person 1 Updated<br><small>23 years old</small></div>"));
+
+        clickElementWithJs(buttons.get(0));
+        waitUntil(driver -> hasHtmlCell(grid,
+                "<div title=\"Person 1 Updated Updated\">Person 1 Updated Updated<br><small>23 years old</small></div>"));
+
+        clickElementWithJs(buttons.get(1));
+        waitUntilNot(driver -> hasHtmlCell(grid,
+                "<div title=\"Person 1 Updated Updated\">Person 1 Updated Updated<br><small>23 years old</small></div>"));
     }
 
     private static String getSelectionMessage(Object oldSelection,

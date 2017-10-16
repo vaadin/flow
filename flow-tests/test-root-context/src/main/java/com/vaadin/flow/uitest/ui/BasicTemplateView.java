@@ -20,6 +20,8 @@ import java.io.Serializable;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.html.Div;
@@ -27,6 +29,7 @@ import com.vaadin.ui.html.Input;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.polymertemplate.Id;
 
+@Route(value = "com.vaadin.flow.uitest.ui.BasicTemplateView", layout = ViewTestLayout.class)
 public class BasicTemplateView extends AngularTemplate {
 
     public interface Model extends TemplateModel {

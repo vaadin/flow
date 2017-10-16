@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
-import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.VaadinSessionScope;
 
 /**
@@ -28,7 +29,9 @@ import com.vaadin.spring.annotation.VaadinSessionScope;
 @VaadinSessionScope
 public class DataBean {
 
+    private final String uid = UUID.randomUUID().toString();
+
     public String getMessage() {
-        return "foo" + VaadinSession.getCurrent().getSession().getId();
+        return "foo" + uid;
     }
 }
