@@ -20,22 +20,30 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.router.NotFoundException;
 
-public class NonExistentTargetIT extends ChromeBrowserTest {
+public class NPEHandlerIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/no-existing-route";
+        return "/npe";
     }
 
     @Test
-    public void customElementIsRegistered() throws Exception {
+    public void npeIsHandledByComponent() throws Exception {
         open();
 
         Assert.assertTrue(
                 "Couldn't find element from the component which represents error for "
-                        + NotFoundException.class.getName(),
-                isElementPresent(By.id("no-route")));
+                        + NullPointerException.class.getName(),
+                isElementPresent(By.id("npe-handle")));
+    }
+
+    @Test
+    public void noRouteIsHandledByExistingFlowComponent() throws Exception {
+        getDriver().get(
+                getTestURL(getRootURL(), "/no-existing-route", new String[0]));
+
+        Assert.assertEquals("Could not navigate to 'no-existing-route'",
+                findElement(By.tagName("div")).getText());
     }
 }

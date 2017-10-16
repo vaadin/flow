@@ -16,6 +16,7 @@
 package com.vaadin.spring;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -131,7 +132,7 @@ public class VaadinServletContextInitializer
             }
 
             Stream<Class<? extends Component>> hasErrorComponents = findBySuperType(
-                    getRoutePackages(), HasErrorParameter.class)
+                    getErrorParameterPackages(), HasErrorParameter.class)
                             .filter(Component.class::isAssignableFrom)
                             .map(clazz -> (Class<? extends Component>) clazz);
             registry.setErrorNavigationTargets(
@@ -193,7 +194,7 @@ public class VaadinServletContextInitializer
 
     }
 
-    private Stream<Class<?>> findByAnnotation(List<String> packages,
+    private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Class<? extends Annotation> annotation) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
@@ -204,7 +205,7 @@ public class VaadinServletContextInitializer
                 .flatMap(set -> set.stream()).map(this::getBeanClass);
     }
 
-    private Stream<Class<?>> findBySuperType(List<String> packages,
+    private Stream<Class<?>> findBySuperType(Collection<String> packages,
             Class<?> type) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
@@ -231,12 +232,20 @@ public class VaadinServletContextInitializer
         return beanClass;
     }
 
-    private List<String> getRoutePackages() {
+    private Collection<String> getRoutePackages() {
         return getDefaultPackages();
     }
 
-    private List<String> getCustomElementPackages() {
+    private Collection<String> getCustomElementPackages() {
         return getDefaultPackages();
+    }
+
+    private Collection<String> getErrorParameterPackages() {
+        return Stream
+                .concat(Stream
+                        .of(HasErrorParameter.class.getPackage().getName()),
+                        getDefaultPackages().stream())
+                .collect(Collectors.toSet());
     }
 
     private List<String> getDefaultPackages() {

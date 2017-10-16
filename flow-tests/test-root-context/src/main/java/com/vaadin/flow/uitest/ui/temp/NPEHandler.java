@@ -13,23 +13,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.uitest.ui.temp;
 
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.HasErrorParameter;
-import com.vaadin.router.NotFoundException;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.html.Div;
 
-public class NonExistentTarget extends Div
-        implements HasErrorParameter<NotFoundException> {
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public class NPEHandler extends Div
+        implements HasErrorParameter<NullPointerException> {
 
     @Override
     public int setErrorParameter(BeforeNavigationEvent event,
-            ErrorParameter<NotFoundException> parameter) {
-        getElement().setText("No route for " + event.getLocation().getPath());
+            ErrorParameter<NullPointerException> parameter) {
+        getElement().setText("NPE is thrown " + event.getLocation().getPath());
         setId("no-route");
-        return 404;
+        return 500;
     }
 
 }
