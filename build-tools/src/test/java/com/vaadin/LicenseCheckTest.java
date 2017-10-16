@@ -61,6 +61,7 @@ public class LicenseCheckTest {
          */
         whitelist.add("BSD");
         whitelist.add("The MIT License");
+        whitelist.add("MIT");
         whitelist.add("Apache License, Version 2.0");
         whitelist.add("ICU License");
     }

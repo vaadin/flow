@@ -4,8 +4,7 @@ Flow
 ======
 *[Flow](https://vaadin.com) is a Java framework for building modern web sites that look great, perform well and make you and your users happy.*
 
-For instructions about _using_ Flow to develop applications, please refer to
-https://github.com/vaadin/flow/tree/master/flow-documentation
+For instructions about _using_ Flow to develop applications, please refer to [the documentation](https://github.com/vaadin/flow/tree/master/flow-documentation).
 
 To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md)
 for general instructions and requirements for contributing code to Flow.
@@ -44,7 +43,7 @@ Note that the first compilation takes a while to finish as Maven downloads depen
 
 Compiling the Client Engine
 --------
-Compile the client engine by executing the eclipse build configuration *Compile ClientEngine* in *flow-client/eclipse*
+Compile the client engine by executing the Eclipse build configuration *Compile ClientEngine* in *flow-client/eclipse*
 
 Set up extra workspace preferences
 --------
@@ -73,15 +72,10 @@ IT tests can be run with
 <pre><code>mvn verify</code></pre>
 
 To run IT tests locally, you'll need a [Testbench](https://vaadin.com/testbench) license and a Chrome browser installed (currently this is the only browser that IT tests are run in).
-IT tests are run in parallel, one thread per CPU core with thread limit = 2 (see `maven-failsafe-plugin` configuration in root [pom.xml](./pom.xml) for details).
+If you don't have the license, it's ok, our CI system will run those tests for you after you create a pull request. 
+Refer to the [contribution guide](/CONTRIBUTING.md) for details. 
 
-When running IT tests locally, by default, local Chrome is used to run tests.
-The other opportunity is to run tests using test hub, to do so, you need to start a hub on a `localhost:4444` address and start tests with `-Dtest.use.hub=true` property.
-
-Currently, when integration tests are run on CI server, they use [Selenoid](https://github.com/aerokube/selenoid) a local hub and target `localhost` as a hub hostname.
-If you want to change hub hostname, this can be done via setting the variable `-Dcom.vaadin.testbench.Parameters.hubHostname="foo"`
-
-Normally, you don't need to run IT tests yourself, the CI will do this for you. 
+When running IT tests locally, by default, local Chrome is used to run tests, make sure it's installed.
 
 Building a package
 =====

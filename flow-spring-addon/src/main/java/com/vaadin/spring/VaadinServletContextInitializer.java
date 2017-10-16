@@ -16,9 +16,11 @@
 package com.vaadin.spring;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContainerInitializer;
@@ -34,7 +36,9 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 
+import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.Route;
 import com.vaadin.server.InvalidRouteConfigurationException;
 import com.vaadin.server.startup.AbstractCustomElementRegistryInitializer;
@@ -71,13 +75,13 @@ public class VaadinServletContextInitializer
         public void contextInitialized(ServletContextEvent event) {
             RouteRegistry registry = RouteRegistry
                     .getInstance(event.getServletContext());
-            if (registry.isInitialized()) {
+            if (registry.navigationTargetsInitialized()) {
                 return;
             }
 
             try {
                 Set<Class<? extends Component>> navigationTargets = validateRouteClasses(
-                        findByAnnotation(Route.class));
+                        findByAnnotation(getRoutePackages(), Route.class));
 
                 registry.setNavigationTargets(navigationTargets);
             } catch (InvalidRouteConfigurationException e) {
@@ -104,8 +108,35 @@ public class VaadinServletContextInitializer
                 return;
             }
 
-            registry.setCustomElements(
-                    filterCustomElements(findByAnnotation(Tag.class)));
+            registry.setCustomElements(filterCustomElements(
+                    findByAnnotation(getCustomElementPackages(), Tag.class)));
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent sce) {
+            // no need to do anything
+        }
+
+    };
+
+    private class ErrorParameterServletContextListener
+            implements ServletContextListener {
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void contextInitialized(ServletContextEvent event) {
+            RouteRegistry registry = RouteRegistry
+                    .getInstance(event.getServletContext());
+            if (registry.errorNavigationTargetsInitialized()) {
+                return;
+            }
+
+            Stream<Class<? extends Component>> hasErrorComponents = findBySuperType(
+                    getErrorParameterPackages(), HasErrorParameter.class)
+                            .filter(Component.class::isAssignableFrom)
+                            .map(clazz -> (Class<? extends Component>) clazz);
+            registry.setErrorNavigationTargets(
+                    hasErrorComponents.collect(Collectors.toSet()));
         }
 
         @Override
@@ -133,7 +164,7 @@ public class VaadinServletContextInitializer
         RouteRegistry registry = RouteRegistry.getInstance(servletContext);
         // If the registry is already initialized then RouteRegistryInitializer
         // has done its job already, skip the custom routes search
-        if (!registry.isInitialized()) {
+        if (!registry.navigationTargetsInitialized()) {
             /*
              * Don't rely on RouteRegistry.isInitialized() negative return value
              * here because it's not known whether RouteRegistryInitializer has
@@ -146,6 +177,13 @@ public class VaadinServletContextInitializer
             servletContext.addListener(new RouteServletContextListener());
         }
 
+        if (!registry.errorNavigationTargetsInitialized()) {
+            // Same thing: don't rely on hasNavigationTargets() negative return
+            // value
+            servletContext
+                    .addListener(new ErrorParameterServletContextListener());
+        }
+
         CustomElementRegistry elementRegistry = CustomElementRegistry
                 .getInstance();
         if (!elementRegistry.isInitialized()) {
@@ -156,14 +194,25 @@ public class VaadinServletContextInitializer
 
     }
 
-    private Stream<Class<?>> findByAnnotation(
+    private Stream<Class<?>> findByAnnotation(Collection<String> packages,
             Class<? extends Annotation> annotation) {
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
                 false);
         scanner.setResourceLoader(appContext);
         scanner.addIncludeFilter(new AnnotationTypeFilter(annotation));
 
-        return getRoutePackages().stream().map(scanner::findCandidateComponents)
+        return packages.stream().map(scanner::findCandidateComponents)
+                .flatMap(set -> set.stream()).map(this::getBeanClass);
+    }
+
+    private Stream<Class<?>> findBySuperType(Collection<String> packages,
+            Class<?> type) {
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
+                false);
+        scanner.setResourceLoader(appContext);
+        scanner.addIncludeFilter(new AssignableTypeFilter(type));
+
+        return packages.stream().map(scanner::findCandidateComponents)
                 .flatMap(set -> set.stream()).map(this::getBeanClass);
     }
 
@@ -183,7 +232,23 @@ public class VaadinServletContextInitializer
         return beanClass;
     }
 
-    private List<String> getRoutePackages() {
+    private Collection<String> getRoutePackages() {
+        return getDefaultPackages();
+    }
+
+    private Collection<String> getCustomElementPackages() {
+        return getDefaultPackages();
+    }
+
+    private Collection<String> getErrorParameterPackages() {
+        return Stream
+                .concat(Stream
+                        .of(HasErrorParameter.class.getPackage().getName()),
+                        getDefaultPackages().stream())
+                .collect(Collectors.toSet());
+    }
+
+    private List<String> getDefaultPackages() {
         if (AutoConfigurationPackages.has(appContext)) {
             return AutoConfigurationPackages.get(appContext);
         }

@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Objects;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -62,15 +63,30 @@ public class DefaultDeploymentConfigurationTest {
     public void webComponentsBase_defaultSetting_fileFound() {
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 DefaultDeploymentConfigurationTest.class, new Properties(),
-                (base, consumer) -> {
-                    consumer.test(
-                            "bower_components/webcomponentsjs/webcomponents-loader.js");
-                });
+                (base, consumer) -> consumer.test(
+                        "bower_components/webcomponentsjs/webcomponents-loader.js"));
 
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
                 .orElseThrow(AssertionError::new);
 
         assertEquals("frontend://bower_components/webcomponentsjs/",
+                webComponentsPolyfillBase);
+    }
+
+    @Test
+    public void webComponentsBase_defaultSetting_webJarFileFound() {
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, new Properties(),
+                (base, consumer) -> {
+                    if (Objects.equals(base, "/")) {
+                        consumer.test("webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
+                    }
+                });
+
+        String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
+                .orElseThrow(AssertionError::new);
+
+        assertEquals("/webjars/bower_components/webcomponentsjs/",
                 webComponentsPolyfillBase);
     }
 

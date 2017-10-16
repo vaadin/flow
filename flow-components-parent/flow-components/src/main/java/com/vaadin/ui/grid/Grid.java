@@ -25,7 +25,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.vaadin.data.AbstractListing;
@@ -45,12 +48,15 @@ import com.vaadin.data.selection.SelectionModel.Single;
 import com.vaadin.data.selection.SingleSelect;
 import com.vaadin.data.selection.SingleSelectionEvent;
 import com.vaadin.data.selection.SingleSelectionListener;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
@@ -526,7 +532,73 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                 .setAttribute("id", columnKey)
                 .appendChild(headerTemplate, contentTemplate);
 
+        Map<String, SerializableConsumer<T>> eventConsumers = renderer
+                .getEventHandlers();
+
+        if (!eventConsumers.isEmpty()) {
+            /*
+             * This code allows the template to use Polymer specific syntax for
+             * events, such as on-click (instead of the native onclick). The
+             * principle is: we set a new function inside the column, and the
+             * function is called by the rendered template. For that to work,
+             * the template element must have the "__dataHost" property set with
+             * the column element.
+             */
+            colElement.getNode().runWhenAttached(
+                    ui -> processTemplateRendererEventConsumers(ui, colElement,
+                            eventConsumers));
+
+            contentTemplate.getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                            "$0.__dataHost = $1;", contentTemplate,
+                            colElement));
+        }
+
         getElement().appendChild(colElement);
+    }
+
+    private void processTemplateRendererEventConsumers(UI ui,
+            Element colElement,
+            Map<String, SerializableConsumer<T>> eventConsumers) {
+        eventConsumers.forEach(
+                (handlerName, consumer) -> setupTemplateRendererEventHandler(ui,
+                        colElement, handlerName, consumer));
+    }
+
+    private void setupTemplateRendererEventHandler(UI ui, Element colElement,
+            String handlerName, Consumer<T> consumer) {
+
+        // vaadin.sendEventMessage is an exported function at the client side
+        ui.getPage().executeJavaScript(String.format(
+                "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
+                handlerName, colElement.getNode().getId(), handlerName),
+                colElement);
+
+        colElement.addEventListener(handlerName,
+                event -> processEventFromTemplateRenderer(event, handlerName,
+                        consumer));
+    }
+
+    private void processEventFromTemplateRenderer(DomEvent event,
+            String handlerName, Consumer<T> consumer) {
+        if (event.getEventData() != null) {
+            String itemKey = event.getEventData().getString("key");
+            T item = getDataCommunicator().getKeyMapper().get(itemKey);
+
+            if (item != null) {
+                consumer.accept(item);
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.INFO,
+                        () -> String.format(
+                                "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
+                                handlerName, itemKey));
+            }
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.INFO,
+                    () -> String.format(
+                            "Received an event for the handler '%s' without any data. Ignoring event.",
+                            handlerName));
+        }
     }
 
     private String getColumnKey(boolean increment) {

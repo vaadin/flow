@@ -21,12 +21,6 @@
 # Python
 scripts/*.pyc
 
-# Frontend
-bower_components
-node
-node_modules
-build
-
 # Intellij Idea files
 .idea
 *.iml
