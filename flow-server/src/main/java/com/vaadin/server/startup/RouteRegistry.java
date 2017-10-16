@@ -144,6 +144,13 @@ public class RouteRegistry implements Serializable {
         initErrorTargets(exceptionTargetsMap);
     }
 
+    /**
+     * Returns whether this registry has been initialized with error navigation
+     * targets.
+     *
+     * @return whether this registry has been initialized with error navigation
+     *         targets
+     */
     public boolean errorNavigationTargetsInitialized() {
         return exceptionTargets.get() != null;
     }

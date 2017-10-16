@@ -15,24 +15,22 @@
  */
 package com.vaadin.flow.spring;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.html.Div;
 
-/**
- * @author Vaadin Ltd
- *
- */
 public class NPEHandler extends Div
         implements HasErrorParameter<NullPointerException> {
 
     @Override
     public int setErrorParameter(BeforeNavigationEvent event,
             ErrorParameter<NullPointerException> parameter) {
-        getElement().setText("NPE is thrown ");
+        getElement().setText("NPE is thrown");
         setId("npe-handle");
-        return 500;
+        return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
     }
 
 }
