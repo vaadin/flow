@@ -38,7 +38,7 @@ public class VaadinSessionScope extends AbstractScope {
 
     public static final String VAADIN_SESSION_SCOPE_NAME = "vaadin-session";
 
-    private class SessionBeanStore extends BeanStore {
+    private static class SessionBeanStore extends BeanStore {
 
         private final Registration sessionDestroyListenerRegistration;
 
