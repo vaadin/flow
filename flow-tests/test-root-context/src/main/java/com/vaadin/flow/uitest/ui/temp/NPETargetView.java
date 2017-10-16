@@ -13,25 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.uitest.ui.temp;
 
-import java.util.UUID;
+import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
 
-import org.springframework.stereotype.Component;
+@Route(value = "npe")
+public class NPETargetView extends AbstractDivView
+        implements BeforeNavigationListener {
 
-import com.vaadin.spring.annotation.VaadinSessionScope;
-
-/**
- * @author Vaadin Ltd
- *
- */
-@Component
-@VaadinSessionScope
-public class DataBean {
-
-    private final String uid = UUID.randomUUID().toString();
-
-    public String getMessage() {
-        return "foo" + uid;
+    @Override
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        event.rerouteToError(NullPointerException.class);
     }
+
 }

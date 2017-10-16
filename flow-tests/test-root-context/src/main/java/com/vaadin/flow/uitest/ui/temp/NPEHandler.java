@@ -13,25 +13,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.uitest.ui.temp;
 
-import java.util.UUID;
-
-import org.springframework.stereotype.Component;
-
-import com.vaadin.spring.annotation.VaadinSessionScope;
+import com.vaadin.router.ErrorParameter;
+import com.vaadin.router.HasErrorParameter;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.ui.html.Div;
 
 /**
  * @author Vaadin Ltd
  *
  */
-@Component
-@VaadinSessionScope
-public class DataBean {
+public class NPEHandler extends Div
+        implements HasErrorParameter<NullPointerException> {
 
-    private final String uid = UUID.randomUUID().toString();
-
-    public String getMessage() {
-        return "foo" + uid;
+    @Override
+    public int setErrorParameter(BeforeNavigationEvent event,
+            ErrorParameter<NullPointerException> parameter) {
+        getElement().setText("NPE is thrown " + event.getLocation().getPath());
+        setId("no-route");
+        return 500;
     }
+
 }

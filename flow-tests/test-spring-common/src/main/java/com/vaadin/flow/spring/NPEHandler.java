@@ -15,23 +15,22 @@
  */
 package com.vaadin.flow.spring;
 
-import java.util.UUID;
+import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.stereotype.Component;
+import com.vaadin.router.ErrorParameter;
+import com.vaadin.router.HasErrorParameter;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.ui.html.Div;
 
-import com.vaadin.spring.annotation.VaadinSessionScope;
+public class NPEHandler extends Div
+        implements HasErrorParameter<NullPointerException> {
 
-/**
- * @author Vaadin Ltd
- *
- */
-@Component
-@VaadinSessionScope
-public class DataBean {
-
-    private final String uid = UUID.randomUUID().toString();
-
-    public String getMessage() {
-        return "foo" + uid;
+    @Override
+    public int setErrorParameter(BeforeNavigationEvent event,
+            ErrorParameter<NullPointerException> parameter) {
+        getElement().setText("NPE is thrown");
+        setId("npe-handle");
+        return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
     }
+
 }
