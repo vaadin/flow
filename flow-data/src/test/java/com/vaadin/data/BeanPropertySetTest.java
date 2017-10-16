@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,7 +30,6 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.data.provider.bov.Person;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.tests.data.bean.Address;
 import com.vaadin.tests.data.bean.Country;
@@ -38,6 +38,34 @@ import com.vaadin.tests.data.bean.Sex;
 import com.vaadin.tests.server.ClassesSerializableUtils;
 
 public class BeanPropertySetTest {
+
+    public static class Person implements Serializable {
+        private String name;
+        private final int born;
+
+        public Person(String name, int born) {
+            this.name = name;
+            this.born = born;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public int getBorn() {
+            return born;
+        }
+
+        @Override
+        public String toString() {
+            return name + "(" + born + ")";
+        }
+    }
+
     @Test
     public void testSerializeDeserialize_propertySet() throws Exception {
         PropertySet<Person> originalPropertySet = BeanPropertySet
@@ -102,7 +130,7 @@ public class BeanPropertySetTest {
         Assert.assertSame(
                 "Deserialized instance should be the same as in the cache",
                 BeanPropertySet.get(Person.class).getProperty("born")
-                .orElseThrow(RuntimeException::new),
+                        .orElseThrow(RuntimeException::new),
                 deserializedDefinition);
     }
 
@@ -132,8 +160,8 @@ public class BeanPropertySetTest {
         Assert.assertSame(
                 "Deserialized instance should be the same as in the cache",
                 BeanPropertySet.get(com.vaadin.tests.data.bean.Person.class)
-                .getProperty("address.postalCode").orElseThrow(
-                        RuntimeException::new),
+                        .getProperty("address.postalCode").orElseThrow(
+                                RuntimeException::new),
                 deserializedDefinition);
     }
 
@@ -173,7 +201,7 @@ public class BeanPropertySetTest {
     public void nestedPropertyDefinition_invalidPropertyNameInChain()
             throws Exception {
         BeanPropertySet.get(FatherAndSon.class)
-        .getProperty("grandfather.firstName");
+                .getProperty("grandfather.firstName");
     }
 
     @Test(expected = IllegalArgumentException.class)
