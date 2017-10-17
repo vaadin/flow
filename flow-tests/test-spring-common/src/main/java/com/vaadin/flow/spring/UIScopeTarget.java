@@ -16,31 +16,40 @@
 package com.vaadin.flow.spring;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import com.vaadin.router.Route;
 import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
-@Route("")
-public class RootNavigationTarget extends Div {
+@Route("ui-scope")
+public class UIScopeTarget extends Div {
 
-    public RootNavigationTarget(@Autowired DataBean dataBean,
-            @Autowired FooNavigationTarget section) {
-        setId("main");
-        Label label = new Label(dataBean.getMessage());
-        label.setId("message");
-        add(label);
+    @Component
+    @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+    public static class InnerComponent extends Div {
 
-        section.setId("singleton");
-        section.setText("singleton");
+        @Autowired
+        private UIScopedBean bean;
+
+        @Override
+        protected void onAttach(AttachEvent attachEvent) {
+            Label label = new Label(String.valueOf(bean.getUid()));
+            label.setId("inner");
+            add(label);
+        }
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        Label label = new Label(String.valueOf(getUI().get().getUIId()));
-        label.setId("ui-id");
+    public UIScopeTarget(@Autowired UIScopedBean bean,
+            @Autowired InnerComponent component) {
+        Label label = new Label(String.valueOf(bean.getUid()));
+        label.setId("main");
         add(label);
+
+        add(component);
     }
 
 }
