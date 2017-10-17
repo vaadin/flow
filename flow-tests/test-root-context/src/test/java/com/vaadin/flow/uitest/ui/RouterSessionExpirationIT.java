@@ -25,7 +25,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/router-session/";
+        return "/new-router-session/";
     }
 
     @Test
