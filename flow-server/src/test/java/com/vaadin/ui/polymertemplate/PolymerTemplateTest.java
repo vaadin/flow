@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -36,12 +37,14 @@ import java.util.function.Function;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.nodefeature.AttachTemplateChildFeature;
 import com.vaadin.flow.nodefeature.ElementData;
@@ -49,6 +52,7 @@ import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.NodeProperties;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Page;
@@ -334,6 +338,24 @@ public class PolymerTemplateTest extends HasCurrentService {
         map.put("child-template", TemplateChild.class);
         map.put("ffs", TestPolymerTemplate.class);
         CustomElementRegistry.getInstance().setCustomElements(map);
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        UI ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        VaadinService service = Mockito.mock(VaadinService.class);
+        when(session.getService()).thenReturn(service);
+        when(service.getInstantiator())
+                .thenReturn(new DefaultInstantiator(service));
+        UI.setCurrent(ui);
+    }
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Override
@@ -637,13 +659,26 @@ public class PolymerTemplateTest extends HasCurrentService {
     private TestPage setupUI(PolymerTemplate<?> template) {
         TestPage page = new TestPage();
 
+        VaadinSession session = UI.getCurrent() == null ? null
+                : UI.getCurrent().getSession();
+
         UI ui = new UI() {
             @Override
             public Page getPage() {
                 return page;
             }
+
+            @Override
+            public VaadinSession getSession() {
+                if (session != null) {
+                    return session;
+                }
+                return super.getSession();
+            }
         };
         ui.add(template);
+
+        UI.setCurrent(ui);
         return page;
     }
 
