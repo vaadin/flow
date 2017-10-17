@@ -37,9 +37,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.data.provider.bov.Person;
 import com.vaadin.data.selection.MultiSelectionEvent;
 import com.vaadin.data.selection.MultiSelectionListener;
+import com.vaadin.flow.tests.components.model.Person;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.SelectionMode;
 import com.vaadin.ui.grid.GridMultiSelectionModel;
