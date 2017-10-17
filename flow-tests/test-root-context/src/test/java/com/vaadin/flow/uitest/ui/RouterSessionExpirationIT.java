@@ -30,7 +30,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     @Test
     public void navigationAfterSessionExpired() {
-        open();
+        open("NormalView");
 
         navigateToAnotherView();
         String sessionId = getSessionId();
@@ -44,7 +44,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     @Test
     public void navigationAfterInternalError() {
-        open();
+        open("NormalView");
 
         navigateToAnotherView();
         String sessionId = getSessionId();
