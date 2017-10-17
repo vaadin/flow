@@ -15,18 +15,22 @@
  */
 package com.vaadin.flow.tutorial.router;
 
-import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.router.ContinueNavigationAction;
 import com.vaadin.router.Route;
-import com.vaadin.ui.html.Anchor;
-import com.vaadin.ui.html.Div;
+import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.html.Anchor;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.paper.dialog.GeneratedPaperDialog;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.model.TemplateModel;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("routing/tutorial-routing-lifecycle.asciidoc")
 public class NavigationEvents {
@@ -74,6 +78,23 @@ public class NavigationEvents {
         }
     }
 
+    public class SignupForm extends Div implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING
+                    && this.hasChanges()) {
+                ContinueNavigationAction action = event.postpone();
+                ConfirmDialog.build("Are you sure you want to leave this page?")
+                        .ifAccept(action::proceed).show();
+            }
+        }
+
+        private boolean hasChanges() {
+            // no-op implementation
+            return true;
+        }
+    }
+
     public class SideMenu extends Div implements AfterNavigationListener {
         Anchor blog = new Anchor("blog", "Blog");
 
@@ -83,5 +104,23 @@ public class NavigationEvents {
                     .equals(blog.getHref());
             blog.getElement().getClassList().set("≥active", active);
         }
+    }
+}
+
+class ConfirmDialog extends GeneratedPaperDialog {
+
+    public static ConfirmDialog build(String message) {
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.add(new Label(message));
+        return dialog;
+    }
+
+    public void show() {
+        open();
+    }
+
+    public ConfirmDialog ifAccept(Runnable confirmationHandler) {
+        confirmationHandler.run();
+        return this;
     }
 }
