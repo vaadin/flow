@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -30,13 +31,18 @@ import com.vaadin.flow.tests.components.AbstractComponentIT;
 
 public class GridViewIT extends AbstractComponentIT {
 
-    @Test
-    public void basicGrid() {
+    private WebElement grid;
+
+    @Before
+    public void init() {
         open();
 
         waitForElementPresent(By.tagName("vaadin-grid"));
-        WebElement grid = findElement(By.tagName("vaadin-grid"));
+        grid = findElement(By.tagName("vaadin-grid"));
+    }
 
+    @Test
+    public void basicGrid() {
         hasCell(grid, "text");
         hasCell(grid, "0");
         hasCell(grid, "1");
@@ -49,11 +55,6 @@ public class GridViewIT extends AbstractComponentIT {
 
     @Test
     public void defaultPageSize() {
-        open();
-
-        waitForElementPresent(By.tagName("vaadin-grid"));
-        WebElement grid = findElement(By.tagName("vaadin-grid"));
-
         Object pageSize = executeScript("return arguments[0].pageSize", grid);
         Assert.assertEquals(
                 "The default pageSize of the webcomponent should be 50", 50,
@@ -62,11 +63,6 @@ public class GridViewIT extends AbstractComponentIT {
 
     @Test
     public void changeDataProvider() {
-        open();
-
-        waitForElementPresent(By.tagName("vaadin-grid"));
-        WebElement grid = findElement(By.tagName("vaadin-grid"));
-
         // change data provider
         findElement(By.id("update-provider")).click();
         waitUntil(driver -> hasData());
