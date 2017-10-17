@@ -17,13 +17,16 @@ package com.vaadin.flow.spring;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
-import com.vaadin.spring.VaadinScopesConfig;
-
+/**
+ * Test configuration which holds the package: all UI classes in the dependent
+ * module are inside this package.
+ *
+ * @author Vaadin Ltd
+ *
+ */
 @Configuration
 @ComponentScan
-@Import(VaadinScopesConfig.class)
 public class TestConfiguration {
 
 }
