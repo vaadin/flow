@@ -466,7 +466,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     public static class ErrorTarget extends RouteNotFoundError implements
-            HasErrorParameter<NotFoundException>, BeforeNavigationListener {
+             BeforeNavigationListener {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -475,8 +475,7 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
-    public static class CustomNotFoundTarget extends RouteNotFoundError
-            implements HasErrorParameter<NotFoundException> {
+    public static class CustomNotFoundTarget extends RouteNotFoundError {
 
         public static final String TEXT_CONTENT = "My custom not found class!";
 
