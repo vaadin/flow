@@ -45,22 +45,6 @@ public class NavigationTriggerView extends AbstractDivView implements
         getElement().appendChild(routerLink, navigateButton);
     }
 
-    @Override
-    public void beforeNavigation(BeforeNavigationEvent event) {
-        super.beforeNavigation(event);
-
-        String location = event.getLocation().getPathWithQueryParameters();
-        assert location.startsWith(CLASS_NAME);
-
-        location = location.substring(CLASS_NAME.length());
-        if (location.isEmpty()) {
-            // For clarity in the message
-            location = "/";
-        }
-
-        addMessage(buildMessage(location, event.getTrigger()));
-    }
-
     public static String buildMessage(String path, NavigationTrigger trigger) {
         return "Navigated to " + path + " with trigger " + trigger.name();
     }
@@ -73,6 +57,15 @@ public class NavigationTriggerView extends AbstractDivView implements
 
     @Override
     public void setParameter(BeforeNavigationEvent event, @OptionalParameter String parameter) {
-        // NOOP
+        String location = event.getLocation().getPathWithQueryParameters();
+        assert location.startsWith(CLASS_NAME);
+
+        location = location.substring(CLASS_NAME.length());
+        if (location.isEmpty()) {
+            // For clarity in the message
+            location = "/";
+        }
+
+        addMessage(buildMessage(location, event.getTrigger()));
     }
 }

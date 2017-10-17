@@ -13,19 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.spring;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.spring.VaadinScopesConfig;
 
-public class UmlautÅäöView extends AngularTemplate {
+@Configuration
+@ComponentScan
+@Import(VaadinScopesConfig.class)
+public class TestConfiguration {
 
-    public UmlautÅäöView() {
-        super(new ByteArrayInputStream(
-                "<div id='content'>Umlaut view: åäöü. a\u00adb</div>"
-                        .getBytes(StandardCharsets.UTF_8)));
-
-    }
 }
