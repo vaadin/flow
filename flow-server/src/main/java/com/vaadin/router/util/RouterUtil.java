@@ -72,12 +72,13 @@ public final class RouterUtil {
      * Uses {@link HasDynamicTitle#getPageTitle()} if implemented, or else the
      * {@link PageTitle} annotation, to resolve the title.
      *
-     * @param ui
-     *            the current user interface
+     * @param navigationEvent
+     *            the event object about the navigation
      * @param routeTarget
      *            the currently visible component
      */
-    public static void updatePageTitle(UI ui, Component routeTarget) {
+    public static void updatePageTitle(NavigationEvent navigationEvent,
+            Component routeTarget) {
 
         String title;
 
@@ -87,7 +88,7 @@ public final class RouterUtil {
             title = lookForTitleInTarget(routeTarget).map(PageTitle::value)
                     .orElse("");
         }
-        ui.getPage().setTitle(title);
+        navigationEvent.getUI().getPage().setTitle(title);
     }
 
     private static Optional<PageTitle> lookForTitleInTarget(

@@ -139,7 +139,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        RouterUtil.updatePageTitle(ui, componentInstance);
+        RouterUtil.updatePageTitle(event, componentInstance);
 
         LocationChangeEvent locationChangeEvent = RouterUtil.createEvent(event,
                 chain);
