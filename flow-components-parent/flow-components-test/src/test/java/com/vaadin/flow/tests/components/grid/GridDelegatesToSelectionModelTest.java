@@ -32,7 +32,6 @@ public class GridDelegatesToSelectionModelTest {
 
     private class CustomGrid extends Grid<String> {
         CustomGrid() {
-            super();
             setSelectionModel(selectionModelMock, SelectionMode.SINGLE);
         }
     }

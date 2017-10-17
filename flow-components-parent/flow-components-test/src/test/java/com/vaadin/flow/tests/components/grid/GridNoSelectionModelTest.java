@@ -32,9 +32,9 @@ import com.vaadin.ui.grid.GridSelectionModel;
 
 public class GridNoSelectionModelTest {
 
-    public static final Person PERSON_C = new Person("c", 3);
-    public static final Person PERSON_B = new Person("b", 2);
-    public static final Person PERSON_A = new Person("a", 1);
+    private static final Person PERSON_C = new Person("c", 3);
+    private static final Person PERSON_B = new Person("b", 2);
+    private static final Person PERSON_A = new Person("a", 1);
 
     private Grid<Person> grid;
     private GridSelectionModel<Person> model;

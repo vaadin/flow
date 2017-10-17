@@ -23,10 +23,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,22 +47,15 @@ import com.vaadin.ui.grid.GridSelectionModel;
 
 public class GridMultiSelectionModelTest {
 
-    public static final Person PERSON_C = new Person("c", 3);
-    public static final Person PERSON_B = new Person("b", 2);
-    public static final Person PERSON_A = new Person("a", 1);
+    private static final Person PERSON_C = new Person("c", 3);
+    private static final Person PERSON_B = new Person("b", 2);
+    private static final Person PERSON_A = new Person("a", 1);
 
     private Grid<Person> grid;
     private GridMultiSelectionModel<Person> selectionModel;
     private Capture<List<Person>> currentSelectionCapture;
     private Capture<List<Person>> oldSelectionCapture;
     private AtomicInteger events;
-
-    public final Map<String, Boolean> generatedData = new LinkedHashMap<>();
-
-    @Before
-    public void generateData() {
-
-    }
 
     @Before
     public void setUp() {
@@ -85,15 +76,6 @@ public class GridMultiSelectionModelTest {
                     .setValue(new ArrayList<>(event.getOldSelection()));
             events.incrementAndGet();
         });
-    }
-
-    @Test(expected = IllegalStateException.class)
-    @Ignore
-    // Ignored because there's no mechanism to disallow selections yet
-    public void throwExcpetionWhenSelectionIsDisallowed() {
-
-        selectionModel.updateSelection(Collections.emptySet(),
-                Collections.emptySet());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -130,7 +112,7 @@ public class GridMultiSelectionModelTest {
         customGrid.setSelectionMode(SelectionMode.SINGLE);
         assertFalse(customGrid.getSelectionModel().getFirstSelectedItem()
                 .isPresent());
-        assertEquals(Arrays.asList(), selectionChanges);
+        assertEquals(Collections.emptyList(), selectionChanges);
         assertEquals(Arrays.asList("Foo", "Bar"),
                 oldSelectionCapture.getValue());
     }
@@ -157,7 +139,7 @@ public class GridMultiSelectionModelTest {
         model.deselect("Bar");
         assertFalse(model.isSelected("Bar"));
         assertTrue(model.getFirstSelectedItem().isPresent());
-        assertEquals(Arrays.asList("Foo"),
+        assertEquals(Collections.singletonList("Foo"),
                 new ArrayList<>(model.getSelectedItems()));
     }
 
@@ -174,7 +156,7 @@ public class GridMultiSelectionModelTest {
         assertTrue(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
 
-        assertEquals(Arrays.asList(PERSON_B),
+        assertEquals(Collections.singletonList(PERSON_B),
                 currentSelectionCapture.getValue());
 
         selectionModel.select(PERSON_A);
@@ -201,7 +183,8 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
 
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(2, events.get());
     }
 
@@ -256,7 +239,8 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
 
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(3, events.get());
     }
 
@@ -266,7 +250,7 @@ public class GridMultiSelectionModelTest {
 
         assertEquals(Arrays.asList(PERSON_C, PERSON_A, PERSON_B),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(), oldSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(), oldSelectionCapture.getValue());
 
         selectionModel.deselect(PERSON_A);
 
@@ -276,35 +260,40 @@ public class GridMultiSelectionModelTest {
                 oldSelectionCapture.getValue());
 
         selectionModel.deselectItems(PERSON_A, PERSON_B, PERSON_C);
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(Arrays.asList(PERSON_C, PERSON_B),
                 oldSelectionCapture.getValue());
 
         selectionModel.selectItems(PERSON_A);
-        assertEquals(Arrays.asList(PERSON_A),
+        assertEquals(Collections.singletonList(PERSON_A),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(), oldSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(), oldSelectionCapture.getValue());
 
         selectionModel.updateSelection(
                 new LinkedHashSet<>(Arrays.asList(PERSON_B, PERSON_C)),
-                new LinkedHashSet<>(Arrays.asList(PERSON_A)));
+                new LinkedHashSet<>(Collections.singletonList(PERSON_A)));
         assertEquals(Arrays.asList(PERSON_B, PERSON_C),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(PERSON_A), oldSelectionCapture.getValue());
+        assertEquals(Collections.singletonList(PERSON_A),
+                oldSelectionCapture.getValue());
 
         selectionModel.deselectAll();
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(Arrays.asList(PERSON_B, PERSON_C),
                 oldSelectionCapture.getValue());
 
         selectionModel.select(PERSON_C);
-        assertEquals(Arrays.asList(PERSON_C),
+        assertEquals(Collections.singletonList(PERSON_C),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(), oldSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(), oldSelectionCapture.getValue());
 
         selectionModel.deselect(PERSON_C);
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(PERSON_C), oldSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
+        assertEquals(Collections.singletonList(PERSON_C),
+                oldSelectionCapture.getValue());
     }
 
     @Test
@@ -322,7 +311,8 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_A));
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(Arrays.asList(PERSON_A, PERSON_C, PERSON_B),
                 oldSelectionCapture.getValue());
         assertEquals(2, events.get());
@@ -331,17 +321,19 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_A));
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertTrue(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(PERSON_C),
+        assertEquals(Collections.singletonList(PERSON_C),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(), oldSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(), oldSelectionCapture.getValue());
         assertEquals(3, events.get());
 
         selectionModel.deselectAll();
         assertFalse(selectionModel.isSelected(PERSON_A));
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(PERSON_C), oldSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
+        assertEquals(Collections.singletonList(PERSON_C),
+                oldSelectionCapture.getValue());
         assertEquals(4, events.get());
 
         selectionModel.deselectAll();
@@ -351,6 +343,7 @@ public class GridMultiSelectionModelTest {
     @Test
     @Ignore
     // Ignored because selectAll is not implemented yet
+    // See https://github.com/vaadin/flow/issues/2546
     public void selectAll() {
         selectionModel.selectAll();
 
@@ -376,7 +369,8 @@ public class GridMultiSelectionModelTest {
         assertTrue(selectionModel.isSelected(PERSON_C));
         assertEquals(Arrays.asList(PERSON_B, PERSON_A, PERSON_C),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(PERSON_B), oldSelectionCapture.getValue());
+        assertEquals(Collections.singletonList(PERSON_B),
+                oldSelectionCapture.getValue());
         assertEquals(3, events.get());
     }
 
@@ -387,7 +381,7 @@ public class GridMultiSelectionModelTest {
         assertTrue(selectionModel.isSelected(PERSON_A));
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(PERSON_A),
+        assertEquals(Collections.singletonList(PERSON_A),
                 currentSelectionCapture.getValue());
         assertEquals(1, events.get());
 
@@ -396,9 +390,10 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_A));
         assertTrue(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(PERSON_B),
+        assertEquals(Collections.singletonList(PERSON_B),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(PERSON_A), oldSelectionCapture.getValue());
+        assertEquals(Collections.singletonList(PERSON_A),
+                oldSelectionCapture.getValue());
         assertEquals(2, events.get());
 
         selectionModel.updateSelection(asSet(PERSON_B), asSet(PERSON_A)); // NOOP
@@ -406,9 +401,10 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_A));
         assertTrue(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(PERSON_B),
+        assertEquals(Collections.singletonList(PERSON_B),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(PERSON_A), oldSelectionCapture.getValue());
+        assertEquals(Collections.singletonList(PERSON_A),
+                oldSelectionCapture.getValue());
         assertEquals(2, events.get());
 
         selectionModel.updateSelection(asSet(PERSON_A, PERSON_C),
@@ -419,7 +415,8 @@ public class GridMultiSelectionModelTest {
         assertTrue(selectionModel.isSelected(PERSON_C));
         assertEquals(Arrays.asList(PERSON_B, PERSON_C),
                 currentSelectionCapture.getValue());
-        assertEquals(Arrays.asList(PERSON_B), oldSelectionCapture.getValue());
+        assertEquals(Collections.singletonList(PERSON_B),
+                oldSelectionCapture.getValue());
         assertEquals(3, events.get());
 
         selectionModel.updateSelection(asSet(PERSON_B, PERSON_A),
@@ -440,7 +437,8 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_A));
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(Arrays.asList(PERSON_B, PERSON_C, PERSON_A),
                 oldSelectionCapture.getValue());
         assertEquals(5, events.get());
@@ -465,7 +463,7 @@ public class GridMultiSelectionModelTest {
         assertEquals(Optional.of(PERSON_C),
                 selectionModel.getFirstSelectedItem());
 
-        assertEquals(Arrays.asList(PERSON_C),
+        assertEquals(Collections.singletonList(PERSON_C),
                 currentSelectionCapture.getValue());
         assertEquals(1, events.get());
     }
@@ -473,7 +471,7 @@ public class GridMultiSelectionModelTest {
     @Test
     public void deselectTwice() {
         selectionModel.select(PERSON_C);
-        assertEquals(Arrays.asList(PERSON_C),
+        assertEquals(Collections.singletonList(PERSON_C),
                 currentSelectionCapture.getValue());
         assertEquals(1, events.get());
 
@@ -481,7 +479,8 @@ public class GridMultiSelectionModelTest {
 
         assertFalse(selectionModel.getFirstSelectedItem().isPresent());
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(2, events.get());
 
         selectionModel.deselect(PERSON_C);
@@ -490,16 +489,16 @@ public class GridMultiSelectionModelTest {
         assertFalse(selectionModel.isSelected(PERSON_A));
         assertFalse(selectionModel.isSelected(PERSON_B));
         assertFalse(selectionModel.isSelected(PERSON_C));
-        assertEquals(Arrays.asList(), currentSelectionCapture.getValue());
+        assertEquals(Collections.emptyList(),
+                currentSelectionCapture.getValue());
         assertEquals(2, events.get());
     }
 
-    @SuppressWarnings({ "serial" })
     @Test
     public void addValueChangeListener() {
         String value = "foo";
 
-        Grid<String> grid = new Grid<String>();
+        Grid<String> grid = new Grid<>();
 
         AtomicReference<MultiSelectionEvent<Grid<String>, String>> event = new AtomicReference<>();
         MultiSelectionListener<Grid<String>, String> selectionListener = evt -> {
@@ -512,7 +511,7 @@ public class GridMultiSelectionModelTest {
         model = Mockito.spy(model);
 
         Mockito.when(model.getSelectedItems())
-                .thenReturn(new LinkedHashSet<String>(Arrays.asList(value)));
+                .thenReturn(new LinkedHashSet<>(Arrays.asList(value)));
 
         grid.setItems("foo", "bar");
 
@@ -522,7 +521,7 @@ public class GridMultiSelectionModelTest {
                 model.asMultiSelect(), Collections.emptySet(), true));
 
         assertEquals(grid, event.get().getSource());
-        assertEquals(new LinkedHashSet<>(Arrays.asList(value)),
+        assertEquals(new LinkedHashSet<>(Collections.singletonList(value)),
                 event.get().getValue());
         assertTrue(event.get().isFromClient());
 
