@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.NotFoundException;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.shared.Registration;
@@ -56,9 +57,9 @@ public class RerouteView extends AbstractDivView {
 
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
-        // if (reroute) {
-        // event.rerouteToErrorView();
-        // }
+         if (reroute) {
+         event.rerouteToError(NotFoundException.class, "Rerouting to error view");
+         }
 
         super.beforeNavigation(event);
     }

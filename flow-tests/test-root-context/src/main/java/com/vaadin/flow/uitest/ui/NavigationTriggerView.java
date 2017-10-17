@@ -18,12 +18,15 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.OptionalParameter;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.NavigationTriggerView", layout = ViewTestLayout.class)
-public class NavigationTriggerView extends AbstractDivView {
+public class NavigationTriggerView extends AbstractDivView implements
+        HasUrlParameter<String> {
     private static final String CLASS_NAME = NavigationTriggerView.class
             .getName();
 
@@ -66,5 +69,10 @@ public class NavigationTriggerView extends AbstractDivView {
         Element element = ElementFactory.createDiv(message);
         element.getClassList().add("message");
         getElement().appendChild(element);
+    }
+
+    @Override
+    public void setParameter(BeforeNavigationEvent event, @OptionalParameter String parameter) {
+        // NOOP
     }
 }
