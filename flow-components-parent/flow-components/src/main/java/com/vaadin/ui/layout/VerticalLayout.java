@@ -16,12 +16,16 @@
 package com.vaadin.ui.layout;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
 
 /**
  * VerticalLayout is a component container, which shows the subcomponents in the
  * order of their addition (vertically). A vertical layout is by default 100%
  * wide.
  */
+@Tag("vaadin-vertical-layout")
+@HtmlImport("frontend://bower_components/vaadin-vertical-layout/vaadin-vertical-layout.html")
 public class VerticalLayout extends FlexLayout {
 
     /**

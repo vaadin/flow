@@ -16,12 +16,16 @@
 package com.vaadin.ui.layout;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.HtmlImport;
 
 /**
  * HorizontalLayout is a component container, which shows the subcomponents in
  * the order of their addition (horizontally). A horizontal layout is doesn't
  * have a predefined size - its size is defined by the components inside it.
  */
+@Tag("vaadin-horizontal-layout")
+@HtmlImport("frontend://bower_components/vaadin-horizontal-layout/vaadin-horizontal-layout.html")
 public class HorizontalLayout extends FlexLayout {
 
     /**
