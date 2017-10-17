@@ -9,13 +9,15 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = Navigation Lifecycle
 
-During the navigation lifecycle the activating and deactivating components will get a number of different lifecycle state events.
+During the navigation lifecycle the activating and deactivating components will
+get a number of different lifecycle state events.
 
 == BeforeNavigationEvent
 
-Any `Component` in the activating or deactivating navigation target chain will receive a `BeforeNavigationEvent` if they extend the `BeforeNavigationListener` *interface*.
+Any `Component` in the activating or deactivating navigation target chain will
+receive a `BeforeNavigationEvent` if they extend the `BeforeNavigationListener` *interface*.
 
-This holds also true for listener implementation in a node component found from the root target e.g.
+This holds also true for listener implementations in a node component found from the root target e.g.
 [source,java]
 ----
 @Route("")
@@ -38,7 +40,7 @@ public class SideElement extends Div implements BeforeNavigationListener {
 ----
 
 
-==== Reroute
+=== Reroute
 The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need
 to show completely different information in some state.
 Rerouting can happen from a listener in the detaching or the attaching chain.
@@ -48,31 +50,73 @@ In this example the reroute would happen on attach of `BlogList` when it receive
 ----
 @Route("no-items")
 public class NoItemsView extends Div {
-  public NoItemsView() {
-    setText("No items found.");
-  }
+    public NoItemsView() {
+        setText("No items found.");
+    }
 }
 
 @Route("blog")
 public class BlogList extends Div implements BeforeNavigationListener {
-  @Override
-  public void beforeNavigation(BeforeNavigationEvent event) {
-    // implementation omitted
-    Object record = getItem();
+    @Override
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        // implementation omitted
+        Object record = getItem();
 
-    if (record == null) {
-      event.rerouteTo(NoItemsView.class);
+        if (record == null) {
+            event.rerouteTo(NoItemsView.class);
+        }
     }
-  }
 
-  private Object getItem() {
-    // no-op implementation
-    return null;
-  }
+    private Object getItem() {
+        // no-op implementation
+        return null;
+    }
 }
 ----
 [NOTE]
 `rerouteTo` has several overloads to serve different use cases.
+
+=== Postpone
+`BeforeNavigationEvent` has a `postpone` method, which can be used to postpone
+the current navigational transition until a specific condition is met.
+E.g. the client may request the user's confirmation before leaving the page:
+[source,java]
+----
+public class SignupForm extends Div implements BeforeNavigationListener {
+    @Override
+    public void beforeNavigation(BeforeNavigationEvent event) {
+        if (event.getActivationState() == ActivationState.DEACTIVATING
+                && this.hasChanges()) {
+            ContinueNavigationAction action = event.postpone();
+            ConfirmDialog.build("Are you sure you want to leave this page?")
+                    .ifAccept(action::proceed).show();
+        }
+    }
+
+    private boolean hasChanges() {
+        // no-op implementation
+        return true;
+    }
+}
+----
+Postponing interrupts the process of notifying listeners. When the transition is
+resumed, the remaining listeners after the one which initiated the postpone will be called.
+As an example, let's assume the current page has 3 listeners __a__, __b__ and __c__,
+which are being notified in this order. If __b__ calls `postpone`, the call to __c__,
+as well as the rest of the transition process, is deferred. If the transition
+postponed by __b__ is not resumed, __c__ will not get a notification about this
+event at all and the transition never finishes. If, however, __b__ executes its
+`ContinueNavigationAction` to resume the transition, it is continued from
+where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ is notified.
+
+[NOTE]
+Postpone may only be initiated while leaving (deactivating) a page; if the method
+is called while entering / activating the new page, it will throw an `IllegalStateException`.
+[NOTE]
+At most one navigation event may be postponed at any time; starting a new
+navigation transition while a previous one is in a postponed state obsoletes
+the postponed state. After that, executing the `ContinueNavigationAction` kept
+from earlier will have no effect.
 
 == AfterNavigationEvent
 
