@@ -308,7 +308,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
                     @Override
                     public void deselectAll() {
-                        selected.clear();
+                        updateSelection(Collections.emptySet(), selected);
                     }
 
                     @Override
