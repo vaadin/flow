@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.tests.components.grid;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -27,8 +28,13 @@ public class GridPageSizeViewIT extends AbstractComponentIT {
     public void gridWithPageSize10() {
         open();
 
-        waitForElementPresent(By.id("query-info"));
+        waitForElementPresent(By.tagName("vaadin-grid"));
+        WebElement grid = findElement(By.tagName("vaadin-grid"));
         WebElement info = findElement(By.id("query-info"));
+
+        Object pageSize = executeScript("return arguments[0].pageSize", grid);
+        Assert.assertEquals("The pageSize of the webcomponent should be 10", 10,
+                Integer.parseInt(String.valueOf(pageSize)));
 
         // the webcomponent use 3 * the page size as the query limit
         waitUntil(driver -> info.getText().endsWith("Query limit: 30"));

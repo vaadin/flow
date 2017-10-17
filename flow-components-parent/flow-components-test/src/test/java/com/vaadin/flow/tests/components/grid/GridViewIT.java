@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -33,6 +34,7 @@ public class GridViewIT extends AbstractComponentIT {
     public void basicGrid() {
         open();
 
+        waitForElementPresent(By.tagName("vaadin-grid"));
         WebElement grid = findElement(By.tagName("vaadin-grid"));
 
         hasCell(grid, "text");
@@ -46,9 +48,23 @@ public class GridViewIT extends AbstractComponentIT {
     }
 
     @Test
+    public void defaultPageSize() {
+        open();
+
+        waitForElementPresent(By.tagName("vaadin-grid"));
+        WebElement grid = findElement(By.tagName("vaadin-grid"));
+
+        Object pageSize = executeScript("return arguments[0].pageSize", grid);
+        Assert.assertEquals(
+                "The default pageSize of the webcomponent should be 50", 50,
+                Integer.parseInt(String.valueOf(pageSize)));
+    }
+
+    @Test
     public void changeDataProvider() {
         open();
 
+        waitForElementPresent(By.tagName("vaadin-grid"));
         WebElement grid = findElement(By.tagName("vaadin-grid"));
 
         // change data provider
