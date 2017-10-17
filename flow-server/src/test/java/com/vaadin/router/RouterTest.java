@@ -29,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -47,6 +48,7 @@ import com.vaadin.ui.UI;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class RouterTest extends RoutingTestBase {
 
@@ -577,6 +579,113 @@ public class RouterTest extends RoutingTestBase {
             eventCollector.add("Redirect");
             UI.getCurrent().navigateTo("loop");
         }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class EagerlyPostponingNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Attempting to postpone...");
+            ContinueNavigationAction action = event.postpone();
+            eventCollector.add("Postponed");
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingForeverNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                event.postpone();
+                eventCollector.add("Postponed");
+            } else {
+                eventCollector.add("Can't postpone here");
+            }
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingAndResumingNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                ContinueNavigationAction action = event.postpone();
+                eventCollector.add("Postponed");
+                sleepThenRun(100, action);
+            } else {
+                eventCollector.add("Can't postpone here");
+            }
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingFirstTimeNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        private int counter = 0;
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (counter++ < 2) {
+                if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                    ContinueNavigationAction action = event.postpone();
+                    eventCollector.add("Postponed");
+                    sleepThenRun(50, action);
+                } else {
+                    eventCollector.add("Can't postpone here");
+                }
+            } else {
+                eventCollector.add("Not postponing anymore");
+            }
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ChildListener extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("ChildListener notified");
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingAndResumingCompoundNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        public PostponingAndResumingCompoundNavigationTarget() {
+            getElement().appendChild(new ChildListener().getElement());
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                ContinueNavigationAction action = event.postpone();
+                eventCollector.add("Postponed");
+                sleepThenRun(100, action);
+            } else {
+                eventCollector.add("Can't postpone here");
+            }
+        }
+    }
+
+    static void sleepThenRun(int millis, ContinueNavigationAction action) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException e) {
+                fail("Resuming thread was interrupted");
+            }
+            eventCollector.add("Resuming");
+            action.proceed();
+        }).start();
     }
 
     @Route("toNotFound")
@@ -1510,6 +1619,124 @@ public class RouterTest extends RoutingTestBase {
         ui.navigateTo("redirect/loop");
 
         Assert.assertEquals("Expected two events", 2, eventCollector.size());
+    }
+
+    @Test
+    public void postpone_fails_on_activating_before_navigation_event()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                EagerlyPostponingNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(500, status);
+    }
+
+    @Test
+    public void postpone_then_resume_on_before_navigation_event()
+            throws InvalidRouteConfigurationException, InterruptedException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                PostponingAndResumingNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed", 200, status1);
+        Assert.assertEquals("Second transition failed",200, status2);
+        Assert.assertEquals(PostponingAndResumingNavigationTarget.class, getUIComponent());
+        Thread.sleep(200);
+        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 3,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("Postponed", eventCollector.get(1));
+        Assert.assertEquals("Resuming", eventCollector.get(2));
+    }
+
+    @Test
+    public void postpone_forever_on_before_navigation_event()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                PostponingForeverNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed", 200, status1);
+        Assert.assertEquals("Second transition failed",200, status2);
+        Assert.assertEquals(PostponingForeverNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("Postponed", eventCollector.get(1));
+    }
+
+    @Test
+    public void postpone_obsoleted_by_new_navigation_transition()
+            throws InvalidRouteConfigurationException, InterruptedException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                FooNavigationTarget.class, FooBarNavigationTarget.class,
+                PostponingFirstTimeNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status3 = router.navigate(ui, new Location("foo/bar"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed", 200, status1);
+        Assert.assertEquals("Second transition failed",200, status2);
+        Assert.assertEquals("Third transition failed",200, status3);
+        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        Thread.sleep(200);
+        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 5,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("Postponed", eventCollector.get(1));
+        Assert.assertEquals("Not postponing anymore", eventCollector.get(2));
+        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(3));
+        Assert.assertEquals("Resuming", eventCollector.get(4));
+    }
+
+    @Test
+    public void postpone_then_resume_with_multiple_listeners()
+            throws InvalidRouteConfigurationException, InterruptedException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                PostponingAndResumingCompoundNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed", 200, status1);
+        Assert.assertEquals("Second transition failed",200, status2);
+        Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class, getUIComponent());
+        Thread.sleep(200);
+        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 5,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("ChildListener notified", eventCollector.get(1));
+        Assert.assertEquals("Postponed", eventCollector.get(2));
+        Assert.assertEquals("Resuming", eventCollector.get(3));
+        Assert.assertEquals("ChildListener notified", eventCollector.get(4));
     }
 
     private Class<? extends Component> getUIComponent() {
