@@ -35,7 +35,6 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.function.SerializableConsumer;
 import com.vaadin.shared.Registration;
-import com.vaadin.ui.UI;
 import com.vaadin.util.Range;
 
 import elemental.json.JsonArray;
@@ -275,11 +274,21 @@ public class DataCommunicator<T> {
     }
 
     private void handleAttach() {
-        attachDataProviderListener();
+        dataProviderUpdateRegistration = getDataProvider()
+                .addDataProviderListener(event -> {
+                    if (event instanceof DataRefreshEvent) {
+                        refresh(((DataRefreshEvent<T>) event).getItem());
+                    } else {
+                        reset();
+                    }
+                });
     }
 
     private void handleDetach() {
-        detachDataProviderListener();
+        if (dataProviderUpdateRegistration != null) {
+            dataProviderUpdateRegistration.remove();
+            dataProviderUpdateRegistration = null;
+        }
     }
 
     private void requestFlush() {
@@ -496,25 +505,5 @@ public class DataCommunicator<T> {
 
     private JsonValue generateJson(T item) {
         return dataGenerator.apply(keyMapper.key(item), item);
-    }
-
-    private void attachDataProviderListener() {
-        dataProviderUpdateRegistration = getDataProvider()
-                .addDataProviderListener(event -> {
-                    UI.getCurrent().access(() -> {
-                        if (event instanceof DataRefreshEvent) {
-                            refresh(((DataRefreshEvent<T>) event).getItem());
-                        } else {
-                            reset();
-                        }
-                    });
-                });
-    }
-
-    private void detachDataProviderListener() {
-        if (dataProviderUpdateRegistration != null) {
-            dataProviderUpdateRegistration.remove();
-            dataProviderUpdateRegistration = null;
-        }
     }
 }
