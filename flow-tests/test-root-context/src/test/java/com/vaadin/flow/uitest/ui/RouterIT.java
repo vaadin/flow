@@ -10,7 +10,6 @@ import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.ChildNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooBarNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooNavigationTarget;
-import com.vaadin.flow.uitest.servlet.RouterTestServlet.RootNavigationTarget;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 public class RouterIT extends ChromeBrowserTest {
@@ -23,7 +22,8 @@ public class RouterIT extends ChromeBrowserTest {
     @Test
     public void rootNavigationTarget() {
         open();
-        Assert.assertEquals(ViewTestLayout.BaseNavigationTarget.class.getSimpleName(),
+        Assert.assertEquals(
+                ViewTestLayout.BaseNavigationTarget.class.getSimpleName(),
                 findElement(By.id("name-div")).getText());
     }
 
@@ -84,9 +84,9 @@ public class RouterIT extends ChromeBrowserTest {
     public void faultyRouteShowsExpectedErrorScreen() {
         openRouteUrl("exception");
 
-        WebElement element = findElement(By.xpath("/html/body/div[1]"));
-
-        Assert.assertEquals("Could not navigate to 'exception'", element.getText());
+        WebElement element = findElement(By.id("error-path"));
+        Assert.assertNotNull(element);
+        Assert.assertEquals("exception", element.getText());
     }
 
     private void openRouteUrl(String route) {
