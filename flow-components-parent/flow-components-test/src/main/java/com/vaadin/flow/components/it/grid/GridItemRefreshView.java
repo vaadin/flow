@@ -63,27 +63,19 @@ public class GridItemRefreshView extends TestView {
 
         Button refreshFirstBtn = new Button("update and refresh first item");
         refreshFirstBtn.addClickListener(event -> {
-            items.get(0).setFirstField(
-                    UPDATED_FIRST_FIELD + " " + items.get(0).getFirstField());
-            items.get(0).setSecondField(UPDATED_SECOND_FIELD);
+            updateBean(items.get(0));
             grid.getDataProvider().refreshItem(items.get(0));
         });
         Button refreshMultipleBtn = new Button("update and refresh items 5-10");
         refreshMultipleBtn.addClickListener(event -> {
             items.subList(4, 10).forEach(item -> {
-                item.setFirstField(
-                        UPDATED_FIRST_FIELD + " " + item.getFirstField());
-                item.setSecondField(UPDATED_SECOND_FIELD);
+                updateBean(item);
                 grid.getDataProvider().refreshItem(item);
             });
         });
         Button refreshAllBtn = new Button("refresh all through data provider");
         refreshAllBtn.addClickListener(event -> {
-            items.forEach(item -> {
-                item.setFirstField(
-                        UPDATED_FIRST_FIELD + " " + item.getFirstField());
-                item.setSecondField(UPDATED_SECOND_FIELD);
-            });
+            items.forEach(this::updateBean);
             grid.getDataProvider().refreshAll();
         });
 
@@ -97,5 +89,10 @@ public class GridItemRefreshView extends TestView {
         return IntStream.range(0, numberOfItems).mapToObj(
                 intValue -> new Bean(String.valueOf(intValue), intValue))
                 .collect(Collectors.toList());
+    }
+
+    private void updateBean(Bean bean) {
+        bean.setFirstField(UPDATED_FIRST_FIELD + " " + bean.getFirstField());
+        bean.setSecondField(UPDATED_SECOND_FIELD);
     }
 }
