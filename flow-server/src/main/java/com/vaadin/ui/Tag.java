@@ -98,6 +98,10 @@ public @interface Tag {
      */
     String LI = "li";
     /**
+     * Tag for an <code>&lt;ol&gt;</code>.
+     */
+    String OL = "ol";
+    /**
      * Tag for an <code>&lt;option&gt;</code>.
      */
     String OPTION = "option";
