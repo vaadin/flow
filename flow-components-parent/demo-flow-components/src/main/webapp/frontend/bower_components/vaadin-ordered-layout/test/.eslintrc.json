@@ -1,0 +1,13 @@
+{
+  "globals": {
+    "WCT": false,
+    "describe": false,
+    "beforeEach": false,
+    "fixture": false,
+    "it": false,
+    "expect": false,
+    "gemini": false,
+    "sinon": false,
+    "positionEquals": false
+  }
+}

@@ -1,0 +1,44 @@
+<dom-module id="ordered-layout-basic-demos">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h3>Horizontal Layout</h3>
+    <vaadin-demo-snippet id='ordered-layout-basic-demos-horizontal-layout'>
+      <template preserve-content>
+        <vaadin-horizontal-layout>
+          <div>
+            Block 1
+          </div>
+          <div>
+            Block 2
+          </div>
+        </vaadin-horizontal-layout>
+      </template>
+    </vaadin-demo-snippet>
+
+    <h3>Vertical Layout</h3>
+    <vaadin-demo-snippet id='ordered-layout-basic-demos-horizontal-layout'>
+      <template preserve-content>
+        <vaadin-vertical-layout>
+          <div>
+            Block 1
+          </div>
+          <div>
+            Block 2
+          </div>
+        </vaadin-vertical-layout>
+      </template>
+    </vaadin-demo-snippet>
+  </template>
+  <script>
+    class OrderedLayoutBasicDemos extends Polymer.Element {
+      static get is() {
+        return 'ordered-layout-basic-demos';
+      }
+    }
+    customElements.define(OrderedLayoutBasicDemos.is, OrderedLayoutBasicDemos);
+  </script>
+</dom-module>

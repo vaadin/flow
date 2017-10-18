@@ -1,0 +1,53 @@
+<!--
+@license
+Copyright (c) 2017 Vaadin Ltd.
+This program is available under Apache License Version 2.0, available at https://vaadin.com/license/
+-->
+
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="vaadin-horizontal-layout">
+  <template>
+    <style>
+      :host {
+        display: flex;
+      }
+    </style>
+    <slot></slot>
+  </template>
+
+  <script>
+    if (!Polymer.Element) {
+      throw new Error(`Unexpected Polymer version ${Polymer.version} is used, expected v2.0.0 or later.`);
+    }
+
+    {
+      /**
+       * `<vaadin-horizontal-layout>` provides a simple way to horizontally align your HTML elements.
+       *
+       * ```
+       * <vaadin-horizontal-layout>
+       *   <div>Block 1</div>
+       *   <div>Block 2</div>
+       * </vaadin-horizontal-layout>
+       * ```
+       *
+       * @memberof Vaadin
+       * @demo demo/index.html
+       */
+      class VaadinHorizontalLayout extends Polymer.Element {
+        static get is() {
+          return 'vaadin-horizontal-layout';
+        }
+      }
+
+      customElements.define(VaadinHorizontalLayout.is, VaadinHorizontalLayout);
+
+      /**
+       * @namespace Vaadin
+       */
+      window.Vaadin = window.Vaadin || {};
+      Vaadin.VaadinHorizontalLayout = VaadinHorizontalLayout;
+    }
+  </script>
+</dom-module>

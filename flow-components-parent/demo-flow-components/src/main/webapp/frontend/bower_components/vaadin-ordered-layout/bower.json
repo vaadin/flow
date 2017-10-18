@@ -1,0 +1,37 @@
+{
+  "name": "vaadin-ordered-layout",
+  "homepage": "https://vaadin.com/elements",
+  "authors": [
+    "Vaadin Ltd"
+  ],
+  "description": "vaadin-ordered-layout",
+  "main": "vaadin-ordered-layout.html",
+  "keywords": [
+    "Vaadin",
+    "vaadin-ordered-layout",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "license": "Apache-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "gulpfile.js",
+    "package-lock.json",
+    "wct.conf.js"
+  ],
+  "dependencies": {
+    "polymer": "^2.0.0"
+  },
+  "devDependencies": {
+    "elements-demo-resources": "^2.0.0",
+    "iron-component-page": "^3.0.0",
+    "iron-demo-helpers": "^2.0.0",
+    "webcomponentsjs": "^1.0.0",
+    "web-component-tester": "^6.1.5",
+    "vaadin-demo-helpers": "vaadin/vaadin-demo-helpers"
+  }
+}

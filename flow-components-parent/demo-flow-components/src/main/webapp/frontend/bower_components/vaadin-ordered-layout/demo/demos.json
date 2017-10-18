@@ -1,0 +1,13 @@
+{
+  "name": "Vaadin Ordered Layout",
+  "pages": [{
+    "name": "Basic Examples",
+    "url": "ordered-layout-basic-demos",
+    "src": "ordered-layout-basic-demos.html",
+    "meta": {
+      "title": "vaadin-ordered-layout Basic Examples",
+      "description": "",
+      "image": ""
+    }
+  }]
+}

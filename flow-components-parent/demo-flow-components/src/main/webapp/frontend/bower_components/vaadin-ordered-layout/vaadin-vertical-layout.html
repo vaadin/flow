@@ -1,0 +1,54 @@
+<!--
+@license
+Copyright (c) 2017 Vaadin Ltd.
+This program is available under Apache License Version 2.0, available at https://vaadin.com/license/
+-->
+
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="vaadin-vertical-layout">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+    <slot></slot>
+  </template>
+
+  <script>
+    if (!Polymer.Element) {
+      throw new Error(`Unexpected Polymer version ${Polymer.version} is used, expected v2.0.0 or later.`);
+    }
+
+    {
+      /**
+       * `<vaadin-vertical-layout>` provides a simple way to vertically align your HTML elements.
+       *
+       * ```
+       * <vaadin-vertical-layout>
+       *   <div>Block 1</div>
+       *   <div>Block 2</div>
+       * </vaadin-vertical-layout>
+       * ```
+       *
+       * @memberof Vaadin
+       * @demo demo/index.html
+       */
+      class VaadinVerticalLayout extends Polymer.Element {
+        static get is() {
+          return 'vaadin-vertical-layout';
+        }
+      }
+
+      customElements.define(VaadinVerticalLayout.is, VaadinVerticalLayout);
+
+      /**
+       * @namespace Vaadin
+       */
+      window.Vaadin = window.Vaadin || {};
+      Vaadin.VaadinVerticalLayout = VaadinVerticalLayout;
+    }
+  </script>
+</dom-module>

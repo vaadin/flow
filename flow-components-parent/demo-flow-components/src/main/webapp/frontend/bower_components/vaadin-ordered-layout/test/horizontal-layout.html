@@ -1,0 +1,56 @@
+<!doctype html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>vaadin-horizontal-layout tests</title>
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../vaadin-horizontal-layout.html">
+  <script src="common.js"></script>
+  <custom-style>
+    <style is="custom-style">
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #container {
+        width: 300px;
+        min-height: 50px;
+      }
+
+      #container > div {
+        width: 50px;
+        height: 50px;
+      }
+    </style>
+  </custom-style>
+</head>
+
+<body>
+  <test-fixture id="default">
+    <template>
+      <vaadin-horizontal-layout id="container">
+        <div id="c1"></div>
+        <div id="c2"></div>
+      </vaadin-horizontal-layout>
+    </template>
+  </test-fixture>
+
+  <script>
+    describe('Basic tests', () => {
+      let element, c1, c2;
+
+      beforeEach(() => {
+        element = fixture('default');
+        c1 = element.querySelector('#c1');
+        c2 = element.querySelector('#c2');
+      });
+
+      it('items are next to each other', () => {
+        expect(positionEquals(element, 0, 300, 50, 0)).to.be.true;
+        expect(positionEquals(c1, 0, 50, 50, 0)).to.be.true;
+        expect(positionEquals(c2, 0, 100, 50, 50)).to.be.true;
+      });
+    });
+  </script>
+</body>

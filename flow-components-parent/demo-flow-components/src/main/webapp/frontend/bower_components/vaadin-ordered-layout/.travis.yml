@@ -1,0 +1,32 @@
+sudo: false
+dist: trusty
+language: node_js
+node_js: 8.0
+
+cache:
+  directories:
+    - node_modules
+
+addons:
+  firefox: latest
+  google-chrome: latest
+
+install:
+  - npm install
+  - bower install
+
+before_script:
+  - gulp lint
+  - polymer lint --rules polymer-2 --input *.html
+  - xvfb-run -s '-screen 0 1024x768x24' polymer test
+  - travis_retry xvfb-run -s '-screen 0 1024x768x24' gulp perf:run
+
+script:
+  - if [[ "$TRAVIS_EVENT_TYPE" != "pull_request" && "$TRAVIS_BRANCH" != quick/* ]]; then
+      npm i gemini@^4.0.0 gemini-sauce gemini-polyserve &&
+      gemini test test/visual &&
+      xvfb-run -s '-screen 0 1024x768x24' polymer test --env saucelabs;
+    fi
+  - if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then
+      xvfb-run -s '-screen 0 1024x768x24' polymer test --env saucelabs-cron;
+    fi

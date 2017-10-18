@@ -1,0 +1,44 @@
+{
+  "name": "vaadin-ordered-layout",
+  "version": "1.0.0-alpha1",
+  "description": "vaadin-ordered-layout",
+  "main": "vaadin-ordered-layout.html",
+  "repository": "vaadin/vaadin-ordered-layout",
+  "keywords": [
+    "Vaadin",
+    "vaadin-ordered-layout",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/vaadin-ordered-layout/issues"
+  },
+  "homepage": "https://vaadin.com/elements",
+  "scripts": {
+    "test": "wct"
+  },
+  "devDependencies": {
+    "bower": "latest",
+    "eslint": "^4.0.0",
+    "eslint-config-vaadin": "latest",
+    "eslint-plugin-html": "^3.0.0",
+    "gulp": "latest",
+    "gulp-eslint": "^4.0.0",
+    "gulp-html-extract": "^0.3.0",
+    "gulp-stylelint": "^5.0.0",
+    "lighthouse": "~1.6.5",
+    "polymer-cli": "^1.2.0",
+    "stylelint": "^8.0.0",
+    "stylelint-config-vaadin": "latest",
+    "web-component-tester": "^6.1.5",
+    "yargs": "latest"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "lighthouse"
+    ]
+  }
+}
