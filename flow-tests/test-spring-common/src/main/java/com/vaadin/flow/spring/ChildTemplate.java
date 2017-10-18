@@ -21,8 +21,8 @@ import org.springframework.stereotype.Component;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.spring.annotation.VaadinSessionScope;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Tag("child-template")

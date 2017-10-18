@@ -18,7 +18,7 @@ package com.vaadin.flow.spring;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.vaadin.router.Route;
-import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
