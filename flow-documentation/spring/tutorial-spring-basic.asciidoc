@@ -5,13 +5,13 @@ layout: page
 ---
 
 ifdef::env-github[:outfilesuffix: .asciidoc]
-==== Work in progress
 
 = Use Flow with Spring
 
 The Spring add-on allows you to use Flow with Spring in two ways: 
 as a Spring Boot application and as a Spring Web application.
 
+== Spring Boot 
 The easiest way to use Spring is the Spring Boot application. 
 To be able to use the add-on you will need to write only one very simple class.
 
@@ -60,7 +60,11 @@ of you project `pom.xml` which declares necessary dependencies:
 [NOTE] 
 You can see the exclusion in the `spring-boot-starter-web` declaration. 
 It's not relevant for this example but it you want to run your application as a 
-deployable WAR then it allows to avoid classpath collisions.  
+deployable WAR then it allows to avoid classpath collisions.
+
+[NOTE]
+The Spring add-on doesn't declare compile dependency to Spring Boot (it doesn't appear transitively) 
+so you should declare it by yourself. This is done to be able to use the add-on without Spring Boot.
 
 Of course you need at least one Flow related class in your application to be able to handle URLs.
 The minimal code would be:
@@ -75,7 +79,8 @@ public class HelloComponent extends Div {
 }
 ----
 
-The `ExampleServletInitializer` class above allows to run WAR application (so it needs to be deployed).
+The `ExampleServletInitializer` class above allows to run WAR application deployed
+on a web server.
 Spring Boot allows to speed up development process and run the Spring Boot application as a plain Java Application.
 To be able to do this you will need to add one more line in your class declaration:
 
@@ -87,4 +92,97 @@ public class ExampleServletInitializer extends SpringBootServletInitializer {
         SpringApplication.run(ExampleServletInitializer.class, args);
     }
 }
+----
+
+No need to do anything in addition to that. If you start this Java application
+then Spring Boot will start embedded web server and everything will work in the same way.
+
+[NOTE]
+You should remove exclusion from the `spring-boot-starter-web` dependency in 
+the ` pom.xml` snippet above.
+
+== Spring Web application
+
+Another option to use Spring in your Flow application is just a pure Spring Web application.
+You may create your own Spring Web application from scratch. To be able to use Flow in 
+your Spring Web application you should register Vaadin servlet as a dispatcher servlet. 
+
+[source,java]
+----
+public abstract class ExampleWebAppInitializer
+        implements WebApplicationInitializer {
+ 
+    @Override
+    public void onStartup(ServletContext servletContext)
+            throws ServletException {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        registerConfiguration(context);
+        servletContext.addListener(new ContextLoaderListener(context));
+ 
+        ServletRegistration.Dynamic registration = servletContext
+                .addServlet("dispatcher", new SpringServlet(context));
+        registration.setLoadOnStartup(1);
+        registration.addMapping("/*");
+    }
+    
+    private void registerConfiguration(
+            AnnotationConfigWebApplicationContext context) {
+        // register your configuration classes here
+    }
+}
+----
+
+Again you will need some Flow component annotated with `@Route` and you should register 
+`VaadinScopesConfig` configuration class to be able to use Spring Vaadin scopes.
+
+[NOTE]
+Alternatively you may add `@EnableVaadin` annotation to your configuration class which
+imports `VaadinScopesConfig` configuration.
+
+The Spring add-on provides an abstract `WebApplicationInitializer` class which you 
+may just extend and provide your configuration classes via implemented `getConfigurationClasses()` method:
+
+[source,java]
+----
+public class SampleWebAppInitializer extends VaadinMVCWebAppInitializer {
+ 
+    @Override
+    protected Collection<Class<?>> getConfigurationClasses() {
+        return Collections.singletonList(SampleConfiguration.class);
+    }
+}
+
+@Configuration
+@ComponentScan
+public class SampleConfiguration {
+}
+----
+
+[NOTE]
+`VaadinScopesConfig` configuration will be register in this case automatically for you.
+
+To be able to use Spring Web application you should declare dependencies in your `pom.xml` file to
+Flow, Flow Spring add-on and Spring web:
+
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow</artifactId>
+        <version>${flow.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-spring-addon</artifactId>
+        <version>${flow.version}</version>
+    </dependency>
+
+    <!-- Spring -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>5.0.0.RELEASE</version>
+    </dependency>
 ----
