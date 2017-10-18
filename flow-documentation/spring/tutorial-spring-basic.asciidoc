@@ -111,20 +111,20 @@ your Spring Web application you should register Vaadin servlet as a dispatcher s
 ----
 public abstract class ExampleWebAppInitializer
         implements WebApplicationInitializer {
- 
+
     @Override
     public void onStartup(ServletContext servletContext)
             throws ServletException {
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
         registerConfiguration(context);
         servletContext.addListener(new ContextLoaderListener(context));
- 
+
         ServletRegistration.Dynamic registration = servletContext
                 .addServlet("dispatcher", new SpringServlet(context));
         registration.setLoadOnStartup(1);
         registration.addMapping("/*");
     }
-    
+
     private void registerConfiguration(
             AnnotationConfigWebApplicationContext context) {
         // register your configuration classes here
@@ -145,7 +145,7 @@ may just extend and provide your configuration classes via implemented `getConfi
 [source,java]
 ----
 public class SampleWebAppInitializer extends VaadinMVCWebAppInitializer {
- 
+
     @Override
     protected Collection<Class<?>> getConfigurationClasses() {
         return Collections.singletonList(SampleConfiguration.class);

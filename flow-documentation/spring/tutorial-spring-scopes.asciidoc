@@ -31,7 +31,7 @@ public class Editor extends Div {
 }
 
 public interface Bean {
-    void getText();
+    String getText();
 }
 
 @Component
@@ -39,7 +39,7 @@ public interface Bean {
 public class SessionBean implements Bean {
     private String uid = UUID.randomUUID().toString();
     
-    public void getText(){
+    public String getText(){
         return "session "+uid;
     } 
 }
@@ -61,7 +61,7 @@ the `UIBean` will be the same while we are in the same `UI`.
 public class UIBean implements Bean {
     private String uid = UUID.randomUUID().toString();
     
-    public void getText(){
+    public String getText(){
         return "ui " + uid;
     } 
 }
