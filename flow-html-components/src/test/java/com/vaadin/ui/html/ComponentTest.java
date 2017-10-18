@@ -71,7 +71,12 @@ public abstract class ComponentTest {
     }
 
     protected void addStringProperty(String propertyName, String defaultValue) {
-        addProperty(propertyName, String.class, defaultValue, false);
+        addProperty(propertyName, String.class, defaultValue, false, true);
+    }
+
+    protected void addStringProperty(String propertyName, String defaultValue,
+            boolean removeDefault) {
+        addProperty(propertyName, String.class, defaultValue, false, removeDefault);
     }
 
     protected void addOptionalStringProperty(String propertyName) {
@@ -80,8 +85,14 @@ public abstract class ComponentTest {
 
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
             U defaultValue, boolean isOptional) {
+        addProperty(propertyName, propertyType, defaultValue, isOptional, true);
+    }
+
+    protected <U> void addProperty(String propertyName, Class<U> propertyType,
+            U defaultValue, boolean isOptional, boolean removeDefault) {
         properties.add(new ComponentProperty(getComponent().getClass(),
-                propertyName, propertyType, defaultValue, isOptional));
+                propertyName, propertyType, defaultValue, isOptional,
+                removeDefault));
     }
 
     protected HtmlComponent createComponent() throws InstantiationException,
@@ -268,7 +279,9 @@ public abstract class ComponentTest {
                 Assert.assertEquals(property.defaultValue,
                         property.getUsingGetter(component));
             }
-            assertNoPropertyOrAttribute(component, property.name);
+            if (property.removeDefault) {
+                assertNoPropertyOrAttribute(component, property.name);
+            }
         }
     }
 
