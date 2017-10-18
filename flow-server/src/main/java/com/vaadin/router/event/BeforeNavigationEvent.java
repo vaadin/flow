@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.vaadin.router.ContinueNavigationAction;
 import com.vaadin.router.ErrorParameter;
 import com.vaadin.router.ErrorStateRenderer;
 import com.vaadin.router.HasUrlParameter;
@@ -51,6 +52,7 @@ public class BeforeNavigationEvent extends EventObject {
     private final Class<?> navigationTarget;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
+    private ContinueNavigationAction continueNavigationAction = null;
 
     /**
      * Construct event from a NavigationEvent.
@@ -348,5 +350,47 @@ public class BeforeNavigationEvent extends EventObject {
      */
     public ErrorParameter getErrorParameter() {
         return errorParameter;
+    }
+
+    /**
+     * Initiates the postponement of the current navigation transition,
+     * allowing a listener to e.g. display a confirmation dialog before
+     * finishing the transition.
+     * <p>
+     * This is only valid while leaving (deactivating) a page; if the method is
+     * called while entering / activating the new page, it will throw an
+     * {@link IllegalStateException}.
+     *
+     * @return the action to run when the transition is to be resumed, or null
+     *
+     * @throws IllegalStateException if the method is called while
+     *                               entering / activating the new page
+     */
+    public ContinueNavigationAction postpone() throws IllegalStateException {
+        if (activationState != ActivationState.DEACTIVATING) {
+            throw new IllegalStateException(
+                    "Transition may only be postponed in its deactivating phase");
+        }
+        continueNavigationAction = new ContinueNavigationAction();
+        return continueNavigationAction;
+    }
+
+    /**
+     * Checks whether this event was postponed.
+     *
+     * @return true if the event was postponed, false otherwise
+     */
+    public boolean isPostponed() {
+        return continueNavigationAction != null;
+    }
+
+    /**
+     * Gets the action used to resume this event, if it was postponed.
+     *
+     * @return the action used to resume this event if it was postponed,
+     *         or null if it is not being postponed
+     */
+    public ContinueNavigationAction getContinueNavigationAction() {
+        return continueNavigationAction;
     }
 }
