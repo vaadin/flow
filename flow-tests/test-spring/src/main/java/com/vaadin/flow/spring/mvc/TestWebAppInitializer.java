@@ -15,30 +15,23 @@
  */
 package com.vaadin.flow.spring.mvc;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-
-import org.springframework.web.WebApplicationInitializer;
-import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import java.util.Collection;
+import java.util.Collections;
 
 import com.vaadin.flow.spring.TestConfiguration;
-import com.vaadin.spring.SpringServlet;
+import com.vaadin.spring.VaadinMVCWebAppInitializer;
 
-public class TestWebAppInitializer implements WebApplicationInitializer {
+/**
+ * The entry point for Spring MVC.
+ * 
+ * @author Vaadin Ltd
+ *
+ */
+public class TestWebAppInitializer extends VaadinMVCWebAppInitializer {
 
     @Override
-    public void onStartup(ServletContext servletContext)
-            throws ServletException {
-        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.register(TestConfiguration.class);
-        servletContext.addListener(new ContextLoaderListener(context));
-
-        ServletRegistration.Dynamic registration = servletContext
-                .addServlet("dispatcher", new SpringServlet(context));
-        registration.setLoadOnStartup(1);
-        registration.addMapping("/*");
+    protected Collection<Class<?>> getConfigurationClasses() {
+        return Collections.singletonList(TestConfiguration.class);
     }
 
 }
