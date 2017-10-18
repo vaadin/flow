@@ -87,5 +87,9 @@
             <groupId>org.webjars.bower</groupId>
             <artifactId>vaadin-split-layout</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.webjars.bower</groupId>
+            <artifactId>vaadin-ordered-layout</artifactId>
+        </dependency>
     </dependencies>
 </project>

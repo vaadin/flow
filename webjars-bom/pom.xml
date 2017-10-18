@@ -61,6 +61,11 @@
                 <artifactId>vaadin-split-layout</artifactId>
                 <version>3.0.0</version>
             </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>vaadin-ordered-layout</artifactId>
+                <version>1.0.0-alpha1</version>
+            </dependency>
 
             <!-- WebJars' transitive dependencies resolutions -->
             <dependency>
