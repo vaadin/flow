@@ -769,6 +769,40 @@ public class GeneratedPaperDialog<R extends GeneratedPaperDialog<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
+	 * Set to true to allow clicks to go through overlays. When the user clicks
+	 * outside this overlay, the click may close the overlay below.
+	 * <p>
+	 * This property is not synchronized automatically from the client side, so
+	 * the returned value may not be the same as in client side.
+	 * </p>
+	 * 
+	 * @return the {@code allowClickThrough} property from the webcomponent
+	 */
+	public boolean isAllowClickThrough() {
+		return getElement().getProperty("allowClickThrough", false);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Set to true to allow clicks to go through overlays. When the user clicks
+	 * outside this overlay, the click may close the overlay below.
+	 * </p>
+	 * 
+	 * @param allowClickThrough
+	 *            the boolean value to set
+	 */
+	public void setAllowClickThrough(boolean allowClickThrough) {
+		getElement().setProperty("allowClickThrough", allowClickThrough);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
 	 * Set to true to keep overlay always on top.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so

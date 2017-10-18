@@ -38,13 +38,13 @@ public class SemanticVersionTest {
 
     @Test
     public void nonSemverStringShouldThrowAnException() {
-        Stream.of("a.0.1", "1.a.1", "1.1", "2")
+        Stream.of("a.0.1", "1.a.1", "1.1", "2", "1.0.aaa")
                 .forEach(this::parseIncorrectVersionString);
     }
 
     @Test
     public void semverStringShouldBeParsedCorrectly() {
-        Stream.of("1.0.1", "1.2.1-alpha3", "1.2.aaa")
+        Stream.of("1.0.1", "1.2.1-alpha3", "1.0.0-x.7.z.92", "1.0.0-0.3.7")
                 .forEach(this::parseCorrectVersionString);
     }
 
@@ -123,16 +123,36 @@ public class SemanticVersionTest {
     }
 
     @Test
+    public void comparePatchVersions_letterWins() {
+        compareNotEqualVersions("1.0.0-alpha.beta", "1.0.0-alpha.1");
+    }
+
+    @Test
+    public void comparePatchVersions_alphabeticOrderWins() {
+        compareNotEqualVersions("1.0.0-beta", "1.0.0-alpha.beta");
+    }
+
+    @Test
+    public void comparePatchVersions_stableVersionWins() {
+        compareNotEqualVersions("1.2.3", "1.2.3-alpha8");
+    }
+
+    @Test
     public void comparePatchVersions_biggerNumberWins_evenIfOccurredNotAtTheEnd() {
         compareNotEqualVersions("1.2.3-g2", "1.2.3-g1aaaaaaaaaaaaaaaaa");
     }
 
     @Test
-    public void comparePatchVersions_longer() {
+    public void comparePatchVersions_longerPreReleaseWins_1() {
         compareNotEqualVersions("1.2.3-gggg", "1.2.3-gg");
     }
 
-    public void compareNotEqualVersions(String biggerVersion, String smallerVersion) {
+    @Test
+    public void comparePatchVersions_longerPreReleaseWins_2() {
+        compareNotEqualVersions("1.0.0-alpha1", "1.0.0-alpha");
+    }
+
+    private void compareNotEqualVersions(String biggerVersion, String smallerVersion) {
         String errorMessage = String.format(
                 "Semantic version '%s' is expected to be bigger than '%s'",
                 biggerVersion, smallerVersion);
