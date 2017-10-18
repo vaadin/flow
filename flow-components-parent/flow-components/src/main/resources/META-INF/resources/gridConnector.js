@@ -1,5 +1,5 @@
 window.gridConnector = {
-    initLazy: function(grid, pageSize) {
+    initLazy: function(grid) {
         var extraPageBuffer = 2;
         var pageCallbacks = {};
         var cache = {};
@@ -9,7 +9,6 @@ window.gridConnector = {
         var selectedKeys = {};
         var selectionMode = 'SINGLE';
 
-        grid.pageSize = pageSize;
         grid.size = 0; // To avoid NaN here and there before we get proper data
 
         var doSelection = function(item, userOriginated) {
