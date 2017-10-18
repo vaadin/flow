@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxItemElement",
   "tag": "vaadin-combo-box-item",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-item.html",
-  "version": "3.0.0-alpha7",
+  "version": "3.0.0",
   "properties": [
     {
       "name": "index",
