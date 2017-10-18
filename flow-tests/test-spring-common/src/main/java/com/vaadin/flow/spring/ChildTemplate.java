@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.spring;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.spring.annotation.VaadinSessionScope;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
@@ -24,4 +29,25 @@ import com.vaadin.ui.polymertemplate.PolymerTemplate;
 @HtmlImport("/components/ChildTemplate.html")
 public class ChildTemplate extends PolymerTemplate<TemplateModel> {
 
+    @Component
+    @VaadinSessionScope
+    public static class BackendImpl implements Backend {
+
+        @Override
+        public String getMessage() {
+            return "foo";
+        }
+    }
+
+    public interface Backend {
+        String getMessage();
+    }
+
+    @Autowired
+    private Backend backend;
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        getElement().setProperty("message", backend.getMessage());
+    }
 }
