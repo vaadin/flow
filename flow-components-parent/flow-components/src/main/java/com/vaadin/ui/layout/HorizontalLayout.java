@@ -25,7 +25,7 @@ import com.vaadin.ui.common.HtmlImport;
  * have a predefined size - its size is defined by the components inside it.
  */
 @Tag("vaadin-horizontal-layout")
-@HtmlImport("frontend://bower_components/vaadin-horizontal-layout/vaadin-horizontal-layout.html")
+@HtmlImport("frontend://bower_components/vaadin-ordered-layout/vaadin-horizontal-layout.html")
 public class HorizontalLayout extends FlexLayout {
 
     /**
