@@ -394,16 +394,18 @@ public class DefaultDeploymentConfiguration
                 Arrays.asList("node/", "node_modules/"));
         Optional<String> frontendDirectoryPath = getFrontendDirectoryPath();
         Set<String> frontendDirectoryPolyfills = frontendDirectoryPath
-                .map(searchBase -> locatePolyfills(resourceScanner,
-                        searchBase, excludedDirectories))
+                .map(searchBase -> locatePolyfills(resourceScanner, searchBase,
+                        excludedDirectories))
                 .orElse(Collections.emptySet());
         if (frontendDirectoryPolyfills.isEmpty()) {
             getLogger().config(() -> String.format(
                     "Unable to find %s polyfill in frontend directory, searching the whole context",
                     WEB_COMPONENTS_LOADER_JS_NAME));
             frontendDirectoryPath.ifPresent(excludedDirectories::add);
-            return getPolyfillBasePath(CONTEXT_ROOT_PATH, locatePolyfills(
-                    resourceScanner, CONTEXT_ROOT_PATH, excludedDirectories));
+            return getPolyfillBasePath(
+                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX,
+                    locatePolyfills(resourceScanner, CONTEXT_ROOT_PATH,
+                            excludedDirectories));
         } else {
             return getPolyfillBasePath(
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX,

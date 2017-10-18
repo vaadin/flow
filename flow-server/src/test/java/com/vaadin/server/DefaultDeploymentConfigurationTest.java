@@ -15,14 +15,14 @@
  */
 package com.vaadin.server;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Objects;
 import java.util.Properties;
 
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link DefaultDeploymentConfiguration}
@@ -86,7 +86,7 @@ public class DefaultDeploymentConfigurationTest {
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
                 .orElseThrow(AssertionError::new);
 
-        assertEquals("/webjars/bower_components/webcomponentsjs/",
+        assertEquals("context://webjars/bower_components/webcomponentsjs/",
                 webComponentsPolyfillBase);
     }
 
