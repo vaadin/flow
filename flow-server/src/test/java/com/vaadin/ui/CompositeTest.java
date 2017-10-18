@@ -22,9 +22,9 @@ import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.ComponentTest.TracksAttachDetach;
 import com.vaadin.ui.CompositeNestedTest.TestLayout;
-import com.vaadin.ui.common.AttachEvent;
-import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 public class CompositeTest {
