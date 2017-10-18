@@ -22,6 +22,7 @@ import java.util.stream.StreamSupport;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 import com.vaadin.util.ReflectTools;
 
@@ -73,5 +74,10 @@ public class DefaultInstantiator implements Instantiator {
     public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
             NavigationEvent event) {
         return ReflectTools.createInstance(routeTargetType);
+    }
+
+    @Override
+    public <T extends Component> T createComponent(Class<T> componentClass) {
+        return ReflectTools.createInstance(componentClass);
     }
 }
