@@ -46,9 +46,21 @@ public @interface Tag {
      */
     String BUTTON = "button";
     /**
+     * Tag for an <code>&lt;dd&gt;</code>.
+     */
+    String DD = "dd";
+    /**
      * Tag for an <code>&lt;div&gt;</code>.
      */
     String DIV = "div";
+    /**
+     * Tag for an <code>&lt;dl&gt;</code>.
+     */
+    String DL = "dl";
+    /**
+     * Tag for an <code>&lt;dt&gt;</code>.
+     */
+    String DT = "dt";
     /**
      * Tag for an <code>&lt;em&gt;</code>.
      */
