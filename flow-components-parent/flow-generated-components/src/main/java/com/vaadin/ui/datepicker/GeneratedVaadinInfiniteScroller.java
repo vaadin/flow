@@ -127,24 +127,6 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
 	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
@@ -183,6 +165,24 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 *            Source path to link.
 	 */
 	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -241,7 +241,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * 	this.items.splice(1, 1, {name: 'Sam'});
 	 * 	this.items.push({name: 'Bob'});
 	 * 	this.notifySplices('items', [
-	 * 	  { index: 1, removed: [{name: 'Todd'}], addedCount: 1, obect: this.items, type: 'splice' },
+	 * 	  { index: 1, removed: [{name: 'Todd'}], addedCount: 1, object: this.items, type: 'splice' },
 	 * 	  { index: 3, removed: [], addedCount: 1, object: this.items, type: 'splice'}
 	 * 	]);
 	 * 	</code>
@@ -538,7 +538,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param ...items Missing documentation!
 	 */
 	@NotSupported
-	protected void splice(elemental.json.JsonObject path, double start,
+	protected void splice(java.lang.String path, double start,
 			double deleteCount, elemental.json.JsonObject _Items) {
 	}
 
@@ -572,7 +572,7 @@ public class GeneratedVaadinInfiniteScroller<R extends GeneratedVaadinInfiniteSc
 	 * @param ...items Missing documentation!
 	 */
 	@NotSupported
-	protected void splice(java.lang.String path, double start,
+	protected void splice(elemental.json.JsonObject path, double start,
 			double deleteCount, elemental.json.JsonObject _Items) {
 	}
 
