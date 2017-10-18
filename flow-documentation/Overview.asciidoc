@@ -78,6 +78,11 @@ These tutorials show how the different features are used.
 *** <<polymer-templates/tutorial-template-list-bindings#,Using List of Items in a PolymerTemplate with template repeater>>
 ** <<polymer-templates/tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>
 ** <<polymer-templates/tutorial-template-model-converters#,Using Model Converters with a PolymerTemplate Model>>
+* Spring
+** <<spring/tutorial-spring-basic#,Use Flow with Spring>>
+** <<spring/tutorial-spring-routing#,Routing with Spring>>
+** <<spring/tutorial-spring-scopes#,Vaadin Spring Scopes>>
+** <<spring/tutorial-spring-starter#,Use starter module>>
 * Misc
 ** <<miscellaneous/tutorial-execute-javascript#,Executing JavaScript>>
 ** <<miscellaneous/tutorial-history-api#,The History API>>

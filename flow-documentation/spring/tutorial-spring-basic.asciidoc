@@ -1,0 +1,90 @@
+---
+title: Use Flow with Spring
+order: 1
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+==== Work in progress
+
+= Use Flow with Spring
+
+The Spring add-on allows you to use Flow with Spring in two ways: 
+as a Spring Boot application and as a Spring Web application.
+
+The easiest way to use Spring is the Spring Boot application. 
+To be able to use the add-on you will need to write only one very simple class.
+
+[source,java]
+----
+@SpringBootApplication
+public class ExampleServletInitializer extends SpringBootServletInitializer {
+
+}
+----
+
+As you can see there is no any Flow classes involved in the class declaration.
+It works out of the box for you if you have dependency on Spring add-on in your classpath.
+It happens because of Spring Boot auto-configuration. Here is the code snippet 
+of you project `pom.xml` which declares necessary dependencies:
+
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow</artifactId>
+        <version>${flow.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-spring-addon</artifactId>
+        <version>${flow.version}</version>
+    </dependency>
+
+    <!-- Spring -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <version>${spring-boot.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-tomcat</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+----
+
+[NOTE] 
+You can see the exclusion in the `spring-boot-starter-web` declaration. 
+It's not relevant for this example but it you want to run your application as a 
+deployable WAR then it allows to avoid classpath collisions.  
+
+Of course you need at least one Flow related class in your application to be able to handle URLs.
+The minimal code would be:
+
+[source,java]
+----
+@Route("")
+public class HelloComponent extends Div {
+    public HelloComponent(){
+        setText("Hello world!");
+    }
+}
+----
+
+The `ExampleServletInitializer` class above allows to run WAR application (so it needs to be deployed).
+Spring Boot allows to speed up development process and run the Spring Boot application as a plain Java Application.
+To be able to do this you will need to add one more line in your class declaration:
+
+[source,java]
+----
+@SpringBootApplication
+public class ExampleServletInitializer extends SpringBootServletInitializer {
+    public static void main(String[] args) {
+        SpringApplication.run(ExampleServletInitializer.class, args);
+    }
+}
+----
