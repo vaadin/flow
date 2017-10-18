@@ -460,7 +460,9 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
     private final Map<String, Function<T, JsonValue>> columnGenerators = new HashMap<>();
     private final DataCommunicator<T> dataCommunicator = new DataCommunicator<>(
-            this::generateItemJson, arrayUpdater, getElement().getNode());
+            this::generateItemJson, arrayUpdater,
+            data -> getElement().callFunction("updateData", data),
+            getElement().getNode());
 
     private int nextColumnId = 0;
 
@@ -620,7 +622,17 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
     @Override
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
+        Objects.requireNonNull(dataProvider, "data provider cannot be null");
         getDataCommunicator().setDataProvider(dataProvider, null);
+    }
+
+    /**
+     * Returns the data provider of this grid.
+     *
+     * @return the data provider of this grid, not {@code null}
+     */
+    public DataProvider<T, ?> getDataProvider() {
+        return getDataCommunicator().getDataProvider();
     }
 
     @Override
