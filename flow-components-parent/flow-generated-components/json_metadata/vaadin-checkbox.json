@@ -2,7 +2,7 @@
   "name": "Vaadin.CheckboxElement",
   "tag": "vaadin-checkbox",
   "baseUrl": "vaadin-checkbox/vaadin-checkbox.html",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0",
   "properties": [
     {
       "name": "autofocus",
@@ -18,7 +18,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n         ",
+      "description": "If true, the element currently has focus.\nThis property is @deprecated and will not be accessible in the next major version\nof the component.\n         ",
       "readOnly": true
     },
     {

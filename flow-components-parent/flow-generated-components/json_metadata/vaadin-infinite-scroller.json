@@ -122,7 +122,7 @@
     },
     {
       "name": "notifySplices",
-      "description": "Notify that an array has changed.\n\nExample:\n\n    this.items = [ {name: 'Jim'}, {name: 'Todd'}, {name: 'Bill'} ];\n    ...\n    this.items.splice(1, 1, {name: 'Sam'});\n    this.items.push({name: 'Bob'});\n    this.notifySplices('items', [\n      { index: 1, removed: [{name: 'Todd'}], addedCount: 1, obect: this.items, type: 'splice' },\n      { index: 3, removed: [], addedCount: 1, object: this.items, type: 'splice'}\n    ]);",
+      "description": "Notify that an array has changed.\n\nExample:\n\n    this.items = [ {name: 'Jim'}, {name: 'Todd'}, {name: 'Bill'} ];\n    ...\n    this.items.splice(1, 1, {name: 'Sam'});\n    this.items.push({name: 'Bob'});\n    this.notifySplices('items', [\n      { index: 1, removed: [{name: 'Todd'}], addedCount: 1, object: this.items, type: 'splice' },\n      { index: 3, removed: [], addedCount: 1, object: this.items, type: 'splice'}\n    ]);",
       "parameters": [
         {
           "name": "path",
