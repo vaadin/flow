@@ -15,19 +15,28 @@
  */
 package com.vaadin.flow.router.event;
 
+import static org.mockito.Mockito.when;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.EventUtil;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.UI;
 
 /**
  * Test event util functionality.
@@ -51,6 +60,27 @@ public class EventUtilTest {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
         }
+    }
+
+    @Before
+    public void setUp() {
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        UI ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        VaadinService service = Mockito.mock(VaadinService.class);
+        when(session.getService()).thenReturn(service);
+        when(service.getInstantiator())
+                .thenReturn(new DefaultInstantiator(service));
+        UI.setCurrent(ui);
+    }
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Test

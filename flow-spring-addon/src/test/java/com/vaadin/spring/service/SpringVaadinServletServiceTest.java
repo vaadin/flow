@@ -76,6 +76,12 @@ public class SpringVaadinServletServiceTest {
             return null;
         }
 
+        @Override
+        public <T extends com.vaadin.ui.Component> T createComponent(
+                Class<T> componentClass) {
+            return null;
+        }
+
     }
 
     @Component

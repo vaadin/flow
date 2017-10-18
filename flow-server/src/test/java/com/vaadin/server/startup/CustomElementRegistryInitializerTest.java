@@ -15,6 +15,8 @@
  */
 package com.vaadin.server.startup;
 
+import static org.mockito.Mockito.when;
+
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,17 +26,21 @@ import java.util.stream.Stream;
 import javax.servlet.ServletException;
 
 import org.jsoup.Jsoup;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
 import com.vaadin.util.HasCurrentService;
@@ -70,6 +76,24 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
                 new AtomicReference<>());
 
         customElementRegistryInitializer = new CustomElementRegistryInitializer();
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        UI ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        VaadinService service = Mockito.mock(VaadinService.class);
+        when(session.getService()).thenReturn(service);
+        when(service.getInstantiator())
+                .thenReturn(new DefaultInstantiator(service));
+        UI.setCurrent(ui);
+    }
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Test
