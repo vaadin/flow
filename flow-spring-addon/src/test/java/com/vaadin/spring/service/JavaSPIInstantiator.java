@@ -21,6 +21,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 
 public class JavaSPIInstantiator implements Instantiator {
@@ -42,6 +43,11 @@ public class JavaSPIInstantiator implements Instantiator {
     @Override
     public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
             NavigationEvent event) {
+        return null;
+    }
+
+    @Override
+    public <T extends Component> T createComponent(Class<T> componentClass) {
         return null;
     }
 

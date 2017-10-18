@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.NavigationEvent;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 
 public class MockInstantiator implements Instantiator {
@@ -43,5 +44,10 @@ public class MockInstantiator implements Instantiator {
     public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
             NavigationEvent event) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T extends Component> T createComponent(Class<T> componentClass) {
+        return null;
     }
 }

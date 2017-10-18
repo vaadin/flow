@@ -20,9 +20,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.util.ReflectionCache;
+import com.vaadin.ui.Component.MapToExistingElement;
 import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.ui.common.AttachEvent;
@@ -31,8 +33,6 @@ import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
-import com.vaadin.ui.Component.MapToExistingElement;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Utility methods for {@link Component}.
@@ -271,7 +271,13 @@ public class ComponentUtil {
 
         try {
             Component.elementToMapTo.set(wrapData);
-            return ReflectTools.createInstance(componentType);
+            UI ui = UI.getCurrent();
+            if (ui == null) {
+                throw new IllegalStateException("UI instance is not available. "
+                        + "It looks like you are trying to execute UI code outside the UI/Servlet dispatching thread");
+            }
+            Instantiator instantiator = Instantiator.get(ui);
+            return instantiator.createComponent(componentType);
         } finally {
             // This should always be cleared, normally it's cleared in Component
             // but in case of exception it might be not cleared
