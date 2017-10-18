@@ -2,7 +2,7 @@
   "name": "Vaadin.ComboBoxLightElement",
   "tag": "vaadin-combo-box-light",
   "baseUrl": "vaadin-combo-box/vaadin-combo-box-light.html",
-  "version": "3.0.0-alpha7",
+  "version": "3.0.0",
   "properties": [
     {
       "name": "opened",
@@ -75,7 +75,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "When set to `true`, a loading spinner is displayed on top of the list of options.\n         "
+      "description": "When set to `true`, \"loading\" attibute is added to host and the overlay element.\n         "
     },
     {
       "name": "filter",

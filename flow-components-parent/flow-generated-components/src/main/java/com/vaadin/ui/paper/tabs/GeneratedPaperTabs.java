@@ -1149,7 +1149,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(double value) {
+	public void select(java.lang.String value) {
 		getElement().callFunction("select", value);
 	}
 
@@ -1166,7 +1166,7 @@ public class GeneratedPaperTabs<R extends GeneratedPaperTabs<R>>
 	 * @param value
 	 *            the value to select.
 	 */
-	public void select(java.lang.String value) {
+	public void select(double value) {
 		getElement().callFunction("select", value);
 	}
 
