@@ -104,7 +104,7 @@ public class DefaultTemplateParser implements TemplateParser {
                             String.format("Can't find resource '%s' "
                                     + "via the servlet context", url));
                 }
-                Element templateElement = parseHtmlImport(content, url);
+                Element templateElement = parseHtmlImport(content, url, tag);
                 if (isTemplateImport(templateElement, tag)) {
                     log(logEnabled, Level.CONFIG, String.format(
                             "Found a template file containing template "
@@ -145,18 +145,35 @@ public class DefaultTemplateParser implements TemplateParser {
                 .anyMatch(element -> tag.equals(element.attr("id")));
     }
 
-    private static Element parseHtmlImport(InputStream content, String path) {
+    private static Element parseHtmlImport(InputStream content, String path,
+            String tag) {
         assert content != null;
         try {
             Document parsedDocument = Jsoup.parse(content,
                     StandardCharsets.UTF_8.name(), "");
-            removeCommentsRecursively(parsedDocument);
-            return parsedDocument;
+            Element domModule = getDomModuleElement(parsedDocument, tag);
+            removeCommentsRecursively(domModule);
+            return domModule;
         } catch (IOException exception) {
             throw new RuntimeException(String.format(
                     "Can't parse the template declared using '%s' path", path),
                     exception);
         }
+    }
+
+    private static Element getDomModuleElement(Element document, String id) {
+        Element module = document.getElementById(id);
+        if (module == null) {
+            throw new IllegalStateException(String.format(
+                    "Couldn't find the dom-module with id '%s'. Please import the proper html file.",
+                    id));
+        }
+        if (!"dom-module".equals(module.tagName())) {
+            throw new IllegalStateException(String.format(
+                    "Couldn't find the dom-module with id '%s'. A '%s' element was found instead. Please import the proper html file.",
+                    id, module.tagName()));
+        }
+        return module;
     }
 
     private static void removeCommentsRecursively(Node node) {
