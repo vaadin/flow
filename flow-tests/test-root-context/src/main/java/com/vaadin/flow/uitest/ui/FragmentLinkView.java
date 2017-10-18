@@ -2,8 +2,8 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.Page;
 
 public class FragmentLinkView extends AbstractDivView {
