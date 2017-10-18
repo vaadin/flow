@@ -26,9 +26,9 @@ import com.vaadin.flow.demo.model.SourceCodeExample;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.html.H3;
 
 /**
