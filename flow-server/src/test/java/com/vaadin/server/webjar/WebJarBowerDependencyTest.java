@@ -31,7 +31,7 @@ import org.junit.Test;
 public class WebJarBowerDependencyTest {
     private static final String BOWER_NAME = "bower-name";
     private static final String WEBJAR_NAME = "webjar-name";
-    private static final String VERSION = "1.2.2alpha77";
+    private static final String VERSION = "1.2.2-alpha77";
 
     @Test(expected = NullPointerException.class)
     public void nullBowerNameIsNotAllowed() {
