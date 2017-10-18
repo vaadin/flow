@@ -23,6 +23,11 @@ import com.vaadin.flow.components.it.TestView;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.grid.Grid;
 
+/**
+ * View for testing item refreshes on the dataprovider.
+ * 
+ * @author Vaadin Ltd.
+ */
 public class GridItemRefreshView extends TestView {
 
     public static final String UPDATED_FIRST_FIELD = "updated";
@@ -54,6 +59,9 @@ public class GridItemRefreshView extends TestView {
         }
     }
 
+    /**
+     * Default constructor.
+     */
     public GridItemRefreshView() {
         Grid<Bean> grid = new Grid<>();
         grid.addColumn("First Field", Bean::getFirstField);
@@ -67,12 +75,11 @@ public class GridItemRefreshView extends TestView {
             grid.getDataProvider().refreshItem(items.get(0));
         });
         Button refreshMultipleBtn = new Button("update and refresh items 5-10");
-        refreshMultipleBtn.addClickListener(event -> {
-            items.subList(4, 10).forEach(item -> {
-                updateBean(item);
-                grid.getDataProvider().refreshItem(item);
-            });
-        });
+        refreshMultipleBtn.addClickListener(
+                event -> items.subList(4, 10).forEach(item -> {
+                    updateBean(item);
+                    grid.getDataProvider().refreshItem(item);
+                }));
         Button refreshAllBtn = new Button("refresh all through data provider");
         refreshAllBtn.addClickListener(event -> {
             items.forEach(this::updateBean);
