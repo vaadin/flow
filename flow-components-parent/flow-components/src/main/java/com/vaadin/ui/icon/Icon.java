@@ -45,15 +45,27 @@ public class Icon extends Component implements HasStyle {
     /**
      * Creates an Icon component that displays the given icon from
      * {@link VaadinIcons}.
-     * 
+     *
      * @param icon
      *            the icon to display
      */
     public Icon(VaadinIcons icon) {
+        this(ICON_COLLECTION_NAME, icon.name().toLowerCase().replace('_', '-'));
+    }
+
+    /**
+     * Creates an Icon component that displays the given {@code icon} from the
+     * given {@code collection}.
+     *
+     * @param collection
+     *            the icon collection
+     * @param icon
+     *            the icon name
+     */
+    public Icon(String collection, String icon) {
         // iron-icon's icon-attribute uses the format "collection:name",
         // eg. icon="vaadin:arrow-down"
-        getElement().setAttribute(ICON_ATTRIBUTE_NAME, ICON_COLLECTION_NAME
-                + ":" + icon.name().toLowerCase().replace('_', '-'));
+        getElement().setAttribute(ICON_ATTRIBUTE_NAME, collection + ':' + icon);
     }
 
     /**
@@ -102,4 +114,5 @@ public class Icon extends Component implements HasStyle {
     public String getColor() {
         return getStyle().get(ElementConstants.STYLE_COLOR);
     }
+
 }
