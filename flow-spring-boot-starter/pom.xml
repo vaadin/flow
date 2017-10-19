@@ -7,13 +7,15 @@
         <artifactId>flow-project</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-spring-addon</artifactId>
-    <name>Flow Spring Add-On</name>
-    <packaging>jar</packaging>
+    <artifactId>flow-spring-boot-starter</artifactId>
+    <name>Flow Spring Boot Starter</name>
+    <description>
+        Spring Boot Starter for Vaadin Flow applications.
+    </description>
 
     <properties>
-        <spring.version>5.0.0.RELEASE</spring.version>
         <spring-boot.version>1.5.7.RELEASE</spring-boot.version>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencyManagement>
@@ -29,61 +31,24 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
+            <artifactId>flow-spring-addon</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
-
+        
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <scope>provided</scope>
         </dependency>
-        
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- End Spring -->
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
 </project>
