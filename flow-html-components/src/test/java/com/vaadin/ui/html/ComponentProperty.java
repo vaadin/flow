@@ -25,16 +25,19 @@ public class ComponentProperty {
     public String name;
     public Object defaultValue, otherValue;
     public boolean optional;
+    public boolean removeDefault;
     public Class<?> type;
     private Class<? extends Component> componentType;
 
     public <T> ComponentProperty(Class<? extends Component> componentType,
-            String name, Class<T> type, T defaultValue, boolean optional) {
+            String name, Class<T> type, T defaultValue, boolean optional,
+            boolean removeDefault) {
         this.componentType = componentType;
         this.name = name;
         this.type = type;
         this.defaultValue = defaultValue;
         this.optional = optional;
+        this.removeDefault = removeDefault;
         otherValue = name + name;
     }
 
