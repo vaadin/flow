@@ -23,14 +23,15 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
 /**
- * Component representing a <code>&lt;p&gt;</code> element.
+ * Component representing a <code>&lt;ol&gt;</code> element.
  *
  * @author Vaadin Ltd
  */
 @Tag(Tag.OL)
 public class OrderedList extends HtmlContainer implements ClickNotifier {
 
-    public static enum Type {
+    public static enum ItemType {
+
         /**
          * The list items will be numbered with numbers (default).
          */
@@ -58,13 +59,29 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
 
         private final String value;
 
-        private Type(String value) {
+        private ItemType(String value) {
             this.value = value;
+        }
+
+        private static ItemType fromAttributeValue(String value) {
+            if (ItemType.NUMBERS.value.equals(value)) {
+                return ItemType.NUMBERS;
+            } else if (ItemType.UPPERCASE_LETTER.value.equals(value)) {
+                return ItemType.UPPERCASE_LETTER;
+            } else if (ItemType.LOWERCASE_LETTER.value.equals(value)) {
+                return ItemType.LOWERCASE_LETTER;
+            } else if (ItemType.UPPERCASE_ROMAN.value.equals(value)) {
+                return ItemType.UPPERCASE_ROMAN;
+            } else if (ItemType.LOWERCASE_ROMAN.value.equals(value)) {
+                return ItemType.LOWERCASE_ROMAN;
+            } else {
+                throw new IllegalArgumentException(value);
+            }
         }
     }
 
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
-            .attributeWithDefault("type", Type.NUMBERS.value);
+            .attributeWithDefault("type", ItemType.NUMBERS.value);
 
     /**
      * Creates a new empty ordered list.
@@ -74,9 +91,9 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
     }
 
     /**
-     * Creates a new empty ordered list with the specified {@link Type}.
+     * Creates a new empty ordered list with the specified {@link ItemType}.
      */
-    public OrderedList(Type type) {
+    public OrderedList(ItemType type) {
         super();
         setType(type);
     }
@@ -91,26 +108,17 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
         super(items);
     }
 
-    public Type getType() {
+    public ItemType getType() {
         String value = get(typeDescriptor);
-        switch (value) {
-        case "1":
-            return Type.NUMBERS;
-        case "A":
-            return Type.UPPERCASE_LETTER;
-        case "a":
-            return Type.LOWERCASE_LETTER;
-        case "I":
-            return Type.UPPERCASE_ROMAN;
-        case "i":
-            return Type.LOWERCASE_ROMAN;
-        default:
+        try {
+            return ItemType.fromAttributeValue(value);
+        } catch (IllegalArgumentException e) {
             throw new IllegalStateException(
-                    "The attribute type has an illegal value: " + value);
+                    "The attribute type has an illegal value: " + value, e);
         }
     }
 
-    public void setType(Type type) {
+    public void setType(ItemType type) {
         set(typeDescriptor, type.value);
     }
 }
