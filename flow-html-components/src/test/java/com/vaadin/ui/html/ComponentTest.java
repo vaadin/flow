@@ -80,8 +80,13 @@ public abstract class ComponentTest {
 
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
             U defaultValue, boolean isOptional) {
+        addProperty(propertyName, propertyType, defaultValue, null, isOptional);;
+    }
+
+    protected <U> void addProperty(String propertyName, Class<U> propertyType,
+            U defaultValue, U otherValue, boolean isOptional) {
         properties.add(new ComponentProperty(getComponent().getClass(),
-                propertyName, propertyType, defaultValue, isOptional));
+                propertyName, propertyType, defaultValue, otherValue, isOptional));
     }
 
     protected HtmlComponent createComponent() throws InstantiationException,

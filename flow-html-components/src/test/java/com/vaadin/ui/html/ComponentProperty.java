@@ -29,13 +29,14 @@ public class ComponentProperty {
     private Class<? extends Component> componentType;
 
     public <T> ComponentProperty(Class<? extends Component> componentType,
-            String name, Class<T> type, T defaultValue, boolean optional) {
+            String name, Class<T> type, T defaultValue, T otherValue,
+            boolean optional) {
         this.componentType = componentType;
         this.name = name;
         this.type = type;
         this.defaultValue = defaultValue;
         this.optional = optional;
-        otherValue = name + name;
+        this.otherValue = otherValue == null ? name + name : otherValue;
     }
 
     public boolean isOptional() {

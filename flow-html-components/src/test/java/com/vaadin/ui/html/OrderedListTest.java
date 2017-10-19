@@ -23,6 +23,7 @@ public class OrderedListTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        addProperty("type", Type.class, Type.NUMBERS, false);
+        addProperty("type", Type.class, Type.NUMBERS, Type.LOWERCASE_ROMAN,
+                false);
     }
 }
