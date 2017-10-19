@@ -1,0 +1,32 @@
+---
+title: Icon
+order: 3
+layout: page
+---
+
+= Icon
+
+== Overview
+
+`Icon` is for displaying an icon from https://github.com/vaadin/vaadin-icons[vaadin-icons]
+or another icon collection (see
+    https://www.webcomponents.org/element/PolymerElements/iron-iconset-svg[iron-iconset-svg]).
+
+== Using Icon
+
+`Icon` is normally used with the default `VaadinIcons` enumeration which maps all the
+icons from https://github.com/vaadin/vaadin-icons[vaadin-icons], e.g.
+
+[source, java]
+----
+Icon icon = VaadinIcons.VAADIN_H.create();
+new Button("Vaadin", icon);
+----
+
+You can also create an `Icon` from other collections, e.g.
+
+[source, java]
+----
+Icon icon = new Icon("valo", "clock");
+new Button("Clock", icon);
+----
