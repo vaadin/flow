@@ -4,10 +4,10 @@ import java.util.EventObject;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.ui.event.DetachEvent;
 
 @CodeFor("creating-components/tutorial-component-with-dependencies.asciidoc")
 public class ComponentAttach {

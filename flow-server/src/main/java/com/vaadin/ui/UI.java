@@ -46,9 +46,9 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.common.AttachEvent;
-import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.common.HasComponents;
+import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.util.CurrentInstance;
 
 /**

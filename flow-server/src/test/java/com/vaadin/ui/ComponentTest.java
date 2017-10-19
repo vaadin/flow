@@ -44,16 +44,16 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.DependencyList;
-import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.ui.event.Synchronize;
 
 public class ComponentTest {

@@ -27,12 +27,12 @@ import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.Component.MapToExistingElement;
 import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.ComponentMetaData.SynchronizedPropertyInfo;
-import com.vaadin.ui.common.AttachEvent;
-import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
+import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.ui.event.DetachEvent;
 
 /**
  * Utility methods for {@link Component}.
