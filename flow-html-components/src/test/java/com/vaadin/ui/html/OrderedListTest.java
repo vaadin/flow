@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.html;
 
-import com.vaadin.ui.html.OrderedList.ItemType;
+import com.vaadin.ui.html.OrderedList.NumberingType;
 
 public class OrderedListTest extends ComponentTest {
 
@@ -23,7 +23,7 @@ public class OrderedListTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        addProperty("type", ItemType.class, ItemType.NUMBERS,
-                ItemType.LOWERCASE_ROMAN, false);
+        addProperty("type", NumberingType.class, NumberingType.NUMBER,
+                NumberingType.LOWERCASE_ROMAN, false);
     }
 }
