@@ -13,12 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.tutorial.spring;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
+@CodeFor("spring/tutorial-spring-basic.asciidoc")
 @SpringBootApplication
-public class TestServletInitializer extends SpringBootServletInitializer {
+public class SpringApplication {
+
+    public static void run(Class<?> class1, String[] args) {
+    }
 
 }
