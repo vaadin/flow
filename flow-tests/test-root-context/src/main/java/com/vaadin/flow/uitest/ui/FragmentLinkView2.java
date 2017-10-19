@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.event.AttachEvent;
 
 public class FragmentLinkView2 extends FragmentLinkView {
 

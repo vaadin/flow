@@ -31,8 +31,8 @@ import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
-import com.vaadin.ui.common.AttachEvent;
-import com.vaadin.ui.common.DetachEvent;
+import com.vaadin.ui.event.AttachEvent;
+import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.util.CurrentInstance;
 
 public class UITest {

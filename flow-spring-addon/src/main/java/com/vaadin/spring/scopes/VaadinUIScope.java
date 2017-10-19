@@ -25,8 +25,8 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Registration;
 import com.vaadin.spring.SpringVaadinSession;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.DetachEvent;
 
 /**
  * Implementation of Spring's

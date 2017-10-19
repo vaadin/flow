@@ -3,7 +3,7 @@ package com.vaadin.flow.uitest.ui.push;
 import com.vaadin.ui.Push;
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.ui.ui.Transport;
+import com.vaadin.shared.ui.Transport;
 
 @Push(transport = Transport.LONG_POLLING)
 public class BasicPushLongPollingUI extends BasicPushUI {
