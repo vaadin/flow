@@ -43,6 +43,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.html.OrderedList.ItemType;
 
 public class HtmlComponentSmokeTest {
 
@@ -58,7 +59,7 @@ public class HtmlComponentSmokeTest {
     private static final Map<Class<?>, Object> testValues = new HashMap<>();
     static {
         testValues.put(String.class, "asdf");
-        testValues.put(OrderedList.Type.class, OrderedList.Type.LOWERCASE_ROMAN);
+        testValues.put(ItemType.class, ItemType.LOWERCASE_ROMAN);
     }
 
     @Test
