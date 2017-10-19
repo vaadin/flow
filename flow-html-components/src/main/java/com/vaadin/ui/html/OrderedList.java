@@ -30,7 +30,10 @@ import com.vaadin.ui.Tag;
 @Tag(Tag.OL)
 public class OrderedList extends HtmlContainer implements ClickNotifier {
 
-    public static enum NumberingType {
+    /**
+     * Defines the numbering type of the list items.
+     */
+    public enum NumberingType {
 
         /**
          * The list items will be numbered with numbers (default).
@@ -59,7 +62,7 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
 
         private final String value;
 
-        private NumberingType(String value) {
+        NumberingType(String value) {
             this.value = value;
         }
 
