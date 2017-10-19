@@ -114,5 +114,4 @@ public class Icon extends Component implements HasStyle {
     public String getColor() {
         return getStyle().get(ElementConstants.STYLE_COLOR);
     }
-
 }
