@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,12 +106,13 @@ public class DefaultTemplateParser implements TemplateParser {
                                     + "via the servlet context", url));
                 }
                 Element templateElement = parseHtmlImport(content, url, tag);
-                if (isTemplateImport(templateElement, tag)) {
+                if (templateElement != null) {
                     log(logEnabled, Level.CONFIG, String.format(
                             "Found a template file containing template "
                                     + "definition for the tag '%s' by the path '%s'",
                             tag, url));
                     return templateElement;
+
                 }
             } catch (IOException exception) {
                 // ignore exception on close()
@@ -136,22 +138,18 @@ public class DefaultTemplateParser implements TemplateParser {
         return uriResolverFactory.toServletContextPath(request, path);
     }
 
-    private static boolean isTemplateImport(Element contentElement,
-            String tag) {
-        if (contentElement == null) {
-            return false;
-        }
-        return contentElement.getElementsByTag("dom-module").stream()
-                .anyMatch(element -> tag.equals(element.attr("id")));
-    }
-
     private static Element parseHtmlImport(InputStream content, String path,
             String tag) {
         assert content != null;
         try {
             Document parsedDocument = Jsoup.parse(content,
                     StandardCharsets.UTF_8.name(), "");
-            Element domModule = getDomModuleElement(parsedDocument, tag);
+            Optional<Element> optionalDomModule = getDomModule(parsedDocument,
+                    tag);
+            if (!optionalDomModule.isPresent()) {
+                return null;
+            }
+            Element domModule = optionalDomModule.get();
             removeCommentsRecursively(domModule);
             return domModule;
         } catch (IOException exception) {
@@ -161,19 +159,9 @@ public class DefaultTemplateParser implements TemplateParser {
         }
     }
 
-    private static Element getDomModuleElement(Element document, String id) {
-        Element module = document.getElementById(id);
-        if (module == null) {
-            throw new IllegalStateException(String.format(
-                    "Couldn't find the dom-module with id '%s'. Please import the proper html file.",
-                    id));
-        }
-        if (!"dom-module".equals(module.tagName())) {
-            throw new IllegalStateException(String.format(
-                    "Couldn't find the dom-module with id '%s'. A '%s' element was found instead. Please import the proper html file.",
-                    id, module.tagName()));
-        }
-        return module;
+    private static Optional<Element> getDomModule(Element parent, String id) {
+        return parent.getElementsByTag("dom-module").stream()
+                .filter(element -> id.equals(element.id())).findFirst();
     }
 
     private static void removeCommentsRecursively(Node node) {

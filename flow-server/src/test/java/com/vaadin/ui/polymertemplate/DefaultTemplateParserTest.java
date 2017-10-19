@@ -72,6 +72,13 @@ public class DefaultTemplateParserTest {
 
     }
 
+    @Tag("bar")
+    @HtmlImport("/bar.html")
+    private static class OtherImportsInspectTemplate
+            extends PolymerTemplate<ModelClass> {
+
+    }
+
     private ServletContext context;
 
     private VaadinUriResolver resolver;
@@ -117,14 +124,19 @@ public class DefaultTemplateParserTest {
         Mockito.when(context.getResourceAsStream("/bar1.html")).thenReturn(
                 new ByteArrayInputStream("<dom-module id='foo'></dom-module>"
                         .getBytes(StandardCharsets.UTF_8)));
+
         Mockito.when(context.getResourceAsStream("/bundle.html"))
-                .thenReturn(new ByteArrayInputStream(
-                        "<dom-module id='bar'></dom-module><dom-module id='foo'></dom-module>"
-                                .getBytes(StandardCharsets.UTF_8)));
+                .thenReturn(getBundle(), getBundle(), getBundle());
 
         CurrentInstance.set(VaadinRequest.class, request);
         CurrentInstance.set(VaadinSession.class, session);
         CurrentInstance.set(VaadinService.class, service);
+    }
+
+    private ByteArrayInputStream getBundle() {
+        return new ByteArrayInputStream(
+                "<dom-module id='bar'></dom-module><dom-module id='foo'></dom-module>"
+                        .getBytes(StandardCharsets.UTF_8));
     }
 
     @After
@@ -285,15 +297,23 @@ public class DefaultTemplateParserTest {
                 .thenReturn(Collections.singletonList(filter));
 
         DefaultTemplateParser parser = new DefaultTemplateParser();
+
         Element element = parser
                 .getTemplateContent(ImportsInspectTemplate.class, "foo");
+        Assert.assertTrue(element.getElementById("foo") != null);
+
+        element = parser.getTemplateContent(RootImportsInspectTemplate.class,
+                "foo");
+        Assert.assertTrue(element.getElementById("foo") != null);
+
+        element = parser.getTemplateContent(OtherImportsInspectTemplate.class,
+                "bar");
+        Assert.assertTrue(element.getElementById("bar") != null);
 
         Assert.assertEquals(
-                "The DependencyFilter should be called exactly once", 1,
+                "The DependencyFilter should be called exactly 3 times", 3,
                 calls.get());
 
-        Assert.assertTrue(element.getElementById("foo") != null);
-        Assert.assertTrue(element.getElementById("bar") != null);
     }
 
     @Test(expected = IllegalStateException.class)
