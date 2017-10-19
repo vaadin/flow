@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui.common;
+package com.vaadin.ui.event;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.common.AbstractAttachDetachEvent;
 
 /**
  * Event fired before a {@link Component} is detached from the UI.

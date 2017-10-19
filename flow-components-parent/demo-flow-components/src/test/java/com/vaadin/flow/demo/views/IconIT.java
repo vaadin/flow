@@ -52,7 +52,8 @@ public class IconIT extends ComponentDemoTest {
     public void allAvailableIcons() {
         WebElement allIcons = layout
                 .findElement(By.className("all-icons-layout"));
-        List<WebElement> children = allIcons.findElements(By.tagName("div"));
+        List<WebElement> children = allIcons
+                .findElements(By.tagName("vaadin-vertical-layout"));
 
         Assert.assertEquals(VaadinIcons.values().length, children.size());
 

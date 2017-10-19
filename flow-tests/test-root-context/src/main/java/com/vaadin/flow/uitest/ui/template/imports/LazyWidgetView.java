@@ -19,9 +19,9 @@ import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.flow.router.View;
 import com.vaadin.shared.ui.LoadMode;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
 @Tag("x-lazy-widget")

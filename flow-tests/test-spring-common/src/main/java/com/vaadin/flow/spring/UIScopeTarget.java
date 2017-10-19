@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.router.Route;
-import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 
