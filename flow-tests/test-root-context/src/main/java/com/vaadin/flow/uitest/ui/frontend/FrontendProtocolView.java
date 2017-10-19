@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.frontend;
 
-
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.event.AttachEvent;
 

@@ -3,8 +3,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
-import com.vaadin.ui.common.AttachEvent;
-
+import com.vaadin.ui.event.AttachEvent;
 
 @Route(value = "com.vaadin.flow.uitest.ui.FragmentLinkView2", layout = ViewTestLayout.class)
 public class FragmentLinkView2 extends FragmentLinkView {
