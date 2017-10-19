@@ -19,6 +19,9 @@ import com.vaadin.ui.common.HtmlContainer;
 import com.vaadin.ui.common.PropertyDescriptor;
 import com.vaadin.ui.common.PropertyDescriptors;
 import com.vaadin.ui.event.ClickNotifier;
+
+import java.util.stream.Stream;
+
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
@@ -67,12 +70,8 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
         }
 
         private static NumberingType fromAttributeValue(String value) {
-            for (NumberingType type : values()) {
-                if (type.value.equals(value)) {
-                    return type;
-                }
-            }
-            throw new IllegalArgumentException(value);
+            return Stream.of(values()).filter(type -> type.value.equals(value))
+                    .findFirst().orElseThrow(IllegalArgumentException::new);
         }
     }
 
@@ -87,9 +86,11 @@ public class OrderedList extends HtmlContainer implements ClickNotifier {
     }
 
     /**
-     * Creates a new empty ordered list with the specified {@link NumberingType}.
+     * Creates a new empty ordered list with the specified
+     * {@link NumberingType}.
      * 
-     * @param type the numbering type of the list items
+     * @param type
+     *            the numbering type of the list items
      */
     public OrderedList(NumberingType type) {
         super();
