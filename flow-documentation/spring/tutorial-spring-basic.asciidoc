@@ -13,7 +13,7 @@ as a Spring Boot application and as a Spring Web application.
 
 == Spring Boot 
 The easiest way to use Spring is the Spring Boot application. 
-To be able to use the add-on you will need to write only one very simple class.
+To use the add-on, you only need to write one very simple class.
 
 [[example-servlet]]
 [source,java]
@@ -26,7 +26,7 @@ public class ExampleServletInitializer extends SpringBootServletInitializer {
 
 Thanks to Spring Boot auto-configuration you only need the Spring add-on 
 in your classpath and no Flow classes are needed in the class declaration. 
-Here is the code snippet of you project `pom.xml` which declares necessary dependencies:
+Here is the code snippet from `pom.xml` which declares necessary dependencies:
 
 [source,xml]
 ----
@@ -59,8 +59,8 @@ Here is the code snippet of you project `pom.xml` which declares necessary depen
 
 [NOTE] 
 You can see the exclusion in the `spring-boot-starter-web` declaration. 
-It's not relevant for this example but it you want to run your application as a 
-deployable WAR then it allows to avoid classpath collisions.
+It's not relevant for this example but if you want to run your application as a 
+deployable WAR then this helps you avoid classpath collisions.
 
 [NOTE]
 The Spring add-on doesn't declare compile dependency to Spring Boot (it doesn't appear transitively) 
@@ -80,8 +80,8 @@ public class HelloComponent extends Div {
 ----
 
 With the <<example-servlet,ExampleServletInitializer>> you can deploy the application as a WAR to a web server.
-Spring Boot allows to speed up development process and run the Spring Boot application as a plain Java Application.
-For this you need to add the main method with the following content:
+Spring Boot lets you to speed up the development process and run the Spring Boot application as a plain Java Application.
+For this you need to add a main method with the following content:
 
 [source,java]
 ----
@@ -93,8 +93,8 @@ public class ExampleServletInitializer extends SpringBootServletInitializer {
 }
 ----
 
-No need to do anything in addition to that. If you start this Java application
-then Spring Boot will start embedded web server and everything will work in the same way.
+No need to do anything in addition to that. Once you start this Java application,
+Spring Boot will start its embedded web server and everything will work in the same way.
 
 [NOTE]
 You should remove exclusion from the `spring-boot-starter-web` dependency in 
@@ -132,14 +132,14 @@ public abstract class ExampleWebAppInitializer
 ----
 
 Again you will need some Flow component annotated with `@Route` and you should register 
-`VaadinScopesConfig` configuration class to be able to use Spring Vaadin scopes.
+the `VaadinScopesConfig` configuration class to be able to use Spring Vaadin scopes.
 
 [NOTE]
-Alternatively you may add `@EnableVaadin` annotation to your configuration class which
-imports `VaadinScopesConfig` configuration.
+Alternatively, you may add the `@EnableVaadin` annotation to your configuration class to
+import `VaadinScopesConfig`.
 
-The Spring add-on provides an abstract `WebApplicationInitializer` class which you 
-may just extend and provide your configuration classes via implemented `getConfigurationClasses()` method:
+The Spring add-on provides an abstract subclass of `WebApplicationInitializer` class which you 
+may just extend and provide your configuration classes via implementing the `getConfigurationClasses()` method:
 
 [source,java]
 ----

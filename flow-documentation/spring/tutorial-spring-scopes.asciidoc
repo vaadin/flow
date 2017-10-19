@@ -11,8 +11,8 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 In addition to standard Spring scope the Spring add-on introduces two new scopes:
 `VaadinSessionScope` and `UIScope`.
 
-The `VaadinSessionScope` scope manages the Spring beans during Vaadin Session lifecycle.
-It means that the same bean instance will be used within the Vaadin session.
+`VaadinSessionScope` manages the Spring beans during Vaadin Session lifecycle.
+It means that the same bean instance will be used within the whole Vaadin session.
 
 [source,java]
 ----
@@ -67,8 +67,8 @@ public class UIBean implements Bean {
 }
 ----
 
-Now if you open two browser tabs then the text will be different since the `UI` instances
-are different. But if you navigate to `Editor` instance via the router (or the `UI` instance which 
+Now if you open two browser tabs, the text in these will be different since the `UI` instances
+are different. But if you navigate to the `Editor` instance via the router (or the `UI` instance which 
 delegates navigation to the router) then the text will be the same.
 
 [source,java]
