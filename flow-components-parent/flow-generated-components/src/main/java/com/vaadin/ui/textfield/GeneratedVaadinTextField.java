@@ -117,8 +117,7 @@ import com.vaadin.shared.Registration;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.TextFieldElement#1.1.0-beta1",
-		"Flow#1.0-SNAPSHOT"})
+		"WebComponent: Vaadin.TextFieldElement#1.1.0", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-text-field")
 @HtmlImport("frontend://bower_components/vaadin-text-field/vaadin-text-field.html")
 public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
@@ -167,7 +166,8 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * If true, the element currently has focus.
+	 * If true, the element currently has focus. This property is @deprecated
+	 * and will not be accessible in the next major version of the component.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -697,7 +697,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * This property is set to true when the control value invalid.
+	 * This property is set to true when the control value is invalid.
 	 * <p>
 	 * This property is synchronized automatically from client side when a
 	 * 'invalid-changed' event happens.
@@ -715,7 +715,7 @@ public class GeneratedVaadinTextField<R extends GeneratedVaadinTextField<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * This property is set to true when the control value invalid.
+	 * This property is set to true when the control value is invalid.
 	 * </p>
 	 * 
 	 * @param invalid

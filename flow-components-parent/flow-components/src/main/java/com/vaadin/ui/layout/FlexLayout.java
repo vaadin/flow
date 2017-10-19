@@ -17,8 +17,8 @@ package com.vaadin.ui.layout;
 
 import java.util.Arrays;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HasOrderedComponents;
 import com.vaadin.ui.common.HasSize;
 import com.vaadin.ui.common.HasStyle;
@@ -33,6 +33,7 @@ import com.vaadin.ui.common.HasStyle;
  *      "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout/Using_CSS_flexible_boxes">Using
  *      CSS Flexible boxes on MDN</a>
  */
+@Tag(Tag.DIV)
 public class FlexLayout extends Component
         implements HasOrderedComponents<FlexLayout>, HasStyle, HasSize {
 
@@ -104,7 +105,6 @@ public class FlexLayout extends Component
      * {@link Alignment#STRETCH}.
      */
     public FlexLayout() {
-        super(new Element("div"));
         getStyle().set("display", "flex");
     }
 
@@ -172,8 +172,7 @@ public class FlexLayout extends Component
      * @param components
      *            The components to which the individual alignment should be set
      */
-    public void setAlignSelf(Alignment alignment,
-            Component... components) {
+    public void setAlignSelf(Alignment alignment, Component... components) {
         if (alignment == null) {
             for (Component component : components) {
                 component.getElement().getStyle()

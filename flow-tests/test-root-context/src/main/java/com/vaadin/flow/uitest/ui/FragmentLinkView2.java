@@ -5,6 +5,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
 import com.vaadin.ui.common.AttachEvent;
 
+
 @Route(value = "com.vaadin.flow.uitest.ui.FragmentLinkView2", layout = ViewTestLayout.class)
 public class FragmentLinkView2 extends FragmentLinkView {
 

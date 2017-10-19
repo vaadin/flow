@@ -31,6 +31,7 @@ import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Hr;
 import com.vaadin.ui.html.NativeButton;
 
+
 @Route(value = "com.vaadin.flow.uitest.ui.InfoView", layout = ViewTestLayout.class)
 public class InfoView extends Div {
 

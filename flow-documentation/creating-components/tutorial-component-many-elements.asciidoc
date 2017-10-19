@@ -63,29 +63,3 @@ You can add API for setting the value of the input and the text of the label, us
     inputElement.setProperty("value", value);
   }
 ----
-
-To make it even more convenient to use, the API can be made fluent by making the setters return the component itself:
-
-[source,java]
-----
-  public TextField setLabel(String label) {
-      labelElement.setText(label);
-      return this;
-  }
-
-  public TextField setValue(String value) {
-      inputElement.setProperty("value", value);
-      return this;
-  }
-----
-
-Now the component can be used as
-[source,java]
-----
-new TextField()
-    .setLabel("Zip code")
-    .setValue("12345");
-----
-
-[NOTE]
-A fluent API does not work well for a component that extends another component which has a fluent API.

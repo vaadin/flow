@@ -27,6 +27,8 @@ import com.vaadin.ui.grid.Grid;
  */
 public class GridView extends TestView {
 
+    private Grid<String> grid;
+
     private DataProvider<String, ?> dataProvider1 = DataProvider
             .fromCallbacks(query -> IntStream
                     .range(query.getOffset(),
@@ -40,7 +42,7 @@ public class GridView extends TestView {
      * Creates a view with a grid.
      */
     public GridView() {
-        Grid<String> grid = new Grid<>();
+        grid = new Grid<>();
 
         grid.setDataProvider(dataProvider1);
         grid.addColumn("text", i -> i);

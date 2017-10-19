@@ -29,7 +29,8 @@ public class SemanticVersion {
 
     private final int major;
     private final int minor;
-    private final String patch;
+    private final int patch;
+    private final String preRelease;
 
     /**
      * Parses provided string into a semantic version.
@@ -50,7 +51,10 @@ public class SemanticVersion {
         }
         major = parseVersionPart(versionString, versionParts[0]);
         minor = parseVersionPart(versionString, versionParts[1]);
-        patch = versionParts[2];
+
+        String[] patchAndPreReleaseParts = versionParts[2].split("-", 2);
+        patch = parseVersionPart(versionString, patchAndPreReleaseParts[0]);
+        preRelease = patchAndPreReleaseParts.length > 1 ? patchAndPreReleaseParts[1] : "";
     }
 
     private String createSemanticVersioningErrorString(String versionString) {
@@ -97,10 +101,18 @@ public class SemanticVersion {
                     "Received incomparable bower webJars with different bower names: '%s' and '%s'",
                     this, version));
         }
-        return compareStringsByCharacter(patch, version.patch);
+        int patchComparison = Integer.compare(patch, version.patch);
+        return patchComparison == 0 ? compareStringsByCharacter(preRelease, version.preRelease) : patchComparison;
     }
 
     private int compareStringsByCharacter(String first, String second) {
+        if (first.length() == 0 && second.length() != 0) {
+            return 1;
+        }
+        if (first.length() != 0 && second.length() == 0) {
+            return -1;
+        }
+
         int minLength = Math.min(first.length(), second.length());
         for (int i = 0; i < minLength; i++) {
             int comparison = Character.compare(first.charAt(i),

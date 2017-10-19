@@ -38,6 +38,7 @@ import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionEvent;
 import com.vaadin.data.selection.MultiSelectionListener;
@@ -57,7 +58,6 @@ import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
@@ -308,7 +308,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
                     @Override
                     public void deselectAll() {
-                        selected.clear();
+                        updateSelection(Collections.emptySet(), selected);
                     }
 
                     @Override
@@ -456,13 +456,13 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         protected abstract <T> GridSelectionModel<T> createModel(Grid<T> grid);
     }
 
-    private static final int PAGE_SIZE = 100;
-
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
 
     private final Map<String, Function<T, JsonValue>> columnGenerators = new HashMap<>();
     private final DataCommunicator<T> dataCommunicator = new DataCommunicator<>(
-            this::generateItemJson, arrayUpdater, getElement().getNode());
+            this::generateItemJson, arrayUpdater,
+            data -> getElement().callFunction("updateData", data),
+            getElement().getNode());
 
     private int nextColumnId = 0;
 
@@ -470,18 +470,29 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
             .createModel(this);
 
     /**
-     * Creates a new instance.
+     * Creates a new instance, with page size of 50.
      */
     public Grid() {
-        getDataCommunicator().setRequestedRange(0, PAGE_SIZE);
+        this(50);
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        attachEvent.getUI().getPage().executeJavaScript(
-                "window.gridConnector.initLazy($0, $1)", getElement(),
-                PAGE_SIZE);
+    /**
+     * Creates a new instance, with the specified page size.
+     * <p>
+     * The page size influences the {@link Query#getLimit()} sent by the client,
+     * but it's up to the webcomponent to determine the actual query limit,
+     * based on the height of the component and scroll position. Usually the
+     * limit is 3 times the page size (e.g. 150 items with a page size of 50).
+     * 
+     * @param pageSize
+     *            the page size. Must be greater than zero.
+     */
+    public Grid(int pageSize) {
+        setPageSize(pageSize);
+
+        getElement().getNode()
+                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                        "window.gridConnector.initLazy($0)", getElement()));
     }
 
     /**
@@ -611,7 +622,17 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
     @Override
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
+        Objects.requireNonNull(dataProvider, "data provider cannot be null");
         getDataCommunicator().setDataProvider(dataProvider, null);
+    }
+
+    /**
+     * Returns the data provider of this grid.
+     *
+     * @return the data provider of this grid, not {@code null}
+     */
+    public DataProvider<T, ?> getDataProvider() {
+        return getDataCommunicator().getDataProvider();
     }
 
     @Override
@@ -625,7 +646,27 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * @return the current page size
      */
     public int getPageSize() {
-        return PAGE_SIZE;
+        return getElement().getProperty("pageSize", 50);
+    }
+
+    /**
+     * Sets the page size.
+     * <p>
+     * This method is private at the moment because the Grid doesn't support
+     * changing the the pageSize after the initial load.
+     * 
+     * @param pageSize
+     *            the maximum number of items sent per request. Should be
+     *            greater than zero
+     */
+    private void setPageSize(int pageSize) {
+        if (pageSize <= 0) {
+            throw new IllegalArgumentException(
+                    "The pageSize should be greater than zero. Was "
+                            + pageSize);
+        }
+        getElement().setProperty("pageSize", pageSize);
+        getDataCommunicator().setRequestedRange(0, pageSize);
     }
 
     /**
