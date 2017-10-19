@@ -92,7 +92,7 @@ public final class Constants implements Serializable {
      * Configuration name for the parameter that determines if Flow should use
      * webJars or not.
      */
-    public static final String DISABLE_WEBJARS = "disable.webjar";
+    public static final String DISABLE_WEBJARS = "disable.webjars";
 
     private Constants() {
         // prevent instantiation constants class only
