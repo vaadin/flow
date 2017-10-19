@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.function.Consumer;
-
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -34,12 +32,6 @@ public class LoadingIndicatorView extends AbstractDivView
 
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
-        setIfPresent(event, "first",
-                getLoadingIndicatorConfiguration()::setFirstDelay);
-        setIfPresent(event, "second",
-                getLoadingIndicatorConfiguration()::setSecondDelay);
-        setIfPresent(event, "third",
-                getLoadingIndicatorConfiguration()::setThirdDelay);
 
         add(divWithText("First delay: "
                 + getLoadingIndicatorConfiguration().getFirstDelay()));
@@ -66,16 +58,6 @@ public class LoadingIndicatorView extends AbstractDivView
 
     private LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
         return UI.getCurrent().getLoadingIndicatorConfiguration();
-    }
-
-    private void setIfPresent(BeforeNavigationEvent event, String parameter,
-            Consumer<Integer> setter) {
-
-        // String value = event.getPathParameter(parameter);
-        // if (value != null) {
-        // setter.accept(Integer.parseInt(value));
-        // }
-
     }
 
     private void delay(int timeMs) {

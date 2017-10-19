@@ -15,13 +15,13 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.router.event.ActivationState;
@@ -47,9 +47,7 @@ import com.vaadin.ui.common.HasElement;
 public class NavigationStateRenderer implements NavigationHandler {
 
     private enum TransitionOutcome {
-        FINISHED,
-        REROUTED,
-        POSTPONED
+        FINISHED, REROUTED, POSTPONED
     }
 
     private final NavigationState navigationState;
@@ -114,8 +112,8 @@ public class NavigationStateRenderer implements NavigationHandler {
                 event, routeTargetType, ActivationState.DEACTIVATING);
         LinkedList<BeforeNavigationListener> listeners = remainingListeners;
         if (listeners == null) {
-            listeners = new LinkedList<>(
-                    EventUtil.collectBeforeNavigationListeners(ui.getElement()));
+            listeners = new LinkedList<>(EventUtil
+                    .collectBeforeNavigationListeners(ui.getElement()));
         } else {
             remainingListeners = null;
         }
@@ -154,8 +152,8 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         listeners = new LinkedList<>(
                 EventUtil.collectBeforeNavigationListeners(chain));
-        transitionOutcome = executeBeforeNavigation(
-                beforeNavigationActivating, listeners);
+        transitionOutcome = executeBeforeNavigation(beforeNavigationActivating,
+                listeners);
         if (transitionOutcome == TransitionOutcome.REROUTED) {
             return reroute(event, beforeNavigationActivating);
         }
