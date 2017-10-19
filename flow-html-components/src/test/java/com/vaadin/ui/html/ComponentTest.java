@@ -281,6 +281,8 @@ public abstract class ComponentTest {
             }
             if (property.removeDefault) {
                 assertNoPropertyOrAttribute(component, property.name);
+            } else {
+                assertPropertyOrAttribute(component, property.name);
             }
         }
     }
