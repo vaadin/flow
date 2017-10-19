@@ -16,6 +16,7 @@
         <module>flow-code-generator-api</module>
         <module>flow-code-generator</module>
         <module>flow-components</module>
+        <module>flow-components-webjars</module>
     </modules>
 
     <properties>
