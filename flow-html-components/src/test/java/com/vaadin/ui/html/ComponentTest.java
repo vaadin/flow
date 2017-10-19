@@ -90,8 +90,14 @@ public abstract class ComponentTest {
 
     protected <U> void addProperty(String propertyName, Class<U> propertyType,
             U defaultValue, boolean isOptional, boolean removeDefault) {
+        addProperty(propertyName, propertyType, defaultValue, null, isOptional,
+                removeDefault);;
+    }
+
+    protected <U> void addProperty(String propertyName, Class<U> propertyType,
+            U defaultValue, U otherValue, boolean isOptional, boolean removeDefault) {
         properties.add(new ComponentProperty(getComponent().getClass(),
-                propertyName, propertyType, defaultValue, isOptional,
+                propertyName, propertyType, defaultValue, otherValue, isOptional,
                 removeDefault));
     }
 
