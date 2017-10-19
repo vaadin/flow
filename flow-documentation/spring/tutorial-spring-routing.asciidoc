@@ -8,8 +8,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 = Routing with Spring
 
-There is no any difference in using router with Spring. All routing features 
-works in Spring application in the same way as they work without Spring.
+Routing works the same way with Spring as it does with a plain Flow application.
 To be able to handle the default route you just define a component with `@Route("")` annotation:
 
 [source,java]

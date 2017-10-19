@@ -46,9 +46,9 @@ public class SessionBean implements Bean {
 ----
 
 In this example the same instance of `SessionBean` will be used as long as 
-we access to the application from the same Vaadin session. E.g. if you open your browser
-and the default URL in one tab and path `editor`  in another tab then the same text
-will be shown in both `Div` components. It happens because the session is the same even though
+we access the application from the same Vaadin session. E.g. if you open the root target in 
+one tab and the editor target in another tab, then the shown text will be the same for both. 
+It happens because the session is the same even though
 the tabs (and `UI` instances) are different.
 
 The `@UIScope` manages the Spring beans during the `UI` lifecycle. Similar to the example above
