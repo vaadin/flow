@@ -24,6 +24,6 @@ public class OrderedListTest extends ComponentTest {
     @Override
     protected void addProperties() {
         addProperty("type", NumberingType.class, NumberingType.NUMBER,
-                NumberingType.LOWERCASE_ROMAN, false);
+                NumberingType.LOWERCASE_ROMAN, false, true);
     }
 }
