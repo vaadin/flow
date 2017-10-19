@@ -21,7 +21,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
 /**
- * Component representing a <code>&lt;p&gt;</code> element.
+ * Component representing a <code>&lt;ul&gt;</code> element.
  *
  * @author Vaadin Ltd
  */
