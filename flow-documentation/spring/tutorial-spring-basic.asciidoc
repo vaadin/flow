@@ -26,7 +26,7 @@ public class ExampleServletInitializer extends SpringBootServletInitializer {
 
 Thanks to Spring Boot auto-configuration you only need the Spring add-on 
 in your classpath and no Flow classes are needed in the class declaration. 
-Here is the code snippet from `pom.xml` which declares necessary dependencies:
+Here is the code snippet from `pom.xml` which declares the necessary dependencies:
 
 [source,xml]
 ----
@@ -80,7 +80,7 @@ public class HelloComponent extends Div {
 ----
 
 With the <<example-servlet,ExampleServletInitializer>> you can deploy the application as a WAR to a web server.
-Spring Boot lets you to speed up the development process and run the Spring Boot application as a plain Java Application.
+Spring Boot lets you speed up the development process and run the Spring Boot application as a plain Java Application.
 For this you need to add a main method with the following content:
 
 [source,java]
