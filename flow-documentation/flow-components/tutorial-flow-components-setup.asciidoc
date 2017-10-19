@@ -13,15 +13,21 @@ any Flow project.
 
 = Overview
 
-`flow-components` package consists of two main sections:
+In order to Flow components to work, we need to have two things:
 
-* java api classes (`Button`, `TextField`, etc)
-* web components' files (html, js, css etc)
+* java api classes (`Button`, `TextField`, etc) – classes that are provided by Flow
+* web components' files (html, js, css etc) – files from http://webcomponents.org[webcomponents.org]
+that are responsible for client side logic of the web components
 
-All sections are used by `flow` to display the components in web pages correctly.
-By default, both sections are provided in the same jar.
+[NOTE]
+How to create your own components by using the same approach is explained in
+<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>.
 
-Web components' files are provided as https://github.com/webjars/webjars/[webjars] –
+Flow allows to choose the general way to provide web components' files for java classes.
+
+== Providing web components' files with web jars
+The easiest way would be to use `flow-components-webjars` artifact where the
+web components' files are provided as https://github.com/webjars/webjars/[webjars] –
 jar files that contain webcomponents' files,
 heavily influenced by current Polymer package manager: https://bower.io/[bower]
 (not developed or maintained by Vaadin)
@@ -31,18 +37,24 @@ Webjars are designed to replace `bower` usage by using `Maven` for the same purp
 `Flow` is able to resolve requests into webjars' contents (if intended by request),
 imitating the regular web component's files.
 
-Although currently enabled by default, webjars do not restrict users from using external
+== Providing web components' files externally
+The other way is to use `flow-components` artifact instead and put your web components' files in the file system,
+telling Flow where to find them.
+
+Webjars are currently enabled by default, webjars do not restrict users from using external
 web components' files:
 
-* webjar resolving can be turned off
+* you can use alternative artifact, without webjars and add only those webjars you want to
+* webjar resolving can be turned off in runtime
 * if no suitable webjar is found, request resolving falls back to configured
 external web components' locations
 
+== Maven configuration
+
+=== Webjars
 [NOTE]
 Due to current webjar https://github.com/webjars/webjars/issues[limitations],
 extra maven configuration (extra repository + bom file declaration) is required.
-
-== Maven configuration
 
 The first step is to add the `bom` and `flow-components` package to your project
 dependencies. This package is released alongside Flow and shares the same
@@ -77,13 +89,34 @@ version number. When using Maven you can add it into your `pom.xml` as this:
     <!-- the dependency with webjars -->
     <dependency>
         <groupId>com.vaadin</groupId>
+        <artifactId>flow-components-webjars</artifactId>
+        <version>${flow.version}</version>
+    </dependency>
+
+    <!-- other dependencies -->
+</dependencies>
+----
+
+=== External files
+[source,xml]
+----
+<dependencies>
+    <!-- other dependencies -->
+
+    <!-- the dependency with webjars -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
         <artifactId>flow-components</artifactId>
         <version>${flow.version}</version>
     </dependency>
 
     <!-- other dependencies -->
-</dependncies>
+</dependencies>
 ----
+
+[NOTE]
+Although Maven configuration is easier in external files' case, extra web components' files management
+is on your own now, also extra Flow runtime configuration may be required.
 
 == Runtime configuration
 
@@ -146,10 +179,6 @@ server-side, except that the final `war` size will be larger for no reason.
 To enable compilation to ES5 (for browsers that lack of ES6 support, such as
   IE11), you need extra configuration, which is described at
   <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
-
-[NOTE]
-How to integrate java and web components' files is explained in
-<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>.
 
 == Demo and code samples
 
