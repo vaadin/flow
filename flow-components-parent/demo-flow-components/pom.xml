@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-components</artifactId>
+            <artifactId>flow-components-webjars</artifactId>
             <version>${project.version}</version>
         </dependency>
 
