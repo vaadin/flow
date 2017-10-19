@@ -20,7 +20,7 @@ icons from https://github.com/vaadin/vaadin-icons[vaadin-icons], e.g.
 [source, java]
 ----
 Icon icon = VaadinIcons.VAADIN_H.create();
-Button button = new Button("Vaadin", icon);
+new Button("Vaadin", icon);
 ----
 
 You can also create an `Icon` from other collections, e.g.
@@ -28,4 +28,5 @@ You can also create an `Icon` from other collections, e.g.
 [source, java]
 ----
 Icon icon = new Icon("valo", "clock");
+new Button("Clock", icon);
 ----
