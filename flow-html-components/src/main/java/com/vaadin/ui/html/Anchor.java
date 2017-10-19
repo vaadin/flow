@@ -31,7 +31,7 @@ import com.vaadin.ui.common.HtmlContainer;
 public class Anchor extends HtmlContainer {
 
     private static final PropertyDescriptor<String, String> hrefDescriptor = PropertyDescriptors
-            .attributeWithDefault("href", "");
+            .attributeWithDefault("href", "", false);
 
     private static final PropertyDescriptor<String, Optional<String>> targetDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("target", "");
