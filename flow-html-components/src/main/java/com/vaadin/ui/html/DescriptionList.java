@@ -123,8 +123,7 @@ public class DescriptionList extends HtmlContainer implements ClickNotifier {
      */
     public DescriptionList(Map<Term, Description> terms) {
         super(terms.entrySet().stream()
-                .flatMap(entry -> Stream.concat(Stream.of(entry.getKey()),
-                        Stream.of(entry.getValue())))
+                .flatMap(entry -> Stream.of(entry.getKey(), entry.getValue()))
                 .toArray(Component[]::new));
     }
 }
