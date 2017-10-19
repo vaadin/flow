@@ -34,7 +34,7 @@ import com.vaadin.ui.common.NotSupported;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxOverlayElement#3.0.0-alpha7",
+		"WebComponent: Vaadin.ComboBoxOverlayElement#3.0.0",
 		"Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-dropdown-wrapper")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-dropdown-wrapper.html")
@@ -196,24 +196,6 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
 	 * @param from
 	 *            Source path to link.
 	 */
-	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
-		getElement().callFunction("linkPaths", to, from);
-	}
-
-	/**
-	 * <p>
-	 * Description copied from corresponding location in WebComponent:
-	 * </p>
-	 * <p>
-	 * Aliases one data path as another, such that path notifications from one
-	 * are routed to the other.
-	 * </p>
-	 * 
-	 * @param to
-	 *            Target path to link.
-	 * @param from
-	 *            Source path to link.
-	 */
 	public void linkPaths(java.lang.String to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
@@ -252,6 +234,24 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
 	 *            Source path to link.
 	 */
 	protected void linkPaths(java.lang.String to, elemental.json.JsonObject from) {
+		getElement().callFunction("linkPaths", to, from);
+	}
+
+	/**
+	 * <p>
+	 * Description copied from corresponding location in WebComponent:
+	 * </p>
+	 * <p>
+	 * Aliases one data path as another, such that path notifications from one
+	 * are routed to the other.
+	 * </p>
+	 * 
+	 * @param to
+	 *            Target path to link.
+	 * @param from
+	 *            Source path to link.
+	 */
+	protected void linkPaths(elemental.json.JsonObject to, java.lang.String from) {
 		getElement().callFunction("linkPaths", to, from);
 	}
 
@@ -310,7 +310,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
 	 * 	this.items.splice(1, 1, {name: 'Sam'});
 	 * 	this.items.push({name: 'Bob'});
 	 * 	this.notifySplices('items', [
-	 * 	  { index: 1, removed: [{name: 'Todd'}], addedCount: 1, obect: this.items, type: 'splice' },
+	 * 	  { index: 1, removed: [{name: 'Todd'}], addedCount: 1, object: this.items, type: 'splice' },
 	 * 	  { index: 3, removed: [], addedCount: 1, object: this.items, type: 'splice'}
 	 * 	]);
 	 * 	</code>
@@ -607,7 +607,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
 	 * @param ...items Missing documentation!
 	 */
 	@NotSupported
-	protected void splice(elemental.json.JsonObject path, double start,
+	protected void splice(java.lang.String path, double start,
 			double deleteCount, elemental.json.JsonObject _Items) {
 	}
 
@@ -641,7 +641,7 @@ public class GeneratedVaadinComboBoxDropdownWrapper<R extends GeneratedVaadinCom
 	 * @param ...items Missing documentation!
 	 */
 	@NotSupported
-	protected void splice(java.lang.String path, double start,
+	protected void splice(elemental.json.JsonObject path, double start,
 			double deleteCount, elemental.json.JsonObject _Items) {
 	}
 

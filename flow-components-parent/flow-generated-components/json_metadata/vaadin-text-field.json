@@ -2,7 +2,7 @@
   "name": "Vaadin.TextFieldElement",
   "tag": "vaadin-text-field",
   "baseUrl": "vaadin-text-field/vaadin-text-field.html",
-  "version": "1.1.0-beta1",
+  "version": "1.1.0",
   "properties": [
     {
       "name": "autofocus",
@@ -18,7 +18,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "If true, the element currently has focus.\n         ",
+      "description": "If true, the element currently has focus.\nThis property is @deprecated and will not be accessible in the next major version\nof the component.\n         ",
       "readOnly": true
     },
     {
@@ -147,7 +147,7 @@
         "BOOLEAN"
       ],
       "objectType": [],
-      "description": "This property is set to true when the control value invalid.\n             "
+      "description": "This property is set to true when the control value is invalid.\n             "
     },
     {
       "name": "hasValue",

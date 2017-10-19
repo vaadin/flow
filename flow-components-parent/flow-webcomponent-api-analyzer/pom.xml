@@ -88,6 +88,9 @@
                                     <directory>dependencies</directory>
                                 </fileset>
                                 <fileset>
+                                    <directory>node</directory>
+                                </fileset>
+                                <fileset>
                                     <directory>node_modules</directory>
                                 </fileset>
                                 <fileset>

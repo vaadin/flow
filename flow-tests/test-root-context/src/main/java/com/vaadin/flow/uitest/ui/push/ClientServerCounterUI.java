@@ -7,8 +7,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.event.DetachEvent;
 
 public class ClientServerCounterUI extends UI {
 

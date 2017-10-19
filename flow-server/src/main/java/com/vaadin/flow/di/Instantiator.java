@@ -27,6 +27,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.UidlWriter;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HasElement;
 
@@ -133,6 +134,15 @@ public interface Instantiator extends Serializable {
      */
     <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
             NavigationEvent event);
+
+    /**
+     * Creates an instance of a component by its {@code componentClass}.
+     *
+     * @param componentClass
+     *            the instance type to create, not <code>null</code>
+     * @return the created instance, not <code>null</code>
+     */
+    <T extends Component> T createComponent(Class<T> componentClass);
 
     /**
      * Gets the instantiator to use for the given UI.

@@ -23,6 +23,7 @@ import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServiceInitListener;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasElement;
 
 /**
@@ -61,12 +62,19 @@ public class SpringInstantiator extends DefaultInstantiator {
     @Override
     public <T extends HasElement> T createRouteTarget(Class<T> routeTargetType,
             NavigationEvent event) {
-        if (context.getBeanNamesForType(routeTargetType).length == 0) {
-            return context.getAutowireCapableBeanFactory()
-                    .createBean(routeTargetType);
-        } else {
-            return context.getBean(routeTargetType);
+        return getObject(routeTargetType);
+    }
+
+    @Override
+    public <T extends Component> T createComponent(Class<T> componentClass) {
+        return getObject(componentClass);
+    }
+
+    private <T> T getObject(Class<T> type) {
+        if (context.getBeanNamesForType(type).length == 1) {
+            return context.getBean(type);
         }
+        return context.getAutowireCapableBeanFactory().createBean(type);
     }
 
 }

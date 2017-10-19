@@ -7,40 +7,116 @@ layout: page
 = Setup your project to use Flow components
 
 Flow provides some pre-built server-side components for Vaadin webcomponents,
-such as `VaadinButton`, `VaadinTextField` and so on. Those components are part of
+such as `Button`, `TextField` and so on. Those components are part of
 the `flow-components` package, that can be added as an optional dependency to
 any Flow project.
 
-== Maven configuration
+= Overview
+
+`flow-components` package consists of two main sections:
+
+* java api classes (`Button`, `TextField`, etc)
+* web components' files (html, js, css etc)
+
+All sections are used by `flow` to display the components in web pages correctly.
+By default, both sections are provided in the same jar.
+
+Web components' files are provided as https://github.com/webjars/webjars/[webjars] –
+jar files that contain webcomponents' files,
+heavily influenced by current Polymer package manager: https://bower.io/[bower]
+(not developed or maintained by Vaadin)
+
+Webjars are designed to replace `bower` usage by using `Maven` for the same purposes.
+
+`Flow` is able to resolve requests into webjars' contents (if intended by request),
+imitating the regular web component's files.
+
+Although currently enabled by default, webjars do not restrict users from using external
+web components' files:
+
+* webjar resolving can be turned off
+* if no suitable webjar is found, request resolving falls back to configured
+external web components' locations
 
 [NOTE]
-Before you configure your project to use Flow components, make sure it is
-properly configured to run with Polymer webcomponents. Please refer to
-<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
-for more information.
+Due to current webjar https://github.com/webjars/webjars/issues[limitations],
+extra maven configuration (extra repository + bom file declaration) is required.
 
-The first step is to add the `flow-components` package to your project
+== Maven configuration
+
+The first step is to add the `bom` and `flow-components` package to your project
 dependencies. This package is released alongside Flow and shares the same
-version number. When using Maven you can add it to your `pom.xml` as this:
+version number. When using Maven you can add it into your `pom.xml` as this:
 
 [source,xml]
 ----
-<dependency>
-    <groupId>com.vaadin</groupId>
-    <artifactId>flow-components</artifactId>
-    <version>${flow.version}</version>
-</dependency>
+<repositories>
+    <repository>
+        <!-- Limitation: Not all webjars are synced into Maven Central now -->
+        <id>webjars</id>
+        <url>https://dl.bintray.com/webjars/maven</url>
+    </repository>
+</repositories>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <!-- Limitation: A bom file to fix webjars' transitive dependencies -->
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-webjars-bom</artifactId>
+            <type>pom</type>
+            <scope>import</scope>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <!-- other dependencies -->
+
+    <!-- the dependency with webjars -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-components</artifactId>
+        <version>${flow.version}</version>
+    </dependency>
+
+    <!-- other dependencies -->
+</dependncies>
 ----
 
-[TIP]
-To enable compilation to ES5 (for browsers that lack of ES6 support, such as
-  IE11), you need extra configuration, which is described at
-  <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+== Runtime configuration
+
+Extra parameters can be specified to configure `flow`:
+
+* disable.webjars - if set to `true`, webjars would be ignored during request resolving,
+allows `flow` to use external source of web components' files.
+[NOTE]
+Webjars are enabled for development mode and disabled for production mode by default,
+unless explicitly overridden by parameter specified.
+In future, webjars should be expected to be enabled always.
+
+Next group of parameters are paths to external web component's locations in development and production modes.
+
+Development mode:
+
+* frontend.url.dev (default value is context://frontend) – a location `flow` searches web components' files in development mode.
+Supports changes reload on a working application and should be set as a directory, containing `bower.json` file.
+By default, `flow` looks for files in `frontend` directory,
+located in https://docs.jboss.org/jbossas/guides/webguide/r2/en/html/ch06.html[context root] of the application
+
+Production mode:
+
+* frontend.url.es5 (default value is context://frontend-es5) - a location `flow` searches web components' files in production mode
+when the request is coming from older browsers, not supporting http://es6-features.org/[es6], default web components' development language version.
+* frontend.url.es6 (default value is context://frontend-es6) - a location `flow` searches web components' files in production mode for requests from modern browsers
 
 == bower.json configuration
 
-In your `bower.json` file, which is located at `${frontend.working.directory}`
-(see <<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>> for details), you
+Currently `bower.json` is needed for production mode and in cases wne you'd like to be able
+to manipulate web component's files before adding them to the application (transpile, minify, check, bundle etc)
+
+In your `bower.json` file, which is located at `${frontend.working.directory}`, you
 need to add the webcomponent dependencies to each desired webcomponent. Here is
 an example that adds all supported elements:
 
@@ -49,12 +125,12 @@ an example that adds all supported elements:
 {
   // [...] other properties
   "dependencies": {
-    "polymer": "~2.0.2",
-    "vaadin-text-field": "~1.1.0-alpha2",
-    "vaadin-button": "~1.0.0",
-    "vaadin-checkbox": "~1.0.0-alpha1",
-    "vaadin-combo-box": "~2.0.0",
-    "vaadin-form-layout": "~1.0.0"
+    "polymer": "2.0.2",
+    "vaadin-text-field": "1.1.0-alpha2",
+    "vaadin-button": "1.0.0",
+    "vaadin-checkbox": "1.0.0-alpha1",
+    "vaadin-combo-box": "2.0.0",
+    "vaadin-form-layout": "1.0.0"
   }
 }
 ----
@@ -65,6 +141,15 @@ https://www.webcomponents.org/collection/vaadin/vaadin-core-elements[here].
 You only need to add the webcomponents you are going to use in your project.
 There's no harm to add webcomponents that you are not going to use at the
 server-side, except that the final `war` size will be larger for no reason.
+
+[TIP]
+To enable compilation to ES5 (for browsers that lack of ES6 support, such as
+  IE11), you need extra configuration, which is described at
+  <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+
+[NOTE]
+How to integrate java and web components' files is explained in
+<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>.
 
 == Demo and code samples
 

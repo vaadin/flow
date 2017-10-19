@@ -150,6 +150,14 @@
       "description": "Set to true to enable restoring of focus when overlay is closed.\n       "
     },
     {
+      "name": "allowClickThrough",
+      "type": [
+        "BOOLEAN"
+      ],
+      "objectType": [],
+      "description": "Set to true to allow clicks to go through overlays. \nWhen the user clicks outside this overlay, the click may\nclose the overlay below.\n       "
+    },
+    {
       "name": "alwaysOnTop",
       "type": [
         "BOOLEAN"
