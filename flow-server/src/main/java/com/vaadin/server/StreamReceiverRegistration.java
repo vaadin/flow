@@ -15,27 +15,16 @@
  */
 package com.vaadin.server;
 
-import java.io.Serializable;
-import java.net.URI;
 import java.util.Optional;
 
-/**
- * Stream resource registration result.
- * <p>
- * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
- * registered. It also allows to unregister the resource.
- *
- * @author Vaadin Ltd
- *
- */
-public interface StreamResourceRegistration extends StreamRegistration {
+public interface StreamReceiverRegistration extends StreamRegistration {
 
     /**
      * Get the resource whose registration result is represented by this
-     * {@link StreamResourceRegistration} instance.
+     * {@link StreamReceiverRegistration} instance.
      *
      * @return an optional resource, or an empty optional if resource has been
      *         already unregistered
      */
-    Optional<StreamResource> getResource();
+    Optional<StreamReceiver> getResource();
 }

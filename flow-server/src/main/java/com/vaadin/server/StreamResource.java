@@ -63,13 +63,13 @@ public class StreamResource implements Serializable {
 
     }
 
-    private static class Pipe implements StreamResourceWriter {
+    protected static class Pipe implements StreamResourceWriter {
 
         private static final int BUFFER_SIZE = 1024;
 
         private InputStreamFactory factory;
 
-        private Pipe(InputStreamFactory factory) {
+        protected Pipe(InputStreamFactory factory) {
             this.factory = factory;
         }
 

@@ -120,6 +120,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private final Attributes attributes = new Attributes();
 
     private final StreamResourceRegistry resourceRegistry;
+    private final StreamReceiverRegistry receiverRegistry;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -130,6 +131,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public VaadinSession(VaadinService service) {
         this.service = service;
         resourceRegistry = new StreamResourceRegistry(this);
+        receiverRegistry = new StreamReceiverRegistry(this);
     }
 
     /**
@@ -987,5 +989,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public StreamResourceRegistry getResourceRegistry() {
         return resourceRegistry;
+    }
+
+    public StreamReceiverRegistry getReceiverRegistry() {
+        return receiverRegistry;
     }
 }

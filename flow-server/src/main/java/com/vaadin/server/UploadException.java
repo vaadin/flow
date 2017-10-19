@@ -15,27 +15,27 @@
  */
 package com.vaadin.server;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.Optional;
-
 /**
- * Stream resource registration result.
- * <p>
- * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
- * registered. It also allows to unregister the resource.
- *
- * @author Vaadin Ltd
- *
+ * Upload exception class.
  */
-public interface StreamResourceRegistration extends StreamRegistration {
+public class UploadException extends Exception {
+    /**
+     * Exception constructor with exception.
+     * 
+     * @param exception
+     *            exception
+     */
+    public UploadException(Exception exception) {
+        super("Upload failed", exception);
+    }
 
     /**
-     * Get the resource whose registration result is represented by this
-     * {@link StreamResourceRegistration} instance.
-     *
-     * @return an optional resource, or an empty optional if resource has been
-     *         already unregistered
+     * Exception constructor with message.
+     * 
+     * @param message
+     *            error message
      */
-    Optional<StreamResource> getResource();
+    public UploadException(String message) {
+        super(message);
+    }
 }
