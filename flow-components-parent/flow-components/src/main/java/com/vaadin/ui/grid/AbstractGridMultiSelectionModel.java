@@ -63,11 +63,17 @@ public abstract class AbstractGridMultiSelectionModel<T>
 
     @Override
     public void selectFromClient(T item) {
+        if (isSelected(item)) {
+            return;
+        }
         doSelect(item, true);
     }
 
     @Override
     public void deselectFromClient(T item) {
+        if (!isSelected(item)) {
+            return;
+        }
         doDeselect(item, true);
     }
 
@@ -83,12 +89,18 @@ public abstract class AbstractGridMultiSelectionModel<T>
 
     @Override
     public void select(T item) {
+        if (isSelected(item)) {
+            return;
+        }
         doSelect(item, false);
         grid.getDataCommunicator().reset();
     }
 
     @Override
     public void deselect(T item) {
+        if (!isSelected(item)) {
+            return;
+        }
         doDeselect(item, false);
         grid.getDataCommunicator().reset();
         selectionColumn.setSelectAllCheckboxState(false);
