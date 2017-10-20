@@ -25,12 +25,12 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/router-session/";
+        return "/view/";
     }
 
     @Test
     public void navigationAfterSessionExpired() {
-        open();
+        openUrl("/new-router-session/NormalView");
 
         navigateToAnotherView();
         String sessionId = getSessionId();
@@ -44,12 +44,13 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     @Test
     public void navigationAfterInternalError() {
-        open();
+        openUrl("/new-router-session/NormalView");
 
         navigateToAnotherView();
         String sessionId = getSessionId();
         navigateToInternalErrorView();
-        navigateToFirstView();
+        // Navigate back as we are on the error view.
+        getDriver().navigate().back();
         Assert.assertEquals(sessionId, getSessionId());
     }
 

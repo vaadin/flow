@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import javax.servlet.annotation.WebServlet;
 
-import com.vaadin.flow.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinServletConfiguration;
@@ -30,7 +29,7 @@ import com.vaadin.shared.ApplicationConstants;
  * {@link Constants#FRONTEND_URL_ES6} is set.
  */
 @WebServlet(asyncSupported = true, urlPatterns = { "/view-es6-url/*" })
-@VaadinServletConfiguration(productionMode = false, routerConfigurator = ViewTestConfigurator.class)
+@VaadinServletConfiguration(productionMode = false, usingNewRouting = true)
 public class Es6UrlViewTestServlet extends ViewTestServlet {
 
     @Override

@@ -18,13 +18,13 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import java.util.concurrent.TimeUnit;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
-/**
- * @author Vaadin Ltd.
- */
+@Route(value = "com.vaadin.flow.uitest.ui.scroll.LongToOpenView", layout = ViewTestLayout.class)
 public class LongToOpenView extends AbstractDivView {
     static final String BACK_BUTTON_ID = "backButton";
     static final String ANCHOR_LINK_ID = "anchorLinkId";

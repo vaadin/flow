@@ -24,10 +24,10 @@ import java.util.Set;
 
 import com.vaadin.router.HasDynamicTitle;
 import com.vaadin.router.LocationChangeEvent;
+import com.vaadin.router.PageTitle;
 import com.vaadin.router.ParentLayout;
 import com.vaadin.router.Route;
 import com.vaadin.router.RouterLayout;
-import com.vaadin.router.PageTitle;
 import com.vaadin.router.event.NavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
@@ -91,9 +91,10 @@ public final class RouterUtil {
         navigationEvent.getUI().getPage().setTitle(title);
     }
 
-    private static Optional<PageTitle> lookForTitleInTarget(Component routeTarget) {
-        return Optional
-                .ofNullable(routeTarget.getClass().getAnnotation(PageTitle.class));
+    private static Optional<PageTitle> lookForTitleInTarget(
+            Component routeTarget) {
+        return Optional.ofNullable(
+                routeTarget.getClass().getAnnotation(PageTitle.class));
     }
 
     /**

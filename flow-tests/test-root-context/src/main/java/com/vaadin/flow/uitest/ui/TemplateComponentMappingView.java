@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.ui.html.NativeButton;
@@ -23,6 +25,7 @@ import com.vaadin.ui.html.Input;
 import com.vaadin.ui.html.Span;
 import com.vaadin.ui.AngularTemplate;
 
+@Route(value = "com.vaadin.flow.uitest.ui.TemplateComponentMappingView", layout = ViewTestLayout.class)
 public class TemplateComponentMappingView extends AngularTemplate {
 
     static final String LOG_ID = "log";

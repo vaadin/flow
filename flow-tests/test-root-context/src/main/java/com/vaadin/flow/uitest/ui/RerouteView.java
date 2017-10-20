@@ -15,17 +15,21 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.ui.event.ComponentEventListener;
-import com.vaadin.ui.html.NativeButton;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.NotFoundException;
+import com.vaadin.router.Route;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlContainer;
-import com.vaadin.ui.html.Input;
-import com.vaadin.ui.html.Label;
 import com.vaadin.ui.event.ChangeEvent;
 import com.vaadin.ui.event.ChangeNotifier;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.html.Input;
+import com.vaadin.ui.html.Label;
+import com.vaadin.ui.html.NativeButton;
 
+@Route(value = "com.vaadin.flow.uitest.ui.RerouteView", layout = ViewTestLayout.class)
 public class RerouteView extends AbstractDivView {
 
     boolean reroute = false;
@@ -52,12 +56,12 @@ public class RerouteView extends AbstractDivView {
     }
 
     @Override
-    public void onLocationChange(LocationChangeEvent event) {
-        if (reroute) {
-            event.rerouteToErrorView();
-        }
+    public void beforeNavigation(BeforeNavigationEvent event) {
+         if (reroute) {
+         event.rerouteToError(NotFoundException.class, "Rerouting to error view");
+         }
 
-        super.onLocationChange(event);
+        super.beforeNavigation(event);
     }
 
     @Tag(Tag.DIV)
