@@ -664,7 +664,6 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * @see #getSelectionModel()
      * @see GridSelectionModel
      */
-    @ClientDelegate
     public void deselectAll() {
         getSelectionModel().deselectAll();
     }
@@ -689,17 +688,6 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      */
     public Registration addSelectionListener(SelectionListener<T> listener) {
         return getSelectionModel().addSelectionListener(listener);
-    }
-
-    @ClientDelegate
-    private void selectAll() {
-        GridSelectionModel<T> selectionModel = getSelectionModel();
-        if (!(selectionModel instanceof GridMultiSelectionModel)) {
-            throw new IllegalStateException(
-                    "Attempted to select all items from the client "
-                            + "while this Grid does not have multi selection enabled");
-        }
-        ((GridMultiSelectionModel<T>) selectionModel).selectAll();
     }
 
     @ClientDelegate
