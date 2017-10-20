@@ -16,13 +16,16 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.polymertemplate.Id;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
+@Route(value = "com.vaadin.flow.uitest.ui.template.BundledTemplateInTemplateWithIdView", layout = ViewTestLayout.class)
 public class BundledTemplateInTemplateWithIdView extends AbstractDivView {
 
     @Tag("parent-id-template-bundled")

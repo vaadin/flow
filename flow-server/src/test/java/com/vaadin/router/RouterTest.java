@@ -16,6 +16,7 @@
 package com.vaadin.router;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -468,8 +469,8 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
-    public static class ErrorTarget extends RouteNotFoundError implements
-            HasErrorParameter<NotFoundException>, BeforeNavigationListener {
+    public static class ErrorTarget extends RouteNotFoundError
+            implements BeforeNavigationListener {
 
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
@@ -478,8 +479,7 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
-    public static class CustomNotFoundTarget extends RouteNotFoundError
-            implements HasErrorParameter<NotFoundException> {
+    public static class CustomNotFoundTarget extends RouteNotFoundError {
 
         public static final String TEXT_CONTENT = "My custom not found class!";
 
@@ -636,7 +636,8 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void beforeNavigation(BeforeNavigationEvent event) {
             if (counter++ < 2) {
-                if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                if (event
+                        .getActivationState() == ActivationState.DEACTIVATING) {
                     ContinueNavigationAction action = event.postpone();
                     eventCollector.add("Postponed");
                     sleepThenRun(50, action);
@@ -661,8 +662,8 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("postpone")
     @Tag(Tag.DIV)
-    public static class PostponingAndResumingCompoundNavigationTarget extends Component
-            implements BeforeNavigationListener {
+    public static class PostponingAndResumingCompoundNavigationTarget
+            extends Component implements BeforeNavigationListener {
         public PostponingAndResumingCompoundNavigationTarget() {
             getElement().appendChild(new ChildListener().getElement());
         }
@@ -1585,7 +1586,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected only one event message from error view",
                 1, eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
+        Assert.assertEquals("The custom error message is not in used",
                 "Error location: beforeToError/message/CustomMessage",
                 eventCollector.get(0));
 
@@ -1634,10 +1635,11 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void postpone_fails_on_activating_before_navigation_event()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream.of(
-                RootNavigationTarget.class,
-                EagerlyPostponingNavigationTarget.class)
-                .collect(Collectors.toSet()));
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(RootNavigationTarget.class,
+                                EagerlyPostponingNavigationTarget.class)
+                        .collect(Collectors.toSet()));
 
         int status = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1649,10 +1651,11 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void postpone_then_resume_on_before_navigation_event()
             throws InvalidRouteConfigurationException, InterruptedException {
-        router.getRegistry().setNavigationTargets(Stream.of(
-                RootNavigationTarget.class,
-                PostponingAndResumingNavigationTarget.class)
-                .collect(Collectors.toSet()));
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(RootNavigationTarget.class,
+                                PostponingAndResumingNavigationTarget.class)
+                        .collect(Collectors.toSet()));
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1677,10 +1680,11 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void postpone_forever_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
-        router.getRegistry().setNavigationTargets(Stream.of(
-                RootNavigationTarget.class,
-                PostponingForeverNavigationTarget.class)
-                .collect(Collectors.toSet()));
+        router.getRegistry()
+                .setNavigationTargets(Stream
+                        .of(RootNavigationTarget.class,
+                                PostponingForeverNavigationTarget.class)
+                        .collect(Collectors.toSet()));
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1702,9 +1706,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void postpone_obsoleted_by_new_navigation_transition()
             throws InvalidRouteConfigurationException, InterruptedException {
-        router.getRegistry().setNavigationTargets(Stream.of(
-                FooNavigationTarget.class, FooBarNavigationTarget.class,
-                PostponingFirstTimeNavigationTarget.class)
+        router.getRegistry().setNavigationTargets(Stream
+                .of(FooNavigationTarget.class, FooBarNavigationTarget.class,
+                        PostponingFirstTimeNavigationTarget.class)
                 .collect(Collectors.toSet()));
 
         int status1 = router.navigate(ui, new Location("postpone"),
@@ -1735,10 +1739,10 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void postpone_then_resume_with_multiple_listeners()
             throws InvalidRouteConfigurationException, InterruptedException {
-        router.getRegistry().setNavigationTargets(Stream.of(
-                RootNavigationTarget.class,
-                PostponingAndResumingCompoundNavigationTarget.class)
-                .collect(Collectors.toSet()));
+        router.getRegistry()
+                .setNavigationTargets(Stream.of(RootNavigationTarget.class,
+                        PostponingAndResumingCompoundNavigationTarget.class)
+                        .collect(Collectors.toSet()));
 
         int status1 = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);

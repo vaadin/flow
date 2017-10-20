@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
 
-public class PaperInputView extends Div implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.webcomponent.PaperInputView", layout = ViewTestLayout.class)
+public class PaperInputView extends Div {
 
     public PaperInputView() {
         PaperInput paperInput = new PaperInput("foo");
