@@ -73,7 +73,7 @@ public class TemplateParser {
         // Only static methods
     }
 
-    private String convertStreamToString(java.io.InputStream is) {
+    private static String convertStreamToString(java.io.InputStream is) {
         try(java.util.Scanner s = new java.util.Scanner(is, "UTF-8")) {
             return s.useDelimiter("\\A").hasNext() ? s.next() : "";
         } catch (Exception e) {
