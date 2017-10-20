@@ -29,8 +29,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -661,26 +659,23 @@ public class ReflectTools implements Serializable {
      * Collect all the integer values for public static final constants found
      * for the given class.
      * 
-     * @param constantsClass
+     * @param clazz
      *            class to collect constants from
      * @return list of all integer constants in class
      */
-    public static List<Integer> getConstantIntValues(Class<?> constantsClass) {
+    public static List<Integer> getConstantIntValues(Class<?> clazz) {
         List<Integer> integerConstants = new ArrayList<>();
 
-        for (Field field : getPublicStaticFinalFields(constantsClass)) {
+        for (Field field : getConstants(clazz)) {
             if (field.getType().equals(int.class)) {
                 try {
                     integerConstants.add(field.getInt(null));
                 } catch (IllegalAccessException e) {
                     // Ignore this exception. Public fields should always be
                     // accessible.
-                    Logger.getLogger(ReflectTools.class.getName()).log(
-                            Level.WARNING,
-                            "Received access exception for public field '"
-                                    + field.getName() + "' in class '"
-                                    + constantsClass.getSimpleName() + "'",
-                            e);
+                    assert false : "Received access exception for public field '"
+                            + field.getName() + "' in class '"
+                            + clazz.getSimpleName() + "'";
                 }
             }
         }
@@ -688,8 +683,7 @@ public class ReflectTools implements Serializable {
         return integerConstants;
     }
 
-    private static List<Field> getPublicStaticFinalFields(
-            Class<?> staticFields) {
+    private static List<Field> getConstants(Class<?> staticFields) {
         List<Field> staticFinalFields = new ArrayList<>();
         Field[] declaredFields = staticFields.getDeclaredFields();
         for (Field field : declaredFields) {

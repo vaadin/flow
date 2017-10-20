@@ -145,7 +145,7 @@ public class ErrorStateRenderer implements NavigationHandler {
         if (!statusCodes.contains(statusCode)) {
             String msg = String.format(
                     "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
-                    statusCode, targetClass.getSimpleName());
+                    statusCode, targetClass.getName());
             throw new IllegalStateException(msg);
         }
     }

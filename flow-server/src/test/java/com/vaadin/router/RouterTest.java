@@ -1637,7 +1637,7 @@ public class RouterTest extends RoutingTestBase {
 
         String validationMessage = String.format(
                 "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
-                0, FaultyErrorView.class.getSimpleName());
+                0, FaultyErrorView.class.getName());
 
         String errorMessage = String.format(
                 "There was an exception while trying to navigate to '%s' with the exception message '%s'",
