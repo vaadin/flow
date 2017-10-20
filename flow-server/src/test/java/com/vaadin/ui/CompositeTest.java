@@ -1,18 +1,16 @@
 package com.vaadin.ui;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.model.TemplateModel;
@@ -26,6 +24,8 @@ import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
+
+import static org.junit.Assert.assertEquals;
 
 public class CompositeTest {
 

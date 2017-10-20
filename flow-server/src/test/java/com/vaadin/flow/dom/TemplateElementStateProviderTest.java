@@ -1027,9 +1027,9 @@ public class TemplateElementStateProviderTest {
                 element.getAttributeNames().toArray());
 
         // Property names are case sensitive
-        Assert.assertEquals("modelValue", element.getProperty("boundproperty"));
-        Assert.assertNull(element.getProperty("boundProperty"));
-        Assert.assertArrayEquals(new Object[] { "boundproperty" },
+        Assert.assertEquals("modelValue", element.getProperty("boundProperty"));
+        Assert.assertNull(element.getProperty("boundproperty"));
+        Assert.assertArrayEquals(new Object[] { "boundProperty" },
                 element.getPropertyNames().toArray());
     }
 

@@ -10,11 +10,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
-import org.jsoup.Jsoup;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;

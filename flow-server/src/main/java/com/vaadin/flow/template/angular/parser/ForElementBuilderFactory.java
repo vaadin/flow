@@ -21,9 +21,8 @@ import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.function.Function;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-
+import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.template.angular.ElementTemplateBuilder;
 import com.vaadin.flow.template.angular.ForTemplateBuilder;
 import com.vaadin.flow.template.angular.TemplateNodeBuilder;

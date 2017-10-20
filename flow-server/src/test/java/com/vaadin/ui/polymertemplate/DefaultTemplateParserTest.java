@@ -15,10 +15,8 @@
  */
 package com.vaadin.ui.polymertemplate;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
-
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -27,18 +25,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-
-import org.jsoup.nodes.Comment;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.external.jsoup.nodes.Comment;
+import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -54,6 +49,10 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.PolymerTemplateTest.ModelClass;
 import com.vaadin.util.CurrentInstance;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertThat;
 
 public class DefaultTemplateParserTest {
 

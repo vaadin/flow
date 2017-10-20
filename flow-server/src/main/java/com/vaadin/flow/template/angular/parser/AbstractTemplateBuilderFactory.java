@@ -17,8 +17,7 @@ package com.vaadin.flow.template.angular.parser;
 
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Node;
-
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.template.angular.AbstractBindingValueProvider;
 import com.vaadin.flow.template.angular.JsExpressionBindingProvider;
 import com.vaadin.flow.template.angular.ModelValueBindingProvider;

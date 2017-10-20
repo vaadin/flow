@@ -16,12 +16,6 @@
 
 package com.vaadin.ui.polymertemplate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -35,14 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.external.jsoup.Jsoup;
+import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.model.TemplateModel;
@@ -61,6 +55,11 @@ import com.vaadin.ui.UI;
 import com.vaadin.util.HasCurrentService;
 
 import elemental.json.JsonArray;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vaadin Ltd.

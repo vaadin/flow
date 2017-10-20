@@ -18,8 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.jsoup.Jsoup;
-
+import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;

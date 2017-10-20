@@ -9,6 +9,14 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.shared.ui.LoadMode;
@@ -17,13 +25,6 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;

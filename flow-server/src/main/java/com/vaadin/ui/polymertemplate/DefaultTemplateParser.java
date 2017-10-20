@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui.polymertemplate;
 
+import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,14 +27,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContext;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Comment;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-
+import com.vaadin.external.jsoup.Jsoup;
+import com.vaadin.external.jsoup.nodes.Comment;
+import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.server.DependencyFilter;
 import com.vaadin.server.DependencyFilter.FilterContext;
