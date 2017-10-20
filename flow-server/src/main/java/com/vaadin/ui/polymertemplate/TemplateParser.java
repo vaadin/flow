@@ -15,7 +15,7 @@
  */
 package com.vaadin.ui.polymertemplate;
 
-import org.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Element;
 
 /**
  * Template content parser.

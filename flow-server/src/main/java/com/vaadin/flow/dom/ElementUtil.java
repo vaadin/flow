@@ -19,10 +19,9 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
-
+import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.external.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.nodes.TextNode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 
@@ -48,8 +47,7 @@ public class ElementUtil {
     /**
      * Checks if the given tag name is valid.
      *
-     * @param tag
-     *            the tag name
+     * @param tag the tag name
      * @return true if the string is valid as a tag name, false otherwise
      */
     public static boolean isValidTagName(String tag) {
@@ -59,8 +57,7 @@ public class ElementUtil {
     /**
      * Checks if the given attribute name is valid.
      *
-     * @param attribute
-     *            the name of the attribute in lower case
+     * @param attribute the name of the attribute in lower case
      * @return true if the name is valid, false otherwise
      */
     public static boolean isValidAttributeName(String attribute) {
@@ -75,8 +72,8 @@ public class ElementUtil {
         // APOSTROPHE ('), U+003E GREATER-THAN SIGN (>), U+002F SOLIDUS (/), and
         // U+003D EQUALS SIGN (=) characters, the control characters, and any
         // characters that are not defined by Unicode.
-        char[] illegalCharacters = new char[] { 0, ' ', '"', '\'', '>', '/',
-                '=' };
+        char[] illegalCharacters = new char[]{0, ' ', '"', '\'', '>', '/',
+                '='};
         for (char c : illegalCharacters) {
             if (attribute.indexOf(c) != -1) {
                 return false;
@@ -89,8 +86,7 @@ public class ElementUtil {
      * Validates the given style property name and throws an exception if the
      * name is invalid.
      *
-     * @param name
-     *            the style property name to validate
+     * @param name the style property name to validate
      */
     public static void validateStylePropertyName(String name) {
         String reason = getInvalidStylePropertyNameError(name);
@@ -128,8 +124,7 @@ public class ElementUtil {
     /**
      * Checks if the given style property name is valid.
      *
-     * @param name
-     *            the name to validate
+     * @param name the name to validate
      * @return true if the name is valid, false otherwise
      */
     public static boolean isValidStylePropertyName(String name) {
@@ -139,8 +134,7 @@ public class ElementUtil {
     /**
      * Checks if the given style property value is valid.
      *
-     * @param value
-     *            the value to validate
+     * @param value the value to validate
      * @return true if the value is valid, false otherwise
      */
     public static boolean isValidStylePropertyValue(String value) {
@@ -152,8 +146,7 @@ public class ElementUtil {
      * <p>
      * Throws an exception if it's certain the value is invalid
      *
-     * @param value
-     *            the value to validate
+     * @param value the value to validate
      */
     public static void validateStylePropertyValue(String value) {
         String reason = getInvalidStylePropertyValueError(value);
@@ -179,10 +172,8 @@ public class ElementUtil {
      * changed. The only exception is {@link Composite} which can overwrite the
      * mapping for its content.
      *
-     * @param element
-     *            the element to map to the component
-     * @param component
-     *            the component this element is attached to
+     * @param element   the element to map to the component
+     * @param component the component this element is attached to
      */
     public static void setComponent(Element element, Component component) {
         if (element == null) {
@@ -197,7 +188,7 @@ public class ElementUtil {
             // Composite can replace its content
             boolean isCompositeReplacingItsContent = component instanceof Composite
                     && component.getChildren().findFirst()
-                            .get() == currentComponent.get();
+                    .get() == currentComponent.get();
             if (!isCompositeReplacingItsContent) {
                 throw new IllegalStateException("A component of type "
                         + currentComponent.get().getClass().getName()
@@ -213,10 +204,9 @@ public class ElementUtil {
      * If the element is mapped to a {@link Composite} or a {@link Composite}
      * chain, this will always return the outermost {@link Composite}.
      *
-     * @param element
-     *            the element to retrieve the component for
+     * @param element the element to retrieve the component for
      * @return an optional component, or an empty optional if no component has
-     *         been mapped to this element
+     * been mapped to this element
      */
     public static Optional<Component> getComponent(Element element) {
         return element.getStateProvider().getComponent(element.getNode());
@@ -226,10 +216,8 @@ public class ElementUtil {
      * Converts the given element and its children to a JSoup node with
      * children.
      *
-     * @param document
-     *            A JSoup document
-     * @param element
-     *            The element to convert
+     * @param document A JSoup document
+     * @param element  The element to convert
      * @return A JSoup node containing the converted element
      */
     public static Node toJsoup(Document document, Element element) {
@@ -237,7 +225,7 @@ public class ElementUtil {
             return new TextNode(element.getText(), document.baseUri());
         }
 
-        org.jsoup.nodes.Element target = document
+        com.vaadin.external.jsoup.nodes.Element target = document
                 .createElement(element.getTag());
         if (element.hasProperty("innerHTML")) {
             target.html((String) element.getPropertyRaw("innerHTML"));
@@ -264,8 +252,7 @@ public class ElementUtil {
      * Custom elements (Web Components) are recognized by having at least one
      * dash in the tag name.
      *
-     * @param element
-     *            the element to check
+     * @param element the element to check
      * @return <code>true</code> if a custom element, <code>false</code> if not
      */
     public static boolean isCustomElement(Element element) {
@@ -275,8 +262,7 @@ public class ElementUtil {
     /**
      * Checks whether the given element is a <code>script</code> or not.
      *
-     * @param element
-     *            the element to check
+     * @param element the element to check
      * @return <code>true</code> if a script, <code>false</code> if not
      */
     public static boolean isScript(Element element) {

@@ -16,8 +16,7 @@
 
 package com.vaadin.server;
 
-import org.jsoup.nodes.Document;
-
+import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.ui.UI;
 

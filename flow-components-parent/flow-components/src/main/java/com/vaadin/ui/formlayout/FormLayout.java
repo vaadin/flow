@@ -21,8 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jsoup.helper.StringUtil;
-
+import com.vaadin.external.jsoup.helper.StringUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.HasSize;
