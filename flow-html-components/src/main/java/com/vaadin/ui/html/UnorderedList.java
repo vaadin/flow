@@ -13,26 +13,35 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.router;
+package com.vaadin.ui.html;
 
-import javax.servlet.http.HttpServletResponse;
-
-import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.event.ClickNotifier;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 
 /**
- * This is a basic default error view shown on routing exceptions.
+ * Component representing a <code>&lt;ul&gt;</code> element.
+ *
+ * @author Vaadin Ltd
  */
-@Tag(Tag.DIV)
-public class RouteNotFoundError extends Component
-        implements HasErrorParameter<NotFoundException> {
+@Tag(Tag.UL)
+public class UnorderedList extends HtmlContainer implements ClickNotifier {
 
-    @Override
-    public int setErrorParameter(BeforeNavigationEvent event,
-            ErrorParameter<NotFoundException> parameter) {
-        getElement().setText(
-                "Could not navigate to '" + event.getLocation().getPath() + "'");
-        return HttpServletResponse.SC_NOT_FOUND;
+    /**
+     * Creates a new empty unordered list.
+     */
+    public UnorderedList() {
+        super();
+    }
+
+    /**
+     * Creates a new unordered list with the given list items.
+     *
+     * @param items
+     *            the list items
+     */
+    public UnorderedList(ListItem... items) {
+        super(items);
     }
 }

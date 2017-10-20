@@ -13,12 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.ui.html;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+public class DescriptionListTest extends ComponentTest {
+    // Actual test methods in super class
 
-@SpringBootApplication
-public class TestServletInitializer extends SpringBootServletInitializer {
+    @Override
+    protected void addProperties() {
+        // Component defines no new properties
+    }
 
 }

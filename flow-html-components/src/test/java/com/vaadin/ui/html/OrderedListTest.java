@@ -13,12 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.ui.html;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import com.vaadin.ui.html.OrderedList.NumberingType;
 
-@SpringBootApplication
-public class TestServletInitializer extends SpringBootServletInitializer {
+public class OrderedListTest extends ComponentTest {
 
+    // Actual test methods in super class
+
+    @Override
+    protected void addProperties() {
+        addProperty("type", NumberingType.class, NumberingType.NUMBER,
+                NumberingType.LOWERCASE_ROMAN, false, true);
+    }
 }

@@ -13,12 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring;
+package com.vaadin.flow.tutorial.component;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.ui.button.Button;
+import com.vaadin.ui.icon.Icon;
+import com.vaadin.ui.icon.VaadinIcons;
 
-@SpringBootApplication
-public class TestServletInitializer extends SpringBootServletInitializer {
+@CodeFor("flow-components/tutorial-flow-icon.asciidoc")
+public class IconBasic {
 
+    public void basics() {
+        Icon icon = VaadinIcons.VAADIN_H.create();
+        new Button("Vaadin", icon);
+    }
+    
+    public void customCollection() {
+        Icon icon = new Icon("valo", "clock");
+        new Button("Clock", icon);
+    }
 }
