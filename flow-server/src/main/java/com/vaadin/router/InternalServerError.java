@@ -15,6 +15,8 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
@@ -41,6 +43,6 @@ public class InternalServerError extends Component
                     event.getLocation().getPath());
         }
         getElement().setText(exceptionText);
-        return 500;
+        return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
     }
 }

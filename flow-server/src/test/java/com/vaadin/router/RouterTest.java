@@ -15,6 +15,7 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -485,7 +486,7 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(TEXT_CONTENT);
-            return 404;
+            return HttpServletResponse.SC_NOT_FOUND;
         }
     }
 
@@ -495,7 +496,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
-            return 404;
+            return HttpServletResponse.SC_NOT_FOUND;
         }
     }
 
@@ -547,12 +548,14 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<IllegalArgumentException> parameter) {
+            eventCollector
+                    .add("Error location: " + event.getLocation().getPath());
             if (parameter.hasCustomMessage()) {
                 getElement().setText(parameter.getCustomMessage());
             } else {
                 getElement().setText("Illegal argument exception.");
             }
-            return 500;
+            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
         }
     }
 
@@ -1578,6 +1581,13 @@ public class RouterTest extends RoutingTestBase {
                 .getComponent();
         Assert.assertEquals("CustomMessage",
                 visibleComponent.get().getElement().getText());
+
+        Assert.assertEquals("Expected only one event message from error view",
+                1, eventCollector.size());
+        Assert.assertEquals("Parameter should be empty",
+                "Error location: beforeToError/message/CustomMessage",
+                eventCollector.get(0));
+
     }
 
     @Test
@@ -1590,7 +1600,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location("toNotFound/error"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Target should have rerouted to exception target.",
-                404, result);
+                HttpServletResponse.SC_NOT_FOUND, result);
 
         Assert.assertEquals(RouteNotFoundError.class, getUIComponent());
     }
@@ -1631,7 +1641,8 @@ public class RouterTest extends RoutingTestBase {
         int status = router.navigate(ui, new Location("postpone"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals(500, status);
+        Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                status);
     }
 
     @Test
@@ -1647,9 +1658,12 @@ public class RouterTest extends RoutingTestBase {
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed", 200, status1);
-        Assert.assertEquals("Second transition failed",200, status2);
-        Assert.assertEquals(PostponingAndResumingNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
+                getUIComponent());
         Thread.sleep(200);
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 3,
@@ -1672,9 +1686,12 @@ public class RouterTest extends RoutingTestBase {
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed", 200, status1);
-        Assert.assertEquals("Second transition failed",200, status2);
-        Assert.assertEquals(PostponingForeverNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals(PostponingForeverNavigationTarget.class,
+                getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 2,
                 eventCollector.size());
         Assert.assertEquals("Can't postpone here", eventCollector.get(0));
@@ -1696,9 +1713,12 @@ public class RouterTest extends RoutingTestBase {
         int status3 = router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed", 200, status1);
-        Assert.assertEquals("Second transition failed",200, status2);
-        Assert.assertEquals("Third transition failed",200, status3);
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals("Third transition failed",
+                HttpServletResponse.SC_OK, status3);
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
         Thread.sleep(200);
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
@@ -1724,9 +1744,12 @@ public class RouterTest extends RoutingTestBase {
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("First transition failed", 200, status1);
-        Assert.assertEquals("Second transition failed",200, status2);
-        Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
+                getUIComponent());
         Thread.sleep(200);
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 5,

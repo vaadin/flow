@@ -251,12 +251,10 @@ public class NavigationStateRenderer implements NavigationHandler {
         if (beforeNavigation.hasErrorParameter()) {
             ErrorParameter<?> errorParameter = beforeNavigation
                     .getErrorParameter();
-            Location location = new Location(
-                    errorParameter.getException().getClass().getSimpleName());
 
-            return new ErrorNavigationEvent(event.getSource(), location,
-                    event.getUI(), NavigationTrigger.PROGRAMMATIC,
-                    errorParameter);
+            return new ErrorNavigationEvent(event.getSource(),
+                    event.getLocation(), event.getUI(),
+                    NavigationTrigger.PROGRAMMATIC, errorParameter);
         }
 
         Location location = new Location(beforeNavigation.getRouteTargetType()
