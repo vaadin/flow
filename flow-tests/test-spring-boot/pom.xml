@@ -27,15 +27,10 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-spring-addon</artifactId>
+            <artifactId>flow-spring-boot-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -59,12 +54,6 @@
 	        <scope>test</scope>
         </dependency>
 
-        <!-- Spring -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <!-- End Spring -->
     </dependencies>
 
     <build>
