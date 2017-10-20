@@ -118,7 +118,7 @@ public class StreamReceiver implements Serializable {
      *
      * @return the resource unique id
      */
-    public final String getId() {
+    public String getId() {
         return id;
     }
 

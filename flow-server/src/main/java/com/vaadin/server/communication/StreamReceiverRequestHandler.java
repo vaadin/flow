@@ -142,12 +142,6 @@ public class StreamReceiverRequestHandler implements RequestHandler {
                 return true;
             }
 
-            // streamVariable = streamReceiver.getStreamVariable();
-            // writer = streamReceiver.getWriter();
-            if (streamReceiver.getWriter() == null) {
-                throw new IOException("Reader can not handle incoming streams");
-            }
-
             UI ui = session.getUIById(Integer.parseInt(uiId));
             UI.setCurrent(ui);
 
@@ -187,8 +181,9 @@ public class StreamReceiverRequestHandler implements RequestHandler {
             builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
             builder.append(nodeId).append(PATH_SEPARATOR);
             builder.append(
-                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
-            builder.append(id).append(PATH_SEPARATOR);
+                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()))
+                    .append(PATH_SEPARATOR);
+            builder.append(id);
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
             throw new RuntimeException(e);
