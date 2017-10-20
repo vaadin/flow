@@ -95,7 +95,7 @@ public class SpringVaadinServletService extends VaadinServletService {
     @Override
     protected VaadinSession createVaadinSession(VaadinRequest request)
             throws ServiceException {
-        return new VaadinSession(this);
+        return new SpringVaadinSession(this);
     }
 
     private void sessionDestroyed(VaadinSession session) {
