@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.event.DomEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.html.NativeButton;
@@ -25,6 +27,7 @@ import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.Text;
 
+@Route(value = "com.vaadin.flow.uitest.ui.CompositeView", layout = ViewTestLayout.class)
 public class CompositeView extends AbstractDivView {
 
     public static final String SERVER_INPUT_ID = "serverInput";

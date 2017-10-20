@@ -27,8 +27,7 @@ public class ExceptionHandling {
         }
     }
 
-    public class CustomNotFoundTarget extends RouteNotFoundError
-            implements HasErrorParameter<NotFoundException> {
+    public class CustomNotFoundTarget extends RouteNotFoundError {
 
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,

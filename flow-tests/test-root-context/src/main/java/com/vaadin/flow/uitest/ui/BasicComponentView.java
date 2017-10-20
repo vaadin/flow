@@ -16,11 +16,14 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Input;
 import com.vaadin.ui.Text;
 
+@Route(value = "com.vaadin.flow.uitest.ui.BasicComponentView", layout = ViewTestLayout.class)
 public class BasicComponentView extends AbstractDivView {
 
     public static final String TEXT = "This is the basic component view text component with some tags: <b><html></body>";

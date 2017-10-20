@@ -15,26 +15,23 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.function.Consumer;
-
-import com.vaadin.ui.common.StyleSheet;
-import com.vaadin.ui.html.NativeButton;
-import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
+import com.vaadin.router.event.BeforeNavigationEvent;
+import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.html.Div;
+import com.vaadin.ui.html.NativeButton;
 
+@Route(value = "com.vaadin.flow.uitest.ui.LoadingIndicatorView", layout = ViewTestLayout.class)
 @StyleSheet("/com/vaadin/flow/uitest/ui/loading-indicator.css")
-public class LoadingIndicatorView extends AbstractDivView {
+public class LoadingIndicatorView extends AbstractDivView
+        implements BeforeNavigationListener {
 
     @Override
-    public void onLocationChange(LocationChangeEvent event) {
-        setIfPresent(event, "first",
-                getLoadingIndicatorConfiguration()::setFirstDelay);
-        setIfPresent(event, "second",
-                getLoadingIndicatorConfiguration()::setSecondDelay);
-        setIfPresent(event, "third",
-                getLoadingIndicatorConfiguration()::setThirdDelay);
+    public void beforeNavigation(BeforeNavigationEvent event) {
 
         add(divWithText("First delay: "
                 + getLoadingIndicatorConfiguration().getFirstDelay()));
@@ -61,15 +58,6 @@ public class LoadingIndicatorView extends AbstractDivView {
 
     private LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
         return UI.getCurrent().getLoadingIndicatorConfiguration();
-    }
-
-    private void setIfPresent(LocationChangeEvent event, String parameter,
-            Consumer<Integer> setter) {
-        String value = event.getPathParameter(parameter);
-        if (value != null) {
-            setter.accept(Integer.parseInt(value));
-        }
-
     }
 
     private void delay(int timeMs) {

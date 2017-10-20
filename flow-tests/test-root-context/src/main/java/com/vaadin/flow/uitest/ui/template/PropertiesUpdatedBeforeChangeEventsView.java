@@ -1,10 +1,13 @@
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
+import com.vaadin.router.Route;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 
+@Route(value = "com.vaadin.flow.uitest.ui.template.PropertiesUpdatedBeforeChangeEventsView", layout = ViewTestLayout.class)
 public class PropertiesUpdatedBeforeChangeEventsView extends AbstractDivView {
 
     @Tag("properties-updated-before-change-events")
