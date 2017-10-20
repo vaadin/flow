@@ -15,11 +15,6 @@
  */
 package com.vaadin.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
 import javax.servlet.http.HttpServletResponse;
 
 import java.util.ArrayList;
@@ -51,6 +46,11 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class RouterTest extends RoutingTestBase {
 
