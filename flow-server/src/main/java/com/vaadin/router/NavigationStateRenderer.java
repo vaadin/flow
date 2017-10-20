@@ -18,7 +18,6 @@ package com.vaadin.router;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
@@ -55,7 +54,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     }
 
     private final NavigationState navigationState;
-    private Deque<BeforeLeaveListener> remainingListeners = null;
+    private ArrayDeque<BeforeLeaveListener> remainingListeners = null;
 
     /**
      * Constructs a new NavigationStateRenderer that handles the given
@@ -115,7 +114,7 @@ public class NavigationStateRenderer implements NavigationHandler {
         BeforeNavigationEvent beforeNavigationDeactivating = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.DEACTIVATING);
 
-        Deque<BeforeLeaveListener> listeners = collectLeaveListeners(
+        ArrayDeque<BeforeLeaveListener> listeners = collectLeaveListeners(
                 ui.getElement());
 
         TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
@@ -191,9 +190,9 @@ public class NavigationStateRenderer implements NavigationHandler {
      *            root element to collect listeners from
      * @return deque of BeforeLeaveListener items
      */
-    private Deque<BeforeLeaveListener> collectLeaveListeners(
+    private ArrayDeque<BeforeLeaveListener> collectLeaveListeners(
             Element rootElement) {
-        Deque<BeforeLeaveListener> listeners = remainingListeners;
+        ArrayDeque<BeforeLeaveListener> listeners = remainingListeners;
         if (listeners == null) {
             listeners = new ArrayDeque(
                     EventUtil.collectBeforeLeaveListeners(rootElement));
