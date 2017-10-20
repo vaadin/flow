@@ -16,8 +16,13 @@
 package com.vaadin.router.event;
 
 /**
- * Event sent to the active and de-active navigation chain instances
- * implementing this interface before navigation happens.
+ * Any {@link com.vaadin.ui.Component} implementing this interface will be
+ * informed when they are being detached from or attached to the UI.
+ * <p>
+ * If the {@link ActivationState} of the {@link BeforeNavigationEvent} is
+ * {@link ActivationState#DEACTIVATING} then it is possible to reroute and
+ * postpone, but in the case it is {@link ActivationState#ACTIVATING} then only
+ * rerouting is supported.
  *
  * @author Vaadin Ltd
  */
