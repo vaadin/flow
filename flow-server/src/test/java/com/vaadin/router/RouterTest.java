@@ -1210,8 +1210,8 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 eventCollector.size());
-        Assert.assertEquals("The custom error message is not in used",
-                "With parameter: ", eventCollector.get(0));
+        Assert.assertEquals("Parameter should be empty", "With parameter: ",
+                eventCollector.get(0));
 
         router.navigate(ui, new Location("wild/single"),
                 NavigationTrigger.PROGRAMMATIC);
@@ -1586,7 +1586,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected only one event message from error view",
                 1, eventCollector.size());
-        Assert.assertEquals("Parameter should be empty",
+        Assert.assertEquals("The custom error message is not in used",
                 "Error location: beforeToError/message/CustomMessage",
                 eventCollector.get(0));
 
