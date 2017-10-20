@@ -29,6 +29,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -673,6 +675,12 @@ public class ReflectTools implements Serializable {
                 } catch (IllegalAccessException e) {
                     // Ignore this exception. Public fields should always be
                     // accessible.
+                    Logger.getLogger(ReflectTools.class.getName()).log(
+                            Level.WARNING,
+                            "Received access exception for public field '"
+                                    + field.getName() + "' in class '"
+                                    + constantsClass.getSimpleName() + "'",
+                            e);
                 }
             }
         }
