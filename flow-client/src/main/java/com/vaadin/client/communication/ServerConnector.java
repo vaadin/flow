@@ -84,9 +84,24 @@ public class ServerConnector {
      */
     public void sendEventMessage(StateNode node, String eventType,
             JsonObject eventData) {
+        sendEventMessage(node.getId(), eventType, eventData);
+    }
+
+    /**
+     * Sends an event message to the server.
+     *
+     * @param nodeId
+     *            the id of the node that listened to the event
+     * @param eventType
+     *            the type of event
+     * @param eventData
+     *            extra data associated with the event
+     */
+    public void sendEventMessage(int nodeId, String eventType,
+            JsonObject eventData) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
-        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_NODE, nodeId);
         message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
 
         if (eventData != null) {

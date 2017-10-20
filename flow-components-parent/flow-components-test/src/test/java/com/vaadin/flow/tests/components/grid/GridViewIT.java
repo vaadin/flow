@@ -21,7 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.Ignore;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -30,12 +31,18 @@ import com.vaadin.flow.tests.components.AbstractComponentIT;
 
 public class GridViewIT extends AbstractComponentIT {
 
-    @Test
-    public void basicGrid() {
+    private WebElement grid;
+
+    @Before
+    public void init() {
         open();
 
-        WebElement grid = findElement(By.tagName("vaadin-grid"));
+        waitForElementPresent(By.tagName("vaadin-grid"));
+        grid = findElement(By.tagName("vaadin-grid"));
+    }
 
+    @Test
+    public void basicGrid() {
         hasCell(grid, "text");
         hasCell(grid, "0");
         hasCell(grid, "1");
@@ -47,19 +54,22 @@ public class GridViewIT extends AbstractComponentIT {
     }
 
     @Test
-    @Ignore
-    /**
-     * Ignored because it doesn't work in Grid v4. See
-     * https://github.com/vaadin/flow/issues/2518
-     */
-    public void changeDataProvider() {
-        open();
+    public void defaultPageSize() {
+        Object pageSize = executeScript("return arguments[0].pageSize", grid);
+        Assert.assertEquals(
+                "The default pageSize of the webcomponent should be 50", 50,
+                Integer.parseInt(String.valueOf(pageSize)));
+    }
 
+    @Test
+    public void changeDataProvider() {
         // change data provider
         findElement(By.id("update-provider")).click();
-
         waitUntil(driver -> hasData());
 
+        // change data provider again
+        findElement(By.id("update-provider")).click();
+        waitUntil(driver -> hasCell(grid, "text"));
     }
 
     private void scrollDown(WebElement grid, int index) {

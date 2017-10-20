@@ -32,6 +32,7 @@ public class BundledTemplateInTemplateWithIdIT extends ChromeBrowserTest {
         WebElement child = getInShadowRoot(template, By.id("child"));
 
         WebElement text = getInShadowRoot(child, By.id("text"));
+        Assert.assertEquals("div", text.getTagName());
         Assert.assertEquals("@Id injected!", text.getText());
     }
 }

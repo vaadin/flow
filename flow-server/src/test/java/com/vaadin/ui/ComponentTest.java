@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,24 +33,27 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.ui.Dependency;
 import com.vaadin.tests.util.TestUtil;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.DependencyList;
-import com.vaadin.ui.common.DetachEvent;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.common.StyleSheet;
 import com.vaadin.ui.common.Uses;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventBus;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.DetachEvent;
 import com.vaadin.ui.event.Synchronize;
 
 public class ComponentTest {
@@ -245,6 +250,24 @@ public class ComponentTest {
         parentDivComponent.getElement().appendChild(
                 child1SpanComponent.getElement(),
                 child2InputComponent.getElement());
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        UI ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        VaadinService service = Mockito.mock(VaadinService.class);
+        when(session.getService()).thenReturn(service);
+        when(service.getInstantiator())
+                .thenReturn(new DefaultInstantiator(service));
+        UI.setCurrent(ui);
+    }
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Test

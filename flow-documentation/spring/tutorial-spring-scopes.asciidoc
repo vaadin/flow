@@ -1,0 +1,81 @@
+---
+title: Vaadin Spring Scopes
+order: 3
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Vaadin Spring Scopes
+
+In addition to standard Spring scope the Spring add-on introduces two new scopes:
+`VaadinSessionScope` and `UIScope`.
+
+`VaadinSessionScope` manages the Spring beans during Vaadin Session lifecycle.
+It means that the same bean instance will be used within the whole Vaadin session.
+
+[source,java]
+----
+@Route("")
+public class MainLayout extends Div {
+    public MainLayout(@Autowired Bean bean){
+        setText(bean.getText());
+    }
+}
+
+@Route("editor")
+public class Editor extends Div {
+    public Editor(@Autowired Bean bean){
+        setText(bean.getText());
+    }
+}
+
+public interface Bean {
+    String getText();
+}
+
+@Component
+@VaadinSessionScope
+public class SessionBean implements Bean {
+    private String uid = UUID.randomUUID().toString();
+    
+    public String getText(){
+        return "session "+uid;
+    } 
+}
+----
+
+In this example the same instance of `SessionBean` will be used as long as 
+we access the application from the same Vaadin session. E.g. if you open the root target in 
+one tab and the editor target in another tab, then the shown text will be the same for both. 
+It happens because the session is the same even though
+the tabs (and `UI` instances) are different.
+
+The `@UIScope` manages the Spring beans during the `UI` lifecycle. Similar to the example above
+the `UIBean` will be the same while we are in the same `UI`.
+
+[source,java]
+----
+@Component
+@UIScope
+public class UIBean implements Bean {
+    private String uid = UUID.randomUUID().toString();
+    
+    public String getText(){
+        return "ui " + uid;
+    } 
+}
+----
+
+Now if you open two browser tabs, the text in these will be different since the `UI` instances
+are different. But if you navigate to the `Editor` instance via the router (or the `UI` instance which 
+delegates navigation to the router) then the text will be the same.
+
+[source,java]
+----
+public void edit() {
+    getUI().get().navigateTo("editor");
+}
+----
+
+So inside the same `UI` instance the same bean instance with `@UIScope` is used. 

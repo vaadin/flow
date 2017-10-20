@@ -117,7 +117,7 @@ import com.vaadin.ui.common.HasComponents;
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.CheckboxElement#1.0.0-beta1", "Flow#1.0-SNAPSHOT"})
+		"WebComponent: Vaadin.CheckboxElement#1.0.0", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-checkbox")
 @HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
@@ -168,7 +168,8 @@ public class GeneratedVaadinCheckbox<R extends GeneratedVaadinCheckbox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * If true, the element currently has focus.
+	 * If true, the element currently has focus. This property is @deprecated
+	 * and will not be accessible in the next major version of the component.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.

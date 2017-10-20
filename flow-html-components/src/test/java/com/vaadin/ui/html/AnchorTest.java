@@ -21,7 +21,7 @@ public class AnchorTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        addStringProperty("href", "");
+        addStringProperty("href", "", false);
         addOptionalStringProperty("target");
     }
 }

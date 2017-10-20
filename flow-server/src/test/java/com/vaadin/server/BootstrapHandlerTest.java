@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,6 +87,11 @@ public class BootstrapHandlerTest {
 
         Mockito.when(browser.isEs6Supported()).thenReturn(false);
         Mockito.when(session.getBrowser()).thenReturn(browser);
+    }
+
+    @After
+    public void tearDown() {
+        session.unlock();
     }
 
     private void initUI(UI ui) {

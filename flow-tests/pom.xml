@@ -21,6 +21,7 @@
         <module>test-servlet</module>
         <module>test-spring-boot</module>
         <module>test-spring-war</module>
+        <module>test-spring</module>
         <module>test-spring-common</module>
     </modules>
 

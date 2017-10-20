@@ -2,7 +2,7 @@
   "name": "Vaadin.SplitLayoutElement",
   "tag": "vaadin-split-layout",
   "baseUrl": "vaadin-split-layout/vaadin-split-layout.html",
-  "version": "3.0.0-beta1",
+  "version": "3.0.0",
   "properties": [
     {
       "name": "vertical",

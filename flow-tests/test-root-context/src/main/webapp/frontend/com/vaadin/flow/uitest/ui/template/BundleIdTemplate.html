@@ -39,6 +39,22 @@
         customElements.define(ParentIdTemplateBundled.is, ParentIdTemplateBundled);
     </script>
 </dom-module>
+<!-- This other module is here just to force having a different template with an element with the id "text" inside it -->
+<dom-module id="other-id-template-bundled">
+    <template>
+        <div style="padding: 10px; border: 1px solid black">
+            <div>Other template</div>
+            <span id="text"></span>
+        </div>
+    </template>
+    <script>
+        class OtherIdTemplateBundled extends Polymer.Element {
+            static get is() { return 'other-id-template-bundled' }
+           
+        }
+        customElements.define(OtherIdTemplateBundled.is, OtherIdTemplateBundled);
+    </script>
+</dom-module>
 <dom-module id="child-id-template-bundled">
     <template>
         <div style="padding: 10px; border: 1px solid black">

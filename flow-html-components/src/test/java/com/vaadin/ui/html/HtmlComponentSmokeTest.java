@@ -43,6 +43,7 @@ import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.HtmlComponent;
 import com.vaadin.ui.common.HtmlContainer;
+import com.vaadin.ui.html.OrderedList.NumberingType;
 
 public class HtmlComponentSmokeTest {
 
@@ -58,6 +59,7 @@ public class HtmlComponentSmokeTest {
     private static final Map<Class<?>, Object> testValues = new HashMap<>();
     static {
         testValues.put(String.class, "asdf");
+        testValues.put(NumberingType.class, NumberingType.LOWERCASE_ROMAN);
     }
 
     @Test
@@ -71,6 +73,8 @@ public class HtmlComponentSmokeTest {
         Files.list(componentClassesLocation)
                 .filter(HtmlComponentSmokeTest::isClassFile)
                 .map(HtmlComponentSmokeTest::loadClass)
+                .filter(HtmlComponentSmokeTest::isHtmlComponentSubclass)
+                .map(HtmlComponentSmokeTest::asHtmlComponentSubclass)
                 .forEach(HtmlComponentSmokeTest::smokeTestComponent);
     }
 
@@ -244,14 +248,14 @@ public class HtmlComponentSmokeTest {
         }
     }
 
-    private static Class<? extends HtmlComponent> loadClass(Path classFile) {
+    private static Class<?> loadClass(Path classFile) {
         String className = classFile.getFileName().toString()
                 .replaceAll("\\.class$", "");
         String qualifiedName = Div.class.getPackage().getName() + "."
                 + className;
 
         try {
-            return Class.forName(qualifiedName).asSubclass(HtmlComponent.class);
+            return Class.forName(qualifiedName);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -261,4 +265,11 @@ public class HtmlComponentSmokeTest {
         return path.toString().endsWith(".class");
     }
 
+    private static boolean isHtmlComponentSubclass(Class<?> cls) {
+        return HtmlComponent.class.isAssignableFrom(cls);
+    }
+
+    private static Class<? extends HtmlComponent> asHtmlComponentSubclass(Class<?> cls) {
+        return cls.asSubclass(HtmlComponent.class);
+    }
 }

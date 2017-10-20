@@ -44,4 +44,16 @@ public class ParentTemplateIT extends ChromeBrowserTest {
         Assert.assertEquals("bar",
                 getInShadowRoot(child, By.id("info")).getText());
     }
+
+    @Test
+    public void injectedComponentIsSpringManaged() throws Exception {
+        open();
+
+        WebElement template = findElement(By.tagName("parent-template"));
+
+        WebElement child = getInShadowRoot(template, By.id("child"));
+
+        Assert.assertEquals("foo",
+                getInShadowRoot(child, By.id("message")).getText());
+    }
 }

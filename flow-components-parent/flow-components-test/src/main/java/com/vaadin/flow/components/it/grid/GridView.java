@@ -26,18 +26,25 @@ import com.vaadin.ui.grid.Grid;
  * @author Vaadin Ltd.
  */
 public class GridView extends TestView {
+
+    private Grid<String> grid;
+
+    private DataProvider<String, ?> dataProvider1 = DataProvider
+            .fromCallbacks(query -> IntStream
+                    .range(query.getOffset(),
+                            query.getOffset() + query.getLimit())
+                    .mapToObj(Integer::toString), query -> 10000);
+
+    private DataProvider<String, ?> dataProvider2 = DataProvider.ofItems("foo",
+            "foob", "fooba", "foobar");
+
     /**
      * Creates a view with a grid.
      */
     public GridView() {
-        Grid<String> grid = new Grid<>();
+        grid = new Grid<>();
 
-        grid.setDataProvider(DataProvider.fromCallbacks(query -> {
-            return IntStream
-                    .range(query.getOffset(),
-                            query.getOffset() + query.getLimit())
-                    .mapToObj(Integer::toString);
-        }, query -> 10000));
+        grid.setDataProvider(dataProvider1);
         grid.addColumn("text", i -> i);
         grid.addColumn("length", i -> String.valueOf(i.length()));
 
@@ -51,7 +58,7 @@ public class GridView extends TestView {
     }
 
     private void setProvider(Grid<String> grid) {
-        grid.setDataProvider(
-                DataProvider.ofItems("foo", "foob", "fooba", "foobar"));
+        grid.setDataProvider(grid.getDataCommunicator().getDataProvider()
+                .equals(dataProvider1) ? dataProvider2 : dataProvider1);
     }
 }
