@@ -23,13 +23,12 @@ import java.util.Map;
 import com.vaadin.flow.demo.SourceContent;
 import com.vaadin.flow.demo.SourceContentResolver;
 import com.vaadin.flow.demo.model.SourceCodeExample;
-import com.vaadin.flow.router.View;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.common.AttachEvent;
 import com.vaadin.ui.common.HasComponents;
 import com.vaadin.ui.common.StyleSheet;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.html.H3;
 
 /**
@@ -37,8 +36,7 @@ import com.vaadin.ui.html.H3;
  */
 @Tag("div")
 @StyleSheet("src/css/demo.css")
-public abstract class DemoView extends Component
-        implements View, HasComponents {
+public abstract class DemoView extends Component implements HasComponents {
 
     private Map<String, List<SourceCodeExample>> sourceCodeExamples = new HashMap<>();
 

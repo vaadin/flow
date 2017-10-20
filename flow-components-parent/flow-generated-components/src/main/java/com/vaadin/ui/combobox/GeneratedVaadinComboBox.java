@@ -209,12 +209,16 @@ import com.vaadin.shared.Registration;
  * <td>Set when the element is keyboard focused</td>
  * <td>:host</td>
  * </tr>
+ * <tr>
+ * <td>{@code loading}</td>
+ * <td>Set when new items are expected</td>
+ * <td>:host</td>
+ * </tr>
  * </tbody>
  * </table>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxElement#3.0.0-alpha7",
-		"Flow#1.0-SNAPSHOT"})
+		"WebComponent: Vaadin.ComboBoxElement#3.0.0", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box.html")
 public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
@@ -434,8 +438,8 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * When set to {@code true}, a loading spinner is displayed on top of the
-	 * list of options.
+	 * When set to {@code true}, &quot;loading&quot; attibute is added to host
+	 * and the overlay element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -452,8 +456,8 @@ public class GeneratedVaadinComboBox<R extends GeneratedVaadinComboBox<R>>
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * When set to {@code true}, a loading spinner is displayed on top of the
-	 * list of options.
+	 * When set to {@code true}, &quot;loading&quot; attibute is added to host
+	 * and the overlay element.
 	 * </p>
 	 * 
 	 * @param loading

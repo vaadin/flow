@@ -15,6 +15,8 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.router.event.BeforeNavigationEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
@@ -31,6 +33,6 @@ public class RouteNotFoundError extends Component
             ErrorParameter<NotFoundException> parameter) {
         getElement().setText(
                 "Could not navigate to '" + event.getLocation().getPath() + "'");
-        return 404;
+        return HttpServletResponse.SC_NOT_FOUND;
     }
 }

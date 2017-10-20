@@ -236,13 +236,17 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * Scrolls the page to the element given using javascript.
      *
-     * Standard Selenium api does not work for current newest Chrome and ChromeDriver.
+     * Standard Selenium api does not work for current newest Chrome and
+     * ChromeDriver.
      *
-     * @param element the element to scroll to, not {@code null}
+     * @param element
+     *            the element to scroll to, not {@code null}
      */
     protected void scrollToElement(WebElement element) {
-        Objects.requireNonNull(element, "The element to scroll to should not be null");
-        getCommandExecutor().executeScript("arguments[0].scrollIntoView(true);", element);
+        Objects.requireNonNull(element,
+                "The element to scroll to should not be null");
+        getCommandExecutor().executeScript("arguments[0].scrollIntoView(true);",
+                element);
     }
 
     /**
@@ -285,6 +289,18 @@ public class TestBenchHelpers extends ParallelTest {
     protected void clickElementWithJs(String elementId) {
         executeScript(String.format("document.getElementById('%s').click();",
                 elementId));
+    }
+
+    /**
+     * Clicks on the element, using JS. This method is more convenient then
+     * Selenium {@code element.click()}, because Selenium method changes scroll
+     * position, which is not always needed.
+     *
+     * @param element
+     *            the element to be clicked on
+     */
+    protected void clickElementWithJs(WebElement element) {
+        executeScript("arguments[0].click();", element);
     }
 
     private WebElement getShadowRoot(WebElement webComponent) {

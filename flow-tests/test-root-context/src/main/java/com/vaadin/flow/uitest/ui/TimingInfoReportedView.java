@@ -16,9 +16,9 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.ui.html.NativeButton;
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.router.View;
-import com.vaadin.ui.common.AttachEvent;
 
 /**
  * @author Vaadin Ltd

@@ -15,6 +15,7 @@
  */
 package com.vaadin.router;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
 import com.vaadin.router.event.AfterNavigationListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
@@ -47,6 +49,7 @@ import com.vaadin.ui.UI;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class RouterTest extends RoutingTestBase {
 
@@ -484,7 +487,7 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(TEXT_CONTENT);
-            return 404;
+            return HttpServletResponse.SC_NOT_FOUND;
         }
     }
 
@@ -494,7 +497,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<NotFoundException> parameter) {
-            return 404;
+            return HttpServletResponse.SC_NOT_FOUND;
         }
     }
 
@@ -546,12 +549,14 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public int setErrorParameter(BeforeNavigationEvent event,
                 ErrorParameter<IllegalArgumentException> parameter) {
+            eventCollector
+                    .add("Error location: " + event.getLocation().getPath());
             if (parameter.hasCustomMessage()) {
                 getElement().setText(parameter.getCustomMessage());
             } else {
                 getElement().setText("Illegal argument exception.");
             }
-            return 500;
+            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
         }
     }
 
@@ -576,6 +581,138 @@ public class RouterTest extends RoutingTestBase {
         public void beforeNavigation(BeforeNavigationEvent event) {
             eventCollector.add("Redirect");
             UI.getCurrent().navigateTo("loop");
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class EagerlyPostponingNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("Attempting to postpone...");
+            ContinueNavigationAction action = event.postpone();
+            eventCollector.add("Postponed");
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingForeverNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                event.postpone();
+                eventCollector.add("Postponed");
+            } else {
+                eventCollector.add("Can't postpone here");
+            }
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingAndResumingNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                ContinueNavigationAction action = event.postpone();
+                eventCollector.add("Postponed");
+                sleepThenRun(100, action);
+            } else {
+                eventCollector.add("Can't postpone here");
+            }
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingFirstTimeNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        private int counter = 0;
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (counter++ < 2) {
+                if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                    ContinueNavigationAction action = event.postpone();
+                    eventCollector.add("Postponed");
+                    sleepThenRun(50, action);
+                } else {
+                    eventCollector.add("Can't postpone here");
+                }
+            } else {
+                eventCollector.add("Not postponing anymore");
+            }
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ChildListener extends Component
+            implements BeforeNavigationListener {
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            eventCollector.add("ChildListener notified");
+        }
+    }
+
+    @Route("postpone")
+    @Tag(Tag.DIV)
+    public static class PostponingAndResumingCompoundNavigationTarget extends Component
+            implements BeforeNavigationListener {
+        public PostponingAndResumingCompoundNavigationTarget() {
+            getElement().appendChild(new ChildListener().getElement());
+        }
+
+        @Override
+        public void beforeNavigation(BeforeNavigationEvent event) {
+            if (event.getActivationState() == ActivationState.DEACTIVATING) {
+                ContinueNavigationAction action = event.postpone();
+                eventCollector.add("Postponed");
+                sleepThenRun(100, action);
+            } else {
+                eventCollector.add("Can't postpone here");
+            }
+        }
+    }
+
+    static void sleepThenRun(int millis, ContinueNavigationAction action) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException e) {
+                fail("Resuming thread was interrupted");
+            }
+            eventCollector.add("Resuming");
+            action.proceed();
+        }).start();
+    }
+
+    @Route("toNotFound")
+    @Tag(Tag.DIV)
+    public static class RedirectToNotFoundInHasParam extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            event.rerouteToError(NotFoundException.class);
+        }
+    }
+
+    @Route("param/reroute")
+    @Tag(Tag.DIV)
+    public static class RedirectOnSetParam extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeNavigationEvent event,
+                String parameter) {
+            // NOTE! Expects RootParameter.class to be registered!
+            event.rerouteTo("", parameter);
         }
     }
 
@@ -838,16 +975,19 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_fails_with_no_url_parameter()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        ParameterRouteNoParameter.class, RerouteToRouteWithParam.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                ParameterRouteNoParameter.class,
+                                RerouteToRouteWithParam.class)
                         .collect(Collectors.toSet()));
         String locationString = "redirect/to/param";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [hello].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -877,9 +1017,10 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_with_multiple_url_parameters()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithMultipleParameters.class,
-                        RerouteToRouteWithMultipleParams.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                RouteWithMultipleParameters.class,
+                                RerouteToRouteWithMultipleParams.class)
                         .collect(Collectors.toSet()));
 
         router.navigate(ui, new Location("redirect/to/params"),
@@ -895,16 +1036,19 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_fails_with_faulty_url_parameters()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithMultipleParameters.class, FailRerouteWithParams.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                RouteWithMultipleParameters.class,
+                                FailRerouteWithParams.class)
                         .collect(Collectors.toSet()));
         String locationString = "fail/params";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "Given route parameter 'class java.lang.Long' is of the wrong type. Required 'class java.lang.String'.";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -915,16 +1059,19 @@ public class RouterTest extends RoutingTestBase {
     public void reroute_with_multiple_url_parameters_fails_to_parameterless_target()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        ParameterRouteNoParameter.class, RerouteToRouteWithMultipleParams.class)
+                .setNavigationTargets(Stream
+                        .of(GreetingNavigationTarget.class,
+                                ParameterRouteNoParameter.class,
+                                RerouteToRouteWithMultipleParams.class)
                         .collect(Collectors.toSet()));
         String locationString = "redirect/to/params";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -934,17 +1081,18 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void reroute_with_multiple_url_parameters_fails_to_single_parameter_target()
             throws InvalidRouteConfigurationException {
-        router.getRegistry()
-                .setNavigationTargets(Stream.of(GreetingNavigationTarget.class,
-                        RouteWithParameter.class, RerouteToRouteWithMultipleParams.class)
-                        .collect(Collectors.toSet()));
+        router.getRegistry().setNavigationTargets(Stream
+                .of(GreetingNavigationTarget.class, RouteWithParameter.class,
+                        RerouteToRouteWithMultipleParams.class)
+                .collect(Collectors.toSet()));
         String locationString = "redirect/to/params";
 
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        Assert.assertEquals("Routing with mismatching parameters should have failed -",
-                500, result);
+        Assert.assertEquals(
+                "Routing with mismatching parameters should have failed -", 500,
+                result);
         String message = "The navigation target for route 'param' doesn't accept the parameters [this, must, work].";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1203,6 +1351,22 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void reroute_on_hasParameter_step()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(RootParameter.class, RedirectOnSetParam.class)
+                        .collect(Collectors.toSet()));
+
+        router.navigate(ui, new Location("param/reroute/hello"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                eventCollector.size());
+        Assert.assertEquals("Parameter should be empty", "hello",
+                eventCollector.get(0));
+    }
+
+    @Test
     public void test_has_url_with_supported_parameters_navigation()
             throws InvalidRouteConfigurationException {
         router.getRegistry()
@@ -1418,6 +1582,28 @@ public class RouterTest extends RoutingTestBase {
                 .getComponent();
         Assert.assertEquals("CustomMessage",
                 visibleComponent.get().getElement().getText());
+
+        Assert.assertEquals("Expected only one event message from error view",
+                1, eventCollector.size());
+        Assert.assertEquals("Parameter should be empty",
+                "Error location: beforeToError/message/CustomMessage",
+                eventCollector.get(0));
+
+    }
+
+    @Test
+    public void reroute_to_error_from_has_param()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(
+                Stream.of(RedirectToNotFoundInHasParam.class)
+                        .collect(Collectors.toSet()));
+
+        int result = router.navigate(ui, new Location("toNotFound/error"),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Target should have rerouted to exception target.",
+                HttpServletResponse.SC_NOT_FOUND, result);
+
+        Assert.assertEquals(RouteNotFoundError.class, getUIComponent());
     }
 
     @Test
@@ -1445,6 +1631,137 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expected two events", 2, eventCollector.size());
     }
 
+    @Test
+    public void postpone_fails_on_activating_before_navigation_event()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                EagerlyPostponingNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                status);
+    }
+
+    @Test
+    public void postpone_then_resume_on_before_navigation_event()
+            throws InvalidRouteConfigurationException, InterruptedException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                PostponingAndResumingNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
+                getUIComponent());
+        Thread.sleep(200);
+        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 3,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("Postponed", eventCollector.get(1));
+        Assert.assertEquals("Resuming", eventCollector.get(2));
+    }
+
+    @Test
+    public void postpone_forever_on_before_navigation_event()
+            throws InvalidRouteConfigurationException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                PostponingForeverNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals(PostponingForeverNavigationTarget.class,
+                getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 2,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("Postponed", eventCollector.get(1));
+    }
+
+    @Test
+    public void postpone_obsoleted_by_new_navigation_transition()
+            throws InvalidRouteConfigurationException, InterruptedException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                FooNavigationTarget.class, FooBarNavigationTarget.class,
+                PostponingFirstTimeNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location("foo"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status3 = router.navigate(ui, new Location("foo/bar"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals("Third transition failed",
+                HttpServletResponse.SC_OK, status3);
+        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        Thread.sleep(200);
+        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 5,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("Postponed", eventCollector.get(1));
+        Assert.assertEquals("Not postponing anymore", eventCollector.get(2));
+        Assert.assertEquals("FooBar ACTIVATING", eventCollector.get(3));
+        Assert.assertEquals("Resuming", eventCollector.get(4));
+    }
+
+    @Test
+    public void postpone_then_resume_with_multiple_listeners()
+            throws InvalidRouteConfigurationException, InterruptedException {
+        router.getRegistry().setNavigationTargets(Stream.of(
+                RootNavigationTarget.class,
+                PostponingAndResumingCompoundNavigationTarget.class)
+                .collect(Collectors.toSet()));
+
+        int status1 = router.navigate(ui, new Location("postpone"),
+                NavigationTrigger.PROGRAMMATIC);
+        int status2 = router.navigate(ui, new Location(""),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("First transition failed",
+                HttpServletResponse.SC_OK, status1);
+        Assert.assertEquals("Second transition failed",
+                HttpServletResponse.SC_OK, status2);
+        Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
+                getUIComponent());
+        Thread.sleep(200);
+        Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
+        Assert.assertEquals("Expected event amount was wrong", 5,
+                eventCollector.size());
+        Assert.assertEquals("Can't postpone here", eventCollector.get(0));
+        Assert.assertEquals("ChildListener notified", eventCollector.get(1));
+        Assert.assertEquals("Postponed", eventCollector.get(2));
+        Assert.assertEquals("Resuming", eventCollector.get(3));
+        Assert.assertEquals("ChildListener notified", eventCollector.get(4));
+    }
+
     private Class<? extends Component> getUIComponent() {
         return ComponentUtil.findParentComponent(ui.getElement().getChild(0))
                 .get().getClass();
@@ -1462,8 +1779,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertTrue("No navigation component visible",
                 visibleComponent.isPresent());
 
-        Assert.assertEquals(errorClass,
-                visibleComponent.get().getClass());
+        Assert.assertEquals(errorClass, visibleComponent.get().getClass());
         Assert.assertEquals(exceptionText,
                 visibleComponent.get().getElement().getText());
     }

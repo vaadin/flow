@@ -1,0 +1,57 @@
+---
+title: Routing with Spring
+order: 2
+layout: page
+---
+
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Routing with Spring
+
+Routing works the same way with Spring as it does with a plain Flow application.
+To be able to handle the default route you just define a component with `@Route("")` annotation:
+
+[source,java]
+----
+@Route("")
+public class RootComponent extends Div {
+    public RootComponent(){
+        setText("Default path");
+    }
+}
+----
+
+In the same way you may define any other router path. See  
+<<../routing/tutorial-routing-annotation#,Defining Routes with @Route>> 
+tutorial and other router tutorials for more details about using router.
+
+The only thing that is new here for Spring is the possibility to use DI in the
+components annotated with `@Route`. Such a component is instantiated by Spring
+and becomes a Spring initialized bean. In particular it means that you may autowire
+other Spring managed beans. Here is an example:
+
+ [source,java]
+----
+@Route("")
+public class RootComponent extends Div {
+    
+    @Autowired
+    private DataBean dataBean;
+    
+    public RootComponent(){
+        setText(dataBean.getMessage());
+    }
+}
+
+public interface DataBean {
+    String getMessage();
+}
+
+@Component
+public class DataBeanImpl implements DataBean {
+
+    public String getMessage(){
+        return "message";
+    }
+}
+----

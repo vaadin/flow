@@ -76,8 +76,7 @@ import com.vaadin.ui.common.HasComponents;
  * </p>
  */
 @Generated({"Generator: com.vaadin.generator.ComponentGenerator#1.0-SNAPSHOT",
-		"WebComponent: Vaadin.ComboBoxLightElement#3.0.0-alpha7",
-		"Flow#1.0-SNAPSHOT"})
+		"WebComponent: Vaadin.ComboBoxLightElement#3.0.0", "Flow#1.0-SNAPSHOT"})
 @Tag("vaadin-combo-box-light")
 @HtmlImport("frontend://bower_components/vaadin-combo-box/vaadin-combo-box-light.html")
 public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight<R>>
@@ -369,8 +368,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * When set to {@code true}, a loading spinner is displayed on top of the
-	 * list of options.
+	 * When set to {@code true}, &quot;loading&quot; attibute is added to host
+	 * and the overlay element.
 	 * <p>
 	 * This property is not synchronized automatically from the client side, so
 	 * the returned value may not be the same as in client side.
@@ -387,8 +386,8 @@ public class GeneratedVaadinComboBoxLight<R extends GeneratedVaadinComboBoxLight
 	 * Description copied from corresponding location in WebComponent:
 	 * </p>
 	 * <p>
-	 * When set to {@code true}, a loading spinner is displayed on top of the
-	 * list of options.
+	 * When set to {@code true}, &quot;loading&quot; attibute is added to host
+	 * and the overlay element.
 	 * </p>
 	 * 
 	 * @param loading

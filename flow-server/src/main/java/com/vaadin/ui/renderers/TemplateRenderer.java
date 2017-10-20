@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.util.JsonSerializer;
 
@@ -42,6 +43,7 @@ public class TemplateRenderer<SOURCE> implements Serializable {
 
     private String template;
     private Map<String, ValueProvider<SOURCE, ?>> valueProviders;
+    private Map<String, SerializableConsumer<SOURCE>> eventHandlers;
 
     /**
      * Creates a new TemplateRenderer based on the provided template. The
@@ -103,20 +105,66 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      * TemplateRenderer.
      * 
      * @param property
-     *            the name of the property used inside the template
+     *            the name of the property used inside the template, not
+     *            <code>null</code>
      * @param provider
      *            a {@link ValueProvider} that provides the actual value for the
-     *            property
+     *            property, not <code>null</code>
      * @return this instance for method chaining
      */
     public TemplateRenderer<SOURCE> withProperty(String property,
             ValueProvider<SOURCE, ?> provider) {
+        Objects.requireNonNull(property, "The property must not be null");
+        Objects.requireNonNull(provider, "The value provider must not be null");
         valueProviders.put(property, provider);
+        return this;
+    }
+
+    /**
+     * Sets an event handler for events from elements inside the template. Each
+     * event is referenced inside the template by using the {@code on-event}
+     * syntax.
+     * <p>
+     * Examples:
+     * 
+     * <pre>
+     * {@code
+     * // Standard event
+     * TemplateRenderer.of("<button on-click='handleClick'>Click me</button>")
+     *          .withEventHandler("handleClick", object -> doSomething());
+     * 
+     * // You can handle custom events from webcomponents as well, using the same syntax
+     * TemplateRenderer.of("<my-webcomponent on-customevent=
+    'onCustomEvent'></my-webcomponent>")
+     *          .withEventHandler("onCustomEvent", object -> doSomething());
+     * }
+     * </pre>
+     * 
+     * The name of the function used on the {@code on-event} attribute should be
+     * the name used at the handlerName parameter. This name must be a valid
+     * Javascript function name.
+     * 
+     * @param handlerName
+     *            the name of the handler used inside the
+     *            {@code on-event="handlerName"}, not <code>null</code>
+     * @param handler
+     *            the handler executed when the event is triggered, not
+     *            <code>null</code>
+     * @return this instance for method chaining
+     * @see <a href=
+     *      "https://www.polymer-project.org/2.0/docs/devguide/events">https://www.polymer-project.org/2.0/docs/devguide/events</a>
+     */
+    public TemplateRenderer<SOURCE> withEventHandler(String handlerName,
+            SerializableConsumer<SOURCE> handler) {
+        Objects.requireNonNull(handlerName, "The handlerName must not be null");
+        Objects.requireNonNull(handler, "The event handler must not be null");
+        eventHandlers.put(handlerName, handler);
         return this;
     }
 
     protected TemplateRenderer() {
         valueProviders = new HashMap<>();
+        eventHandlers = new HashMap<>();
     }
 
     /**
@@ -136,5 +184,16 @@ public class TemplateRenderer<SOURCE> implements Serializable {
      */
     public Map<String, ValueProvider<SOURCE, ?>> getValueProviders() {
         return Collections.unmodifiableMap(valueProviders);
+    }
+
+    /**
+     * Gets the event handlers linked to this renderer. The returned map in
+     * immutable.
+     * 
+     * @return the mapped event handlers, never <code>null</code>
+     * @see #withEventHandler(String, SerializableConsumer)
+     */
+    public Map<String, SerializableConsumer<SOURCE>> getEventHandlers() {
+        return Collections.unmodifiableMap(eventHandlers);
     }
 }

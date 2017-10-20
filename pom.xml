@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.vaadin</groupId>
@@ -10,6 +11,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <modules>
+        <module>webjars-bom</module>
         <module>flow</module>
         <module>flow-server</module>
         <module>flow-push</module>
@@ -17,6 +19,7 @@
         <module>flow-client</module>
         <module>flow-html-components</module>
         <module>flow-spring-addon</module>
+        <module>flow-spring-boot-starter</module>
         <module>flow-documentation</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
@@ -40,24 +43,32 @@
     <inceptionYear>2000</inceptionYear>
     <scm>
         <connection>scm:https:https://github.com/vaadin/flow.git</connection>
-        <developerConnection>scm:git:git@github.com:vaadin/flow.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:vaadin/flow.git
+        </developerConnection>
         <url>https://github.com/vaadin/flow</url>
     </scm>
 
     <properties>
         <flow.repo.id>hummingbird-snapshot</flow.repo.id>
-        <flow.snapshot.repo.url>https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/</flow.snapshot.repo.url>
-        <flow.release.repo.url>https://repo.vaadin.com/nexus/content/repositories/flow/</flow.release.repo.url>
-        <flow.deployment.repo.url>${flow.snapshot.repo.url}</flow.deployment.repo.url>
+        <flow.snapshot.repo.url>
+            https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/
+        </flow.snapshot.repo.url>
+        <flow.release.repo.url>
+            https://repo.vaadin.com/nexus/content/repositories/flow/
+        </flow.release.repo.url>
+        <flow.deployment.repo.url>${flow.snapshot.repo.url}
+        </flow.deployment.repo.url>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.reporting.outputEncoding>UTF-8
+        </project.reporting.outputEncoding>
         <jsinterop.version>1.0.1</jsinterop.version>
         <sonar.java.source>8</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
-        <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
+        <sonar.issuesReport.console.enable>true
+        </sonar.issuesReport.console.enable>
         <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <failOnMissingWebXml>false</failOnMissingWebXml>
@@ -67,7 +78,8 @@
         <hibernate.validator.version>6.0.1.Final</hibernate.validator.version>
 
         <!-- Plugins -->
-        <driver.binary.downloader.maven.plugin.version>1.0.14</driver.binary.downloader.maven.plugin.version>
+        <driver.binary.downloader.maven.plugin.version>1.0.14
+        </driver.binary.downloader.maven.plugin.version>
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
         <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>2.20</maven.failsafe.plugin.version>
@@ -82,8 +94,6 @@
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
         <node.version>v7.10.1</node.version>
         <npm.version>5.3.0</npm.version>
-
-        <frontend.working.directory>${project.basedir}/src/main/webapp/frontend</frontend.working.directory>
 
         <maven.test.skip>false</maven.test.skip>
     </properties>
@@ -104,6 +114,10 @@
             <id>vaadin-addons</id>
             <url>http://maven.vaadin.com/vaadin-addons</url>
         </repository>
+        <repository>
+            <id>webjars</id>
+            <url>https://dl.bintray.com/webjars/maven</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -123,16 +137,24 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.google.gwt</groupId>
-                <artifactId>gwt-elemental</artifactId>
-                <version>${gwt.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.google.jsinterop</groupId>
                 <artifactId>jsinterop</artifactId>
                 <version>${jsinterop.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-webjars-bom</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt-elemental</artifactId>
+                <version>${gwt.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -177,82 +199,15 @@
                 <version>2.0</version>
             </dependency>
 
-            <!-- Fix all ambiguities in bower dependencies. Will be moved to bom file later. -->
+            <!-- webjars that do not belong to flow-components -->
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>polymer</artifactId>
-                <version>2.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymer-polymer</artifactId>
-                <version>v2.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>iron-flex-layout</artifactId>
+                <artifactId>paper-styles</artifactId>
                 <version>2.0.0</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-flex-layout</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-flex-layout</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>shadycss</artifactId>
-                <version>v1.0.5</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-webcomponents-shadycss</artifactId>
-                <version>v1.0.5</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>webcomponentsjs</artifactId>
-                <version>1.0.8</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-input</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-paper-input</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-a11y-keys-behavior</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-a11y-keys-behavior</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-polymerelements-paper-styles</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-paper-styles</artifactId>
                 <version>2.0.0</version>
             </dependency>
 
@@ -261,72 +216,65 @@
                 <artifactId>github-com-polymerelements-font-roboto</artifactId>
                 <version>1.0.3</version>
             </dependency>
+
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-font-roboto</artifactId>
-                <version>1.0.3</version>
+                <artifactId>github-com-polymerelements-iron-autogrow-textarea</artifactId>
+                <version>2.1.0</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-behaviors</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-behaviors</artifactId>
-                <version>2.0.0</version>
+                <artifactId>github-com-polymerelements-iron-validatable-behavior</artifactId>
+                <version>1.1.1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-progress</artifactId>
+                <artifactId>github-com-polymerelements-iron-input</artifactId>
+                <version>2.0.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-polymerelements-iron-form-element-behavior</artifactId>
+                <version>1.0.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>paper-input</artifactId>
+                <version>2.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-polymerelements-paper-input</artifactId>
+                <version>2.0.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>paper-progress</artifactId>
                 <version>2.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-paper-progress</artifactId>
+                <artifactId>github-com-polymerelements-paper-progress</artifactId>
                 <version>2.0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-polymerelements-iron-range-behavior</artifactId>
-                <version>1.0.6</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-range-behavior</artifactId>
-                <version>1.0.6</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-form-element-behavior</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-form-element-behavior</artifactId>
                 <version>2.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-polymerelements-paper-behaviors</artifactId>
-                <version>2.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-paper-behaviors</artifactId>
-                <version>2.0.0</version>
+                <version>1.0.10</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-checked-element-behavior</artifactId>
-                <version>2.0.0</version>
-            </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
                 <artifactId>github-com-PolymerElements-iron-checked-element-behavior</artifactId>
@@ -335,73 +283,52 @@
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-paper-ripple</artifactId>
-                <version>2.0.1</version>
+                <artifactId>github-com-polymerelements-iron-image</artifactId>
+                <version>2.1.2</version>
             </dependency>
+
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-paper-ripple</artifactId>
+                <artifactId>github-com-polymerelements-paper-dialog-behavior</artifactId>
                 <version>2.0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-autogrow-textarea</artifactId>
-                <version>2.1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-autogrow-textarea</artifactId>
-                <version>2.1.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-validatable-behavior</artifactId>
+                <artifactId>paper-item</artifactId>
                 <version>2.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-validatable-behavior</artifactId>
+                <artifactId>github-com-polymerelements-paper-item</artifactId>
                 <version>2.0.0</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-meta</artifactId>
-                <version>2.0.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-meta</artifactId>
-                <version>2.0.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-input</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-input</artifactId>
+                <artifactId>github-com-polymerelements-paper-icon-button</artifactId>
                 <version>2.0.1</version>
             </dependency>
 
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-polymerelements-iron-a11y-announcer</artifactId>
-                <version>1.0.5</version>
-            </dependency>
-            <dependency>
-                <groupId>org.webjars.bower</groupId>
-                <artifactId>github-com-PolymerElements-iron-a11y-announcer</artifactId>
-                <version>1.0.5</version>
+                <artifactId>github-com-polymerelements-paper-listbox</artifactId>
+                <version>2.0.0</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-polymerelements-iron-menu-behavior</artifactId>
+                <version>2.0.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>github-com-polymerelements-paper-menu-button</artifactId>
+                <version>2.0.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-
 
     <dependencies>
         <dependency>
@@ -450,9 +377,11 @@
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>1.8.1</version>
                 <configuration>
-                    <configFile>classpath:/eclipse/VaadinJavaConventions.xml</configFile>
+                    <configFile>classpath:/eclipse/VaadinJavaConventions.xml
+                    </configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>classpath:/eclipse/VaadinJavaConventions.xml</configJsFile>
+                    <configJsFile>classpath:/eclipse/VaadinJavaConventions.xml
+                    </configJsFile>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -537,22 +466,14 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${frontend.working.directory}/bower_components</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/build</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>${frontend.working.directory}/node_modules</directory>
-                        </fileset>
-                        <fileset>
                             <directory>${project.rootdir}/driver</directory>
                         </fileset>
                         <fileset>
-                            <directory>${project.rootdir}/driver_zips</directory>
+                            <directory>${project.rootdir}/driver_zips
+                            </directory>
+                        </fileset>
+                        <fileset>
+                            <directory>error-screenshots</directory>
                         </fileset>
                     </filesets>
                 </configuration>
@@ -572,12 +493,12 @@
                     <configuration>
                         <archive>
                             <manifestEntries>
-                                <Implementation-Title>${project.name}</Implementation-Title>
-                                <Implementation-Version>${project.version}</Implementation-Version>
+                                <Implementation-Title>${project.name}
+                                </Implementation-Title>
+                                <Implementation-Version>${project.version}
+                                </Implementation-Version>
                             </manifestEntries>
                         </archive>
-                        <warSourceExcludes>**/node_modules/,**/node/,**/etc/</warSourceExcludes>
-                        <packagingExcludes>**/node_modules/,**/node/,**/etc/</packagingExcludes>
                     </configuration>
                 </plugin>
                 <plugin>

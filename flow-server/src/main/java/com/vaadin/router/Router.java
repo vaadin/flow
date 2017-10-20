@@ -54,8 +54,6 @@ public class Router implements RouterInterface {
 
     private final RouteRegistry registry;
 
-    private Location lastHandledNavigation = null;
-
     /**
      * Constructs a new router with the given route registry and a
      * {@link DefaultRouteResolver}.
@@ -112,8 +110,9 @@ public class Router implements RouterInterface {
 
                 NavigationHandler handler = new NavigationStateRenderer(
                         newState);
-                if (notNavigatingToSameLocation(location)) {
-                    lastHandledNavigation = location;
+                if (notNavigatingToSameLocation(location,
+                        ui.getInternals().getLastHandledLocation())) {
+                    ui.getInternals().setLastHandledNavigation(location);
                     return handler.handle(navigationEvent);
                 }
             }
@@ -140,7 +139,7 @@ public class Router implements RouterInterface {
 
             return navigateToExceptionView(ui, location, errorParameter);
         } finally {
-            lastHandledNavigation = null;
+            ui.getInternals().clearLastHandledNavigation();
         }
     }
 
@@ -165,10 +164,13 @@ public class Router implements RouterInterface {
         }
     }
 
-    private boolean notNavigatingToSameLocation(Location location) {
-        return lastHandledNavigation == null
-                || !location.getPathWithQueryParameters().equals(
-                        lastHandledNavigation.getPathWithQueryParameters());
+    private boolean notNavigatingToSameLocation(Location location,
+            Location lastHandledNavigation) {
+        if (lastHandledNavigation != null) {
+            return !location.getPathWithQueryParameters()
+                    .equals(lastHandledNavigation.getPathWithQueryParameters());
+        }
+        return true;
     }
 
     @Override

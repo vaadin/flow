@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui.common;
 
+import com.vaadin.ui.event.AttachEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.event.ComponentEventNotifier;

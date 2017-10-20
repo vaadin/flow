@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
@@ -43,10 +44,8 @@ import com.vaadin.ui.renderers.TemplateRenderer;
 public class GridView extends DemoView {
 
     static List<Person> items = new ArrayList<>();
-    private static Random random = new Random(0);
     static {
-        items = IntStream.range(1, 500).mapToObj(GridView::createPerson)
-                .collect(Collectors.toList());
+        items = createItems();
     }
 
     // begin-source-example
@@ -55,9 +54,18 @@ public class GridView extends DemoView {
      * Example object.
      */
     public static class Person {
+        private int id;
         private String name;
         private int age;
         private Address address;
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
 
         public String getName() {
             return name;
@@ -84,9 +92,24 @@ public class GridView extends DemoView {
         }
 
         @Override
+        public int hashCode() {
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (!(obj instanceof Person)) {
+                return false;
+            }
+            Person other = (Person) obj;
+            return id == other.id;
+        }
+
+        @Override
         public String toString() {
-            return String.format("Person [name=%s, age=%s, address=%s]", name,
-                    age, address);
+            return String.format("Person [name=%s, age=%s]", name, age);
         }
     }
 
@@ -121,13 +144,6 @@ public class GridView extends DemoView {
         public void setPostalCode(String postalCode) {
             this.postalCode = postalCode;
         }
-
-        @Override
-        public String toString() {
-            return String.format(
-                    "Address [street=%s, number=%s, postalCode=%s]", street,
-                    number, postalCode);
-        }
     }
     // end-source-example
 
@@ -148,7 +164,7 @@ public class GridView extends DemoView {
         // begin-source-example
         // source-example-heading: Grid Basics
         Grid<Person> grid = new Grid<>();
-        grid.setItems(createItems());
+        grid.setItems(getItems());
 
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", Person::getAge);
@@ -170,12 +186,13 @@ public class GridView extends DemoView {
          * view "window". The Data Provider will use callbacks to load only a
          * portion of the data.
          */
-        grid.setDataProvider(DataProvider.fromCallbacks(query -> {
-            return IntStream
-                    .range(query.getOffset(),
-                            query.getOffset() + query.getLimit())
-                    .mapToObj(GridView::createPerson);
-        }, query -> 10000));
+        Random random = new Random(0);
+        grid.setDataProvider(DataProvider.fromCallbacks(
+                query -> IntStream
+                        .range(query.getOffset(),
+                                query.getOffset() + query.getLimit())
+                        .mapToObj(index -> createPerson(index, random)),
+                query -> 10000));
 
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", Person::getAge);
@@ -191,7 +208,7 @@ public class GridView extends DemoView {
         Div messageDiv = new Div();
         // begin-source-example
         // source-example-heading: Grid Single Selection
-        List<Person> people = createItems();
+        List<Person> people = getItems();
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
@@ -227,7 +244,7 @@ public class GridView extends DemoView {
         Div messageDiv = new Div();
         // begin-source-example
         // source-example-heading: Grid Multi Selection
-        List<Person> people = createItems();
+        List<Person> people = getItems();
         Grid<Person> grid = new Grid<>();
         grid.setItems(people);
 
@@ -261,7 +278,7 @@ public class GridView extends DemoView {
         // begin-source-example
         // source-example-heading: Grid with No Selection Enabled
         Grid<Person> grid = new Grid<>();
-        grid.setItems(createItems());
+        grid.setItems(getItems());
 
         grid.addColumn("Name", Person::getName);
         grid.addColumn("Age", Person::getAge);
@@ -296,18 +313,40 @@ public class GridView extends DemoView {
                 "<div>[[item.address.street]], number [[item.address.number]]<br><small>[[item.address.postalCode]]</small></div>")
                 .withProperty("address", Person::getAddress));
 
+        // You can set events handlers associated with the template. The syntax
+        // follows the Polymer convention "on-event", such as "on-click".
+        grid.addColumn("Actions", TemplateRenderer.<Person> of(
+                "<button on-click='handleUpdate'>Update</button><button on-click='handleRemove'>Remove</button>")
+                .withEventHandler("handleUpdate", person -> {
+                    person.setName(person.getName() + " Updated");
+                    grid.getDataCommunicator().reset();
+                }).withEventHandler("handleRemove", person -> {
+                    ListDataProvider<Person> dataProvider = (ListDataProvider<Person>) grid
+                            .getDataCommunicator().getDataProvider();
+                    dataProvider.getItems().remove(person);
+                    grid.getDataCommunicator().reset();
+                }));
+
         grid.setSelectionMode(SelectionMode.NONE);
         // end-source-example
         grid.setId("template-renderer");
         addCard("Grid with columns using template renderer", grid);
     }
 
-    private List<Person> createItems() {
+    private List<Person> getItems() {
         return items;
     }
 
-    private static Person createPerson(int index) {
+    private static List<Person> createItems() {
+        Random random = new Random(0);
+        return IntStream.range(1, 500)
+                .mapToObj(index -> createPerson(index, random))
+                .collect(Collectors.toList());
+    }
+
+    private static Person createPerson(int index, Random random) {
         Person person = new Person();
+        person.setId(index);
         person.setName("Person " + index);
         person.setAge(13 + random.nextInt(50));
 

@@ -15,24 +15,32 @@
  */
 package com.vaadin.server.startup;
 
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletException;
 
 import org.jsoup.Jsoup;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.model.TemplateModel;
 import com.vaadin.function.DeploymentConfiguration;
 import com.vaadin.server.InvalidCustomElementNameException;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.Tag;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.polymertemplate.PolymerTemplate;
 import com.vaadin.ui.polymertemplate.TemplateParser;
 import com.vaadin.util.HasCurrentService;
@@ -59,17 +67,40 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
     }
 
     @Before
-    public void setup() {
-        CustomElementRegistryAccess.resetRegistry();
+    public void setup() throws NoSuchFieldException, SecurityException,
+            IllegalArgumentException, IllegalAccessException {
+        Field customElements = CustomElementRegistry.class
+                .getDeclaredField("customElements");
+        customElements.setAccessible(true);
+        customElements.set(CustomElementRegistry.getInstance(),
+                new AtomicReference<>());
 
         customElementRegistryInitializer = new CustomElementRegistryInitializer();
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+        UI ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        VaadinService service = Mockito.mock(VaadinService.class);
+        when(session.getService()).thenReturn(service);
+        when(service.getInstantiator())
+                .thenReturn(new DefaultInstantiator(service));
+        UI.setCurrent(ui);
+    }
+
+    @After
+    public void tearDown() {
+        UI.setCurrent(null);
     }
 
     @Test
     public void registryInitializerAcceptsNull() throws ServletException {
         // doesn't throw
         customElementRegistryInitializer.onStartup(null, null);
-        Assert.assertTrue(CustomElementRegistry.getInstance().initialized);
+        Assert.assertTrue(CustomElementRegistry.getInstance().isInitialized());
     }
 
     @Test
@@ -97,14 +128,14 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
             throws ServletException {
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class, ValidExtendingElement.class)
-                .collect(Collectors.toSet()),
+                        .collect(Collectors.toSet()),
                 null);
 
         Assert.assertTrue(CustomElementRegistry.getInstance()
                 .isRegisteredCustomElement("custom-element"));
         Assert.assertEquals("Stored element was not the super class",
                 ValidCustomElement.class, CustomElementRegistry.getInstance()
-                .getRegisteredCustomElement("custom-element"));
+                        .getRegisteredCustomElement("custom-element"));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -140,7 +171,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
         Assert.assertTrue("Element got unexpected Component",
                 polymerElement.getComponent().get().getClass()
-                .equals(CustomPolymerElement.class));
+                        .equals(CustomPolymerElement.class));
     }
 
     @Test
@@ -158,7 +189,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
         Assert.assertTrue("Element got unexpected Component",
                 element.getComponent().get().getClass()
-                .equals(ValidCustomElement.class));
+                        .equals(ValidCustomElement.class));
     }
 
     @Test
@@ -189,7 +220,8 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
     }
 
     @Test
-    public void shouldNotFailWhenCommonSuperClassIsLastElement() throws ServletException {
+    public void shouldNotFailWhenCommonSuperClassIsLastElement()
+            throws ServletException {
         customElementRegistryInitializer.onStartup(Stream
                 .of(ValidExtendingElement.class, ValidExtendingElement2.class,
                         ValidExtendingElement3.class,
@@ -203,12 +235,12 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
         Assert.assertTrue("Element got unexpected Component",
                 element.getComponent().get().getClass()
-                .equals(ValidCustomElement.class));
+                        .equals(ValidCustomElement.class));
     }
 
     @Tag("custom-element")
     public static class ValidCustomElement
-    extends PolymerTemplate<TemplateModel> {
+            extends PolymerTemplate<TemplateModel> {
 
         public ValidCustomElement() {
             super(TEST_PARSER);
@@ -230,7 +262,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
     @Tag("-invalid")
     private static class InvalidCustomElement
-    extends PolymerTemplate<TemplateModel> {
+            extends PolymerTemplate<TemplateModel> {
 
         public InvalidCustomElement() {
             super(TEST_PARSER);
@@ -239,7 +271,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
     @Tag("custom-element")
     private static class InvalidExtendingElement
-    extends PolymerTemplate<TemplateModel> {
+            extends PolymerTemplate<TemplateModel> {
 
         public InvalidExtendingElement() {
             super(TEST_PARSER);
@@ -248,7 +280,7 @@ public class CustomElementRegistryInitializerTest extends HasCurrentService {
 
     @Tag("custom-polymer-element")
     public static class CustomPolymerElement
-    extends PolymerTemplate<TemplateModel> {
+            extends PolymerTemplate<TemplateModel> {
 
         public CustomPolymerElement() {
             super(TEST_PARSER);

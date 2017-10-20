@@ -15,7 +15,6 @@
  */
 package com.vaadin.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,9 +24,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
+import javax.servlet.ServletContext;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -51,18 +53,14 @@ import com.vaadin.util.ReflectTools;
  */
 public class RouteRegistry implements Serializable {
 
-    private final Map<String, RouteTarget> routes = new HashMap<>();
-    private final Map<Class<? extends Component>, String> targetRoutes = new HashMap<>();
-    private final Map<Class, Class<? extends Component>> exceptionTargets = new HashMap<Class, Class<? extends Component>>();
-
-    private boolean initialized;
-    private boolean errorTargetsInitialized;
+    private final AtomicReference<Map<String, RouteTarget>> routes = new AtomicReference<>();
+    private final AtomicReference<Map<Class<? extends Component>, String>> targetRoutes = new AtomicReference<>();
+    private final AtomicReference<Map<Class<?>, Class<? extends Component>>> exceptionTargets = new AtomicReference<>();
 
     /**
      * Creates a new uninitialized route registry.
      */
     protected RouteRegistry() {
-        initialized = false;
     }
 
     /**
@@ -80,13 +78,16 @@ public class RouteRegistry implements Serializable {
     public static RouteRegistry getInstance(ServletContext servletContext) {
         assert servletContext != null;
 
-        Object attribute = servletContext
-                .getAttribute(RouteRegistry.class.getName());
+        Object attribute;
+        synchronized (servletContext) {
+            attribute = servletContext
+                    .getAttribute(RouteRegistry.class.getName());
 
-        if (attribute == null) {
-            attribute = new RouteRegistry();
-            servletContext.setAttribute(RouteRegistry.class.getName(),
-                    attribute);
+            if (attribute == null) {
+                attribute = new RouteRegistry();
+                servletContext.setAttribute(RouteRegistry.class.getName(),
+                        attribute);
+            }
         }
 
         if (attribute instanceof RouteRegistry) {
@@ -97,16 +98,11 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private void clear() {
-        routes.clear();
-        targetRoutes.clear();
-    }
-
     /**
      * Registers a set of components as navigation targets.
      * <p>
      * <strong>Note:</strong> Navigation targets can only be set once, i.e. when
-     * {@link #isInitialized()} is {@code false}.
+     * {@link #navigationTargetsInitialized()} is {@code false}.
      *
      * @param navigationTargets
      *            set of navigation target components
@@ -116,34 +112,47 @@ public class RouteRegistry implements Serializable {
     public void setNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
-        if (isInitialized()) {
+
+        if (navigationTargetsInitialized()) {
             throw new InvalidRouteConfigurationException(
                     "Routes have already been initialized");
         }
         validateNavigationTargets(navigationTargets);
         doRegisterNavigationTargets(navigationTargets);
-        initialized = true;
     }
 
     /**
      * Set error handler navigation targets.
-     * 
+     *
      * @param errorNavigationTargets
      *            error handler navigation targets
      */
     public void setErrorNavigationTargets(
             Set<Class<? extends Component>> errorNavigationTargets) {
+        Map<Class<?>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
         for (Class<? extends Component> target : errorNavigationTargets) {
             Class<?> exceptionType = ReflectTools
                     .getGenericInterfaceType(target, HasErrorParameter.class);
 
-            if (exceptionTargets.containsKey(exceptionType)) {
-                handleRegisteredExceptionType(target, exceptionType);
+            if (exceptionTargetsMap.containsKey(exceptionType)) {
+                handleRegisteredExceptionType(exceptionTargetsMap, target,
+                        exceptionType);
             } else {
-                exceptionTargets.put(exceptionType, target);
+                exceptionTargetsMap.put(exceptionType, target);
             }
         }
-        initErrorTargets();
+        initErrorTargets(exceptionTargetsMap);
+    }
+
+    /**
+     * Returns whether this registry has been initialized with error navigation
+     * targets.
+     *
+     * @return whether this registry has been initialized with error navigation
+     *         targets
+     */
+    public boolean errorNavigationTargetsInitialized() {
+        return exceptionTargets.get() != null;
     }
 
     /**
@@ -153,19 +162,20 @@ public class RouteRegistry implements Serializable {
      * If the target is not related to the registered handler then throw
      * configuration exception as only one handler for each exception type is
      * allowed.
-     * 
+     *
      * @param target
      *            target being handled
      * @param exceptionType
      *            type of the handled exception
      */
     private void handleRegisteredExceptionType(
+            Map<Class<?>, Class<? extends Component>> exceptionTargetsMap,
             Class<? extends Component> target, Class<?> exceptionType) {
-        Class<? extends Component> registered = exceptionTargets
+        Class<? extends Component> registered = exceptionTargetsMap
                 .get(exceptionType);
 
         if (registered.isAssignableFrom(target)) {
-            exceptionTargets.put(exceptionType, target);
+            exceptionTargetsMap.put(exceptionType, target);
         } else if (!target.isAssignableFrom(registered)) {
             String msg = String.format(
                     "Only one target for an exception should be defined. Found '%s' and '%s' for exception '%s'",
@@ -175,30 +185,34 @@ public class RouteRegistry implements Serializable {
         }
     }
 
-    private void initErrorTargets() {
-        if (!exceptionTargets.containsKey(NotFoundException.class)) {
-            exceptionTargets.put(NotFoundException.class,
+    private void initErrorTargets(
+            Map<Class<?>, Class<? extends Component>> exceptionTargetsMap) {
+        if (!exceptionTargetsMap.containsKey(NotFoundException.class)) {
+            exceptionTargetsMap.put(NotFoundException.class,
                     RouteNotFoundError.class);
         }
-        if (!exceptionTargets.containsKey(Exception.class)) {
-            exceptionTargets.put(Exception.class, InternalServerError.class);
+        if (!exceptionTargetsMap.containsKey(Exception.class)) {
+            exceptionTargetsMap.put(Exception.class, InternalServerError.class);
         }
-        errorTargetsInitialized = true;
+        if (!exceptionTargets.compareAndSet(null, exceptionTargetsMap)) {
+            throw new IllegalStateException(
+                    "Exception targets has been already initialized");
+        }
     }
 
     /**
      * Get a registered navigation target for given exception. First we will
      * search for a matching cause for in the exception chain and if no match
      * found search by extended type.
-     * 
+     *
      * @param exception
      *            exception to search error view for
      * @return optional error target corresponding to the given exception
      */
     public Optional<Class<? extends Component>> getErrorNavigationTarget(
             Throwable exception) {
-        if (!errorTargetsInitialized) {
-            initErrorTargets();
+        if (!errorNavigationTargetsInitialized()) {
+            initErrorTargets(new HashMap<>());
         }
         Class<? extends Component> result = searchByCause(exception);
         if (result == null) {
@@ -208,8 +222,8 @@ public class RouteRegistry implements Serializable {
     }
 
     private Class<? extends Component> searchByCause(Throwable exception) {
-        if (exceptionTargets.containsKey(exception.getClass())) {
-            return exceptionTargets.get(exception.getClass());
+        if (exceptionTargets.get().containsKey(exception.getClass())) {
+            return exceptionTargets.get().get(exception.getClass());
         }
         if (exception.getCause() != null) {
             return searchByCause(exception.getCause());
@@ -220,8 +234,8 @@ public class RouteRegistry implements Serializable {
     private Class<? extends Component> searchBySuperType(Throwable exception) {
         Class<?> superClass = exception.getClass().getSuperclass();
         do {
-            if (exceptionTargets.containsKey(superClass)) {
-                return exceptionTargets.get(superClass);
+            if (exceptionTargets.get().containsKey(superClass)) {
+                return exceptionTargets.get().get(superClass);
             }
             superClass = superClass.getSuperclass();
         } while (superClass != null
@@ -251,10 +265,10 @@ public class RouteRegistry implements Serializable {
     /**
      * Gets the optional navigation target class for a given Location matching
      * with path segments.
-     * 
-     * 
+     *
+     *
      * @see Location
-     * 
+     *
      * @param pathString
      *            path to get navigation target for, not {@code null}
      * @param segments
@@ -265,8 +279,8 @@ public class RouteRegistry implements Serializable {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
         if (hasRouteTo(pathString)) {
-            return Optional
-                    .ofNullable(routes.get(pathString).getTarget(segments));
+            return Optional.ofNullable(
+                    getRoutes().get(pathString).getTarget(segments));
         }
         return Optional.empty();
     }
@@ -276,13 +290,13 @@ public class RouteRegistry implements Serializable {
      *
      * @param pathString
      *            path to get navigation target for, not {@code null}
-     * @return true if the registry contains a route to the given path,
-     *         false otherwise.
+     * @return true if the registry contains a route to the given path, false
+     *         otherwise.
      */
     public boolean hasRouteTo(String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
 
-        return routes.containsKey(pathString);
+        return getRoutes().containsKey(pathString);
     }
 
     /**
@@ -308,10 +322,11 @@ public class RouteRegistry implements Serializable {
      */
     private String collectRequiredParameters(
             Class<? extends Component> navigationTarget) {
-        String route = targetRoutes.get(navigationTarget);
+        String route = targetRoutes.get().get(navigationTarget);
         if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
-            Class genericInterfaceType = ReflectTools.getGenericInterfaceType(
-                    navigationTarget, HasUrlParameter.class);
+            Class<?> genericInterfaceType = ReflectTools
+                    .getGenericInterfaceType(navigationTarget,
+                            HasUrlParameter.class);
             route = route + "/{" + genericInterfaceType.getSimpleName() + "}";
         }
         return route;
@@ -323,14 +338,15 @@ public class RouteRegistry implements Serializable {
      *
      * @return whether this registry has been initialized
      */
-    public boolean isInitialized() {
-        return initialized;
+    public boolean navigationTargetsInitialized() {
+        return routes.get() != null;
     }
 
-    private void validateNavigationTargets(
+    private Map<Class<? extends Component>, String> validateNavigationTargets(
             Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
         Map<String, RouteTarget> navigationTargetMap = new HashMap<>();
+        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
         for (Class<? extends Component> navigationTarget : navigationTargets) {
             if (!navigationTarget.isAnnotationPresent(Route.class)) {
                 throw new InvalidRouteConfigurationException(String.format(
@@ -339,7 +355,7 @@ public class RouteRegistry implements Serializable {
                         navigationTarget.getName()));
             }
             String route = getNavigationRoute(navigationTarget);
-            targetRoutes.put(navigationTarget, route);
+            targetRoutesMap.put(navigationTarget, route);
             // Further validation is performed inside addRoute()
             if (navigationTargetMap.containsKey(route)) {
                 navigationTargetMap.get(route).addRoute(navigationTarget);
@@ -348,6 +364,7 @@ public class RouteRegistry implements Serializable {
                         new RouteTarget(navigationTarget));
             }
         }
+        return targetRoutesMap;
     }
 
     /**
@@ -408,20 +425,31 @@ public class RouteRegistry implements Serializable {
             throws InvalidRouteConfigurationException {
         Logger logger = Logger.getLogger(RouteRegistry.class.getName());
 
-        clear();
+        Map<String, RouteTarget> routesMap = new HashMap<>();
+        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
         for (Class<? extends Component> navigationTarget : navigationTargets) {
             String route = getNavigationRoute(navigationTarget);
-            targetRoutes.put(navigationTarget, route);
-            if (routes.containsKey(route)) {
-                routes.get(route).addRoute(navigationTarget);
+            targetRoutesMap.put(navigationTarget, route);
+            if (routesMap.containsKey(route)) {
+                routesMap.get(route).addRoute(navigationTarget);
             } else {
                 String message = String.format(
                         "Registering route '%s' to navigation target '%s'.",
                         route, navigationTarget.getName());
                 logger.log(Level.FINE, message);
 
-                routes.put(route, new RouteTarget(navigationTarget));
+                routesMap.put(route, new RouteTarget(navigationTarget));
             }
+        }
+        if (!routes.compareAndSet(null,
+                Collections.unmodifiableMap(routesMap))) {
+            throw new IllegalStateException(
+                    "Route registry has been already initialized");
+        }
+        if (!targetRoutes.compareAndSet(null,
+                Collections.unmodifiableMap(targetRoutesMap))) {
+            throw new IllegalStateException(
+                    "Route registry has been already initialized");
         }
     }
 
@@ -432,6 +460,14 @@ public class RouteRegistry implements Serializable {
      *         registered; otherwise <code>false</code>
      */
     public boolean hasNavigationTargets() {
-        return !routes.isEmpty();
+        return !getRoutes().isEmpty();
+    }
+
+    private Map<String, RouteTarget> getRoutes() {
+        Map<String, RouteTarget> map = routes.get();
+        if (map == null) {
+            return Collections.emptyMap();
+        }
+        return map;
     }
 }

@@ -23,7 +23,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.data.AbstractListing;
 import com.vaadin.data.Binder;
@@ -32,6 +35,7 @@ import com.vaadin.data.provider.ArrayUpdater;
 import com.vaadin.data.provider.ArrayUpdater.Update;
 import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
 import com.vaadin.data.selection.MultiSelectionListener;
 import com.vaadin.data.selection.SelectionEvent;
@@ -41,13 +45,15 @@ import com.vaadin.data.selection.SelectionModel.Single;
 import com.vaadin.data.selection.SingleSelect;
 import com.vaadin.data.selection.SingleSelectionEvent;
 import com.vaadin.data.selection.SingleSelectionListener;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.util.HtmlUtils;
 import com.vaadin.flow.util.JsonUtils;
+import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
 import com.vaadin.ui.Tag;
-import com.vaadin.ui.common.AttachEvent;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
@@ -292,13 +298,13 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         protected abstract <T> GridSelectionModel<T> createModel(Grid<T> grid);
     }
 
-    private static final int PAGE_SIZE = 100;
-
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
 
     private final Map<String, Function<T, JsonValue>> columnGenerators = new HashMap<>();
     private final DataCommunicator<T> dataCommunicator = new DataCommunicator<>(
-            this::generateItemJson, arrayUpdater, getElement().getNode());
+            this::generateItemJson, arrayUpdater,
+            data -> getElement().callFunction("updateData", data),
+            getElement().getNode());
 
     private int nextColumnId = 0;
 
@@ -306,18 +312,29 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
             .createModel(this);
 
     /**
-     * Creates a new instance.
+     * Creates a new instance, with page size of 50.
      */
     public Grid() {
-        getDataCommunicator().setRequestedRange(0, PAGE_SIZE);
+        this(50);
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        attachEvent.getUI().getPage().executeJavaScript(
-                "window.gridConnector.initLazy($0, $1)", getElement(),
-                PAGE_SIZE);
+    /**
+     * Creates a new instance, with the specified page size.
+     * <p>
+     * The page size influences the {@link Query#getLimit()} sent by the client,
+     * but it's up to the webcomponent to determine the actual query limit,
+     * based on the height of the component and scroll position. Usually the
+     * limit is 3 times the page size (e.g. 150 items with a page size of 50).
+     * 
+     * @param pageSize
+     *            the page size. Must be greater than zero.
+     */
+    public Grid(int pageSize) {
+        setPageSize(pageSize);
+
+        getElement().getNode()
+                .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                        "window.gridConnector.initLazy($0)", getElement()));
     }
 
     /**
@@ -368,7 +385,73 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
                 .setAttribute("id", columnKey)
                 .appendChild(headerTemplate, contentTemplate);
 
+        Map<String, SerializableConsumer<T>> eventConsumers = renderer
+                .getEventHandlers();
+
+        if (!eventConsumers.isEmpty()) {
+            /*
+             * This code allows the template to use Polymer specific syntax for
+             * events, such as on-click (instead of the native onclick). The
+             * principle is: we set a new function inside the column, and the
+             * function is called by the rendered template. For that to work,
+             * the template element must have the "__dataHost" property set with
+             * the column element.
+             */
+            colElement.getNode().runWhenAttached(
+                    ui -> processTemplateRendererEventConsumers(ui, colElement,
+                            eventConsumers));
+
+            contentTemplate.getNode()
+                    .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                            "$0.__dataHost = $1;", contentTemplate,
+                            colElement));
+        }
+
         getElement().appendChild(colElement);
+    }
+
+    private void processTemplateRendererEventConsumers(UI ui,
+            Element colElement,
+            Map<String, SerializableConsumer<T>> eventConsumers) {
+        eventConsumers.forEach(
+                (handlerName, consumer) -> setupTemplateRendererEventHandler(ui,
+                        colElement, handlerName, consumer));
+    }
+
+    private void setupTemplateRendererEventHandler(UI ui, Element colElement,
+            String handlerName, Consumer<T> consumer) {
+
+        // vaadin.sendEventMessage is an exported function at the client side
+        ui.getPage().executeJavaScript(String.format(
+                "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
+                handlerName, colElement.getNode().getId(), handlerName),
+                colElement);
+
+        colElement.addEventListener(handlerName,
+                event -> processEventFromTemplateRenderer(event, handlerName,
+                        consumer));
+    }
+
+    private void processEventFromTemplateRenderer(DomEvent event,
+            String handlerName, Consumer<T> consumer) {
+        if (event.getEventData() != null) {
+            String itemKey = event.getEventData().getString("key");
+            T item = getDataCommunicator().getKeyMapper().get(itemKey);
+
+            if (item != null) {
+                consumer.accept(item);
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.INFO,
+                        () -> String.format(
+                                "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
+                                handlerName, itemKey));
+            }
+        } else {
+            Logger.getLogger(getClass().getName()).log(Level.INFO,
+                    () -> String.format(
+                            "Received an event for the handler '%s' without any data. Ignoring event.",
+                            handlerName));
+        }
     }
 
     private String getColumnKey(boolean increment) {
@@ -381,7 +464,17 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
     @Override
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
+        Objects.requireNonNull(dataProvider, "data provider cannot be null");
         getDataCommunicator().setDataProvider(dataProvider, null);
+    }
+
+    /**
+     * Returns the data provider of this grid.
+     *
+     * @return the data provider of this grid, not {@code null}
+     */
+    public DataProvider<T, ?> getDataProvider() {
+        return getDataCommunicator().getDataProvider();
     }
 
     @Override
@@ -395,7 +488,27 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * @return the current page size
      */
     public int getPageSize() {
-        return PAGE_SIZE;
+        return getElement().getProperty("pageSize", 50);
+    }
+
+    /**
+     * Sets the page size.
+     * <p>
+     * This method is private at the moment because the Grid doesn't support
+     * changing the the pageSize after the initial load.
+     * 
+     * @param pageSize
+     *            the maximum number of items sent per request. Should be
+     *            greater than zero
+     */
+    private void setPageSize(int pageSize) {
+        if (pageSize <= 0) {
+            throw new IllegalArgumentException(
+                    "The pageSize should be greater than zero. Was "
+                            + pageSize);
+        }
+        getElement().setProperty("pageSize", pageSize);
+        getDataCommunicator().setRequestedRange(0, pageSize);
     }
 
     /**

@@ -1,5 +1,5 @@
 window.gridConnector = {
-    initLazy: function(grid, pageSize) {
+    initLazy: function(grid) {
         var extraPageBuffer = 2;
         var pageCallbacks = {};
         var cache = {};
@@ -9,7 +9,6 @@ window.gridConnector = {
         var selectedKeys = {};
         var selectionMode = 'SINGLE';
 
-        grid.pageSize = pageSize;
         grid.size = 0; // To avoid NaN here and there before we get proper data
 
         grid.doSelection = function(item, userOriginated) {
@@ -117,6 +116,33 @@ window.gridConnector = {
                         grid.doDeselection(item);
                     }
                 }
+                updateGridCache(page);
+            }
+        };
+
+        var itemToCacheLocation = function(itemKey) {
+            for (var page in cache) {
+                for (var index in cache[page]) {
+                    if (cache[page][index].key === itemKey) {
+                        return {page: page, index: index};
+                    }
+                }
+            }
+            return null;
+        }
+
+        grid.updateData = function(items) {
+            var pagesToUpdate = [];
+            for (var i = 0; i < items.length; i++) {
+                var cacheLocation = itemToCacheLocation(items[i].key);
+                if (cacheLocation) {
+                    cache[cacheLocation.page][cacheLocation.index] = items[i];
+                    if (pagesToUpdate.indexOf(cacheLocation.page) === -1) {
+                        pagesToUpdate.push(cacheLocation.page);
+                    }
+                }
+            }
+            for (var page in pagesToUpdate) {
                 updateGridCache(page);
             }
         };
