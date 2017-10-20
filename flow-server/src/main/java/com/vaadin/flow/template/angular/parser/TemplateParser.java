@@ -32,6 +32,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.parser.ParseSettings;
+import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeTraversor;
 import org.jsoup.select.NodeVisitor;
@@ -71,6 +73,14 @@ public class TemplateParser {
         // Only static methods
     }
 
+    private String convertStreamToString(java.io.InputStream is) {
+        try(java.util.Scanner s = new java.util.Scanner(is, "UTF-8")) {
+            return s.useDelimiter("\\A").hasNext() ? s.next() : "";
+        } catch (Exception e) {
+            throw new TemplateParseException("Error reading template data", e);
+        }
+    }
+
     /**
      * Parses the template from the given input stream to a tree of template
      * nodes.
@@ -84,14 +94,14 @@ public class TemplateParser {
      */
     public static TemplateNode parse(InputStream templateStream,
             TemplateResolver templateResolver) {
-        assert templateStream != null;
-        try {
-            Document document = Jsoup.parse(templateStream, null, "");
 
-            return parse(document, templateResolver);
-        } catch (IOException e) {
-            throw new TemplateParseException("Error reading template data", e);
-        }
+        assert templateStream != null;
+        String templateString = convertStreamToString(templateStream);
+        Parser parser = Parser.htmlParser();
+        parser.settings(new ParseSettings(true, true)); // tag, attribute preserve case
+        Document document = parser.parseInput(templateString, "");
+
+        return parse(document, templateResolver);
     }
 
     /**
