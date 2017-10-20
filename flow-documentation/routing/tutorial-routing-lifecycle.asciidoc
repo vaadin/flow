@@ -12,12 +12,22 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 During the navigation lifecycle the activating and deactivating components will
 get a number of different lifecycle state events.
 
-== BeforeNavigationEvent
+== BeforeNavigation
 
-Any `Component` in the activating or deactivating navigation target chain will
-receive a `BeforeNavigationEvent` if they extend the `BeforeNavigationListener` *interface*.
+In this state of the navigation lifecycle we detach any existing components, collect
+the components for the new view to be shown and inform component event listeners
+of the navigation status.
 
-This holds also true for listener implementations in a node component found from the root target e.g.
+During this lifecycle there is the possibility to reroute to another view, reroute to an
+error view and even postpone navigation to get user confirmation.
+
+=== BeforeNavigationListeners
+
+Any `Component` implementing `BeforeNavigationListener` will be informed when they
+are being detached or attached to the UI. The components to inform of navigation
+events will be collected from the root component and children connected to it.
+
+.Child component implementing BeforNavigationListener
 [source,java]
 ----
 @Route("")
@@ -39,6 +49,22 @@ public class SideElement extends Div implements BeforeNavigationListener {
 }
 ----
 
+=== BeforeLeaveListener
+The `BeforeLeaveListener` is a specific BeforeNavigationListener that is only
+executed when the component will be detached from the UI.
+
+During the `BeforeLeaveListener` state postponing and reroute is supported.
+
+=== BeforeEnterListener
+The `BeforeLeaveListener` is a specific BeforeNavigationListener that is only
+executed when the component will be attached to the UI.
+
+During the `BeforeEnterListener` state only reroute is supported.
+
+== BeforeNavigationEvent
+
+The `BeforeNavigationEvent` class contains information about the current navigation
+state, and enables optional functions like rerouting and postponing.
 
 === Reroute
 The `BeforeNavigationEvent` can be used to reroute dynamically if there is a need
@@ -79,6 +105,7 @@ public class BlogList extends Div implements BeforeNavigationListener {
 === Postpone
 `BeforeNavigationEvent` has a `postpone` method, which can be used to postpone
 the current navigational transition until a specific condition is met.
+
 E.g. the client may request the user's confirmation before leaving the page:
 [source,java]
 ----
@@ -110,7 +137,8 @@ event at all and the transition never finishes. If, however, __b__ executes its
 where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ is notified.
 
 [NOTE]
-Postpone may only be initiated while leaving (deactivating) a page; if the method
+Postpone may only be initiated while navigating away (For a `BeforeNavigationListener` the
+`BeforeNavigationEvent::getActivationState` is DEACTIVATING or we use the `BeforeLeaveListener`) form a page; if the method
 is called while entering / activating the new page, it will throw an `IllegalStateException`.
 [NOTE]
 At most one navigation event may be postponed at any time; starting a new

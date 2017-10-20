@@ -16,17 +16,20 @@
 package com.vaadin.router;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.router.event.ActivationState;
 import com.vaadin.router.event.AfterNavigationEvent;
+import com.vaadin.router.event.BeforeEnterListener;
+import com.vaadin.router.event.BeforeLeaveListener;
 import com.vaadin.router.event.BeforeNavigationEvent;
-import com.vaadin.router.event.BeforeNavigationListener;
 import com.vaadin.router.event.ErrorNavigationEvent;
 import com.vaadin.router.event.EventUtil;
 import com.vaadin.router.event.NavigationEvent;
@@ -52,7 +55,7 @@ public class NavigationStateRenderer implements NavigationHandler {
     }
 
     private final NavigationState navigationState;
-    private LinkedList<BeforeNavigationListener> remainingListeners = null;
+    private Deque<BeforeLeaveListener> remainingListeners = null;
 
     /**
      * Constructs a new NavigationStateRenderer that handles the given
@@ -111,15 +114,13 @@ public class NavigationStateRenderer implements NavigationHandler {
 
         BeforeNavigationEvent beforeNavigationDeactivating = new BeforeNavigationEvent(
                 event, routeTargetType, ActivationState.DEACTIVATING);
-        LinkedList<BeforeNavigationListener> listeners = remainingListeners;
-        if (listeners == null) {
-            listeners = new LinkedList<>(
-                    EventUtil.collectBeforeNavigationListeners(ui.getElement()));
-        } else {
-            remainingListeners = null;
-        }
-        TransitionOutcome transitionOutcome = executeBeforeNavigation(
+
+        Deque<BeforeLeaveListener> listeners = collectLeaveListeners(
+                ui.getElement());
+
+        TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
                 beforeNavigationDeactivating, listeners);
+
         if (transitionOutcome == TransitionOutcome.REROUTED) {
             return reroute(event, beforeNavigationDeactivating);
         } else if (transitionOutcome == TransitionOutcome.POSTPONED) {
@@ -151,11 +152,11 @@ public class NavigationStateRenderer implements NavigationHandler {
             return reroute(event, beforeNavigationActivating);
         }
 
-        listeners = new LinkedList<>(
-                EventUtil.collectBeforeNavigationListeners(chain));
-        transitionOutcome = executeBeforeNavigation(
-                beforeNavigationActivating, listeners);
-        if (transitionOutcome == TransitionOutcome.REROUTED) {
+        transitionOutcome = executeBeforeEnterNavigation(
+                beforeNavigationActivating,
+                new ArrayDeque<>(EventUtil.collectBeforeEnterListeners(chain)));
+
+        if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
             return reroute(event, beforeNavigationActivating);
         }
 
@@ -180,6 +181,26 @@ public class NavigationStateRenderer implements NavigationHandler {
             locationChangeEvent.setStatusCode(HttpServletResponse.SC_NOT_FOUND);
         }
         return locationChangeEvent.getStatusCode();
+    }
+
+    /**
+     * Collect all BeforeLeaveListeners and BeforeNavigationEventListeners or
+     * any listeners left after a postpone event.
+     * 
+     * @param rootElement
+     *            root element to collect listeners from
+     * @return deque of BeforeLeaveListener items
+     */
+    private Deque<BeforeLeaveListener> collectLeaveListeners(
+            Element rootElement) {
+        Deque<BeforeLeaveListener> listeners = remainingListeners;
+        if (listeners == null) {
+            listeners = new ArrayDeque(
+                    EventUtil.collectBeforeLeaveListeners(rootElement));
+        } else {
+            remainingListeners = null;
+        }
+        return listeners;
     }
 
     private void storeContinueNavigationAction(UI ui,
@@ -221,17 +242,31 @@ public class NavigationStateRenderer implements NavigationHandler {
         return RouterUtil.getParentLayouts(targetType);
     }
 
-    private TransitionOutcome executeBeforeNavigation(
+    private TransitionOutcome executeBeforeLeaveNavigation(
             BeforeNavigationEvent beforeNavigation,
-            Queue<BeforeNavigationListener> listeners) {
+            Queue<BeforeLeaveListener> listeners) {
         while (!listeners.isEmpty()) {
-            BeforeNavigationListener listener = listeners.remove();
+            BeforeLeaveListener listener = listeners.remove();
             listener.beforeNavigation(beforeNavigation);
 
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             } else if (beforeNavigation.isPostponed()) {
                 return TransitionOutcome.POSTPONED;
+            }
+        }
+        return TransitionOutcome.FINISHED;
+    }
+
+    private TransitionOutcome executeBeforeEnterNavigation(
+            BeforeNavigationEvent beforeNavigation,
+            Queue<BeforeEnterListener> listeners) {
+        while (!listeners.isEmpty()) {
+            BeforeEnterListener listener = listeners.remove();
+            listener.beforeNavigation(beforeNavigation);
+
+            if (beforeNavigation.hasRerouteTarget()) {
+                return TransitionOutcome.REROUTED;
             }
         }
         return TransitionOutcome.FINISHED;

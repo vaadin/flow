@@ -22,6 +22,13 @@ package com.vaadin.router.event;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface BeforeNavigationListener
-        extends BeforeEnterListener, BeforeLeaveListener {
+public interface BeforeLeaveListener {
+
+    /**
+     * Method called before navigation is executed.
+     * 
+     * @param event
+     *            before navigation event with event details
+     */
+    void beforeNavigation(BeforeNavigationEvent event);
 }

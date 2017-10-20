@@ -46,6 +46,21 @@ public final class EventUtil {
                 BeforeNavigationListener.class).collect(Collectors.toList());
     }
 
+
+    /**
+     * Collect all Components implementing BeforeLeaveListener connected to
+     * given element tree.
+     *
+     * @param element
+     *            element to search from
+     * @return navigation listeners
+     */
+    public static List<BeforeLeaveListener> collectBeforeLeaveListeners(
+            Element element) {
+        return getListenerComponents(flattenChildren(element),
+                BeforeLeaveListener.class).collect(Collectors.toList());
+    }
+
     /**
      * Collect all Components implementing BeforeNavigationListener connected to
      * tree of all given Components in list.
@@ -60,6 +75,23 @@ public final class EventUtil {
                 .flatMap(component -> flattenChildren(component.getElement()));
 
         return getListenerComponents(elements, BeforeNavigationListener.class)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Collect all Components implementing BeforeEnterListener connected to
+     * tree of all given Components in list.
+     *
+     * @param components
+     *            components to search
+     * @return navigation listeners
+     */
+    public static List<BeforeEnterListener> collectBeforeEnterListeners(
+            List<HasElement> components) {
+        Stream<Element> elements = components.stream()
+                .flatMap(component -> flattenChildren(component.getElement()));
+
+        return getListenerComponents(elements, BeforeEnterListener.class)
                 .collect(Collectors.toList());
     }
 
