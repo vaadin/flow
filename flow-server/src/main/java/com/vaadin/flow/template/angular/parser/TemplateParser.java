@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -74,7 +75,7 @@ public class TemplateParser {
     }
 
     private static String convertStreamToString(java.io.InputStream is) {
-        try(java.util.Scanner s = new java.util.Scanner(is, "UTF-8")) {
+        try (java.util.Scanner s = new java.util.Scanner(is, StandardCharsets.UTF_8.name())) {
             return s.useDelimiter("\\A").hasNext() ? s.next() : "";
         } catch (Exception e) {
             throw new TemplateParseException("Error reading template data", e);
