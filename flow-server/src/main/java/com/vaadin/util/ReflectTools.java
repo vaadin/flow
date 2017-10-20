@@ -20,11 +20,13 @@ import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -653,4 +655,42 @@ public class ReflectTools implements Serializable {
         return filteredMethods.get(0);
     }
 
+    /**
+     * Collect all the integer values for public static final constants found
+     * for the given class.
+     * 
+     * @param constantsClass
+     *            class to collect constants from
+     * @return list of all integer constants in class
+     */
+    public static List<Integer> getConstantIntValues(Class<?> constantsClass) {
+        List<Integer> integerConstants = new ArrayList<>();
+
+        for (Field field : getPublicStaticFinalFields(constantsClass)) {
+            if (field.getType().equals(int.class)) {
+                try {
+                    integerConstants.add(field.getInt(null));
+                } catch (IllegalAccessException e) {
+                    // Ignore this exception. Public fields should always be
+                    // accessible.
+                }
+            }
+        }
+
+        return integerConstants;
+    }
+
+    private static List<Field> getPublicStaticFinalFields(
+            Class<?> staticFields) {
+        List<Field> staticFinalFields = new ArrayList<>();
+        Field[] declaredFields = staticFields.getDeclaredFields();
+        for (Field field : declaredFields) {
+            if (Modifier.isStatic(field.getModifiers())
+                    && Modifier.isFinal(field.getModifiers())
+                    && Modifier.isPublic(field.getModifiers())) {
+                staticFinalFields.add(field);
+            }
+        }
+        return staticFinalFields;
+    }
 }
