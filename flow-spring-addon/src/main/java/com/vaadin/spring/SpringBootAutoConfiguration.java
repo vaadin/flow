@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
@@ -34,10 +35,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @AutoConfigureBefore(WebMvcAutoConfiguration.class)
 @ConditionalOnClass(ServletContextInitializer.class)
+@EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringBootAutoConfiguration {
 
     @Autowired
     private ApplicationContext context;
+
+    @Autowired
+    private VaadinConfigurationProperties configurationProperties;
 
     /**
      * Creates a {@link ServletContextInitializer} instance.
@@ -58,8 +63,10 @@ public class SpringBootAutoConfiguration {
     @Bean
     public ServletRegistrationBean servletRegistrationBean() {
         ServletRegistrationBean registration = new ServletRegistrationBean(
-                new SpringServlet(context), "/*");
-        registration.setAsyncSupported(true);
+                new SpringServlet(context),
+                configurationProperties.getUrlMapping());
+        registration
+                .setAsyncSupported(configurationProperties.isAsyncSupported());
         return registration;
     }
 }
