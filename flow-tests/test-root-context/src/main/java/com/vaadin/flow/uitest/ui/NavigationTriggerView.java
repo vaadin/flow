@@ -17,10 +17,16 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.HasUrlParameter;
 import com.vaadin.router.NavigationTrigger;
+import com.vaadin.router.OptionalParameter;
+import com.vaadin.router.Route;
+import com.vaadin.router.event.BeforeNavigationEvent;
 
-public class NavigationTriggerView extends AbstractDivView {
+@Route(value = "com.vaadin.flow.uitest.ui.NavigationTriggerView", layout = ViewTestLayout.class)
+public class NavigationTriggerView extends AbstractDivView implements
+        HasUrlParameter<String> {
     private static final String CLASS_NAME = NavigationTriggerView.class
             .getName();
 
@@ -39,10 +45,18 @@ public class NavigationTriggerView extends AbstractDivView {
         getElement().appendChild(routerLink, navigateButton);
     }
 
-    @Override
-    public void onLocationChange(LocationChangeEvent event) {
-        super.onLocationChange(event);
+    public static String buildMessage(String path, NavigationTrigger trigger) {
+        return "Navigated to " + path + " with trigger " + trigger.name();
+    }
 
+    private void addMessage(String message) {
+        Element element = ElementFactory.createDiv(message);
+        element.getClassList().add("message");
+        getElement().appendChild(element);
+    }
+
+    @Override
+    public void setParameter(BeforeNavigationEvent event, @OptionalParameter String parameter) {
         String location = event.getLocation().getPathWithQueryParameters();
         assert location.startsWith(CLASS_NAME);
 
@@ -53,15 +67,5 @@ public class NavigationTriggerView extends AbstractDivView {
         }
 
         addMessage(buildMessage(location, event.getTrigger()));
-    }
-
-    public static String buildMessage(String path, NavigationTrigger trigger) {
-        return "Navigated to " + path + " with trigger " + trigger.name();
-    }
-
-    private void addMessage(String message) {
-        Element element = ElementFactory.createDiv(message);
-        element.getClassList().add("message");
-        getElement().appendChild(element);
     }
 }

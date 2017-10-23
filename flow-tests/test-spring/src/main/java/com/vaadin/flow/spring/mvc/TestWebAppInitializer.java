@@ -23,7 +23,7 @@ import com.vaadin.spring.VaadinMVCWebAppInitializer;
 
 /**
  * The entry point for Spring MVC.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

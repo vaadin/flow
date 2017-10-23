@@ -66,7 +66,7 @@ version number. When using Maven you can add it into your `pom.xml` as this:
             <artifactId>vaadin-webjars-bom</artifactId>
             <type>pom</type>
             <scope>import</scope>
-            <version>${project.version}</version>
+            <version>${flow.version}</version>
         </dependency>
     </dependencies>
 </dependencyManagement>
