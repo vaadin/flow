@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.server.StreamReceiver;
 import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
@@ -130,6 +131,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         checkModifiableAttribute(attribute);
         modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .setAttribute(overrideNode, attribute, resource));
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamReceiver receiver) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

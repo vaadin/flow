@@ -125,14 +125,14 @@ public class StreamReceiverRequestHandlerTest {
      * Tests whether we get infinite loop if InputStream is already read
      * (#10096)
      */
-    // @Test(expected = IOException.class)
-    // public void exceptionIsThrownOnUnexpectedEnd() throws IOException {
-    // when(request.getInputStream()).thenReturn(createInputStream(""));
-    // when(request.getHeader("Content-Length")).thenReturn("1");
-    //
-    // handler.doHandleSimpleMultipartFileUpload(null, request, null, null,
-    // null, null, null);
-    // }
+    @Test(expected = IOException.class)
+    public void exceptionIsThrownOnUnexpectedEnd() throws IOException {
+        when(request.getInputStream()).thenReturn(createInputStream(""));
+        when(request.getHeader("Content-Length")).thenReturn("1");
+
+        handler.doHandleMultipartFileUpload(null, request, null, null, null,
+                null);
+    }
 
     @Test
     public void responseIsSentOnCorrectSecurityKey() throws IOException {

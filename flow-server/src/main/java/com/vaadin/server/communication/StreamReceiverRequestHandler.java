@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.communication;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,6 +31,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.util.Streams;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.server.ErrorEvent;
@@ -157,6 +164,8 @@ public class StreamReceiverRequestHandler implements RequestHandler {
             // TODO: only if really really needed. Everything should go through
             // XHR
             getLog().info("Boundary request received.");
+            doHandleMultipartFileUpload(session, request, response,
+                    streamReceiver, variableName, source);
         } else {
             // if boundary string does not exist, the posted file is from
             // XHR2.post(File)
@@ -218,6 +227,47 @@ public class StreamReceiverRequestHandler implements RequestHandler {
 
     private static Logger getLog() {
         return Logger.getLogger(StreamReceiverRequestHandler.class.getName());
+    }
+
+    protected void doHandleMultipartFileUpload(VaadinSession session,
+            VaadinRequest request, VaadinResponse response,
+            StreamReceiver streamReceiver, String variableName, StateNode owner)
+            throws IOException {
+
+        // Create a new file upload handler
+        ServletFileUpload upload = new ServletFileUpload();
+
+        long contentLength = getContentLength(request);
+        // Parse the request
+        FileItemIterator iter = null;
+        try {
+            iter = upload.getItemIterator((HttpServletRequest) request);
+            while (iter.hasNext()) {
+                FileItemStream item = iter.next();
+                String name = item.getFieldName();
+                InputStream stream = item.openStream();
+                if (item.isFormField()) {
+                    System.out.println("Form field " + name + " with value "
+                            + Streams.asString(stream) + " detected.");
+                } else {
+
+                    try {
+                        handleFileUploadValidationAndData(session, stream,
+                                streamReceiver, name, item.getContentType(),
+                                contentLength, owner, variableName);
+                    } catch (UploadException e) {
+                        session.getErrorHandler().error(new ErrorEvent(e));
+                    }
+                    sendUploadResponse(request, response);
+
+                    System.out.println("File field " + name + " with file name "
+                            + item.getName() + " detected.");
+                    // Process the input stream
+                }
+            }
+        } catch (FileUploadException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

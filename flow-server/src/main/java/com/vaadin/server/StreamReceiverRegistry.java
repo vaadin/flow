@@ -125,8 +125,8 @@ public class StreamReceiverRegistry implements Serializable {
 
     private static URI getURI(int nodeId, String id, String attributeName) {
         try {
-            return new URI(StreamReceiverRequestHandler.generateURI(nodeId, id,
-                    attributeName));
+            return new URI(StreamReceiverRequestHandler.generateURI(nodeId,
+                    attributeName, id));
         } catch (URISyntaxException e) {
             // this may not happen if implementation is correct
             throw new RuntimeException(e);

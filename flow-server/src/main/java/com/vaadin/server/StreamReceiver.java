@@ -15,19 +15,20 @@
  */
 package com.vaadin.server;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.UUID;
+
+import com.vaadin.flow.StateNode;
 
 public class StreamReceiver implements Serializable {
 
     private long cacheTime = 0L;
 
-    private int nodeId;
+    private StateNode node;
 
     private final String attributeName;
-
-    private final StreamResourceWriter writer;
 
     private final StreamVariable streamVariable;
 
@@ -43,36 +44,15 @@ public class StreamReceiver implements Serializable {
      * is registered) in a way that the {@code name} is the last segment of the
      * path. So this is synthetic file name (not real one).
      *
-     * @param writer
-     *            data output stream consumer
      */
-    public StreamReceiver(int nodeId, String attributeName,
-            StreamVariable streamVariable, StreamResourceWriter writer) {
-        assert writer != null;
+    public StreamReceiver(StateNode node, String attributeName,
+            StreamVariable streamVariable){
         assert attributeName != null;
         assert streamVariable != null;
 
-        this.nodeId = nodeId;
-        this.writer = writer;
+        this.node = node;
         this.streamVariable = streamVariable;
         this.attributeName = attributeName;
-    }
-
-    /**
-     * Creates {@link StreamResource} instance using mandatory parameter input
-     * stream {@code factory} as a factory for data.
-     * <p>
-     * {@code name} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@code name} is the last segment of the
-     * path. So this is synthetic file name (not real one).
-     *
-     * @param factory
-     *            data input stream factory. May not be null.
-     */
-    public StreamReceiver(int nodeId, String attributeName,
-            StreamVariable streamVariable, InputStreamFactory factory) {
-        this(nodeId, attributeName, streamVariable,
-                new StreamResource.Pipe(factory));
     }
 
     /**
@@ -102,15 +82,18 @@ public class StreamReceiver implements Serializable {
     }
 
     /**
-     * Returns the stream resource writer.
-     * <p>
-     * Writer writes data in the output stream provided as an argument to its
-     * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
+     * Interface implemented by the source of a StreamResource.
      *
-     * @return stream resource writer
+     * @author Vaadin Ltd.
+     * @since 3.0
      */
-    public StreamResourceWriter getWriter() {
-        return writer;
+    @FunctionalInterface
+    public interface StreamSource extends Serializable {
+
+        /**
+         * Returns new input stream that is used for reading the resource.
+         */
+        InputStream getStream();
     }
 
     /**
@@ -127,7 +110,7 @@ public class StreamReceiver implements Serializable {
     }
 
     public int getNodeId() {
-        return nodeId;
+        return node.getId();
     }
 
     public StreamVariable getStreamVariable() {

@@ -40,6 +40,7 @@ import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
+import com.vaadin.server.StreamReceiver;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.startup.CustomElementRegistry;
 import com.vaadin.shared.Registration;
@@ -359,6 +360,21 @@ public class Element extends Node<Element> {
                 .get(lowerCaseAttribute);
         if (!customAttribute.isPresent()) {
             getStateProvider().setAttribute(getNode(), attribute, resource);
+        } else {
+            throw new IllegalArgumentException("Can't set " + attribute
+                    + " to StreamResource value. This attribute has special semantic");
+        }
+
+        return this;
+    }
+
+    public Element setAttribute(String attribute, StreamReceiver receiver) {
+        String lowerCaseAttribute = validateAttribute(attribute, receiver);
+
+        Optional<CustomAttribute> customAttribute = CustomAttribute
+                .get(lowerCaseAttribute);
+        if (!customAttribute.isPresent()) {
+            getStateProvider().setAttribute(getNode(), attribute, receiver);
         } else {
             throw new IllegalArgumentException("Can't set " + attribute
                     + " to StreamResource value. This attribute has special semantic");

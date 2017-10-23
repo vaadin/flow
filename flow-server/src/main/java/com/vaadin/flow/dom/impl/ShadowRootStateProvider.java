@@ -26,6 +26,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.server.StreamReceiver;
 import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
@@ -92,6 +93,12 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @Override
     public void setAttribute(StateNode node, String attribute,
             StreamResource resource) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamReceiver receiver) {
         throw new UnsupportedOperationException();
     }
 
