@@ -99,7 +99,7 @@ public interface GridMultiSelectionModel<T>
      *            the visiblity mode to use
      * @see SelectAllCheckboxVisibility
      */
-    public void setSelectAllCheckboxVisibility(
+    void setSelectAllCheckboxVisibility(
             SelectAllCheckboxVisibility selectAllCheckBoxVisibility);
 
     /**
@@ -109,7 +109,7 @@ public interface GridMultiSelectionModel<T>
      * @see SelectAllCheckboxVisibility
      * @see #isSelectAllCheckboxVisible()
      */
-    public SelectAllCheckboxVisibility getSelectAllCheckboxVisibility();
+    SelectAllCheckboxVisibility getSelectAllCheckboxVisibility();
 
     /**
      * Returns whether the select all checkbox will be visible with the current
@@ -121,5 +121,5 @@ public interface GridMultiSelectionModel<T>
      * @see SelectAllCheckboxVisibility
      * @see #setSelectAllCheckboxVisibility(SelectAllCheckboxVisibility)
      */
-    public boolean isSelectAllCheckboxVisible();
+    boolean isSelectAllCheckboxVisible();
 }

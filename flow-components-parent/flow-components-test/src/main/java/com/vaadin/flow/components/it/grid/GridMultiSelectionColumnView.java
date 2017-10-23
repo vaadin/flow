@@ -23,12 +23,18 @@ import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.SelectionMode;
 import com.vaadin.ui.html.Div;
 
+/**
+ * Test view for grid's multi selection column.
+ */
 public class GridMultiSelectionColumnView extends TestView {
 
     public static final int ITEM_COUNT = 1000;
 
     private Div message;
 
+    /**
+     * Constructor.
+     */
     public GridMultiSelectionColumnView() {
         message = new Div();
         message.setId("selected-item-count");
