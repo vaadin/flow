@@ -42,6 +42,7 @@ import com.vaadin.util.ReflectTools;
 public class ErrorStateRenderer implements NavigationHandler {
 
     private final NavigationState navigationState;
+    private static List<Integer> statusCodes;
 
     /**
      * Constructs a new state renderer for the given navigation state.
@@ -140,8 +141,10 @@ public class ErrorStateRenderer implements NavigationHandler {
 
     private void validateStatusCode(int statusCode,
             Class<? extends Component> targetClass) {
-        List<Integer> statusCodes = ReflectTools
-                .getConstantIntValues(HttpServletResponse.class);
+        if (statusCodes == null) {
+            statusCodes = ReflectTools
+                    .getConstantIntValues(HttpServletResponse.class);
+        }
         if (!statusCodes.contains(statusCode)) {
             String msg = String.format(
                     "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
