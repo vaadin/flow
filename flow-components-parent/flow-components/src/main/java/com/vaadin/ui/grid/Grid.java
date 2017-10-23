@@ -472,6 +472,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         /**
          * Constructs a new Column for use inside a Grid.
          *
+         * @param grid
+         *            the grid this column is attached to
          * @param columnId
          *            unique identifier of this column
          * @param header
@@ -517,12 +519,13 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Set the width of this column as a CSS-string.
+         * Sets the width of this column as a CSS-string.
          *
          * @see #setFlexGrow(int)
          *
          * @param width
-         *            the width to set this column to, as a CSS-string
+         *            the width to set this column to, as a CSS-string, not
+         *            {@code null}
          * @return this column, for method chaining
          */
         public Column<T> setWidth(String width) {
@@ -531,7 +534,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Get the width of this column as a CSS-string.
+         * Gets the width of this column as a CSS-string.
          * 
          * @return the width of this column as a CSS-string
          */
@@ -541,7 +544,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Set the flex grow ratio for this column. When set to 0, column width
+         * Sets the flex grow ratio for this column. When set to 0, column width
          * is fixed.
          *
          * @see #setWidth(String)
@@ -555,7 +558,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Get the currently set flex grow value, by default 1.
+         * Gets the currently set flex grow value, by default 1.
          *
          * @return the currently set flex grow value, by default 1
          */
@@ -579,13 +582,26 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Get whether this column is user-resizable.
+         * Gets whether this column is user-resizable.
          *
          * @return whether this column is user-resizable
          */
         @Synchronize("resizable-changed")
-        public boolean getResizable() {
+        public boolean isResizable() {
             return getElement().getProperty("resizable", false);
+        }
+
+        /**
+         * Gets the underlying {@code <vaadin-grid-column>} element.
+         * <p>
+         * <strong>It is highly discouraged to directly use the API exposed by
+         * the returned element.</strong>
+         *
+         * @return the root element of this component
+         */
+        @Override
+        public Element getElement() {
+            return super.getElement();
         }
 
         private void processTemplateRendererEventConsumers(UI ui,
@@ -693,6 +709,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *            the column header name
      * @param valueProvider
      *            the value provider
+     * @return the created column
      */
     public Column<T> addColumn(String header,
             ValueProvider<T, ?> valueProvider) {
@@ -711,7 +728,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *            the column header name
      * @param renderer
      *            the renderer used to create the grid cell structure
-     * 
+     * @return the created column
+     *
      * @see TemplateRenderer#of(String)
      */
     public Column<T> addColumn(String header,

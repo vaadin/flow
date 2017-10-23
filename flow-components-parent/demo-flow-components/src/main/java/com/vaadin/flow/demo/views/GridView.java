@@ -329,7 +329,7 @@ public class GridView extends DemoView {
 
     private void createResizable() {
         // begin-source-example
-        // source-example-heading: Grid with column resizing
+        // source-example-heading: Grid with resizable columns
         Grid<Person> grid = new Grid<>();
         grid.setItems(getItems());
 
