@@ -56,12 +56,14 @@ import com.vaadin.flow.util.JsonUtils;
 import com.vaadin.function.SerializableConsumer;
 import com.vaadin.function.ValueProvider;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
 import com.vaadin.ui.event.ComponentEventListener;
+import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
 
@@ -456,6 +458,193 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         protected abstract <T> GridSelectionModel<T> createModel(Grid<T> grid);
     }
 
+    /**
+     * Server-side component for the {@code <vaadin-grid-column>} element.
+     * 
+     * @param <T>
+     *            type of the underlying grid this column is compatible with
+     */
+    @Tag("vaadin-grid-column")
+    public static class Column<T> extends Component {
+
+        private final Grid<T> grid;
+
+        /**
+         * Constructs a new Column for use inside a Grid.
+         *
+         * @param columnId
+         *            unique identifier of this column
+         * @param header
+         *            the header text of this column
+         * @param renderer
+         *            the renderer to use in this column
+         */
+        public Column(Grid<T> grid, String columnId, String header,
+                TemplateRenderer<T> renderer) {
+            this.grid = grid;
+
+            Element headerTemplate = new Element("template")
+                    .setAttribute("class", "header")
+                    .setProperty("innerHTML", HtmlUtils.escape(header));
+
+            Element contentTemplate = new Element("template")
+                    .setProperty("innerHTML", renderer.getTemplate());
+
+            getElement().setAttribute("id", columnId)
+                    .appendChild(headerTemplate, contentTemplate);
+
+            Map<String, SerializableConsumer<T>> eventConsumers = renderer
+                    .getEventHandlers();
+
+            if (!eventConsumers.isEmpty()) {
+                /*
+                 * This code allows the template to use Polymer specific syntax
+                 * for events, such as on-click (instead of the native onclick).
+                 * The principle is: we set a new function inside the column,
+                 * and the function is called by the rendered template. For that
+                 * to work, the template element must have the "__dataHost"
+                 * property set with the column element.
+                 */
+                getElement().getNode().runWhenAttached(
+                        ui -> processTemplateRendererEventConsumers(ui,
+                                getElement(), eventConsumers));
+
+                contentTemplate.getNode()
+                        .runWhenAttached(ui -> ui.getPage().executeJavaScript(
+                                "$0.__dataHost = $1;", contentTemplate,
+                                getElement()));
+            }
+        }
+
+        /**
+         * Set the width of this column as a CSS-string.
+         *
+         * @see #setFlexGrow(int)
+         *
+         * @param width
+         *            the width to set this column to, as a CSS-string
+         * @return this column, for method chaining
+         */
+        public Column<T> setWidth(String width) {
+            getElement().setProperty("width", width);
+            return this;
+        }
+
+        /**
+         * Get the width of this column as a CSS-string.
+         * 
+         * @return the width of this column as a CSS-string
+         */
+        @Synchronize("width-changed")
+        public String getWidth() {
+            return getElement().getProperty("width");
+        }
+
+        /**
+         * Set the flex grow ratio for this column. When set to 0, column width
+         * is fixed.
+         *
+         * @see #setWidth(String)
+         *
+         * @param flexGrow
+         * @return this column, for method chaining
+         */
+        public Column<T> setFlexGrow(int flexGrow) {
+            getElement().setProperty("flexGrow", flexGrow);
+            return this;
+        }
+
+        /**
+         * Get the currently set flex grow value, by default 1.
+         *
+         * @return the currently set flex grow value, by default 1
+         */
+        @Synchronize("flex-grow-changed")
+        public int getFlexGrow() {
+            return getElement().getProperty("flexGrow", 1);
+        }
+
+
+        /**
+         * When set to {@code true}, the column is user-resizable. By default
+         * this is set to {@code false}.
+         *
+         * @param resizable
+         *            whether to allow user resizing of this column
+         * @return this column, for method chaining
+         */
+        public Column<T> setResizable(boolean resizable) {
+            getElement().setProperty("resizable", resizable);
+            return this;
+        }
+
+        /**
+         * Get whether this column is user-resizable.
+         *
+         * @return whether this column is user-resizable
+         */
+        @Synchronize("resizable-changed")
+        public boolean getResizable() {
+            return getElement().getProperty("resizable", false);
+        }
+
+        private void processTemplateRendererEventConsumers(UI ui,
+                Element colElement,
+                Map<String, SerializableConsumer<T>> eventConsumers) {
+            eventConsumers.forEach((handlerName,
+                    consumer) -> setupTemplateRendererEventHandler(ui,
+                            colElement, handlerName, consumer));
+        }
+
+        private void setupTemplateRendererEventHandler(UI ui,
+                Element colElement, String handlerName, Consumer<T> consumer) {
+
+            // vaadin.sendEventMessage is an exported function at the client
+            // side
+            ui.getPage()
+                    .executeJavaScript(String.format(
+                            "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
+                            handlerName, colElement.getNode().getId(),
+                            handlerName), colElement);
+
+            colElement.addEventListener(handlerName,
+                    event -> processEventFromTemplateRenderer(event,
+                            handlerName, consumer));
+        }
+
+        private void processEventFromTemplateRenderer(DomEvent event,
+                String handlerName, Consumer<T> consumer) {
+            if (event.getEventData() != null) {
+                String itemKey = event.getEventData().getString("key");
+                T item = getGrid().getDataCommunicator().getKeyMapper()
+                        .get(itemKey);
+
+                if (item != null) {
+                    consumer.accept(item);
+                } else {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO,
+                            () -> String.format(
+                                    "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
+                                    handlerName, itemKey));
+                }
+            } else {
+                Logger.getLogger(getClass().getName()).log(Level.INFO,
+                        () -> String.format(
+                                "Received an event for the handler '%s' without any data. Ignoring event.",
+                                handlerName));
+            }
+        }
+
+        /**
+         * Gets the grid that this column belongs to.
+         *
+         * @return the grid that this column belongs to
+         */
+        private Grid<T> getGrid() {
+            return grid;
+        }
+    }
+
     private final ArrayUpdater arrayUpdater = UpdateQueue::new;
 
     private final Map<String, Function<T, JsonValue>> columnGenerators = new HashMap<>();
@@ -505,9 +694,11 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * @param valueProvider
      *            the value provider
      */
-    public void addColumn(String header, ValueProvider<T, ?> valueProvider) {
+    public Column<T> addColumn(String header,
+            ValueProvider<T, ?> valueProvider) {
         String columnKey = getColumnKey(false);
-        addColumn(header, TemplateRenderer.<T> of("[[item." + columnKey + "]]")
+        return addColumn(header,
+                TemplateRenderer.<T> of("[[item." + columnKey + "]]")
                 .withProperty(columnKey, valueProvider));
     }
 
@@ -523,7 +714,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      * 
      * @see TemplateRenderer#of(String)
      */
-    public void addColumn(String header, TemplateRenderer<T> renderer) {
+    public Column<T> addColumn(String header,
+            TemplateRenderer<T> renderer) {
         String columnKey = getColumnKey(true);
 
         renderer.getValueProviders().forEach((key, provider) -> {
@@ -531,85 +723,13 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         });
 
         getDataCommunicator().reset();
+        
+        Column<T> column = new Column<>(this, columnKey, header, renderer);
 
-        // Use innerHTML to set document fragment instead of DOM children
-        Element headerTemplate = new Element("template")
-                .setAttribute("class", "header")
-                .setProperty("innerHTML", HtmlUtils.escape(header));
-        Element contentTemplate = new Element("template")
-                .setProperty("innerHTML", renderer.getTemplate());
+        getElement().getNode().runWhenAttached(
+                ui -> getElement().appendChild(column.getElement()));
 
-        Element colElement = new Element("vaadin-grid-column")
-                .setAttribute("id", columnKey)
-                .appendChild(headerTemplate, contentTemplate);
-
-        Map<String, SerializableConsumer<T>> eventConsumers = renderer
-                .getEventHandlers();
-
-        if (!eventConsumers.isEmpty()) {
-            /*
-             * This code allows the template to use Polymer specific syntax for
-             * events, such as on-click (instead of the native onclick). The
-             * principle is: we set a new function inside the column, and the
-             * function is called by the rendered template. For that to work,
-             * the template element must have the "__dataHost" property set with
-             * the column element.
-             */
-            colElement.getNode().runWhenAttached(
-                    ui -> processTemplateRendererEventConsumers(ui, colElement,
-                            eventConsumers));
-
-            contentTemplate.getNode()
-                    .runWhenAttached(ui -> ui.getPage().executeJavaScript(
-                            "$0.__dataHost = $1;", contentTemplate,
-                            colElement));
-        }
-
-        getElement().appendChild(colElement);
-    }
-
-    private void processTemplateRendererEventConsumers(UI ui,
-            Element colElement,
-            Map<String, SerializableConsumer<T>> eventConsumers) {
-        eventConsumers.forEach(
-                (handlerName, consumer) -> setupTemplateRendererEventHandler(ui,
-                        colElement, handlerName, consumer));
-    }
-
-    private void setupTemplateRendererEventHandler(UI ui, Element colElement,
-            String handlerName, Consumer<T> consumer) {
-
-        // vaadin.sendEventMessage is an exported function at the client side
-        ui.getPage().executeJavaScript(String.format(
-                "$0.%s = function(e) {vaadin.sendEventMessage(%d, '%s', {key: e.model.__data.item.key})}",
-                handlerName, colElement.getNode().getId(), handlerName),
-                colElement);
-
-        colElement.addEventListener(handlerName,
-                event -> processEventFromTemplateRenderer(event, handlerName,
-                        consumer));
-    }
-
-    private void processEventFromTemplateRenderer(DomEvent event,
-            String handlerName, Consumer<T> consumer) {
-        if (event.getEventData() != null) {
-            String itemKey = event.getEventData().getString("key");
-            T item = getDataCommunicator().getKeyMapper().get(itemKey);
-
-            if (item != null) {
-                consumer.accept(item);
-            } else {
-                Logger.getLogger(getClass().getName()).log(Level.INFO,
-                        () -> String.format(
-                                "Received an event for the handler '%s' with item key '%s', but the item is not present in the KeyMapper. Ignoring event.",
-                                handlerName, itemKey));
-            }
-        } else {
-            Logger.getLogger(getClass().getName()).log(Level.INFO,
-                    () -> String.format(
-                            "Received an event for the handler '%s' without any data. Ignoring event.",
-                            handlerName));
-        }
+        return column;
     }
 
     private String getColumnKey(boolean increment) {

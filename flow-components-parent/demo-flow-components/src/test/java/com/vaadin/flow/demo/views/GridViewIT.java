@@ -175,6 +175,22 @@ public class GridViewIT extends ComponentDemoTest {
                 "<div title=\"Person 1 Updated Updated\">Person 1 Updated Updated<br><small>23 years old</small></div>"));
     }
 
+    @Test
+    public void gridWithResizableColumns() {
+        WebElement grid = findElement(By.id("resizable-columns"));
+        scrollToElement(grid);
+
+        Assert.assertEquals("Two resize handlers should be present", 2L,
+                getCommandExecutor().executeScript(
+                        "return arguments[0].shadowRoot.querySelectorAll('[part~=\"resize-handle\"]').length;",
+                        grid));
+
+        Assert.assertEquals("First width is fixed", "75px",
+                getCommandExecutor().executeScript(
+                        "return arguments[0].shadowRoot.querySelectorAll('th')[0].style.width;",
+                        grid));
+    }
+
     private static String getSelectionMessage(Object oldSelection,
             Object newSelection, boolean isFromClient) {
         return String.format(

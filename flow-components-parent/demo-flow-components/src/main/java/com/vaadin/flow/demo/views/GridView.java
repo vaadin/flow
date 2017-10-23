@@ -153,6 +153,7 @@ public class GridView extends DemoView {
         createMultiSelect();
         createNoneSelect();
         createColumnTemplate();
+        createResizable();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -324,6 +325,21 @@ public class GridView extends DemoView {
         // end-source-example
         grid.setId("template-renderer");
         addCard("Grid with columns using template renderer", grid);
+    }
+
+    private void createResizable() {
+        // begin-source-example
+        // source-example-heading: Grid with column resizing
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+
+        grid.addColumn("ID", Person::getId).setFlexGrow(0).setWidth("75px");
+        grid.addColumn("Name", Person::getName).setResizable(true);
+        grid.addColumn("Age", Person::getAge).setResizable(true);
+        // end-source-example
+
+        grid.setId("resizable-columns");
+        addCard("Grid with resizable columns", grid);
     }
 
     private List<Person> getItems() {
