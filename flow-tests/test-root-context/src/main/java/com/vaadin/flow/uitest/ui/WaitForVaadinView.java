@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.NativeButton;
 import com.vaadin.ui.html.Div;
 
+@Route(value = "com.vaadin.flow.uitest.ui.WaitForVaadinView", layout = ViewTestLayout.class)
 public class WaitForVaadinView extends AbstractDivView {
     private final Div message;
     private final NativeButton button;

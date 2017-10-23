@@ -22,6 +22,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 
+import org.springframework.core.env.Environment;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -45,10 +46,15 @@ public abstract class VaadinMVCWebAppInitializer
         registerConfiguration(context);
         servletContext.addListener(new ContextLoaderListener(context));
 
+        context.refresh();
+        Environment env = context.getBean(Environment.class);
         ServletRegistration.Dynamic registration = servletContext
                 .addServlet("dispatcher", new SpringServlet(context));
         registration.setLoadOnStartup(1);
-        registration.addMapping("/*");
+        registration.addMapping(env.getProperty("vaadin.urlMapping", "/*"));
+        registration.setAsyncSupported(
+                Boolean.TRUE.toString().equals(env.getProperty(
+                        "vaadin.asyncSupported", Boolean.TRUE.toString())));
     }
 
     /**
