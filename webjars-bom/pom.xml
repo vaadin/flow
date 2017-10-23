@@ -13,8 +13,8 @@
             <!-- Vaadin components webJars -->
             <dependency>
                 <groupId>org.webjars.bower</groupId>
-                <artifactId>vaadin-grid</artifactId>
-                <version>4.0.0-alpha5</version>
+                <artifactId>github-com-vaadin-vaadin-grid</artifactId>
+                <version>v4.0.0-alpha5</version>
             </dependency>
             <dependency>
                 <groupId>org.webjars.bower</groupId>

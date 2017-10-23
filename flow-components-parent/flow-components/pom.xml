@@ -49,7 +49,7 @@
         <!-- webJars -->
         <dependency>
             <groupId>org.webjars.bower</groupId>
-            <artifactId>vaadin-grid</artifactId>
+            <artifactId>github-com-vaadin-vaadin-grid</artifactId>
         </dependency>
         <dependency>
             <groupId>org.webjars.bower</groupId>
