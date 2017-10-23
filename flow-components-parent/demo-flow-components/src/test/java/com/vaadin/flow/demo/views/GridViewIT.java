@@ -176,8 +176,8 @@ public class GridViewIT extends ComponentDemoTest {
     }
 
     @Test
-    public void gridWithResizableColumns() {
-        WebElement grid = findElement(By.id("resizable-columns"));
+    public void gridColumnApiTests() {
+        WebElement grid = findElement(By.id("column-api-example"));
         scrollToElement(grid);
 
         Assert.assertEquals("Two resize handlers should be present", 2L,
@@ -189,6 +189,18 @@ public class GridViewIT extends ComponentDemoTest {
                 getCommandExecutor().executeScript(
                         "return arguments[0].shadowRoot.querySelectorAll('th')[0].style.width;",
                         grid));
+
+        WebElement toggleIdColumnVisibility = findElement(
+                By.id("toggle-id-column-visibility"));
+        String firstCellHiddenScript = "return arguments[0].shadowRoot.querySelectorAll('td')[0].hidden;";
+        Assert.assertNotEquals(true, getCommandExecutor()
+                .executeScript(firstCellHiddenScript, grid));
+        toggleIdColumnVisibility.click();
+        Assert.assertEquals(true, getCommandExecutor()
+                .executeScript(firstCellHiddenScript, grid));
+        toggleIdColumnVisibility.click();
+        Assert.assertNotEquals(true, getCommandExecutor()
+                .executeScript(firstCellHiddenScript, grid));
     }
 
     private static String getSelectionMessage(Object oldSelection,
