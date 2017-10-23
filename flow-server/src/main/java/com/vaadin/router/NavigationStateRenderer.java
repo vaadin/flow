@@ -48,9 +48,7 @@ import com.vaadin.ui.common.HasElement;
 public class NavigationStateRenderer implements NavigationHandler {
 
     private enum TransitionOutcome {
-        FINISHED,
-        REROUTED,
-        POSTPONED
+        FINISHED, REROUTED, POSTPONED
     }
 
     private final NavigationState navigationState;

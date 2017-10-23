@@ -20,16 +20,16 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.router.View;
 import com.vaadin.flow.uitest.servlet.ViewClassLocator;
+import com.vaadin.ui.Component;
 
 public class ToStringTest {
     @Test
     public void testViewsElementsStringable() throws Exception {
-        Collection<Class<? extends View>> viewClasses = new ViewClassLocator(
+        Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(
                 getClass().getClassLoader()).getAllViewClasses();
-        for (Class<? extends View> viewClass : viewClasses) {
-            View view = viewClass.newInstance();
+        for (Class<? extends Component> viewClass : viewClasses) {
+            Component view = viewClass.newInstance();
             String string = view.getElement().toString();
             Assert.assertNotNull(string);
             Assert.assertNotEquals("", string);

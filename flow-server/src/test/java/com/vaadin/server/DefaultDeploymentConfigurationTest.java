@@ -40,7 +40,7 @@ public class DefaultDeploymentConfigurationTest {
         System.setProperty(prop, value);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 clazz, new Properties(), (base, consumer) -> {
-                });
+        });
         assertEquals(value, config.getSystemProperty(prop));
     }
 
@@ -67,16 +67,20 @@ public class DefaultDeploymentConfigurationTest {
                         "bower_components/webcomponentsjs/webcomponents-loader.js"));
 
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElseThrow(AssertionError::new);
+                .orElseThrow(() -> new AssertionError(
+                        "Unexpected: did not find any webcomponents polyfill"));
 
         assertEquals("frontend://bower_components/webcomponentsjs/",
                 webComponentsPolyfillBase);
     }
 
     @Test
-    public void webComponentsBase_defaultSetting_webJarFileFound() {
+    public void webComponentsBase_webjarsEnabled_webJarFileFound() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.DISABLE_WEBJARS, Boolean.FALSE.toString());
+
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                DefaultDeploymentConfigurationTest.class, new Properties(),
+                DefaultDeploymentConfigurationTest.class, initParameters,
                 (base, consumer) -> {
                     if (Objects.equals(base, "/")) {
                         consumer.test("webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
@@ -84,10 +88,28 @@ public class DefaultDeploymentConfigurationTest {
                 });
 
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElseThrow(AssertionError::new);
+                .orElseThrow(() -> new AssertionError(
+                        "Unexpected: did not find any webcomponents polyfill"));
 
         assertEquals("context://webjars/bower_components/webcomponentsjs/",
                 webComponentsPolyfillBase);
+    }
+
+    @Test
+    public void webComponentsBase_webJarsDisabled_noPolyfillFound() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(Constants.DISABLE_WEBJARS, Boolean.TRUE.toString());
+
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                DefaultDeploymentConfigurationTest.class, initParameters,
+                (base, consumer) -> {
+                    if (Objects.equals(base, "/")) {
+                        consumer.test("webjars/bower_components/webcomponentsjs/webcomponents-loader.js");
+                    }
+                });
+
+        assertFalse("When webjars are disabled, no webjars paths should be used",
+                config.getWebComponentsPolyfillBase().isPresent());
     }
 
     @Test
@@ -115,13 +137,14 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void testWebComponentsBase_explicitSetting() {
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "foo");
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "foo");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
 
         String webComponentsPolyfillBase = config.getWebComponentsPolyfillBase()
-                .orElseThrow(AssertionError::new);
+                .orElseThrow(() -> new AssertionError(
+                        "Unexpected: did not find any webcomponents polyfill"));
 
         assertEquals("foo", webComponentsPolyfillBase);
     }
@@ -129,7 +152,7 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void testWebComponentsBase_explicitDisable() {
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "");
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_POLYFILL_BASE, "");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -140,7 +163,7 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void booleanValueReadIgnoreTheCase_true() {
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "tRUe");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
@@ -153,7 +176,7 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void booleanValueReadIgnoreTheCase_false() {
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "FaLsE");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
@@ -167,7 +190,7 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void booleanValueRead_emptyIsTrue() {
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
@@ -180,7 +203,7 @@ public class DefaultDeploymentConfigurationTest {
     @Test(expected = IllegalArgumentException.class)
     public void booleanValueRead_exceptionOnNonBooleanValue() {
         Properties initParameters = new Properties();
-        initParameters.put(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+        initParameters.setProperty(Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "incorrectValue");
 
         createDeploymentConfig(initParameters);

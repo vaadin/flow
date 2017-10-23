@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.startup;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,8 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
 
 import com.vaadin.router.HasErrorParameter;
 import com.vaadin.router.HasUrlParameter;
@@ -131,8 +130,7 @@ public class RouteRegistry implements Serializable {
             Set<Class<? extends Component>> errorNavigationTargets) {
         Map<Class<?>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
         for (Class<? extends Component> target : errorNavigationTargets) {
-            Class<?> exceptionType = ReflectTools
-                    .getGenericInterfaceType(target, HasErrorParameter.class);
+            Class<?> exceptionType = getExceptionType(target);
 
             if (exceptionTargetsMap.containsKey(exceptionType)) {
                 handleRegisteredExceptionType(exceptionTargetsMap, target,
@@ -142,6 +140,18 @@ public class RouteRegistry implements Serializable {
             }
         }
         initErrorTargets(exceptionTargetsMap);
+    }
+
+    private Class<?> getExceptionType(Class<? extends Component> target) {
+        Class<?> exceptionType = (Class<?>) ReflectTools
+                .getGenericInterfaceType(target, HasErrorParameter.class);
+
+        if (exceptionType == null) {
+            return getExceptionType(
+                    (Class<? extends Component>) target.getSuperclass());
+        }
+
+        return exceptionType;
     }
 
     /**

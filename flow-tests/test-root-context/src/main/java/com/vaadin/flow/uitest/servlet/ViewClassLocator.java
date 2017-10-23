@@ -30,10 +30,10 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.Component;
 
 public class ViewClassLocator {
-    private final LinkedHashMap<String, Class<? extends View>> views = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Class<? extends Component>> views = new LinkedHashMap<>();
     private final ClassLoader classLoader;
 
     public ViewClassLocator(ClassLoader classLoader) {
@@ -65,8 +65,7 @@ public class ViewClassLocator {
         }
     }
 
-    private void findViews(File parent)
-            throws IOException {
+    private void findViews(File parent) throws IOException {
         Path root = parent.toPath();
         Files.walkFileTree(parent.toPath(), new SimpleFileVisitor<Path>() {
             @Override
@@ -89,7 +88,7 @@ public class ViewClassLocator {
                     .replace(File.separatorChar, '.').replace(".class", "");
             try {
                 Class<?> cls = classLoader.loadClass(className);
-                if (View.class.isAssignableFrom(cls)
+                if (Component.class.isAssignableFrom(cls)
                         && !Modifier.isAbstract(cls.getModifiers())) {
                     try {
                         // Only include views which have a no-arg
@@ -97,7 +96,7 @@ public class ViewClassLocator {
                         Constructor<?> constructor = cls.getConstructor();
                         assert constructor != null;
                         views.put(cls.getSimpleName(),
-                                (Class<? extends View>) cls);
+                                (Class<? extends Component>) cls);
                     } catch (Exception e) {
                         // InlineTemplate or similar
                     }
@@ -112,19 +111,19 @@ public class ViewClassLocator {
         return Logger.getLogger(ViewClassLocator.class.getName());
     }
 
-    public Collection<Class<? extends View>> getAllViewClasses() {
+    public Collection<Class<? extends Component>> getAllViewClasses() {
         return views.values();
     }
 
     @SuppressWarnings("unchecked")
-    public Class<? extends View> findViewClass(String fullOrSimpleName)
+    public Class<? extends Component> findViewClass(String fullOrSimpleName)
             throws ClassNotFoundException {
         if (fullOrSimpleName == null) {
             return null;
         }
         String baseName = fullOrSimpleName;
         try {
-            return (Class<? extends View>) getClass().getClassLoader()
+            return (Class<? extends Component>) getClass().getClassLoader()
                     .loadClass(baseName);
         } catch (Exception e) {
         }
