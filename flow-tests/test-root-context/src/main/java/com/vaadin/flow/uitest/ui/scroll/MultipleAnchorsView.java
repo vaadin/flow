@@ -16,13 +16,13 @@
 
 package com.vaadin.flow.uitest.ui.scroll;
 
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Anchor;
 import com.vaadin.ui.html.Div;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
-/**
- * @author Vaadin Ltd.
- */
+@Route(value = "com.vaadin.flow.uitest.ui.scroll.MultipleAnchorsView", layout = ViewTestLayout.class)
 public class MultipleAnchorsView extends AbstractDivView {
     static final int NUMBER_OF_ANCHORS = 6;
     static final String ANCHOR_URL_ID_BASE = "anchorUrlId";

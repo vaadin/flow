@@ -15,17 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
 import com.vaadin.ui.html.NativeButton;
-import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.model.TemplateModel;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class TextTemplateView extends Div implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.TextTemplateView", layout = ViewTestLayout.class)
+public class TextTemplateView extends Div {
 
     public interface Model extends TemplateModel {
         void setName(String name);
@@ -44,7 +42,8 @@ public class TextTemplateView extends Div implements View {
                 "<div id='js-expression'>{{name ? 'Hello ' + name: 'No name'}}</div>",
                 Model.class);
         setName(jsExpression, null, "js-text");
-        NativeButton updateJsExpression = new NativeButton("Update JS expression");
+        NativeButton updateJsExpression = new NativeButton(
+                "Update JS expression");
         updateJsExpression.setId("set-expression-name");
         updateJsExpression.addClickListener(
                 event -> setName(jsExpression, "Foo", "js-text"));

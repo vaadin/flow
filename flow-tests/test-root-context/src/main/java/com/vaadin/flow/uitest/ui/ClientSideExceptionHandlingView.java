@@ -15,11 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.ui.html.NativeButton;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.router.Route;
 import com.vaadin.ui.html.Div;
-import com.vaadin.flow.router.View;
+import com.vaadin.ui.html.NativeButton;
 
-public class ClientSideExceptionHandlingView extends Div implements View {
+@Route(value = "com.vaadin.flow.uitest.ui.ClientSideExceptionHandlingView", layout = ViewTestLayout.class)
+public class ClientSideExceptionHandlingView extends Div {
 
     static final String CAUSE_EXCEPTION_ID = "causeException";
     private NativeButton causeException;
