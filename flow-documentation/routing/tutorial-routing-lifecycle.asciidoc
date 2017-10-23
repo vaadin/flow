@@ -51,13 +51,13 @@ public class SideElement extends Div implements BeforeNavigationListener {
 
 === BeforeLeaveListener
 The `BeforeLeaveListener` is a specific BeforeNavigationListener that is only
-executed when the component will be detached from the UI.
+notified when the component will be detached from the UI.
 
-During the `BeforeLeaveListener` state postponing and reroute is supported.
+During the `BeforeLeaveListener` state postponing and rerouting is supported.
 
 === BeforeEnterListener
 The `BeforeLeaveListener` is a specific BeforeNavigationListener that is only
-executed when the component will be attached to the UI.
+notified when the component will be attached to the UI.
 
 During the `BeforeEnterListener` state only reroute is supported.
 
@@ -137,8 +137,9 @@ event at all and the transition never finishes. If, however, __b__ executes its
 where it was interrupted. Thus __a__ and __b__ are not called again, but __c__ is notified.
 
 [NOTE]
-Postpone may only be initiated while navigating away (For a `BeforeNavigationListener` the
-`BeforeNavigationEvent::getActivationState` is DEACTIVATING or we use the `BeforeLeaveListener`) form a page; if the method
+Postpone may only be initiated while navigating away from a page, meaning it is only
+available for a `BeforeNavigationListener` where the `BeforeNavigationEvent::getActivationState`
+is *DEACTIVATING* or when we use a `BeforeLeaveListener`; if the method
 is called while entering / activating the new page, it will throw an `IllegalStateException`.
 [NOTE]
 At most one navigation event may be postponed at any time; starting a new

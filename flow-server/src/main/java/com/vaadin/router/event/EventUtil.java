@@ -33,8 +33,8 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing BeforeNavigationListener connected to
-     * given element tree.
+     * Collect all Components implementing {@link BeforeNavigationListener} connected to
+     * the given element tree.
      * 
      * @param element
      *            element to search from
@@ -48,8 +48,8 @@ public final class EventUtil {
 
 
     /**
-     * Collect all Components implementing BeforeLeaveListener connected to
-     * given element tree.
+     * Collect all Components implementing {@link BeforeLeaveListener} connected to
+     * the given element tree.
      *
      * @param element
      *            element to search from
@@ -62,8 +62,8 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing BeforeNavigationListener connected to
-     * tree of all given Components in list.
+     * Collect all Components implementing {@link BeforeNavigationListener} connected to
+     * the tree of all given Components in list.
      *
      * @param components
      *            components to search
@@ -79,8 +79,8 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing BeforeEnterListener connected to
-     * tree of all given Components in list.
+     * Collect all Components implementing {@link BeforeEnterListener} connected to
+     * the tree of all given Components in list.
      *
      * @param components
      *            components to search
@@ -96,7 +96,7 @@ public final class EventUtil {
     }
 
     /**
-     * Collect all Components implementing AfterNavigationListener that are
+     * Collect all Components implementing {@link AfterNavigationListener} that are
      * found in the trees of given Components.
      *
      * @param components

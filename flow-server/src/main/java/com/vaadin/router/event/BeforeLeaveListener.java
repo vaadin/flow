@@ -19,7 +19,7 @@ package com.vaadin.router.event;
  * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when they
  * are being detached from the UI.
  * <p>
- * During this face there is the possibility to reroute to another navigation
+ * During this phase there is the possibility to reroute to another navigation
  * target or to postpone the navigation (to for instance get user input).
  *
  * @author Vaadin Ltd
