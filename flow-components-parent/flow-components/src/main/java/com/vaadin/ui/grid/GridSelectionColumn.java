@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui.grid;
 
+import com.vaadin.function.SerializableRunnable;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Tag;
 import com.vaadin.ui.common.ClientDelegate;
@@ -29,8 +30,8 @@ import com.vaadin.ui.common.HtmlImport;
 @HtmlImport("context://vaadin-grid-flow-selection-column.html")
 public class GridSelectionColumn extends Component {
 
-    private final Runnable selectAllCallback;
-    private final Runnable deselectAllCallback;
+    private final SerializableRunnable selectAllCallback;
+    private final SerializableRunnable deselectAllCallback;
 
     /**
      * Constructs a new grid selection column configured to use the given
@@ -43,8 +44,8 @@ public class GridSelectionColumn extends Component {
      *            the runnable to run when the select all checkbox has been
      *            unchecked
      */
-    public GridSelectionColumn(Runnable selectAllCallback,
-            Runnable deselectAllCallback) {
+    public GridSelectionColumn(SerializableRunnable selectAllCallback,
+            SerializableRunnable deselectAllCallback) {
         this.selectAllCallback = selectAllCallback;
         this.deselectAllCallback = deselectAllCallback;
     }
