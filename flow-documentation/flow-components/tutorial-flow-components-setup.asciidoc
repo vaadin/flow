@@ -42,7 +42,7 @@ external web components' locations
 Due to current webjar https://github.com/webjars/webjars/issues[limitations],
 extra maven configuration (extra repository + bom file declaration) is required.
 
-== Maven configuration
+== Maven configuration to use webjars
 
 The first step is to add the `bom` and `flow-components` package to your project
 dependencies. This package is released alongside Flow and shares the same
@@ -85,36 +85,40 @@ version number. When using Maven you can add it into your `pom.xml` as this:
 </dependncies>
 ----
 
-== Runtime configuration
+== Maven configuration to exclude webjars
 
-Extra parameters can be specified to configure `flow`:
+If webjar dependencies are not needed, they can be excluded from the project using standard Maven mechanism:
+[source,xml]
+----
+<!-- No webjars == no bom needed and no extra repo needed, but you have to get webjars' files into the build yourself -->
+<dependencies>
+    <!-- other dependencies -->
 
-* disable.webjars - if set to `true`, webjars would be ignored during request resolving,
-allows `flow` to use external source of web components' files.
-[NOTE]
-Webjars are enabled for development mode and disabled for production mode by default,
-unless explicitly overridden by parameter specified.
-In future, webjars should be expected to be enabled always.
+    <!-- the dependency with webjars excluded -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-components</artifactId>
+        <version>${flow.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.webjars.bower</groupId>
+                <artifactId>*</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
 
-Next group of parameters are paths to external web component's locations in development and production modes.
+    <!-- other dependencies -->
+</dependncies>
+----
 
-Development mode:
-
-* frontend.url.dev (default value is context://frontend) – a location `flow` searches web components' files in development mode.
-Supports changes reload on a working application and should be set as a directory, containing `bower.json` file.
-By default, `flow` looks for files in `frontend` directory,
-located in https://docs.jboss.org/jbossas/guides/webguide/r2/en/html/ch06.html[context root] of the application
-
-Production mode:
-
-* frontend.url.es5 (default value is context://frontend-es5) - a location `flow` searches web components' files in production mode
-when the request is coming from older browsers, not supporting http://es6-features.org/[es6], default web components' development language version.
-* frontend.url.es6 (default value is context://frontend-es6) - a location `flow` searches web components' files in production mode for requests from modern browsers
+More documentation on webjars in can be found here: <<tutorial-flow-webjars#,WebJars in Flow>>
+General webJars usage manual is here: <<tutorial-how-to-use-webjars#, How to use webjars>>
 
 == bower.json configuration
 
 Currently `bower.json` is needed for production mode and in cases wne you'd like to be able
 to manipulate web component's files before adding them to the application (transpile, minify, check, bundle etc)
+It is also can be used in developmentMode as a webjars' substitution.
 
 In your `bower.json` file, which is located at `${frontend.working.directory}`, you
 need to add the webcomponent dependencies to each desired webcomponent. Here is
@@ -149,7 +153,33 @@ To enable compilation to ES5 (for browsers that lack of ES6 support, such as
 
 [NOTE]
 How to integrate java and web components' files is explained in
-<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>.
+<<../web-components/tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+
+== Runtime configuration
+
+Extra parameters can be specified to configure `flow`:
+
+* disable.webjars - if set to `true`, webjars would be ignored during request resolving,
+allows `flow` to use external source of web components' files.
+[NOTE]
+Webjars are enabled for development mode and disabled for production mode by default,
+unless explicitly overridden by parameter specified.
+In future, webjars should be expected to be enabled always.
+
+Next group of parameters are paths to external web component's locations in development and production modes.
+
+Development mode:
+
+* frontend.url.dev (default value is context://frontend) – a location `flow` searches web components' files in development mode.
+Supports changes reload on a working application and should be set as a directory, containing `bower.json` file.
+By default, `flow` looks for files in `frontend` directory,
+located in https://docs.jboss.org/jbossas/guides/webguide/r2/en/html/ch06.html[context root] of the application
+
+Production mode:
+
+* frontend.url.es5 (default value is context://frontend-es5) - a location `flow` searches web components' files in production mode
+when the request is coming from older browsers, not supporting http://es6-features.org/[es6], default web components' development language version.
+* frontend.url.es6 (default value is context://frontend-es6) - a location `flow` searches web components' files in production mode for requests from modern browsers
 
 == Demo and code samples
 

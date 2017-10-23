@@ -1,0 +1,112 @@
+---
+title: WebJars in Flow
+order: 4
+layout: page
+---
+
+This tutorial is intended to explain what options the user has
+Explanation on how to use WebJars is arbitrary project is in <<tutorial-how-to-use-webjars#, How to use webjars>>
+
+= Current web components' files situation
+In order to work properly, Flow requires web component's files
+(js, html, css, etc.) when `flow-components` like `Button`, `Icon` etc. are used.
+
+Currently, the latest production-ready webcomponents, along with latest
+https://www.polymer-project.org/[Polymer 2.0] utilize https://bower.io/[bower] as a dependency management system.
+That's the https://www.polymer-project.org/2.0/start/install-2-0[recommended way] currently.
+
+In future, when https://www.polymer-project.org/blog/2017-08-23-hands-on-30-preview[Polymer 3.0]
+migrate to https://yarnpkg.com/lang/en/[yarn].
+
+Flow does not need to know anything about `bower` or `yarn`: it has defaults that can be overridden with
+runtime configuration (more details in <<tutorial-flow-components-setup#,Flow components setup>>)
+
+Although Flow does not need to know about those tools, it would be nice to integrate this workflow as part of Flow and
+do not force users to familiarise themselves with another tool.
+
+= Integration options:
+
+Here are considered ways of getting web components' files into the project, summary is in the next section.
+
+== Maven (Gradle) plugin to download bower dependencies
+
+Polymer requires its dependencies to have flat directory structure (that's what bower provides),
+but packages can have dependencies too (transitive dependencies) and either those should be resolved
+by plugin somehow (which should be same as bower resolutions) or this should be done by user.
+
+It's pretty obvious that forcing user to resolve dependencies programmatically is not the easiest way,
+so it better be bower-resolved structure.
+This approach has some cornerstones considered in the next point.
+
+== Bower to download bower dependencies
+
+This can be done either by bower itself or by some Java build system plugin.
+
+Apart from the fact that Maven users need to be familiar with web components to know which components and versions
+to download and how to specify them in bower.json or any other file, the approach has one peculiarity:
+bower never fixes the resolved dependency tree.
+
+Bower (and yarn) allows to specify dependencies versions using special symbols `~`, `^`, `latest` or even a branch name,
+see https://github.com/bower/spec/blob/master/json.md[specification] for details.
+And even if you don't use this feature, you cannot restrict your dependencies from using it.
+Bower does not any `lock file` concept as npm or yarn have, so each new time the dependency resolution is done, it may
+pull new transitive dependencies' versions which may break things.
+
+bower has no file caching mechanism (it has some sort of resolution caching, but it's a different thing)
+which means that each time you clean the resolved and downloaded components, all of those should be redownloaded.
+
+Bower downloads rather large amount of files.
+If you have bower installed and run `bower i paper-button#2.0.0` (web component, officially developed by google) in any temporary directory,
+next things can be noticed:
+
+* various `^` resolutions during installation
+* 339 files downloaded
+* 18 packages downloaded (including paper-button)
+
+[NOTE]
+Luckily, the dependencies and file numbers does not scale linearly,
+since some transitive dependencies match for other dependencies when resolved for flat dependency tree.
+
+One example of that kind of configuration can be found here: <<../web-components/tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+
+== https://www.webjars.org/[WebJars]
+
+The project is able to pack any bower, npm (yarn) package into a jar.
+In theory, this allows to attach those jars with Maven and Gradle seamlessly like any other dependencies.
+No other working analogs were found, so this project was taken into consideration.
+
+Although there are downsides. Main ones are:
+
+* https://github.com/webjars/webjars/issues/1452 Same bower packages have 3 different ways (at least) of naming in webjars repository (`paper-button`, `github-com-polymerelements-paper-button` and `github-com-PolymerElements-paper-button`)
+* absolutely no consistency between those dependencies for a single dependency (`paper-button` depends on artifacts with names with prefixes: https://dl.bintray.com/webjars/maven/org/webjars/bower/paper-button/2.0.0/:paper-button-2.0.0.pom)
+* https://github.com/webjars/webjars/issues/1656 2 different ways of defining the dependency version (1.0.1 and v1.0.1 are the same from webjars' point of view but Maven and Gradle fail to resolve it properly)
+* https://github.com/webjars/webjars/issues/1636 dependencies with incorrect version number
+* transitive webjar dependencies are not fixed: they have a range version in their poms (from the pom url above: `<version>[1.9,3)</version>`)
+
+Additional challenges provided by the https://www.webjars.org/ website:
+* Rich ui with multiple ways of adding the same bower dependency that lead to confusion and different names of the artifacts
+* https://github.com/webjars/webjars/issues/1648 sometimes deploy breaks, some artifacts are present in BinTray, not MavenCentral
+
+This means that we need to apply extra dependencies resolutions (bom file) and extra repository to get webjars from (more details in <<tutorial-flow-components-setup#,Flow components setup>>).
+
+= Summary
+
+For Polymer 2, most viable options seem to be bower and webjars.
+Flow supports both approaches (both at the same time and standalone approaches either) and does not restrict users
+from providing web components' files via some other way.
+
+= Why WebJars?
+
+* Currently, only webjars provide a way to fix bower dependencies and make CI builds repeatable (needs extra settings)
+* Maven dependency caching and resolution allows to download webjars significantly faster and with less IO errors than bower
+* WebJars support both npm and bower, so we can provide easier transition to Polymer 3 in future
+* It's almost regular Java packages, familiar to all Java users: no extra tool to learn and break things with
+* Despite current WebJars issues, it's the most alive project amongst its analogues now and Flow can make them easier to use
+
+= How Flow is solving the problems
+
+* Flow provides internal runtime WebJars support that works seamlessly when all dependencies are resolved
+* Flow provides bom file (can be used natively in Maven, can be used in Gradle with a https://spring.io/blog/2015/02/23/better-dependency-management-for-gradle[plugin])
+* Flow provides its components' jars with resolved dependencies so that users should not need to deal with WebJars explicitly
+* Flow provides a documentation on the topic
+* Flow provides a way to avoid using WebJars, if not satisfied with them
