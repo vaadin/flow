@@ -434,6 +434,30 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
+         * Hides or shows the column. By default columns are visible before
+         * explicitly hiding them.
+         *
+         * @param hidden
+         *            {@code true} to hide the column, {@code false} to show
+         * @return this column, for method chaining
+         */
+        public Column<T> setHidden(boolean hidden) {
+            getElement().setProperty("hidden", hidden);
+            return this;
+        }
+
+        /**
+         * Returns whether this column is hidden. Default is {@code false}.
+         *
+         * @return {@code true} if the column is currently hidden, {@code false}
+         *         otherwise
+         */
+        @Synchronize("hidden-changed")
+        public boolean isHidden() {
+            return getElement().getProperty("hidden", false);
+        }
+
+        /**
          * Gets the underlying {@code <vaadin-grid-column>} element.
          * <p>
          * <strong>It is highly discouraged to directly use the API exposed by
