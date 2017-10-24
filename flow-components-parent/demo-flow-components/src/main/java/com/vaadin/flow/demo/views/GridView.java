@@ -29,9 +29,11 @@ import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
 import com.vaadin.ui.grid.Grid.SelectionMode;
+import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSelectionModel;
 import com.vaadin.ui.html.Div;
 import com.vaadin.ui.html.Label;
+import com.vaadin.ui.layout.HorizontalLayout;
 import com.vaadin.ui.renderers.TemplateRenderer;
 
 /**
@@ -260,11 +262,16 @@ public class GridView extends DemoView {
         Button selectBtn = new Button("Select first five persons");
         selectBtn.addClickListener(event -> grid.asMultiSelect()
                 .setValue(new LinkedHashSet<>(people.subList(0, 5))));
+        Button selectAllBtn = new Button("Select all");
+        selectAllBtn.addClickListener(
+                event -> ((GridMultiSelectionModel<Person>) grid
+                        .getSelectionModel()).selectAll());
         // end-source-example
         grid.setId("multi-selection");
         selectBtn.setId("multi-selection-button");
         messageDiv.setId("multi-selection-message");
-        addCard("Grid Multi Selection", grid, selectBtn, messageDiv);
+        addCard("Grid Multi Selection", grid,
+                new HorizontalLayout(selectBtn, selectAllBtn), messageDiv);
     }
 
     private void createNoneSelect() {
