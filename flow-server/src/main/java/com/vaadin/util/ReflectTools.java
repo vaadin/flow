@@ -20,13 +20,17 @@ import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -653,4 +657,47 @@ public class ReflectTools implements Serializable {
         return filteredMethods.get(0);
     }
 
+    /**
+     * Collect all the integer values for public static final constants found
+     * for the given class.
+     * 
+     * @param clazz
+     *            class to collect constants from
+     * @return list of all integer constants in class
+     */
+    public static List<Integer> getConstantIntValues(Class<?> clazz) {
+        List<Integer> integerConstants = new ArrayList<>();
+
+        for (Field field : getConstants(clazz)) {
+            if (field.getType().equals(int.class)) {
+                try {
+                    integerConstants.add(field.getInt(null));
+                } catch (IllegalAccessException e) {
+                    // Ignore this exception. Public fields should always be
+                    // accessible.
+                    String msg = String.format(
+                            "Received access exception for public field '%s' in class '%s'",
+                            field.getName(), clazz.getSimpleName());
+                    assert false : msg;
+                    Logger.getLogger(ReflectTools.class.getName())
+                            .log(Level.WARNING, msg, e);
+                }
+            }
+        }
+
+        return integerConstants;
+    }
+
+    private static List<Field> getConstants(Class<?> staticFields) {
+        List<Field> staticFinalFields = new ArrayList<>();
+        Field[] declaredFields = staticFields.getDeclaredFields();
+        for (Field field : declaredFields) {
+            if (Modifier.isStatic(field.getModifiers())
+                    && Modifier.isFinal(field.getModifiers())
+                    && Modifier.isPublic(field.getModifiers())) {
+                staticFinalFields.add(field);
+            }
+        }
+        return staticFinalFields;
+    }
 }
