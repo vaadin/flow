@@ -468,7 +468,6 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         @Override
         public Element getElement() {
             return super.getElement();
-
         }
 
         private void processTemplateRendererEventConsumers(UI ui,
