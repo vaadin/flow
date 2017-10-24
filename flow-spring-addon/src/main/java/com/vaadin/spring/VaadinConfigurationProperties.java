@@ -57,4 +57,24 @@ public class VaadinConfigurationProperties {
         return asyncSupported;
     }
 
+    /**
+     * Sets {@code urlMapping} property value.
+     *
+     * @param urlMapping
+     *            the {@code urlMapping} property value
+     */
+    public void setUrlMapping(String urlMapping) {
+        this.urlMapping = urlMapping;
+    }
+
+    /**
+     * Sets {@code asyncSupported} property value.
+     *
+     * @param asyncSupported
+     *            the {@code asyncSupported} property value
+     */
+    public void setAsyncSupported(boolean asyncSupported) {
+        this.asyncSupported = asyncSupported;
+    }
+
 }
