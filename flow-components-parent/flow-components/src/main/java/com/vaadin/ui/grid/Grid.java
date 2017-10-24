@@ -17,9 +17,7 @@ package com.vaadin.ui.grid;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +27,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.vaadin.data.AbstractListing;
 import com.vaadin.data.Binder;
@@ -40,7 +37,6 @@ import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
-import com.vaadin.data.selection.MultiSelectionEvent;
 import com.vaadin.data.selection.MultiSelectionListener;
 import com.vaadin.data.selection.SelectionEvent;
 import com.vaadin.data.selection.SelectionListener;
@@ -62,6 +58,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.event.Synchronize;
 import com.vaadin.ui.renderers.TemplateRenderer;
@@ -82,6 +79,8 @@ import elemental.json.JsonValue;
  */
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
+@HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
+@HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @JavaScript("context://gridConnector.js")
 public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
@@ -267,168 +266,11 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         MULTI {
             @Override
             protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
-                return new GridMultiSelectionModel<T>() {
-
-                    Set<T> selected = new LinkedHashSet<>();
+                return new AbstractGridMultiSelectionModel<T>(grid) {
 
                     @Override
-                    public void remove() {
-                        deselectAll();
-                    }
-
-                    @Override
-                    public void selectFromClient(T item) {
-                        doSelect(item, true);
-                    }
-
-                    @Override
-                    public void deselectFromClient(T item) {
-                        doDeselect(item, true);
-                    }
-
-                    @Override
-                    public Set<T> getSelectedItems() {
-                        return Collections.unmodifiableSet(selected);
-                    }
-
-                    @Override
-                    public Optional<T> getFirstSelectedItem() {
-                        return selected.stream().findFirst();
-                    }
-
-                    @Override
-                    public void select(T item) {
-                        doSelect(item, false);
-                        grid.getDataCommunicator().reset();
-                    }
-
-                    @Override
-                    public void deselect(T item) {
-                        doDeselect(item, false);
-                        grid.getDataCommunicator().reset();
-                    }
-
-                    @Override
-                    public void deselectAll() {
-                        updateSelection(Collections.emptySet(), selected);
-                    }
-
-                    @Override
-                    public void updateSelection(Set<T> addedItems,
-                            Set<T> removedItems) {
-                        Objects.requireNonNull(addedItems,
-                                "added items cannot be null");
-                        Objects.requireNonNull(removedItems,
-                                "removed items cannot be null");
-                        addedItems.removeIf(removedItems::remove);
-                        if (selected.containsAll(addedItems) && Collections
-                                .disjoint(selected, removedItems)) {
-                            return;
-                        }
-                        Set<T> oldSelection = new LinkedHashSet<>(selected);
-                        selected.removeAll(removedItems);
-                        selected.addAll(addedItems);
-                        grid.getDataCommunicator().reset();
-                        grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(grid,
-                                grid.asMultiSelect(), oldSelection, false));
-                    }
-
-                    @Override
-                    public void selectAll() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
-                    }
-
-                    @Override
-                    public boolean isSelected(T item) {
-                        return getSelectedItems().contains(item);
-                    }
-
-                    @Override
-                    public MultiSelect<Grid<T>, T> asMultiSelect() {
-                        return new MultiSelect<Grid<T>, T>() {
-
-                            @Override
-                            public void setValue(Set<T> value) {
-                                Objects.requireNonNull(value);
-                                Set<T> copy = value.stream()
-                                        .map(Objects::requireNonNull)
-                                        .collect(Collectors.toCollection(
-                                                LinkedHashSet::new));
-                                updateSelection(copy, new LinkedHashSet<>(
-                                        getSelectedItems()));
-                            }
-
-                            @Override
-                            public Set<T> getValue() {
-                                return getSelectedItems();
-                            }
-
-                            @SuppressWarnings({ "unchecked", "rawtypes" })
-                            @Override
-                            public Registration addValueChangeListener(
-                                    ValueChangeListener<Grid<T>, Set<T>> listener) {
-                                Objects.requireNonNull(listener,
-                                        "listener cannot be null");
-                                return grid.addListener(
-                                        MultiSelectionEvent.class,
-                                        (ComponentEventListener) listener);
-                            }
-
-                            @Override
-                            public Grid<T> get() {
-                                return grid;
-                            }
-
-                            @Override
-                            public Set<T> getEmptyValue() {
-                                return Collections.emptySet();
-                            }
-                        };
-                    }
-
-                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                    @Override
-                    public Registration addSelectionListener(
-                            SelectionListener<T> listener) {
-                        Objects.requireNonNull(listener,
-                                "listener cannot be null");
-                        return grid.addListener(MultiSelectionEvent.class,
-                                (ComponentEventListener) (event -> listener
-                                        .selectionChange(
-                                                (SelectionEvent) event)));
-                    }
-
-                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                    @Override
-                    public Registration addMultiSelectionListener(
-                            MultiSelectionListener<Grid<T>, T> listener) {
-                        Objects.requireNonNull(listener,
-                                "listener cannot be null");
-                        return grid.addListener(MultiSelectionEvent.class,
-                                (ComponentEventListener) (event -> listener
-                                        .selectionChange(
-                                                (MultiSelectionEvent) event)));
-                    }
-
-                    private void doSelect(T item, boolean userOriginated) {
-                        Set<T> oldSelection = new LinkedHashSet<>(selected);
-                        boolean added = selected.add(item);
-                        if (added) {
-                            grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(
-                                    grid, grid.asMultiSelect(), oldSelection,
-                                    userOriginated));
-                        }
-                    }
-
-                    private void doDeselect(T item, boolean userOriginated) {
-                        Set<T> oldSelection = new LinkedHashSet<>(selected);
-                        boolean removed = selected.remove(item);
-                        if (removed) {
-                            grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(
-                                    grid, grid.asMultiSelect(), oldSelection,
-                                    userOriginated));
-                        }
+                    protected void fireSelectionEvent(SelectionEvent<T> event) {
+                        grid.fireEvent((ComponentEvent<Grid>) event);
                     }
                 };
             }
@@ -472,6 +314,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         /**
          * Constructs a new Column for use inside a Grid.
          *
+         * @param grid
+         *            the grid this column is attached to
          * @param columnId
          *            unique identifier of this column
          * @param header
@@ -517,12 +361,13 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Set the width of this column as a CSS-string.
+         * Sets the width of this column as a CSS-string.
          *
          * @see #setFlexGrow(int)
          *
          * @param width
-         *            the width to set this column to, as a CSS-string
+         *            the width to set this column to, as a CSS-string, not
+         *            {@code null}
          * @return this column, for method chaining
          */
         public Column<T> setWidth(String width) {
@@ -531,7 +376,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Get the width of this column as a CSS-string.
+         * Gets the width of this column as a CSS-string.
          * 
          * @return the width of this column as a CSS-string
          */
@@ -541,7 +386,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Set the flex grow ratio for this column. When set to 0, column width
+         * Sets the flex grow ratio for this column. When set to 0, column width
          * is fixed.
          *
          * @see #setWidth(String)
@@ -555,7 +400,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Get the currently set flex grow value, by default 1.
+         * Gets the currently set flex grow value, by default 1.
          *
          * @return the currently set flex grow value, by default 1
          */
@@ -579,12 +424,12 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         }
 
         /**
-         * Get whether this column is user-resizable.
+         * Gets whether this column is user-resizable.
          *
          * @return whether this column is user-resizable
          */
         @Synchronize("resizable-changed")
-        public boolean getResizable() {
+        public boolean isResizable() {
             return getElement().getProperty("resizable", false);
         }
 
@@ -610,6 +455,20 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         @Synchronize("hidden-changed")
         public boolean isHidden() {
             return getElement().getProperty("hidden", false);
+        }
+
+        /**
+         * Gets the underlying {@code <vaadin-grid-column>} element.
+         * <p>
+         * <strong>It is highly discouraged to directly use the API exposed by
+         * the returned element.</strong>
+         *
+         * @return the root element of this component
+         */
+        @Override
+        public Element getElement() {
+            return super.getElement();
+
         }
 
         private void processTemplateRendererEventConsumers(UI ui,
@@ -717,6 +576,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *            the column header name
      * @param valueProvider
      *            the value provider
+     * @return the created column
      */
     public Column<T> addColumn(String header,
             ValueProvider<T, ?> valueProvider) {
@@ -735,7 +595,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
      *            the column header name
      * @param renderer
      *            the renderer used to create the grid cell structure
-     * 
+     * @return the created column
+     *
      * @see TemplateRenderer#of(String)
      */
     public Column<T> addColumn(String header,

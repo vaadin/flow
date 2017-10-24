@@ -17,6 +17,7 @@ package com.vaadin.flow.demo.views;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.Assert;
@@ -120,17 +121,20 @@ public class GridViewIT extends ComponentDemoTest {
                 messageDiv.getText());
         assertRowsSelected(grid, 0, 5);
 
-        List<WebElement> cells = grid
-                .findElements(By.tagName("vaadin-grid-cell-content"));
-        cells.get(0).click();
-        cells.get(2).click();
+        List<WebElement> checkboxes = grid
+                .findElements(By.tagName("vaadin-checkbox")).stream()
+                .filter(element -> "Select Row"
+                        .equals(element.getAttribute("aria-label")))
+                .collect(Collectors.toList());
+        clickCheckbox(checkboxes.get(0));
+        clickCheckbox(checkboxes.get(1));
         Assert.assertEquals(
                 getSelectionMessage(GridView.items.subList(1, 5),
                         GridView.items.subList(2, 5), true),
                 messageDiv.getText());
         assertRowsSelected(grid, 2, 5);
 
-        cells.get(10).click();
+        clickCheckbox(checkboxes.get(5));
         Assert.assertTrue(isRowSelected(grid, 5));
         selectBtn.click();
         assertRowsSelected(grid, 0, 5);
@@ -254,6 +258,10 @@ public class GridViewIT extends ComponentDemoTest {
         return cells.stream()
                 .filter(cell -> text.equals(cell.getAttribute("innerHTML")))
                 .findAny().orElse(null);
+    }
+
+    private void clickCheckbox(WebElement checkbox) {
+        getInShadowRoot(checkbox, By.id("nativeCheckbox")).click();
     }
 
     @Override
