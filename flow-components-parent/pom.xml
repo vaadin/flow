@@ -17,6 +17,7 @@
         <module>flow-code-generator</module>
         <module>flow-components</module>
         <module>flow-component-demo-helpers</module>
+        <module>flow-component</module>
     </modules>
 
     <properties>
