@@ -86,23 +86,23 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         private List<Runnable> queue = new ArrayList<>();
 
         private UpdateQueue(int size) {
-            enqueue("connectorUpdateSize", size);
+            enqueue("$connector.updateSize", size);
         }
 
         @Override
         public void set(int start, List<JsonValue> items) {
-            enqueue("connectorSet", start,
+            enqueue("$connector.set", start,
                     items.stream().collect(JsonUtils.asArray()));
         }
 
         @Override
         public void clear(int start, int length) {
-            enqueue("connectorClear", start, length);
+            enqueue("$connector.clear", start, length);
         }
 
         @Override
         public void commit(int updateId) {
-            enqueue("connectorConfirm", updateId);
+            enqueue("$connector.confirm", updateId);
             queue.forEach(Runnable::run);
             queue.clear();
         }
@@ -303,7 +303,7 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
     private final Map<String, Function<T, JsonValue>> columnGenerators = new HashMap<>();
     private final DataCommunicator<T> dataCommunicator = new DataCommunicator<>(
             this::generateItemJson, arrayUpdater,
-            data -> getElement().callFunction("updateData", data),
+            data -> getElement().callFunction("$connector.updateData", data),
             getElement().getNode());
 
     private int nextColumnId = 0;
@@ -548,7 +548,8 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         Objects.requireNonNull(selectionMode, "selection mode cannot be null");
         selectionModel.remove();
         selectionModel = model;
-        getElement().callFunction("setSelectionMode", selectionMode.name());
+        getElement().callFunction("$connector.setSelectionMode",
+                selectionMode.name());
     }
 
     /**
