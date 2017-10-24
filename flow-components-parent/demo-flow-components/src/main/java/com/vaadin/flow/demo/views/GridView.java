@@ -156,6 +156,7 @@ public class GridView extends DemoView {
         createNoneSelect();
         createColumnTemplate();
         createResizable();
+        t();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -347,6 +348,25 @@ public class GridView extends DemoView {
 
         grid.setId("resizable-columns");
         addCard("Grid with resizable columns", grid);
+    }
+
+    private void t() {
+        // begin-source-example
+        // source-example-heading: Grid with reorderable columns
+        Grid<Person> grid = new Grid<>();
+        grid.setItems(getItems());
+
+        grid.addColumn("ID", Person::getId).setFlexGrow(0).setWidth("75px");
+        grid.addColumn("Name", Person::getName).setResizable(true);
+        grid.addColumn("Age", Person::getAge).setResizable(true);
+
+        Button btn = new Button("toggle reorder");
+        btn.addClickListener(event -> grid
+                .setColumnReorderingAllowed(!grid.isColumnReorderingAllowed()));
+        // end-source-example
+
+        grid.setId("reorderable-columns");
+        addCard("Grid with reorderable columns", grid, btn);
     }
 
     private List<Person> getItems() {

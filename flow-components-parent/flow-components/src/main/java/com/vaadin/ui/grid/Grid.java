@@ -828,6 +828,31 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         return getSelectionModel().addSelectionListener(listener);
     }
 
+    /**
+     * Returns whether column reordering is allowed. Default value is
+     * {@code false}.
+     *
+     * @return true if reordering is allowed
+     */
+    @Synchronize("column-reordering-allowed-changed")
+    public boolean isColumnReorderingAllowed() {
+        return getElement().getProperty("columnReorderingAllowed", false);
+    }
+
+    /**
+     * Sets whether or not column reordering is allowed. Default value is
+     * {@code false}.
+     *
+     * @param columnReorderingAllowed
+     *            specifies whether column reordering is allowed
+     */
+    public void setColumnReorderingAllowed(boolean columnReorderingAllowed) {
+        if (isColumnReorderingAllowed() != columnReorderingAllowed) {
+            getElement().setProperty("columnReorderingAllowed",
+                    columnReorderingAllowed);
+        }
+    }
+
     @ClientDelegate
     private void select(int key) {
         getSelectionModel().selectFromClient(findByKey(key));
