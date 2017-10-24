@@ -17,9 +17,7 @@ package com.vaadin.ui.grid;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +27,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import com.vaadin.data.AbstractListing;
 import com.vaadin.data.Binder;
@@ -40,7 +37,6 @@ import com.vaadin.data.provider.DataCommunicator;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.Query;
 import com.vaadin.data.selection.MultiSelect;
-import com.vaadin.data.selection.MultiSelectionEvent;
 import com.vaadin.data.selection.MultiSelectionListener;
 import com.vaadin.data.selection.SelectionEvent;
 import com.vaadin.data.selection.SelectionListener;
@@ -61,6 +57,7 @@ import com.vaadin.ui.UI;
 import com.vaadin.ui.common.ClientDelegate;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.common.JavaScript;
+import com.vaadin.ui.event.ComponentEvent;
 import com.vaadin.ui.event.ComponentEventListener;
 import com.vaadin.ui.renderers.TemplateRenderer;
 import com.vaadin.util.JsonSerializer;
@@ -80,6 +77,8 @@ import elemental.json.JsonValue;
  */
 @Tag("vaadin-grid")
 @HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid.html")
+@HtmlImport("frontend://bower_components/vaadin-grid/vaadin-grid-column.html")
+@HtmlImport("frontend://bower_components/vaadin-checkbox/vaadin-checkbox.html")
 @JavaScript("context://gridConnector.js")
 public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
 
@@ -265,168 +264,11 @@ public class Grid<T> extends AbstractListing<T> implements HasDataProvider<T> {
         MULTI {
             @Override
             protected <T> GridSelectionModel<T> createModel(Grid<T> grid) {
-                return new GridMultiSelectionModel<T>() {
-
-                    Set<T> selected = new LinkedHashSet<>();
+                return new AbstractGridMultiSelectionModel<T>(grid) {
 
                     @Override
-                    public void remove() {
-                        deselectAll();
-                    }
-
-                    @Override
-                    public void selectFromClient(T item) {
-                        doSelect(item, true);
-                    }
-
-                    @Override
-                    public void deselectFromClient(T item) {
-                        doDeselect(item, true);
-                    }
-
-                    @Override
-                    public Set<T> getSelectedItems() {
-                        return Collections.unmodifiableSet(selected);
-                    }
-
-                    @Override
-                    public Optional<T> getFirstSelectedItem() {
-                        return selected.stream().findFirst();
-                    }
-
-                    @Override
-                    public void select(T item) {
-                        doSelect(item, false);
-                        grid.getDataCommunicator().reset();
-                    }
-
-                    @Override
-                    public void deselect(T item) {
-                        doDeselect(item, false);
-                        grid.getDataCommunicator().reset();
-                    }
-
-                    @Override
-                    public void deselectAll() {
-                        updateSelection(Collections.emptySet(), selected);
-                    }
-
-                    @Override
-                    public void updateSelection(Set<T> addedItems,
-                            Set<T> removedItems) {
-                        Objects.requireNonNull(addedItems,
-                                "added items cannot be null");
-                        Objects.requireNonNull(removedItems,
-                                "removed items cannot be null");
-                        addedItems.removeIf(removedItems::remove);
-                        if (selected.containsAll(addedItems) && Collections
-                                .disjoint(selected, removedItems)) {
-                            return;
-                        }
-                        Set<T> oldSelection = new LinkedHashSet<>(selected);
-                        selected.removeAll(removedItems);
-                        selected.addAll(addedItems);
-                        grid.getDataCommunicator().reset();
-                        grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(grid,
-                                grid.asMultiSelect(), oldSelection, false));
-                    }
-
-                    @Override
-                    public void selectAll() {
-                        throw new UnsupportedOperationException(
-                                "Not implemented yet.");
-                    }
-
-                    @Override
-                    public boolean isSelected(T item) {
-                        return getSelectedItems().contains(item);
-                    }
-
-                    @Override
-                    public MultiSelect<Grid<T>, T> asMultiSelect() {
-                        return new MultiSelect<Grid<T>, T>() {
-
-                            @Override
-                            public void setValue(Set<T> value) {
-                                Objects.requireNonNull(value);
-                                Set<T> copy = value.stream()
-                                        .map(Objects::requireNonNull)
-                                        .collect(Collectors.toCollection(
-                                                LinkedHashSet::new));
-                                updateSelection(copy, new LinkedHashSet<>(
-                                        getSelectedItems()));
-                            }
-
-                            @Override
-                            public Set<T> getValue() {
-                                return getSelectedItems();
-                            }
-
-                            @SuppressWarnings({ "unchecked", "rawtypes" })
-                            @Override
-                            public Registration addValueChangeListener(
-                                    ValueChangeListener<Grid<T>, Set<T>> listener) {
-                                Objects.requireNonNull(listener,
-                                        "listener cannot be null");
-                                return grid.addListener(
-                                        MultiSelectionEvent.class,
-                                        (ComponentEventListener) listener);
-                            }
-
-                            @Override
-                            public Grid<T> get() {
-                                return grid;
-                            }
-
-                            @Override
-                            public Set<T> getEmptyValue() {
-                                return Collections.emptySet();
-                            }
-                        };
-                    }
-
-                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                    @Override
-                    public Registration addSelectionListener(
-                            SelectionListener<T> listener) {
-                        Objects.requireNonNull(listener,
-                                "listener cannot be null");
-                        return grid.addListener(MultiSelectionEvent.class,
-                                (ComponentEventListener) (event -> listener
-                                        .selectionChange(
-                                                (SelectionEvent) event)));
-                    }
-
-                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                    @Override
-                    public Registration addMultiSelectionListener(
-                            MultiSelectionListener<Grid<T>, T> listener) {
-                        Objects.requireNonNull(listener,
-                                "listener cannot be null");
-                        return grid.addListener(MultiSelectionEvent.class,
-                                (ComponentEventListener) (event -> listener
-                                        .selectionChange(
-                                                (MultiSelectionEvent) event)));
-                    }
-
-                    private void doSelect(T item, boolean userOriginated) {
-                        Set<T> oldSelection = new LinkedHashSet<>(selected);
-                        boolean added = selected.add(item);
-                        if (added) {
-                            grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(
-                                    grid, grid.asMultiSelect(), oldSelection,
-                                    userOriginated));
-                        }
-                    }
-
-                    private void doDeselect(T item, boolean userOriginated) {
-                        Set<T> oldSelection = new LinkedHashSet<>(selected);
-                        boolean removed = selected.remove(item);
-                        if (removed) {
-                            grid.fireEvent(new MultiSelectionEvent<Grid<T>, T>(
-                                    grid, grid.asMultiSelect(), oldSelection,
-                                    userOriginated));
-                        }
+                    protected void fireSelectionEvent(SelectionEvent<T> event) {
+                        grid.fireEvent((ComponentEvent<Grid>) event);
                     }
                 };
             }
