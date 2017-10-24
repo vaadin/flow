@@ -67,7 +67,13 @@ public class ComponentDemoServer {
 
         File file = new File(WEB_APP_PATH);
         if (!file.exists()) {
-            file.mkdirs();
+            try {
+                file.mkdirs();
+            } catch (SecurityException exception) {
+                throw new SecurityException(
+                        "Failed to create the following directory for webapp: "
+                                + WEB_APP_PATH);
+            }
         }
         context.setWar(file.getPath());
 
@@ -116,7 +122,7 @@ public class ComponentDemoServer {
      *            the server
      */
     protected void configure(WebAppContext context, Server server) {
-
+        // override for additional configuration
     }
 
 }
