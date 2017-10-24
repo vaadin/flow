@@ -258,7 +258,6 @@ public class StreamReceiverRequestHandler implements RequestHandler {
                     } catch (UploadException e) {
                         session.getErrorHandler().error(new ErrorEvent(e));
                     }
-                    sendUploadResponse(request, response);
 
                     System.out.println("File field " + name + " with file name "
                             + item.getName() + " detected.");
@@ -268,6 +267,7 @@ public class StreamReceiverRequestHandler implements RequestHandler {
         } catch (FileUploadException e) {
             e.printStackTrace();
         }
+        sendUploadResponse(request, response);
     }
 
     /**
