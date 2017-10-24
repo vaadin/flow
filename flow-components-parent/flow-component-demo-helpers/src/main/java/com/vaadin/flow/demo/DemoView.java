@@ -31,6 +31,8 @@ import com.vaadin.ui.html.H3;
 
 /**
  * Base class for all the Views that demo some component.
+ * 
+ * @author Vaadin Ltd
  */
 @StyleSheet("src/css/demo.css")
 @JavaScript("src/script/prism.js")

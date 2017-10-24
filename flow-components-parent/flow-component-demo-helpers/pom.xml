@@ -11,7 +11,7 @@
 
     <artifactId>flow-component-demo-helpers</artifactId>
     <name>Flow component demo helpers</name>
-	<description>Includes a server and a base view for creating component demos</description>
+    <description>Includes a server and a base view for creating component demos</description>
 
     <dependencies>
         <dependency>
