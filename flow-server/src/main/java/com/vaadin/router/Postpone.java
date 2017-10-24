@@ -15,7 +15,9 @@
  */
 package com.vaadin.router;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
+import java.util.Deque;
 
 import com.vaadin.router.event.BeforeLeaveObserver;
 import com.vaadin.router.event.BeforeNavigationObserver;
@@ -23,9 +25,14 @@ import com.vaadin.router.event.BeforeNavigationObserver;
 /**
  * Container class for containing left over listeners on postponed navigation.
  */
-public class Postpone {
+public class Postpone implements Serializable {
     private ArrayDeque<BeforeLeaveObserver> remainingLeaveListeners = new ArrayDeque<>();
     private ArrayDeque<BeforeNavigationObserver> remainingNavigationListeners = new ArrayDeque<>();
+
+    private Postpone(Deque<BeforeLeaveObserver> beforeLeave, Deque<BeforeNavigationObserver> beforeNavigation) {
+        remainingLeaveListeners = new ArrayDeque<>(beforeLeave);
+        remainingNavigationListeners = new ArrayDeque<>(beforeNavigation);
+    }
 
     /**
      * Set any remaining {@link BeforeLeaveObserver}s to be continued from.
@@ -34,10 +41,9 @@ public class Postpone {
      *            listeners to continue calling
      * @return uncalled listeners to continue from
      */
-    public Postpone setLeaveObservers(
-            ArrayDeque<BeforeLeaveObserver> beforeLeave) {
-        remainingLeaveListeners = beforeLeave;
-        return this;
+    public static Postpone withLeaveObservers(
+            Deque<BeforeLeaveObserver> beforeLeave) {
+        return new Postpone(beforeLeave, new ArrayDeque<>());
     }
 
     /**
@@ -47,10 +53,9 @@ public class Postpone {
      *            listeners to continue calling
      * @return uncalled listeners to continue from
      */
-    public Postpone setNavigationObservers(
-            ArrayDeque<BeforeNavigationObserver> beforeNavigation) {
-        remainingNavigationListeners = beforeNavigation;
-        return this;
+    public static Postpone withNavigationObservers(
+            Deque<BeforeNavigationObserver> beforeNavigation) {
+        return new Postpone(new ArrayDeque<>(), beforeNavigation);
     }
 
     /**
@@ -59,7 +64,7 @@ public class Postpone {
      * 
      * @return remaining BeforeLeaveObservers or empty ArrayDeque
      */
-    public ArrayDeque<BeforeLeaveObserver> getLeaveObservers() {
+    public Deque<BeforeLeaveObserver> getLeaveObservers() {
         return remainingLeaveListeners;
     }
 
@@ -69,7 +74,7 @@ public class Postpone {
      * 
      * @return remaining BeforeNavigationObservers or empty ArrayDeque
      */
-    public ArrayDeque<BeforeNavigationObserver> getNavigationObservers() {
+    public Deque<BeforeNavigationObserver> getNavigationObservers() {
         return remainingNavigationListeners;
     }
 }

@@ -16,8 +16,8 @@
 package com.vaadin.router.event;
 
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when they
- * are being detached from the UI.
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be
+ * informed when they are being detached from the UI.
  * <p>
  * During this phase there is the possibility to reroute to another navigation
  * target or to postpone the navigation (to for instance get user input).
@@ -28,7 +28,7 @@ package com.vaadin.router.event;
 public interface BeforeLeaveObserver {
 
     /**
-     * Method called before away navigation is executed.
+     * Method called before navigation to detaching Component chain is made.
      * 
      * @param event
      *            before navigation event with event details

@@ -16,8 +16,8 @@
 package com.vaadin.router.event;
 
 /**
- * Any {@code com.vaadin.ui.Component} implementing this interface will be informed when they
- * are being attached to the UI.
+ * Any {@code com.vaadin.ui.Component} implementing this interface will be
+ * informed when they are being attached to the UI.
  * <p>
  * During this phase there is the possibility to reroute to another navigation
  * target.
@@ -28,7 +28,7 @@ package com.vaadin.router.event;
 public interface BeforeEnterObserver {
 
     /**
-     * Method called before in navigation is executed.
+     * Method called before navigation to attaching Component chain is made.
      * 
      * @param event
      *            before navigation event with event details

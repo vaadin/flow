@@ -18,6 +18,7 @@ package com.vaadin.router;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
@@ -228,11 +229,12 @@ public class NavigationStateRenderer implements NavigationHandler {
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
             BeforeNavigationEvent beforeNavigation, Element element) {
-        ArrayDeque<BeforeLeaveObserver> leaveObservers;
+        Deque<BeforeLeaveObserver> leaveObservers;
         if (postponed != null) {
             leaveObservers = postponed.getLeaveObservers();
-            if (!leaveObservers.isEmpty())
+            if (!leaveObservers.isEmpty()) {
                 postponed = null;
+            }
         } else {
             leaveObservers = new ArrayDeque(
                     EventUtil.collectBeforeLeaveObservers(element));
@@ -245,12 +247,12 @@ public class NavigationStateRenderer implements NavigationHandler {
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             } else if (beforeNavigation.isPostponed()) {
-                postponed = new Postpone().setLeaveObservers(leaveObservers);
+                postponed = Postpone.withLeaveObservers(leaveObservers);
                 return TransitionOutcome.POSTPONED;
             }
         }
 
-        ArrayDeque<BeforeNavigationObserver> navigationObservers;
+        Deque<BeforeNavigationObserver> navigationObservers;
         if (postponed != null) {
             navigationObservers = postponed.getNavigationObservers();
             postponed = null;
@@ -266,8 +268,8 @@ public class NavigationStateRenderer implements NavigationHandler {
             if (beforeNavigation.hasRerouteTarget()) {
                 return TransitionOutcome.REROUTED;
             } else if (beforeNavigation.isPostponed()) {
-                postponed = new Postpone()
-                        .setNavigationObservers(navigationObservers);
+                postponed = Postpone
+                        .withNavigationObservers(navigationObservers);
                 return TransitionOutcome.POSTPONED;
             }
         }
