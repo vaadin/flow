@@ -15,27 +15,21 @@
  */
 package com.vaadin.server.communication;
 
+import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
-import com.vaadin.server.RequestHandler;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceWriter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
@@ -43,7 +37,7 @@ import com.vaadin.server.VaadinSession;
  * @author Vaadin Ltd
  *
  */
-public class StreamResourceRequestHandler implements RequestHandler {
+public class StreamResourceRequestHandler {
 
     private static final char PATH_SEPARATOR = '/';
 
@@ -52,33 +46,13 @@ public class StreamResourceRequestHandler implements RequestHandler {
      */
     static final String DYN_RES_PREFIX = "VAADIN/dynamic/generated-resources/";
 
-    @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
+            VaadinResponse response, StreamResource streamResource)
+            throws IOException {
+
         StreamResourceWriter writer = null;
-
-        String pathInfo = request.getPathInfo();
-        if (pathInfo == null) {
-            return false;
-        }
-        // remove leading '/'
-        assert pathInfo.startsWith(Character.toString(PATH_SEPARATOR));
-        pathInfo = pathInfo.substring(1);
-        if (!pathInfo.startsWith(DYN_RES_PREFIX)) {
-            return false;
-        }
-
         session.lock();
         try {
-            Optional<StreamResource> resource = getPathUri(pathInfo)
-                    .flatMap(session.getResourceRegistry()::getResource);
-            if (!resource.isPresent()) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        "Resource is not found for path=" + pathInfo);
-                return true;
-            }
-
-            StreamResource streamResource = resource.get();
             ServletContext context = ((VaadinServletRequest) request)
                     .getServletContext();
             response.setContentType(streamResource.getContentTypeResolver()
@@ -111,38 +85,15 @@ public class StreamResourceRequestHandler implements RequestHandler {
     public static String generateURI(String id, String name) {
         StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
         try {
-            builder.append(id).append(PATH_SEPARATOR).append(
+            builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
+            builder.append(id).append(PATH_SEPARATOR);
+            builder.append(
                     URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
             throw new RuntimeException(e);
         }
         return builder.toString();
-    }
-
-    private static Optional<URI> getPathUri(String path) {
-        int index = path.lastIndexOf('/');
-        boolean hasPrefix = index >= 0;
-        if (!hasPrefix) {
-            getLog().info("Unsupported path structure, path=" + path);
-            return Optional.empty();
-        }
-        String prefix = path.substring(0, index + 1);
-        String name = path.substring(prefix.length());
-        // path info returns decoded name but space ' ' remains encoded '+'
-        name = name.replace('+', ' ');
-        try {
-            URI uri = new URI(prefix
-                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
-            return Optional.of(uri);
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            getLog().log(Level.INFO, "Path '" + path
-                    + "' is not correct URI (it violates RFC 2396)", e);
-            return Optional.empty();
-        }
     }
 
     private static Logger getLog() {

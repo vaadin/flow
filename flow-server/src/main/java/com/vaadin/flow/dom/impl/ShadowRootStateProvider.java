@@ -26,16 +26,15 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.server.StreamReceiver;
-import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
 import com.vaadin.flow.nodefeature.VirtualChildrenList;
-import com.vaadin.server.StreamResource;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.shared.Registration;
+import com.vaadin.ui.event.PropertyChangeListener;
 
 /**
  * Implementation which handles shadow root nodes.
@@ -92,13 +91,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute,
-            StreamResource resource) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setAttribute(StateNode node, String attribute,
-            StreamReceiver receiver) {
+            AbstractStreamResource resource) {
         throw new UnsupportedOperationException();
     }
 
@@ -123,9 +116,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addEventListener(StateNode node,
-            String eventType, DomEventListener listener,
-            String[] eventDataExpressions) {
+    public Registration addEventListener(StateNode node, String eventType,
+            DomEventListener listener, String[] eventDataExpressions) {
         throw new UnsupportedOperationException();
     }
 
@@ -191,8 +183,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Registration addPropertyChangeListener(StateNode node,
-            String name, PropertyChangeListener listener) {
+    public Registration addPropertyChangeListener(StateNode node, String name,
+            PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }
 

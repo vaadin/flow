@@ -36,7 +36,7 @@ import com.vaadin.function.ContentTypeResolver;
  * @author Vaadin Ltd
  *
  */
-public class StreamResource implements Serializable {
+public class StreamResource extends AbstractStreamResource {
 
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 

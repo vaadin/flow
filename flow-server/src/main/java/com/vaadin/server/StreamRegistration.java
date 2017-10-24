@@ -17,6 +17,7 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Optional;
 
 public interface StreamRegistration extends Serializable {
 
@@ -41,4 +42,6 @@ public interface StreamRegistration extends Serializable {
      * until the session expires.
      */
     void unregister();
+
+    AbstractStreamResource getResource();
 }

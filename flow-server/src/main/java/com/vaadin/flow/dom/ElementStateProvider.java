@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.StreamReceiver;
 import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ComponentMapping;
@@ -78,9 +79,8 @@ public interface ElementStateProvider extends Serializable {
      *            the attribute value, not null
      */
     void setAttribute(StateNode node, String attribute,
-            StreamResource resource);
+            AbstractStreamResource resource);
 
-    void setAttribute(StateNode node, String attribute, StreamReceiver receiver);
     /**
      * Gets the value of the given attribute.
      *

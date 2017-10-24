@@ -16,6 +16,9 @@
 
 package com.vaadin.server;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,10 +48,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.router.RouterConfigurator;
@@ -60,8 +59,7 @@ import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.FaviconHandler;
 import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
-import com.vaadin.server.communication.StreamReceiverRequestHandler;
-import com.vaadin.server.communication.StreamResourceRequestHandler;
+import com.vaadin.server.communication.StreamRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.server.startup.RouteRegistry;
 import com.vaadin.shared.ApplicationConstants;
@@ -318,8 +316,7 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
-        handlers.add(new StreamReceiverRequestHandler());
-        handlers.add(new StreamResourceRequestHandler());
+        handlers.add(new StreamRequestHandler());
 
         return handlers;
     }

@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.server.AbstractStreamResource;
 import com.vaadin.server.StreamReceiver;
 import com.vaadin.ui.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
@@ -316,16 +317,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute,
-            StreamResource resource) {
-        assert node != null;
-        assert attribute != null;
-        assert resource != null;
-        getAttributeFeature(node).setResource(attribute, resource);
-    }
-
-    @Override
-    public void setAttribute(StateNode node, String attribute,
-            StreamReceiver receiver) {
+            AbstractStreamResource receiver) {
         assert node != null;
         assert attribute != null;
         assert receiver != null;

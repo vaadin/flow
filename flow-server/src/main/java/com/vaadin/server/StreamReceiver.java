@@ -15,14 +15,12 @@
  */
 package com.vaadin.server;
 
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.UUID;
 
 import com.vaadin.flow.StateNode;
 
-public class StreamReceiver implements Serializable {
+public class StreamReceiver extends AbstractStreamResource {
 
     private long cacheTime = 0L;
 
@@ -46,7 +44,7 @@ public class StreamReceiver implements Serializable {
      *
      */
     public StreamReceiver(StateNode node, String attributeName,
-            StreamVariable streamVariable){
+            StreamVariable streamVariable) {
         assert attributeName != null;
         assert streamVariable != null;
 
@@ -82,21 +80,6 @@ public class StreamReceiver implements Serializable {
     }
 
     /**
-     * Interface implemented by the source of a StreamResource.
-     *
-     * @author Vaadin Ltd.
-     * @since 3.0
-     */
-    @FunctionalInterface
-    public interface StreamSource extends Serializable {
-
-        /**
-         * Returns new input stream that is used for reading the resource.
-         */
-        InputStream getStream();
-    }
-
-    /**
      * Gets unique identifier of the resource.
      *
      * @return the resource unique id
@@ -109,8 +92,8 @@ public class StreamReceiver implements Serializable {
         return attributeName;
     }
 
-    public int getNodeId() {
-        return node.getId();
+    public StateNode getNode() {
+        return node;
     }
 
     public StreamVariable getStreamVariable() {

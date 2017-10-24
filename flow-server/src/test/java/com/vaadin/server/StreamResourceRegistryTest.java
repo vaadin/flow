@@ -28,6 +28,9 @@ import javax.servlet.ServletException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.ui.UI;
 
 public class StreamResourceRegistryTest {
 
@@ -37,6 +40,9 @@ public class StreamResourceRegistryTest {
 
     @Before
     public void setUp() throws ServletException {
+        UI ui = Mockito.mock(UI.class);
+        UI.setCurrent(ui);
+        Mockito.when(ui.getUIId()).thenReturn(1);
         service = servlet.getService();
         session = new VaadinSession(service) {
 
@@ -53,7 +59,7 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration = registry
+        StreamRegistration registration = registry
                 .registerResource(resource);
         Assert.assertNotNull(registration);
 
@@ -66,7 +72,7 @@ public class StreamResourceRegistryTest {
 
         Assert.assertSame(
                 "Unexpected resource is returned by the registration instance",
-                resource, registration.getResource().get());
+                resource, registration.getResource());
     }
 
     @Test
@@ -75,7 +81,7 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration = registry
+        StreamRegistration registration = registry
                 .registerResource(resource);
         Assert.assertNotNull(registration);
 
@@ -89,7 +95,7 @@ public class StreamResourceRegistryTest {
                 stored.isPresent());
         Assert.assertFalse(
                 "Unexpected resource is returned by the registration instance",
-                registration.getResource().isPresent());
+                registration.getResource() != null);
     }
 
     @Test
@@ -98,12 +104,12 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource1 = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration1 = registry
+        StreamRegistration registration1 = registry
                 .registerResource(resource1);
 
         StreamResource resource2 = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration2 = registry
+        StreamRegistration registration2 = registry
                 .registerResource(resource2);
 
         Assert.assertNotEquals(
@@ -124,7 +130,7 @@ public class StreamResourceRegistryTest {
 
         StreamResource resource = new StreamResource("a?b=c d&e",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration = registry
+        StreamRegistration registration = registry
                 .registerResource(resource);
 
         URI url = registration.getResourceUri();

@@ -16,7 +16,6 @@
 package com.vaadin.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,12 +23,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.fileupload.FileItemIterator;
@@ -42,7 +37,6 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.NoInputStreamException;
 import com.vaadin.server.NoOutputStreamException;
-import com.vaadin.server.RequestHandler;
 import com.vaadin.server.StreamReceiver;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamVariable;
@@ -62,7 +56,7 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  *
  */
-public class StreamReceiverRequestHandler implements RequestHandler {
+public class StreamReceiverRequestHandler {
 
     private static final char PATH_SEPARATOR = '/';
 
@@ -94,56 +88,15 @@ public class StreamReceiverRequestHandler implements RequestHandler {
         }
     }
 
-    @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
-        String pathInfo = request.getPathInfo();
-        if (pathInfo == null) {
-            return false;
-        }
-
-        // remove leading '/'
-        assert pathInfo.startsWith(Character.toString(PATH_SEPARATOR));
-        pathInfo = pathInfo.substring(1);
-        if (!pathInfo.startsWith(DYN_RES_PREFIX)) {
-            return false;
-        }
-        /*
-         * URI pattern:
-         * VAADIN/dynamic/file-upload/[UIID]/[NODEID]/[NAME]/[SECKEY]
-         * 
-         * @see #generateURI
-         */
-        // strip away part until the data we are interested starts
-        int startOfData = pathInfo.indexOf(DYN_RES_PREFIX)
-                + DYN_RES_PREFIX.length();
-
-        String uppUri = pathInfo.substring(startOfData);
-        // [0] UIid, [1] id, [2] name
-        String[] parts = uppUri.split("/", 4);
-        String uiId = parts[0];
-        int nodeId = Integer.parseInt(parts[1]);
-        String variableName = parts[2];
-
-        // These are retrieved while session is locked
+            VaadinResponse response, StreamReceiver streamReceiver, String uiId,
+            String securityKey) throws IOException {
         StateNode source;
-        StreamReceiver streamReceiver;
-        // StreamVariable streamVariable;
-        // StreamResourceWriter writer = null;
 
         session.lock();
         try {
-            Optional<StreamReceiver> receiver = getPathUri(pathInfo)
-                    .flatMap(session.getReceiverRegistry()::getReceiver);
-            if (!receiver.isPresent()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "No receiver registered for path '" + pathInfo + "'");
-                return true;
-            }
-            streamReceiver = receiver.get();
-
             String secKey = streamReceiver.getId();
-            if (secKey == null || !secKey.equals(parts[3])) {
+            if (secKey == null || !secKey.equals(securityKey)) {
                 getLog().warning(
                         "Received incoming stream with faulty security key.");
                 return true;
@@ -152,7 +105,7 @@ public class StreamReceiverRequestHandler implements RequestHandler {
             UI ui = session.getUIById(Integer.parseInt(uiId));
             UI.setCurrent(ui);
 
-            source = ui.getInternals().getStateTree().getNodeById(nodeId);
+            source = streamReceiver.getNode();
 
         } finally {
             session.unlock();
@@ -161,16 +114,13 @@ public class StreamReceiverRequestHandler implements RequestHandler {
         String contentType = request.getContentType();
         if (contentType.contains("boundary")) {
             // Multipart requests contain boundary string
-            // TODO: only if really really needed. Everything should go through
-            // XHR
-            getLog().info("Boundary request received.");
             doHandleMultipartFileUpload(session, request, response,
-                    streamReceiver, variableName, source);
+                    streamReceiver, source);
         } else {
             // if boundary string does not exist, the posted file is from
             // XHR2.post(File)
             doHandleXhrFilePost(session, request, response, streamReceiver,
-                    variableName, source, getContentLength(request));
+                    source, getContentLength(request));
         }
         return true;
     }
@@ -200,39 +150,13 @@ public class StreamReceiverRequestHandler implements RequestHandler {
         return builder.toString();
     }
 
-    private static Optional<URI> getPathUri(String path) {
-        int index = path.lastIndexOf('/');
-        boolean hasPrefix = index >= 0;
-        if (!hasPrefix) {
-            getLog().info("Unsupported path structure, path=" + path);
-            return Optional.empty();
-        }
-        String prefix = path.substring(0, index + 1);
-        String name = path.substring(prefix.length());
-        // path info returns decoded name but space ' ' remains encoded '+'
-        name = name.replace('+', ' ');
-        try {
-            URI uri = new URI(prefix
-                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
-            return Optional.of(uri);
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            getLog().log(Level.INFO, "Path '" + path
-                    + "' is not correct URI (it violates RFC 2396)", e);
-            return Optional.empty();
-        }
-    }
-
     private static Logger getLog() {
         return Logger.getLogger(StreamReceiverRequestHandler.class.getName());
     }
 
     protected void doHandleMultipartFileUpload(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
-            StreamReceiver streamReceiver, String variableName, StateNode owner)
-            throws IOException {
+            StreamReceiver streamReceiver, StateNode owner) throws IOException {
 
         // Create a new file upload handler
         ServletFileUpload upload = new ServletFileUpload();
@@ -254,7 +178,7 @@ public class StreamReceiverRequestHandler implements RequestHandler {
                     try {
                         handleFileUploadValidationAndData(session, stream,
                                 streamReceiver, name, item.getContentType(),
-                                contentLength, owner, variableName);
+                                contentLength, owner);
                     } catch (UploadException e) {
                         session.getErrorHandler().error(new ErrorEvent(e));
                     }
@@ -286,8 +210,6 @@ public class StreamReceiverRequestHandler implements RequestHandler {
      *            The upload response
      * @param streamReceiver
      *            the receiver containing the destination stream variable
-     * @param variableName
-     *            The name of the destination stream variable
      * @param owner
      *            The owner of the stream variable
      * @param contentLength
@@ -298,8 +220,8 @@ public class StreamReceiverRequestHandler implements RequestHandler {
      */
     protected void doHandleXhrFilePost(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
-            StreamReceiver streamReceiver, String variableName, StateNode owner,
-            long contentLength) throws IOException {
+            StreamReceiver streamReceiver, StateNode owner, long contentLength)
+            throws IOException {
 
         // These are unknown in filexhr ATM, maybe add to Accept header that
         // is accessible in portlets
@@ -309,7 +231,7 @@ public class StreamReceiverRequestHandler implements RequestHandler {
 
         try {
             handleFileUploadValidationAndData(session, stream, streamReceiver,
-                    filename, mimeType, contentLength, owner, variableName);
+                    filename, mimeType, contentLength, owner);
         } catch (UploadException e) {
             session.getErrorHandler().error(new ErrorEvent(e));
         }
@@ -319,7 +241,7 @@ public class StreamReceiverRequestHandler implements RequestHandler {
     private void handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,
             String filename, String mimeType, long contentLength,
-            StateNode node, String variableName) throws UploadException {
+            StateNode node) throws UploadException {
         session.lock();
         try {
             if (node == null) {
@@ -412,7 +334,7 @@ public class StreamReceiverRequestHandler implements RequestHandler {
     private void cleanStreamVariable(VaadinSession session,
             StreamReceiver streamReceiver) {
         session.accessSynchronously(() -> {
-            session.getReceiverRegistry().registerResource(streamReceiver)
+            session.getResourceRegistry().registerResource(streamReceiver)
                     .unregister();
         });
     }
