@@ -28,6 +28,7 @@ import com.vaadin.flow.demo.ComponentDemo;
 import com.vaadin.ui.button.Button;
 import com.vaadin.ui.common.HtmlImport;
 import com.vaadin.ui.grid.Grid;
+import com.vaadin.ui.grid.Grid.Column;
 import com.vaadin.ui.grid.Grid.SelectionMode;
 import com.vaadin.ui.grid.GridMultiSelectionModel;
 import com.vaadin.ui.grid.GridSelectionModel;
@@ -155,7 +156,7 @@ public class GridView extends DemoView {
         createMultiSelect();
         createNoneSelect();
         createColumnTemplate();
-        createResizable();
+        createColumnApiExample();
 
         addCard("Grid example model",
                 new Label("These objects are used in the examples above"));
@@ -334,19 +335,24 @@ public class GridView extends DemoView {
         addCard("Grid with columns using template renderer", grid);
     }
 
-    private void createResizable() {
+    private void createColumnApiExample() {
         // begin-source-example
-        // source-example-heading: Grid with resizable columns
+        // source-example-heading: Column API example
         Grid<Person> grid = new Grid<>();
         grid.setItems(getItems());
 
-        grid.addColumn("ID", Person::getId).setFlexGrow(0).setWidth("75px");
+        Column<Person> idColumn = grid.addColumn("ID", Person::getId)
+                .setFlexGrow(0).setWidth("75px");
         grid.addColumn("Name", Person::getName).setResizable(true);
         grid.addColumn("Age", Person::getAge).setResizable(true);
+
+        Button btn = new Button("Toggle visibility of the ID column");
+        btn.addClickListener(event -> idColumn.setHidden(!idColumn.isHidden()));
         // end-source-example
 
-        grid.setId("resizable-columns");
-        addCard("Grid with resizable columns", grid);
+        grid.setId("column-api-example");
+        btn.setId("toggle-id-column-visibility");
+        addCard("Column API example", grid, btn);
     }
 
     private List<Person> getItems() {
