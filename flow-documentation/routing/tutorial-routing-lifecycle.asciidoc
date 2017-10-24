@@ -23,11 +23,11 @@ error view and even postpone navigation to get user confirmation.
 
 === BeforeNavigationListeners
 
-Any `Component` implementing `BeforeNavigationListener` will be informed when they
+Any `Component` implementing `BeforeNavigationObserver` will be informed when they
 are being detached or attached to the UI. The components to inform of navigation
 events will be collected from the root component and children connected to it.
 
-.Child component implementing BeforNavigationListener
+.Child component implementing BeforNavigationObserver
 [source,java]
 ----
 @Route("")
@@ -41,7 +41,7 @@ public class MainLayout extends PolymerTemplate<TemplateModel> {
     }
 }
 
-public class SideElement extends Div implements BeforeNavigationListener {
+public class SideElement extends Div implements BeforeNavigationObserver {
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
         // Handle for instance before navigation clean up
@@ -49,17 +49,17 @@ public class SideElement extends Div implements BeforeNavigationListener {
 }
 ----
 
-=== BeforeLeaveListener
-The `BeforeLeaveListener` is a specific BeforeNavigationListener that is only
+=== BeforeLeaveObserver
+The `BeforeLeaveObserver` is a specific BeforeNavigationObserver that is only
 notified when the component will be detached from the UI.
 
-During the `BeforeLeaveListener` state postponing and rerouting is supported.
+During the `BeforeLeaveObserver` state postponing and rerouting is supported.
 
-=== BeforeEnterListener
-The `BeforeLeaveListener` is a specific BeforeNavigationListener that is only
+=== BeforeEnterObserver
+The `BeforeLeaveObserver` is a specific BeforeNavigationObserver that is only
 notified when the component will be attached to the UI.
 
-During the `BeforeEnterListener` state only reroute is supported.
+During the `BeforeEnterObserver` state only reroute is supported.
 
 == BeforeNavigationEvent
 
@@ -82,7 +82,7 @@ public class NoItemsView extends Div {
 }
 
 @Route("blog")
-public class BlogList extends Div implements BeforeNavigationListener {
+public class BlogList extends Div implements BeforeNavigationObserver {
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
         // implementation omitted
@@ -109,7 +109,7 @@ the current navigational transition until a specific condition is met.
 E.g. the client may request the user's confirmation before leaving the page:
 [source,java]
 ----
-public class SignupForm extends Div implements BeforeNavigationListener {
+public class SignupForm extends Div implements BeforeNavigationObserver {
     @Override
     public void beforeNavigation(BeforeNavigationEvent event) {
         if (event.getActivationState() == ActivationState.DEACTIVATING
@@ -161,14 +161,14 @@ the activating chain.
 
 [source,java]
 ----
-public class SideMenu extends Div implements AfterNavigationListener {
+public class SideMenu extends Div implements AfterNavigationObserver {
     Anchor blog = new Anchor("blog", "Blog");
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
         boolean active = event.getLocation().getFirstSegment()
                 .equals(blog.getHref());
-        blog.getElement().getClassList().set("≥active", active);
+        blog.getElement().getClassList().set("active", active);
     }
 }
 ----

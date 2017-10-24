@@ -102,7 +102,7 @@ public class NavigationEvents {
         public void afterNavigation(AfterNavigationEvent event) {
             boolean active = event.getLocation().getFirstSegment()
                     .equals(blog.getHref());
-            blog.getElement().getClassList().set("≥active", active);
+            blog.getElement().getClassList().set("active", active);
         }
     }
 }
